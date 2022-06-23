@@ -24207,5 +24207,385 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
         $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
     }
+
+    public function testCreationOfInternalEntityWhenInterAccountTestPayoutIsProcessedToBankAccount()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTER_ACCOUNT_TEST_PAYOUT]);
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS => [
+                                                   [
+                                                       'merchant_id'  => 'merchant100000',
+                                                       'account_type' => 'vpa',
+                                                       'address'      => '9876543210@axl',
+                                                       'entity'       => 'RZPX'
+                                                   ],
+                                                   [
+                                                       'merchant_id'    => 'merchant200000',
+                                                       'account_type'   => 'bank_account',
+                                                       'account_number' => '35860000002',
+                                                       'entity'         => 'RZPX',
+                                                   ],
+                                               ],
+                                           ]);
+
+        $ledgerSnsPayloadArray = [];
+
+        // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $bankAccount = $this->getDbEntity('bank_account', ['id' => $fundAccount->getAccountId()]);
+
+        $this->fixtures->edit('bank_account', $bankAccount->getId(),
+                              [
+                                  'account_number' => '35860000002',
+                                  'ifsc_code'      => 'YESB0000022'
+                              ]);
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('created', $payout->getStatus());
+
+        $this->updateFtaAndSource($payout->getId(), 'processed', '12341234');
+
+        $payout->reload();
+        $transaction = $payout->transaction;
+
+        $this->assertEquals('processed', $payout->getStatus());
+        $this->assertEquals('12341234', $payout->getUtr());
+        $this->assertNotNull($payout->getProcessedAt());
+
+        $internalEntity = $this->getDbLastEntity('internal');
+
+        $this->assertEquals('merchant200000', $internalEntity->getMerchantId());
+        $this->assertEquals('expected', $internalEntity->getStatus());
+        $this->assertEquals($payout->getAmount(), $internalEntity->getAmount());
+        $this->assertEquals($payout->getUtr(), $internalEntity->getUtr());
+        $this->assertEquals($payout->getId(), $internalEntity->getEntityId());
+        $this->assertEquals('payout', $internalEntity->getEntityType());
+        $this->assertEquals('test_payout', $internalEntity->getRemarks());
+
+
+        $initiatedLedgerPayload = $ledgerSnsPayloadArray[0];
+        $processedLedgerPayload = $ledgerSnsPayloadArray[1];
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'             => 'X',
+                'transactor_id'      => $payout->getPublicId(),
+                'transactor_event'   => 'inter_account_payout_initiated',
+                'amount'             => strval($payout->getAmount()),
+                'api_transaction_id' => $transaction->getId(),
+            ], $initiatedLedgerPayload);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'           => 'X',
+                'transactor_id'    => $payout->getPublicId(),
+                'transactor_event' => 'inter_account_payout_processed',
+                'amount'           => strval($payout->getAmount()),
+            ], $processedLedgerPayload);
+
+    }
+
+    public function testCreationOfInternalEntityWhenInterAccountTestPayoutIsProcessedToVpa()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTER_ACCOUNT_TEST_PAYOUT]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS => [
+                                                   [
+                                                       'merchant_id'  => 'merchant100000',
+                                                       'account_type' => 'vpa',
+                                                       'address'      => '9876543210@axl',
+                                                       'entity'       => 'RZPX'
+                                                   ],
+                                                   [
+                                                       'merchant_id'    => 'merchant200000',
+                                                       'account_type'   => 'bank_account',
+                                                       'account_number' => '35860000002',
+                                                       'entity'         => 'RZPX',
+                                                   ],
+                                               ],
+                                           ]);
+
+        $ledgerSnsPayloadArray = [];
+
+        // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $vpa = $this->fixtures->create('vpa', [
+            'username' => '9876543210',
+            'handle'   => 'axl',
+        ]);
+
+        $fundAccount->account()->associate($vpa);
+        $fundAccount->save();
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+        $testData['request']['content']['mode'] = 'UPI';
+        $testData['response']['content']['mode'] = 'UPI';
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('created', $payout->getStatus());
+
+        $this->updateFtaAndSource($payout->getId(), 'processed', '12341234');
+
+        $payout->reload();
+        $transaction = $payout->transaction;
+
+        $this->assertEquals('processed', $payout->getStatus());
+        $this->assertEquals('12341234', $payout->getUtr());
+        $this->assertNotNull($payout->getProcessedAt());
+
+        $internalEntity = $this->getDbLastEntity('internal');
+
+        $this->assertEquals('merchant100000', $internalEntity->getMerchantId());
+        $this->assertEquals('expected', $internalEntity->getStatus());
+        $this->assertEquals($payout->getAmount(), $internalEntity->getAmount());
+        $this->assertEquals($payout->getUtr(), $internalEntity->getUtr());
+        $this->assertEquals($payout->getId(), $internalEntity->getEntityId());
+        $this->assertEquals('payout', $internalEntity->getEntityType());
+        $this->assertEquals('test_payout', $internalEntity->getRemarks());
+
+
+        $initiatedLedgerPayload = $ledgerSnsPayloadArray[0];
+        $processedLedgerPayload = $ledgerSnsPayloadArray[1];
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'             => 'X',
+                'transactor_id'      => $payout->getPublicId(),
+                'transactor_event'   => 'inter_account_payout_initiated',
+                'amount'             => strval($payout->getAmount()),
+                'api_transaction_id' => $transaction->getId(),
+            ], $initiatedLedgerPayload);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'           => 'X',
+                'transactor_id'    => $payout->getPublicId(),
+                'transactor_event' => 'inter_account_payout_processed',
+                'amount'           => strval($payout->getAmount()),
+            ], $processedLedgerPayload);
+
+    }
+
+    public function testStatusOfInternalEntityChangedToFailedWhenInterAccountTestPayoutIsReversedFromProcessed()
+    {
+        $this->testCreationOfInternalEntityWhenInterAccountTestPayoutIsProcessedToBankAccount();
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $payout = $this->getDblastEntity('payout');
+
+        $internalEntity = $this->getDbLastEntity('internal');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $payout->reload();
+        $internalEntity->reload();
+        $reversal = $this->getDblastEntity('reversal');
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($reversal->getTransactionId(), $transaction->getId());
+        $this->assertEquals($reversal->getEntityId(), $payout->getId());
+
+        $this->assertEquals('reversed', $payout->getStatus());
+        $this->assertEquals('failed', $internalEntity->getStatus());
+
+        $expectedLedgerPayload = [
+            'tenant'             => 'X',
+            'transactor_id'      => $reversal->getPublicId(),
+            'transactor_event'   => 'inter_account_payout_reversed',
+            'amount'             => strval($payout->getAmount()),
+            'api_transaction_id' => $reversal->getTransactionId(),
+        ];
+
+        $this->assertArraySelectiveEquals($expectedLedgerPayload, $ledgerSnsPayloadArray[0]);
+    }
+
+    public function testNoCreationOfInternalEntityWhenInterAccountTestPayoutIsReversedFromInitiated()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTER_ACCOUNT_TEST_PAYOUT]);
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS => [
+                                                   [
+                                                       'merchant_id'    => 'merchant200000',
+                                                       'account_type'   => 'bank_account',
+                                                       'account_number' => '35860000002',
+                                                       'entity'         => 'RZPX'
+                                                   ],
+                                               ],
+                                           ]);
+
+        $ledgerSnsPayloadArray = [];
+
+        // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $bankAccount = $this->getDbEntity('bank_account', ['id' => $fundAccount->getAccountId()]);
+
+        $this->fixtures->edit('bank_account', $bankAccount->getId(),
+                              [
+                                  'account_number' => '35860000002',
+                                  'ifsc_code'      => 'YESB0000022'
+                              ]);
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $initiatedLedgerPayload = $ledgerSnsPayloadArray[0];
+        $failedLedgerPayload = $ledgerSnsPayloadArray[1];
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'             => 'X',
+                'transactor_id'      => $payout->getPublicId(),
+                'transactor_event'   => 'inter_account_payout_initiated',
+                'amount'             => strval($payout->getAmount()),
+                'api_transaction_id' => $payout->transaction->getId(),
+            ], $initiatedLedgerPayload);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'           => 'X',
+                'transactor_id'    => $reversal->getPublicId(),
+                'transactor_event' => 'inter_account_payout_failed',
+                'amount'           => strval($payout->getAmount()),
+                'api_transaction_id' => $reversal->transaction->getId(),
+            ], $failedLedgerPayload);
+
+        $internalEntity = $this->getDbLastEntity('internal');
+        $this->assertNull($internalEntity);
+    }
+
+    public function testCreationOfInternalEntityWhenInterAccountTestPayoutIsProcessedInLedgerReverseShadow()
+    {
+        Queue::fake();
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([
+                                                   Feature\Constants::INTER_ACCOUNT_TEST_PAYOUT,
+                                                   Feature\Constants::LEDGER_REVERSE_SHADOW,
+                                               ]);
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS => [
+                                                   [
+                                                       'merchant_id'  => 'merchant100000',
+                                                       'account_type' => 'vpa',
+                                                       'address'      => '9876543210@axl',
+                                                       'entity'       => 'RZPX'
+                                                   ],
+                                                   [
+                                                       'merchant_id'    => 'merchant200000',
+                                                       'account_type'   => 'bank_account',
+                                                       'account_number' => '35860000002',
+                                                       'entity'         => 'RZPX',
+                                                   ],
+                                               ],
+                                           ]);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $vpa = $this->fixtures->create('vpa', [
+            'username' => '9876543210',
+            'handle'   => 'axl',
+        ]);
+
+        $fundAccount->account()->associate($vpa);
+        $fundAccount->save();
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+        $testData['request']['content']['mode'] = 'UPI';
+        $testData['response']['content']['mode'] = 'UPI';
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals('created', $payout->getStatus());
+
+        $this->updateFtaAndSource($payout->getId(), 'processed', '12341234');
+
+        $payout->reload();
+
+        $this->assertEquals('processed', $payout->getStatus());
+        $this->assertEquals('12341234', $payout->getUtr());
+        $this->assertNotNull($payout->getProcessedAt());
+
+        $internalEntity = $this->getDbLastEntity('internal');
+
+        $this->assertEquals('merchant100000', $internalEntity->getMerchantId());
+        $this->assertEquals('expected', $internalEntity->getStatus());
+        $this->assertEquals($payout->getAmount(), $internalEntity->getAmount());
+        $this->assertEquals($payout->getUtr(), $internalEntity->getUtr());
+        $this->assertEquals($payout->getId(), $internalEntity->getEntityId());
+        $this->assertEquals('payout', $internalEntity->getEntityType());
+        $this->assertEquals('test_payout', $internalEntity->getRemarks());
+
+        //Pushed once for payout create transaction
+        Queue::assertPushed(Transactions::class, 1);
+    }
+
+    public function testStatusChangeOfInternalEntityWhenInterAccountTestPayoutIsReversedInledgerReverseShadow()
+    {
+        $this->testCreationOfInternalEntityWhenInterAccountTestPayoutIsProcessedInledgerReverseShadow();
+
+        $payout = $this->getDbLastEntity('payout');
+        $internalEntity = $this->getDbLastEntity('internal');
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'reversed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'YB_NS_E10282323'
+        ]);
+
+        $payout->reload();
+        $internalEntity->reload();
+        $reversal = $this->getDblastEntity('reversal');
+
+        $this->assertEquals($reversal->getEntityId(), $payout->getId());
+        $this->assertEquals('reversed', $payout->getStatus());
+        $this->assertEquals('failed', $internalEntity->getStatus());
+        // pushed once for payout creation transaction and once for reversal transaction
+        Queue::assertPushed(Transactions::class, 2);
+    }
  }
 

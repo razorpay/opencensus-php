@@ -2971,4 +2971,34 @@ class Entity extends Base\PublicEntity
     {
         return $this->getChannel() === Channel::RZPX;
     }
+
+    /**
+     * A payout is an inter account payout if
+     * 1. the payout purpose = inter_account_payout meaning it was initiated for inter nodal transfer by FinOps.
+     * 2. Or, the merchant associated with the payout must have the feature flag inter_account_test_payout enabled,
+     *    and the beneficiary account_number/vpa must be present in the config maintained for whitelisted bene accounts.
+     *    This means the payout was meant to be an inter account test payout for testing purposes.
+     * Ref doc link : https://docs.google.com/document/d/1d2Lag8ox1TRaroKNdw2J0dHARb06scu9pXUGPE1vryE/edit#
+     *
+     * @return bool
+     */
+    public function isInterAccountPayout() : bool
+    {
+        // return true if payout is an inter account payout
+        if ($this->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT)
+        {
+            return true;
+        }
+
+        // else, return false if merchant does not have the feature enabled
+        if ($this->merchant->isFeatureEnabled(Features::INTER_ACCOUNT_TEST_PAYOUT) === false)
+        {
+            return false;
+        }
+
+        // else return true or false based on whether the bene account is whitelisted or not
+        list($isBeneWhitelisted, $beneMerchantId) = (new \RZP\Models\Internal\Service())->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($this);
+
+        return $isBeneWhitelisted;
+    }
 }

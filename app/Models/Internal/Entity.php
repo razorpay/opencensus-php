@@ -100,10 +100,53 @@ class Entity extends Base\PublicEntity
         self::ID,
     ];
 
+    // ****************** Start of public getters ******************
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getRemarks()
+    {
+        return $this->getAttribute(self::REMARKS);
+    }
+
+    // ****************** End of public getters ******************
+
+    //****************** Start of public setters ******************
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
     //
     // Relations with other entities
     //
-
     public function merchant()
     {
         return $this->belongsTo(Merchant\Entity::class);

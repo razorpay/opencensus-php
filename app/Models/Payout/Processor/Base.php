@@ -36,6 +36,7 @@ use RZP\Models\WalletAccount;
 use RZP\Models\Payout\Entity;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Internal\Service;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\UniqueIdEntity;

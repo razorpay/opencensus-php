@@ -1387,6 +1387,11 @@ class Constants
 
     const CART_API_AMOUNT_CHECK  =  "cart_api_amount_check";
 
+    /**
+     * Feature flag to allow creation of inter account test payouts
+     */
+    const INTER_ACCOUNT_TEST_PAYOUT = 'inter_account_test_payout';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1902,6 +1907,7 @@ class Constants
         self::RECURRING_CHECKOUT_DOT_COM      => true,
         self::ALLOW_NEGATIVE_DISPUTE          => true,
         self::DEDUPE_CONTACT_ON_REPLICA       => true,
+        self::INTER_ACCOUNT_TEST_PAYOUT       => true,
         self::CART_API_AMOUNT_CHECK           => true,
     ];
 

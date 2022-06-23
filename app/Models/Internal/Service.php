@@ -20,18 +20,13 @@ use RZP\Models\Admin\Service as AdminService;
 
 class Service extends Base\Service
 {
-    const TIME_TAKEN                   = 'time_taken';
     const INTERNAL_ENTITY_CREATE_MUTEX = 'internal_entity_create_%s';
     const MUTEX_LOCK_TIMEOUT           = 30;
     const MERCHANT_ID                  = 'merchant_id';
     const ACCOUNT_NUMBER               = 'account_number';
     const TRANSACTOR_ID                = 'transactor_id';
     const TRANSACTOR_EVENT             = 'transactor_event';
-    const IDENTIFIERS                  = 'identifiers';
-    const ADDITIONAL_PARAMS            = 'additional_params';
-    const BANKING_ACCOUNT_ID           = 'banking_account_id';
     const TRANSACTOR_EVENT_NAME        = 'inter_account_credit_processed';
-    const PAYOUT_PURPOSE               = 'inter_account_payout';
 
     const STATUS_EXPECTED              = 'expected';
     const STATUS_RECEIVED              = 'received';
@@ -40,10 +35,7 @@ class Service extends Base\Service
     const TYPE_CREDIT                  = 'credit';
     const TENANT                       = 'tenant';
     const X                            = 'X';
-
-    const RZP_ENTITY                   = 'entity';
-    const RZP_ENTITY_RZPX              = 'RZPX';
-    const RZP_ENTITY_RSPL              = 'RSPL';
+    const TEST_PAYOUT_REMARK           = 'test_payout';
 
     protected $ledgerService;
 
@@ -54,7 +46,7 @@ class Service extends Base\Service
         $this->ledgerService = $this->app['ledger'];
     }
 
-    public function createOnPayout(Payout\Entity $payout): array
+    public function createOnPayout(Payout\Entity $payout, bool $isTestPayout = false): array
     {
         $this->trace->info(TraceCode::INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA, [
             Payout\Entity::ID          => $payout->getPublicId(),
@@ -65,44 +57,25 @@ class Service extends Base\Service
             Payout\Entity::TYPE        => self::TYPE_CREDIT,
             Payout\Entity::UPDATED_AT  => $payout->getUpdatedAt(),
             Payout\Entity::MODE        => $payout->getMode(),
+            Constants::IS_TEST_PAYOUT  => $isTestPayout,
         ]);
 
-        // based on the payout_id, the beneficiary's account number has to be identified.
-        // account number is fetched by payout -> fund_account -> bank_account
-        // get account_id from fund account using id
-        $fundAccount = $this->repo->fund_account->find($payout->getFundAccountId(), [FundAccount\Entity::ACCOUNT_ID]);
-        if (empty($fundAccount) === true)
+        $remarks        = null;
+        $bankName       = null;
+        $beneMerchantId = null;
+
+        if ($isTestPayout === true)
         {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
-        }
+            list($isBeneWhitelisted, $beneMerchantId) = $this->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
 
-        // get account_number from bank account using id
-        $bankAccount = $this->repo->bank_account->find($fundAccount->getAccountId(), [BankAccount\Entity::ACCOUNT_NUMBER, BankAccount\Entity::IFSC_CODE]);
-        if (empty($bankAccount) === true)
+            $remarks = self::TEST_PAYOUT_REMARK;
+        }
+        else
         {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
+            list($bankName, $beneMerchantId) = $this->getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
         }
 
-        // fetch bank_name for the given payout
-        // payout -> fund_account -> bank_account -> ifsc_code
-        $ifscCode = $bankAccount->getIfscCode();
-        // ifsc_code -> bank_name
-        $bankName = (new BankName)->getName($ifscCode);
-
-        // RZP_INTERNAL_ACCOUNTS contains list of internal accounts belonging to Razorpay
-        // Check if the account belongs to RZP Internal accounts and it's an RZPX Account
-        $beneMerchantId = "";
-        $rzpInternalAccounts = (new AdminService)->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
-        for ($i = 0; $i< count($rzpInternalAccounts); $i++) {
-            if (isset($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER])
-                && $rzpInternalAccounts[$i][self::ACCOUNT_NUMBER] === $bankAccount->getAccountNumber()
-                && $rzpInternalAccounts[$i][self::RZP_ENTITY] === self::RZP_ENTITY_RZPX) {
-                $beneMerchantId = $rzpInternalAccounts[$i][self::MERCHANT_ID];
-            }
-        }
-        if ($beneMerchantId === "")
+        if (empty($beneMerchantId) === true)
         {
             // throw exception
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_MERCHANT_NOT_FOUND);
@@ -110,18 +83,19 @@ class Service extends Base\Service
 
         // create an internal entity
         return $this->create([
-            Entity::AMOUNT            => $payout->getAmount(),
-            Entity::BASE_AMOUNT       => $payout->getBaseAmount(),
-            Entity::UTR               => $payout->getUtr(),
-            Entity::MODE              => $payout->getMode(),
-            Entity::ENTITY_ID         => $payout->getId(),
-            Entity::ENTITY_TYPE       => $payout->getEntity(),
-            Entity::BANK_NAME         => $bankName,
-            Entity::CURRENCY          => $payout->getCurrency(),
-            Entity::TYPE              => self::TYPE_CREDIT,
-            Entity::TRANSACTION_DATE  => $payout->getUpdatedAt(),
-            Entity::MERCHANT_ID       => $beneMerchantId,
-        ]);
+                                 Entity::AMOUNT           => $payout->getAmount(),
+                                 Entity::BASE_AMOUNT      => $payout->getBaseAmount(),
+                                 Entity::UTR              => $payout->getUtr(),
+                                 Entity::MODE             => $payout->getMode(),
+                                 Entity::ENTITY_ID        => $payout->getId(),
+                                 Entity::ENTITY_TYPE      => $payout->getEntity(),
+                                 Entity::BANK_NAME        => $bankName,
+                                 Entity::CURRENCY         => $payout->getCurrency(),
+                                 Entity::TYPE             => self::TYPE_CREDIT,
+                                 Entity::TRANSACTION_DATE => $payout->getUpdatedAt(),
+                                 Entity::MERCHANT_ID      => $beneMerchantId,
+                                 Entity::REMARKS          => $remarks,
+                             ]);
     }
 
     public function create(array $input): array
@@ -164,13 +138,13 @@ class Service extends Base\Service
 
         // fetch internal entity from the utr
         $internal = $this->repo->internal->fetchByEntityIDAndType($payout->getId(), $payout->getEntity());
-        if ($internal == null)
+        if ($internal === null)
         {
             // throw exception
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND);
         }
 
-        return $this->fail($internal->getPublicId());
+        return $this->fail($internal->getId());
     }
 
     public function fail(string $id): array
@@ -262,4 +236,88 @@ class Service extends Base\Service
         return $response[LedgerService::RESPONSE_BODY];
     }
 
+    public function getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted(Payout\Entity $payout)
+    {
+        $beneAccount = $payout->fundAccount->account;
+
+        if ($beneAccount === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
+        }
+
+        $beneAccountType      = $beneAccount->getEntity();
+        $internalTestAccounts = (new AdminService())->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS]);
+
+        foreach ($internalTestAccounts as $testAccount)
+        {
+            if ($testAccount[Constants::ACCOUNT_TYPE] === $beneAccountType)
+            {
+                if ($testAccount[Constants::RZP_ENTITY] !== Constants::RZP_ENTITY_RZPX)
+                {
+                    continue;
+                }
+
+                if ($beneAccountType === Constants::VPA and
+                    $beneAccount->getAddress() === $testAccount[Constants::ADDRESS])
+                {
+                    return [true, $testAccount[self::MERCHANT_ID]];
+                }
+
+                if ($beneAccountType === Constants::BANK_ACCOUNT and
+                    $beneAccount->getAccountNumber() === $testAccount[self::ACCOUNT_NUMBER])
+                {
+                    return [true, $testAccount[self::MERCHANT_ID]];
+                }
+            }
+        }
+
+        return [false, null];
+    }
+
+    public function getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted(Payout\Entity $payout)
+    {
+        // based on the payout_id, the beneficiary's account number has to be identified.
+        // account number is fetched by payout -> fund_account -> bank_account
+        // get account_id from fund account using id
+        $bankName       = null;
+        $beneMerchantId = null;
+
+        $fundAccount = $this->repo->fund_account->find($payout->getFundAccountId(), [FundAccount\Entity::ACCOUNT_ID]);
+
+        if (empty($fundAccount) === true)
+        {
+            // throw exception
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
+        }
+
+        // get account_number from bank account using id
+        $bankAccount = $this->repo->bank_account->find($fundAccount->getAccountId(), [BankAccount\Entity::ACCOUNT_NUMBER, BankAccount\Entity::IFSC_CODE]);
+        if (empty($bankAccount) === true)
+        {
+            // throw exception
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
+        }
+
+        // fetch bank_name for the given payout
+        // payout -> fund_account -> bank_account -> ifsc_code
+        $ifscCode = $bankAccount->getIfscCode();
+        // ifsc_code -> bank_name
+        $bankName = (new BankName)->getName($ifscCode);
+
+        // RZP_INTERNAL_ACCOUNTS contains list of internal accounts belonging to Razorpay
+        // Check if the account belongs to RZP Internal accounts and it's an RZPX Account
+        $rzpInternalAccounts = (new AdminService)->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
+        for ($i = 0; $i < count($rzpInternalAccounts); $i++)
+        {
+            if (isset($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER])
+                && $rzpInternalAccounts[$i][self::ACCOUNT_NUMBER] === $bankAccount->getAccountNumber()
+                && $rzpInternalAccounts[$i][Constants::RZP_ENTITY] === Constants::RZP_ENTITY_RZPX)
+            {
+                $beneMerchantId = $rzpInternalAccounts[$i][self::MERCHANT_ID];
+                break;
+            }
+        }
+
+        return [$bankName, $beneMerchantId];
+    }
 }

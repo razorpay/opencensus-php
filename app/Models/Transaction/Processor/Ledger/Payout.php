@@ -452,6 +452,8 @@ class Payout extends Base
 
         if (($transactorEvent === self::PAYOUT_REVERSED) or
             ($transactorEvent === self::PAYOUT_FAILED) or
+            ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_REVERSED) or
+            ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_FAILED) or
             ($transactorEvent === self::VA_TO_VA_PAYOUT_FAILED))
         {
             if ($reversal !== null)
@@ -461,13 +463,15 @@ class Payout extends Base
             }
         }
 
-        if ($transactorEvent === self::PAYOUT_INITIATED or
-            $transactorEvent === self::VA_TO_VA_PAYOUT_INITIATED)
+        if (($transactorEvent === self::PAYOUT_INITIATED) or
+            ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_INITIATED) or
+            ($transactorEvent === self::VA_TO_VA_PAYOUT_INITIATED))
         {
             $payload[self::TRANSACTION_DATE] = $payout->getInitiatedAt();
         }
 
-        if ($transactorEvent === self::PAYOUT_PROCESSED)
+        if (($transactorEvent === self::PAYOUT_PROCESSED) or
+            ($transactorEvent === self::INTER_ACCOUNT_PAYOUT_PROCESSED))
         {
             $payload[self::TRANSACTION_DATE] = $payout->getProcessedAt();
         }

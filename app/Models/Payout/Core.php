@@ -2292,12 +2292,16 @@ class Core extends Base\Core
             }
         }
 
-        // if purpose_type = inter_account_payout then create an internal entity
-        if($payout->getPurposeType() === Purpose::INTER_ACCOUNT_PAYOUT)
+        $isInterAccountPayout = $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT;
+        $isInterAccountTestPayout = $payout->merchant->isFeatureEnabled(FeatureConstants::INTER_ACCOUNT_TEST_PAYOUT) === true;
+        $shouldCreateInternalEntityForPayout = ($isInterAccountPayout or $isInterAccountTestPayout);
+
+        if ($shouldCreateInternalEntityForPayout === true)
         {
-            try {
+            try
+            {
                 $internalEntityService = new \RZP\Models\Internal\Service();
-                $internalEntityService->createOnPayout($payout);
+                $internalEntityService->createOnPayout($payout, $isInterAccountTestPayout);
             }
             catch(\Throwable $ex)
             {
@@ -2377,6 +2381,8 @@ class Core extends Base\Core
 
         if (($event === PayoutsLedgerProcessor::PAYOUT_FAILED or
              $event === PayoutsLedgerProcessor::PAYOUT_REVERSED or
+             $event === PayoutsLedgerProcessor::INTER_ACCOUNT_PAYOUT_FAILED or
+             $event === PayoutsLedgerProcessor::INTER_ACCOUNT_PAYOUT_REVERSED or
              $event === PayoutsLedgerProcessor::VA_TO_VA_PAYOUT_FAILED) and
              $reversal === null)
         {
@@ -2887,12 +2893,13 @@ class Core extends Base\Core
          */
         $clonedPayout = clone $payout;
 
+        $previousStatus = $payout->getStatus();
+
         /*
          * If fta status is Status::REVERSED, we have to send reversed event to ledger,
          * so we first send a processed event to make sure correct ledger entries are recorded
          */
         if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED)) {
-            $previousStatus = $payout->getStatus();
 
             // If a payout goes from initiated to directly reversed, we will still wish to move the status
             // from initiated -> processed -> reversed for proper journal writes,
@@ -3043,7 +3050,7 @@ class Core extends Base\Core
         }
 
         // if a reversal happens on the payout with inter_account_payout then mark the internal entity as failed
-        if($payout->getPurposeType() === Purpose::INTER_ACCOUNT_PAYOUT)
+        if(($previousStatus === Status::PROCESSED) and ($payout->isInterAccountPayout() === true))
         {
             try {
                 // get internal entity

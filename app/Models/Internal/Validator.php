@@ -15,8 +15,9 @@ class Validator extends Base\Validator
         Entity::TYPE             => 'required|filled|string|in:debit,credit',
         Entity::TRANSACTION_DATE => 'required|filled|integer',
         Entity::MODE             => 'required|filled|string',
-        Entity::BANK_NAME        => 'required|filled|string',
+        Entity::BANK_NAME        => 'nullable|string',
         Entity::ENTITY_ID        => 'required|filled|string',
         Entity::ENTITY_TYPE      => 'required|filled|string',
+        Entity::REMARKS          => 'sometimes|nullable|string|in:test_payout',
     ];
 }

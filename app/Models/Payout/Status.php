@@ -6,6 +6,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Transaction\Processor\Ledger;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
@@ -317,15 +318,13 @@ class Status
     {
         $payoutStatus = $payout->getStatus();
 
-        $purpose = $payout->getPurpose();
-
         if ($payout->isVaToVaPayout() === true)
         {
             // for VA to VA payouts
             return self::$payoutStatusToLedgerEventMapForVaToVaPayouts[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
         }
 
-        if ($purpose === Purpose::INTER_ACCOUNT_PAYOUT)
+        if ($payout->isInterAccountPayout() === true)
         {
             return self::$payoutStatusToLedgerEventMapForInterAccount[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
         }

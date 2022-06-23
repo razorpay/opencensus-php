@@ -4624,6 +4624,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA                  = 'INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA';
     const INTERNAL_CREATE_INPUT_DATA                            = 'INTERNAL_CREATE_INPUT_DATA';
     const INTERNAL_ENTITY_CREATED                               = 'INTERNAL_ENTITY_CREATED';
+    const RZP_INTERNAL_TEST_ACCOUNTS                            = 'RZP_INTERNAL_TEST_ACCOUNTS';
 
     const INTERNAL_FAIL_ON_PAYOUT_REVERSAL_INPUT_DATA           = 'INTERNAL_FAIL_INPUT_DATA';
     const INTERNAL_FAIL_INPUT_DATA                              = 'INTERNAL_FAIL_INPUT_DATA';
