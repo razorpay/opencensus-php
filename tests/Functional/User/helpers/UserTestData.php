@@ -740,6 +740,97 @@ return [
         ],
     ],
 
+    'testMobileLoginWithNewSmsTemplateAndSendsViaStork' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'contact_mobile'        => '8766776666',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMobileSignupWithNewSmsTemplateAndSendsViaStork' => [
+        'request' => [
+            'url'     => '/users/register/otp',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+            'content' => [
+                'contact_mobile'        => '8766776665',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginWithNewSmsTemplate' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMobileVerifyOtpForSignupWithNewSmsTemplate' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776664',
+                'captcha'        => 'faked'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testMobileLoginForXWithNewSmsTemplateAndSendsViaStork' => [
         'request' => [
             'url'     => '/users/login/otp',

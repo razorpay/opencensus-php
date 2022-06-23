@@ -411,6 +411,8 @@ class Constants
         self::X_LOGIN_OTP_ACTION        => Metric::VERIFY_LOGIN_INCORRECT_OTP,
         self::VERIFY_USER_ACTION        => Metric::VERIFY_LOGIN_INCORRECT_OTP,
         self::X_VERIFY_USER_ACTION      => Metric::VERIFY_LOGIN_INCORRECT_OTP,
+        self::SIGNUP_OTP_ACTION_V2      => Metric::VERIFY_SIGNUP_INCORRECT_OTP,
+        self::LOGIN_OTP_ACTION_V2       => Metric::VERIFY_LOGIN_INCORRECT_OTP,
     ];
 
     // Ras Signup
@@ -433,11 +435,16 @@ class Constants
         self::X_VERIFY_USER_ACTION
     ];
 
+    const LOGIN_OTP_ACTION_V2                      = 'login_otp_v2';
+    const SIGNUP_OTP_ACTION_V2                     = 'signup_otp_v2';
+
     const THROW_SMS_EXCEPTION_IN_STORK     = 'THROW_SMS_EXCEPTION_IN_STORK';
 
     const STORK_RESOURCE_EXHAUSTED_MESSAGE = 'twirp error resource_exhausted: request to send sms has been denied. maximum limit reached';
 
     const API_STORK_RX_SEND_SMS_RAZORX_EXP = 'api_stork_rx_send_sms';
+
+    const API_STORK_SEND_SMS_RAZORX_EXP    = 'api_stork_send_sms';
 
     // Constants related to product-switch for user_fetch
     const PRODUCT_SWITCH          = 'product_switch';

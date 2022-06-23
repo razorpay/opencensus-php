@@ -4,8 +4,10 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants\Date;
+use RZP\Constants\Util;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Exception\AssertionException;
 use RZP\Exception\BadRequestException;
@@ -1135,5 +1137,58 @@ if (! function_exists('mask_by_percentage'))
 
         return substr($data, 0, $dataLen - $lengthOfDataToMask) .
             str_repeat('*', $lengthOfDataToMask);
+    }
+}
+
+if (! function_exists('isValidHost'))
+{
+     function isValidHost(string $host): bool
+     {
+        $domains = Util::RAZORPAY_VALID_DOMAINS;
+
+        for($i = 0; $i < sizeof($domains); $i++)
+        {
+            if(str_contains($host, $domains[$i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+     }
+}
+
+
+if(! function_exists('getOrigin'))
+{
+    function getOrigin(): string
+    {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $app = App::getFacadeRoot()['app'];
+
+        $origin_value = "";
+
+        $origin = $app['request']->header(RequestHeader::X_REQUEST_ORIGIN) ?? "";
+
+        try
+        {
+            $host =  parse_url($origin, PHP_URL_HOST);
+
+            if(empty($host) === false and is_string($host) === true and isValidHost($host) === true)
+            {
+                $host = preg_replace( '/[^-a-zA-Z.]/i', '', $host);
+                // All valid senders has less than 30 characters https://github.com/razorpay/vishnu/blob/b27a63f4dbae1eaf4dec3bf3aca9b1c02454e77e/prod/kubernetes/prod-white/apps/dashboard/dashboards.tf#L46-L61
+                $origin_value = '@'.str_limit($host, 29, '');
+            }
+        }
+        catch (Throwable $e)
+        {
+            $trace->info(TraceCode::DOMAIN_URL_PARSE_FAILURE, [
+                'url' => $origin,
+            ]);
+        }
+
+        return $origin_value;
     }
 }

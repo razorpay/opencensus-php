@@ -6,6 +6,7 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
+use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use Throwable;
@@ -183,13 +184,31 @@ class Core extends Base\Core
 
         $receiver = $input[Entity::CONTACT_MOBILE];
 
-        $otp = $this->generateOtpForLoginSignup($receiver, $input);
+        $messageSendViaStork = false;
 
-        $payload = $this->getSmsPayload($input, $otp);
+        if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
+            $this->app['razorx']->getTreatment($receiver , Constants::API_STORK_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on' and
+            $input['action'] = Constants::SIGNUP_OTP_ACTION)
+        {
+            $messageSendViaStork = true;
+            $input['action'] = Constants::SIGNUP_OTP_ACTION_V2; //It should come from frontend once experiment will be removed.
+        }
+
+        $otp = $this->generateOtpForLoginSignup($receiver, $input);
 
         try
         {
-            $this->app->raven->sendOtp($payload);
+            if($messageSendViaStork === true)
+            {
+                $payload = $this->getStorkLoginSignupPayload($input, $otp);
+                $stork = $this->app['stork_service'];
+
+                $stork->sendSms($this->mode,$payload);
+            }
+            else {
+                $payload = $this->getSmsPayload($input, $otp);
+                $this->app->raven->sendOtp($payload);
+            }
         }
         catch (\Throwable $e)
         {
@@ -207,6 +226,7 @@ class Core extends Base\Core
             switch ($e->getCode())
             {
                 case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
+                case Constants::STORK_RESOURCE_EXHAUSTED_MESSAGE:
                 case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
@@ -316,6 +336,15 @@ class Core extends Base\Core
             Constants::VERIFY_SIGNUP_OTP_TTL,
             Constants::SIGNUP_OTP_VERIFICATION_THRESHOLD
         );
+
+        if($input[Entity::MEDIUM] === Org\Constants::SMS and
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
+            $this->app['razorx']->getTreatment($receiver, Constants::API_STORK_SEND_SMS_RAZORX_EXP, Mode::LIVE) === 'on' and
+            $input[Entity::ACTION] == Constants::SIGNUP_OTP_ACTION)
+        {
+            //It should come from frontend once experiment will be removed.
+            $input[Entity::ACTION] = Constants::SIGNUP_OTP_ACTION_V2;
+        }
 
         $this->verifyLoginSignupOtp($receiver, $input, $receiver);
 
@@ -1034,6 +1063,42 @@ class Core extends Base\Core
         return $otp + array_only($payload, 'context') + compact('token');
     }
 
+    public function getStorkLoginSignupPayload(array $input, array $otp, Entity $user = null)
+    {
+        $receiver = $input[Entity::CONTACT_MOBILE];
+
+        $origin_value = getOrigin();
+
+        $orgId = $this->app['basicauth']->getOrgId();
+
+        $ownerId = "1000000000";
+
+        if (is_null($user) === false)
+        {
+            $ownerId =$user->getId();
+        }
+
+        $payload = [
+            'ownerId'               => $ownerId,
+            'ownerType'             => 'merchant',
+            'orgId'                 => $orgId,
+            'destination'           => $receiver,
+            'source'                => 'api.user.' . $input[Entity::ACTION],
+            'templateName'          => 'sms.user.' . $input[Entity::ACTION],
+            'templateNamespace'     => 'partnerships',
+            'sender'                => 'RZRPAY',
+            'language'              => 'english',
+            'contentParams'   => [
+                'otp'      => $otp['otp'],
+                'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
+                'origin'   => $origin_value,
+            ],
+            'THROW_SMS_EXCEPTION_IN_STORK' => true,
+        ];
+
+        return $payload;
+    }
+
     public function getSmsPayload(array $input, array $otp)
     {
         $receiver = $input[Entity::CONTACT_MOBILE];
@@ -1116,6 +1181,16 @@ class Core extends Base\Core
             $sendViaHelperMethod = true;
         }
 
+        $messageSendViaStork = false;
+
+        if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
+            $this->app['razorx']->getTreatment($input[Entity::CONTACT_MOBILE] , Constants::API_STORK_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on' and
+            $input[Entity::ACTION] === Constants::LOGIN_OTP_ACTION)
+        {
+            $input[Entity::ACTION] = Constants::LOGIN_OTP_ACTION_V2;
+            $messageSendViaStork = true;
+        }
+
         $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
 
         // Raven payload
@@ -1126,6 +1201,14 @@ class Core extends Base\Core
             if ($sendViaHelperMethod === true)
             {
                 $token = $this->sendOtpViaSms($input,null,$user,$otp);
+            }
+            else if($messageSendViaStork === true)
+            {
+                $payload = $this->getStorkLoginSignupPayload($input, $otp, $user);
+
+                $stork = $this->app['stork_service'];
+
+                $stork->sendSms($this->mode,$payload);
             }
             else
             {
@@ -1176,6 +1259,7 @@ class Core extends Base\Core
                 switch ($e->getCode())
                 {
                     case ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED:
+                    case Constants::STORK_RESOURCE_EXHAUSTED_MESSAGE:
                     case ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED:
                         throw new Exception\BadRequestException(
                             ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED,
@@ -1609,6 +1693,14 @@ class Core extends Base\Core
             $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP, Mode::LIVE) === 'on')
         {
             $input[Entity::ACTION] = Constants::X_LOGIN_OTP_ACTION;
+        }
+
+        if($input[Entity::MEDIUM] === Org\Constants::SMS and
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
+            $this->app['razorx']->getTreatment($receiver, Constants::API_STORK_SEND_SMS_RAZORX_EXP, Mode::LIVE) === 'on' and
+            $input[Entity::ACTION] == Constants::LOGIN_OTP_ACTION)
+        {
+            $input[Entity::ACTION] = Constants::LOGIN_OTP_ACTION_V2;
         }
 
         $this->verifyLoginSignupOtp($receiver, $input, $user->getId());

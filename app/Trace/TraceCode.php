@@ -2804,6 +2804,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_FAILURE';
     const GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS                  = 'GOOGLE_OAUTH_ID_TOKEN_VERIFY_SUCCESS';
     const GOOGLE_OAUTH_INVALID_ID_TOKEN                         = 'GOOGLE_OAUTH_INVALID_ID_TOKEN';
+    const DOMAIN_URL_PARSE_FAILURE                              = 'DOMAIN_URL_PARSE_FAILURE';
 
     const LOGIN_2FA_CORRECT_OTP                                 = 'LOGIN_2FA_CORRECT_OTP';
 
