@@ -14,15 +14,21 @@ class CmmaProxyController extends BaseProxyController
     const HANDLE_CALLBACK                 = 'HandleCallback';
     const GET_USER_TASK_QUERY             = 'GetUserTaskQuery';
     const GET_USER_TASK_BY_ID             = 'GetUserTaskById';
+    const GET_PROCESS_INSTANCE_DETAILS    = 'GetProcessInstanceDetails';
+    const GET_PROCESS_INSTANCE_RESOURCES  = 'GetProcessInstanceResources';
+    const UPDATE_TASK                     = 'UpdateTask';
 
     const ROUTES_URL_MAP    = [
-        self::GET_PROCESS_INSTANCE => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceById/",
-        self::CREATE_PROCESS_INSTANCE => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/CreateProcessInstance/",
-        self::HANDLE_CALLBACK => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/HandleCallback/",
-        self::GET_USER_TASK_QUERY => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskQuery/',
-        self::GET_USER_TASK_BY_ID => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskById/',
+        self::GET_PROCESS_INSTANCE            => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceById/",
+        self::CREATE_PROCESS_INSTANCE         => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/CreateProcessInstance/",
+        self::HANDLE_CALLBACK                 => "/twirp\/rzp.cmma.process.v1.ProcessManagementService\/HandleCallback/",
+        self::UPDATE_TASK                     => "/twirp\/rzp.cmma.userTask.v1.UserTaskService\/UpdateUserTask/",
+        self::GET_USER_TASK_QUERY             => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskQuery/',
+        self::GET_USER_TASK_BY_ID             => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskById/',
         self::CRON_UPDATE_PROCESS_ASSIGNED_TO => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/UpdateProcessAssignedTo/",
-        self::FETCH_PROCESS_INSTANCES => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/FetchProcessInstances/",
+        self::FETCH_PROCESS_INSTANCES         => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/FetchProcessInstances/",
+        self::GET_PROCESS_INSTANCE_DETAILS    => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceDetails/",
+        self::GET_PROCESS_INSTANCE_RESOURCES  => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetResources/",
     ];
 
     const ADMIN_ROUTES   = [
@@ -30,7 +36,10 @@ class CmmaProxyController extends BaseProxyController
         self::FETCH_PROCESS_INSTANCES,
         self::HANDLE_CALLBACK,
         self::GET_USER_TASK_QUERY,
-        self::GET_USER_TASK_BY_ID
+        self::GET_USER_TASK_BY_ID,
+        self::GET_PROCESS_INSTANCE_DETAILS,
+        self::GET_PROCESS_INSTANCE_RESOURCES,
+        self::UPDATE_TASK,
     ];
 
     const CRON_ROUTES   = [
@@ -39,12 +48,16 @@ class CmmaProxyController extends BaseProxyController
     ];
 
     const ADMIN_ROUTES_VS_PERMISSION   = [
-        self::GET_PROCESS_INSTANCE   => Name::CMMA_PROCESS_VIEW,
-        self::FETCH_PROCESS_INSTANCES => Name::CMMA_PROCESS_VIEW,
-        self::HANDLE_CALLBACK => Name::CMMA_PROCESS_EDIT,
-        self::GET_USER_TASK_QUERY => Name::CMMA_USER_TASK_VIEW,
-        self::GET_USER_TASK_BY_ID => Name::CMMA_USER_TASK_VIEW
+        self::GET_PROCESS_INSTANCE           => Name::CMMA_PROCESS_VIEW,
+        self::FETCH_PROCESS_INSTANCES        => Name::CMMA_PROCESS_VIEW,
+        self::HANDLE_CALLBACK                => Name::CMMA_PROCESS_EDIT,
+        self::UPDATE_TASK                    => Name::CMMA_PROCESS_EDIT,
+        self::GET_USER_TASK_QUERY            => Name::CMMA_PROCESS_VIEW,
+        self::GET_USER_TASK_BY_ID            => Name::CMMA_PROCESS_VIEW,
+        self::GET_PROCESS_INSTANCE_DETAILS   => Name::CMMA_PROCESS_VIEW,
+        self::GET_PROCESS_INSTANCE_RESOURCES => Name::CMMA_PROCESS_VIEW,
     ];
+    
 
     public function __construct()
     {
