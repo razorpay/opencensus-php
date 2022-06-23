@@ -938,6 +938,30 @@ class Processor
      * @param $input
      * @param $paymentData
      */
+    protected function autoSaveUserConsentForRecurring(& $input, $paymentData): void
+    {
+        // If payment is done via recurring flow and call is from S2S,
+        // we are automatically collect the user's consent for card
+
+        $library = $input['_']['library'] ?? '';
+
+        $isRecurringInitialPayment = (isset($paymentData['type']) and $paymentData['type'] === 'first');
+
+        $isRecurringFlow = isset($input['recurring']) and
+                           (($input["recurring"] === '1') or ($input['recurring'] === 'preferred'));
+
+        if($isRecurringInitialPayment and
+            ($isRecurringFlow or isset($input[Payment\Entity::SUBSCRIPTION_ID])) and
+            $library === Payment\Analytics\Metadata::S2S)
+        {
+            $input['save'] = 1;
+        }
+    }
+
+    /**
+     * @param $input
+     * @param $paymentData
+     */
     protected function saveUserConsentInRedis($input, $paymentData): void
     {
         try
@@ -947,6 +971,8 @@ class Processor
             $paymentMethodsUsingCards = [Payment\Entity::CARD, Payment\Entity::EMI];
             $library = $input['_']['library'] ?? '';
             $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS, Payment\Analytics\Metadata::HOSTED, Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM, Payment\Analytics\Metadata::S2S];
+
+            $this->autoSaveUserConsentForRecurring($input, $paymentData);
 
             $this->trace->info(
                 TraceCode::TOKENISATION_CONSENT_LOG,
