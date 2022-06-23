@@ -32,13 +32,13 @@ class Attachments extends Mailable
     protected function addAttachments()
     {
         if ((isset($this->data[PayoutConstant::ATTACHMENT_FILE_URL]) === true) and
-            (isset($this->data[PayoutConstant::FILE_NAME]) === true) and
+            (isset($this->data[PayoutConstant::DISPLAY_NAME]) === true) and
             (isset($this->data[PayoutConstant::MIME]) === true))
         {
 
             $this->attach($this->data[PayoutConstant::ATTACHMENT_FILE_URL],
                 [
-                    'as' => $this->data[PayoutConstant::FILE_NAME],
+                    'as' => $this->data[PayoutConstant::DISPLAY_NAME] . '.' . $this->data[PayoutConstant::EXTENSION],
                     'mime' => $this->data[PayoutConstant::MIME]
                 ]
             );

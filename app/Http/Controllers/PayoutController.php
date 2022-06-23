@@ -698,7 +698,7 @@ class PayoutController extends Controller
 
         $response = $this->service()->emailAttachments($input);
 
-        if ($response[PayoutConstants::STATUS_CODE] == 201)
+        if ($response[PayoutConstants::STATUS_CODE] == 200)
         {
             return ApiResponse::json(['Status' => 'Success'], 200);
         }

@@ -33,7 +33,7 @@
                     </tr>
                     <tr>
                         <td style="margin-top: 5px;">
-                            <span style="color: rgba(0,0,0,0.54);">Name:</span> RX Payouts attachments
+                            <span style="color: rgba(0,0,0,0.54);">Name:</span> {{$display_name}}
                         </td>
                     </tr>
                 </table>

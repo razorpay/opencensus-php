@@ -34,7 +34,9 @@ class Constants
 
     public const PAYOUT_ATTACHMENT_METRO_TOPIC = 'payout_attachments';
 
-    public const FILE_NAME                  = 'name';
+    public const DISPLAY_NAME               = 'display_name';
+
+    public const EXTENSION                  = 'extension';
 
     public const MIME                       = 'mime';
 

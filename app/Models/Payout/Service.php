@@ -3268,7 +3268,9 @@ class Service extends Base\Service
 
         $mailData[PayoutConstants::ATTACHMENT_FILE_URL] = $response[PayoutConstants::SIGNED_URL];
 
-        $mailData[PayoutConstants::FILE_NAME] = $response[PayoutConstants::FILE_NAME];
+        $mailData[PayoutConstants::DISPLAY_NAME] = $response[PayoutConstants::DISPLAY_NAME];
+
+        $mailData[PayoutConstants::EXTENSION] = $response[PayoutConstants::EXTENSION];
 
         $mailData[PayoutConstants::MIME] = $response[PayoutConstants::MIME];
 
