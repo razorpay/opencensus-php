@@ -775,6 +775,62 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    public function removeDuplicateCardRecurringTokensIfAny($tokens, $merchant)
+    {
+        if (Base\PublicCollection::isPublicCollection($tokens) === true)
+        {
+
+            $tokens = $tokens->reject(
+                function($token)
+                {
+                    global $distinctCardTokensData;
+
+                    if ($token->hasCard() and $token->isRecurring())
+                    {
+                        if(isset($distinctCardTokensData[$token->card->getVaultToken()]))
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            $distinctCardTokensData[$token->card->getVaultToken()] = $token->card->getNetwork() .
+                                $token->card->getIssuer();
+                            return false;
+                        }
+                    }
+                    return false;
+                })->values();
+        }
+        else
+        {
+            $tokenItems = & $tokens['items'];
+
+            $tokenItems = array_filter($tokenItems, function ($item)
+            {
+                global $distinctCardTokensData;
+
+                if ((isset($item[Entity::CARD]) === true) and
+                    $item[Token\Entity::RECURRING] === true)
+                {
+                    $tokenIIN = $item[Entity::CARD][Card\Entity::TOKEN_IIN];
+
+                    if (isset($distinctCardTokensData[$tokenIIN]))
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        $distinctCardTokensData[$tokenIIN] = $item[Entity::CARD][Card\Entity::NETWORK] .
+                            $item[Entity::CARD][Card\Entity::ISSUER];
+                        return true;
+                    }
+                }
+                return true;
+            });
+        }
+        return $tokens;
+    }
+
     public function updateTokenFromEmandateGatewayData(Entity $token, array $gatewayData)
     {
         if (empty($gatewayData[Entity::RECURRING_STATUS]) === false)

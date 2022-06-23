@@ -2505,6 +2505,62 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertContains('token_100022xtokeng1', $tokenIds);
     }
 
+    public function testCheckoutPreferencesForDedupeRecurringCardLocalToken()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::CHARGE_AT_WILL]);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::DEDUP_RECURRING_SAVED_CARD_TOKEN)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $this->fixturesToCreateRecurringCardToken('100022xtokeng1', '100000003card2',
+            '411140',self::DEFAULT_MERCHANT_ID,self::LOCAL_CUSTOMER_ID );
+
+        $this->fixturesToCreateRecurringTokenForExistingCard('100022xtokeng2', '100000003card2',
+            self::DEFAULT_MERCHANT_ID,self::LOCAL_CUSTOMER_ID );
+
+        $request = [
+            'url'     => '/preferences',
+            'method'  => 'get',
+            'content' => [
+                'currency' => [
+                    'INR'
+                ],
+            ],
+        ];
+
+        $request['content']['customer_id'] = 'cust_' . self::LOCAL_CUSTOMER_ID;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains('token_100022xtokeng2', $tokenIds);
+
+        $this->assertNotContains('token_100022xtokeng1', $tokenIds);
+
+    }
+
+
+
     public function testGetCheckoutPreferencesForDudupeLocalOverGlobalTokensWhenGlobalAndLocalTokenOfSameCardExpectsToReturnLocalToken()
     {
         $this->ba->publicAuth();
@@ -2721,6 +2777,71 @@ class CheckoutPreferencesTest extends TestCase
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+            ]
+        );
+    }
+
+    protected function fixturesToCreateRecurringCardToken(
+        $tokenId,
+        $cardId,
+        $iin,
+        $merchantId = self::DEFAULT_MERCHANT_ID,
+        $customerId = self::LOCAL_CUSTOMER_ID,
+        $inputFields = []
+    )
+    {
+        $this->fixtures->card->create(
+            [
+                'id'            => $cardId,
+                'merchant_id'   => $merchantId,
+                'name'          => 'test',
+                'iin'           => $iin,
+                'expiry_month'  => '12',
+                'expiry_year'   => '2100',
+                'issuer'        => 'HDFC',
+                'network'       => $inputFields['network'] ?? 'Visa',
+                'last4'         => '1111',
+                'type'          => 'debit',
+                'vault'         => 'rzpvault',
+                'vault_token'   => 'test_token',
+                'international' => $inputFields['international'] ?? null,
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'              => $tokenId,
+                'customer_id'     => $customerId,
+                'method'          => 'card',
+                'card_id'         => $cardId,
+                'used_at'         => 10,
+                'merchant_id'     => $merchantId,
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+                'recurring'       => 1,
+            ]
+        );
+    }
+
+    protected function fixturesToCreateRecurringTokenForExistingCard(
+        $tokenId,
+        $cardId,
+        $merchantId = self::DEFAULT_MERCHANT_ID,
+        $customerId = self::LOCAL_CUSTOMER_ID,
+        $inputFields = []
+    )
+    {
+        $this->fixtures->token->create(
+            [
+                'id'              => $tokenId,
+                'customer_id'     => $customerId,
+                'method'          => 'card',
+                'card_id'         => $cardId,
+                'used_at'         => 10,
+                'merchant_id'     => $merchantId,
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+                'recurring'       => 1,
             ]
         );
     }

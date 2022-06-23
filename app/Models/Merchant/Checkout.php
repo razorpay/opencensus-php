@@ -731,6 +731,14 @@ class Checkout
 
             $savedTokens = $tokenCore->removeCardTokensWithoutName($savedTokens);
 
+            if((new Merchant\Core)->isRazorxExperimentEnable(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::DEDUP_RECURRING_SAVED_CARD_TOKEN
+            ))
+            {
+                $savedTokens = $tokenCore->removeDuplicateCardRecurringTokensIfAny($savedTokens,$merchant);
+            }
+
             $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens, $merchant);
             $custData['tokens'] = $savedTokens->toArrayPublic();
 
