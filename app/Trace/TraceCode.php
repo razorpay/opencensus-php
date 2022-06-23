@@ -7259,6 +7259,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ROLE_ACCESS_POLICY_MAP_UPDATE_RESPONSE                = 'ROLE_ACCESS_POLICY_MAP_UPDATE_RESPONSE';
 
     const CREATING_ACCESS_CONTROL_UPDATE_HISTORY                = 'CREATING_ACCESS_CONTROL_UPDATE_HISTORY';
+    const DB_QUERY_EXCEPTION                                    = 'DB_QUERY_EXCEPTION';
 
     const VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT           = 'VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT';
     const CARD_VAULT_METRICS_DIMENSION_PUSH_FAILED              = 'CARD_VAULT_METRICS_DIMENSION_PUSH_FAILED';
@@ -7437,6 +7438,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::UPDATE_OBSERVER_DATA                                  => 'Update Observer Data',
         self::GET_OBSERVER_DATA                                     => 'Get Observer Data',
         self::DB_QUERY_EXECUTION_LOG                                => 'db query executed',
+        self::DB_QUERY_EXCEPTION                                    => 'db query exception',
         self::FAV_QUEUE_FOR_FTS_JOB_INIT                            => 'FAV job picked up for FTS request',
         self::FAV_QUEUE_FOR_FTS_JOB_REQUEST                         => 'FAV ID pushed to queue for FTS request',
         self::FAV_QUEUE_FOR_FTS_JOB_FAILED                          => 'FAV job for FTS request failed',

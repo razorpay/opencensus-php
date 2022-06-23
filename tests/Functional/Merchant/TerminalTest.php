@@ -804,8 +804,6 @@ class TerminalTest extends TestCase
 
         $content = $this->editTerminal($tid, $data);
 
-        s($content);
-
         $this->assertEquals( "razorpay", $content['procurer']);
     }
 

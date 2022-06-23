@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal;
 
 use DB;
 use Carbon\Carbon;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -234,8 +235,6 @@ class Repository extends Base\Repository
             $query->withTrashed();
         }
 
-        $terminal = $query->findOrFailPublic($id);
-
         $mode = $this->app['rzp.mode'] ??  Mode::LIVE ;
 
         $variantFlag = $this->app->razorx->getTreatment($id, "ROUTE_PROXY_TS_BY_ID_2",  $mode);
@@ -252,14 +251,19 @@ class Repository extends Base\Repository
 
                 $response = $this->app['terminals_service']->proxyTerminalService('', "GET", $path);
 
-                $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+                $terminalFromTs = Terminal\Service::getEntityFromTerminalServiceResponse($response);
+                // Only saving and comparing the terminals which are present in the API service DB.
+                // In case of activated PayPal terminals it is present in both API service DB and TS service DB.
+                if(!$terminalFromTs->isTerminalOnlyOnTerminalsService()){
+                    $terminal = $query->findOrFailPublic($id);
 
-                if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    if (Terminal\Service::compareTerminalEntity($terminal, $terminalFromTs) === false)
+                    {
+                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
+                    }
                 }
 
-                return $terminal2;
+                return $terminalFromTs;
             }
             catch (\Throwable $ex)
             {
@@ -269,7 +273,7 @@ class Repository extends Base\Repository
             }
         }
 
-        return $terminal;
+        return $query->findOrFailPublic($id);
     }
 
     public function getTerminalsWithNullEnabledWallets($count)
@@ -340,7 +344,9 @@ class Repository extends Base\Repository
 
                 $terminalEntityByTS = Terminal\Service::getEntityFromTerminalServiceResponse($response);
 
-                if(!in_array($terminalEntityByTS->getGateway(), Gateway::TOKENISATION_GATEWAYS)){
+                // Only saving and comparing the terminals which are present in the API service DB.
+                // In case of activated PayPal terminals it is present in both API service DB and TS service DB.
+                if(!$terminalEntityByTS->isTerminalOnlyOnTerminalsService()){
 
                     $terminal = parent::find($id, $columns);
 
@@ -1740,7 +1746,15 @@ class Repository extends Base\Repository
 
                 $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
-                parent::saveOrFail($entity);
+                try{
+                    parent::saveOrFail($entity);
+                }catch (DbQueryException $e){
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::DB_QUERY_EXCEPTION);
+                    //We only need to delete terminals on API service if its present on both TS and API service
+                    if(!$entity->isTerminalOnlyOnTerminalsService()){
+                        throw $e;
+                    }
+                }
             }
 
             $entity->deleteOrFail();

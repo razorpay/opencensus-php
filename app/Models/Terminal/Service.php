@@ -3,6 +3,7 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -12,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -1015,7 +1017,15 @@ class Service extends Base\Service
 
         $terminal = $this->repo->transaction(function () use ($terminal, $client) {
 
-            $this->repo->terminal->lockForUpdateAndReload($terminal);
+            try{
+                $this->repo->terminal->lockForUpdateAndReload($terminal);
+            }catch (DbQueryException $e){
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::DB_QUERY_EXCEPTION);
+                //We only need to delete terminals on API service if its present on both TS and API service
+                if(!$terminal->isTerminalOnlyOnTerminalsService()){
+                    throw $e;
+                }
+            }
 
             try
             {

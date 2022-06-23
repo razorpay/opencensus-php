@@ -401,6 +401,10 @@ class Entity extends Base\PublicEntity
         'axis_org' => 'paysecure',
     ];
 
+    const gatewaysOnlyOnTs = [
+        Gateway::WALLET_PAYPAL,
+    ];
+
     protected $appends = [
         self::SHARED,
         self::BANKING_TYPES,
@@ -453,7 +457,7 @@ class Entity extends Base\PublicEntity
     {
         if(!array_key_exists(self::GATEWAY_RECON_PASSWORD, $this->attributes))
             return null;
-        
+
         $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];
 
         if ($reconPassword === null)
@@ -1898,5 +1902,15 @@ class Entity extends Base\PublicEntity
     public static function getCacheTag($id)
     {
         return implode('_', [E::TERMINAL, $id]);
+    }
+
+    public function isTerminalOnlyOnTerminalsService(): bool
+    {
+        $isActivatedPayPalTerminal = ($this->getStatus() == Status::ACTIVATED && $this->getGateway() == Gateway::WALLET_PAYPAL);
+        if ($isActivatedPayPalTerminal)
+        {
+            return false;
+        }
+        return in_array($this->getGateway(), self::gatewaysOnlyOnTs) || in_array($this->getGateway(), Gateway::TOKENISATION_GATEWAYS);
     }
 }
