@@ -1,4 +1,4 @@
-import { analyticsTrack } from 'common/utils/analytics';
+import { sendToLumberjack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 export const trackOptimizerEvents = ({
@@ -7,15 +7,14 @@ export const trackOptimizerEvents = ({
   properties = {},
   screen = 'Optimizer',
 }) => {
-  analyticsTrack({
-    objectName,
-    actionName,
+  sendToLumberjack({
+    eventName: `${objectName} ${actionName}`.split(' ').join('.').toLowerCase(),
     properties: {
       ...getCommonSegmentProperties(window.rzp_user, { addUserProperties: true }),
       ...properties,
+      screen,
+      eventTimestamp: new Date().toISOString(),
     },
-    screen,
-    toLumberjack: true,
   });
 };
 
