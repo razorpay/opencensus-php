@@ -211,4 +211,17 @@ class Validator extends Base\Validator
 
         return $rules;
     }
+
+    public function makeFetchAllRules()
+    {
+        // restrict fetch all via only device id in merchant context
+        if($this->context === Base\Libraries\Context::MERCHANT)
+        {
+            return  Parent::makeDeviceIdRules();
+        }
+        else
+        {
+            return $this->makeRules([]);
+        }
+    }
 }

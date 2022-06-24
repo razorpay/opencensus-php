@@ -29,5 +29,8 @@ class Fetch extends Base\Fetch
             Entity::USERNAME,
             Entity::HANDLE,
         ],
+        AuthType::PRIVATE_AUTH =>[
+            Entity::DEVICE_ID,
+        ],
     ];
 }

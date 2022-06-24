@@ -19,6 +19,8 @@ use RZP\Exception\P2p\BadRequestException;
  */
 class Processor extends Base\Processor
 {
+    use Base\Traits\FetchTrait;
+
     public function initiateAdd(array $input): array
     {
         $this->initialize(Action::INITIATE_ADD, $input, true);

@@ -279,12 +279,17 @@ final class P2pRoute
                 'merchant/devices/{device_id}/{action}',
                 'DeviceController@updateWithAction'
             ],
-
         Requests::P2P_MERCHANT_DEVICES_FETCH_ALL =>
             [
                 'get',
                 'merchant/devices',
                 'DeviceController@fetchAll'
+            ],
+        Requests::P2P_MERCHANT_VPA_FETCH_ALL =>
+            [
+                'get',
+                'merchant/vpa',
+                'VpaController@fetchAll'
             ],
 
         /************* Mandates **************/
@@ -431,6 +436,7 @@ final class P2pRoute
         Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE,
         Requests::P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION,
         Requests::P2P_MERCHANT_DEVICES_FETCH_ALL,
+        Requests::P2P_MERCHANT_VPA_FETCH_ALL,
     ];
 
     public static $routePermission = [];

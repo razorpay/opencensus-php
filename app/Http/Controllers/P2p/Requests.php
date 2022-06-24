@@ -54,7 +54,8 @@ class Requests
 
     const P2P_MERCHANT_BENEFICIARY_VALIDATE                = 'p2p_merchant_beneficiary_validate';
     const P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION           = 'p2p_merchant_device_update_with_action';
-    const P2P_MERCHANT_DEVICES_FETCH_ALL                    = 'p2p_merchant_devices_fetch_all';
+    const P2P_MERCHANT_DEVICES_FETCH_ALL                   = 'p2p_merchant_devices_fetch_all';
+    const P2P_MERCHANT_VPA_FETCH_ALL                       = 'p2p_merchant_vpa_fetch_all';
 
 
     const P2P_CUSTOMER_MANDATE_FETCH_ALL                   = 'p2p_customer_mandate_fetch_all';

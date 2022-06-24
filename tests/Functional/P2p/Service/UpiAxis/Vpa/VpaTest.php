@@ -6,6 +6,7 @@ use RZP\Models\P2p\Vpa\Entity;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\TransactionTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class VpaTest extends TestCase
 {
@@ -341,5 +342,39 @@ class VpaTest extends TestCase
         $helper->initiateCheckVpaAvailable([
             'username' => $vpa->getUsername(),
         ]);
+    }
+
+    public function testFetchVpaAndBankAccountByDeviceId()
+    {
+        $helper = $this->getDeviceHelper()->setMerchantOnAuth(true);
+
+        $device = $this->fixtures->device(self::DEVICE_1);
+
+        $response = $helper->fetchAll(['contact' => $device->getContact()]);
+
+        $deviceId = $response['items'][0]['id'];
+
+        $helper = $this->getVpaHelper()->setMerchantOnAuth(true);
+
+        $response = $helper->fetchAllVpa(['device_id'  => $deviceId]);
+
+        $this->assertEquals($response['items'][0]['entity'],'vpa');
+    }
+
+    public function testFetchVpaAndBankAccountWithoutDeviceId()
+    {
+        $helper = $this->getDeviceHelper()->setMerchantOnAuth(true);
+
+        $device = $this->fixtures->device(self::DEVICE_1);
+
+        $response = $helper->fetchAll(['contact' => $device->getContact(),]);
+
+        $deviceId = $response['items'][0]['id'];
+
+        $helper = $this->getVpaHelper()->setMerchantOnAuth(true);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $response = $helper->fetchAllVpa([]);
     }
 }
