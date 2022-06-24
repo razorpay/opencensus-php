@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
 
     const CREATED_AT             = 'created_at';
     const UPDATED_AT             = 'updated_at';
+    const METADATA               = 'metadata';
 
     protected $entity            = 'user_device_detail';
 
@@ -28,7 +29,8 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::APPSFLYER_ID,
         self::SIGNUP_SOURCE,
-        self::SIGNUP_CAMPAIGN
+        self::SIGNUP_CAMPAIGN,
+        self::METADATA
     ];
 
     protected $public = [
@@ -37,7 +39,16 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::APPSFLYER_ID,
         self::SIGNUP_SOURCE,
-        self::SIGNUP_CAMPAIGN
+        self::SIGNUP_CAMPAIGN,
+        self::METADATA
+    ];
+
+    protected $casts = [
+        self::METADATA => 'array',
+    ];
+
+    protected $defaults = [
+        self::METADATA => []
     ];
 
     public function getAppsFlyerId()
@@ -63,5 +74,24 @@ class Entity extends Base\PublicEntity
     public function getSignupCampaign()
     {
         return $this->getAttribute(self::SIGNUP_CAMPAIGN);
+    }
+
+    public function getMetaData()
+    {
+        return $this->getAttribute(self::METADATA);
+    }
+
+    public function getValueFromMetaData($key){
+        $metaData   = $this->getAttribute(self::METADATA);
+
+        $value = null;
+
+        if (empty($metaData) === false
+            and array_key_exists($key, $metaData))
+        {
+            $value = $metaData[$key];
+        }
+
+        return $value;
     }
 }

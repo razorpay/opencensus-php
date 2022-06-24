@@ -458,7 +458,7 @@ class UserRolesScope
             'transfer_fetch'                                => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::FINANCE],
             'transfer_fetch_reversals'                      => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SUPPORT, Role::MANAGER, Role::FINANCE],
             'ufh_get_file_signed_url'                       => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER, Role::SUPPORT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_ADMIN, Role::LINKED_ACCOUNT_OWNER,],
-            'user_device_detail_save'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,Role::FINANCE],
+            'user_device_detail_save'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,Role::FINANCE, Role::SELLERAPP, Role::SUPPORT],
             'user_fetch_for_merchant'                       => [Role::ADMIN, Role::OWNER, Role::SELLERAPP, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::FINANCE, Role::AGENT,],
             'user_fetch_purpose_code'                       => Role::ALL_ROLES,
             'user_otp_create'                               => Role::ALL_ROLES,

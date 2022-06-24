@@ -5,9 +5,11 @@ namespace RZP\Services\Segment;
 
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cookie;
 use Razorpay\Trace\Logger as Trace;
 use Respect\Validation\Rules\Even;
 use RZP\Constants\Timezone;
+use RZP\Models\DeviceDetail\Constants as DeviceDetailConstants;
 use RZP\Models\Merchant;
 use RZP\Jobs\SegmentRequestJob;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -83,11 +85,26 @@ class SegmentAnalyticsClient extends AbstractEventClient
 
         try
         {
+            $deviceDetails = $this->repo->user_device_detail->fetchByMerchantIdAndUserRole($merchant->getId());
+
+            $gclid = $_COOKIE['gclid'] ?? Cookie::get('gclid');
+            if (empty($gclid) == true and empty($deviceDetails) == false)
+            {
+                $gclid = $deviceDetails->getValueFromMetaData(DeviceDetailConstants::G_CLICK_ID);
+            }
+
             $properties += [
                 Merchant\Entity::MERCHANT_ID    => $merchant->getId(),
                 'event_category'                => Constants::SEGMENT_EVENT_CATEGORY,
                 'event_action'                  => $eventName,
+                'gclid'                         => $gclid,
             ];
+
+            if ($this->isFacebookPlatformEvent($eventName))
+            {
+                $properties += [
+                    'action_source'                 => Constants::ACTION_SOURCE];
+            }
 
             $properties += $this->getUserProperties($merchant);
 
@@ -104,6 +121,16 @@ class SegmentAnalyticsClient extends AbstractEventClient
                 'event'                 => $eventName,
                 Constants::INTEGRATIONS => $this->getIntegrations($merchant)
             ];
+
+            if ($this->isFacebookPlatformEvent($eventName))
+            {
+                $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip();
+                if (empty($clientIpAddress) == true and empty($deviceDetails) == false)
+                {
+                    $clientIpAddress = $deviceDetails->getValueFromMetaData(DeviceDetailConstants::CLIENT_IP);
+                }
+                $eventData['context'] = [DeviceDetailConstants::CLIENT_IP => $clientIpAddress];
+            }
 
             if($eventTimestamp != null)
             {
@@ -237,6 +264,11 @@ class SegmentAnalyticsClient extends AbstractEventClient
         }
 
         $appsflyerId = null;
+        $gaClientId = $_COOKIE['_ga'] ?? Cookie::get('_ga');
+        if (empty($gaClientId) == false)
+        {
+            $gaClientId = substr($gaClientId,6);
+        }
 
         $userDeviceDetail = $this->repo->user_device_detail->fetchByMerchantIdAndUserId(
             $merchant->getId() ,$user->getId());
@@ -244,11 +276,15 @@ class SegmentAnalyticsClient extends AbstractEventClient
         if(empty($userDeviceDetail) === false)
         {
             $appsflyerId = $userDeviceDetail->getAppsFlyerId();
+            $gaClientId = $gaClientId ?? $userDeviceDetail->getValueFromMetaData(DeviceDetailConstants::G_CLIENT_ID);
         }
 
         return [
             Constants::APPSFLYER     => [
                 Constants::APPSFLYERID => $appsflyerId
+            ],
+            Constants::GOOGLE_UNIVERSAL_ANALYTICS => [
+                Constants::CLIENTID => $gaClientId
             ]
         ];
     }
@@ -482,6 +518,22 @@ class SegmentAnalyticsClient extends AbstractEventClient
         ];
 
         if(in_array($eventName, $googleAnalyticsEvents) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isFacebookPlatformEvent(string $eventName){
+
+        $facebookPlatformEvents = [
+            EventCode::L1_SUBMISSION,
+            EventCode::L2_SUBMISSION,
+            EventCode::MTU_TRANSACTED
+        ];
+
+        if(in_array($eventName, $facebookPlatformEvents) === true)
         {
             return true;
         }

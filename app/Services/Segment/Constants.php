@@ -38,4 +38,9 @@ class Constants
     const REGULAR_MERCHANT = "regular_merchant";
 
     const EVENT_MILESTONE   = 'event_milestone';
+
+    const ACTION_SOURCE                 = 'system_generated';
+    const GOOGLE_UNIVERSAL_ANALYTICS    = 'Google Universal Analytics';
+    const CLIENTID                      = 'clientId';
+
 }

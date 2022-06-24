@@ -183,12 +183,19 @@ abstract class AbstractEventClient extends Base\Core
                     $eventData['key'] = $this->config['key'];
                 }
 
-                $context = $this->getEventContext();
-
-                if ((isset($context) === true) and
-                    (empty($context) === false))
+                if (isset($eventChunk['context']) == true and
+                    empty($eventChunk['context']) == false)
                 {
-                    $eventData['context'] = $context;
+                    $eventData['context'] = $eventChunk['context'];
+                }
+                else
+                {
+                    $context = $this->getEventContext();
+
+                    if ((isset($context) === true) and
+                        (empty($context) === false)) {
+                        $eventData['context'] = $context;
+                    }
                 }
 
                 $eventChunksData[] = $eventData;
