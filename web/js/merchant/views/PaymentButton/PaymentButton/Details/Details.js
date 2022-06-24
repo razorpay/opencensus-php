@@ -103,7 +103,11 @@ export default class PaymentButtonEntity extends React.Component {
     const { user, paymentButtonEntity, reportConfigs } = this.props;
     let configId;
 
-    if (!reportConfigs.length) {
+    if (!reportConfigs?.length) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Something went wrong. Try again later.',
+      });
       return;
     }
 

@@ -114,7 +114,11 @@ export default class PaymentPagesV3Entity extends React.Component {
     const { user, paymentPageEntity, reportConfigs } = this.props;
     let configId;
 
-    if (!reportConfigs.length) {
+    if (!reportConfigs?.length) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Something went wrong. Try again later.',
+      });
       return;
     }
 
