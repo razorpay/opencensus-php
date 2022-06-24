@@ -24,7 +24,6 @@ import { fetchUser } from 'merchant/reducers/session';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import IntoView from 'common/ui/IntoView';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import TokenisationConsent from './TokenisationConsent';
 import {
   FLASH_CHECKOUT,
   CAPTURE_SETTINGS,
@@ -34,7 +33,6 @@ import {
   WHATSAPP_NOTIF,
   SKIP_CARD_MANDATE_SUMMARY,
 } from './deeplink-constants';
-import { getFeature } from 'common/utils/features';
 import EasterEgg from 'merchant/components/EasterEgg';
 import Firc from './components/FircAnnouncements/Firc';
 import ToggleSetting from './ToggleSetting';
@@ -284,10 +282,6 @@ class CongfigurationContainer extends Component {
       });
   };
 
-  shouldShowConsentForTokenisation = () => {
-    const showConsent = getFeature(this.props.features, 'disable_collect_consent');
-    return Object.keys(showConsent).length > 0;
-  };
   render() {
     const {
       mode,
@@ -328,9 +322,6 @@ class CongfigurationContainer extends Component {
               onSwitchChange={this.handleCovidReliefOptinAndOut}
               isLoading={this.state.isLoading}
             />
-            <ShowWhen additionalCondition={this.shouldShowConsentForTokenisation}>
-              <TokenisationConsent />
-            </ShowWhen>
             {user.isOrgAllowedFunctionality('flashcheckout') && (
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <ToggleSetting {...flashCheckoutProps} org={org} />
@@ -397,7 +388,6 @@ export default compose(
         configState: state.config,
         mode: state.session.mode,
         org: state.session.org,
-        features: state.config.features,
       };
     },
     { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
