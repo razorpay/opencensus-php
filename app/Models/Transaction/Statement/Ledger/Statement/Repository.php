@@ -202,6 +202,10 @@ class Repository extends Base\Repository
                 $this->setAdjustmentAttributesForTxn($sourceId, $transaction, $merchant);
                 break;
 
+            case E::CREDIT_TRANSFER:
+                $this->setCreditTransferAttributesForTxn($sourceId, $transaction, $merchant);
+                break;
+
             case E::REVERSAL:
                 $this->setReversalAttributesForTxn($sourceId, $transaction, $merchant);
                 break;
@@ -823,6 +827,22 @@ class Repository extends Base\Repository
         // Calling statement entity function to set public attributes for adjustment entity.
         $statement = new Statement\Entity();
         $statement->setPublicSourceAttributeForAdjustment($transaction);
+    }
+
+    /**
+     * Fetch credit_transfer entity using txn id and then set it's attributes on transaction array.
+     * @param string $id
+     * @param array $transaction
+     * @param Merchant\Entity $merchant
+     */
+    private function setCreditTransferAttributesForTxn(string $id, array &$transaction, Merchant\Entity $merchant)
+    {
+        $credit_transfer = $this->repo->credit_transfer->findByPublicIdAndMerchant($id, $merchant);
+        $transaction[Service::SOURCE] = $credit_transfer->toArrayPublic();
+
+        // Calling statement entity function to set public attributes for adjustment entity.
+        $statement = new Statement\Entity();
+        $statement->setPublicSourceAttributeForCreditTransfer($transaction);
     }
 
     /**
