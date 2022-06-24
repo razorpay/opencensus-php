@@ -4,7 +4,7 @@ const rzp_gst = '29AAGCR4375J1ZU';
 
 export const isEmail = (email) => {
   email = email || '';
-  let emailRegExp = new RegExp(
+  const emailRegExp = new RegExp(
     /^$|[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/,
   );
   return emailRegExp.test(email);
@@ -13,8 +13,8 @@ export const isEmail = (email) => {
 //- validates url without http/https/www
 export const isUrlLenient = (url) => {
   url = url || '';
-
-  let urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+  /* eslint-disable */
+  const urlRegExp = /^(https?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
   return urlRegExp.test(url);
 };
 
@@ -24,59 +24,59 @@ export const isUrlLenient = (url) => {
  * */
 export const flexibleDevUrl = (url) => {
   url = url || '';
-
-  let urlRegExp = /^(http(s?)?:\/\/)?[\w.-]+(\.[\w.-]+)*(:[0-9]+)?\/?(\/[.\w\-]*)*$/;
-
+  const urlRegExp = new RegExp(/^(http(s?)?:\/\/)?[\w.-]+(\.[\w.-]+)*(:[0-9]+)?\/?(\/[.\w\-]*)*$/);
   return urlRegExp.test(url);
 };
 
 export const isDeepLink = (url) => {
   url = url || '';
 
-  let urlRegExp = /[A-Za-z]+:\/\/.*/;
+  const urlRegExp = /[A-Za-z]+:\/\/.*/;
   return urlRegExp.test(url);
 };
 
 // Note: Fallacy in this method is, the 3rd party urls can keep modifying / may add new url shortner. So this would have to be updated.
 export const validateEmbeddedVideoUrl = (url) => {
   url = url || '';
-  const urlRegExp = /^(http(s)?:\/\/)((w){3}.)?(vimeo\.com|youtu\.be|youtube\.com)\/([\w-_\/]+)([\?].*)?$/i;
+  const urlRegExp = new RegExp(
+    /^(http(s)?:\/\/)((w){3}.)?(vimeo\.com|youtu\.be|youtube\.com)\/([\w-_\/]+)([\?].*)?$/i,
+  );
 
   return urlRegExp.test(url);
 };
 
 export const isAmount = (amount) => {
   amount = amount || '';
-  let amountRexExp = /^\d+(\.\d{1,2})?$/;
+  const amountRexExp = new RegExp(/^\d+(\.\d{1,2})?$/);
   return amountRexExp.test(amount);
 };
 
 export const isPhone = (phone) => {
   phone = phone || '';
-  let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
+  const phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
   return phoneRegExp.test(phone);
 };
 
 export const isMobile = (mobile) => {
   mobile = mobile || '';
-  let mobileRegExp = new RegExp(/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/);
+  const mobileRegExp = new RegExp(/^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/);
   return mobileRegExp.test(mobile);
 };
 
 export const isValidPinCode = (pinCode) => {
   pinCode = pinCode || '';
-  let pinCodeRegExp = new RegExp(/^[1-9][0-9]{5}$/);
+  const pinCodeRegExp = new RegExp(/^[1-9][0-9]{5}$/);
   return pinCodeRegExp.test(pinCode);
 };
 
 export const isValidName = (name) => {
   name = name || '';
-  let nameRegExp = new RegExp(/^[a-zA-Z ]+$/);
+  const nameRegExp = new RegExp(/^[a-zA-Z ]+$/);
   return nameRegExp.test(name);
 };
 
 export const isInteger = (value = '') => {
-  let integerRegExp = new RegExp(/^[0-9]+$/);
+  const integerRegExp = new RegExp(/^[0-9]+$/);
 
   return integerRegExp.test(value);
 };
@@ -148,7 +148,9 @@ export function validateCIN(value, type = 'CIN') {
   if (value) {
     if (value.length != 21 && type === 'CIN') {
       return 'CIN length must be 21 characters';
-    } else if (!/^([a-z]{3}-\d{4}|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i.test(value)) {
+    } else if (
+      !/^([a-z]{3}-\d{4}|([F|f]\w{3}-\d{4})|[ul]\d{5}[a-z]{2}\d{4}[a-z]{3}\d{6})$/i.test(value)
+    ) {
       return `Please Provide Valid ${type}`;
     }
   }
@@ -245,25 +247,25 @@ export function validateSlug(val) {
 }
 
 export function validateAlphanumericWithMaxLength(value, maxLength) {
-  let regex = new RegExp(`^[a-z0-9]{0,${maxLength}}$`, 'i');
+  const regex = new RegExp(`^[a-z0-9]{0,${maxLength}}$`, 'i');
 
   return regex.test(value);
 }
 
 export function validateAlphanumericWithStrictLength(value, length) {
-  let regex = new RegExp(`^[a-z0-9]{${length}}$`, 'i');
+  const regex = new RegExp(`^[a-z0-9]{${length}}$`, 'i');
 
   return regex.test(value);
 }
 
 export function validateBeneficiaryName(value) {
-  let regex = new RegExp(/^[a-zA-Z0-9 ]+$/);
+  const regex = new RegExp(/^[a-zA-Z0-9 ]+$/);
 
   return value.length >= 4 && value.length <= 120 && regex.test(value);
 }
 
 export function validateAlphanumeric(value) {
-  let regex = new RegExp(/^[a-z0-9]+$/i);
+  const regex = new RegExp(/^[a-z0-9]+$/i);
 
   return regex.test(value);
 }
