@@ -131,4 +131,13 @@ class AccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchLinkedAccountsForMerchant(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchLinkedAccountsForMerchant($input, $merchantId);
+
+        return ApiResponse::json($response);
+    }
 }

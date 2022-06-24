@@ -223,4 +223,13 @@ class Service extends Merchant\Service
 
         unset($input[Entity::CODE]);
     }
+
+    public function fetchLinkedAccountsForMerchant(array $input, string $merchantId)
+    {
+        $input[Entity::PARENT_ID] = $merchantId;
+
+        $linkedAccounts = $this->repo->account->fetch($input);
+
+        return $linkedAccounts->toArrayPublic();
+    }
 }

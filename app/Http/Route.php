@@ -1875,6 +1875,7 @@ class Route
         'transfer_fetch_la'                        => ['get',      'la-transfers/{id}',                              'TransferController@getLinkedAccountTransfer'                       ],
         'la_transfer_create_reversal'              => ['post',     'la-transfers/{id}/reversal' ,                    'TransferController@postLinkedAccountTransferReversal'              ],
         'la_fetch'                                 => ['get',      'linked_accounts',                                'AccountController@listLinkedAccounts'                              ],
+        'merchant_la_fetch'                        => ['get',      'merchants/{id}/linked_accounts',                 'AccountController@fetchLinkedAccountsForMerchant'                              ],
         'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
         'linked_account_update_bank_account'       => ['post',     'linked_accounts/{id}/bank_account',              'MerchantController@updateLinkedAccountBankAccount'                 ],
         'transfer_settlement_status_update'        => ['patch',     'transfers/settlement_status',                   'TransferController@updateSettlementStatusInTransfer'               ],
@@ -4188,6 +4189,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_la_fetch',
         'collect_info_merchant_details_internal',
         'generate_gifu_file',
         'generate_nium_settlement_file',
@@ -12872,6 +12874,7 @@ class Route
         ],
 
         'settlements_service' => [
+            'merchant_la_fetch',
             'create_settlement_entry',
             'get_global_config',
             'setl_execution_reminder',

@@ -405,4 +405,48 @@ return [
             ]
         ]
     ],
+
+    'testRetrieveLinkedAccountsForMerchantId' => [
+        'request'  => [
+            'url' => '/merchants/10000000000000/linked_accounts',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'acc_10000000000001',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testRetrieveLinkedAccountsForMerchantIdWithoutLa' => [
+        'request'  => [
+            'url' => '/merchants/10000000000000/linked_accounts',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testRetrieveLinkedAccountsForMerchantIdWithPagination' => [
+        'request'  => [
+            'url' => '/merchants/10000000000000/linked_accounts?skip=1&count=1',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'acc_10000000000001',
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

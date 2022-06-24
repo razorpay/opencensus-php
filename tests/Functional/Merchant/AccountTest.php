@@ -301,4 +301,55 @@ class AccountTest extends TestCase
         $bankAccount = $this->getDbLastEntity('bank_account', 'live');
         $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
     }
+
+    public function testRetrieveLinkedAccountsForMerchantId()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account',  ['id' => '10000000000001']);
+
+        // below segment of code may not be actually required. I added it because it was not working without it.
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->settlementsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testRetrieveLinkedAccountsForMerchantIdWithoutLa()
+    {
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->settlementsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testRetrieveLinkedAccountsForMerchantIdWithPagination()
+    {
+        $merchant1 = $this->fixtures->create('merchant:marketplace_account',  ['id' => '10000000000001']);
+
+        // below segment of code may not be actually required. I added it because it was not working without it.
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant1['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->fixtures->create('merchant:marketplace_account', ['id' => '10000000000002']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->settlementsAuth();
+
+        $this->startTest($testData);
+    }
 }
