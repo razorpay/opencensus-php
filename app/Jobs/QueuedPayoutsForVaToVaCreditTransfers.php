@@ -38,7 +38,9 @@ class QueuedPayoutsForVaToVaCreditTransfers extends Job
 
         $this->trace->info(
             TraceCode::PAYOUT_VA_TO_VA_QUEUE_REQUEST,
-            $traceData);
+            $traceData + [
+                'attempt' => $this->attempts(),
+            ]);
 
         try
         {
@@ -58,23 +60,32 @@ class QueuedPayoutsForVaToVaCreditTransfers extends Job
                 $ex,
                 null,
                 TraceCode::PAYOUT_VA_TO_VA_QUEUE_ATTEMPT_FAILED,
-                $traceData);
+                $traceData + [
+                    'attempt' => $this->attempts(),
+                ]);
 
             if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
             {
                 $this->trace->info(
                     TraceCode::PAYOUT_VA_TO_VA_QUEUE_FAILURE_EXCEPTION,
-                    $traceData + [
-                        'payout_status' => $payout->getStatus(),
-                    ]);
+                    $traceData);
 
-                $payout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($this->payoutId);
+                try
+                {
+                    $payout = (new Payout\Core)->handleReversalForFailedVaToVaPayout($this->payoutId);
 
-                $this->trace->info(
-                    TraceCode::PAYOUT_VA_TO_VA_REVERSED,
-                    $traceData + [
-                        'payout_status' => $payout->getStatus(),
-                    ]);
+                    $this->trace->info(
+                        TraceCode::PAYOUT_VA_TO_VA_REVERSED,
+                        $traceData + [
+                            'payout_status' => $payout->getStatus(),
+                        ]);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->info(
+                        TraceCode::PAYOUT_VA_TO_VA_REVERSAL_FAILED,
+                        $traceData);
+                }
 
                 $this->delete();
             }
