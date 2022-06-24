@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import isEmpty from '@universe/utils/isEmpty';
 import Input from 'common/new-ui/Input';
 import { bindActionCreators } from 'redux';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
-import { FETCH_STATUS, PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import {
+  FETCH_STATUS,
+  PLATFORMS,
+  SHIPPING_SETTINGS,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import FeeConfiguration from 'merchant/views/MagicCheckout/common/components/FeeConfiguration';
 import { FEE_RULES, DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
 import { isFeeRuleValid } from 'merchant/views/MagicCheckout/common/feeUtils';
 import { AsyncBtn } from 'common/new-ui/Button';
+import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
 
-const WoocSettingsForm = ({ settings, updateSettings }) => {
+const ShippingForm = ({ settings, updateSettings }) => {
   const [formValid, setFormValid] = useState(false);
   const [feeRule, setFeeRule] = useState(DEFAULT_RULE);
   const [shippingUrl, setShippingUrl] = useState();
+  const [shippingSettings, setShippingSettings] = useState([]);
 
   const updateRule = useCallback((_, value) => {
     const rule = {
@@ -39,18 +46,45 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
       if (settings.shipping_info) {
         setShippingUrl(settings.shipping_info);
       }
+      setShippingSettings((prevSettings) => {
+        const tempShippingSettings = isEmpty(prevSettings) ? SHIPPING_SETTINGS : [...prevSettings];
+        tempShippingSettings.forEach((settingItem) => {
+          settingItem.value = settings[settingItem.key];
+        });
+
+        return tempShippingSettings;
+      });
     }
-  }, [settings.platform, settings.status, settings.shipping_info]);
+  }, [
+    settings.platform,
+    settings.status,
+    settings.shipping_info,
+    settings.one_cc_international_shipping,
+    settings.one_cc_capture_billing_address,
+  ]);
 
   const onSave = useCallback(() => {
-    updateSettings(
-      {
-        platform: PLATFORMS.VALUES.WOOCOMMERCE,
-        cod_slabs: feeRule,
-      },
-      false,
-    );
-  }, [updateSettings, shippingUrl, feeRule]);
+    const payload = {
+      platform: PLATFORMS.VALUES.WOOCOMMERCE,
+      cod_slabs: feeRule,
+    };
+    shippingSettings.forEach((setting) => {
+      payload[setting.key] = setting.value;
+    });
+    updateSettings(payload, false);
+  }, [updateSettings, feeRule, shippingSettings]);
+
+  const onToggle = useCallback((checked, label) => {
+    setShippingSettings((prevSetting) => {
+      const tempShippingSettings = [...prevSetting];
+      tempShippingSettings.forEach((setting) => {
+        if (setting.label === label) {
+          setting.value = checked;
+        }
+      });
+      return tempShippingSettings;
+    });
+  }, []);
 
   return (
     <div className="woocommerce-shipping-container">
@@ -73,6 +107,9 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
           updateUserFeeRule={updateRule}
           feeRule={feeRule}
         />
+        {shippingSettings.map((setting) => (
+          <SettingsToggle key={setting.label} setting={setting} onToggle={onToggle} />
+        ))}
       </div>
       <AsyncBtn.Primary
         type="button"
@@ -95,4 +132,4 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ updateSettings: updateMagicSettings }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(WoocSettingsForm);
+export default connect(mapStateToProps, mapDispatchToProps)(ShippingForm);

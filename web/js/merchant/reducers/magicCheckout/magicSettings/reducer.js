@@ -66,6 +66,14 @@ export default function magicSettingsReducer(state = initialState, action) {
       });
     case ACTIONS.UPDATE_MAGIC_SETTINGS_ERROR:
       return merge(state, { status: FETCH_STATUS.ERROR, error: action.payload });
+    case ACTIONS.DISABLE_MAGIC_CHECKOUT_PENDING: {
+      const status = action.data.showLoader ? FETCH_STATUS.LOADING : state.status;
+      return merge(state, { status });
+    }
+    case ACTIONS.DISABLE_MAGIC_CHECKOUT_SUCCESS:
+      return merge(state, { status: FETCH_STATUS.IDLE, one_click_checkout: false });
+    case ACTIONS.DISABLE_MAGIC_CHECKOUT_ERROR:
+      return merge(state, { status: FETCH_STATUS.IDLE });
     case ACTIONS.UPDATE_PAGE_VIEW:
       return merge(state, { nested_view_type: action.payload.view });
     case ACTIONS.UPDATE_DOMAIN_DETAIL:

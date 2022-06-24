@@ -5,6 +5,7 @@ import { bindActionCreators } from 'redux';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { PLATFORMS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { AsyncBtn } from 'common/new-ui/Button';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const SHOPIFY_ID_REGEX = new RegExp(/([A-Za-z0-9]+)(.myshopify.com)/);
 
@@ -29,7 +30,7 @@ const validateShopId = (input) => {
   return null;
 };
 
-const ShopifySettingsForm = ({ settings, updateSettings }) => {
+const SettingsForm = ({ settings, updateSettings, merchantId }) => {
   const [formValid, setFormValid] = useState(false);
   const [shopId, setShopId] = useState('');
 
@@ -49,6 +50,15 @@ const ShopifySettingsForm = ({ settings, updateSettings }) => {
       list_promotions: ``,
       apply_promotion: ``,
       shipping_info: ``,
+    });
+    analyticsTrack({
+      objectName: '1ccclickednextonplatformsettings',
+      actionName: 'behav',
+      properties: {
+        platform: PLATFORMS.VALUES.SHOPIFY,
+        store_id: `${shopId}.myshopify.com`,
+        merchant_id: merchantId,
+      },
     });
   }, [updateSettings, shopId]);
 
@@ -90,9 +100,15 @@ const ShopifySettingsForm = ({ settings, updateSettings }) => {
 
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
+  merchantId: state.config?.config?.id,
 });
 
 const mapDispatchToProps = (dispatch) =>
-  bindActionCreators({ updateSettings: updateMagicSettings }, dispatch);
+  bindActionCreators(
+    {
+      updateSettings: updateMagicSettings,
+    },
+    dispatch,
+  );
 
-export default connect(mapStateToProps, mapDispatchToProps)(ShopifySettingsForm);
+export default connect(mapStateToProps, mapDispatchToProps)(SettingsForm);

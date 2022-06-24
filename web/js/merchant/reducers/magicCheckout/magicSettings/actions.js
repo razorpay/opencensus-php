@@ -14,6 +14,11 @@ export const ACTIONS = {
   UPDATE_MAGIC_SETTINGS_SUCCESS: `${REDUCER_NAMESPACE}_UPDATE::SUCCESS`,
   UPDATE_MAGIC_SETTINGS_ERROR: `${REDUCER_NAMESPACE}_UPDATE::ERROR`,
 
+  DISABLE_MAGIC_CHECKOUT: `${REDUCER_NAMESPACE}_DISABLE`,
+  DISABLE_MAGIC_CHECKOUT_PENDING: `${REDUCER_NAMESPACE}_DISABLE::PENDING`,
+  DISABLE_MAGIC_CHECKOUT_SUCCESS: `${REDUCER_NAMESPACE}_DISABLE::SUCCESS`,
+  DISABLE_MAGIC_CHECKOUT_ERROR: `${REDUCER_NAMESPACE}_DISABLE::ERROR`,
+
   UPDATE_PAGE_VIEW: `${REDUCER_NAMESPACE}_UPDATE::PAGE`,
 
   UPDATE_DOMAIN_DETAIL: `${REDUCER_NAMESPACE}_UPDATE::DOMAIN`,
@@ -56,6 +61,18 @@ export const updateMagicSettings = (payload, showLoader = true) => {
     type: ACTIONS.UPDATE_MAGIC_SETTINGS,
     payload: merchantFetchWithContentType({
       url: '1cc/merchant/configs',
+      method: 'post',
+      data: payload,
+    }),
+    data: { ...payload, showLoader },
+  };
+};
+
+export const disableMagicCheckout = (payload, showLoader = true) => {
+  return {
+    type: ACTIONS.DISABLE_MAGIC_CHECKOUT,
+    payload: merchantFetchWithContentType({
+      url: '1cc/magic/disable',
       method: 'post',
       data: payload,
     }),

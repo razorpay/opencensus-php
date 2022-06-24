@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { updatePageView } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { TABS } from 'merchant/views/MagicCheckout/Settings/constants';
 
-const NestedTabs = ({ settings }) => {
+const NestedVerticalTab = ({ settings }) => {
   const { platform } = settings;
   const [activeTab, setActiveTab] = useState(TABS[platform][0]);
   const { Component, label, tabHeading } = activeTab;
+
   return (
     <div className="magic-settings-tabs display-flex">
       <div className="tabs-container">
@@ -49,4 +50,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(NestedTabs);
+export default connect(mapStateToProps, mapDispatchToProps)(NestedVerticalTab);

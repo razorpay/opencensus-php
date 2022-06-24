@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { VIEWS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import CouponCard from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CouponCard';
-import CouponForm from 'merchant/views/MagicCheckout/MagicSettings/containers/native/CouponForm';
+import CouponForm from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/CouponForm';
 
 export const CouponWrapper = ({
   settings: { list_promotions, apply_promotion, nestedTabsStatus },

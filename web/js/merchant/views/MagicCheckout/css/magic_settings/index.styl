@@ -43,6 +43,30 @@
 
 .woocommerce-coupons-container, .woocommerce-shipping-container
   padding: 22px 0
+  .Input
+    margin-bottom: 0
+  .checkout-settings-toggle
+      margin-top: 24px
+      width: 100%
+      .setting-label
+        width: 25%
+        display: flex
+        align-items: center
+        .i-info-outline
+          margin-top: 4px;
+          margin-left: 6px;
+          font-size: 16px;
+          .rzp-popover-content > .rzp-popover-body
+            font-style: normal
+      .setting-toggle
+        .checkbox-knob
+          margin-top: 4px
+        .toggle-status
+          padding-left: 12px
+        .text-faded
+          color: #58666E
+        .text-primary
+          color: #528FF0
   .wooc-url-label
     width: 25%
     font-weight: normal
@@ -50,7 +74,15 @@
   
   .woo-url-wrapper
     margin-bottom: 24px
-
+    .Input
+      margin-top: 0;
+      width: 100%;
+      .Input-content
+        width: 320px;
+        max-width: 100%;
+  .save-cta
+    float: right
+    margin-top: 42px
     .Input
       margin: 0
       width: 375px
@@ -80,6 +112,10 @@
 .shopify-container
   label
     width: 16%
+
+  .Input-el--after {
+    padding-right: 105px
+  }
 
 .edit-settings-cta-container
   padding: 14px 28px
@@ -152,13 +188,29 @@
 
     .platform-settings-card-info
       justify-content: space-between
+      position: relative
+
+      .setting-card
+        width: 85%
+
+        .setting-value
+          word-break: break-all
 
     .platform-settings-edit
       color: #2B83EA
+      position: absolute;
+      right: 14px;
       
       .platform-settings-edit-icon
         margin-left: 8px
         margin-right: 8px
+
+  .platform-settings-edit
+    color: #2B83EA
+    
+    .platform-settings-edit-icon
+      margin-left: 8px
+      margin-right: 8px
 
 .platform-settings-card--header
   background: #F8FBFF

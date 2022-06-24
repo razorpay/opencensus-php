@@ -9,6 +9,7 @@ import {
   PLATFORMS_DROPDOWN,
   COMPONENTS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const MagicSettings = ({ settings, openModal, closeModal }) => {
   const [platform, setPlatform] = useState(PLATFORMS_DROPDOWN[0].name);
@@ -32,6 +33,10 @@ const MagicSettings = ({ settings, openModal, closeModal }) => {
 
   const onPlatformChange = useCallback(
     (e) => {
+      analyticsTrack({
+        objectName: '1cceditplatform',
+        actionName: 'behav',
+      });
       if (e?.target?.value === PLATFORMS_DROPDOWN[0]?.name) {
         setPlatform(e?.target?.value);
         return;

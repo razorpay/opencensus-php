@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   VIEWS,
   COMPONENTS,
@@ -7,10 +7,10 @@ import {
   FETCH_STATUS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
-export const Settings = ({ settings: { shipping_info, nestedTabsStatus } }) => {
+export const ShippingAPI = ({ settings: { shipping_info, nestedTabsStatus } }) => {
   const [view, setView] = useState(VIEWS.EDIT);
 
-  const switchToEdit = useCallback(() => setView(VIEWS.EDIT), []);
+  const switchToEdit = () => setView(VIEWS.EDIT);
 
   useEffect(() => {
     if (shipping_info && nestedTabsStatus !== FETCH_STATUS.LOADING) {
@@ -30,4 +30,4 @@ const mapStateToProps = (state) => ({
   settings: state.magic_settings,
 });
 
-export default connect(mapStateToProps, null)(Settings);
+export default connect(mapStateToProps, null)(ShippingAPI);

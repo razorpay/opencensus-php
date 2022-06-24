@@ -1,7 +1,8 @@
-import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/containers/common/CouponsCard';
+import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/woocommerce/CouponWrapper';
 import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingWrapper';
 
 import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containers/MagicIntelligenceTab';
+import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
 
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CouponWrapper';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
@@ -14,6 +15,10 @@ export const PLATFORMS = {
 
 export const TABS = {
   [PLATFORMS.SHOPIFY]: [
+    {
+      label: 'Store Settings',
+      Component: CheckoutSettingsTab,
+    },
     {
       label: 'Magic Intelligence',
       Component: MagicIntelligenceTab,

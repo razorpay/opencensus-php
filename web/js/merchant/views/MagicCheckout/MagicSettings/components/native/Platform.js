@@ -4,9 +4,18 @@ import { bindActionCreators } from 'redux';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { FETCH_STATUS, PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import { analyticsTrack } from 'common/utils/analytics';
 
-const NativePlatform = ({ status, updateSettings }) => {
+const NativePlatform = ({ status, merchantId, updateSettings }) => {
   const onSave = useCallback(() => {
+    analyticsTrack({
+      objectName: '1ccclickednextonplatformsettings',
+      actionName: 'behav',
+      properties: {
+        platform: PLATFORMS.VALUES.NATIVE,
+        merchant_id: merchantId,
+      },
+    });
     updateSettings({
       platform: PLATFORMS.VALUES.NATIVE,
       list_promotions: ``,
@@ -27,6 +36,10 @@ const NativePlatform = ({ status, updateSettings }) => {
   );
 };
 
+const mapStateToProps = (state) => ({
+  merchantId: state.config?.config?.id,
+});
+
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
@@ -35,4 +48,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(NativePlatform);
+export default connect(mapStateToProps, mapDispatchToProps)(NativePlatform);

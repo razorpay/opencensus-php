@@ -14,7 +14,7 @@ const SettingsCard = ({ children, platform, onEdit }) => (
 );
 
 SettingsCard.Item = ({ label, value }) => (
-  <div className="flex flex--column gap--4">
+  <div className="flex flex--column gap--4 setting-card">
     <div className="setting-label">{label}</div>
     <div className="setting-value font-bold">{value}</div>
   </div>

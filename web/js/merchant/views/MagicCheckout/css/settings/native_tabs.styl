@@ -8,13 +8,38 @@ $text-blue = #2B83EA
 
     .Input-label
       width: 30%
-    
+      .i-info-outline
+        margin-top: 4px;
+        margin-left: 10px;
+        font-size: 18px;
     .Input-content
       width: 320px
-  
+  .checkout-settings-toggle
+    margin-bottom: 24px
+
   .next-cta
     margin: 16px 0
     text-align: right
+  
+  .checkout-settings-toggle
+    width: 100%
+    .setting-label
+      width: 30%
+      .i-info-outline
+        margin-top: 4px;
+        margin-left: 8px;
+        font-size: 16px;
+        .rzp-popover-content > .rzp-popover-body
+          font-style: normal
+    .setting-toggle
+      .checkbox-knob
+        margin-top: 4px
+      .toggle-status
+        padding-left: 12px
+      .text-faded
+        color: #58666E
+      .text-primary
+        color: #528FF0
 
   
 .native-shipping-wrapper
@@ -45,6 +70,13 @@ $text-blue = #2B83EA
 .native-shipping-card
   .native-shipping-card-content
     justify-content: space-between
+    position: relative
+
+    .setting-card
+      width: 85%
+
+      .setting-value
+        word-break: break-all
 
     .native-card-edit
       text-align: right
@@ -57,16 +89,30 @@ $text-blue = #2B83EA
     border: 1px solid $border-color
     border-radius: 4px
 
+    .native-shipping-card-content > .native-card-edit
+      position: absolute;
+      right: 14px;
+      width: 50px;
+
     .wooc-settings-card-widget-content
       max-width: 75%
       word-break: break-word
       flex-direction: column
+
+      .setting-value
+        word-break: break-all
     
     .wooc-settings-card-widget-wrapper
       justify-content: space-between
+      position: relative
 
-    .native-card-edit
-      min-width: 120px
+    .native-card-widget
+      position: relative;
+
+      .native-card-edit
+        position: absolute;
+        right: 14px;
+        width: 50px;
 
     .setting-card-item
       padding: 16px 24px 2px
@@ -75,10 +121,11 @@ $text-blue = #2B83EA
       padding-bottom: 16px
 
   .native-card-edit
+    position: absolute;
+    right: 0;
     color: $text-blue
     width: 90px
 
   .native-settings-edit-icon
-    margin-left: 24px
-    margin-right: 8px
+    margin-right: 6px
     color: $text-blue

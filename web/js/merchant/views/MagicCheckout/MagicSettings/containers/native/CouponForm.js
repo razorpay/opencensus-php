@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import Input from 'common/new-ui/Input';
+import isEmpty from '@universe/utils/isEmpty';
 import { bindActionCreators } from 'redux';
 import { isUrlLenient } from 'common/utils/validators';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { AsyncBtn } from 'common/new-ui/Button';
-import { PLATFORMS, FETCH_STATUS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import {
+  PLATFORMS,
+  FETCH_STATUS,
+  COUPON_SETTINGS,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { SettingsInputLabel } from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsInputLabel';
+import SettingsToggle from 'merchant/views/MagicCheckout/MagicSettings/components/common/SettingsToggle';
 
 const isUrlValid = (value) => {
   if (!isUrlLenient(value)) {
@@ -19,13 +25,20 @@ const getInputLabel = ({ label, description }) => {
   return <SettingsInputLabel label={label}>{description}</SettingsInputLabel>;
 };
 
-const NativeCouponsForm = ({
-  settings: { nestedTabsStatus, list_promotions, apply_promotion, platform },
+const CouponForm = ({
+  settings: {
+    nestedTabsStatus,
+    list_promotions,
+    apply_promotion,
+    platform,
+    one_cc_auto_fetch_coupons,
+  },
   updateSettings,
 }) => {
   const [formValid, setFormValid] = useState(false);
   const [listPromotionsUrl, setListPromotionsUrl] = useState('');
   const [applyPromotionUrl, setApplyPromotionUrl] = useState('');
+  const [autoFetchCoupon, setAutoFetchCoupon] = useState({});
 
   const onChange = useCallback(
     (setStore) => (e) => {
@@ -46,8 +59,14 @@ const NativeCouponsForm = ({
     if (platform === PLATFORMS.VALUES.NATIVE) {
       setListPromotionsUrl(list_promotions);
       setApplyPromotionUrl(apply_promotion);
+      setAutoFetchCoupon((prevSettings) => {
+        const tempCouponSettings = isEmpty(prevSettings) ? COUPON_SETTINGS : { ...prevSettings };
+        tempCouponSettings.value = one_cc_auto_fetch_coupons;
+
+        return tempCouponSettings;
+      });
     }
-  }, [platform, list_promotions, apply_promotion]);
+  }, [platform, list_promotions, apply_promotion, one_cc_auto_fetch_coupons]);
 
   const onSave = useCallback(() => {
     updateSettings(
@@ -55,16 +74,21 @@ const NativeCouponsForm = ({
         platform: PLATFORMS.VALUES.NATIVE,
         list_promotions: listPromotionsUrl,
         apply_promotion: applyPromotionUrl,
+        one_cc_auto_fetch_coupons: autoFetchCoupon.value,
       },
       false,
     );
-  }, [updateSettings, listPromotionsUrl, applyPromotionUrl]);
+  }, [updateSettings, listPromotionsUrl, applyPromotionUrl, autoFetchCoupon]);
+
+  const onToggle = useCallback((checked) => {
+    setAutoFetchCoupon((prevSetting) => ({ ...prevSetting, value: checked }));
+  }, []);
 
   return (
     <>
       <div className="native-coupon-container padding-16">
         <Input
-          required={true}
+          required
           validator={isUrlValid}
           onChange={onChange(setListPromotionsUrl)}
           value={listPromotionsUrl}
@@ -80,7 +104,7 @@ const NativeCouponsForm = ({
           className="display-flex"
         />
         <Input
-          required={true}
+          required
           validator={isUrlValid}
           value={applyPromotionUrl}
           onChange={onChange(setApplyPromotionUrl)}
@@ -95,6 +119,9 @@ const NativeCouponsForm = ({
           id="applyPromotionUrl"
           className="display-flex"
         />
+        <div className="display-flex align-center">
+          <SettingsToggle setting={autoFetchCoupon} onToggle={onToggle} />
+        </div>
       </div>
       <AsyncBtn.Primary
         type="button"
@@ -117,4 +144,4 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ updateSettings: updateMagicSettings }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(NativeCouponsForm);
+export default connect(mapStateToProps, mapDispatchToProps)(CouponForm);

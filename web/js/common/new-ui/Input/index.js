@@ -295,7 +295,7 @@ export default class Field extends React.Component {
     this.updateInfo(e); // On focus, it must display information based on some value of self / other field.
   };
 
-  valid() {
+  valid = () => {
     const { validator, requiredError, patternError } = this.props;
 
     const el = this.el;
@@ -315,7 +315,7 @@ export default class Field extends React.Component {
     this.setState({ error });
     // if(this.state.touched){
     // }
-  }
+  };
 
   setCharacterLength() {
     const { showCharacterLength } = this.props;
@@ -601,7 +601,7 @@ class Radio extends Field {
 Field.Radio = Radio;
 Field.Check = Check;
 
-Field.Textarea = (_) => <Field {..._} tag="textarea" />;
+Field.Textarea = React.forwardRef((_, ref) => <Field {..._} ref={ref} tag="textarea" />);
 Field.File2 = (_) => {
   return <Field {..._} type="file" />;
 };

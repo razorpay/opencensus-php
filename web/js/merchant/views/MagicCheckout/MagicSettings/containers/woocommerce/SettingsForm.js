@@ -7,6 +7,7 @@ import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettin
 import { FETCH_STATUS, PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { AsyncBtn } from 'common/new-ui/Button';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const isUrlValid = (value) => {
   if (!isUrlLenient(value)) {
@@ -15,7 +16,7 @@ const isUrlValid = (value) => {
   return '';
 };
 
-const WoocSettingsForm = ({ settings, updateSettings }) => {
+const SettingsForm = ({ settings, updateSettings, merchantId }) => {
   const [formValid, setFormValid] = useState(false);
   const [domain, setDomain] = useState('');
 
@@ -53,7 +54,16 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
       apply_promotion: `${domain}/wp-json/1cc/v1/coupon/apply`,
       shipping_info: `${domain}/wp-json/1cc/v1/shipping/shipping-info`,
     });
-  }, [updateSettings, domain]);
+    analyticsTrack({
+      objectName: '1ccclickednextonplatformsettings',
+      actionName: 'behav',
+      properties: {
+        platform: PLATFORMS.VALUES.WOOCOMMERCE,
+        domain_hyperlink: domain,
+        merchant_id: merchantId,
+      },
+    });
+  }, [updateSettings, domain, merchantId]);
 
   return (
     <div>
@@ -96,9 +106,10 @@ const WoocSettingsForm = ({ settings, updateSettings }) => {
 
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
+  merchantId: state.config?.config?.id,
 });
 
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ updateSettings: updateMagicSettings }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(WoocSettingsForm);
+export default connect(mapStateToProps, mapDispatchToProps)(SettingsForm);

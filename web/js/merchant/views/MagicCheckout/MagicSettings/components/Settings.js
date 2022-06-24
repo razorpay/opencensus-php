@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   VIEWS,
   COMPONENTS,
@@ -8,7 +8,7 @@ import {
 export const Settings = ({ settings, platform }) => {
   const [view, setView] = useState(VIEWS.EDIT);
 
-  const switchToEdit = useCallback(() => setView(VIEWS.EDIT), []);
+  const switchToEdit = () => setView(VIEWS.EDIT);
 
   useEffect(() => {
     if (

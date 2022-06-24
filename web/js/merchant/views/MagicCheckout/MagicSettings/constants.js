@@ -92,3 +92,93 @@ export const NESTED_VIEW_TYPE = {
   PLATFORM_SELECTION: 'platform_selection',
   SETTINGS: 'settings',
 };
+
+export const DISABLE_MAGIC_REASONS = [
+  {
+    value: 'Pricing too high',
+    label: 'Pricing too high',
+  },
+  {
+    value: 'Don’t find this useful',
+    label: 'Don’t find this useful',
+  },
+  {
+    value: 'Privacy concerns',
+    label: 'Privacy concerns',
+  },
+  {
+    value: 'Support issues',
+    label: 'Support issues',
+  },
+  {
+    value: 'Others',
+    label: 'Others',
+  },
+];
+
+export const SHOPIFY_CHECKOUT_SETTINGS = [
+  {
+    label: 'Auto fetch coupon',
+    value: false,
+    key: 'one_cc_auto_fetch_coupons',
+    description:
+      'Enable auto fetching of coupons to show all available coupons directly on Magic Checkout',
+  },
+  {
+    label: 'International Shipping',
+    value: false,
+    key: 'one_cc_international_shipping',
+    description: 'Allow customers to select international pin code for delivery',
+  },
+  {
+    label: 'Capture Billing Address',
+    value: false,
+    key: 'one_cc_capture_billing_address',
+    description: 'Ask customers to enter billing address separately',
+  },
+];
+
+export const SHOPIFY_ANALYTICS_SETTINGS = [
+  {
+    label: 'Google Analytics',
+    value: false,
+    key: 'one_cc_ga_analytics',
+    description: 'Enable Google Analytics tracking for Magic Checkout orders',
+  },
+  {
+    label: 'Facebook Pixel',
+    value: false,
+    key: 'one_cc_fb_analytics',
+    description: 'Enable Facebook Pixel tracking for Magic Checkout orders',
+  },
+];
+
+export const SHIPPING_SETTINGS = [
+  {
+    label: 'International Shipping',
+    value: false,
+    key: 'one_cc_international_shipping',
+    description: 'Allow customers to select international pin code for delivery',
+  },
+  {
+    label: 'Capture Billing Address',
+    value: false,
+    key: 'one_cc_capture_billing_address',
+    description: 'Ask customers to enter billing address separately',
+  },
+];
+
+export const COUPON_SETTINGS = {
+  label: 'Auto fetch coupon',
+  value: false,
+  key: 'one_cc_auto_fetch_coupons',
+  description:
+    'Enable auto fetching of coupons to show all available coupons directly on Magic Checkout',
+};
+
+export const SHOPIFY_MAGIC_CHECKOUT = {
+  label: 'Magic Checkout',
+  value: false,
+  description: 'Enable Magic Checkout',
+  key: 'one_click_checkout',
+};

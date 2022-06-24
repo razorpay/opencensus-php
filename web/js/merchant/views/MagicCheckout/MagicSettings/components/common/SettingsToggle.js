@@ -1,0 +1,34 @@
+import SwitchField from 'common/ui/Forms/SwitchField';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import isEmpty from '@universe/utils/isEmpty';
+
+const SettingsToggle = ({ setting, onToggle }) =>
+  !isEmpty(setting) && (
+    <div className="display-flex checkout-settings-toggle">
+      <div className="setting-label">
+        {setting.label}
+        <i className="i i-info-outline">
+          <Popover align="bottom" theme="dark">
+            <PopoverBody>
+              <div>{setting.description}</div>
+            </PopoverBody>
+          </Popover>
+        </i>
+      </div>
+      <div className="display-flex setting-toggle">
+        <SwitchField
+          onChange={(checked, postActionCB) => onToggle(checked, setting.label, postActionCB)}
+          checked={setting.value}
+          defaultChecked={setting.value}
+          type="prime"
+        />
+        {setting.value ? (
+          <b className="text-primary toggle-status">Enabled</b>
+        ) : (
+          <b className="text-faded toggle-status">Disabled</b>
+        )}
+      </div>
+    </div>
+  );
+
+export default SettingsToggle;
