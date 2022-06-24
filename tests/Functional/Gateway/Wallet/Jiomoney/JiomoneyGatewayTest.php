@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Jiomoney;
 
+use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Jiomoney\StatusCode;
 use RZP\Gateway\Wallet\Jiomoney\TestAmount;
@@ -282,6 +283,58 @@ class JiomoneyGatewayTest extends TestCase
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
 
         $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testPaymentWithCallbackVerifyStatusFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'checkpaymentstatus')
+            {
+                $content['RESPONSE']['CHECKPAYMENTSTATUS']['TXN_STATUS'] = "FAILED";
+            }
+        });
+
+        $data = $this->testData['testPaymentWithCallbackVerifyStatusFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame($payment['status'], "failed");
+
+        $this->assertSame($payment['internal_error_code'], ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+    }
+
+    public function testPaymentWithCallbackVerifyAmountMismatchFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('jiomoney');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'checkpaymentstatus')
+            {
+                $content['RESPONSE']['CHECKPAYMENTSTATUS']['TXN_AMOUNT'] = 49900;
+            }
+        });
+
+        $data = $this->testData['testPaymentWithCallbackVerifyAmountMismatchFailure'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertSame($payment['status'], "failed");
+
+        $this->assertSame($payment['internal_error_code'], ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
     }
 
     /**

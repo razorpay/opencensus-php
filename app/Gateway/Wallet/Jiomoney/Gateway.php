@@ -124,6 +124,10 @@ class Gateway extends Base\Gateway
 
         $this->assertGatewayResponse($input);
 
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        $this->verifyCallback($gatewayPayment, $input);
+
         $this->callbackAuthSuccessFlow($input);
 
         return $this->getCallbackResponseData($input);
@@ -343,6 +347,94 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+    }
+
+    protected function verifyCallback(Base\Entity $gatewayPayment, array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $verify->gatewaySuccess = false;
+        $verify->amountMismatch = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if($this->verifiedUsingStatusQuery)
+        {
+
+            if ((isset($content[StatusQueryRequestFields::PAYLOAD_DATA]['txn_status']) === true) and
+                ($content[StatusQueryRequestFields::PAYLOAD_DATA]['txn_status'] === ResponseCode::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
+
+        }
+        else {
+
+            $data = $content[ResponseFields::RESPONSE];
+            if ((isset($data)) and
+                (isset($data[ResponseFields::CHECKPAYMENTSTATUS][ResponseFields::TXN_STATUS]) === true) and
+                ($data[ResponseFields::CHECKPAYMENTSTATUS][ResponseFields::TXN_STATUS] === ResponseCode::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
+
+        }
+
+
+        if ($verify->gatewaySuccess !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+                'FAILED',
+                '',
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $this->gateway
+                ]);
+        }
+
+        if($this->verifiedUsingStatusQuery){
+
+            if ((isset($content[StatusQueryRequestFields::PAYLOAD_DATA]['txn_amount']) === false) ||
+                ($this->getFormattedAmount($input['payment']['amount']) !== $content[StatusQueryRequestFields::PAYLOAD_DATA]['txn_amount']))
+            {
+                $verify->amountMismatch = true;
+            }
+
+        }
+        else
+        {
+
+            $data = $content[ResponseFields::RESPONSE];
+            if ((isset($data[ResponseFields::CHECKPAYMENTSTATUS][ResponseFields::TXN_AMOUNT]) === false) ||
+                ($input['payment']['amount'] !== $data[ResponseFields::CHECKPAYMENTSTATUS][ResponseFields::TXN_AMOUNT]))
+            {
+                $verify->amountMismatch = true;
+            }
+
+        }
+
+        if ($verify->amountMismatch === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED,
+                'FAILED',
+                '',
+                [
+                    'callback_response' => $input['gateway'],
+                    'verify_response'   => $verify->verifyResponseContent,
+                    'payment_id'        => $input['payment']['id'],
+                    'gateway'           => $verify->gateway,
+                ]);
+        }
     }
 
     protected function callbackAuthFailureFlow(array $input)

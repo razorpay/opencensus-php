@@ -28,7 +28,7 @@ class ResponseFields
     const REFUND_AMOUNT        = 'REFUND_AMOUNT';
     const JM_TRAN_REF_NO       = 'JM_TRAN_REF_NO';
     const TXN_TIME_STAMP       = 'TXN_TIME_STAMP';
-
+    const TXN_AMOUNT           = 'TXN_AMOUNT';
     /**
      * This provides the list of fields returned for callback and
      * refund gateway response.

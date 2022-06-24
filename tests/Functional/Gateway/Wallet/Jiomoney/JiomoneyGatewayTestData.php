@@ -216,4 +216,36 @@ return [
         'entity'    => 'refund',
         'admin'     => true,
     ],
+
+    'testPaymentWithCallbackVerifyStatusFailure'   => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => "Your payment didn't go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days."
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR
+        ],
+    ],
+
+    'testPaymentWithCallbackVerifyAmountMismatchFailure'   => [
+    'response'  => [
+        'content' => [
+            'error' => [
+                'code'        => PublicErrorCode::GATEWAY_ERROR,
+                'description' => "Payment processing failed due to error at bank or wallet gateway"
+            ],
+        ],
+        'status_code' => 502,
+    ],
+    'exception' => [
+        'class'               => Rzp\Exception\GatewayErrorException::class,
+        'internal_error_code' => ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED
+    ],
+],
 ];

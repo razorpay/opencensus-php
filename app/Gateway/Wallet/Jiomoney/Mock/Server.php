@@ -221,6 +221,7 @@ class Server extends Base\Mock\Server
                     'MID'            => $input[RequestFields::MERCHANT_ID],
                     'TRAN_REF_NO'    => $input[RequestFields::PAYMENT_ID],
                     'JM_TRAN_REF_NO' => '100',
+                    'TXN_AMOUNT'     => 50000,
                     'TXN_TIME_STAMP' => $date,
                     'CARD_NO'        => 'NA',
                     'TXN_TYPE'       => 'JM',
@@ -245,7 +246,7 @@ class Server extends Base\Mock\Server
                 'merchant_id'    => $input['payload_data']['merchant_id'],
                 'tran_ref_no'    => $input['payload_data']['tran_ref_no'],
                 'jm_tran_ref_no' => $this->getJioMoneyTxnId(),
-                'txn_amount'     => '5.00',
+                'txn_amount'     => '500.00',
                 'txn_type'       => 'JM',
                 'txn_status'     => 'SUCCESS'
             ]
