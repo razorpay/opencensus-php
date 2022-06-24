@@ -2,15 +2,10 @@
 
 
 namespace RZP\Mail\Batch;
-
-
-use Carbon\Carbon;
 use RZP\Constants\MailTags;
-use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
-use RZP\Models\Batch\Entity;
 
-class CreatePaymentFraud extends Base
+class EdMerchantSearch extends Base
 {
     protected static $mailTag     = MailTags::ED_MERCHANT_SEARCH_RESULT;
 
