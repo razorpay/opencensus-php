@@ -3657,7 +3657,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $app = \App::getFacadeRoot();
 
         if (($this->getCurrency() !== Currency\Currency::INR) or
-            ($app['basicauth']->isProxyOrPrivilegeAuth() === true))
+            (($app['basicauth']->isProxyOrPrivilegeAuth() === true) and
+                ($app['basicauth']->isCron() === false)))
         {
             return;
         }
@@ -3814,7 +3815,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         //
         $app = \App::getFacadeRoot();
 
-        if ($app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        if (($app['basicauth']->isProxyOrPrivilegeAuth() === false) or
+            (($app['basicauth']->isProxyOrPrivilegeAuth() === true) and
+              ($app['basicauth']->isCron() === true)))
         {
             unset($attributes[self::AMOUNT_TRANSFERRED]);
         }

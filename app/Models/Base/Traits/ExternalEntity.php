@@ -28,7 +28,6 @@ trait ExternalEntity
         }
         catch (\Throwable $e)
         {
-           throw $e;
         }
 
         return $this->fetchExternalEntity($this->{$this->primaryKey}, '', []);
