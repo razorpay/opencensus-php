@@ -16,7 +16,7 @@ jobs:
           utilization=$(cat rate_limit.json | jq '.rate.used/.rate.limit*100')
           echo "::set-output name=utilization::$(printf '%.2f' $utilization)"
       - name: Report current GitHub Actions Rate Limit to Slack
-        if: ${{steps.get_rate_limit.outputs.utilization < 100}}
+        if: ${{steps.get_rate_limit.outputs.utilization > 75}}
         env:
           SLACK_MESSAGE: "Utilization: ${{ steps.get_rate_limit.outputs.utilization }}%"
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
