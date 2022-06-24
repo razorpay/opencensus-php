@@ -949,6 +949,13 @@ class Constants
     const HDFC_CHECKOUT_2   = 'hdfc_checkout_2';
 
     /**
+     * Banking Orgs UI Controls
+     */
+    const ORG_HIDE_SETTLEMENT_DETAILS = 'hide_settlement_details';
+    const ORG_ENABLE_EXTERNAL_REDIRECT = 'enable_external_redirect';
+    const ORG_HIDE_RAZORPAY_TEXT_LINKS = 'hide_razorpay_text_link';
+
+    /**
      * Org level feature flag for sub merchant activation with MCC Pending status.
      */
     const ORG_SUB_MERCHANT_MCC_PENDING  =   'sub_merchant_mcc_pending';
@@ -1796,6 +1803,9 @@ class Constants
         self::ORG_ADMIN_REPORT_ENABLE         => true,
         self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
         self::HDFC_CHECKOUT_2                 => true,
+        self::ORG_HIDE_SETTLEMENT_DETAILS     => true,
+        self::ORG_ENABLE_EXTERNAL_REDIRECT    => true,
+        self::ORG_HIDE_RAZORPAY_TEXT_LINKS    => true,
         self::SHOW_OLD_ERROR_DESC             => true,
         self::PAYOUT_ASYNC_FTS_TRANSFER       => true,
         self::NULL_NARRATION_ALLOWED          => true,
