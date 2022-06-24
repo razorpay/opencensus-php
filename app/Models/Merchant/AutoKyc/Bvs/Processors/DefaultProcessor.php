@@ -49,7 +49,7 @@ class DefaultProcessor implements Processor
     ];
 
     protected $timeoutMap = [
-        Constant::GSTIN                                      => 2,
+        Constant::GSTIN                                      => 5,
         Constant::CIN                                        => 2,
         Constant::LLP_DEED                                   => 2,
         Constant::PERSONAL_PAN                               => 3,
@@ -278,19 +278,19 @@ class DefaultProcessor implements Processor
         }
 
         return $this->timeoutMap[$this->configName];
-
     }
 
     protected function requestMode()
     {
-        if (empty($this->merchant) === true or
-            empty($this->merchant->getMerchantId()) === true or
-            empty($this->experimentMap) === true or
-            empty($this->configName) === true or
-            array_key_exists($this->configName, $this->experimentMap) === false or
-            empty($this->experimentMap[$this->configName]) === true or
-            (new Core)->isRegularMerchant($this->merchant) === false or
-            $this->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false
+        if ((empty($this->merchant) === true) or
+            (empty($this->merchant->getMerchantId()) === true) or
+            (empty($this->experimentMap) === true) or
+            (empty($this->configName) === true) or
+            (array_key_exists($this->configName, $this->experimentMap) === false) or
+            (empty($this->experimentMap[$this->configName]) === true) or
+            ((new Core)->isRegularMerchant($this->merchant) === false) or
+            ((in_array($this->configName, Constant::EXCLUDED_CONFIGS, true) === false) and
+            ($this->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false))
         )
         {
             return Constant::ASYNC;
@@ -325,6 +325,5 @@ class DefaultProcessor implements Processor
         $this->app['segment-analytics']->pushTrackEvent($this->merchant, [], SegmentEvent::BVS_IN_SYNC_ENABLED);
 
         return Constant::SYNC;
-
     }
 }

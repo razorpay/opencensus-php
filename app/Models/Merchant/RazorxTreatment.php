@@ -19,7 +19,7 @@ final class RazorxTreatment
     const PERSONAL_PAN_SYNC         = "personal_pan_sync";
     const BUSINESS_PAN_SYNC         = "business_pan_sync";
     const BANK_SYNC                 = "bank_sync";
-    const AADHAR_FRONT_BACK_SYNC         = "aadhar_front_back_sync";
+    const AADHAR_FRONT_BACK_SYNC    = "aadhar_front_back_sync";
     const AADHAR_EKYC_SYNC          = "aadhar_ekyc_sync";
     const VOTERS_ID_SYNC            = 'voters_id_sync';
     const PASSPORT_SYNC             = 'passport_sync';

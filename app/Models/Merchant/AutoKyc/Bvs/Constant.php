@@ -307,4 +307,7 @@ class Constant
         Constant::AADHAAR . '-' . BvsValidationConstants::PROOF                                       => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS]
     ];
 
+    const EXCLUDED_CONFIGS = [
+        self::GSTIN,
+    ];
 }

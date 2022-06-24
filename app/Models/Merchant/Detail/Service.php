@@ -2083,29 +2083,49 @@ class Service extends Base\Service
 
         unset($input[DetailConstants::GSTIN_SELF_SERVE_CERTIFICATE]);
 
-        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
-
-        if ($validation === null)
-        {
-            throw new Exception\ServerErrorException('bvs validation create failed', ErrorCode::SERVER_ERROR);
-        }
-
         $input = array_merge($input, [
             Merchant\Entity::MERCHANT_ID               => $this->merchant->getId(),
-            BvsConstant::VALIDATION_ID                 => $validation->getValidationId(),
             DetailConstants::GSTIN_CERTIFICATE_FILE_ID => $fileId,
             DEConstants::IS_ADD_GSTIN_OPERATION        => $isAddAction,
         ]);
 
         $this->storeGstinSelfServeInput($input);
 
+        $validation = (new BvsCore($this->merchant, $this->merchant->merchantDetail))->verify($this->merchant->getId(), $payload);
+
+        if ($validation === null)
+        {
+            throw new Exception\ServerErrorException('bvs validation create failed', ErrorCode::SERVER_ERROR);
+        }
+
+        $input[BvsConstant::VALIDATION_ID]  = $validation->getValidationId();
+
+        $response = $input;
+
+        switch ($validation->getValidationStatus())
+        {
+            case BvsValidationConstants::SUCCESS:
+                $response[Constants::SYNC_FLOW] = true;
+                $response[Constants::WORKFLOW_CREATED] = false;
+                break;
+            case BvsValidationConstants::FAILED:
+                $response[Constants::SYNC_FLOW] = true;
+                $response[Constants::WORKFLOW_CREATED] = true;
+                break;
+            default:
+                $response[Constants::SYNC_FLOW] = false;
+                $response[Constants::WORKFLOW_CREATED] = null;
+        }
+
         $traceCode = ($isAddAction) ? TraceCode::GSTIN_ADD_SELF_SERVE_VALIDATION_CREATED : TraceCode::GSTIN_UPDATE_SELF_SERVE_VALIDATION_CREATED;
 
         $this->trace->info($traceCode, [
-            $validation->toArrayPublic()
+            $validation->toArrayPublic(),
+            Constants::SYNC_FLOW => $response[Constants::SYNC_FLOW],
+            Constants::WORKFLOW_CREATED => $response[Constants::WORKFLOW_CREATED]
         ]);
 
-        return $input;
+        return $response;
     }
 
     protected function pushBvsResultToSegmentForGstinSelfServe(Entity $detail, Merchant\BvsValidation\Entity $validation)
@@ -2160,7 +2180,7 @@ class Service extends Base\Service
         switch ($validation->getValidationStatus())
         {
             case 'success':
-                $this->handleGstinSelfServeCallbackSuccess($detail);
+                $this->handleGstinSelfServeCallbackSuccess($detail, $validation->getValidationId());
                 break;
             default:
                 $this->handleGstinSelfServeCallbackFailure($detail);
@@ -2184,7 +2204,7 @@ class Service extends Base\Service
     /**
      * @param Entity $detail
      */
-    private function handleGstinSelfServeCallbackSuccess(Entity $detail): void
+    private function handleGstinSelfServeCallbackSuccess(Entity $detail, string $validationId): void
     {
         $input = $this->getGstinSelfServeInputFromCache($detail->getId());
 
@@ -2201,7 +2221,7 @@ class Service extends Base\Service
 
         try
         {
-            $registeredBusinessAddressDetails =  $this->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($detail->getMerchantId(), $input[BvsConstant::VALIDATION_ID]);
+            $registeredBusinessAddressDetails =  $this->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($detail->getMerchantId(), $validationId);
 
             // This method is used for backfilling(storing in S3) the PG merchant invoices PDFs for the months on or before Dec-2020 before the merchant details are updated.
             if (($isAddOperation === false) and
@@ -2545,11 +2565,11 @@ class Service extends Base\Service
             $commentEntity->entity()->associate($workFlowAction);
 
             $this->repo->saveOrFail($commentEntity);
-        }
 
-        $this->trace->info(TraceCode::GSTIN_CERTIFICATE_URL_ADDED_IN_WORKFLOW_COMMENT, [
-            'workflow_action' => $workFlowAction->toArrayPublic(),
-        ]);
+            $this->trace->info(TraceCode::GSTIN_CERTIFICATE_URL_ADDED_IN_WORKFLOW_COMMENT, [
+                'workflow_action' => $workFlowAction->toArrayPublic(),
+            ]);
+        }
     }
 
     protected function sendNotificationForGstinUpdatedSelfServe($isAddOperation, $isBvsValidationSuccessEvent, $merchant)

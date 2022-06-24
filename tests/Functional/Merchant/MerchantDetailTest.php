@@ -89,7 +89,6 @@ class MerchantDetailTest extends OAuthTestCase
         $this->esDao = new EsDao();
 
         $this->esClient =  $this->esDao->getEsClient()->getClient();
-
     }
 
     public function testGetMerchantDetails()
@@ -3894,7 +3893,11 @@ Team Razorpay', '1234567890');
 
         $this->createMerchantAndInvoiceData();
 
-        $this->initiateGstinSelfServe();
+        $response = $this->initiateGstinSelfServe();
+
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
@@ -4472,7 +4475,11 @@ Team Razorpay',
     {
         $merchant = $this->setupMerchantForGstinSelfServeTest()['merchant'];
 
-        $this->initiateGstinSelfServe();
+        $response = $this->initiateGstinSelfServe();
+
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(null, $response['workflow_created']);
 
         $merchantDetail = $this->getLastEntity('merchant_detail', true);
 
@@ -4533,7 +4540,11 @@ Team Razorpay',
     {
         extract($this->setupMerchantForGstinSelfServeTest());
 
-        $this->initiateGstinSelfServe();
+        $response = $this->initiateGstinSelfServe();
+
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
@@ -4631,7 +4642,11 @@ Team Razorpay',
     {
         extract($this->setupMerchantForGstinSelfServeTest(false));
 
-        $this->initiateGstinSelfServe();
+        $response = $this->initiateGstinSelfServe();
+
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
 
         $this->setBvsValidationDetailForGstinUpdateSelfServe();
 
@@ -4693,6 +4708,110 @@ Team Razorpay',
         ]);
     }
 
+    public function testUpdateGstinSelfServeSyncBvsValidationSuccess()
+    {
+        extract($this->setupMerchantForGstinSelfServeTest(false));
+
+        $this->enableRazorXTreatmentForSyncGstinBvsValidation('on');
+
+        $this->setBvsValidationDetailForGstinUpdateSelfServe();
+
+        $this->mockStorkForUpdateGstBvsValidationSuccess();
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertEquals('success', $properties['result']);
+                $this->assertEquals("Edit gstin bvs result", $eventName);
+            }));
+
+        $response = $this->initiateGstinSelfServe();
+
+        $this->assertEquals(true, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
+
+        $this->processBvsResponseForGstinSelfServe();
+
+        $merchantDetail = $this->getEntityById('merchant_detail', $merchant['id'], true);
+
+        $this->assertCacheDataNullForGstinSelfServe($merchant['id']);
+
+        $this->assertArraySelectiveEquals([
+            'gstin'                       => '18AABCU9603R1ZM',
+            'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+            'business_registered_pin'     => '400018',
+            'business_registered_city'    => 'Mumbai City',
+            'business_registered_state'   => 'MH'
+        ], $merchantDetail);
+
+        Mail::assertQueued(MerchantDashboardEmail::class, function ($mail)
+        {
+            $this->assertEquals('emails.merchant.gstin_updated_self_serve', $mail->view);
+
+            $this->assertArraySelectiveEquals([
+                'gstin'                       => '18AABCU9603R1ZM',
+                'business_registered_address' => '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI',
+                'business_registered_pin'     => '400018',
+                'business_registered_city'    => 'Mumbai City',
+                'business_registered_state'   => 'MH',
+                'gstin_operation'             => 'updated'
+            ], $mail->viewData);
+
+            return true;
+        });
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user['id']);
+
+        $this->assertGstinSelfServeStatusAndRejectionReason([
+            'workflow_exists'          =>  false,
+            'request_under_validation' =>  false
+        ]);
+    }
+
+    protected function enableRazorXTreatmentForSyncGstinBvsValidation($value = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use ($value)
+                {
+                    if ($feature === RazorxTreatment::GSTIN_SYNC)
+                    {
+                        return $value;
+                    }
+
+                    if ($feature === RazorxTreatment::BVS_IN_SYNC)
+                    {
+                        return $value;
+                    }
+
+                    if ($feature === RazorxTreatment::WHATSAPP_NOTIFICATIONS)
+                    {
+                        return $value;
+                    }
+
+                    return 'off';
+                }));
+    }
+
     protected function mockStorkForUpdateGstBvsValidationSuccess()
     {
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
@@ -4725,7 +4844,11 @@ Team Razorpay',
     {
         extract($this->setupMerchantForGstinSelfServeTest());
 
-        $this->initiateGstinSelfServe();
+        $response = $this->initiateGstinSelfServe();
+
+        $this->assertEquals(false, $response['sync_flow']);
+
+        $this->assertEquals(false, $response['workflow_created']);
 
         $registeredAddress = '1302, 13, ORCHID, 18 B G KHER ROAD, WORLI MUMBAI, Mumbai City, Nostate, 400018';
 
@@ -4836,13 +4959,10 @@ Team Razorpay',
     {
         $data = $this->app['cache']->get('gstin_self_serve_input_' . $merchantId);
 
-        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
-
         $this->assertEquals([
             'gstin'                     => '18AABCU9603R1ZM',
             'gstin_certificate_file_id' => '1cXSLlUU8V9sXl',
             'merchant_id'               => $merchantId,
-            'validation_id'             => $bvsValidationEntity['validation_id'],
             'is_add_gstin_operation'    => true,
         ], $data);
     }
@@ -5204,9 +5324,12 @@ Team Razorpay',
     private function initiateGstinSelfServe()
     {
         $this->testData[__FUNCTION__] = $this->testData['testUpdateGstinSelfServe'];
+
         $this->updateUploadDocumentData(__FUNCTION__, 'gstin_self_serve_certificate');
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        return $response;
     }
 
    private function setupMerchantWithMerchantDetails(array $predefinedMerchant = [], array $predefinedMerchantDetails = [], string $role = Role::OWNER)
