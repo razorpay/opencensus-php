@@ -173,6 +173,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_DBS,
         Payment\Gateway::INGENICO,
         Payment\Gateway::BILLDESK_OPTIMIZER,
+        Payment\Gateway::HDFC_EZETAP
     ];
 
     protected static $createValidators = [
@@ -2183,6 +2184,26 @@ class Validator extends Base\Validator
         Entity::OFFLINE                     => 'sometimes|boolean|in:1',
         Entity::TYPE                        => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes',
+        Entity::STATUS                      => 'sometimes|in:activated,deactivated',
+    ];
+
+    protected static $hdfcEzetapTerminalRules = [
+        Entity::GATEWAY                                     => 'required|in:hdfc_ezetap',
+        Entity::GATEWAY_MERCHANT_ID                         => 'required|string',
+        Entity::GATEWAY_ACQUIRER                            => 'sometimes|string|in:hdfc',
+        Entity::CARD                                        => 'sometimes|boolean|in:0,1',
+        Entity::UPI                                         => 'sometimes|boolean|in:0,1',
+        Entity::TYPE                                        => 'required|array',
+        Entity::TYPE . '.pos'                               => 'required|in:1',
+        Entity::TYPE . '.direct_settlement_with_refund'     => 'required|in:1',
+        Entity::STATUS                                      => 'sometimes|in:activated,deactivated',
+    ];
+
+    protected static $hdfcEzetapEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::CARD                        => 'sometimes|boolean|in:0,1',
+        Entity::UPI                         => 'sometimes|boolean|in:0,1',
+        Entity::TYPE                        => 'sometimes|array',
         Entity::STATUS                      => 'sometimes|in:activated,deactivated',
     ];
 

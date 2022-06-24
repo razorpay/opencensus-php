@@ -139,6 +139,8 @@ return [
         'mandate_hq',
         'rupay_sihub',
         'emerchantpay',
+        'hdfc_ezetap',
+        'offline_hdfc',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),

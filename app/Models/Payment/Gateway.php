@@ -120,6 +120,7 @@ class Gateway
     const PAYSECURE              = 'paysecure';
     const UPI_AIRTEL             = 'upi_airtel';
     const WORLDLINE              = 'worldline';
+    const HDFC_EZETAP            = 'hdfc_ezetap';
     const UPI_CITI               = 'upi_citi';
     const UPI_JUSPAY             = 'upi_juspay';
     const BILLDESK_SIHUB         = 'billdesk_sihub';
@@ -254,7 +255,8 @@ class Gateway
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
-        self::PAYU         => [self::PAYU]
+        self::PAYU         => [self::PAYU],
+        self::HDFC_EZETAP  => [self::ACQUIRER_HDFC]
     ];
 
     const POWER_WALLETS = [
@@ -366,6 +368,7 @@ class Gateway
         self::NETBANKING_SBI        => self::SBIN,
         self::NETBANKING_INDUSIND   => self::INDUSIND,
         self::OFFLINE_HDFC          => self::HDFC,
+        self::HDFC_EZETAP           => self::HDFC,
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -396,6 +399,7 @@ class Gateway
         self::INGENICO              => self::INGENICO,
         self::BILLDESK_OPTIMIZER    => self::BILLDESK_OPTIMIZER,
         self::OFFLINE_HDFC          => self::HDFC,
+        self::HDFC_EZETAP           =>self::HDFC,
     ];
 
 
@@ -1406,6 +1410,7 @@ class Gateway
             self::FULCRUM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::HDFC_EZETAP,
         ],
 
         Method::NETBANKING => [
@@ -1516,6 +1521,7 @@ class Gateway
             self::PAYU,
             self::PAYTM,
             self::PINELABS,
+            self::HDFC_EZETAP,
         ],
 
         Method::AEPS => [

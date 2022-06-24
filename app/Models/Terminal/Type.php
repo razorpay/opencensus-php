@@ -46,6 +46,8 @@ class Type
     // Terminal to be used for direct settlements without refunds
     const DIRECT_SETTLEMENT_WITHOUT_REFUND   = 'direct_settlement_without_refund';
 
+    const POS                                = 'pos';
+
     // Terminal to be used for direct settlements with refunds
     const DIRECT_SETTLEMENT_WITH_REFUND      = 'direct_settlement_with_refund';
 
@@ -93,6 +95,7 @@ class Type
         self::TOKENISATION,
         self::MANDATE_HUB,
         self::OPTIMIZER,
+        self::POS,
     ];
 
     protected static $bitPosition = [
@@ -118,6 +121,7 @@ class Type
         self::TOKENISATION                     => 20,
         self::MANDATE_HUB                      => 21,
         self::OPTIMIZER                        => 22,
+        self::POS                              => 23,
     ];
 
     /**

@@ -213,6 +213,7 @@ class Entity extends Base\PublicEntity
         self::PLAN_ID,
         self::APP,
         self::OFFLINE,
+
     ];
 
     protected $public = [
@@ -1103,6 +1104,7 @@ class Entity extends Base\PublicEntity
         {
             $hex = $this->attributes[self::TYPE];
         }
+
         $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
     }
 
@@ -1833,6 +1835,11 @@ class Entity extends Base\PublicEntity
     public function isDirectSettlementWithoutRefund()
     {
         return ($this->isTypeApplicable(Type::DIRECT_SETTLEMENT_WITHOUT_REFUND) === true);
+    }
+
+    public function isPos()
+    {
+        return ($this->isTypeApplicable(Type::POS) === true);
     }
 
     public function isInternational()

@@ -1465,6 +1465,37 @@ return [
         ],
     ],
 
+    'testCreateEzetapBadRequestTerminal' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                  => 'hdfc_ezetap',
+                'gateway_merchant_id'      => '12344',
+                'gateway_acquirer'         => 'hdfc',
+                'gateway_terminal_id'      => '12344',
+                'upi'                     =>  1,
+                'type'                  => [
+                    'pos' => '1',
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "gateway_terminal_id is/are not required and should not be sent",
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
     'testCreateTwidTerminal' => [
         'request' => [
             'url' => '/merchants/10000000000000/terminals',
@@ -3596,6 +3627,29 @@ return [
                 'type'                      => [
                     'non_recurring'                 => '1',
                     'bharat_qr'                     => '1',
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => '037122003842039',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateEzetapTerminal'  => [
+        'request' => [
+            'content' => [
+                'merchant_id'               => '10000000000000',
+                'gateway'                   => 'hdfc_ezetap',
+                'card'                      => '1',
+                'gateway_merchant_id'       => '037122003842039',
+                'gateway_acquirer'          => 'hdfc',
+                'type'                      => [
+                    'pos' => '1',
                     'direct_settlement_with_refund' => '1'
                 ],
             ],

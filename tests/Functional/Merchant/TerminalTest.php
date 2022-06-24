@@ -980,6 +980,15 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateEzetapBadRequestTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
     public function testCreateTwidTerminal()
     {
         $url = '/merchants/100000Razorpay/terminals';
@@ -3024,6 +3033,20 @@ class TerminalTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        // Adding below assert to check if the org is being associated to terminal (via merchant) properly
+        $this->assertEquals('100000razorpay', $terminal['org_id']);
+    }
+
+    public function testCreateEzetapTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $resp = $this->startTest();
 
         $terminal = $this->getLastEntity('terminal', true);
 
