@@ -1276,6 +1276,7 @@ class Route
         'payment_links_switch_versions'            => ['post',            'payment_links_switch_versions',                  'InvoiceController@switchPlVersions'                                ],
         'payment_links_v2_admin'                   => ['post',            'payment_links_admin',                            'PlinkController@sendRequest'                                       ],
         'payment_links_ops_batch_cancel'           => ['post',            'payment_links_ops/batch_cancel',                 'PlinkController@sendRequest'                                       ],
+        'payment_links_es_cleanup'                 => ['post',            'payment_links_es_cleanup',                       'PlinkController@sendRequest'                                       ],
         // end of payment link service end points
         // Setu Integration
         'bbps_bill_payments'                       => ['get',      'bbps_bill_payments',                             'BbpsController@showBbpsDashboard'                                  ],
@@ -4585,6 +4586,7 @@ class Route
         'mpans_bulk',
         'upi_terminal_onboarding_bulk',
         'payment_links_bulk_expire',
+        'payment_links_es_cleanup',
         'fts_bulk_attempts_initiate',
         'fts_bulk_beneficiary_initiate',
         'fts_one_off_db_migrate_cron',
@@ -12367,6 +12369,7 @@ class Route
             'transfer_settlements_update',
             'retry_penny_testing_cron',
             'payment_links_bulk_expire',
+            'payment_links_es_cleanup',
             'fee_recovery_payout_process',
             'fts_bulk_attempts_initiate',
             'fts_bulk_beneficiary_initiate',
