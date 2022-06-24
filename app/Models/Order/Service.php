@@ -593,6 +593,7 @@ class Service extends Base\Service
             $res = $apiPayments->merge($rearchPayments);
 
             return $res->toArrayPublic();
+
         }
 
         $payments = $this->repo->payment->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);

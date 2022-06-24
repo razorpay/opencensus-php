@@ -1396,6 +1396,14 @@ EOT;
                     ->get();
     }
 
+    public function fetchPaymentsWithCardForOrderId($orderId)
+    {
+        return $this->newQuery()
+            ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+            ->with(["card"])
+            ->get();
+    }
+
     public function fetchCapturedRearchPaymentsTxnNull()
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))

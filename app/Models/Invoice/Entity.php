@@ -668,7 +668,8 @@ class Entity extends Base\PublicEntity
             {
                 $publicArray[self::AUTH_LINK_STATUS] = $tokenRegistration->getAuthLinkStatus($this, $order);
 
-                if ($order->products !== null)
+                if (($order->products !== null) and
+                    (is_array($order->products) === false))
                 {
                     $productsArray = $order->products->toArrayPublic()['items'] ?? [];
 

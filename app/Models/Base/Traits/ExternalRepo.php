@@ -201,6 +201,8 @@ trait ExternalRepo
 
                 $relations = $this->getExpandsForQueryFromInput($input);
 
+                $this->handleOrderExpands($input,$this->entity, $entity, $id, $class, $merchantId);
+
                 $entity->loadMissing($relations);
 
                 return $entity;
@@ -226,6 +228,34 @@ trait ExternalRepo
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
+    }
+
+    protected function handleOrderExpands($expands, $entityType, $entity, $id, $class, $merchantId)
+    {
+        if (($entityType === Entity::ORDER) and (array_key_exists("expands",$expands) === true))
+        {
+            //payments,payments.card
+            if (in_array("payments.card",  $expands['expands']) === true)
+            {
+                $apiPayments = $this->repo->payment->fetchPaymentsWithCardForOrderId($id);
+
+                $rearchPayments = $class->fetchOrderPayments($id, $merchantId, true);
+
+                $res = $apiPayments->merge($rearchPayments);
+
+                $entity->payments = $res->toArrayPublic();
+            }
+            else if (in_array("payments", $expands['expands']) === true)
+            {
+                $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($id);
+
+                $rearchPayments = $class->fetchOrderPayments($id, $merchantId);
+
+                $res = $apiPayments->merge($rearchPayments);
+
+                $entity->payments = $res->toArrayPublic();
+            }
+        }
     }
 
     public function serializeForIndexingForExternal(PublicEntity $entity): array

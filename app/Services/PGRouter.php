@@ -322,7 +322,7 @@ class PGRouter
         return null;
     }
 
-    public function fetchOrderPayments(string $orderId, string $merchantId)
+    public function fetchOrderPayments(string $orderId, string $merchantId, $withCard = false)
     {
         $endpoint = sprintf(self::PGRouterFetchOrderPayments, $orderId);
 
@@ -365,7 +365,7 @@ class PGRouter
 
                 $paymentEntity = (new Payment\Entity)->forceFill($payment['data']['payment']);
 
-                if ($card !== null)
+                if (($card !== null) and ($withCard === true))
                 {
                     $paymentEntity->card()->associate($card);
                 }
