@@ -32,7 +32,7 @@ class EmiFile extends Base\EmiFile
 
             $data[] = [
                 'EMI ID'                     => $emiPayment->getId(),
-                'Card Pan'                   => $this->getCardNumber($emiPayment->card),
+                'Card Pan'                   => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
                 'Issuer'                     => 'Kotak',
                 'Auth Code'                  => $authCode,
                 'Tx Amount'                  => $emiPayment->getAmount()/ 100,

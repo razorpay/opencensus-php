@@ -207,7 +207,7 @@ class Base extends BaseProcessor
         return Str::random(self::EMI_FILE_PASSWORD_LENGTH);
     }
 
-    protected function getCardNumber(Card\Entity $card)
+    protected function getCardNumber(Card\Entity $card,$gateway=null)
     {
         if ($card->globalCard !== null)
         {
@@ -216,7 +216,7 @@ class Base extends BaseProcessor
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken,$card->toArray());
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken,$card->toArray(),$gateway);
 
         return $cardNumber;
     }

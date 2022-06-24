@@ -21,11 +21,11 @@ class CardVault extends Base\Core
         $this->cardVault = $this->app['card.cardVault'];
     }
 
-    public function getCardNumber($vaultToken,array $input = [])
+    public function getCardNumber($vaultToken,array $input = [],$gateway=null)
     {
         $vaultEx = null;
         $buNamespace =null;
-        $buNamespace = $this->getBuNamespaceIfApplicable($input);
+        $buNamespace = $this->getBuNamespaceIfApplicable($input,false,$gateway);
         try
         {
             $cardNumber = $this->cardVault->detokenize($vaultToken,$buNamespace);
@@ -116,11 +116,13 @@ class CardVault extends Base\Core
 
 
 
-    public function getVaultTokenFromTempToken($tempVaultToken)
+    public function getVaultTokenFromTempToken($tempVaultToken, $cardArray = [], $gateway = null)
     {
         try
         {
-            return $this->cardVault->getVaultTokenFromTempToken($tempVaultToken);
+            $buNamespace = $this->getBuNamespaceIfApplicable($cardArray, false, $gateway);
+
+            return $this->cardVault->getVaultTokenFromTempToken($tempVaultToken,$buNamespace);
         }
         catch (\Exception $e)
         {
@@ -175,7 +177,8 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getBuNamespaceIfApplicable($input, $isRzpX = false)
+
+    public function getBuNamespaceIfApplicable($input, $isRzpX = false ,$gateway=null)
     {
         $buNamespace =null;
         try
@@ -190,6 +193,9 @@ class CardVault extends Base\Core
                 }
                 else if (empty($input['network']) === false and $input['network'] === 'Bajaj Finserv'){
                     $buNamespace = 'payments_bajajfinserv';
+                }
+                else if (isset($gateway) === true and $gateway === 'paysecure'){
+                    $buNamespace = 'payments_paysecure';
                 }
             }
             else

@@ -2977,9 +2977,9 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Exception
      */
-    public function createLocalTokenFromGlobalToken(Entity $globalToken, Merchant\Entity $merchant): Entity
+    public function createLocalTokenFromGlobalToken(Entity $globalToken, Merchant\Entity $merchant , $gateway=null): Entity
     {
-        $localToken = $this->createGlobalOrLocalTokenFromExistingToken($globalToken, $merchant);
+        $localToken = $this->createGlobalOrLocalTokenFromExistingToken($globalToken, $merchant,$gateway);
 
         return $localToken;
     }
@@ -2990,11 +2990,11 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Exception
      */
-    public function createGlobalTokenFromLocalToken(Entity $localToken): Entity
+    public function createGlobalTokenFromLocalToken(Entity $localToken , $gateway=null): Entity
     {
         $globalMerchant = $this->repo->merchant->getSharedAccount();
 
-        $globalToken = $this->createGlobalOrLocalTokenFromExistingToken($localToken, $globalMerchant);
+        $globalToken = $this->createGlobalOrLocalTokenFromExistingToken($localToken, $globalMerchant,$gateway);
 
         return $globalToken;
     }
@@ -3014,7 +3014,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws \Exception
      */
-    protected function createGlobalOrLocalTokenFromExistingToken(Entity $existingToken, Merchant\Entity $merchantToBeAssociated): Entity
+    protected function createGlobalOrLocalTokenFromExistingToken(Entity $existingToken, Merchant\Entity $merchantToBeAssociated , $gateway=null): Entity
     {
         try
         {
@@ -3050,7 +3050,7 @@ class Core extends Base\Core
 
             $existingCard = $existingToken->card;
 
-            $actualCardNumber = (new Card\CardVault)->getCardNumber($existingCard->getVaultToken(),$existingCard->toArray());
+            $actualCardNumber = (new Card\CardVault)->getCardNumber($existingCard->getVaultToken(),$existingCard->toArray(),$gateway);
 
             $cardInput = [
                 Card\Entity::NUMBER           => $actualCardNumber,

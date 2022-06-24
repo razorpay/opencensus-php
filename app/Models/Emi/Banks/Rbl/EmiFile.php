@@ -39,7 +39,7 @@ class EmiFile extends Base\EmiFile
 
             $data[] = [
                 'EMI ID'                           => $emiPayment->getId(),
-                'RBL Card no'                      => $this->getCardNumber($emiPayment->card),
+                'RBL Card no'                      => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
                 'Issuer'                           => 'RBL Bank',
                 'Acquirer'                         => '',
                 'Aggregator Merchant Name'         => 'RAZORPAY',

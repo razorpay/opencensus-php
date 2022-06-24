@@ -75,7 +75,7 @@ trait CardCacheTrait
      * @param array $input
      * @throws \Exception
      */
-    protected function setCardNumberAndCvv(array & $input)
+    protected function setCardNumberAndCvv(array & $input,$cardArray=[])
     {
         $data = $this->getCardDetailsFromCache($input);
 
@@ -95,9 +95,10 @@ trait CardCacheTrait
         {
             $vaultToken = $input['card'][Card\Entity::VAULT_TOKEN];
         }
-        $cardArray = $input['card']??[];
 
-        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken,$cardArray);
+        $gateway = $input['payment']['gateway'] ?? null;
+
+        $input['card']['number'] = (new Card\CardVault)->getCardNumber($vaultToken, $cardArray, $gateway);
 
         if (isset($data['cvv']) === true)
         {

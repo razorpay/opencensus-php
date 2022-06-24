@@ -3807,7 +3807,7 @@ class Processor
                 // Persist card details only when payment method is card or emi
                 if ($this->payment->isMethodCardOrEmi() === true)
                 {
-                    $this->persistCardDetails($gateway, $action, $gatewayData);
+                    $this->persistCardDetails($gateway, $action, $gatewayData,$this->payment->card->toArray());
                 }
 
                 // Card Mandate flow for recurring transactions
@@ -4008,7 +4008,7 @@ class Processor
         return ($cpsRoute === Payment\Entity::UPI_PAYMENT_SERVICE);
     }
 
-    protected function persistCardDetails($gatewayName, $action, &$input)
+    protected function persistCardDetails($gatewayName, $action, &$input , $cardArray=[])
     {
         $action = snake_case($action);
 
@@ -4018,7 +4018,7 @@ class Processor
         }
         else if ($action === Action::CALLBACK or $action === Action::CAPTURE or $action === Action::PAY)
         {
-            $this->setCardNumberAndCvv($input);
+            $this->setCardNumberAndCvv($input,$cardArray);
         }
     }
 

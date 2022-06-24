@@ -105,7 +105,7 @@ class Icici extends Base
             $data[] = [
                 'EMI ID'                           => $emiPayment->getId(),
                 'Tx Time'                          => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
-                'Card PAN'                         => $this->getCardNumber($emiPayment->card),
+                'Card PAN'                         => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
                 'Amount'                           => $principalAmount,
                 'Auth Code'                        => $this->getAuthCode($emiPayment),
                 'Scheme Code'                      => substr($issuerPlanId, 0, 4).'P199'.substr($issuerPlanId, -2),

@@ -700,7 +700,7 @@ trait Callback
 
             $input['card'] = array();
 
-            $input['card']['number'] = $this->getCardNumber($card);
+            $input['card']['number'] = $this->getCardNumber($card, $payment->getGateway());
         }
     }
 
@@ -920,7 +920,7 @@ trait Callback
         return 'redirect_' . $payment->getId();
     }
 
-    protected function getCardNumber($card)
+    protected function getCardNumber($card , $gateway=null)
     {
         if ($card->globalCard !== null)
         {
@@ -929,7 +929,7 @@ trait Callback
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken,$card->toArray());
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken,$card->toArray(),$gateway);
 
         return $cardNumber;
     }

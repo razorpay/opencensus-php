@@ -5282,7 +5282,7 @@ trait Authorize
                 ($token->isGlobal()) &&
                 (new Payment\TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($this->merchant->getId())
             ) {
-                $token = (new Token\Core())->createLocalTokenFromGlobalToken($token, $this->merchant);
+                $token = (new Token\Core())->createLocalTokenFromGlobalToken($token, $this->merchant,$payment->getGateway());
             }
 
             // For global customer local token payments
@@ -6471,8 +6471,7 @@ trait Authorize
     {
         try
         {
-            if (($payment->isMethodCardOrEmi() === false) or
-                ($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION))
+            if (($payment->isMethodCardOrEmi() === false) or (($payment->card->getVault() !== Card\Vault::RZP_ENCRYPTION) and $payment->getGateway() !== 'paysecure'))
             {
                 return;
             }
@@ -6482,12 +6481,15 @@ trait Authorize
                 'card_id'    => $payment->card->getId(),
                 'token'      => $payment->card->getVaultToken(),
                 'mode'       => $this->mode,
+                'gateway'    => $payment->getGateway()
             ];
+
+            $cardVault = (new Card\CardVault);
 
             $this->trace->info(
                 TraceCode::VAULT_TOKEN_MIGRATION_REQUEST_INIT,
                 [
-                    'input' => $input,
+                    'input' => $input
                 ]);
 
             Jobs\CardVaultMigrationJob::dispatch($input, $this->mode);
@@ -6717,7 +6719,7 @@ trait Authorize
             $input['payment'] = $payment->toArrayGateway();
             $input['card'] = $payment->card->toArray();
 
-            $this->setCardNumberAndCvv($input);
+            $this->setCardNumberAndCvv($input,$payment->card->toArray());
 
             $cardInput = [
                 'cvv'                             => $input['card']['cvv'] ?? Card\Entity::getDummyCvv($payment->card->getNetworkCode()),
@@ -8181,7 +8183,9 @@ trait Authorize
             return $this->createCardEntityForTokenisedCard($token, $input);
         }
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
+        $gateway = $input['payment']['gateway'] ?? null;
+
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray(),$gateway);
 
         // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -8267,7 +8271,9 @@ trait Authorize
      */
     protected function createActualCardFromTokenisedCard(Card\Entity $card, $input): array
     {
-        $actualCardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
+        $gateway = $input['payment']['gateway']?? null;
+
+        $actualCardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray(),$gateway);
 
         $cardInput = [
             Card\Entity::NUMBER           => $actualCardNumber,
@@ -8300,7 +8306,9 @@ trait Authorize
             return $this->createCardEntityForTokenisedCard($token, $input);
         }
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray());
+        $gateway = $input['payment']['gateway']?? null;
+
+        $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray(),$gateway);
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
@@ -10251,14 +10259,14 @@ trait Authorize
 
         if (($payment->isMethodCardOrEmi() === true) and (empty($inputDetails[Payment\Entity::TOKEN]) === true))
         {
-            $this->setCardNumberAndCvv($inputDetails);
+            $this->setCardNumberAndCvv($inputDetails,$payment->card->toArray());
 
             if(empty($inputDetails['gateway_input']) === false)
             {
 
                 $gatewayInput = $inputDetails['gateway_input'];
 
-                $this->setCardNumberAndCvv($gatewayInput);
+                $this->setCardNumberAndCvv($gatewayInput,$payment->card->toArray());
 
                 $inputDetails['gateway_input'] = $gatewayInput;
             }
@@ -11131,7 +11139,7 @@ trait Authorize
                 ($token->isLocalTokenOnGlobalCustomer()) &&
                 ($token->card->isGlobalTokenCreationSupportedOnCard())
             ) {
-                $globalToken = (new Token\Core())->createGlobalTokenFromLocalToken($token);
+                $globalToken = (new Token\Core())->createGlobalTokenFromLocalToken($token,$payment->getGateway());
 
                 SavedCardTokenisationJob::dispatch($this->mode, $globalToken->getId(), $payment->getId());
             }

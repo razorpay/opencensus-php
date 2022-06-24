@@ -371,7 +371,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             Constants::CALLBACK_URL => $url,
             Constants::SKIP_SUMMARY_PAGE => $skipSummaryPage,
             Constants::CARD         => [
-                Constants::CARD_NUMBER       => $this->getCardNumber($card),
+                Constants::CARD_NUMBER       => $this->getCardNumber($card,$payment->getGateway()),
                 Constants::CARD_NAME         =>  $card->getName(),
                 Constants::CARD_EXPIRY_MONTH => stringify($card->getExpiryMonth()),
                 Constants::CARD_EXPIRY_YEAR  => substr(stringify($card->getExpiryYear()), -2)
@@ -387,7 +387,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             try {
                 if ($isTokenPan === true){
                     // In case of token requester merchant
-                    $tokenInput = $token->card->buildTokenisedTokenForMandateHQ($this->getCardNumber($token->card));
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHQ($this->getCardNumber($token->card,$payment->getGateway()));
                 } else {
                     $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
                 }
@@ -436,11 +436,11 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         return hash_hmac('sha1', $string, $secret);
     }
 
-    protected function getCardNumber(Card\Entity $card)
+    protected function getCardNumber(Card\Entity $card,$gateway=null)
     {
         $cardToken = $card->getCardVaultToken();
 
-        return (new Card\CardVault)->getCardNumber($cardToken,$card->toArray());
+        return (new Card\CardVault)->getCardNumber($cardToken,$card->toArray(),$gateway);
     }
 
     public function updateTokenisedCardTokenInMandate($cardMandate, $input)

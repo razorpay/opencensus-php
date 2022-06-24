@@ -29,7 +29,7 @@ class Axis extends Base
             $txn = $emiPayment->transaction;
 
             $formattedData[] = [
-                'Card Number'                  => $this->getCardNumber($emiPayment->card),
+                'Card Number'                  => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
                 'Transaction Amount'           => $emiPayment->getAmount() / 100,
                 'Transaction Date'             => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
                 'Settlement Date'              => $this->getFormattedDate($txn->getSettledAt()),

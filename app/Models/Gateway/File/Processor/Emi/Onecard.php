@@ -182,7 +182,7 @@ class Onecard extends Base
 
             $formattedData[] = [
                 'Card BIN'                     => $emiPayment->card->getIin(),
-                'Card Hash'                    => hash("sha256", $this->getCardNumber($emiPayment->card)),
+                'Card Hash'                    => hash("sha256", $this->getCardNumber($emiPayment->card,$emiPayment->getGateway())),
                 'Issuer'                       => 'One Card',
                 'RRN'                          => $rrns[$emiPayment['id']]['rrn'] ?? '',
                 'Auth Code'                    => $this->getAuthCode($emiPayment),

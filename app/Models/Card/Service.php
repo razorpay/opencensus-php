@@ -56,25 +56,25 @@ class Service extends Base\Service
         return [$responseKey => $recurring];
     }
 
-    public function migtateCardVaultToken($cardId, $bulkUpdate = false)
+    public function migtateCardVaultToken($cardId, $bulkUpdate = false, $gateway = null)
     {
         $card = $this->repo->card->find($cardId);
 
         if ($bulkUpdate == true)
         {
-            $this->updateVaultTokenBulk($card);
+            $this->updateVaultTokenBulk($card, $gateway);
             return;
         }
 
-        $this->updateVaultToken($card);
+        $this->updateVaultToken($card, $gateway);
 
         if ($card->hasGlobalCard() === true)
         {
-            $this->updateVaultToken($card->globalCard);
+            $this->updateVaultToken($card->globalCard, $gateway);
         }
     }
 
-    public function updateVaultTokenBulk(Entity $card)
+    public function updateVaultTokenBulk(Entity $card, $gateway = null)
     {
         $cardVault = new CardVault;
 
@@ -92,7 +92,7 @@ class Service extends Base\Service
         }
         else
         {
-            $vaultResponse = $cardVault->getVaultTokenFromTempToken($token);
+            $vaultResponse = $cardVault->getVaultTokenFromTempToken($token, $card->toArray(), $gateway);
 
             $vaultToken = $vaultResponse['token'];
 
@@ -102,7 +102,7 @@ class Service extends Base\Service
         }
     }
 
-    public function updateVaultToken(Entity $card)
+    public function updateVaultToken(Entity $card, $gateway=null)
     {
         $cardVault = new CardVault;
 
@@ -110,12 +110,12 @@ class Service extends Base\Service
         $vault = $card->getVault();
 
         if (($token === null) or
-            ($vault !== Vault::RZP_ENCRYPTION))
+            (($vault !== Vault::RZP_ENCRYPTION) and isset($gateway) === true and  $gateway !== 'paysecure'))
         {
             return;
         }
 
-        $vaultResponse = $cardVault->getVaultTokenFromTempToken($token);
+        $vaultResponse = $cardVault->getVaultTokenFromTempToken($token, $card->toArray(), $gateway);
 
         $vaultToken = $vaultResponse['token'];
 
@@ -128,6 +128,11 @@ class Service extends Base\Service
         $card->setGlobalFingerPrint($fingerprint);
 
         $this->repo->saveOrFail($card);
+
+        // not calling delete api in case of paysecure
+        if ((isset($gateway) === true) and ($gateway === 'paysecure')){
+            return ;
+        }
 
         //deleting data from cache.
         $cardVault->deleteToken($token);

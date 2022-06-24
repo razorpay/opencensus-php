@@ -120,7 +120,7 @@ class Hsbc extends Base
         }
     }
 
-    protected function getCardNumber($card)
+    protected function getCardNumber($card,$gateway=null)
     {
         if ($card->globalCard !== null) {
             $card = $card->globalCard;
@@ -128,7 +128,7 @@ class Hsbc extends Base
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken);
+        $cardNumber = (new Card\CardVault)->getCardNumber($cardToken,$card->toArray(),$gateway);
 
         return $cardNumber;
     }

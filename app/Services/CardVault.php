@@ -278,11 +278,27 @@ class CardVault
         return $response[self::VALUE];
     }
 
-    public function getVaultTokenFromTempToken($tempVaultToken)
+    public function getVaultTokenFromTempToken($tempVaultToken, $buNamespace = null)
     {
         $input = [
             self::TOKEN  => $tempVaultToken,
         ];
+
+        if (isset($buNamespace) === true ) {
+
+            $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
+
+            $this->trace->info(TraceCode::VAULT_BU_NAMESPACE_MIGRATION_RAZORX_VARIANT, [
+                'razorx_variant' => $variant,
+                'bu_namespace'   => $buNamespace
+            ]);
+
+            if (strtolower($variant) === 'on') {
+                $input += [
+                    self::BU_NAMESPACE => $buNamespace,
+                ];
+            }
+        }
 
         $response = $this->sendRequest('token/migrate', 'post', $input);
 

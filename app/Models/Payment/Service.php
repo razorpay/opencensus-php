@@ -3601,11 +3601,11 @@ class Service extends Base\Service
         return $token;
     }
 
-    public function migrateCardVaultToken(string $cardId, string $paymentId = null, bool $bulkUpdate = false)
+    public function migrateCardVaultToken(string $cardId, string $paymentId = null, bool $bulkUpdate = false, string $gateway = null)
     {
         $updated = null;
 
-        (new Card\Service)->migtateCardVaultToken($cardId, $bulkUpdate);
+        (new Card\Service)->migtateCardVaultToken($cardId, $bulkUpdate, $gateway);
 
         if ($paymentId !== null)
         {

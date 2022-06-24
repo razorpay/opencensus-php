@@ -248,7 +248,7 @@ class Sbi extends Base
                     'DD' .    // record type always DD
                     'R' . $this->numpad($uniqueReferenceNum, 14) .
                     $this->strpad('Razor Pay', 40) .
-                    $this->numpad($this->getCardNumber($emiPayment->card), 19) .
+                    $this->numpad($this->getCardNumber($emiPayment->card,$emiPayment->getGateway()), 19) .
                     $this->numpad($principalAmount, 17) .
                     $this->numpad($tenure, 3) .
                     $this->strpad($this->getAuthCode($emiPayment), 6) .

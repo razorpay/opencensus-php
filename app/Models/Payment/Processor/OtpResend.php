@@ -117,7 +117,7 @@ trait OtpResend
         $card = $payment->card;
 
         //set card details
-        $this->setCardNumberAndCvv($input);
+        $this->setCardNumberAndCvv($input,$card->toArray());
 
         $input['card']['expiry_month']  = $card->getExpiryMonth();
 

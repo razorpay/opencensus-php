@@ -66,7 +66,7 @@ class CardVault extends BaseCardVault
         ];
     }
 
-    public function getVaultTokenFromTempToken($token)
+    public function getVaultTokenFromTempToken($token , $buNamespace =null)
     {
         $response['token'] = strrev($token);
         $response['fingerprint'] = strrev($token);

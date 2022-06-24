@@ -32,7 +32,7 @@ class EmiFile extends Base\EmiFile
             $txn = $emiPayment->transaction;
 
             $data[] = [
-                'Card Number'                  => $this->getCardNumber($emiPayment->card),
+                'Card Number'                  => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
                 'Transaction Amount'           => $emiPayment->getAmount()/100,
                 'Transaction Date'             => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
                 'Settlement Date'              => $this->formattedDateFromTimestamp($txn->getSettledAt()),

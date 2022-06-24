@@ -32,7 +32,7 @@ class EmiFile extends Base\EmiFile
             $emiRate = $emiPayment->emiPlan['rate'];
 
             $data[] = [
-                'CARD_NUMBER'                  => $this->getCardNumber($emiPayment->card),
+                'CARD_NUMBER'                  => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
                 'MID'                          => $emiPayment->getId(),
                 'MERCHANT_NAME'                => 'Razorpay Payments',
                 'TRXN_AMOUNT'                  => $this->getFormattedAmount($emiPayment->getAmount()),

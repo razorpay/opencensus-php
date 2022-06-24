@@ -158,7 +158,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $cardData = $card->toArray();
 
-        $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card);
+        $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
 
         $startTime = $payment->localToken->getStartTime();
 
@@ -242,7 +242,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $cardData = $card->toArray();
 
-        $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card);
+        $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
 
         return [
             Constants::PAYMENT      => $payment->toArray(),
@@ -378,11 +378,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
      * @return string
      * @throws \Exception
      */
-    protected function getCardNumber(Card\Entity $card) : string
+    protected function getCardNumber(Card\Entity $card , $gateway=null) : string
     {
         $cardToken = $card->getCardVaultToken();
 
-        return (new Card\CardVault)->getCardNumber($cardToken,$card->toArray());
+        return (new Card\CardVault)->getCardNumber($cardToken,$card->toArray(),$gateway);
     }
 
     public function updateTokenisedCardTokenInMandate($cardMandate, $input)
