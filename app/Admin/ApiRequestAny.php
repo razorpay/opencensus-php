@@ -706,6 +706,17 @@ class ApiRequestAny
                 $this->options['cookies']['razorx'] = $cookie;
             }
         }
+
+        //Forwarding _ga and gclid cookies for Google Analytics tracking
+        if (empty($_COOKIE['_ga']) === false and isset($this->options['cookies']['_ga']) === false)
+        {
+            $this->options['cookies']['_ga'] = $_COOKIE['_ga'];
+        }
+
+        if (empty($_COOKIE['gclid']) === false and isset($this->options['cookies']['gclid']) === false)
+        {
+            $this->options['cookies']['gclid'] = $_COOKIE['gclid'];
+        }
     }
 
     public function debugLogsEnable()
