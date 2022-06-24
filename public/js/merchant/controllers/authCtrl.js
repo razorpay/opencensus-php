@@ -91,7 +91,7 @@ app
       };
 
       const ORG_CUSTOM_CODE_MAP = {
-        Razorpay: 'rzp',
+        RAZORPAY: 'rzp',
         AXIS_BANK: 'axis',
         ICICI_BANK: 'icic',
         HDFC_SMART_HUB: 'hdfc',
@@ -172,7 +172,7 @@ app
         $scope.isOrgCheckDone = true;
         $scope.organization = data;
         $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
-        $scope.isOrgRZP = data.custom_code === ORG_CUSTOM_CODE_MAP.Razorpay;
+        $scope.isOrgRZP = data.custom_code === ORG_CUSTOM_CODE_MAP.RAZORPAY;
         $scope.isOrgAXIS = data.custom_code === ORG_CUSTOM_CODE_MAP.AXIS_BANK;
         $scope.isOrgICICI = data.custom_code === ORG_CUSTOM_CODE_MAP.ICICI_BANK;
         $scope.isOrgHDFC = data.custom_code === ORG_CUSTOM_CODE_MAP.HDFC_SMART_HUB;

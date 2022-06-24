@@ -34,16 +34,19 @@ const PRODUCT_KEY_MAPS = [
 ];
 
 const ORG_CUSTOM_CODE_MAP = {
+  RAZORPAY: 'rzp',
+  AXIS_BANK: 'axis',
+  ICICI_BANK: 'icic',
+  HDFC_SMART_HUB: 'hdfc',
+  HDFC_COLLECT_NOW: 'HDFC',
   KOTAK_MAHINDRA_BANK: 'KKBK',
 };
 
 // TODO: Rename fn. name
 export function setFeatures(features) {
   const enabledFeatures = filterBy(features, 'value', true);
-
   return enabledFeatures;
 }
-
 export default class User {
   merchants = {};
 
@@ -110,12 +113,30 @@ export default class User {
 
   get isOrgRZP() {
     const org = getOrg();
+    return org?.custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.RAZORPAY;
+  }
 
-    if (org && org.custom_code && org.custom_code.toLowerCase() === 'rzp') {
-      return true;
-    }
+  get isOrgAxis() {
+    const org = getOrg();
+    return org?.custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.AXIS_BANK;
+  }
 
-    return false;
+  get isOrgKotak() {
+    const org = getOrg();
+    return org?.custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.KOTAK_MAHINDRA_BANK;
+  }
+
+  get isWhiteLabelledOrg() {
+    return !this.isOrgRZP;
+  }
+
+  get orgCustomCode() {
+    return getOrg()?.custom_code;
+  }
+
+  /* Check case-insensitive tag check existence */
+  findTag(tag) {
+    return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
   }
 
   isProductHiddenForWhiteLabelledOrg(moduleName) {
@@ -124,6 +145,10 @@ export default class User {
     }
 
     if (!this.isWhiteLabelledOrg) {
+      return false;
+    }
+
+    if (isOrgFeatureExist(`white_labelled_${moduleName}`)) {
       return false;
     }
 
@@ -732,11 +757,6 @@ export default class User {
     return this.getExpStatus('pb_direct_plugin_links');
   }
 
-  /* Check case-insensitive tag check existence */
-  findTag(tag) {
-    return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
-  }
-
   /*
    * Detects whether user is partner or not.
    * If check has to be made for specific type of partners,
@@ -1252,30 +1272,10 @@ export default class User {
     return this.getExpStatus('app_switcher');
   }
 
-  get isOrgAxis() {
-    const currentOrg = getOrg().custom_code;
-
-    return currentOrg === 'axis';
-  }
-
-  get isOrgKotak() {
-    const currentOrg = getOrg()?.custom_code;
-
-    return currentOrg === ORG_CUSTOM_CODE_MAP.KOTAK_MAHINDRA_BANK;
-  }
-
   get isSourceRX() {
     const query = QueryString.parse(window.location.search);
     const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
     return isSourceRX;
-  }
-
-  get isWhiteLabelledOrg() {
-    return this.isOrgAxis;
-  }
-
-  get orgCustomCode() {
-    return getOrg().custom_code;
   }
 
   get showOnDemandDeduction() {
@@ -1576,9 +1576,7 @@ export default class User {
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
-  if (!moduleName) {
-    return false;
-  }
+  if (!moduleName) return false;
 
   const restrictedModulesForOrg = antiOrgsModules[getOrg().custom_code];
 
@@ -1614,6 +1612,6 @@ function getSplitzExperimentVariant(experimentName) {
 }
 
 export function isOrgFeatureExist(feature) {
-  const org = getOrg();
-  return org?.features?.indexOf(feature) > -1;
+  const features = getOrg()?.features ?? [];
+  return features.some((f) => f.toLowerCase() === feature.toLowerCase());
 }
