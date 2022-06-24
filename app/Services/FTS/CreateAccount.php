@@ -273,12 +273,42 @@ class CreateAccount extends Base
 
     public function getCardDetails(Card\Entity $card)
     {
-        return [
+        $cardDetails = [
             Constants::NAME         => $card->getName(),
             Constants::ISSUER_BANK  => $this->getIssuer($card),
             Constants::VAULT_TOKEN  => $this->getCardVaultToken($card),
             Constants::NETWORK_CODE => $card->getNetworkCode(),
         ];
+
+        if ($card->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true)
+        {
+            $tokenised = ($card->isTokenPan() === true) ? true : $card->isNetworkTokenisedCard();
+
+            $cardDetails[Constants::TOKENISED] = $tokenised;
+
+            $this->setNamespacesInRequest($cardDetails, $card);
+        }
+
+        return $cardDetails;
+    }
+
+    protected function setNamespacesInRequest(&$cardDetails, $card)
+    {
+        if ($card->isTokenPan() === true)
+        {
+            $cardDetails[Constants::BU_NAMESPACE] = Card\BuNamespace::RAZORPAYX_TOKEN_PAN;
+        }
+        else
+        {
+            if ($card->isNetworkTokenisedCard() === true)
+            {
+                $cardDetails[Constants::BU_NAMESPACE] = null;
+            }
+            else
+            {
+                $cardDetails[Constants::BU_NAMESPACE] = Card\BuNamespace::RAZORPAYX_NON_SAVED_CARDS;
+            }
+        }
     }
 
     /**
