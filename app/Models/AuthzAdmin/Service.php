@@ -17,7 +17,7 @@ class Service extends Base\Service
     private $authzXPlatformAdminClient;
 
     const ORG_ID = "razorpayx";
-    private $service = "";
+    private $serviceId = "";
     const PAGE_SIZE = 100;
 
     /**
@@ -31,7 +31,7 @@ class Service extends Base\Service
 
         $this->config      = app('config')->get('applications.authzXPlatformAdmin');
 
-        $this->service = $this->config['service'];
+        $this->serviceId = $this->config['service_id'];
     }
 
     public function adminAPIListPolicy(array $roles)
@@ -53,7 +53,7 @@ class Service extends Base\Service
             $policyItemsAndCount = $this->authzXPlatformAdminClient->adminAPIListPolicy(
                 $paginationToken,
                 $resourceGroupIdList = null, $resourceIdList = null,
-                $roleId = null, $serviceIdList = $this->service,
+                $roleId = null, $serviceIdList = $this->serviceId,
                 $permissionIdList = null, $roleNames = $roles,
                 $orgId = self::ORG_ID
             );
