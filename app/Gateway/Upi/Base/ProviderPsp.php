@@ -20,6 +20,7 @@ class ProviderPsp
     const MOBIKWIK          = 'mobikwik';
     const DIGI_BANK         = 'digi_bank';
     const BHIM_DLB_UPI      = 'bhim_dlb_upi';
+    const PAYZAPP           = 'payzapp';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

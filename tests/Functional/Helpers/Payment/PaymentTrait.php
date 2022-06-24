@@ -3482,6 +3482,7 @@ trait PaymentTrait
             "tapicici",
             "liv",
             "sliceaxis",
+            "pz",
         ];
 
         return $vpaHandles;

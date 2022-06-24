@@ -167,6 +167,7 @@ class ProviderCode
     const TAPICICI           = 'tapicici';
     const LIV                = 'liv';
     const SLICEAXIS          = 'sliceaxis';
+    const PZ                 = 'pz';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -324,6 +325,7 @@ class ProviderCode
         self::TAPICICI           => IFSC::ICIC,
         self::LIV                => self::PPIW,
         self::SLICEAXIS          => IFSC::UTIB,
+        self::PZ                 => IFSC::HDFC,
     ];
 
     /**
@@ -406,6 +408,7 @@ class ProviderCode
         ProviderPsp::MOBIKWIK,
         ProviderPsp::DIGI_BANK,
         ProviderPsp::BHIM_DLB_UPI,
+        ProviderPsp::PAYZAPP,
     ];
 
     /**
@@ -431,6 +434,8 @@ class ProviderCode
         self::IKWIK         => ProviderPsp::MOBIKWIK,
         self::DBS           => ProviderPsp::DIGI_BANK,
         self::DLB           => ProviderPsp::BHIM_DLB_UPI,
+        self::SLICEAXIS     => ProviderPsp::BHIM_AXISPAY,
+        self::PZ            => ProviderPsp::PAYZAPP,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
