@@ -8,7 +8,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ProfileActions from 'merchant/reducers/profile';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
-import User from 'merchant/models/User';
+import User, { isOrgFeatureExist } from 'merchant/models/User';
 import MerchantDetails from 'merchant/views/Account/Profile/components/MerchantDetails';
 import Gst from 'merchant/views/Account/Profile/components/GST';
 import BankAccountDetails from 'merchant/views/Account/Profile/components/BankAccountDetails';
@@ -537,26 +537,26 @@ class Profile extends Component {
 
     if (!user.isAuthenticated) {
       return (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       );
     }
     return (
-      <div class="content-wrapper content-sm">
-        <div class="profile-container">
+      <div className="content-wrapper content-sm">
+        <div className="profile-container">
           <Alert type="error" message={this.state.errors} showDismiss={false} />
           {user &&
           !user.user?.org_enforced_second_factor_auth &&
           (user.user?.signup_via_email || user.is2FAMobileSignupEnabled) ? (
             <User2FASettings />
           ) : null}
-          <div class="panel panel-default">
+          <div className="panel panel-default">
             {user && user.current && (
-              <div class="panel-heading">
+              <div className="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
                 {user.user?.signup_via_email || profile.check_password.data.set_password ? (
-                  <a class="pull-right" onClick={this.openChangePasswordModal}>
+                  <a className="pull-right" onClick={this.openChangePasswordModal}>
                     Change Password
                   </a>
                 ) : null}
@@ -585,7 +585,9 @@ class Profile extends Component {
               <Gst />
             </IntoView>
           </ShowWhen>
-          {bankAccount ? (
+          <ShowWhen
+            additionalCondition={() => bankAccount && !isOrgFeatureExist('hide_settlement_details')}
+          >
             <IntoView hashedWith={[UPDATE_BANK_ACC, NC_UPDATE_BANK_ACC, RR_UPDATE_BANK_ACC]}>
               <BankAccountDetails
                 bankAccount={bankAccount}
@@ -594,7 +596,7 @@ class Profile extends Component {
                 onChangeBankAccountDetails={this.openChangeBankDetailsModal}
               />
             </IntoView>
-          ) : null}
+          </ShowWhen>
           {this.state.loggedInUserRole === 'owner' ||
           this.state.merchantCount > 1 ||
           this.state.loggedInUser.email !== user.email ? (

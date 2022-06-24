@@ -1612,3 +1612,8 @@ function getSplitzExperimentVariant(experimentName) {
   }
   return splitzExperimentVariant || {};
 }
+
+export function isOrgFeatureExist(feature) {
+  const org = getOrg();
+  return org?.features?.indexOf(feature) > -1;
+}
