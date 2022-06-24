@@ -1762,7 +1762,10 @@ class BasicAuth
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
                 (($this->isBatchApp() === true) and
-                 $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user'));
+                 $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user') or
+                (($this->isExpress() === true) and
+                  empty($this->request->headers->get(RequestHeader::X_Creator_Type)) === false)
+        );
     }
 
     public function isDebugApp()
@@ -2768,14 +2771,21 @@ class BasicAuth
 
         if ($userId === null)
         {
-            $userId = $this->request->headers->get(RequestHeader::X_Creator_Id, null);
-
-            $userType = $this->request->headers->get(RequestHeader::X_Creator_Type, null);
-
-            if ((empty($userType) === false) and
-                ($userType === 'admin'))
+            if ($this->isExpress() === true)
             {
-                return;
+                $userId = $this->getUserIdForRoute();
+            }
+            else
+            {
+                $userId = $this->request->headers->get(RequestHeader::X_Creator_Id, null);
+
+                $userType = $this->request->headers->get(RequestHeader::X_Creator_Type, null);
+
+                if ((empty($userType) === false) and
+                    ($userType === 'admin'))
+                {
+                    return;
+                }
             }
         }
 
@@ -3107,5 +3117,29 @@ class BasicAuth
     public function getPassportFromJob()
     {
         return $this->passportFromJob;
+    }
+
+    /**
+     * Returns user id to be set for express proxy auth routes.
+     */
+    public function getUserIdForRoute():string
+    {
+        $type = $this->request->headers->get(RequestHeader::X_Creator_Type, null);
+
+        $id = $this->request->headers->get(RequestHeader::X_Creator_Id, null);
+
+        if ($type === 'merchant')
+        {
+            try
+            {
+                return $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($id)[0];
+            }
+            catch (\Exception $exception)
+            {
+                return '';
+            }
+        }
+
+        return $id;
     }
 }

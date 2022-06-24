@@ -86,7 +86,6 @@ class RequestHeader
 
     const AUTHORIZATION                 = 'AUTHORIZATION';
     const BEARER                        = 'Bearer';
-
     /**
      * Request header for Typeform auth
      */
