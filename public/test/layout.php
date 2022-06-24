@@ -168,10 +168,15 @@ function getRazorpayConfig () {
     }
 }
 
+
 var $ = document.querySelector.bind(document);
-if (localStorage.code) {
-  $('#code').innerHTML = localStorage.code;
-} else {
+try {
+  if (localStorage.code) {
+    $('#code').innerHTML = localStorage.code;
+  } else {
+    $('#code').innerHTML = getBaseCode();
+  }
+} catch(e) {
   $('#code').innerHTML = getBaseCode();
 }
 var flask = new CodeFlask;flask.run('#code',{language:'javascript'});
@@ -180,7 +185,11 @@ var x = $('#target');
 
 t.setAttribute('spellcheck', 'false');
 t.oninput = () => {
-  localStorage.code = t.value
+  try {
+    localStorage.code = t.value
+  } catch(e) {
+    return;
+  }
 }
 
 $('#keys').onclick = t.onkeydown = e => {
