@@ -35,6 +35,8 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Schedule\Task as scheduleTask;
 
+const CAPTURE              = 'capture';
+
 class Service extends Base\Service
 {
     const LEDGER_RECON_STATE_PROCESSING                                = 'processing';
@@ -1084,7 +1086,7 @@ class Service extends Base\Service
             {
                 case E::PAYMENT:
 
-                    $paymentMeta = $txn->source->paymentMeta;
+                    $paymentMeta = (new Payment\Service)->getPaymentMetaByPaymentIdAction($txn->source->id, CAPTURE);
 
                     $googleRequestId = null;
 
