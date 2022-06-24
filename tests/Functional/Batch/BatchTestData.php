@@ -446,4 +446,57 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testRecuringAxisChargeBatch' =>[
+        'request' => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'recurring_charge_axis'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 1,
+                'error_count'       => 0,
+                'parsed_entries'    => [
+                    [
+                        'slno'               => '1',
+                        'URNNo'              => '11223344',
+                        'Folio_No'           => '91000xxxxxx',
+                        'SchemeCode'         => 'AF',
+                        'TransactionNo'      => '86XXX',
+                        'InvestorName'       => 'Srinivas M',
+                        'Purchase Day'       => '1',
+                        'Pur Amount'         => '1000',
+                        'BankAccountNo'      => '02951XXXXXXX',
+                        'Purchase Date'      => '2/15/21',
+                        'Batch Ref Number'   => '1',
+                        'Branch'             => 'RPXX',
+                        'Tr.Type'            => 'SIN',
+                        'UMRN No / TOKEN ID' => 'HDFC60000XXXXXXXX',
+                        'Credit Account No'  => '91602XXXXXX',
+                    ]
+                ],
+            ],
+        ],
+    ],
+    'testInvalidRecuringAxisChargeBatch' =>[
+        'request' => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'recurring_charge_axis'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+    ],
+
 ];

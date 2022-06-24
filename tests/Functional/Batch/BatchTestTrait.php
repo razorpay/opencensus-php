@@ -6,6 +6,7 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Models\FileStore;
 use RZP\Models\Batch\Status;
+use RZP\Models\Batch\Header;
 use RZP\Models\Batch as BatchModel;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -131,5 +132,34 @@ trait BatchTestTrait
         $this->assertEquals($expected, $batch['status']);
 
         return $batch;
+    }
+    public function createAndPutTwoSheetsExcelFileInRequest(array $entries, string $callee)
+    {
+        $url = $this->writeToExcelFile($entries, 'file', 'files/batch',['Sheet 1', 'Sheet 2'], 'xlsx');
+        $uploadedFile = $this->createUploadedFile($url);
+        $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
+    }
+
+    public function getRecurringAxisChargeBatch()
+    {
+        return [
+            [
+                Header::RECURRING_CHARGE_AXIS_SLNO                      => '1',
+                Header::RECURRING_CHARGE_AXIS_URNNO                     => '11223344',
+                Header::RECURRING_CHARGE_AXIS_FOLIO_NO                  => '91000xxxxxx',
+                Header:: RECURRING_CHARGE_AXIS_SCHEMECODE               => 'AF',
+                Header:: RECURRING_CHARGE_AXIS_TRANSACTION_NO           => '86XXX',
+                Header:: RECURRING_CHARGE_AXIS_INVESTOR_NAME            => 'Srinivas M',
+                Header:: RECURRING_CHARGE_AXIS_PURCHASE_DAY             => '8',
+                Header:: RECURRING_CHARGE_AXIS_PUR_AMOUNT               => '1000',
+                Header:: RECURRING_CHARGE_AXIS_BANK_ACCOUNTNO           => '02951XXXXXXX',
+                Header:: RECURRING_CHARGE_AXIS_PURCHASE_DATE            => '2/15/21',
+                Header:: RECURRING_CHARGE_AXIS_BATCH_REF_NUMBER         => '1',
+                Header:: RECURRING_CHARGE_AXIS_BRANCH                   => 'RPXX',
+                Header:: RECURRING_CHARGE_AXIS_TR_TYPE                  => 'SIN',
+                Header:: RECURRING_CHARGE_AXIS_UMRNNO_OR_TOKENID        => 'HDFC60000XXXXXXXX',
+                Header:: RECURRING_CHARGE_AXIS_CREDIT_ACCOUNT_NO        => '91602XXXXXX',
+            ],
+        ];
     }
 }

@@ -521,6 +521,9 @@ final class RazorxTreatment
 
     const PAYMENT_METHOD_CONFIG_UPDATE = 'payment_method_config_update';
 
+    // Razorx treatment constant  for which validating multiple sheets for recurring charge axis;
+    const DUPLICATE_SHEET_VALIDATION_BATCH = 'duplicate_sheet_validation_batch';
+  
     const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
 
     const REFUNDS_IIN_REMOVAL = "refunds_iin_removal";

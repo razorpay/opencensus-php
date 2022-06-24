@@ -1,9 +1,11 @@
 <?php
 
 namespace RZP\Models\Batch\Processor;
-
+use RZP\Models\Merchant;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Batch\Entity;
+use PhpOffice\PhpSpreadsheet\IOFactory as SpreadsheetIOFactory;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder as PhpSpreadsheetDefaultValueBinder;
 
 class RecurringChargeAxis extends Base
 {
@@ -44,6 +46,17 @@ class RecurringChargeAxis extends Base
 
     protected function validateInputFileEntries(array $input): array
     {
+        if ((new Merchant\Core)->isRazorxExperimentEnable($this->merchant->getId(),
+                Merchant\RazorxTreatment::DUPLICATE_SHEET_VALIDATION_BATCH) === true)
+        {
+            $fileType = SpreadsheetIOFactory::identify($this->inputFileLocalPath);
+            $reader = SpreadsheetIOFactory::createReader($fileType);
+            \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder(new PhpSpreadsheetDefaultValueBinder);
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($this->inputFileLocalPath);
+            assertTrue($spreadsheet->getSheetCount() === 1,"More than one Excel Sheet Found");
+            return $this->defaultEntries;
+        }
         return $this->defaultEntries;
     }
 

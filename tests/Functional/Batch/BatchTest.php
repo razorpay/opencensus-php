@@ -4,7 +4,9 @@ namespace RZP\Tests\Functional\Batch;
 
 use Hash;
 use Mail;
+use Closure;
 use Mockery;
+use RZP\Exception\AssertionException;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
@@ -13,8 +15,10 @@ use RZP\Models\BankAccount;
 use RZP\Services\RazorXClient;
 use RZP\Mail\Batch\PaymentLink;
 use RZP\Mail\Batch\PayoutApproval;
+use RZP\Tests\Functional\Assertion\Assertion;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 /**
@@ -326,5 +330,74 @@ class BatchTest extends TestCase
 
                     return 'off';
                 }));
+    }
+    public function testRecuringAxisChargeBatch()
+    {
+        $this->enableRazorxBatchAxisValidation();
+        $this->ba->proxyAuth();
+        $entries = $this->getRecurringAxisChargeBatch();
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+        $this->startTest();
+    }
+
+    public function testInvalidRecuringAxisChargeBatch()
+    {
+        $this->enableRazorxBatchAxisValidation();
+        $this->ba->proxyAuth();
+        $entries = $this->getRecurringAxisChargeBatch();
+        $this->createAndPutTwoSheetsExcelFileInRequest($entries, __FUNCTION__);
+
+        $testData=$this->testData[__FUNCTION__];
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->startTest($testData);
+            },
+            AssertionException::class,
+            'More than one Excel Sheet Found');
+
+    }
+
+    protected function enableRazorxBatchAxisValidation()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::DUPLICATE_SHEET_VALIDATION_BATCH)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+    }
+    protected function makeRequestAndCatchException(
+        Closure $closure,
+        string $exceptionClass = AssertionException::class,
+        string $exceptionMessage = null)
+    {
+        try
+        {
+            $closure();
+        }
+        catch (AssertionException $e)
+        {
+            $this->assertExceptionClass($e, $exceptionClass);
+
+            if ($exceptionMessage !== null)
+            {
+                $this->assertSame($exceptionMessage, $e->getMessage());
+            }
+
+            return;
+        }
+        $this->fail('Expected exception ' . $exceptionClass . ' was not thrown');
     }
 }
