@@ -38,6 +38,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_requestor_subcategory' => 'required|string|max:100',
         'custom_fields.cf_transaction_id'        => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
         'custom_fields.cf_razorpay_payment_id'   => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'custom_fields.cf_creation_source'       => 'sometimes|string|custom:custom_field_creation_source',
     ];
 
     protected static $createMerchantAccountRecoveryTicketRules = [
@@ -51,6 +52,7 @@ class Validator extends Base\Validator
         'custom_fields'                          => 'required|array',
         'custom_fields.cf_requester_category'    => 'required|string|max:50',
         'custom_fields.cf_requestor_subcategory' => 'required|string|max:100',
+        'custom_fields.cf_creation_source'       => 'sometimes|string|custom:custom_field_creation_source',
         'attachments'                            => 'sometimes',
         'attachments.*'                          => 'custom:attachment',
         'captcha'                                => 'required|string|custom',
