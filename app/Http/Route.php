@@ -13660,6 +13660,7 @@ class Route
         'merchant_activation_needs_clarification',
         'payout_create',
         'payout_validate',
+        'payout_create_internal',
         'payouts_batch_create',
         'payout_create_with_otp',
         'undo_payout_creation',

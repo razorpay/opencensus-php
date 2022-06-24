@@ -236,10 +236,12 @@ class Service extends Base\Service
 
         $requestTime = microtime(true);
 
+        $traceData = $this->unsetSensitiveCardDetails($input);
+
         $this->trace->info(
             TraceCode::PAYOUT_CREATE_REQUEST,
             [
-                'input' => $input,
+                'input' => $traceData,
                 'time'  => $requestTime
             ]);
 
@@ -2006,7 +2008,10 @@ class Service extends Base\Service
             }
 
             unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::CVV]);
+            unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::NAME]);
             unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::NUMBER]);
+            unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::EXPIRY_MONTH]);
+            unset($input[Entity::FUND_ACCOUNT][FundAccount\Entity::CARD][Card\Entity::EXPIRY_YEAR]);
         }
 
         return $input;
