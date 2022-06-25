@@ -261,6 +261,11 @@ class Processor
     const PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER = 'partner_auth_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a Diners and AMex payment should go via PG Router and CPS or just via API service
+     */
+    const DINERS_OR_AMEX_CARD_PAYMENTS_VIA_PGROUTER = 'diners_or_amex_card_payments_via_pg_router';
+
+    /**
      * User consent flag indicates whether the user has given consent to tokenise
      * the card or not.
      */
@@ -529,9 +534,12 @@ class Processor
                 Card\Network::MC,
                 Card\Network::VISA,
                 Card\Network::RUPAY,
+                Card\Network::DICL,
+                Card\Network::AMEX,
             ];
 
-            if (($iin->isInternational() === true) or
+            if ((($iin->isAmex() === false) and 
+                 ($iin->isInternational() === true)) or
                 (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
             {
                 return false;
@@ -573,7 +581,7 @@ class Processor
                     return false;
                 }
             }
-
+            
             if ($this->ba->getOAuthClientId() !== null)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::OAUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -594,6 +602,16 @@ class Processor
                 }
             }
 
+            if (($iin->isAmex() === true) or
+                ($iin->isDiners() === true))
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::DINERS_OR_AMEX_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on')
+                {
+                    return false;
+                }
+            }
 
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
