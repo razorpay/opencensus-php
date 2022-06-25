@@ -3472,6 +3472,59 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    /**
+     * Test for getting multiple banking accounts using admin access with archived status
+     */
+    public function testGetBankingAccountsArchived()
+    {
+
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Umakant',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'business_category' => 'limited_liability_partnership',
+                'merchant_documents_address' => 'x, y, z',
+                'sales_team' => 'sme',
+                'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
+                'assignee_team' => 'sales',
+                'initial_cheque_value' => 100,
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+            ]
+        ];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $this->fixtures->edit('banking_account',
+            $bankingAccount['id'],
+            [
+                'status' => 'archived',
+            ]);
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/admin/banking_account?pending_on=admin_'.Org::SUPER_ADMIN,
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testGetBankingAccount()
     {
         $activationDetails = [
@@ -3510,6 +3563,114 @@ class BankingAccountTest extends TestCase
 
             ],
         ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
+    public function addSalesforceAuth()
+    {
+        $salesforceSecret = \Config::get('applications.salesforce')['secret'];
+        $this->ba->basicAuth('rzp_test', $salesforceSecret);
+    }
+
+    public function testCreateBankingAccountFromSalesforce()
+    {
+        $this->addSalesforceAuth();
+
+        $merchantAttribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $merchantAttribute);
+        $this->ba->addAccountAuth($merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $data = [
+            Entity::PINCODE => '560030',
+            Entity::CHANNEL => 'rbl',
+        ];
+
+        $attributes = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
+            ]
+        ];
+        $data = array_merge($data, $attributes);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/salesforce/banking_account/rbl',
+                'method'  => 'POST',
+                'content' => $data,
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
+    public function testGetBankingAccountFromSalesforce()
+    {
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/salesforce/banking_accounts/' . $bankingAccount['id'],
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        // replace auth by salesforce internal auth
+        $this->addSalesforceAuth();
+        $this->ba->addAccountAuth($merchantDetail->merchant['id']);
+        $this->ba->addXOriginHeader();
 
         $this->startTest($dataToReplace);
 

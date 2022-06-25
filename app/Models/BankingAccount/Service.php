@@ -84,7 +84,18 @@ class Service extends Base\Service
 
         $activationDetailInput = $this->preProcessActivationDetailCreateInput($activationDetailInput);
 
-        $account = $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, 'create_normal');
+        $validatorOp = 'create_normal';
+        if ($this->auth->getInternalApp() === 'salesforce')
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_CREATE_FROM_SALESFORCE,
+                [
+                    'input' => $this->core->scrubBankingAccountSensitiveDetails($input),
+                ]);
+
+            $validatorOp = 'create';
+        }
+        $account = $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, $validatorOp);
 
         return $account->toArrayPublic();
 

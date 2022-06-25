@@ -75,6 +75,17 @@ class BasController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function forwardSalesforceRequest($path = '')
+    {
+        $input = Request::all();
+
+        $basPath = 'salesforce/'.$path;
+
+        $data =  $this->service->forwardLMSRequest($basPath, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function forwardLMSRequest($path = '')
     {
         $input = Request::all();

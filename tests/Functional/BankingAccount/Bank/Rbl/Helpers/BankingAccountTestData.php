@@ -24,6 +24,40 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountFromSalesforce' => [
+        'request'  => [
+            'url'     => '/salesforce/banking_accounts/rbl',
+            'method'  => 'POST',
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
+    'testGetBankingAccountFromSalesforce' => [
+        'request'  => [
+            'url'     => '/salesforce/banking_accounts',
+            'method'  => 'GET',
+            'content' => [
+                'channel' => 'rbl',
+                'pincode' => '560034',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountAdmin' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',
@@ -1439,11 +1473,8 @@ return [
 
     'testGetBankingAccounts' => [
         'request'  => [
-            'url'     => '/banking_accounts',
+            'url'     => '/banking_account',
             'method'  => 'GET',
-            'server' => [
-                'X-Dashboard-User-Id' => '20000000000000',
-            ],
         ],
         'response' => [
             'content' => [
@@ -1476,6 +1507,20 @@ return [
                         ]
                     ]
                 ]
+            ]
+        ],
+    ],
+
+    'testGetBankingAccountsArchived' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count" => 0,
+                "items" => []
             ]
         ],
     ],

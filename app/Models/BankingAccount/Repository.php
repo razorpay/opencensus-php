@@ -226,6 +226,7 @@ class Repository extends Base\Repository
                 ->from(Table::ADMIN_AUDIT_MAP)
                 ->join($activationDetailTable, $bankingAccountIdColumn, '=', $bankingAccountIdForeignColumn)
                 ->where('admin_id', '=', $params[Entity::PENDING_ON])
+                ->where(Table::BANKING_ACCOUNT.'.'.Entity::STATUS, '!=', Status::ARCHIVED)
                 ->where('entity_type','=','banking_account')
                 ->whereRaw("((".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'spoc' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'sales' ) OR ( ".Table::ADMIN_AUDIT_MAP.'.'.Entity::AUDITOR_TYPE." = 'reviewer' AND ".Table::BANKING_ACCOUNT_ACTIVATION_DETAIL.'.'.Entity::ASSIGNEE_TEAM." = 'ops' ))")
                 ->whereRaw(Table::BANKING_ACCOUNT.'.'.Entity::ID.' = '.Table::ADMIN_AUDIT_MAP.'.'.Entity::ENTITY_ID);

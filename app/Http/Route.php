@@ -2401,6 +2401,7 @@ class Route
         'mob_to_bas_routes'                        => ['any',      'mob/bas/merchant/banking_application/business/{path?}', 'BasController@forwardRequest'                                      ],
         'mob_ca_lms_routes'                        => ['post',     'mob/lms/{path?}',                                       'MasterOnboardingController@adminRequest'                           ],
         'bas_internal_admin_routes'                => ['any',      'bas_internal/lms/{path?}',                              'BasController@forwardLMSRequest'                                   ],
+        'bas_internal_salesforce'                  => ['any',      'salesforce/banking_account/icici/{path?}',              'BasController@forwardSalesforceRequest'                            ],
 
         //all requests get forwarded to banking account service
         'banking_account_service_lms_routes_all'   => ['any',      'bas/lms/{path?}',                                    'BasController@forwardLMSRequest'                               ],
@@ -2845,6 +2846,8 @@ class Route
         'banking_account_create_dashboard'        => ['post',     'banking_accounts_dashboard',                                'BankingAccountController@createDashboard'                  ],
         'banking_account_create_dashboard_admin'  => ['post',     'banking_accounts_admin_dashboard',                          'BankingAccountController@createDashboard'                  ],
         'banking_account_create_admin'            => ['post',     'banking_accounts_admin',                                    'BankingAccountController@create'                           ],
+        'banking_account_create_salesforce'       => ['post',     'salesforce/banking_account/rbl',                            'BankingAccountController@create'                           ],
+        'banking_account_get_salesforce'          => ['get',      'salesforce/banking_accounts/{id}',                          'BankingAccountController@get'                               ],
         'banking_account_activate'                => ['post',     'banking_accounts/{id}/activate',                            'BankingAccountController@activate'                         ],
         'banking_serviceable_pincodes'            => ['post',     'banking_account/serviceability/{channel}/pincodes',         'BankingAccountController@postServiceablePincodes'          ],
         'banking_accounts_list'                   => ['get',      'banking_accounts',                                          'BankingAccountController@list'                             ],
@@ -4530,7 +4533,11 @@ class Route
         'refund_scrooge_transaction_create',
         'refund_edit_internal',
         'gateway_file_bank_refunds_upload',
-
+        
+        'banking_account_create_salesforce',
+        'bas_internal_salesforce',
+        'banking_account_get_salesforce',
+        
         // account service routes
         'account_service_details_fetch',
 
@@ -12114,7 +12121,11 @@ class Route
 
         'salesforce' => [
             'fd_create_ticket',
-            'fd_fetch_tickets'
+            'fd_fetch_tickets',
+
+            'banking_account_create_salesforce',
+            'banking_account_get_salesforce',
+            'bas_internal_salesforce',
         ],
 
         'mock_gateways' => [
