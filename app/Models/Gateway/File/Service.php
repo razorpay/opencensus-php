@@ -93,6 +93,16 @@ class Service extends Base\Service
             return;
         }
 
+        if (($input[Entity::TYPE] === Type::CARDSETTLEMENT) and
+            (in_array(Constants::AXIS, $targets) === true))
+        {
+            $input[Entity::BEGIN] = $input[Entity::BEGIN] ?? 946684800;
+
+            $input[Entity::END] = $input[Entity::END] ?? 946684801;
+
+            return;
+        }
+
         // When called via cron, we update the timestamps for the
         // gateway file for the to indicate the previous days time period.
 

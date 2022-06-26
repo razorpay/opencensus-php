@@ -45,8 +45,6 @@ return [
             'content' => [
                 'type'    => 'cardsettlement',
                 'targets' => ['axis'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

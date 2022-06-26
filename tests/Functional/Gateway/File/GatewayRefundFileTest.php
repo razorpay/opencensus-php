@@ -48,8 +48,33 @@ class GatewayRefundFileTest extends TestCase
         return $this->doAuthAndCapturePayment($payment);
     }
 
+    public function testGenerateAxisSettlementAndRefundFileWithTimestamps()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testGenerateAxisSettlementAndRefundFile'];
 
-    public function testGenerateAxisSettlementAndRefundFile()
+        $this->testData[__FUNCTION__]['request']['content']['begin'] = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['request']['content']['end'] = Carbon::tomorrow(Timezone::IST)->getTimestamp();
+
+        $this->axisSettlementTestCore();
+
+        $content = $this->startTest();
+
+        $this->axisSettlementFileVerifyOutput($content);
+    }
+
+    public function testGenerateAxisSettlementAndRefundFileWithoutTimestamps()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testGenerateAxisSettlementAndRefundFile'];
+
+        $this->axisSettlementTestCore();
+
+        $content = $this->startTest();
+
+        $this->axisSettlementFileVerifyOutput($content);
+    }
+
+    protected function axisSettlementTestCore()
     {
         Mail::fake();
 
@@ -85,8 +110,8 @@ class GatewayRefundFileTest extends TestCase
             'captured_at'=>$capturedAt,
             'notes' => [
                 'GST' => 'GST 3',
-                'Corporate Name' => 'Corp 1',
-                'paymentRefId' => 'paymentRefId_1'
+                'CorporateName' => 'Corp 1',
+                'MTR' => 'paymentRefId_1'
             ],
         ])->getId();
 
@@ -95,8 +120,8 @@ class GatewayRefundFileTest extends TestCase
             'captured_at'=>$capturedAt,
             'notes' => [
                 'GST' => 'GST 2',
-                'Corporate Name' => 'Corp 2',
-                'paymentRefId' => 'paymentRefId_2'
+                'CorporateName' => 'Corp 2',
+                'MTR' => 'paymentRefId_2'
             ],
         ])->getId();
 
@@ -105,8 +130,8 @@ class GatewayRefundFileTest extends TestCase
             'captured_at'=>$capturedAt,
             'notes' => [
                 'GST' => 'GST2 1',
-                'Corporate Name' => 'Corp 3',
-                'paymentRefId' => 'paymentRefId_3'
+                'CorporateName' => 'Corp 3',
+                'MTR' => 'paymentRefId_3'
             ],
         ])->getId();
 
@@ -121,9 +146,10 @@ class GatewayRefundFileTest extends TestCase
         $this->refundPayment($pay['id']);
 
         $this->ba->adminAuth();
+    }
 
-        $content = $this->startTest();
-
+    protected function axisSettlementFileVerifyOutput($content)
+    {
         $content = $content['items'][0];
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
