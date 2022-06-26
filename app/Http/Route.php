@@ -8276,7 +8276,7 @@ class Route
         'payout_approve'                               => Permission::APPROVE_PAYOUT,
         'payout_reject'                                => Permission::REJECT_PAYOUT,
         'payout_fetch_by_id'                           => Permission::VIEW_PAYOUT,
-        'payout_update_attachments'                    => Permission::UPDATE_PAYOUT,
+        'payout_update_attachments'                    => Permission::UPDATE_PAYOUT_ATTACHMENT,
         'payout_download_attachments'                  => Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
         'payout_report_get_attachment_signed_url'      => Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
         'payout_report_get_attachment_details'         => Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,

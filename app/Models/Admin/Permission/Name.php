@@ -551,6 +551,7 @@ class Name
     const CANCEL_PAYOUT                       = 'cancel_payout';
     const UPDATE_PAYOUT                       = 'update_payout';
     const DOWNLOAD_PAYOUT_ATTACHMENTS         = 'download_payout_attachments';
+    const UPDATE_PAYOUT_ATTACHMENT            = 'update_payout_attachment';
     const VIEW_PAYOUT_PURPOSE                 = 'view_payout_purpose';
     const CREATE_PAYOUT_PURPOSE               = 'create_payout_purpose';
     const VIEW_PAYOUT_REVERSAL                = 'view_payout_reversal';
