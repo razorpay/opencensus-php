@@ -987,6 +987,7 @@ class NeedsClarificationTest extends TestCase
             'artefact_type'     => 'bank_account',
             'validation_unit'   => 'identifier',
             'error_code'        => 'INPUT_DATA_ISSUE',
+            'error_description' => 'KC03: Invalid Beneficiary Account Number or IFSC',
             'validation_status' => 'failed'
         ]);
 
@@ -1281,6 +1282,7 @@ class NeedsClarificationTest extends TestCase
             'owner_id'      => $mid,
             'artefact_type' => 'bank_account',
             'error_code'    => 'INPUT_DATA_ISSUE',
+            'error_description' => 'KC03: Invalid Beneficiary Account Number or IFSC',
             'validation_status' => 'failed'
         ]);
 
@@ -1350,6 +1352,109 @@ class NeedsClarificationTest extends TestCase
 
         $this->assertEquals($partnerKycClarificationReasons, $expectedPartnerKycClarificationReasons);
     }
+
+
+    public function testReasonComposerForBankNonFixableError()
+    {
+        $input = [
+            'poi_verification_status'                => 'verified',
+            'bank_details_verification_status'       => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'bank_account',
+            'error_code'    => 'NO_PROVIDER_ERROR',
+            'error_description' => 'KC08: Limit Exceeded For Member Bank',
+            'validation_status' => 'failed'
+        ]);
+
+        $factory = new NeedsClarification\ReasonComposer\Factory( $merchantDetail);
+
+        $metadata = NeedsClarificationMetaData::SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA[Constants::BANK_ACCOUNT_NUMBER];
+
+        $reason = $factory->getClarificationReasonComposer($metadata)->getClarificationReason();
+
+        $expectedReasons = [
+           ];
+
+        $this->assertEquals($expectedReasons,$reason);
+    }
+
+    public function testReasonComposerForBankFixableError()
+    {
+        $input = [
+            'poi_verification_status'                => 'verified',
+            'bank_details_verification_status'       => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'      => $mid,
+            'artefact_type' => 'bank_account',
+            'error_code'    => 'INPUT_DATA_ISSUE',
+            'error_description' => 'KC07: Account Closed',
+            'validation_status' => 'failed'
+        ]);
+
+        $factory = new NeedsClarification\ReasonComposer\Factory( $merchantDetail);
+
+        $metadata = NeedsClarificationMetaData::SYSTEM_BASED_NEEDS_CLARIFICATION_METADATA[Constants::BANK_ACCOUNT_NUMBER];
+
+        $reason = $factory->getClarificationReasonComposer($metadata)->getClarificationReason();
+
+
+        $expectedReasons = [
+            'additional_details' =>  [
+                'cancelled_cheque' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "document",
+                        'field_value' => null,
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ],
+                'bank_account_name' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "test",
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ],
+                'bank_account_number' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "123456789012345",
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ],
+                'bank_branch_ifsc' => [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'field_value' => "ICIC0000001",
+                        'reason_code' => "bank_account_change_request_for_prop_ngo_trust"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($expectedReasons,$reason);
+    }
+
 
     public function testReasonComposerForShopEstablishmentAndCinNotMatched() {
         $input          = [
