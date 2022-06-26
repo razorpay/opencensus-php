@@ -22,7 +22,7 @@ class Service extends Base\Service
 
     public function createPrivilege(array $input) :array
     {
-        $this->core->create($input);
+        return $this->core->create($input);
     }
 
     public function listDashboardPrivileges()
