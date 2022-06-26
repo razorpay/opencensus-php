@@ -235,6 +235,150 @@ class FraudDetectionTest extends TestCase
         );
     }
 
+    public function testShopifyFraudDetectedByShield()
+    {
+        $this->mockRazorx();
+
+        $this->createMerchantDetails();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_'] = array(
+            'integration' => 'shopify',
+            'integration_version' => 'shopify-payment-app',
+        );
+
+        $payment['notes'] = array(
+            'merchant_order_id' => 'random order id',
+            'cancel_url'    => 'https://xyz.in/123/checkouts/abc',
+            'domain'        => 'xyz77.myshopify.com',
+        );
+
+        $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
+
+        $payment['card']['number'] = '4012010000000007';
+
+        $data = $this->testData['testFraudDetected'];
+
+        $expectedShieldPayload  = [
+            'integration'          => "shopify",
+            'integration_version'  => "shopify-payment-app",
+            'rzp_checkout_library' => "direct",
+            'order_domain'         => "xyz77.myshopify.com",
+            'order_cancel_url'     => "https://xyz.in/123/checkouts/abc",
+        ];
+        $expectedShieldResponse = [
+            "action"                => "block",
+            "max_rule_weight"       => 0,
+            "maxmind_score"         => null,
+            "triggered_rule_weight" => 0,
+            "triggered_rules"       => [
+                "block"     => [
+                    [
+                        "id"               => 370,
+                        "rule_code"        => "RULE_CODE_DEFAULT",
+                        "rule_description" => "Test 1d rule",
+                        "rule_id"          => "rule_Jhhek9mkIkpuTx",
+                    ],
+                ],
+                "review"    => [],
+                "whitelist" => []
+            ]];
+
+        $this->mockShieldClientRequest($expectedShieldPayload, $expectedShieldResponse);
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals(
+            Risk\RiskCode::PAYMENT_CONFIRMED_FRAUD_BY_SHIELD,
+            $riskEntity['reason']
+        );
+    }
+
+    protected function mockShieldClientRequest($expectedPayload = [], $expectedResponse = [])
+    {
+        $this->shieldMock = Mockery::mock('RZP\Services\ShieldClient', $this->app)->makePartial();
+
+        $this->shieldMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['shield'] = $this->shieldMock;
+
+        $this->shieldMock->shouldReceive('evaluateRules')->times(1)->andReturnUsing(function($payload) use ($expectedPayload, $expectedResponse) {
+            $this->assertArraySelectiveEquals($expectedPayload, $payload['input']);
+
+            return $expectedResponse;
+        });
+    }
+
+    public function testShopifyFraudNotDetectedByShield()
+    {
+        $this->mockRazorx();
+
+        $this->createMerchantDetails();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_'] = array(
+            'integration' => 'shopify',
+            'integration_version' => 'shopify-payment-app',
+        );
+
+        $payment['notes'] = array(
+            'merchant_order_id' => 'random order id',
+            'cancel_url'    => 'https://xyz.in/123/checkouts/abc',
+            'domain'        => 'xyz77.myshopify.com',
+        );
+
+        $payment['card']['number'] = '5105105105105100';
+
+        $expectedShieldPayload  = [
+            'integration'          => "shopify",
+            'integration_version'  => "shopify-payment-app",
+            'rzp_checkout_library' => "direct",
+            'order_domain'         => "xyz77.myshopify.com",
+            'order_cancel_url'     => "https://xyz.in/123/checkouts/abc"
+        ];
+        $expectedShieldResponse = [
+            "action"                => "allow",
+            "max_rule_weight"       => 0,
+            "maxmind_score"         => null,
+            "triggered_rule_weight" => 0,
+            "triggered_rules"       => [
+                "block"     => [],
+                "review"    => [],
+                "whitelist" => []
+            ]];
+
+        $this->mockShieldClientRequest($expectedShieldPayload, $expectedShieldResponse);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    private function createMerchantDetails($unregisteredBusiness = false)
+    {
+        $merchantDetailData = [
+            'merchant_id'    => '10000000000000',
+            'contact_mobile' => '9999999999',
+        ];
+
+        if ($unregisteredBusiness === true)
+        {
+            $merchantDetailData['business_type'] = "2";
+        }
+
+        $this->fixtures->create('merchant_detail', $merchantDetailData);
+    }
+
     public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false, $unregisteredBusiness = false, $ruleID = 'rule_F1fgTZ9p7tj2es')
     {
         if (($mobileSignUpTest === false) and ($unregisteredBusiness === false))
@@ -249,16 +393,8 @@ class FraudDetectionTest extends TestCase
         $merchant_phone = '9999999999';
         $merchant_id = '10000000000000';
 
-        $merchantDetailData = [
-            'merchant_id'    => $merchant_id,
-            'contact_mobile' => $merchant_phone,
-        ];
+        $this->createMerchantDetails($unregisteredBusiness);
 
-        if ($unregisteredBusiness === true) {
-            $merchantDetailData['business_type'] = "2";
-        }
-
-        $this->fixtures->create('merchant_detail', $merchantDetailData);
         $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
 

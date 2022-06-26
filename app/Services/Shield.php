@@ -319,6 +319,7 @@ class Shield
         $payloadDetails[ShieldConstants::PLATFORM]             = $paymentAnalytics->getPlatform();
         $payloadDetails[ShieldConstants::PLATFORM_VERSION]     = $paymentAnalytics->getPlatformVersion();
         $payloadDetails[ShieldConstants::INTEGRATION]          = $paymentAnalytics->getIntegration();
+        $payloadDetails[ShieldConstants::INTEGRATION_VERSION]  = $paymentAnalytics->getIntegrationVersion();
 
         $paArray = $paymentAnalytics->toArray();
         $payloadDetails[ShieldConstants::RZP_CHECKOUT_LIBRARY] = $paArray[Payment\Analytics\Entity::LIBRARY] ?? null;
@@ -333,6 +334,29 @@ class Shield
         if (empty($virtualDeviceId) === false)
         {
             $payloadDetails[ShieldConstants::VIRTUAL_DEVICE_ID] = $virtualDeviceId;
+        }
+
+        if ($payloadDetails[ShieldConstants::INTEGRATION] === ShieldConstants::SHOPIFY and
+            $payloadDetails[ShieldConstants::INTEGRATION_VERSION] === ShieldConstants::SHOPIFY_PAYMENT_APP)
+        {
+            $notes = $payment->getNotes();
+
+            $this->trace->info(
+                TraceCode::FRAUD_DETECTION_PAYMENT_NOTES_DETAILS,
+                [
+                    'payment_id' => $payment->getId(),
+                    'notes'      => $notes,
+                ]);
+
+            if (isset($notes[ShieldConstants::DOMAIN]) === true)
+            {
+                $payloadDetails[ShieldConstants::ORDER_DOMAIN] = $notes[ShieldConstants::DOMAIN];
+            }
+
+            if (isset($notes[ShieldConstants::CANCEL_URL]) === true)
+            {
+                $payloadDetails[ShieldConstants::ORDER_CANCEL_URL] = $notes[ShieldConstants::CANCEL_URL];
+            }
         }
     }
 
