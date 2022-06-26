@@ -553,4 +553,42 @@ class AccountV2Test extends TestCase
 
         $this->assertNotEquals(20000000, $merchant->getMaxPaymentAmount());
     }
+
+    public function testCreateAccountV2WithInvalidContactName()
+    {
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $contactName = 'contactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactn
+                        amecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnameconta
+                        ctnamecontactnamecontactnamecontactnamecontactnamecontactnamecoc';
+
+        $testData['request']['content']['contact_name'] = $contactName;
+
+        $testData['response'] = $this->testData[__FUNCTION__]['response'];
+
+        $testData['exception'] = $this->testData[__FUNCTION__]['exception'];
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testEditAccountWithInvalidContactName()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
 }

@@ -1656,4 +1656,45 @@ return [
             ],
         ],
     ],
+
+    'testCreateAccountV2WithInvalidContactName' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact name may not be greater than 255 characters.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEditAccountWithInvalidContactName' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'contact_name'   => 'contactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontact
+                                 namecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontact
+                                 namecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecontactnamecoc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact name may not be greater than 255 characters.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
