@@ -2312,6 +2312,17 @@ class Core extends Base\Core
         return $users;
     }
 
+    public function getUsersByRole(Entity $merchant, string $role, string $product = Product::BANKING)
+    {
+        $users = $merchant->users()
+            ->where(User\Entity::ROLE, $role)
+            ->wherePivot(User\Entity::PRODUCT, $product)
+            ->get()
+            ->callOnEveryItem('toArrayMerchant');
+
+        return $users;
+    }
+
     /**
      * Save merchant entity and notify on slack
      *

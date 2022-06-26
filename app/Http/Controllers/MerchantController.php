@@ -1297,7 +1297,9 @@ class MerchantController extends Controller
 
     public function getUsers()
     {
-        $data = $this->service()->getUsers();
+        $input = Request::all();
+
+        $data = $this->service()->getUsersWithFilters($input);
 
         return ApiResponse::json($data);
     }
@@ -3160,7 +3162,7 @@ class MerchantController extends Controller
 
         return ApiResponse::json([]);
     }
-    
+
     public function CollectInfoMerchantDetailsPatch($merchantId){
         $input = Request::all();
         $response = $this->service(E::MERCHANT_DETAIL)->patchSmartDashboardMerchantDetails($input, $merchantId);

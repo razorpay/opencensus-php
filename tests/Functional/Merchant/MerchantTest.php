@@ -438,6 +438,62 @@ class MerchantTest extends TestCase
         $this->assertTrue(in_array('manager', $roles));
     }
 
+    public function testGetMerchantUsersByRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $role = $this->fixtures->create('roles',
+            [
+                'id' => '1000customRole',
+                'org_id'=>'100000razorpay',
+                'merchant_id' => $merchant['id']]);
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], '1000customRole', 'test', 'banking');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], '2000customRole', 'test', 'banking');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchants-users?role=1000customRole';
+
+        $response = $this->startTest();
+
+        $this->assertEquals(count($response['users']), 1);
+
+        $this->assertEquals($response['users'][0]['role'], '1000customRole');
+    }
+
+    public function testGetMerchantUsersWithInvalidRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $role = $this->fixtures->create('roles',
+            [
+                'id' => '1000customRole',
+                'org_id'=>'100000razorpay',
+                'merchant_id' => $merchant['id']]);
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], '1000customRole', 'test', 'banking');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], '2000customRole', 'test', 'banking');
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $user1->getId());
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchants-users?role=3000customRole';
+
+        $response = $this->startTest();
+    }
+
     public function testGetMerchantUsersInternal()
     {
         $merchant = $this->fixtures->create('merchant');
@@ -7602,13 +7658,14 @@ IFSC Code  ICIC0001206
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode = 'test')
+    protected function createUserMerchantMapping(string $userId, string $merchantId, string $role, $mode = 'test', $product = 'primary')
     {
         DB::connection($mode)->table('merchant_users')
             ->insert([
                 'merchant_id' => $merchantId,
                 'user_id'     => $userId,
                 'role'        => $role,
+                'product'     => $product,
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
             ]);

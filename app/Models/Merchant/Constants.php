@@ -328,6 +328,10 @@ final class Constants
 
     const ENABLE_NON_3DS_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postEnableNon3dsWorkflowApprove';
 
+    const ROLE                      = 'role';
+    const ROLE_ID                   = 'role_id';
+    const ROLE_NAME                 = 'role_name';
+    const USERS                     = 'users';
 
     const unregisteredMerchantMaximumTransactionLimit = [
         BusinessCategory::FINANCIAL_SERVICES        => 10000000,

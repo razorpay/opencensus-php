@@ -4681,6 +4681,19 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getUsersWithFilters($input)
+    {
+        if(array_key_exists(Constants::ROLE, $input))
+        {
+            $data = $this->getUsersByRole($input[Constants::ROLE]);
+        }
+        else
+        {
+            $data = $this->getUsers();
+        }
+        return $data;
+    }
+
     public function getUsers()
     {
         $merchantId = $this->merchant->getId();
@@ -4692,6 +4705,34 @@ class Service extends Base\Service
         $users = $this->core()->getUsers($merchant, $product);
 
         return $users;
+    }
+
+    private function getUsersByRole($roleId)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $product = $this->auth->getRequestOriginProduct();
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $roleEntity = $this->repo->roles->fetchRole($roleId);
+
+        if(empty($roleEntity) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException("Invalid Role Id" ,
+                ['roleId' => $roleId]);
+        }
+
+        $roleName = $roleEntity->getName();
+
+        $users =  $this->core()->getUsersByRole($merchant, $roleId, $product);
+
+        return [
+            Constants::ROLE_ID        => $roleId,
+            Constants::MERCHANT_ID    => $merchantId,
+            Constants::ROLE_NAME      => $roleName,
+            Constants::USERS          => $users
+        ];
     }
 
     public function getInternalUsers($merchantId, $product)
