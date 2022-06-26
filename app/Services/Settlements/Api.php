@@ -231,4 +231,16 @@ class Api extends Base
     {
         return $this->makeRequest(self::CHECK_FOR_ENTITY_ALERTS, $input, self::SERVICE_API);
     }
+
+    /**
+     * Initiates Inter nodal transfer via New Settlement service.
+     * @param array  $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function initiateInterNodalTransfer(array $input) : array
+    {
+        return $this->makeRequest(self::INITIATE_INTER_NODAL_TRANSFER, $input, self::SERVICE_API);
+    }
 }

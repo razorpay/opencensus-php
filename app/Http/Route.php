@@ -882,7 +882,8 @@ class Route
         'setl_optimizer_settlement_cron'           => ['post',     'settlements/optimizer/execute',                  'SettlementController@optimizerExternalSettlementsExecute'          ],
         'setl_optimizer_settlement_manual_api'     => ['post',     'settlements/optimizer/manual_execute',           'SettlementController@optimizerExternalSettlementsManualExecute'    ],
         'setl_merchant_dashboard_config_get'       => ['post',     'settlements/dashboard/merchant_config/get',      'SettlementController@merchantDashboardConfigGet'                   ],
-        'setl_entity_alerts'                       => ['post',     'settlements/check_for_entity_alerts',            'SettlementController@checkForEntityAlerts'                                    ],
+        'setl_entity_alerts'                       => ['post',     'settlements/check_for_entity_alerts',            'SettlementController@checkForEntityAlerts'                         ],
+        'setl_nodal_initiate_transfer_admin'       => ['post',     'settlements/nodal/transfer/admin',               'SettlementController@initiateInterNodalTransfer'                   ],
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -4192,6 +4193,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'adj_add',
         'merchant_la_fetch',
         'collect_info_merchant_details_internal',
         'generate_gifu_file',
@@ -12894,6 +12896,7 @@ class Route
             'setl_get_transaction_details',
             'payout_create_internal',
             'payout_fetch_by_id_internal',
+            'adj_add'
         ],
 
         'terminals_service' => [

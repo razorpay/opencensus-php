@@ -801,4 +801,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function initiateInterNodalTransfer()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->initiateInterNodalTransfer($input);
+
+        return ApiResponse::json($data);
+    }
 }

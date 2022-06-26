@@ -1522,6 +1522,11 @@ class Service extends Base\Service
         return app('settlements_api')->checkForEntityAlerts($input);
     }
 
+    public function initiateInterNodalTransfer($input) : array
+    {
+        return app('settlements_api')->initiateInterNodalTransfer($input);
+    }
+
     public function migrateConfigurations(array $input)
     {
         if(isset($input['migrate_bank_account']) === true)

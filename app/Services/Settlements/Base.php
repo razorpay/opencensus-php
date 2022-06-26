@@ -33,6 +33,7 @@ class Base
     const LEDGER_CRON_EXECUTION_ADD         = '/twirp/rzp.settlements.ledger_cron_execution.v1.LedgerCronExecutionService/Create';
     const LEDGER_CRON_EXECUTION_UPDATE      = '/twirp/rzp.settlements.ledger_cron_execution.v1.LedgerCronExecutionService/Update';
     const CHECK_FOR_ENTITY_ALERTS           = '/twirp/rzp.settlements.entity_alerts.v1.EntityAlerts/PushForAlert';
+    const INITIATE_INTER_NODAL_TRANSFER     = '/twirp/rzp.settlements.inter_nodal_transfer.v1.InterNodalTransfer/Initiate';
 
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_EXECUTION          = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/Execute';
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_MANUAL_EXECUTION   = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/ManualExecute';
