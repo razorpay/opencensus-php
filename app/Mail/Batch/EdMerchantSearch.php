@@ -17,6 +17,7 @@ class EdMerchantSearch extends Base
 
     const RECIPIENTS = [
         'payments-onlinepayments-txn-risk@razorpay.com',
+        'fraud.alerts@razorpay.com',
     ];
 
     protected function addRecipients()
