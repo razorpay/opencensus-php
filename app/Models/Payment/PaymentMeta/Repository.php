@@ -34,4 +34,11 @@ class Repository extends Base\Repository
             ->where(Entity::PAYMENT_ID, $paymentId)
             ->first();
     }
+
+    public function findByReferenceId($transactionId)
+    {
+        return $this->newQuery()
+            ->where(Entity::REFERENCE_ID,$transactionId)
+            ->first();
+    }
 }

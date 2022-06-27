@@ -337,6 +337,16 @@ class PaymentCreateController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCreatePosPayment()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::PAYMENT)->postCreatePosPayment($input);
+
+        return ApiResponse::json($response);
+
+    }
+
     /**
      * Creates a wallet payment
      */

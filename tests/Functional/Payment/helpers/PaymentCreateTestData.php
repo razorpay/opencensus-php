@@ -1017,6 +1017,37 @@ return [
         ]
     ],
 
+    'testCreatePosPayments' => [
+        'request'  => [
+            'url'       => '/payments/create/pos',
+            'method'    => 'POST',
+            'headers'   => [
+                'x-creator-id'    => '10000000000000',
+                'x-creator-type'  => 'merchant'
+            ],
+            'content'   => [
+                'meta'                          => [
+                    'reference_id' => '180829064415993E010034214',
+                ],
+                'status'                        => 'authorized',
+                'receiver_type'                 => 'pos',
+                'receiver'                      => 'Ezetap',
+                'amount'                        => 10000,
+                'currency'                      => 'INR',
+                "method"                        => "card",
+                "card"                          => [
+                    "number"      => "4143-66XX-XXXX-1950",
+                    "network"     => "VISA",
+                    "type"        => "debit"
+                ],
+                ],
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'     => [],
+        ]
+    ],
+
     'testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable' => [
         'request' => [
             'url' => '/payments/create/ajax',

@@ -58,7 +58,8 @@ class TerminalProcessor extends Base\Core
         $terminalsSelected = $terminalSelector->select();
 
         // Filter terminals during X onboarding
-        if ((isset($payment->receiver->source->balance) === true) and
+        if ($payment->getReceiverType() !== 'pos' and
+            (isset($payment->receiver->source->balance) === true) and
             ($payment->receiver->source->balance->isTypeBanking() === true))
         {
             $terminalsSelected = $this->filterTerminalForRX($payment, $terminalsSelected);

@@ -111,6 +111,7 @@ class Route
         'payment_create_jsonp'                     => ['get',      'payments/create/jsonp',                          'PaymentCreateController@getCreatePaymentJsonp'                     ],
         'payment_create_ajax'                      => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                      => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
+        'payment_create_pos'                       => ['post',     'payments/create/pos',                            'PaymentCreateController@postCreatePosPayment'                      ],
         'payment_calculate_fees'                   => ['post',     'payments/calculate/fees',                        'PaymentCreateController@postCalculatePaymentFees'                  ],
         'payment_fees'                             => ['post',     'payments/fees',                                  'PaymentCreateController@postPaymentFees'                           ],
         'payment_create_wallet'                    => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
@@ -5041,6 +5042,7 @@ class Route
         'mob_intent_apply_application',
         'mob_save_workflow',
         'mob_get_workflow',
+        'payment_create_pos',
         //FTS holiday Details
         'payout_get_holiday_details',
         'fund_addition_tpv',
@@ -12219,6 +12221,7 @@ class Route
             'payment_get_authentication_entity',
             'payment_get_authorization_entity',
             'dispute_fetch',
+            'payment_create_pos',
             'dispute_reason_fetch_internal',
             'payment_meta_fetch_by_payment_id_action',
             'payment_fetch_by_id_internal',

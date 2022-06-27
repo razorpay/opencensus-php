@@ -90,6 +90,7 @@ class Constants
     const PAYMENT_HAS_NO_ORDER                      = 'Payment does not have an order associated with it.';
     const SUBSCRIPTION_PAYMENT                      = 'Subscription Payment.';
     const FILE_BASED_EMANDATE_PAYMENT               = 'File based emandate Payment.';
+    const POS_PAYMENT                               = 'Pos Payment.';
     const DIRECT_SETTLEMENT_ORDER_NOT_PAID          = 'Direct Settlement Payment with order is still not paid.';
     const ORDER_ALREADY_MARKED_PAID                 = 'Order already marked as paid.';
     const PAYMENT_AMOUNT_GREATER_THAN_AMOUNT_DUE    = 'Payment amount is greater than amount due.';

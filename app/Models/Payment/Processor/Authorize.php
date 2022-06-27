@@ -32,6 +32,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Address;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
@@ -2064,6 +2065,11 @@ trait Authorize
         }
 
         if ($payment->isBharatQr() === true)
+        {
+            return;
+        }
+
+        if ($payment->isPos() === true)
         {
             return;
         }
@@ -9173,7 +9179,9 @@ trait Authorize
         if (($payment->isBankTransfer() === true) or
             ($payment->isBharatQr() === true) or
             ($payment->isUpiTransfer() === true) or
-            ($payment->isCoD() === true))
+            ($payment->isCoD() === true) or
+            ($payment->isPos() === true)
+        )
         {
             return false;
         }

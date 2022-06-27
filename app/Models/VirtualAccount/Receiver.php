@@ -21,12 +21,14 @@ class Receiver extends Base\Core
     const VPA               = 'vpa';
     const QR_CODE           = 'qr_code';
     const OFFLINE_CHALLAN   = 'offline_challan';
+    const POS               = 'pos';
 
     const TYPES = [
         self::BANK_ACCOUNT,
         self::VPA,
         self::QR_CODE,
         self::OFFLINE_CHALLAN,
+        self::POS,
     ];
 
     protected $app;

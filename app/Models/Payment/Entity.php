@@ -2512,6 +2512,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::QR_CODE);
     }
 
+    public function isPos()
+    {
+        return ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::POS);
+    }
+
     public function isFlowIntent(): bool
     {
         if ($this->isGooglePayMethodSupported(Method::UPI))

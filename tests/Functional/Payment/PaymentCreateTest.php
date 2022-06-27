@@ -3,12 +3,17 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Card\Repository;
+use RZP\Tests\Functional\Fixtures\Entity\Card;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
 
+use RZP\Error\PublicErrorCode;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Admin;
@@ -8401,6 +8406,198 @@ class PaymentCreateTest extends TestCase
         $response = $this->doS2SPrivateAuthPayment($paymentArray);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
+    public function testCreatePosPayments()
+    {
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'hdfc_ezetap',
+            'gateway_merchant_id'      => '12344',
+            'gateway_acquirer'         => 'hdfc',
+            'card'                       => 1,
+            'type'                      => [
+                'pos' => '1',
+                'direct_settlement_with_refund' => '1',
+                'non_recurring'             => '1'
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RULE_FILTER]);
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->fixtures->pricing->createTestPlanForPosPayments();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $response = $this->startTest();
+
+        $input = $this->testData[__FUNCTION__]['request']['content'];
+
+        $first6 = implode(explode("-",substr($input['card']['number'],0,7)));
+
+        $last4  = substr($input['card']['number'],-4);
+
+        $cardEntity = $response['card_id'];
+
+        $cardNumber = (new Repository())->findByPublicId($cardEntity)->toArray();
+
+        $paymentEntity = (new Payment\Repository())->findByPublicId($response['id']);
+
+        $terminalEntity = (new \RZP\Models\Terminal\Repository())->fetchForPayment($paymentEntity)->toArray();
+
+        $this->assertEquals($first6,$cardNumber['iin']);
+
+        $this->assertEquals($last4,$cardNumber['last4']);
+
+        $this->assertEquals($terminalEntity['gateway'],'hdfc_ezetap');
+
+        $this->assertEquals('authorized', $response['status']);
+
+    }
+
+    public function testCreatePosPaymentsForUpi()
+    {
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'hdfc_ezetap',
+            'gateway_merchant_id'      => '12344',
+            'gateway_acquirer'         => 'hdfc',
+            'upi'                       => 1,
+            'type'                      => [
+                'pos' => '1',
+                'direct_settlement_with_refund' => '1',
+                'non_recurring'             => '1'
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->fixtures->pricing->createTestPlanForPosPayments();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $testData['request']['content']['method'] = 'upi';
+
+        unset($testData['request']['content']['card']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $response = $this->startTest($testData);
+
+        $paymentEntity = (new Payment\Repository())->findByPublicId($response['id']);
+
+        $terminalEntity = (new \RZP\Models\Terminal\Repository())->fetchForPayment($paymentEntity)->toArray();
+
+        $this->assertEquals('captured', $response['status']);
+
+        $this->assertEquals($terminalEntity['gateway'],'hdfc_ezetap');
+    }
+
+    public function testCreateExistingPosPayment(){
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['meta'] = [
+            'reference_id' => '180829064415993E010034214'
+        ];
+
+        $payment['amount'] = '10236';
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $paymentAuth = $this->doAuthPayment($payment);
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $testData['request']['content']['method'] = 'upi';
+
+        $testData[ 'response' ] = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payment has already been either captured or voided',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+        $testData['exception'] = [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED
+        ];
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $this->startTest($testData);
+
+    }
+
+    public function testCreatePosPaymentsForUpiWithoutPricing()
+    {
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $testData['request']['content']['method'] = 'upi';
+
+        unset($testData['request']['content']['card']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData[ 'response' ] = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ];
+        $testData['exception'] = [
+            'class'               => 'RZP\Exception\LogicException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT
+        ];
+
+        $this->startTest($testData);
+
+    }
+
+    public function testCreatePosPaymentsWithoutPricing()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $testData[ 'response' ] = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ];
+
+        $testData['exception'] = [
+            'class'               => 'RZP\Exception\LogicException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT
+        ];
+
+        $this->startTest($testData);
     }
 
     public function testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable()

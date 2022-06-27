@@ -265,6 +265,11 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::VPA_ID));
     }
 
+    public function hasPos()
+    {
+        return false;
+    }
+
     // ----------------------- Getters -----------------------------------------
 
     public function getMerchantId()

@@ -7,6 +7,7 @@ use Neves\Events\TransactionalClosureEvent;
 use Route;
 use Config;
 use Carbon\Carbon;
+use RZP\Base\Luhn;
 use RZP\Base\Repository;
 use RZP\Error\Error;
 use RZP\Exception;
@@ -829,6 +830,55 @@ class Processor
         return null;
     }
 
+    protected function getDummyCardDetails($first6,$last4)
+    {
+        $card = (new Card\Entity)->getDummyCardArray();
+
+        $card[Card\Entity::NUMBER] = $this->getLuhnValidCardNumber($first6,$last4);
+
+        return $card;
+    }
+
+    protected function getLuhnValidCardNumber($firstSix,$lastFour): string
+    {
+        $part1 = $firstSix . '00000';
+
+        $part2 = $lastFour;
+
+        $checksum = Luhn::computeCheckDigitWithPart($part1, $part2);
+
+        return $part1 . $checksum . $part2;
+    }
+
+    protected function preProcessPosPaymentRequest(&$input)
+    {
+        if(isset($input['receiver_type']) === false or $input['receiver_type'] !== Receiver::POS)
+            return;
+
+        unset($input['receiver_type'] , $input['status'],
+            $input['reference1'],$input['reference2']);
+
+        if($input['method'] === 'card')
+        {
+            $first6 = implode(explode("-",substr($input['card']['number'],0,7)));
+
+            $last4  = substr($input['card']['number'],-4);
+
+            $card = $this->getDummyCardDetails($first6,$last4);
+
+            $input['card'] = $card;
+        }
+
+        if($input['method'] === 'upi' and isset($input['vpa']) === false) {
+            $input['vpa'] = Payment\Entity::DUMMY_VPA;
+        }
+
+        $input['receiver'] = array(
+            'type'=> 'pos'
+        );
+    }
+
+
     public function process(array $input, $gatewayInput = []): array
     {
         $meta = [
@@ -843,6 +893,8 @@ class Processor
         try
         {
             $startTime = microtime(true);
+
+            $this->preProcessPosPaymentRequest($input);
 
             $this->setMethodForInput($input);
 
@@ -4579,11 +4631,15 @@ class Processor
             case Receiver::VPA :
                 $receiver = $this->repo->$entity->findbyPublicIdAndMerchantAlsoWithTrash($receiverInput['id'], $this->merchant);
                 break;
+            case Receiver::POS :
+                $payment->setReceiverType(Receiver::POS);
+                break;
             default :
                 $receiver = $this->repo->$entity->findbyPublicIdAndMerchant($receiverInput['id'], $this->merchant);
         }
 
-        $payment->receiver()->associate($receiver);
+        if($payment->getReceiverType() !== Receiver::POS)
+            $payment->receiver()->associate($receiver);
     }
 
     protected function validateAndSetPaymentLinkIfApplicable(Payment\Entity $payment, array $input)
@@ -5020,6 +5076,15 @@ class Processor
             return $response;
         }
 
+        if ($payment->isPos() === true and $payment->getMethod() === Method::CARD)
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::POS_PAYMENT;
+
+            return $response;
+        }
+
         //
         // We do an auto capture direct settlement payment only if payment is not associated with an order.
         //
@@ -5067,6 +5132,15 @@ class Processor
             $response['should_auto_capture'] = true;
 
             $response['reason'] = Constants::PAYMENT_ATTRIBUTE_CAPTURE_TRUE;
+
+            return $response;
+        }
+        //Adding this until terminal issue gets resolved , ideally direct terminal without order should auto capture
+        if ($payment->isPos() === true and $payment->getMethod() === Method::UPI)
+        {
+            $response['should_auto_capture'] = true;
+
+            $response['reason'] = Constants::POS_PAYMENT;
 
             return $response;
         }
@@ -5624,6 +5698,11 @@ class Processor
 
     protected function shouldHitGatewayForPayment(Payment\Entity $payment, array $gatewayInput = []): bool
     {
+        if($payment->isPos() === true)
+        {
+            return false;
+        }
+
         if ((isset($gatewayInput['skip_gateway_call']) === true) and
             ($gatewayInput['skip_gateway_call'] === true))
         {

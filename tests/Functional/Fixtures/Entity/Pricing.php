@@ -628,6 +628,60 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
+    public function createTestPlanForPosPayments()
+    {
+        $pricingPlanId = '1zD0BpqeO1qqpB';
+
+        $rows = [
+            [
+                'id'                  => '1zD0Bpqeupipos',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlanForPosUpi',
+                'product'             => 'primary',
+                'procurer'            => 'razorpay',
+                'feature'             => 'payment',
+                'payment_method'      => 'upi',
+                'receiver_type'       => 'pos',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => null,
+                'amount_range_max'    => null,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+                'min_fee'             => 0,
+                'max_fee'             => null,
+                'fee_bearer'          => 'platform',
+            ],
+            [
+                'id'                  => '1zD0Bpqcardpos',
+                'plan_id'             => '1zD0BpqeO1qqpB',
+                'plan_name'           => 'testDefaultPlanForPosCard',
+                'product'             => 'primary',
+                'feature'             => 'payment',
+                'payment_method'      => 'card',
+                'receiver_type'       => 'pos',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 0,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+                'min_fee'             => 0,
+                'max_fee'             => null,
+                'fee_bearer'          => 'platform',
+            ]
+        ];
+
+        $this->addPricingRulesToDb($rows);
+
+    }
+
     public function createOndemandPercentRatePricingPlan()
     {
         $pricingPlanId = self::DEFAULT_PRICING_PLAN_ID;

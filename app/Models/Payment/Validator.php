@@ -87,7 +87,7 @@ class Validator extends Base\Validator
         'subscription_id'               => 'sometimes|public_id',
         'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled|custom',
         'receiver.type'                 => 'required_with:receiver|filled|string',
-        'receiver.id'                   => 'required_with:receiver|filled|public_id',
+        'receiver.id'                   => 'required_if:receiver,vpa,qr_code,bank_transfer|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
         'token'                         => 'sometimes|string',
         'save'                          => 'sometimes|in:0,1',
@@ -154,6 +154,35 @@ class Validator extends Base\Validator
         Entity::REFERENCE2           => 'sometimes|nullable|string',
         Entity::REFERENCE16          => 'sometimes|nullable|string',
         Entity::REFERENCE17          => 'sometimes|nullable|string',
+    ];
+
+    protected static $posCreateRules = [
+        'status'                       => 'required|string',
+        'amount'                       => 'required|integer',
+        'receiver_type'                => 'required|string',
+        'currency'                     => 'required|string|size:3',
+        'receiver'                     => 'required|string',
+        'method'                       => 'required|string',
+        'contact'                      => 'sometimes|string',
+        'email'                        => 'sometimes|email',
+        'reference1'                   => 'sometimes|string',
+        'reference2'                   => 'sometimes|string',
+        'meta'                         => 'required|associative_array',
+        'meta.reference_id'            => 'required|string|size:25',
+        'notes'                        => 'sometimes|array',
+        'notes.*.external_ref_id1'     => 'sometimes|string',
+        'notes.*.external_ref_id2'     => 'sometimes|string',
+        'notes.*.external_ref_id3'     => 'sometimes|string',
+        'notes.*.external_ref_id4'     => 'sometimes|string',
+        'notes.*.external_ref_id5'     => 'sometimes|string',
+        'notes.*.external_ref_id6'     => 'sometimes|string',
+        'notes.*.external_ref_id7'     => 'sometimes|string',
+        'notes.*.change_slip_date'     => 'sometimes|string',
+        'notes.*.receipt_url'          => 'sometimes|string',
+        'notes.*.tid'                  => 'sometimes|string',
+        'card'                         => 'sometimes|array',
+        'errorCode'                    => 'sometimes|string',
+        'error_description'            => 'sometimes|string',
     ];
 
     protected static $editCpsResponseRules = [
@@ -677,6 +706,11 @@ class Validator extends Base\Validator
             $requiredLength = 18;
         }
 
+        if ($receiver['type'] === Receiver::POS)
+        {
+            return;
+        }
+
         if (strlen($receiver['id']) !== $requiredLength)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -1042,6 +1076,32 @@ class Validator extends Base\Validator
                 'amount',
                 ['amount' => $amount]);
         }
+    }
+
+    public function validatePosPaymentCreation($input)
+    {
+        (new Validator)->validateInput('pos_create',$input);
+
+        $paymentFetch = (new PaymentMeta\Repository())->findByReferenceId($input['meta']['reference_id']);
+
+        if(is_null($paymentFetch) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED,null,[
+                'error_code'            => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED,
+                'error_description'     => PublicErrorDescription::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED_OR_VOIDED
+            ]);
+        }
+
+        if(in_array($input[Entity::METHOD],[Entity::CARD,'upi']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,null,[
+                "error_code"        => ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD,
+                'error_description' => PublicErrorDescription::BAD_REQUEST_INVALID_PAYMENT_METHOD
+            ]);
+        }
+
     }
 
     public function validateUpiVpaPsp(string $vpa, array $excludedPsps)

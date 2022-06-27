@@ -179,6 +179,28 @@ class MerchantFeeTest extends TestCase
             'fee_bearer'          => Merchant\FeeBearer::PLATFORM
         ]);
 
+        $pricingRuleUpiPosReceiver = new Pricing\Entity([
+            'id'                  => '1nvp2POSasRLxx',
+            'plan_id'             => 'testplan_1',
+            'plan_name'           => 'testDefaultPlanForPos',
+            'product'             => 'primary',
+            'feature'             => 'payment',
+            'payment_method'      => 'upi',
+            'receiver_type'       => 'pos',
+            'payment_method_type' => null,
+            'payment_network'     => null,
+            'payment_issuer'      => null,
+            'amount_range_active' => false,
+            'amount_range_min'    => 0,
+            'amount_range_max'    => 0,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'international'       => 0,
+            'min_fee'             => 0,
+            'max_fee'             => null,
+            'fee_bearer'          => Merchant\FeeBearer::PLATFORM,
+        ]);
+
         $pricingRuleOne = new Pricing\Entity([
             'id'                  => '1nvp2XPMmaRLxx',
             'plan_id'             => '1hDYlICobzOCYt',
@@ -777,6 +799,7 @@ class MerchantFeeTest extends TestCase
 
         $pricingRules =  [
             $pricingRuleUpi,
+            $pricingRuleUpiPosReceiver,
             $pricingRuleOne,
             $pricingRuleOneNetwork,
             $pricingRuleTwo,
@@ -1291,6 +1314,14 @@ class MerchantFeeTest extends TestCase
             false, false, true, [], true, true));
 
         $this->runMerchantTestForUpi('100', ['payment' => 'E9t4ljM1mW3CwI'], Receiver::VPA);
+    }
+
+    public function testUpiRuleForPOSPayments()
+    {
+        $this->fee->setPricingRepo($this->getMockPricingRepo(
+            false, true, true, [], true, true));
+
+        $this->runMerchantTestForUpi('100', ['payment' => '1nvp2POSasRLxx'], Receiver::POS);
     }
 
     /**
@@ -1887,6 +1918,11 @@ class MerchantFeeTest extends TestCase
         if($receiver === Receiver::VPA)
         {
             $payment->receiver()->associate($this->vpa);
+        }
+
+        if($receiver === Receiver::POS)
+        {
+            $payment->setReceiverType(Receiver::POS);
         }
 
         list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);

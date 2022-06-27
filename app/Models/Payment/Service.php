@@ -7,6 +7,7 @@ use Mail;
 use Crypt;
 use Config;
 use Carbon\Carbon;
+use RZP\Base\Luhn;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
@@ -45,6 +46,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants;
 use RZP\Models\Customer;
 use RZP\Constants\MailTags;
+use RZP\Models\Pos;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
@@ -606,6 +608,40 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function postCreatePosPayment($input)
+    {
+        (new Validator)->validatePosPaymentCreation($input);
+
+        $merchant =$this->auth->getMerchant();
+
+        $this->trace->info(TraceCode::POS_PAYMENT_CREATE_REQUEST,
+            [
+                'Payment Array' => $this->removeSensitiveData($input),
+                'Merchant Id'   => $merchant->getId()
+            ]
+        );
+
+        $dataResponse  = $this->getNewProcessor($merchant)->process($input);
+
+        $payment = $this->repo->payment->findByPublicId($dataResponse['razorpay_payment_id']);
+
+        return $payment->toArrayPublic();
+
+    }
+
+    public function removeSensitiveData($input):array
+    {
+        if(isset($input['card']) === true)
+        {
+            unset($input['card']);
+        }
+
+        return $input;
     }
 
     public function chargeToken($input)

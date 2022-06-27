@@ -566,6 +566,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OTC_VALIDATION_CLIENT_CODE                            = 'OTC_VALIDATION_CLIENT_CODE';
 
 
+    const POS_PAYMENT_CREATE_EXCEPTION                          = 'POS_PAYMENT_CREATE_EXCEPTION';
+    const POS_PAYMENT_CREATE_REQUEST                            = 'POS_PAYMENT_CREATE_REQUEST';
+
+
+
     const FTA_MODE_SET                                          = 'FTA_MODE_SET';
     const FTA_SLA_EXPIRED                                       = 'FTA_SLA_EXPIRED';
     const FTA_MODE_NOT_FOUND                                    = 'FTA_MODE_NOT_FOUND';

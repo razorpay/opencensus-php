@@ -24,6 +24,7 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Gateway\Hitachi\Gateway as HitachiGateway;
+use RZP\Models\VirtualAccount\Receiver;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -43,6 +44,7 @@ class TransactionFilter extends Terminal\Filter
         'corporate',
         'auth_type',
         'bharat_qr',
+        'pos',
         'bank_account_type',
         'capability',
         'blacklisted_mcc',
@@ -949,6 +951,15 @@ class TransactionFilter extends Terminal\Filter
         {
             return ($terminal->isBharatQr() === false);
         }
+    }
+
+    public function posFilter($terminal)
+    {
+        if ($this->input['payment']->isPos() === true)
+        {
+            return ($terminal->isPos() === true);
+        }
+        return true;
     }
 
     public function directSettlementFilter($terminal, $applicableTerminals)

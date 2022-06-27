@@ -1095,7 +1095,7 @@ trait Capture
         $payment = $this->payment;
 
         // Skip event trigger if receiver is an instance of QRv2
-        if ($payment->isQrV2Payment() === true)
+        if ($payment->getReceiverType() === VirtualAccount\Receiver::POS or $payment->isQrV2Payment() === true)
         {
             return;
         }
@@ -1115,7 +1115,7 @@ trait Capture
         $payment = $this->payment;
 
         // Skip event trigger if receiver is not an instance of QRv2
-        if ($payment->isQrV2Payment() === false)
+        if ($payment->getReceiverType() === VirtualAccount\Receiver::POS or $payment->isQrV2Payment() === false)
         {
             return;
         }
