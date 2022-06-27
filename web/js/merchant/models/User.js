@@ -1417,8 +1417,9 @@ export default class User {
 
   get isSubMerchantKycResellerEnabled() {
     // only for RZP org
+    // only to owner,admin,manager
     const variant = getSplitzExperimentVariant('submerchant_kyc_reseller');
-    return variant?.name === 'exposed' && this.isOrgRZP;
+    return this.isOrgRZP && this.isAllowedView('submerchants') && variant?.name === 'exposed';
   }
 
   get canSkipPoiValidation() {
