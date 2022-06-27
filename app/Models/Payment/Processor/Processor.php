@@ -267,6 +267,17 @@ class Processor
     const DINERS_OR_AMEX_CARD_PAYMENTS_VIA_PGROUTER = 'diners_or_amex_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a JSON V2 should go via PG Router and CPS or just via API service
+     */
+    const JSON_V2_CARD_PAYMENTS_VIA_PGROUTER = 'json_v2_card_payments_via_pg_router';
+
+     /**
+     * Razorx flag to indicate if a marketplace should go via PG Router and CPS or just via API service
+     */
+    const MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER = 'marketplace_v2_card_payments_via_pg_router';
+
+
+    /**
      * User consent flag indicates whether the user has given consent to tokenise
      * the card or not.
      */
@@ -484,12 +495,34 @@ class Processor
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
-                ($merchant->isMarketplace() === true) or
-                ($merchant->isFeatureEnabled(Feature::JSON_V2) === true) or
                 (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false))
             {
                 return false;
             }
+
+
+            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) and 
+                ($merchant->isHeadlessEnabled() === false))
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::JSON_V2_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on')
+                {
+                    return false;
+                }   
+            }
+
+
+            if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === true)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                if ($result !== 'on')
+                {
+                    return false;
+                }   
+            }
+
 
             if (empty($input[Payment\Entity::ORDER_ID]) === false)
             {
@@ -615,6 +648,7 @@ class Processor
                 }
             }
 
+        
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
             $isIVR = (in_array(Card\IIN\Flow::IVR, $enabledFlows, true) === true);
