@@ -35,6 +35,7 @@ use RZP\Models\Feature;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Payment\Processor\Notify;
+use RZP\Models\Reminders;
 use RZP\Models\Payment\Processor\FraudDetector;
 use RZP\Models\Transfer;
 use RZP\Models\UpiMandate;
@@ -630,6 +631,22 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findByPublicId($dataResponse['razorpay_payment_id']);
 
+        if ($input['method'] === 'card')
+        {
+            try{
+                //Register reminder to capture payment after 24 hours
+                $this->setCapturePosPaymentReminder($payment);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::WARNING,
+                    TraceCode::BAD_REQUEST_REMINDER_CREATION_FAILURE
+                );
+            }
+        }
+
         return $payment->toArrayPublic();
 
     }
@@ -642,6 +659,39 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    /**
+     * @param $payment
+     * @return mixed
+     */
+    protected function setCapturePosPaymentReminder($payment)
+    {
+        $merchantId = Merchant\Account::SHARED_ACCOUNT;
+
+        $reminderData = [
+            'remind_at' => $payment['created_at'] + (24*60*60)
+        ];
+
+        $namespace  = Reminders\ReminderProcessor::CAPTURE_POS_PAYMENT;
+
+        $paymentId  = $payment->GetId();
+
+        $url = sprintf('reminders/send/%s/payment/%s/%s', $this->mode, $namespace, $paymentId);
+
+        $request = [
+            'namespace'     => $namespace,
+            'entity_id'     => $paymentId,
+            'entity_type'   => $payment->getEntityName(),
+            'reminder_data' => $reminderData,
+            'callback_url'  => $url,
+        ];
+
+        $response = $this->app['reminders']->createReminder($request, $merchantId);
+
+        $reminderId = array_get($response, 'id');
+
+        return $reminderId;
     }
 
     public function chargeToken($input)

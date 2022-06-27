@@ -33,6 +33,7 @@ abstract class ReminderProcessor
     const SETTLEMENTS               = 'settlements';
     const QR_CODE                   = 'qr_code';
     const COD_PAYMENT_PENDING       = 'cod_payment_pending';
+    const CAPTURE_POS_PAYMENT       = 'capture_pos_payment';
 
     const REMINDERS_API_NAMESPACE_PROCESSORS = [
         self::PAYMENT_LINK              => 'InvoiceReminderProcessor',
@@ -43,6 +44,7 @@ abstract class ReminderProcessor
         self::SETTLEMENTS               => 'SettlementReminderProcessor',
         self::QR_CODE                   => 'QrCodeReminderProcessor',
         self::COD_PAYMENT_PENDING       => 'CoDPaymentPendingProcessor',
+        self::CAPTURE_POS_PAYMENT       => 'CapturePosPaymentProcessor',
     ];
 
     public function __construct()

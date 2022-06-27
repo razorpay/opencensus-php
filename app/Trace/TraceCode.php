@@ -4212,6 +4212,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const P2P_CALLBACK_TRACE                                    = 'P2P_CALLBACK_TRACE';
 
     const REMINDER_DELETE_FAILURE                               = 'REMINDER_DELETE_FAILURE';
+    const BAD_REQUEST_REMINDER_CREATION_FAILURE                 = 'BAD_REQUEST_REMINDER_CREATION_FAILURE';
 
     const SUBSCRIPTION_PAYMENT_NOTIFY                           = 'SUBSCRIPTION_PAYMENT_NOTIFY';
 
