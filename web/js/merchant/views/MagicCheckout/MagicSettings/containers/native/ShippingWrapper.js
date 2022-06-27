@@ -4,6 +4,7 @@ import { NATIVE_SHIPPING_VIEWS } from 'merchant/views/MagicCheckout/MagicSetting
 import NativeShippingTab from 'merchant/views/MagicCheckout/MagicSettings/components/native/ShippingTab';
 import NativeShippingAPI from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingAPI';
 import ShipRocketSettings from 'merchant/views/MagicCheckout/ShippingServices';
+import { SHIPPING_PARTNERS } from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
 const NativeShippingTabWrapper = ({ settings }) => {
   let defaultView = NATIVE_SHIPPING_VIEWS.PROVIDER_SELECTION;
@@ -40,7 +41,10 @@ const NativeShippingTabWrapper = ({ settings }) => {
         </div>
       </div>
       <div className={`padding-20${view === NATIVE_SHIPPING_VIEWS.SHIPROCKET ? ' bg-white' : ''}`}>
-        <Component isServiceabilitySettingsEnabled={true} />
+        <Component
+          providers={[Object.keys(SHIPPING_PARTNERS)[0]]}
+          isServiceabilitySettingsEnabled
+        />
       </div>
     </div>
   );

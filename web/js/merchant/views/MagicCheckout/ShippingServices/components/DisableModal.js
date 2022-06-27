@@ -1,26 +1,8 @@
 import ModalHeader from 'common/ui/ModalHeader';
-
-const TEXTS = {
-  serviceability: {
-    header: 'Disable serviceability using shiprocket',
-    subText: 'Are you sure you want to disable ?',
-    desc:
-      'Razorpay will stop receiving Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
-    secondaryCtaLabel: "No, don't disable",
-    primaryCtaLabel: 'Yes, disable',
-  },
-  disconnect: {
-    header: 'Disconnect Shiprocket',
-    subText: 'Are you sure you want to disconnect ?',
-    desc:
-      'Razorpay will stop receiving order status, Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
-    secondaryCtaLabel: 'No, don’t disconnect',
-    primaryCtaLabel: 'Yes, disconnect',
-  },
-};
+import { DISCONNECT_TEXTS } from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
 const DisableModal = ({ modalType, closeModal, handleDisconnect }) => {
-  const { header, subText, desc, secondaryCtaLabel, primaryCtaLabel } = TEXTS[modalType];
+  const { header, subText, desc, secondaryCtaLabel, primaryCtaLabel } = DISCONNECT_TEXTS[modalType];
   return (
     <div className="disable-modal">
       <ModalHeader

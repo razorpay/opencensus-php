@@ -11,9 +11,11 @@ const BenefitsShiprocket = ({ showIntelligenceHighlights }) => {
     : BENEFITS_SHIPROCKET_HIGHLIGHTS;
   return (
     <div className="benefits-shiprocket-container">
-      <div className="benefits-text benefits-header font-bold color-black">
-        Benefits of connecting Shiprocket account
-      </div>
+      {!showIntelligenceHighlights ? (
+        <div className="benefits-text benefits-header font-bold color-black">
+          Benefits of connecting Shiprocket account
+        </div>
+      ) : null}
       <div>
         {highlights.map((item, ind) => {
           const { functionality, startingText, subText, image } = item;
@@ -21,14 +23,32 @@ const BenefitsShiprocket = ({ showIntelligenceHighlights }) => {
             <div key={ind} className="benefits-text display-flex">
               <img src={ListBullet} alt="bullet" className="benefits-shiprocket-list-icon" />
               <div className="benefits-text">
-                <span>{startingText}</span>
-                <span className="font-bold color-black">{functionality}</span>
-                <span>{subText}</span>
-                {image ? (
-                  <div>
-                    <img src={BenefitsIllustration} alt="BenefitsIllustration" />
-                  </div>
-                ) : null}
+                {showIntelligenceHighlights ? (
+                  <>
+                    <p className="font-bold color-black">{startingText}</p>
+                    <p>{subText}</p>
+                    {image ? (
+                      <div>
+                        <img
+                          src={BenefitsIllustration}
+                          alt="BenefitsIllustration"
+                          className="magicIntelligence-benefits-illustration"
+                        />
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <span>{startingText}</span>
+                    <span className="font-bold color-black">{functionality}</span>
+                    <span>{subText}</span>
+                    {image ? (
+                      <div>
+                        <img src={BenefitsIllustration} alt="BenefitsIllustration" />
+                      </div>
+                    ) : null}
+                  </>
+                )}
               </div>
             </div>
           );

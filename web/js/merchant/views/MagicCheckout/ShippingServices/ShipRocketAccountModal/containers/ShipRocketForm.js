@@ -5,43 +5,16 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { createShippingProviders } from 'merchant/reducers/magicCheckout/shipping_services/actions';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import Input from 'common/new-ui/Input';
-import { EMAIL_REGEX } from 'merchant/views/MagicCheckout/ShippingServices/constants';
+import {
+  EMAIL_REGEX,
+  SHIPPING_PARTNERS,
+} from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
-const ShipRocketForm = ({
-  step,
-  setStep,
-  createProviders,
-  shippingProviders,
-  displayNotification,
-  closeModal,
-}) => {
+const ShipRocketForm = ({ step, setStep, createProviders, displayNotification, closeModal }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isCtaEnabled, setIsCtaEnabled] = useState(false);
 
-  const { id, error } = shippingProviders;
-
-  useEffect(() => {
-    if (id) {
-      displayNotification({
-        type: 'success',
-        message: 'Connected Successfully',
-        closeTimeout: 2000,
-      });
-      setTimeout(() => {
-        closeModal();
-      }, 2000);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (error) {
-      displayNotification({
-        type: 'error',
-        message: 'The entered credentials are invalid. Please verify & retry',
-      });
-    }
-  }, [error]);
   const handleSecondaryClick = useCallback(() => {
     setStep(step - 1);
   }, [step, setStep]);
@@ -62,8 +35,33 @@ const ShipRocketForm = ({
 
   const handleShiprocketConnect = useCallback(() => {
     setIsCtaEnabled(false);
-    createProviders(email, password);
-  }, [setIsCtaEnabled, email, password]);
+    createProviders({
+      providerType: Object.keys(SHIPPING_PARTNERS)[0],
+      providerId: email,
+      shiprocket: {
+        auth: {
+          user: email,
+          password,
+        },
+      },
+    })
+      .then(() => {
+        displayNotification({
+          type: 'success',
+          message: 'Connected Successfully',
+          closeTimeout: 2000,
+        });
+        setTimeout(() => {
+          closeModal();
+        }, 2000);
+      })
+      .catch(() => {
+        displayNotification({
+          type: 'error',
+          message: 'The entered credentials are invalid. Please verify & retry',
+        });
+      });
+  }, [setIsCtaEnabled, email, password, createProviders, displayNotification]);
 
   useEffect(() => {
     checkCtaEnabled(email, password);
@@ -129,10 +127,6 @@ const ShipRocketForm = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  shippingProviders: state.shippingService.shippingProviders,
-});
-
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
@@ -143,4 +137,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(ShipRocketForm);
+export default connect(null, mapDispatchToProps)(ShipRocketForm);

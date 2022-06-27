@@ -31,9 +31,12 @@ const openShippingDisconnectModal = (openModal, closeModal, handleDisconnect) =>
 
 const ServiceabilitySettings = ({ openModal, shippingService, closeModal, deleteMethods }) => {
   const {
-    shippingProviders: { id: providerId },
+    shippingProviders: {
+      shiprocket: { id: providerId },
+    },
     shippingMethods,
   } = shippingService;
+
   const id = shippingMethods?.id;
   const handleDisconnect = useCallback(() => {
     deleteMethods(id);

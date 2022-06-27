@@ -10,6 +10,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import BenefitsShiprocket from 'merchant/views/MagicCheckout/ShippingServices/components/BenefitsShiprocket';
 import Spinner from 'common/ui/Spinner';
 import Listing from 'merchant/views/MagicCheckout/ShippingServices/Listing';
+import { SHIPPING_PARTNERS } from 'merchant/views/MagicCheckout/ShippingServices/constants';
 
 const ShippingAccount = ({
   fetchProviders,
@@ -18,20 +19,17 @@ const ShippingAccount = ({
   modifyFlag,
   fetchMethod,
   isServiceabilitySettingsEnabled,
+  magicIntelligence,
+  providers,
 }) => {
-  const {
-    shouldCloseModal,
-    shippingProviders: { id },
-    loading,
-  } = shippingService;
+  const { shouldCloseModal, shippingProviders, loading } = shippingService;
+
+  const { shiprocket } = shippingProviders;
 
   useEffect(() => {
-    if (!id) {
-      fetchProviders();
-    } else {
-      fetchMethod(id);
-    }
-  }, [id]);
+    if (Object.keys(shippingProviders).length === 0) fetchProviders();
+    else if (shiprocket && shiprocket.id) fetchMethod(shiprocket.id);
+  }, [shiprocket]);
 
   useEffect(() => {
     if (shouldCloseModal) {
@@ -52,15 +50,27 @@ const ShippingAccount = ({
       <div className="row">
         <div className="col-sm-5 no-padding">
           <div className="font-heading font-bold shipping-header color-black">
-            Link Shiprocket Account
+            {magicIntelligence ? 'Integrate your logistic partner' : 'Link Shiprocket Account'}
           </div>
           <div className="no-padding">
             {isServiceabilitySettingsEnabled
               ? 'Check pincode serviceability directly via Shiprocket.'
               : null}
-            Get better RTO protection with realtime order status updates.
+            {magicIntelligence
+              ? 'Connect your delivery partner with Razorpay for better RTO protection on COD orders'
+              : 'Get better RTO protection with realtime order status updates.'}
           </div>
-          <Listing id={id} isServiceabilitySettingsEnabled={isServiceabilitySettingsEnabled} />
+          {providers.map((item, idx) => (
+            <Listing
+              key={idx}
+              id={shippingProviders[item] ? shippingProviders[item].id : null}
+              label={SHIPPING_PARTNERS[item].provider_type}
+              isServiceabilitySettingsEnabled={isServiceabilitySettingsEnabled}
+              component={SHIPPING_PARTNERS[item].component}
+              containerIcon={SHIPPING_PARTNERS[item].image}
+              modalType={item}
+            />
+          ))}
         </div>
         <div className="benefit-shiprocket-container display-inline">
           <BenefitsShiprocket showIntelligenceHighlights={!isServiceabilitySettingsEnabled} />

@@ -1,3 +1,8 @@
+import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
+import ShipRocketModal from 'merchant/views/MagicCheckout/ShippingServices/ShipRocketAccountModal/';
+import DelhiveryModal from 'merchant/views/MagicCheckout/ShippingServices/DelhiveryAccountModal';
+import DelhiveryIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/delhivery.svg';
+
 export const RULE_TYPES_RADIO_INPUT = [
   {
     value: 'free',
@@ -71,8 +76,61 @@ export const BENEFITS_SHIPROCKET_HIGHLIGHTS = [
 
 export const BENEFITS_SHIPROCKET_HIGHLIGHTS_INTELLIGENCE = [
   {
-    startingText: 'Magic Checkout will fetch ',
-    functionality: 'order status updates ',
-    subText: 'from your Shiprocket account to provide better RTO protection on your COD orders.',
+    startingText: 'Automatic delivery status updates',
+    subText: 'Share order data from your logistic partner account directly.',
+  },
+  {
+    startingText: 'RTO protection on COD orders',
+    subText: 'You will be eligible for RTO Insurance on these orders.',
+    image: true,
   },
 ];
+
+export const DELHIVERY_STEPS = [
+  {
+    instructions: {
+      heading: 'Production Authentication Token',
+      points: [{ custompoint: true }],
+    },
+  },
+];
+
+export const SHIPPING_PARTNERS = {
+  shiprocket: {
+    provider_type: 'Shiprocket',
+    image: ShipRocketIcon,
+    component: <ShipRocketModal />,
+  },
+  delhivery: {
+    provider_type: 'Delhivery',
+    image: DelhiveryIcon,
+    component: <DelhiveryModal />,
+  },
+};
+
+export const DISCONNECT_TEXTS = {
+  serviceability: {
+    header: 'Disable serviceability using shiprocket',
+    subText: 'Are you sure you want to disable ?',
+    desc:
+      'Razorpay will stop receiving Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
+    secondaryCtaLabel: "No, don't disable",
+    primaryCtaLabel: 'Yes, disable',
+  },
+  shiprocket: {
+    header: 'Disconnect Shiprocket',
+    subText: 'Are you sure you want to disconnect ?',
+    desc:
+      'Razorpay will stop receiving order status, Pincode serviceablity updates from your Shiprocket account. This will remove your shipping & COD settings.',
+    secondaryCtaLabel: 'No, don’t disconnect',
+    primaryCtaLabel: 'Yes, disconnect',
+  },
+  delhivery: {
+    header: 'Disconnect Delhivery',
+    subText: 'Are you sure you want to disconnect ?',
+    desc:
+      'Razorpay will stop receiving delivery status updates from your Delhivery account. Orders shipped via Delhivery will no longer be eligible for RTO insurance.',
+    secondaryCtaLabel: 'No, don’t disconnect',
+    primaryCtaLabel: 'Yes, disconnect',
+  },
+};

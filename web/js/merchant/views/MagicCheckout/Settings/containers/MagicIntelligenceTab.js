@@ -26,9 +26,9 @@ const MagicIntelligenceTab = ({ settings, updateSettings }) => {
   return (
     <div className="magic-intelligence">
       <div className="header-wrapper">
-        <div className="font-20 font-bold heading">Magic Intelligence</div>
+        <div className="font-20 font-bold heading">Reduce RTO orders with Magic Intelligence</div>
         <div className="font-14 subtext">
-          Reduce RTO orders by using Magic Intelligence to disable COD for high risk customers.
+          Automatically turn off the cash on delivery (COD) payment option for high risk customers
         </div>
         <div className="magic-intelligence-toggle">
           <CodIntelligenceToggle checked={codIntelligence} switchMode={switchMode} />

@@ -2,27 +2,26 @@ import { useCallback } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import ServiceabilitySettings from 'merchant/views/MagicCheckout/ShippingServices/Listing/containers/ServiceabilitySettings';
-import ShipRocketIcon from 'merchant/views/MagicCheckout/ShippingServices/assets/shiprocket.svg';
 import Tick from 'merchant/views/MagicCheckout/ShippingServices/assets/tick.svg';
-import ShipRocketModal from 'merchant/views/MagicCheckout/ShippingServices/ShipRocketAccountModal/';
 import DisableModal from 'merchant/views/MagicCheckout/ShippingServices/components/DisableModal';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { deleteShippingProviders } from 'merchant/reducers/magicCheckout/shipping_services/actions';
 
-const openShipRocketModal = (openModal) => {
+const openShipRocketModal = (openModal, component, modalType) => {
   openModal({
     size: 'xlarge',
-    component: <ShipRocketModal />,
+    className: modalType ? `Modal--${modalType}` : '',
+    component,
   });
 };
 
-const openDisconnectModal = (openModal, closeModal, deleteShippingMethods) => {
+const openDisconnectModal = (openModal, closeModal, deleteShippingMethods, modalType) => {
   openModal({
     size: 'medium',
     component: (
       <DisableModal
         closeModal={closeModal}
-        modalType="disconnect"
+        modalType={modalType}
         handleDisconnect={deleteShippingMethods}
       />
     ),
@@ -35,6 +34,10 @@ const Listing = ({
   closeModal,
   id,
   isServiceabilitySettingsEnabled,
+  label,
+  component,
+  containerIcon,
+  modalType,
 }) => {
   const handleDisconnect = useCallback(() => {
     deleteProviders(id);
@@ -42,20 +45,24 @@ const Listing = ({
   }, [id]);
 
   const onConnectClick = useCallback(() => {
-    openShipRocketModal(openModal);
-  }, [openModal]);
+    openShipRocketModal(openModal, component, modalType);
+  }, [openModal, component]);
 
   const onDisconnectClick = useCallback(() => {
-    openDisconnectModal(openModal, closeModal, handleDisconnect);
+    openDisconnectModal(openModal, closeModal, handleDisconnect, modalType);
   }, [openModal, handleDisconnect]);
 
   return (
     <div className="shipping-account">
       <div className="connect-container display-flex">
         <div className="display-flex font-bold">
-          <img alt="shiprocket-logo" className="connect-container-logo" src={ShipRocketIcon} />
+          <img
+            alt={`${modalType}-logo`}
+            className={`connect-container-logo ${modalType}-logo`}
+            src={containerIcon}
+          />
           <div className="display-flex align-center color-black">
-            Shiprocket
+            {label}
             {id ? (
               <div className="display-inline font-12 connected-container">
                 <img alt="tick" className="" src={Tick} />

@@ -25,19 +25,7 @@ export const ACTIONS = {
   USER_SHIPPING_METHOD_RESET: `${REDUCER_NAMESPACE}:USER_SHIPPING_METHOD::RESET`,
 };
 
-export const createShippingProviders = (email, password) => {
-  const payload = {
-    providerType: 'shiprocket',
-    providerId: email,
-
-    shiprocket: {
-      auth: {
-        user: email,
-        password,
-      },
-    },
-  };
-
+export const createShippingProviders = (payload) => {
   return {
     type: ACTIONS.CREATE_SHIPPING_PROVIDERS,
     payload: merchantFetch({
@@ -108,6 +96,7 @@ export const deleteShippingProviders = (shipping_provider_id) => ({
     url: `1cc/shipping_providers/${shipping_provider_id}`,
     method: `delete`,
   }),
+  id: shipping_provider_id,
 });
 
 export const toggleModalFlag = (flag) => ({
