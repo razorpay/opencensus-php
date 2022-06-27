@@ -196,11 +196,11 @@ class DefaultRefundSpeed extends Component {
   render() {
     const { isInstantRefundOrg, isInstantRefundMid } = this.state;
 
-    const feeBearerValue = this.props.user.merchant.fee_bearer;
+    const feeBearerValue = this.props.user?.merchant?.fee_bearer;
 
     return (
       <div id="default-refund-container" className="panel panel-default refund-panel">
-        <div className="panel-heading pl10" style={{ paddingTop: 0 }}>
+        <div className="panel-heading pl10">
           <span className="title">
             <TextHighlighter hashedWith={REFUND_SETTINGS}>Default Refund Speed</TextHighlighter>{' '}
             <a
@@ -224,16 +224,12 @@ class DefaultRefundSpeed extends Component {
               }
             >
               Know more
-              <i className="i i-external-link" style={{ marginLeft: '5px' }} />
+              <i className="i i-external-link know-more-label" />
             </a>
             <a
-              className="highlight know-more"
+              className="highlight know-more guide-link"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                borderLeft: '1px solid rgba(22, 47, 86, 0.1)',
-                paddingLeft: '9px',
-              }}
               href={getCustomURL('https://razorpay.com/docs/payment-gateway/instant-refunds/api')}
               onClick={() =>
                 analyticsTrack({
@@ -249,12 +245,12 @@ class DefaultRefundSpeed extends Component {
               }
             >
               API Reference Guide
-              <i className="i i-external-link" style={{ marginLeft: '5px' }} />
+              <i className="i i-external-link know-more-label" />
             </a>
           </span>
         </div>
 
-        <div className="panel-body refund-speed-pannel" style={{ paddingBottom: '6px' }}>
+        <div className="panel-body refund-speed-pannel">
           <div className="row">
             <div className="col-sm-6 p5">
               <div
@@ -283,7 +279,7 @@ class DefaultRefundSpeed extends Component {
                     <i className="i i-help" />
                     <Popover align="bottom" theme="dark">
                       <PopoverBody>
-                        <div style={{ textAlign: 'left' }}>
+                        <div>
                           All your refund API calls will have speed set to `normal` by default
                           unless it is set to `optimum` explicitly
                         </div>
@@ -342,7 +338,6 @@ class DefaultRefundSpeed extends Component {
                           size: 'small',
                         });
                       }}
-                      style={{ color: '#528ff0' }}
                     >
                       minimal fee
                     </strong>
@@ -359,7 +354,7 @@ class DefaultRefundSpeed extends Component {
                         <i className="i i-help" />
                         <Popover align="bottom" theme="dark">
                           <PopoverBody>
-                            <div style={{ textAlign: 'left' }}>
+                            <div>
                               All your refund API calls will have speed set to `optimum` by default
                               unless it is set to `normal` explicitly{' '}
                             </div>
@@ -380,12 +375,9 @@ class DefaultRefundSpeed extends Component {
                             eventLabel: `Setting Page | Contact Support`,
                           });
                         }}
-                        className="highlight know-more"
-                        style={{ marginLeft: 0 }}
-                        // target="_blank"
-                        // href="https://razorpay.com/support/#request"
+                        className="highlight know-more contact-support-link"
                       >
-                        <strong style={{ color: '#528ff0' }}>contact support</strong>
+                        <strong>contact support</strong>
                       </a>
                     </p>
                   )}
