@@ -39,6 +39,7 @@ class Network
         self::MC, // MasterCard
         self::RUPAY, // RuPay
         self::VISA, // Visa
+        self::AMEX, // Amex
     ];
 
     public static $fullName = [

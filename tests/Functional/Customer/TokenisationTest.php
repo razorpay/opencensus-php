@@ -1433,14 +1433,16 @@ class TokenisationTest extends TestCase
         return $payment->localToken ?? $payment->globalToken;
     }
 
-    protected function doFirstPaymentThroughTokenisingTheCard($isLocal = false)
+    protected function doFirstPaymentThroughTokenisingTheCard($isLocal = false, $network = 'visa')
     {
-        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::AMEX]);
 
         $payment = $this->getDefaultPaymentArray();
+        if($network == "american express") {
+            $payment['card']['cvv'] = '1234';
+        }
         $payment['_']['library'] = 'razorpayjs';
         $payment['save'] = 1;
-
         if ($isLocal === true)
         {
             $payment['customer_id'] = 'cust_100000customer';
@@ -1463,7 +1465,7 @@ class TokenisationTest extends TestCase
 
         $this->assertEquals('401200', $tokenCard['iin']);
         $this->assertEquals($token['card_id'], $tokenCard['id']);
-        $this->assertEquals($tokenCard['vault'], 'visa');
+        $this->assertEquals($tokenCard['vault'], $network);
         $this->assertEquals('credit', $tokenCard['type']);
         $this->assertNull($paymentCard['trivia']);
 
@@ -1517,6 +1519,86 @@ class TokenisationTest extends TestCase
 
         $this->assertEquals($tokenId, $token['id']);
         $this->assertEquals('visa', $tokenCard['vault']);
+        $this->assertEquals('authorized', $payment2['status']);
+        $this->assertEquals("passed", $payment2['two_factor_auth']);
+        $this->assertNotNull($payment2['token_id']);
+        $this->assertEquals(1, $paymentCard['trivia']);
+
+        //assert token card
+
+        $this->assertEquals('2024', $tokenCard['expiry_year']);
+        $this->assertEquals('12', $tokenCard['expiry_month']);
+        $this->assertEquals('3335', $tokenCard['last4']);
+        $this->assertEquals('2024', $paymentCard['token_expiry_year']);
+        $this->assertEquals('12', $tokenCard['token_expiry_month']);
+        $this->assertEquals('5890', $paymentCard['token_last4']);
+
+        //replace below lines to token_expiry_year and token_expiry_month ,once they are populated
+        $this->assertEquals('2024', $paymentCard['expiry_year']);
+        $this->assertEquals('12', $paymentCard['expiry_month']);
+        $this->assertEquals('3335', $paymentCard['last4']);
+        $this->assertEquals('2024', $paymentCard['token_expiry_year']);
+        $this->assertEquals('12', $paymentCard['token_expiry_month']);
+        $this->assertEquals('5890', $paymentCard['token_last4']);
+        $this->assertEquals('credit', $paymentCard['type']);
+        $this->assertEquals('404464916', $paymentCard['token_iin']);
+        $this->assertEquals('400782', $paymentCard['iin']);
+        $this->assertEquals($paymentCard['vault'], 'rzpvault');
+    }
+
+    public function testIsRepeatPaymentProcessedWithTokenisedCardOnLocalMerchantWhenExp2ReturnsTrueAmex()
+    {
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->mockRazorXTreatment('on');
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->fixtures->iin->create([
+            'iin'     => '400782',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'American Express',
+            'type'    => 'credit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $this->fixtures->edit('iin', 401200, [
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'American Express',
+            'type'    => 'credit',
+            'flows'   => [
+                '3ds' => '1',
+                'ivr' => '1',
+                'otp' => '1',
+            ]
+        ]);
+
+        $tokenId = $this->doFirstPaymentThroughTokenisingTheCard(true, 'american express');
+
+        $payment = $this->getDefaultTokenIdPaymentArray($tokenId);
+
+        $payment['card']['cvv'] = '1234';
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        $paymentResponse = $this->doAuthPayment($payment);
+
+        $payment2 = $this->getDbEntityById('payment', $paymentResponse['razorpay_payment_id']);
+
+        $paymentCard = $payment2->card;
+
+        $token = $this->getToken($payment2);
+
+        $tokenCard = $token->card;
+
+        $this->assertEquals($tokenId, $token['id']);
+        $this->assertEquals('american express', $tokenCard['vault']);
         $this->assertEquals('authorized', $payment2['status']);
         $this->assertEquals("passed", $payment2['two_factor_auth']);
         $this->assertNotNull($payment2['token_id']);
@@ -1982,7 +2064,7 @@ class TokenisationTest extends TestCase
                 }
 
                 if ($feature === RazorxTreatment::PAYMENT_PROCESS_THROUGH_TOKENISED_CARD) {
-                    if ($mid === 'HDFC_VISA_credit') {
+                    if ($mid === 'HDFC_VISA_credit' || $mid === 'ICIC_AMEX_credit') {
                         return $value;
                     }
 

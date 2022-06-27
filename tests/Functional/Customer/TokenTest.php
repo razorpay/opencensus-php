@@ -7,6 +7,7 @@ use Mockery;
 use Requests_Response;
 use RZP\Error\Error;
 use RZP\Exception;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Constants;
 use RZP\Models\Card\Network;
 use RZP\Models\Customer\Token;
@@ -621,6 +622,52 @@ class TokenTest extends TestCase
         $this->assertEquals('card_' . $token['card_id'], $card['id']);
 
         $this->assertEquals($card['vault'], 'visa');
+
+        $this->assertEquals('2024', $card['expiry_year']);
+        $this->assertEquals('12', $card['expiry_month']);
+        $this->assertEquals('3335', $card['last4']);
+        $this->assertEquals('2024', $card['token_expiry_year']);
+        $this->assertEquals('12', $card['token_expiry_month']);
+        $this->assertNull($card['token_last4']);
+    }
+
+    public function testMigrateTokenToTokenizedCardAmex()
+    {
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA, Network::MC, Network::RUPAY, Network::AMEX]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['cvv'] = '1234';
+
+        $this->fixtures->edit('iin',
+            401200,
+            [
+                'network'       => 'American Express'
+            ]);
+
+        $payment['_']['library'] = 'razorpayjs';
+
+        $payment['save'] = 1;
+
+        $payment['customer_id']='cust_100000customer';
+
+        $response = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['token_id']);
+
+        $token = $this->getLastEntity('token', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('card_' . $token['card_id'], $card['id']);
+
+        $this->assertEquals($card['vault'], 'american express');
 
         $this->assertEquals('2024', $card['expiry_year']);
         $this->assertEquals('12', $card['expiry_month']);
