@@ -182,9 +182,14 @@ trait ExternalRepo
 
     private function validateExternalFetchEnabled()
     {
-        $keyName = Entity::getExternalConfigKeyName($this->entityName);
+        if (app()->runningUnitTests() === true)
+        {
+            $keyName = Entity::getExternalConfigKeyName($this->entityName);
 
-        return (bool) ConfigKey::get($keyName, false);
+            return (bool) ConfigKey::get($keyName, false);
+        }
+
+        return true;
     }
 
     private function fetchExternalEntity($id, $merchantId = '', $input = [])
@@ -234,7 +239,7 @@ trait ExternalRepo
     {
         if (($entityType === Entity::ORDER) and (array_key_exists("expands",$expands) === true))
         {
-            //payments,payments.card
+            //relations --> payments,payments.card
             if (in_array("payments.card",  $expands['expands']) === true)
             {
                 $apiPayments = $this->repo->payment->fetchPaymentsWithCardForOrderId($id);

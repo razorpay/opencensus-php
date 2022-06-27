@@ -102,11 +102,6 @@ class Service extends Base\Service
             return false;
         }
 
-        if ((bool) ConfigKey::get(ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
-        {
-            return false;
-        }
-
         if (isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true)
         {
             return false;

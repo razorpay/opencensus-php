@@ -539,7 +539,7 @@ class Processor
                 Card\Network::AMEX,
             ];
 
-            if ((($iin->isAmex() === false) and 
+            if ((($iin->isAmex() === false) and
                  ($iin->isInternational() === true)) or
                 (in_array($iin->getNetworkCode(), $supportedNetworks, true) === false))
             {
@@ -569,7 +569,8 @@ class Processor
                 }
             }
 
-            if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
+            if ((app()->runningUnitTests() === true) and
+                ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
             {
                 return false;
             }
@@ -582,7 +583,7 @@ class Processor
                     return false;
                 }
             }
-            
+
             if ($this->ba->getOAuthClientId() !== null)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::OAUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -721,7 +722,8 @@ class Processor
             return false;
         }
 
-        if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false)
+        if ((app()->runningUnitTests() === true) and
+            ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
         {
             return false;
         }
