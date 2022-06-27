@@ -703,7 +703,7 @@ class UpiIciciGatewayReconTest extends TestCase
     public function testAllowedAmountMismatch()
     {
         $createdAt  = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
-        $diff       = 100;
+        $diff       = 0;
         $amount     = $this->payment['amount'];
 
         $override = [
@@ -714,9 +714,7 @@ class UpiIciciGatewayReconTest extends TestCase
             'error_code'            => 'SERVER_ERROR',
             'error_description'     => 'We are facing some trouble completing your request at the moment. Please try again shortly.'
         ];
-        // We will create four payment IDs where first two will be allowed and next two will not be
-        $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount - $diff),      1];
-        $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount + $diff),      1];
+        // We will create two payment IDs where no payments will be allowed now.
         $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount - $diff - 1),  0];
         $payments[$this->doUpiIciciPayment($override)] = [amount_format_IN($amount + $diff + 1),  0];
 
@@ -726,7 +724,7 @@ class UpiIciciGatewayReconTest extends TestCase
         ], $override);
 
         // For DS merchants not even single paisa is allowed for amount mismatch
-        $payments[$this->doUpiIciciPayment($dsOverride)] = [amount_format_IN($amount - 1),       0];
+        $payments[$this->doUpiIciciPayment($dsOverride)] = [amount_format_IN($amount - 2),       0];
 
         // No we will change the amount in recon
         $this->reconcileWithMock(
@@ -738,9 +736,9 @@ class UpiIciciGatewayReconTest extends TestCase
         $batch = $this->getDbLastEntity('batch');
 
         $this->assertArraySubset([
-            Batch\Entity::TOTAL_COUNT       => 5,
-            Batch\Entity::PROCESSED_COUNT   => 5,
-            Batch\Entity::SUCCESS_COUNT     => 2,
+            Batch\Entity::TOTAL_COUNT       => 3,
+            Batch\Entity::PROCESSED_COUNT   => 3,
+            Batch\Entity::SUCCESS_COUNT     => 0,
             Batch\Entity::FAILURE_COUNT     => 3,
             Batch\Entity::FAILURE_REASON    => '{"AMOUNT_MISMATCH":3}',
         ], $batch->toArray(), true);

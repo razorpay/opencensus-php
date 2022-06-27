@@ -325,7 +325,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             return 0;
         }
 
-        return 100;
+        /*
+           removing this marginal amount for icici due to security concerns
+            (https://razorpay.slack.com/archives/CNP473LRF/p1650375675582489)
+         */
+        //return 100;
+        return 0;
     }
 
     protected function getReferenceNumber($row)
