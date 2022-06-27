@@ -112,7 +112,6 @@ return [
                         'credit'         => 0,
                         'currency'       => 'INR',
                         'balance'        => 9999000,
-                        'created_at'     => 1650628947,
                         'source'         => [
                             'entity'       => 'payout',
                             'fund_account' => [
@@ -251,7 +250,6 @@ return [
                         'credit'         => 0,
                         'currency'       => 'INR',
                         'balance'        => 9999000,
-                        'created_at'     => 1650628947,
                         'source'         => [
                             'entity'       => 'payout',
                             'fund_account' => [
@@ -385,7 +383,6 @@ return [
                         'credit'         => 0,
                         'currency'       => 'INR',
                         'balance'        => 9999000,
-                        'created_at'     => 1650628947,
                         'source'         => [
                             'entity'       => 'payout',
                             'fund_account' => [

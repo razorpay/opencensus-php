@@ -178,16 +178,21 @@ class Entity extends BankingAccountStatement\Entity
         return (optional($this->accountBalance)->getType() === Balance\Type::BANKING);
     }
 
+    // Is this even needed if the only thing now this does is type casting?
+    // Maybe use entity's $casts property later.
     public function getCreatedAtAttribute()
     {
         $createdAt = (int) $this->attributes[self::CREATED_AT];
 
-        if ($this->isBalanceAccountTypeDirect() === true)
-        {
-            $postedAt = (int) $this->attributes[self::POSTED_DATE];
-
-            return $postedAt ? $postedAt : $createdAt;
-        }
+        // Commenting this out for now as ledger won't be used for DA statements
+        // TODO: Fix the account balance relation for future proofing.
+        // This is a quick fix to unblock merchants
+        //if ($this->isBalanceAccountTypeDirect() === true)
+        //{
+        //    $postedAt = (int) $this->attributes[self::POSTED_DATE];
+        //
+        //    return $postedAt ? $postedAt : $createdAt;
+        //}
 
          return $createdAt;
     }
