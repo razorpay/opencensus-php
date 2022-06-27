@@ -41,6 +41,8 @@ class Entity extends Base\Entity
     const SECOND_FACTOR_AUTH_MODE         = 'second_factor_auth_mode';
     const PAYMENT_APPS_LOGO_URL           = 'payment_apps_logo_url';
     const PAYMENT_BTN_LOGO_URL            = 'payment_btn_logo_url';
+    const EXTERNAL_REDIRECT_URL           = 'external_redirect_url';
+    const EXTERNAL_REDIRECT_URL_TEXT      = 'external_redirect_url_text';
 
     /**
      * Org level features
@@ -153,6 +155,8 @@ class Entity extends Base\Entity
         self::SECOND_FACTOR_AUTH_MODE,
         self::PAYMENT_APPS_LOGO_URL,
         self::PAYMENT_BTN_LOGO_URL,
+        self::EXTERNAL_REDIRECT_URL,
+        self::EXTERNAL_REDIRECT_URL_TEXT,
     ];
 
     protected $visible = [
@@ -187,6 +191,8 @@ class Entity extends Base\Entity
         self::SECOND_FACTOR_AUTH_MODE,
         self::PAYMENT_APPS_LOGO_URL,
         self::PAYMENT_BTN_LOGO_URL,
+        self::EXTERNAL_REDIRECT_URL,
+        self::EXTERNAL_REDIRECT_URL_TEXT,
     ];
 
     protected $public = [
@@ -219,6 +225,8 @@ class Entity extends Base\Entity
         self::SECOND_FACTOR_AUTH_MODE,
         self::PAYMENT_APPS_LOGO_URL,
         self::PAYMENT_BTN_LOGO_URL,
+        self::EXTERNAL_REDIRECT_URL,
+        self::EXTERNAL_REDIRECT_URL_TEXT,
     ];
 
     protected $guarded = [
@@ -239,7 +247,9 @@ class Entity extends Base\Entity
         self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS => Constants::DEFAULT_MAX_WRONG_2FA_ATTEMPTS,
         self::ADMIN_SECOND_FACTOR_AUTH        => false,
         self::ADMIN_MAX_WRONG_2FA_ATTEMPTS    => Constants::DEFAULT_MAX_WRONG_2FA_ATTEMPTS,
-        self::SECOND_FACTOR_AUTH_MODE         => Constants::SMS
+        self::SECOND_FACTOR_AUTH_MODE         => Constants::SMS,
+        self::EXTERNAL_REDIRECT_URL          => null,
+        self::EXTERNAL_REDIRECT_URL_TEXT     => null,
     ];
 
     protected $publicSetters = [
@@ -474,6 +484,32 @@ class Entity extends Base\Entity
     public function getBackgroundImage()
     {
         return $this->attributes[self::BACKGROUND_IMAGE_URL];
+    }
+
+    public function getExternalRedirectUrl()
+    {
+        return $this->attributes[self::EXTERNAL_REDIRECT_URL];
+    }
+
+    public function setExternalRedirectUrl($array)
+    {
+        if (isset($array[self::EXTERNAL_REDIRECT_URL]) === true)
+        {
+            $this->attributes[self::EXTERNAL_REDIRECT_URL] = $array[self::EXTERNAL_REDIRECT_URL];
+        }
+    }
+
+    public function getExternalRedirectUrlText()
+    {
+        return $this->attributes[self::EXTERNAL_REDIRECT_URL_TEXT];
+    }
+
+    public function setExternalRedirectUrlText($array)
+    {
+        if (isset($array[self::EXTERNAL_REDIRECT_URL_TEXT]) === true)
+        {
+            $this->attributes[self::EXTERNAL_REDIRECT_URL_TEXT] = $array[self::EXTERNAL_REDIRECT_URL_TEXT];
+        }
     }
 
     public function isMerchant2FaEnabled(): bool

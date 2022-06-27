@@ -6883,3 +6883,7 @@ CREATE TABLE IF NOT EXISTS  merchant_1cc_comments (
 
 ALTER TABLE merchant_business_details
    ADD COLUMN plugin_details json DEFAULT NULL;
+
+ALTER TABLE orgs
+    ADD COLUMN `external_redirect_url` varchar(255) DEFAULT NULL,
+    ADD COLUMN `external_redirect_url_text` text;

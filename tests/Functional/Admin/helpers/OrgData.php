@@ -33,7 +33,9 @@ return [
                 'merchant_styles' => [
                     'color_code1' => '123',
                     'color_code2' => '345'
-                ]
+                ],
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text'
             ],
         ],
         'response' => [
@@ -47,7 +49,9 @@ return [
                 'display_name'  => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type'     => 'password',
-                'custom_code'   => 'test custom code'
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text'
             ],
             'status_code' => 200,
         ],
@@ -66,6 +70,8 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type'     => 'password',
                 'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text'
             ],
         ],
         'response' => [
@@ -79,6 +85,8 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type'     => 'password',
                 'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text'
             ],
             'status_code' => 200,
         ],
@@ -421,7 +429,7 @@ return [
                 'main_logo_url' => null,
                 'auth_type' => 'password',
                 'payment_apps_logo_url' => null,
-                'payment_btn_logo_url'  => null
+                'payment_btn_logo_url'  => null,
             ],
             'status_code' => 200,
         ],

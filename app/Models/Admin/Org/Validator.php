@@ -37,7 +37,10 @@ class Validator extends Base\Validator
         Entity::MERCHANT_MAX_WRONG_2FA_ATTEMPTS => 'sometimes|numeric',
         Entity::ADMIN_SECOND_FACTOR_AUTH        => 'sometimes|boolean',
         Entity::ADMIN_MAX_WRONG_2FA_ATTEMPTS    => 'sometimes|numeric',
-        Entity::SECOND_FACTOR_AUTH_MODE         => 'sometimes|string|in:sms,email,sms_and_email'
+        Entity::SECOND_FACTOR_AUTH_MODE         => 'sometimes|string|in:sms,email,sms_and_email',
+        Entity::EXTERNAL_REDIRECT_URL           => 'sometimes|url',
+        Entity::EXTERNAL_REDIRECT_URL_TEXT      => 'sometimes|string'
+
     ];
 
     protected static $editRules = [
@@ -67,7 +70,9 @@ class Validator extends Base\Validator
         Entity::MERCHANT_MAX_WRONG_2FA_ATTEMPTS => 'sometimes|numeric',
         Entity::ADMIN_SECOND_FACTOR_AUTH        => 'sometimes|boolean',
         Entity::ADMIN_MAX_WRONG_2FA_ATTEMPTS    => 'sometimes|numeric',
-        Entity::SECOND_FACTOR_AUTH_MODE         => 'sometimes|string|in:sms,email,sms_and_email'
+        Entity::SECOND_FACTOR_AUTH_MODE         => 'sometimes|string|in:sms,email,sms_and_email',
+        Entity::EXTERNAL_REDIRECT_URL           => 'sometimes|url',
+        Entity::EXTERNAL_REDIRECT_URL_TEXT      => 'sometimes|string'
     ];
 
     protected function validateEmailDomains($attribute, $domains)

@@ -97,6 +97,12 @@ class CreateOrgs extends Migration
             $table->string(Org::SECOND_FACTOR_AUTH_MODE)
                   ->default(Constants::SMS);
 
+            $table->string(Org::EXTERNAL_REDIRECT_URL)
+                ->nullable();
+
+            $table->text(Org::EXTERNAL_REDIRECT_URL_TEXT)
+                ->nullable();
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);
 
