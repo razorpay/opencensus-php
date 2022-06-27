@@ -623,8 +623,6 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
-        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
-        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
         Entity::NOTES                      => 'sometimes|string',
     ];
 
