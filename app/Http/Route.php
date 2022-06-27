@@ -889,6 +889,7 @@ class Route
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                  => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
+        'setl_adj_add'                             => ['post',     'settlements/adjustments',                        'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                          => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                             => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_batch'                            => ['post',     'adjustments/batch',                              'AdjustmentController@postAdjustmentBatch'                          ],
@@ -4194,7 +4195,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
-        'adj_add',
+        'setl_adj_add',
         'merchant_la_fetch',
         'collect_info_merchant_details_internal',
         'generate_gifu_file',
@@ -4536,11 +4537,11 @@ class Route
         'refund_scrooge_transaction_create',
         'refund_edit_internal',
         'gateway_file_bank_refunds_upload',
-        
+
         'banking_account_create_salesforce',
         'bas_internal_salesforce',
         'banking_account_get_salesforce',
-        
+
         // account service routes
         'account_service_details_fetch',
 
@@ -6733,6 +6734,7 @@ class Route
         'setl_migrate_payout',
         'setl_transfer_status_update',
         'setl_entity_download_file',
+        'setl_nodal_initiate_transfer_admin',
 
         'get_irctc_settlement_file_admin',
         'update_late_auth_config_admin_bulk',
@@ -7254,6 +7256,7 @@ class Route
         'setl_service_migration_admin'             => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_migrate_payout'                      => Permission::SETTLEMENT_BULK_UPDATE,
         'setl_transfer_status_update'              => Permission::SETTLEMENT_BULK_UPDATE,
+        'setl_nodal_initiate_transfer_admin'       => Permission::CREATE_NODAL_ACCOUNT_TRANSFER,
         'merchant_batches'                         => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'                => Permission::MERCHANT_INVOICE_EDIT,
         'payment_dispute_create'                   => Permission::CREATE_DISPUTE,
@@ -11623,6 +11626,7 @@ class Route
             'setl_service_migration_admin',
             'setl_transaction_replay_admin',
             'setl_ledger_inconsistency_debug_admin',
+            'setl_nodal_initiate_transfer_admin',
             'settings_delete',
             'settings_fetch',
             'settings_fetch_defined',
@@ -12899,7 +12903,7 @@ class Route
             'setl_get_transaction_details',
             'payout_create_internal',
             'payout_fetch_by_id_internal',
-            'adj_add'
+            'setl_adj_add'
         ],
 
         'terminals_service' => [
