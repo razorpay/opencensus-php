@@ -18,6 +18,7 @@ class AppResponse
         'signup',
         'admin_merchant_stats',
         'razorx_catchall',
+        'capital_catchall',
         'report_download',
         'extension_catchall',
 

@@ -97,13 +97,28 @@ class AdminController extends Controller
             if (empty($admin['data']) === false)
             {
                 $view = 'admin.index';
+                $build_sub_path = '';
+                $env = \App::environment();
+                $cdn = \Config::get('app.cdn_dashboard_url');
 
                 if ($currentRouteName === 'razorx_catchall' and (empty($org['custom_code'] === false) and ($org['custom_code'] === 'rzp'))) {
                     $view = 'admin.razorx';
                 }
 
+                if ($currentRouteName === 'capital_catchall' and (empty($org['custom_code'] === false) and ($org['custom_code'] === 'rzp'))) {
+                    $view = 'admin.capital';
+                    $build_sub_path = 'capital/';
+                    $cdn = \Config::get('app.cdn_base_url');
+                    
+                    if($env !== 'production'){
+                        $branch_name = isset($_GET['branch']) ? $_GET['branch'] . '/' : 'master/';
+                        $build_sub_path .= $branch_name;
+                    }
+                }
+
                 return view($view, [
-                    'cdn' => \Config::get('app.cdn_dashboard_url'),
+                    'cdn' => $cdn,
+                    'build_sub_path' => $build_sub_path, 
                     'org'   => $org,
                     'user'  => $admin['data'],
                 ]);
@@ -123,7 +138,9 @@ class AdminController extends Controller
         }
 
         // /admin/merchants → /admin, to avoid google oauth error (redirect_uri_mismatch)
-        if ($currentRouteName === 'admin_catchall' or $currentRouteName === 'razorx_catchall') {
+        
+        $admin_validation_route = array('admin_catchall', 'razorx_catchall', 'capital_catchall');
+        if (in_array($currentRouteName , $admin_validation_route, true)) {
             return redirect(self::REDIRECT_TO);
         }
 
