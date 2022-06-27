@@ -29,6 +29,10 @@
         "id": {
             "type" : ["string", "null"],
             "description": "If validated, it can be used in transactions"
+        },
+        "verified": {
+            "type": "boolean",
+            "description": "Flag for verified payee"
         }
     }
 }

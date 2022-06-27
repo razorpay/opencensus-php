@@ -264,10 +264,12 @@ class UpiTransactionTransformer extends Transformer
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
 
-                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
+                $payer    = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
 
-                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+                $payee    = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+                $verified = $this->input[Fields::IS_VERIFIED_PAYEE] ?? false;
                 $payee[Vpa\Entity::BENEFICIARY_NAME]    = $this->input[Fields::PAYEE_NAME];
+                $payee[Vpa\Entity::VERIFIED]            = $this->toBoolean($verified);
 
                 $expiryAt = $this->transformExpireAt();
 

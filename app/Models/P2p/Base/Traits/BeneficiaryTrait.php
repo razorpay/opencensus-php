@@ -2,7 +2,7 @@
 
 namespace RZP\Models\P2p\Base\Traits;
 
-use RZP\Models\P2p\Base\Entity;
+use RZP\Models\P2p\BankAccount\Entity;
 use RZP\Models\P2p\Beneficiary\Entity as Beneficiary;
 
 /**
@@ -33,13 +33,25 @@ trait BeneficiaryTrait
     {
         $array = $this->toArrayPublic();
 
+        if($array[Entity::ENTITY] === Entity::BANK_ACCOUNT)
+        {
+            return [
+                        Beneficiary::VALIDATED  => true,
+                        Beneficiary::TYPE       => $array[self::ENTITY],
+                        self::ID                => $array[self::ID],
+                        self::ADDRESS           => $this->getAddress(),
+                        self::BENEFICIARY_NAME  => $this->getBeneficiaryName(),
+                    ];
+        }
+
         return [
-            Beneficiary::VALIDATED  => true,
-            Beneficiary::TYPE       => $array[self::ENTITY],
-            self::ID                => $array[self::ID],
-            self::ADDRESS           => $this->getAddress(),
-            self::BENEFICIARY_NAME  => $this->getBeneficiaryName(),
-        ];
+                    Beneficiary::VALIDATED  => true,
+                    Beneficiary::TYPE       => $array[self::ENTITY],
+                    self::ID                => $array[self::ID],
+                    self::ADDRESS           => $this->getAddress(),
+                    self::BENEFICIARY_NAME  => $this->getBeneficiaryName(),
+                    self::VERIFIED          => $array[self::VERIFIED],
+                ];
     }
 
     public function isBeneficiary(): bool

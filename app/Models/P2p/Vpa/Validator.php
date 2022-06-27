@@ -35,7 +35,7 @@ class Validator extends Base\Validator
             Entity::FREQUENCY            => 'string',
             Entity::ACTIVE               => 'string',
             Entity::VALIDATED            => 'boolean',
-            Entity::VERIFIED             => 'string',
+            Entity::VERIFIED             => 'boolean',
             Entity::DEFAULT              => 'string',
         ];
 
@@ -69,6 +69,7 @@ class Validator extends Base\Validator
             Entity::USERNAME             => 'required',
             Entity::BENEFICIARY_NAME     => 'required',
             Entity::GATEWAY_DATA         => 'sometimes',
+            Entity::VERIFIED             => 'sometimes',
         ]);
 
         return $rules;
