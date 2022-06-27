@@ -13,8 +13,8 @@ class IfscValidationTest extends TestCase
     public function testValidationOnMappedIfsc()
     {
         $result = [
-            'total'     => count(OldNewIfscMapping::$oldToNewIfscMapping),
-            'valid'     => 0,
+            'total' => count(OldNewIfscMapping::$oldToNewIfscMapping),
+            'valid' => 0,
         ];
 
         foreach (OldNewIfscMapping::$oldToNewIfscMapping as $mapped)
@@ -26,8 +26,8 @@ class IfscValidationTest extends TestCase
         }
 
         $this->assertArraySubset([
-            'total' => 21576,
-            'valid' => 21398,
+            'total' => 21586,
+            'valid' => 21408,
         ], $result);
     }
 }

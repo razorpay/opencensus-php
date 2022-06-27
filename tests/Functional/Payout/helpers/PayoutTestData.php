@@ -742,7 +742,7 @@ return [
                     'account_type' => 'bank_account',
                     'bank_account' => [
                         'name'           => 'Sagnik Saha',
-                        'ifsc'           => 'IOBA0001548',
+                        'ifsc'           => 'BARB0HEADOF',
                         'account_number' => '3434000111000'
                     ],
                     'contact'      => [
@@ -775,7 +775,7 @@ return [
                     "entity"       => "fund_account",
                     "account_type" => "bank_account",
                     "bank_account" => [
-                        "ifsc"           => "IOBA0002897",
+                        "ifsc"           => "BARB0CURZON",
                         "name"           => "Sagnik Saha",
                         "notes"          => [],
                         "account_number" => "3434000111000"
