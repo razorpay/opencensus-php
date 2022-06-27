@@ -115,6 +115,7 @@ import {
   allowlistReducer,
 } from 'merchant/reducers/magicCheckout/magicIntelligence/reducer';
 
+import non3dsCardsActivationReducer from 'merchant/reducers/non3dsCardsActivation';
 import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
 import apiStatsReducer from 'merchant/reducers/developers/apiStats';
 import apiListReducer from 'merchant/reducers/developers/apiList';
@@ -228,6 +229,7 @@ export default combineReducers({
   trackEvents: trackEventsReducer,
   workflows: workflowReducer,
   virtualAccountBatches: virtualAccountBatchesReducer,
+  non3dsCardsActivation: non3dsCardsActivationReducer,
   apiLogs: apiLogsReducer,
   apiStats: apiStatsReducer,
   appList: apiListReducer,

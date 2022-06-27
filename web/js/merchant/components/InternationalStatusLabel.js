@@ -6,6 +6,7 @@ const statusMap = {
   rejected: 'label-danger-light',
   disabled: 'label-muted',
   access_requested: 'label-primary-light',
+  requested: 'label-warning',
   in_review: 'label-primary-light',
   under_review: 'label-primary-light',
   enabled: 'label-success-light',

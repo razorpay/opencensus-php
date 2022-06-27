@@ -19,6 +19,7 @@ export enum Teams {
   TERMINAL = 'Terminal',
   COMMON = 'Common',
   ROUTING = 'Routing',
+  CROSS_BORDER = 'Cross Border',
   DEV_EXP = 'Developer Experience',
 }
 
