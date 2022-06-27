@@ -953,6 +953,7 @@ class PublicErrorDescription
     const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                 = 'The requested action is not found';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSE_NOT_AUTHORIZED                      = 'Workflow Action can only be closed by maker.';
     const BAD_REQUEST_WORKFLOW_ACTION_CLOSED                                    = 'The workflow action is closed.';
+    const BAD_REQUEST_WORKFLOW_ACTION_CHECKER_CANNOT_BE_SAME_AS_MAKER           = 'Maker and Checker can not be the same';
     const BAD_REQUEST_ACTION_NOT_APPROVED                                       = 'The requested action is not in approved state';
     const BAD_REQUEST_ACTION_ALREADY_EXECUTED                                   = 'The requested action has already been executed';
     const BAD_REQUEST_WORKFLOW_UPDATE_OR_DELETE_NOT_ALLOWED                     = 'Updating or Deleting a workflow is not allowed when there are open actions';

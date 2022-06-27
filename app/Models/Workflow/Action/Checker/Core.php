@@ -66,6 +66,17 @@ class Core extends Base\Core
             throw new Exception\LogicException('Checker null, unexpected', null, ['input' => $input]);
         }
 
+        // An admin(maker) shouldn't be allowed to approve workflow_actions created by them
+        // super admin are allowed
+        if (($checkerType === 'admin') and
+            ($checkerEntity->isSuperAdmin() === false) and
+            ($input[Entity::APPROVED] == 1) and
+            ($checkerEntity->getId() === $action->getMakerId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CHECKER_CANNOT_BE_SAME_AS_MAKER);
+        }
+
         //
         // When a checker request is made, we need to first
         // verify whether the admin/user can check the action
