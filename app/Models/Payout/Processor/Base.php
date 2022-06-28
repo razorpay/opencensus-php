@@ -3356,6 +3356,92 @@ class Base extends BaseCore
     }
 
     /**
+     * Function is called from payout Microservice to fetch pricing info in api.
+     *
+     * @param array $params
+     * @return array
+     */
+    public function fetchPricingInfoForPayoutService(array $params): array
+    {
+        try
+        {
+            $payoutId = $params[Payout\Entity::PAYOUT_ID];
+
+            $payout = (new Payout\Entity);
+
+            $payout->setId($payoutId);
+
+            $payout->setMethod($params[Entity::METHOD]);
+
+            $payout->setAmount($params[Entity::AMOUNT]);
+
+            /*
+                Setting some default value here since this is needed to identify downstream processor
+                Since actual channel identification happens in FTS and we don't have any overrided functions
+                in any of the channel specific class, setting some default value. All the calls will go to
+                base method only
+            */
+            $payout->setChannel(BankingAccount\Channel::YESBANK);
+
+            if (isset($input[Entity::PURPOSE]) === true)
+            {
+                $payout->setPurpose($params[Entity::PURPOSE]);
+            }
+
+            if (isset($input[Entity::FEE_TYPE]) === true)
+            {
+                $payout->setPurpose($params[Entity::FEE_TYPE]);
+            }
+
+            $merchantId = $params[Payout\Entity::MERCHANT_ID];
+
+            $merchant = (new Merchant\Repository)->findOrFail($merchantId);
+
+            $payout->merchant()->associate($merchant);
+
+            /** @var Balance\Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($params[Entity::BALANCE_ID]);
+
+            $payout->balance()->associate($balance);
+
+            $payoutType = $this->getPayoutType();
+
+            $downstreamProcessor = new DownstreamProcessor($payoutType, $payout, $this->mode);
+
+            $downstreamProcessor->processFetchPricingInfoForPayoutsService();
+
+            $response = [
+                Entity::FEES            => $payout->getFees(),
+                Entity::TAX             => $payout->getTax(),
+                Entity::PRICING_RULE_ID => $payout->getPricingRuleId(),
+            ];
+
+            $this->trace->info(TraceCode::PAYOUT_SERVICE_FETCH_PRICING_INFO_RESPONSE,
+                               [
+                                   'response' => $response
+                               ]);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FETCH_PRICING_INFO_FOR_MICROSERVICE_FAILED,
+                [
+                    'payout_id' => $payoutId,
+                ]
+            );
+
+            return [
+                Entity::ERROR            => $exception->getMessage(),
+                Error::PUBLIC_ERROR_CODE => strval($exception->getCode()),
+            ];
+        }
+    }
+
+    /**
      * Check if we need to call payout microservice for payout creation
      *
      * @return bool

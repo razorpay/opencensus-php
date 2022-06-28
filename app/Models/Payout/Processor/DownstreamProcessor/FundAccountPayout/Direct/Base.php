@@ -135,7 +135,7 @@ class Base extends FundAccountPayout\Base
         }
     }
 
-    protected function setFeeAndTaxForPayout($payout)
+    public function setFeeAndTaxForPayout($payout)
     {
         list($fees, $tax, $pricingRuleId) = $this->calculateFeesAndTaxForPayouts($payout);
 

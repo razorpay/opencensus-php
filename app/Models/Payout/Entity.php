@@ -211,6 +211,7 @@ class Entity extends Base\PublicEntity
     const ACCOUNT_NUMBER       = 'account_number';
     const QUEUE_IF_LOW_BALANCE = 'queue_if_low_balance';
     const PAYOUT_IDS           = 'payout_ids';
+    const PAYOUT_ID            = 'payout_id';
     const SKIP_WORKFLOW        = 'skip_workflow';
     const FORCE_REJECT         = 'force_reject';
     //Input key to support search using reversal_id

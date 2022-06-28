@@ -71,6 +71,13 @@ class DownstreamProcessor
         $subProcessor->processCreateFundTransferAttempt($this->payout, $this->ftaAccount);
     }
 
+    public function processFetchPricingInfoForPayoutsService()
+    {
+        $subProcessor = $this->getSubProcessorClass();
+
+        $subProcessor->setFeeAndTaxForPayout($this->payout);
+    }
+
     public function getSubProcessorClass()
     {
         $subProcessor = __NAMESPACE__ . '\\' . studly_case($this->type);

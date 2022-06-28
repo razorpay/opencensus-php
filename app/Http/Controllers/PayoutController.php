@@ -53,6 +53,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchPricingInfoForPayoutService()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchPricingInfoForPayoutService($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postFundAccountPayout()
     {
         $input = Request::all();

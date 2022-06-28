@@ -4573,6 +4573,12 @@ class Core extends Base\Core
                     ->createPayoutServiceTransaction($input);
     }
 
+    public function fetchPricingInfoForPayoutService(array $input)
+    {
+        return $this->getProcessor('fund_account_payout')
+                    ->fetchPricingInfoForPayoutService($input);
+    }
+
     public function reversePayoutService(Entity $payout,
                                          string $reverseReason = null,
                                          $ftaBankStatusCode = null,

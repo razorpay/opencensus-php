@@ -1,7 +1,10 @@
 <?php
 
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Method;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Payout\QueuedReasons;
 
@@ -58,6 +61,72 @@ return [
                 'queued_reason' => null,
                 'status_code'   => null
             ],
+        ],
+    ],
+
+    'testFetchPricingInfoForPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/fetch_pricing_info',
+            'content' => [
+                Entity::PAYOUT_ID   => "Gg7sgBZgvYTTTT",
+                Entity::BALANCE_ID  => "GhidjxhfiCL7WT",
+                Entity::MERCHANT_ID => "10000000000000",
+                Entity::METHOD      => Method::FUND_TRANSFER,
+                Entity::AMOUNT      => 100,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                Entity::FEES            => 590,
+                Entity::TAX             => 90,
+                Entity::PRICING_RULE_ID => "Bbg7cl6t6I3XA5",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    // We don't want to retry at payout service. Hence it expects 200 response
+    'testFetchPricingInfoForPayoutServiceBadRequest' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/fetch_pricing_info',
+            'content' => [
+                Entity::PAYOUT_ID   => "Gg7sgBZgvYTTTT",
+                Entity::BALANCE_ID  => "GhidjxhfiCL7WT",
+                Entity::MERCHANT_ID => "10000000000000",
+                Entity::METHOD      => Method::FUND_TRANSFER,
+                Entity::AMOUNT      => 50,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                Entity::ERROR            => "Minimum transaction amount allowed is Re. 1",
+                Error::PUBLIC_ERROR_CODE => "BAD_REQUEST_VALIDATION_FAILURE",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    // We don't want to retry at payout service. Hence it expects 200 response
+    'testFetchPricingInfoForPayoutServiceInternalServerError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/fetch_pricing_info',
+            'content' => [
+                Entity::PAYOUT_ID   => "Gg7sgBZgvYTTTT",
+                Entity::BALANCE_ID  => "GhidjxhfiCL7WT",
+                Entity::MERCHANT_ID => "10000000000000",
+                Entity::METHOD      => "invalid_method",
+                Entity::AMOUNT      => 100,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                Entity::ERROR            => "Invalid rule count: 0, Merchant Id: 10000000000000",
+                Error::PUBLIC_ERROR_CODE => "SERVER_ERROR_PRICING_RULE_ABSENT",
+            ],
+            'status_code' => 200,
         ],
     ],
 

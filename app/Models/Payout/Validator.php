@@ -97,6 +97,7 @@ class Validator extends Base\Validator
     const PAYOUT_SERVICE_TRANSACTION_CREATE         = 'payout_service_transaction_create';
     const PAYOUT_SERVICE_FTS_CREATE                 = 'payout_service_fts_create';
     const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
+    const PAYOUT_SERVICE_FETCH_PRICING_INFO         = 'payout_service_fetch_pricing_info';
 
     const AMOUNT_REGEX = '/[^0-9]/';
 
@@ -404,6 +405,17 @@ class Validator extends Base\Validator
     protected static $payoutServiceTransactionCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+    ];
+
+    protected static $payoutServiceFetchPricingInfoRules = [
+        Entity::PAYOUT_ID            => 'required|alpha_num|size:14',
+        Entity::MERCHANT_ID          => 'required|alpha_num|size:14',
+        Entity::BALANCE_ID           => 'required|alpha_num|size:14',
+        Entity::AMOUNT               => 'required|integer|min:100',
+        Entity::METHOD               => 'required|string',
+        Entity::PURPOSE              => 'sometimes|nullable|string',
+        Entity::CHANNEL              => 'sometimes|nullable|string',
+        Entity::FEE_TYPE             => 'sometimes|nullable|string'
     ];
 
     protected static $payoutBulkStatusUpdateManualRules = [

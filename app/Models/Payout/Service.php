@@ -175,6 +175,38 @@ class Service extends Base\Service
         return $this->core->createPayoutServiceTransaction($input);
     }
 
+    public function fetchPricingInfoForPayoutService(array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_FETCH_PRICING_INFO_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        try
+        {
+            (new Validator)->validateInput(Validator::PAYOUT_SERVICE_FETCH_PRICING_INFO, $input);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::FETCH_PRICING_INFO_FOR_MICROSERVICE_FAILED,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            return [
+                Entity::ERROR            => $exception->getMessage(),
+                Error::PUBLIC_ERROR_CODE => strval($exception->getCode()),
+            ];
+        }
+
+        return $this->core->fetchPricingInfoForPayoutService($input);
+    }
+
     public function fundAccountPayoutOnInternalContact(array $input): array
     {
         // check that the auth in internal

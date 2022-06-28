@@ -465,6 +465,48 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
     }
 
+    public function testFetchPricingInfoForPayoutService($mode = 'IMPS')
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number' => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testFetchPricingInfoForPayoutServiceBadRequest($mode = 'IMPS')
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number' => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testFetchPricingInfoForPayoutServiceInternalServerError($mode = 'IMPS')
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number' => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutServiceTransactionWithFeeRewards($mode = 'IMPS')
     {
         $this->testCreatePayoutEntry($mode);
