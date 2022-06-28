@@ -815,23 +815,28 @@ class Core extends Base\Core
         return false;
     }
 
-    public function getCardInputFromCryptogram($cryptgram, $card, $input)
+    public function getCardInputFromCryptogram($cryptogram, $card, $input)
     {
         $input = [
-            Card\Entity::NUMBER                 => $cryptgram['token_number'] ?? $cryptgram['card']['number'],
+            Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
             Card\Entity::NAME                   => $card->getName(),
-            Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptgram['token_expiry_month'] ?? null,
-            Card\Entity::TOKEN_EXPIRY_YEAR      => $cryptgram['token_expiry_year'] ?? null,
+            Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptogram['token_expiry_month'] ?? null,
+            Card\Entity::TOKEN_EXPIRY_YEAR      => $cryptogram['token_expiry_year'] ?? null,
             Card\Entity::EXPIRY_MONTH           => $card->getExpiryMonth(),
             Card\Entity::EXPIRY_YEAR            => $card->getExpiryYear(),
             Card\Entity::LAST4                  => $card->getLast4(),
-            Card\Entity::CRYPTOGRAM_VALUE       => $cryptgram['cryptogram_value'] ?? null,
+            Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL        => false,
             Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
         ];
+
+        if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
+        {
+            $input["cvv"] = $cryptogram["cvv"];
+        }
 
         return $input;
     }
