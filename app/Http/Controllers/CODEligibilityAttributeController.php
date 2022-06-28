@@ -55,4 +55,11 @@ class CODEligibilityAttributeController extends Controller
         return ApiResponse::json($response);
     }
 
+    protected function deleteByAttribute($codEligibilityType, $attributeType, $attributeValue)
+    {
+        $merchantId = $this->ba->getMerchant()->getId();
+
+        return $this->app['rto_prediction_provider_service']->deleteByAttribute($merchantId, $codEligibilityType, $attributeType, $attributeValue);
+    }
+
 }

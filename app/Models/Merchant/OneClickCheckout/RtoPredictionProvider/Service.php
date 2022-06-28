@@ -14,6 +14,7 @@ class Service
     const BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE = 'bulk_upsert_cod_eligibility_attribute';
     const LIST_COD_ELIGIBILITY_ATTRIBUTE        = "list_cod_eligibility_attribute";
     const DELETE_COD_ELIGIBILITY_ATTRIBUTE      = "delete_cod_eligibility_attribute";
+    const DELETE_BY_COD_ELIGIBILITY_ATTRIBUTE   = "delete_by_cod_eligibility_attribute";
     const PATH                                  = 'path';
 
     const COD_ELIGIBILITY_ATTRIBUTES = "cod_eligibility_attributes";
@@ -35,6 +36,9 @@ class Service
         ],
         self::DELETE_COD_ELIGIBILITY_ATTRIBUTE => [
             self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteCODEligibilityAttribute',
+        ],
+        self::DELETE_BY_COD_ELIGIBILITY_ATTRIBUTE => [
+            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteByCODEligibilityAttribute',
         ]
     ];
 
@@ -213,6 +217,21 @@ class Service
         $input['id'] = $id;
 
         $params = self::PARAMS[self::DELETE_COD_ELIGIBILITY_ATTRIBUTE];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    public function deleteByAttribute($merchantId, $codEligibilityType, $attributeType, $attributeValue)
+    {
+        $input[self::MERCHANT_ID] = $merchantId;
+
+        $input[self::COD_ELIGIBILITY_TYPE] = $codEligibilityType;
+
+        $input[self::ATTRIBUTE_TYPE] = $attributeType;
+
+        $input[self::ATTRIBUTE_VALUE] = $attributeValue;
+
+        $params = self::PARAMS[self::DELETE_BY_COD_ELIGIBILITY_ATTRIBUTE];
 
         return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
     }

@@ -3560,10 +3560,13 @@ class Route
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
 
-        '1cc_cod_eligibility_attribute_list'         => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
-        '1cc_cod_eligibility_attribute_upsert_bulk'  => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
-        '1cc_cod_eligibility_attribute_upsert_batch' => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/batch', 'CODEligibilityAttributeController@batchUpsert' ],
-        '1cc_cod_eligibility_attribute_delete'       => ['delete', '1cc/rto_prediction_service/cod_eligibility_attribute/{id}',        'CODEligibilityAttributeController@delete'     ],
+        '1cc_cod_eligibility_attribute_list'                => ['get',    '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}',             'CODEligibilityAttributeController@list'       ],
+        '1cc_cod_eligibility_attribute_upsert_bulk'         => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/bulk', 'CODEligibilityAttributeController@bulkUpsert' ],
+        '1cc_cod_eligibility_attribute_upsert_batch'        => ['post',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/upsert/batch', 'CODEligibilityAttributeController@batchUpsert' ],
+        '1cc_cod_eligibility_attribute_delete'              => ['delete', '1cc/rto_prediction_service/cod_eligibility_attribute/{id}',        'CODEligibilityAttributeController@delete'     ],
+        '1cc_cod_eligibility_attribute_delete_by_attribute' => ['delete',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/{attribute_type}/{attribute_value}',        'CODEligibilityAttributeController@deleteByAttribute'     ],
+
+        '1cc_rto_dashboard_list'                     => ['post',   '1cc/rto_prediction_service/dashboard', 'RtoDashboardController@list' ],
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
@@ -5768,7 +5771,9 @@ class Route
         '1cc_cod_eligibility_attribute_list',
         '1cc_cod_eligibility_attribute_upsert_bulk',
         '1cc_cod_eligibility_attribute_delete',
+        '1cc_cod_eligibility_attribute_delete_by_attribute',
         '1cc_cod_eligibility_attribute_upsert_batch',
+        '1cc_rto_dashboard_list',
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -10073,8 +10078,10 @@ class Route
             '1cc_cod_eligibility_attribute_list',
             '1cc_cod_eligibility_attribute_upsert_bulk',
             '1cc_cod_eligibility_attribute_delete',
+            '1cc_cod_eligibility_attribute_delete_by_attribute',
             'country_fetch',
             'state_fetch',
+            '1cc_rto_dashboard_list',
 
             'growth_get_public_asset_details',
 
