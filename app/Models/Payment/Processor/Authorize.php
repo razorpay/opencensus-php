@@ -11258,16 +11258,38 @@ trait Authorize
 
             $order = $payment->order;
 
-            if ($order->is1ccShopifyOrder() === true and
-                $payment->isPaymentCompletedOrCOD() === true)
+            // Certain orders are not being dispatched to the queue
+            // Splitting up the conditions to check the status temporarily
+            if ($order->is1ccShopifyOrder() === true)
             {
-                OneCCShopifyCreateOrder::dispatch([
-                    'mode'                => $this->mode,
-                    'razorpay_order_id'   => $order->getPublicId(),
-                    'razorpay_payment_id' => $payment->getPublicId(),
-                    'merchant_id'         => $this->merchant->getId(),
-                    'dispatch_time'       => millitime() - $start,
-                ])->delay(now()->addMinutes(5));
+                $dispatched = false;
+
+                if ($payment->isPaymentCompletedOrCOD() === true)
+                {
+                    $dispatched = true;
+
+                    OneCCShopifyCreateOrder::dispatch([
+                        'mode'                => $this->mode,
+                        'razorpay_order_id'   => $order->getPublicId(),
+                        'razorpay_payment_id' => $payment->getPublicId(),
+                        'merchant_id'         => $this->merchant->getId(),
+                        'dispatch_time'       => millitime() - $start,
+                    ])->delay(now()->addMinutes(5));
+                }
+
+                // To debug payloads not being handled properly in sqs
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
+                    [
+                        'step'                => 'dispatch',
+                        'dispatched'          => $dispatched,
+                        'mode'                => $this->mode,
+                        'razorpay_order_id'   => $order->getPublicId(),
+                        'razorpay_payment_id' => $payment->getPublicId(),
+                        'payment_method'      => $payment->getMethod(),
+                        'payment_status'      => $payment->getStatus(),
+                        'merchant_id'         => $this->merchant->getId(),
+                    ]);
             }
 
         }
