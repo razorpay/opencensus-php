@@ -523,10 +523,11 @@ final class RazorxTreatment
 
     // Razorx treatment constant  for which validating multiple sheets for recurring charge axis;
     const DUPLICATE_SHEET_VALIDATION_BATCH = 'duplicate_sheet_validation_batch';
-  
+
     const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
 
     const REFUNDS_IIN_REMOVAL = "refunds_iin_removal";
+    const NON_RZP_TOKENISED_IR = "non_rzp_tokenised_ir";
 
     /** Experiment to enable custom access control */
     public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";

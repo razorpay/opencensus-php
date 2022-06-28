@@ -518,6 +518,11 @@ class FundTransfer extends Base
             {
                 $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = true;
             }
+            else if ($this->isNonRzpTokenisedCard($this->fta->card) === true)
+            {
+                $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = true;
+                $request[Constants::ACCOUNT][Constants::CARD][Constants::BU_NAMESPACE] = Card\BuNamespace::PAYMENTS_TOKEN_PAN;
+            }
         }
 
         if (($this->fta->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true) and
@@ -531,6 +536,24 @@ class FundTransfer extends Base
         }
 
         return $request;
+    }
+
+    private function isNonRzpTokenisedCard(CardVault $card): bool
+    {
+        if ($card->getTrivia() === "1")
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $card->getId(),
+                RazorxTreatment::NON_RZP_TOKENISED_IR,
+                $this->mode
+            );
+
+            if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected function setNamespacesInRequest(&$card)
