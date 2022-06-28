@@ -250,7 +250,7 @@ class FraudDetectionTest extends TestCase
 
         $payment['notes'] = array(
             'merchant_order_id' => 'random order id',
-            'cancel_url'    => 'https://xyz.in/123/checkouts/abc',
+            'cancelUrl'    => 'https://xyz.in/123/checkouts/abc',
             'domain'        => 'xyz77.myshopify.com',
         );
 
@@ -333,7 +333,7 @@ class FraudDetectionTest extends TestCase
 
         $payment['notes'] = array(
             'merchant_order_id' => 'random order id',
-            'cancel_url'    => 'https://xyz.in/123/checkouts/abc',
+            'cancelUrl'    => 'https://xyz.in/123/checkouts/abc',
             'domain'        => 'xyz77.myshopify.com',
         );
 

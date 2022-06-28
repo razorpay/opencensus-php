@@ -91,7 +91,7 @@ final class Shield
     const VIRTUAL_DEVICE_ID             = 'virtual_device_id';
     const SHOPIFY                       = 'shopify';
     const SHOPIFY_PAYMENT_APP           = 'shopify-payment-app';
-    const CANCEL_URL                    = 'cancel_url';
+    const CANCEL_URL                    = 'cancelUrl';
     const DOMAIN                        = 'domain';
     const ORDER_CANCEL_URL              = 'order_cancel_url';
     const ORDER_DOMAIN                  = 'order_domain';
