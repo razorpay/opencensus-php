@@ -36,6 +36,11 @@ jobs:
         uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
         env:
           ACTIONS_STEP_DEBUG: true
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
       - name: prepare_test
         run: ci-assets/prepare_test.sh
         env:
