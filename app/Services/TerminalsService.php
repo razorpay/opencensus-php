@@ -268,6 +268,11 @@ class TerminalsService
             $options[self::CONNECT_TIMEOUT] = 0.5;
         }
 
+        if ((strpos($path, "v2/collect_info/merchant") !== false) && (strpos($path, "details") !== false)){
+            $options[self::TIMEOUT] = 3.0;
+            $options[self::CONNECT_TIMEOUT] = 3.0;
+        }
+
         $additionalHeaders = $this->addHeaderForExternalOrg();
 
         $headers = array_merge($headers, $additionalHeaders);
