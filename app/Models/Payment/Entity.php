@@ -1869,7 +1869,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     $acquirerData['product_enrollment_id'] = $productEnrollmentId;
                 }
 
-                if(($this->card !== null) && $this->card->isRuPay())
+                if(($this->getCardId() === true) && ($this->card->isRuPay() ==true))
                 {
                     $authenticationData = (new Payment\Service)->getAuthenticationEntityForAcquirerData($this->getId());
                 }
