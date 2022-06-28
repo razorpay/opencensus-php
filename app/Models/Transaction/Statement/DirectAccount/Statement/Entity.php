@@ -184,15 +184,12 @@ class Entity extends BankingAccountStatement\Entity
     {
         $createdAt = (int) $this->attributes[self::CREATED_AT];
 
-        // Commenting this out for now as ledger won't be used for DA statements
-        // TODO: Fix the account balance relation for future proofing.
-        // This is a quick fix to unblock merchants
-        //if ($this->isBalanceAccountTypeDirect() === true)
-        //{
-        //    $postedAt = (int) $this->attributes[self::POSTED_DATE];
-        //
-        //    return $postedAt ? $postedAt : $createdAt;
-        //}
+        if ($this->isBalanceAccountTypeDirect() === true)
+        {
+            $postedAt = (int) $this->attributes[self::POSTED_DATE];
+
+            return $postedAt ? $postedAt : $createdAt;
+        }
 
          return $createdAt;
     }

@@ -179,12 +179,13 @@ class Entity extends LedgerEntry\Entity
     {
         $createdAt = (int) $this->attributes[self::CREATED_AT];
 
-        if ($this->isBalanceAccountTypeDirect() === true)
-        {
-            $postedAt = (int) $this->attributes[self::POSTED_AT];
-
-            return $postedAt ? $postedAt : $createdAt;
-        }
+        // Commenting out this code as DA won't come here
+//         if ($this->isBalanceAccountTypeDirect() === true)
+//         {
+//             $postedAt = (int) $this->attributes[self::POSTED_AT];
+//
+//             return $postedAt ? $postedAt : $createdAt;
+//         }
 
          return $createdAt;
     }
