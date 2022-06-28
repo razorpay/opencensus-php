@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Cron\Collectors;
 
+use RZP\Models\DeviceDetail\Constants;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Trace\TraceCode;
@@ -17,6 +18,8 @@ class InstantlyActivatedButNotTransactedDataCollector extends TimeBoundDbDataCol
         ]);
 
         $merchantIdList = $this->repo->merchant->fetchAllInstantlyActivatedMerchants($startTime, $endTime);
+
+        $merchantIdList = $this->repo->user_device_detail->removeSignupCampaignIdsFromMerchantIdList($merchantIdList, Constants::EASY_ONBOARDING);
 
         $transactedMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
             $merchantIdList, $startTime);

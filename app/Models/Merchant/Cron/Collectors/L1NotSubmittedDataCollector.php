@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Cron\Collectors;
 
+use RZP\Models\DeviceDetail\Constants;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Trace\TraceCode;
@@ -17,6 +18,8 @@ class L1NotSubmittedDataCollector extends TimeBoundDbDataCollector
         ]);
 
         $merchantIdList = $this->repo->merchant_detail->filterL1NotSubmittedMerchantIds($startTime, $endTime);
+
+        $merchantIdList = $this->repo->user_device_detail->removeSignupCampaignIdsFromMerchantIdList($merchantIdList, Constants::EASY_ONBOARDING);
 
         $data["merchantIds"] = $merchantIdList;
 

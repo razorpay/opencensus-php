@@ -12,6 +12,7 @@ use RZP\Notifications\BaseHandler;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 class Handler extends BaseHandler
 {
@@ -134,18 +135,27 @@ class Handler extends BaseHandler
             case Status::ACTIVATED:
                 if ($isUnregistered or ($activationStatus === Status::INSTANTLY_ACTIVATED))
                 {
-                    array_push($events, Events::UNREGISTERED_SETTLEMENTS_ENABLED);
-                    array_push($events, Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED);
+                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+                    {
+                        array_push($events, Events::UNREGISTERED_SETTLEMENTS_ENABLED);
+                        array_push($events, Events::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED);
+                    }
                 }
                 else
                 {
-                    array_push($events, Events::REGISTERED_SETTLEMENTS_ENABLED);
-                    array_push($events, Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED);
+                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+                    {
+                        array_push($events, Events::REGISTERED_SETTLEMENTS_ENABLED);
+                        array_push($events, Events::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED);
+                    }
                 }
                 break;
             case Status::INSTANTLY_ACTIVATED:
+                if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+                {
                     array_push($events, Events::PAYMENTS_ENABLED);
-                array_push($events, Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED);
+                    array_push($events, Events::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED);
+                }
                 break;
         }
 
