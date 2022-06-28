@@ -16,7 +16,7 @@ class L1FormEmailTriggerDataCollector extends TimeBoundDbDataCollector
             'end_time'   => $endTime
         ]);
 
-        $merchantIdList = $this->repo->merchant_detail->filterL1NotSubmittedMerchantIds($startTime, $endTime);
+        $merchantIdList = $this->repo->merchant_detail->filterL1NotSubmittedMerchantIdsWithEmailId($startTime, $endTime);
 
         $data["merchantIds"] = $merchantIdList;
 

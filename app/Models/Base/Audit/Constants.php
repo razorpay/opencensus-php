@@ -12,8 +12,8 @@ class Constants
     const AUTH_TYPE  = 'auth_type';
     const TASK_ID    = 'task_id';
     const APP        = 'app';
+    const IP         = 'ip';
 
-    const ACTOR_TYPE_ADMIN    = 'admin';
-    const ACTOR_TYPE_USER     = 'user';
-    const ACTOR_TYPE_MERCHANT = 'merchant';
+    const ACTOR_TYPE_ADMIN = 'admin';
+    const ACTOR_TYPE_USER  = 'user';
 }

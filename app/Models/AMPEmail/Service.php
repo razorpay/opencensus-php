@@ -54,6 +54,16 @@ class Service extends Base\Service
     {
         $service = MailService::getInstance();
 
+        if(empty($merchant->getEmail())===true)
+        {
+            $this->trace->info(TraceCode::AMP_EMAIL_MERCHANT_REQUEST_FAILED,
+                               [
+                                   "merchantId" => $merchant->getId(),
+                                   "email"      => "null"]);
+
+            return false;
+        }
+
         $input = [
             Entity::ENTITY_TYPE => Constants::MERCHANT,
             Entity::ENTITY_ID   => $merchant->getId(),

@@ -370,6 +370,27 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function filterL1NotSubmittedMerchantIdsWithEmailId(int $from, int $to): array
+    {
+        $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantCreatedAtColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
+        $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+                    ->select(Entity::MERCHANT_ID)
+                    ->whereBetween($merchantCreatedAtColumn, [$from, $to])
+                    ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
+                    ->where($merchantOrgIdColumn,  '=' ,Org\Entity::RAZORPAY_ORG_ID)
+                    ->whereNotNull(Entity::CONTACT_EMAIL)
+                    ->where($merchantBusinessBankingIdColumn, '=', false)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function filterL2BankDetailsNotSubmittedMerchantIds(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID): array
     {
         $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
