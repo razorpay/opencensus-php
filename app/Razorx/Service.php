@@ -261,6 +261,7 @@ class Service extends Base\Service
             'set_pref_corporate_cards',
             'capital_addon_cards_statement_export',
             'optimizer_onboarding',
+            'rx_yellow_ai_enabled'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
