@@ -72,5 +72,13 @@ class AdminFetch extends Base
 
             unset($input['id']);
         }
+        else
+        {
+            $query = http_build_query($input);
+
+            $url = $url . '?' . $query;
+
+            $input = [];
+        }
     }
 }
