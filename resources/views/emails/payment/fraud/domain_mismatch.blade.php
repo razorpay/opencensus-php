@@ -180,7 +180,18 @@
                                                         </p>
 
                                                         <p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978; margin: 15px 0;">
-                                                            If you own the above domain & want to accept payments on the above domain, please reach out to us <a href="https://razorpay.com/support/#request/merchant/account-configuration-changes">here</a>.
+                                                            If you own the above domain & want to accept payments on the above domain, please click <a href=https://dashboard.razorpay.com/app/profile>here</a> to go to My Account and click on + sign under the "Additional Business Website/App" section.<br><br>
+                                                            Alternatively, you can follow the below steps:<br>
+                                                            1. <a href="https://bit.ly/34uUhel">Login</a> to your <a href="https://dashboard.razorpay.com/">Razorpay dashboard</a>. <br>
+                                                            2. Go to My Account  (on the left side panel) <br>
+                                                            3. Find Additional Business Website/App, click on the add ‘+’ sign & complete the requested details.<br><br>
+                                                            We will review your request and update in 48 hours.<br>
+                                                        Please note that until the above URL is whitelisted, all the transactions that originate from this URL will be declined.<br><br>
+
+                                                        Do let us know for any further assistance in this regard and we’ll be happy to assist you.<br><br>
+
+                                                        This is an auto email hence do not reply.  Please reach out to us <a href="https://razorpay.com/support/#request/merchant/account-configuration-changes">here</a>.
+
                                                         </p>
 
                                                         <p class="para-normal font-size-medium" style="font-size: 14px; line-height: 1.5; color: #515978; margin: 20px 0;">
