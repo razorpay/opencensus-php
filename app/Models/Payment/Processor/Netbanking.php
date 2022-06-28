@@ -1578,6 +1578,7 @@ class Netbanking
         $rearchBanks = [
             Bank::YESB,
             Bank::DBSS,
+            Bank::ICIC
         ];
 
         return in_array($bank, $rearchBanks, true);

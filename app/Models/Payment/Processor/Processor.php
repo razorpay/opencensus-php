@@ -767,7 +767,7 @@ class Processor
             return true;
         }
 
-        $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), self::NETBANKING_PAYMENTS_VIA_PGROUTER, $this->mode);
+        $result = $this->app->razorx->getTreatment($input[Payment\Entity::BANK], self::NETBANKING_PAYMENTS_VIA_PGROUTER, $this->mode);
 
         return ($result === 'on');
     }
