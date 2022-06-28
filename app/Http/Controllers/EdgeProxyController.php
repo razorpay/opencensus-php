@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Response;
 use Throwable;
 use Razorpay\Trace\Logger;
+use RZP\Http\RequestHeader;
 use Illuminate\Http\Request;
 use Razorpay\Edge\Passport\Passport;
 use Psr\Http\Client\ClientInterface;
@@ -90,12 +91,25 @@ class EdgeProxyController extends Controller
         $body        = $request->getContent();
         $contentType = $request->getContentType();
         $auth        = $hostCfg['auth'];
-        $headers     = [];
+        $headers     = [
+            RequestHeader::DEV_SERVE_USER => $request->header(RequestHeader::DEV_SERVE_USER)
+        ];
+
+        if (($request->method() === 'GET') and
+            (empty($request->all()) === false) and
+            (empty($query) === true))
+        {
+            $query = http_build_query($request->all());
+        }
 
         // 3. Makes request and returns response.
         $response = $this->request($host, $method, $path, $query, $body, $contentType, $auth, $headers);
 
-        return Response::make((string) $response->getBody(), $response->getStatusCode(), $response->getHeaders());
+        $response = Response::make((string) $response->getBody(), $response->getStatusCode());
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
     }
 
 

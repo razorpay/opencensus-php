@@ -56,4 +56,29 @@ class ContactController extends Controller
 
         return ApiResponse::json($response, $responseCode);
     }
+
+    public function getAddresses(string $contactID)
+    {
+        $input = Request::all();
+
+        $addresses = $this->service()->fetchAddresses($contactID, $input);
+
+        return ApiResponse::json($addresses);
+    }
+
+    public function postCreateAddress($contactID)
+    {
+        $input = Request::all();
+
+        $address = $this->service()->createAddress($contactID, $input);
+
+        return ApiResponse::json($address);
+    }
+
+    public function getAddress(string $contactID, string $addressID)
+    {
+        $address = $this->service()->fetchAddress($contactID, $addressID);
+
+        return ApiResponse::json($address);
+    }
 }

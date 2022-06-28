@@ -435,6 +435,7 @@ class Service extends Base\Service
     public function isAllowedInternalApp(): bool
     {
         return $this->auth->isPayoutLinkApp() or
+               $this->auth->isAccountsReceivableApp() or
                $this->auth->isVendorPaymentApp() or
                $this->auth->isSettlementsApp() or
                $this->auth->isXPayrollApp() or

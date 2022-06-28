@@ -6,6 +6,7 @@ use App;
 use Request;
 use ApiResponse;
 use RZP\Exception;
+use RZP\Constants\Entity;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
 use RZP\Models\Merchant\Methods;
@@ -1610,6 +1611,13 @@ class MerchantController extends Controller
     public function getMerchantDetails()
     {
         $response = $this->service()->getMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMerchantDetailsForAccountReceivables()
+    {
+        $response = $this->service(Entity::MERCHANT_DETAIL)->fetchMerchantDetailsForAccountReceivables();
 
         return ApiResponse::json($response);
     }

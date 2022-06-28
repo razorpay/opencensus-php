@@ -12,6 +12,7 @@ class Type
     const TOKEN             = 'token';
     const STAKEHOLDER       = 'stakeholder';
     const RAW_ADDRESS       = 'raw_address';
+    const CONTACT           = 'contact';
 
     const SHIPPING_ADDRESS  = 'shipping_address';
     const BILLING_ADDRESS   = 'billing_address';
@@ -23,6 +24,7 @@ class Type
         self::TOKEN,
         self::STAKEHOLDER,
         self::RAW_ADDRESS,
+        self::CONTACT,
     ];
 
     protected static $validTypes = [
@@ -42,6 +44,10 @@ class Type
         self::RAW_ADDRESS => [
             self::SHIPPING_ADDRESS,
         ],
+        self::CONTACT => [
+            self::SHIPPING_ADDRESS,
+            self::BILLING_ADDRESS,
+        ]
     ];
 
     public static function validateEntityType($entityType)

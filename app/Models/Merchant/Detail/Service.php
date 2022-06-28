@@ -49,6 +49,7 @@ use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Services\Segment as SegmentAnalytics;
 use RZP\Notifications\AdminDashboard\Handler;
 use RZP\Models\Partner\Metric as PartnerMetric;
+use RZP\Models\BankingAccount as BankingAccount;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use \RZP\Models\State\Entity as StateChangeEntity;
 use RZP\Models\Transaction\CreditType as CreditType;
@@ -112,6 +113,39 @@ class Service extends Base\Service
 
         $this->ba=$this->app['basicauth'];
 
+    }
+
+    public function fetchMerchantDetailsForAccountReceivables(): array
+    {
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $response = [
+            Merchant\Entity::BILLING_LABEL      => $this->merchant->getLabelForInvoice(),
+            Entity::GSTIN                       => $merchantDetails->getGstin(),
+            Entity::COMPANY_CIN                 => $merchantDetails->getCompanyCin(),
+            Entity::BUSINESS_REGISTERED_ADDRESS => $merchantDetails->getBusinessRegisteredAddress(),
+            Entity::BUSINESS_REGISTERED_STATE   => $merchantDetails->getBusinessRegisteredStateName(),
+            Entity::BUSINESS_REGISTERED_CITY    => $merchantDetails->getBusinessRegisteredCity(),
+            Entity::BUSINESS_REGISTERED_PIN     => $merchantDetails->getBusinessRegisteredPin(),
+            'merchant_brand_logo'               => $this->merchant->getFullLogoUrlWithSize(),
+            'merchant_brand_color'              => $this->merchant->getBrandColorElseDefault(),
+            'merchant_contrast_color'           => $this->merchant->getContrastOfBrandColor(),
+        ];
+
+        $bankingAccountList = $this->merchant->activeBankingAccounts();
+        $currentAccount = current(array_filter($bankingAccountList->toArray(), function ($account) {
+            return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
+        }));
+
+        if (!empty($currentAccount)) {
+            $response['bank_account'] = [
+                "name"           => $currentAccount[BankingAccount\Entity::BENEFICIARY_NAME],
+                "ifsc"           => $currentAccount[BankingAccount\Entity::ACCOUNT_IFSC],
+                "account_number" => $currentAccount[BankingAccount\Entity::ACCOUNT_NUMBER]
+            ];
+        }
+
+        return $response;
     }
 
     public function fetchMerchantDetails()

@@ -354,6 +354,7 @@ class Service extends Base\Service
     protected function isAllowedInternalAppForDeDuplicateFA(): bool
     {
         return (($this->auth->isPayoutLinkApp() === true) or
+                ($this->auth->isAccountsReceivableApp() === true) or
                 ($this->auth->isVendorPaymentApp() === true) or
                 ($this->auth->isSettlementsApp() === true) or
                 ($this->auth->isScroogeApp() === true) or

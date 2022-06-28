@@ -1007,6 +1007,8 @@ class Name
 
     const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
 
+    const VIEW_TAX_STATES                      = 'view_tax_states';
+
     //FE premissions
     const VIEW_PUBLIC_PROFILE                   = 'view_public_profile';
     const VIEW_MANAGE_TEAM                      = 'view_manage_team';

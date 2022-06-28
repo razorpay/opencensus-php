@@ -417,6 +417,7 @@ class Route
         'merchant_invoice_entity_create_admin'     => ['post',     'merchants/invoice/entity/create',                'MerchantInvoiceController@entityCreateAdmin'                       ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
+        'account_receivables_merchant_details_fetch' => ['get',    'account_receivables/merchants/details',          'MerchantController@fetchMerchantDetailsForAccountReceivables'                             ],
         'smart_dashboard_merchant_details_fetch'   => ['get',      'smart_dashboard/merchants/details',              'MerchantController@getSmartDashboardMerchantDetails'               ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
         'smart_dashboard_merchant_details_patch'   => ['post',     'smart_dashboard/merchants/details',              'MerchantController@patchSmartDashboardMerchantDetails'             ],
@@ -2682,6 +2683,9 @@ class Route
         'contact_types_get'                        => ['get',      'contacts/types',                                 'ContactController@getTypes'                                        ],
         'contact_types_post'                       => ['post',     'contacts/types',                                 'ContactController@postType'                                        ],
         'contact_types_get_internal'               => ['get',      'contacts_internal/types',                        'ContactController@getTypes'                                        ],
+        'contact_create_address'                   => ['post',     'contacts/{id}/addresses',                        'ContactController@postCreateAddress'                               ],
+        'contact_fetch_addresses'                  => ['get',      'contacts/{id}/addresses',                        'ContactController@getAddresses'                                    ],
+        'contact_fetch_address'                    => ['get',      'contacts/{contactId}/addresses/{addressId}',     'ContactController@getAddress'                                      ],
 
         // Fund Account Validation
         'fund_account_validate'                    => ['post',     'fund_accounts/validations',                      'FundAccountValidationController@create'                            ],
@@ -4518,6 +4522,7 @@ class Route
         'transaction_settled_data_fix',
         'contact_types_get_internal',
         'contact_get_internal',
+        'account_receivables_merchant_details_fetch',
         'contact_create_internal',
         'fund_account_create_internal',
         'fund_account_update_internal',
@@ -4916,6 +4921,8 @@ class Route
         'guest_pincode_get',
 
         'internal_transactions_cron',
+
+        'contact_fetch_address',
 
         'transaction_statement_fetch_multiple_for_banking_internal',
     ];
@@ -5578,6 +5585,8 @@ class Route
 
         // Accounts-Receivable
         'accounts_receivable_all_routes',
+        'contact_create_address',
+        'contact_fetch_addresses',
 
         // Vendor Portal Invitation
         'invite_to_vendor_portal',
@@ -8370,12 +8379,15 @@ class Route
         'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'accounts_receivable_all_routes'               => '*',
+        'tax_get_meta_states'                          => Permission::VIEW_TAX_STATES,
         'invite_to_vendor_portal'                      => Permission::INVITE_VENDOR,
         'resend_invite_to_vendor_portal'               => Permission::INVITE_VENDOR,
         'merchant_edit_config_logo'                    => Permission::MERCHANT_CONFIG_LOGO,
         'contact_get'                                  => Permission::VIEW_CONTACT,
         'contact_list'                                 => Permission::VIEW_CONTACT,
         'contact_create'                               => Permission::CREATE_CONTACT,
+        'contact_create_address'                       => Permission::CREATE_CONTACT,
+        'contact_fetch_addresses'                      => Permission::VIEW_CONTACT,
         'corporate_card_update'                        => Permission::EDIT_CORPORATE_CARD,
         'corporate_card_get'                           => Permission::VIEW_CORPORATE_CARD,
         'corporate_card_list'                          => Permission::VIEW_CORPORATE_CARD,
@@ -8856,6 +8868,17 @@ class Route
             'banking_account_service_pincode_serviceability_check',
         ],
 
+        'accounts_receivable' => [
+            'contact_get_internal',
+            'account_receivables_merchant_details_fetch',
+            'payment_links_create',
+            'settings_fetch_internal',
+            'settings_upsert_internal',
+            'payment_links_get',
+            'payout_create_internal',
+            'contact_fetch_address',
+        ],
+
         'metro' => [
             'payout_email_attachments',
         ],
@@ -9097,6 +9120,8 @@ class Route
             'contact_types_get',
             'contact_types_post',
             'contact_update',
+            'contact_create_address',
+            'contact_fetch_addresses',
             'coupon_validate',
             'create_credit_note',
             'create_low_balance_config',
@@ -13846,6 +13871,9 @@ class Route
         'contact_types_get',
         'contact_types_post',
         'contact_create_internal',
+        'contact_create_address',
+        'contact_fetch_addresses',
+        'contact_fetch_address',
 
         'banking_account_beneficiary_fetch',
         'fund_account_validate',

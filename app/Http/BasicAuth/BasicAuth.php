@@ -1719,6 +1719,11 @@ class BasicAuth
         return $this->internalApp === 'payout_links';
     }
 
+    public function isAccountsReceivableApp()
+    {
+        return $this->internalApp === 'accounts_receivable';
+    }
+
     public function isPayoutService()
     {
         return $this->internalApp === 'payouts_service';
@@ -1755,6 +1760,7 @@ class BasicAuth
                 ($this->isVendorPaymentApp() === true) or
                 ($this->isMetroApp() === true) or
                 ($this->isPayoutLinkApp() === true) or
+                ($this->isAccountsReceivableApp() === true) or
                 ($this->isCapitalCardsApp() === true) or
                 ($this->isMobApp() === true) or
                 ($this->isCapitalLOCApp() === true) or

@@ -144,6 +144,8 @@ class UserRolePermissionsMap
 
                  Permission::COUPON_VALIDATE,
 
+                 Permission::VIEW_TAX_STATES,
+
                  Permission::ADD_MERCHANT_EMAIL,
                  Permission::MERCHANT_GET_OAUTH_TOKEN,
                  Permission::UPDATE_USER_ROLE,
@@ -274,6 +276,8 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_PREFERENCE,
                  Permission::VIEW_MERCHANT_PREFERENCE,
 
+                 Permission::VIEW_TAX_STATES,
+
                  Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
                  Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
                  // Download payout attachments
@@ -385,6 +389,8 @@ class UserRolePermissionsMap
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
                  Permission::UPDATE_ACCOUNTING_INTEGRATION,
 
+                 Permission::VIEW_TAX_STATES,
+
                  Permission::CREATE_INVITATION,
                  Permission::VIEW_MERCHANT_PREFERENCE,
                  // Download payout attachments
@@ -439,6 +445,8 @@ class UserRolePermissionsMap
                  Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
                  Permission::ENABLE_EMAIL_IMPORT,
                  Permission::INVITE_VENDOR,
+
+                 Permission::VIEW_TAX_STATES,
 
                  Permission::VIEW_TAX_PAYMENTS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
@@ -524,6 +532,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_USER_OTP,
+                 Permission::VIEW_TAX_STATES,
                  Permission::VIEW_MERCHANT_PREFERENCE,
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,

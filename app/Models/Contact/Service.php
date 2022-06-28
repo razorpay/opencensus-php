@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Address;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FundAccount\Service as FundAccountService;
@@ -147,5 +148,39 @@ class Service extends Base\Service
         $typeObj->addNewCustom($input[Entity::TYPE], $this->merchant);
 
         return $typeObj->getAll($this->merchant);
+    }
+
+    public function createAddress($contactId, array $input)
+    {
+        $contact = $this->repo->contact->findByPublicIdAndMerchant(
+            $contactId, $this->merchant);
+
+        $address = (new Address\Core)->create($contact, Address\Type::CONTACT, $input);
+
+        return $address->toArrayPublic();
+    }
+
+    public function fetchAddresses($contactId, array $input)
+    {
+        Entity::verifyIdAndStripSign($contactId);
+
+        $contact = $this->repo->contact->findByIdAndMerchant($contactId, $this->merchant);
+
+        $addresses = $this->repo->address->fetchAddressesForEntity($contact, $input);
+
+        return $addresses->toArrayPublic();
+    }
+
+    public function fetchAddress($contactID, $addressID)
+    {
+        Entity::verifyIdAndStripSign($contactID);
+
+        Address\Entity::verifyIdAndStripSign($addressID);
+
+        $contact = $this->repo->contact->findByIdAndMerchant($contactID, $this->merchant);
+
+        $addresses = $this->repo->address->findByEntityAndId($addressID, $contact);
+
+        return $addresses->toArrayPublic();
     }
 }

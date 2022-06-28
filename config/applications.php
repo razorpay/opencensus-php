@@ -905,6 +905,14 @@ return [
         'vendor_portal_merchant_id' => env('VENDOR_PORTAL_MERCHANT_ID', '')
     ],
 
+    'accounts_receivable' => [
+        'url' => env('ACCOUNTS_RECEIVABLE_HOST_URL'),
+        // the secret used by the accounts receviable to call apis under internal auth
+        // this same secret is used as the password to call APIs on the micro-service
+        'secret' => env('ACCOUNTS_RECEIVABLE_PASSWORD'),
+        'timeout' => env('ACCOUNTS_RECEIVABLE_TIMEOUT_SECS', 60),
+    ],
+
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
     'payout_links' => [
         'url'                    => env('APP_PAYOUT_LINKS_URL', 'http://localhost:8000'),
