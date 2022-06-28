@@ -128,42 +128,48 @@ class Service extends Base\Service
             ]
         );
 
+        if(!isset($iin)){
+            return null;
+        }
+
         return $this->repo->deleteOrFail($iin);
     }
 
-    public function deleteBulk($id)
+    public function deleteBulk($input)
     {
 
         $failedIds = [];
+        $deletedIds = [];
+        $failedCount = 0;
 
-        for($val = 0; $val < 100 ;$val++){
+        for($val = 0; $val < 10 ;$val++){
 
+            $id = $input + $val;
             try
             {
-                $id = $id + $val;
 
                 $this->deleteIin($id);
-
+                $deletedIds[] = ($id);
                 $this->trace->info(TraceCode::TOKEN_IIN_DELETE_BULK,
                 [
-                    'id'    => ($id + $val)
+                    'id'    => ($id)
                 ]
                 );
 
             }
             catch (\Exception $e)
             {
-                $this->trace->traceException($e,
+                $this->trace->error($e,
                     TraceCode::TOKEN_IIN_DELETE_BULK_FAILED,
                     [
-                        'id'    => ($id + $val),
+                        'id'    => ($id),
                         'error'  => $e->getMessage(),
                     ]
                 );
 
                 $failedCount++;
 
-                $failedIds[] = ($id + $val);
+                $failedIds[] = ($id);
             }
 
         }
@@ -171,6 +177,7 @@ class Service extends Base\Service
         $response = [
             'failed'    => $failedCount,
             'failedIds' => $failedIds,
+            'deletedIds' => $deletedIds,
         ];
 
         return $response;
