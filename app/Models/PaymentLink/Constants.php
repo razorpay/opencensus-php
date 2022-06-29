@@ -54,7 +54,5 @@ class Constants
 
     const DEFAULT_IMAGE_COMPRESSION_QUALITY = 75;
 
-    const RAZORX_PP_IMAGE_OPTIMIZAION = 'raxorx_pp_image_optimization';
-
     const SKIP_IMAGE_COMPRESSION_FORMAT = ['gif', 'GIF', 'webp', 'WEBP'];
 }

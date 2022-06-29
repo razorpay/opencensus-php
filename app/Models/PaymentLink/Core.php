@@ -2039,51 +2039,21 @@ class Core extends Base\Core
      * @return array Image cdn urls
      * @throws \RZP\Exception\ServerErrorException
      */
-    public function   upload(array $input, Merchant\Entity $merchant): array
+    public function upload(array $input, Merchant\Entity $merchant): array
     {
         $urls = [];
 
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
-            Constants::RAZORX_PP_IMAGE_OPTIMIZAION,
-            $this->mode);
-
-        if ($variant === 'on')
-        {
-            foreach ($input['images'] as $image)
-            {
-                $processedData = $this->processImage($image);
-
-                $url = $this->uploadToS3($merchant, $processedData[0], $processedData[1]);
-
-                $urls[] = $url;
-            }
-
-            $this->trace->info(TraceCode::PAYMENT_PAGE_IMAGE_UPLOAD_OPTIMIZATION, $urls);
-
-            return $urls;
-        }
-
-        $cdn  = sprintf(
-            'https://s3.ap-south-1.amazonaws.com/rzp-%s-merchant-assets',
-            $this->env === 'production' ? 'prod' : 'nonprod');
 
         foreach ($input['images'] as $image)
         {
-            $filenameWithoutExt = str_before($image->getClientOriginalName(), '.' . $image->getClientOriginalExtension());
+            $processedData = $this->processImage($image);
 
-            $uploadFilename = 'payment-link/description/' . $filenameWithoutExt . '_' . UniqueIdEntity::generateUniqueId();
+            $url = $this->uploadToS3($merchant, $processedData[0], $processedData[1]);
 
-            $ufhService = $this->app['ufh.service'];
-
-            $file = $ufhService->uploadFileAndGetUrl(
-                $image,
-                $uploadFilename,
-                Constants::PAYMENT_LINK_DESCRIPTION,
-                $merchant,
-                ['Content-Disposition' => 'inline']);
-
-            $urls[] = $cdn . '/' . $file[Constants::RELATIVE_LOCATION];
+            $urls[] = $url;
         }
+
+        $this->trace->info(TraceCode::PAYMENT_PAGE_IMAGE_UPLOAD_OPTIMIZATION, $urls);
 
         return $urls;
     }
