@@ -3,11 +3,13 @@
 namespace RZP\Models\Merchant\Cron\Collectors;
 
 use RZP\Constants\Mode;
-use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
-use RZP\Models\Merchant\Cron\Dto\CollectorDto;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
+use RZP\Services\ApachePinotClient;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Escalations\Entity;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\Cron\Dto\CollectorDto;
+use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 
 class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 {
@@ -29,21 +31,56 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
 
         $merchantList = $this->repo
             ->merchant_promotion
-            ->fetchMerchantIdsWithAnyPromotion(
-                $merchantIdList
-            );
+            ->fetchMerchantIdsWithAnyPromotion($merchantIdList);
 
-        $merchantList =  array_diff($merchantIdList, $merchantList);
+        $merchantList = array_diff($merchantIdList, $merchantList);
 
-        $transactedMerchants = $this->repo->transaction->filterMerchantsWithFirstTransactionAboveTimestamp(
-            $merchantList, $startTime);
+        $merchantIdChunks = array_chunk($merchantList, 100);
 
-        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-            'args'          => $this->args,
-            'start_time'    => $startTime,
-            'end_time'      => $endTime,
-            'transactedMerchants' => count($transactedMerchants)
-        ]);
+        $transactedMerchants = [];
+
+        foreach ($merchantIdChunks as $merchantIdChunk)
+        {
+            $query = 'select min(created_at) as first_transaction_timestamp, merchant_id from payments_v1 where merchant_id in (%s) and base_amount > 0 group by merchant_id limit %s';
+
+            $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", count($merchantList));
+
+            // fetch all merchants first transaction timestamp
+            $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+
+            if (empty($queryResponse) === true)
+            {
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'type'          => 'first_payment_offer',
+                    'reason'        => 'no merchants found',
+                    'step'          => 'first_transaction_timestamp',
+                    'args'          => $this->args,
+                    'start_time'    => $startTime,
+                    'end_time'      => $endTime
+                ]);
+
+                return CollectorDto::create(null);
+            }
+
+            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                'merchants_count' => count($queryResponse),
+                'type'            => 'first_payment_offer',
+                'step'            => 'first_transaction_timestamp',
+                'args'            => $this->args,
+                'start_time'      => $startTime,
+                'end_time'        => $endTime,
+            ]);
+
+            $transactedMerchants = array_merge($transactedMerchants, array_keys(
+                array_filter(
+                    array_column($queryResponse, 'first_transaction_timestamp', Entity::MERCHANT_ID),
+                    function ($firstTxnTimestamp) use ($startTime)
+                    {
+                        return $firstTxnTimestamp >= $startTime;
+                    }
+                )
+            ));
+        }
 
         $merchantIdList =  array_diff($merchantList, $transactedMerchants);
 
@@ -71,7 +108,7 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
             }
         }
 
-        $data["merchantIds"] = $finalMidList;
+        $data['merchantIds'] = $finalMidList;
 
         return CollectorDto::create($data);
     }
