@@ -101,6 +101,7 @@ class Gateway
     const NETBANKING_BDBL        = 'netbanking_bdbl';
     const NETBANKING_SARASWAT    = 'netbanking_saraswat';
     const NETBANKING_UCO         = 'netbanking_uco';
+    const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_TMB         = 'netbanking_tmb';
     const NETBANKING_DBS         = 'netbanking_dbs';
     const NACH_CITI              = 'nach_citi';
@@ -569,6 +570,7 @@ class Gateway
         self::NETBANKING_DBS,
         self::NETBANKING_SARASWAT,
         self::NETBANKING_HDFC,
+        self::NETBANKING_UJJIVAN,
         self::OFFLINE_HDFC,
         self::NETBANKING_TMB,
     ];
@@ -621,6 +623,7 @@ class Gateway
         Payment\Gateway::UPI_YESBANK,
         Payment\Gateway::NETBANKING_DLB,
         Payment\Gateway::NETBANKING_TMB,
+        Payment\Gateway::NETBANKING_UJJIVAN,
         Payment\Gateway::TWID,
     ];
 
@@ -1333,6 +1336,7 @@ class Gateway
         Payment\Gateway::NETBANKING_BDBL        => 1618511400,
         Payment\Gateway::NETBANKING_SARASWAT    => 1618511400,
         Payment\Gateway::NETBANKING_UCO         => 1618511400,
+        Payment\Gateway::NETBANKING_UJJIVAN     => 1618511400,
         Payment\Gateway::NETBANKING_DBS         => 1618511400,
     ];
 
@@ -1457,6 +1461,7 @@ class Gateway
             self::NETBANKING_DLB,
             self::NETBANKING_NSDL,
             self::NETBANKING_BDBL,
+            self::NETBANKING_UJJIVAN,
             self::NETBANKING_SARASWAT,
             self::NETBANKING_UCO,
             self::NETBANKING_TMB,
@@ -2810,6 +2815,7 @@ class Gateway
         IFSC::BDBL         => Gateway::NETBANKING_BDBL,
         IFSC::SRCB         => Gateway::NETBANKING_SARASWAT,
         IFSC::UCBA         => Gateway::NETBANKING_UCO,
+        IFSC::UJVN         => Gateway::NETBANKING_UJJIVAN,
         IFSC::TMBL         => Gateway::NETBANKING_TMB,
         IFSC::DBSS         => Gateway::NETBANKING_DBS,
         Netbanking::LAVB_R => Gateway::NETBANKING_DBS,
@@ -2885,6 +2891,7 @@ class Gateway
         IFSC::SRCB => Gateway::NETBANKING_SARASWAT,
         IFSC::UCBA => Gateway::NETBANKING_UCO,
         IFSC::TMBL => Gateway::NETBANKING_TMB,
+        IFSC::UJVN => Gateway::NETBANKING_UJJIVAN,
         Netbanking::HDFC_C =>Gateway::NETBANKING_HDFC,
     ];
 
@@ -4043,6 +4050,7 @@ class Gateway
             self::NETBANKING_KVB,
             self::TWID,
             self::NETBANKING_BDBL,
+            self::NETBANKING_UJJIVAN,
             self::NETBANKING_SARASWAT,
             self::NETBANKING_UCO,
             self::EMERCHANTPAY,
@@ -4158,6 +4166,7 @@ class Gateway
             self::TWID,
             self::NETBANKING_PNB,
             self::NETBANKING_BDBL,
+            self::NETBANKING_UJJIVAN,
             self::NETBANKING_SARASWAT,
             self::NETBANKING_UCO,
             self::EMERCHANTPAY,

@@ -134,6 +134,8 @@ class Terminal extends Base
         $this->createSharedNetbankingBdblTerminal();
         $this->createSharedNetbankingSaraswatTerminal();
         $this->createSharedNetbankingUcoTerminal();
+        $this->createSharedNetbankingUjjivanTerminal();
+        $this->createSharedNetbankingUjjivanTpvTerminal();
         $this->createSharedNetbankingTmbTerminal();
         $this->createsharednetbankingDbsTerminal();
     }
@@ -4596,6 +4598,41 @@ class Terminal extends Base
             'gateway_merchant_id' => 'netbanking_uco_merchant_id',
             'netbanking'          => 1,
          ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+    public function createSharedNetbankingUjjivanTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id' => Shared::NETBANKING_UJVN_TERMINAL,
+            'merchant_id' => $merchantId,
+            'gateway' => Gateway::NETBANKING_UJJIVAN,
+            'gateway_merchant_id' => 'netbanking_ujjivan_merchant_id',
+            'netbanking' => 1,
+            'shared' => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+    }
+
+    public function createSharedNetbankingUjjivanTpvTerminal(array $attributes = []){
+
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'id'                    => Shared::NETBANKING_UJVN_TPV_TERMINAL,
+            'merchant_id'           => $merchantId,
+            'gateway'               => Gateway::NETBANKING_UJJIVAN,
+            'gateway_merchant_id'   => 'netbanking_ujjivan_merchant_id',
+            'netbanking'            => 1,
+            'tpv'                   => 1,
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

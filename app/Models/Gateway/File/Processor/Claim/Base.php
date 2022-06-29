@@ -55,6 +55,7 @@ class Base extends BaseProcessor
         Constants::SRCB,
         Constants::UCO,
         Constants::HDFC_CORP,
+        Constants::UJVN,
         Constants::RBL_CORP,
         Constants::DBS,
     ];

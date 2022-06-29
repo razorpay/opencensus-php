@@ -154,6 +154,10 @@ class Type
 
     const NSDL_NETBANKING_CLAIM             = 'nsdl_netbanking_claim';
 
+    const UJJIVAN_NETBANKING_REFUND         = 'ujjivan_netbanking_refund';
+
+    const UJJIVAN_NETBANKING_CLAIMS         = 'ujjivan_netbanking_claims';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
@@ -439,6 +443,8 @@ class Type
             self::DBS_NETBANKING_COMBINED_UNENCRYPTED,
             self::HDFC_CORP_NETBANKING_CLAIMS,
             self::HDFC_CORP_NETBANKING_REFUNDS,
+            self::UJJIVAN_NETBANKING_REFUND,
+            self::UJJIVAN_NETBANKING_CLAIMS,
             self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
             self::NIUM_SETTLEMENT_FILE
         ],
@@ -612,6 +618,8 @@ class Type
         self::AUBL_NETBANKING_REFUND,
         self::AUBL_NETBANKING_COMBINED,
         self::DLB_NETBAKING_REFUND,
+        self::UJJIVAN_NETBANKING_REFUND,
+        self::UJJIVAN_NETBANKING_CLAIMS,
         self::TMB_NETBANKING_REFUND,
         self::KOTAK_CORP_NETBANKING_REFUND,
         self::DATA_LAKE_SEGMENT_FILE,
@@ -828,6 +836,7 @@ class Type
             self::DBS_NETBANKING_COMBINED_UNENCRYPTED,
             self::HDFC_CORP_NETBANKING_REFUNDS,
             self::HDFC_CORP_NETBANKING_CLAIMS,
+            self::UJJIVAN_NETBANKING_REFUND,
             self::IOB_NETBANKING_REFUND,
             self::JSB_NETBANKING_CLAIM,
             self::KVB_NETBANKING_CLAIM,

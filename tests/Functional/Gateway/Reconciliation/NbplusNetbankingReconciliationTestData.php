@@ -287,4 +287,13 @@ return [
         'TRANSACTION_STATUS'            => 'TRANSACTION_STATUS',
         'TRANSACTION_REQUESTED_DATE'    => 'TRANSACTION_REQUESTED_DATE'
     ],
+
+    'testUjjivanSuccessRecon' => [
+        'PRN'                           => '',
+        'BID'                           => 'UJ001',
+        'AMT'                           => 'AMT',
+        'STATUS'                        => 'Y',
+        'TXNDATE'                       => Carbon::today()->format("d-m-Y"),
+        'ACCOUNTNUMBER'                 => '1234'
+    ],
 ];

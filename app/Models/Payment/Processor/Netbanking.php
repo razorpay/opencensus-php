@@ -142,6 +142,7 @@ class Netbanking
         IFSC::BDBL,
         IFSC::SRCB,
         IFSC::UCBA,
+        IFSC::UJVN,
         IFSC::TMBL,
         IFSC::DBSS,
         self::LAVB_R,
@@ -195,6 +196,7 @@ class Netbanking
         IFSC::DCBL,
         IFSC::SRCB,
         IFSC::UCBA,
+        IFSC::UJVN,
         IFSC::TMBL,
         IFSC::DBSS,
         self::LAVB_R,
@@ -1118,6 +1120,14 @@ class Netbanking
                 IFSC::UCBA,
             ]
         ],
+        Gateway::NETBANKING_UJJIVAN => [
+            'retail' => [
+                IFSC::UJVN,
+            ],
+            'tpv' => [
+                IFSC::UJVN,
+            ]
+        ],
         Gateway::NETBANKING_TMB => [
             'retail' => [
                 IFSC::TMBL,
@@ -1578,6 +1588,7 @@ class Netbanking
         $rearchBanks = [
             Bank::YESB,
             Bank::DBSS,
+            Bank::UJVN,
             Bank::ICIC
         ];
 

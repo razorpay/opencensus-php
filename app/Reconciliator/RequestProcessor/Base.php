@@ -95,6 +95,7 @@ class Base extends Core
     const NETBANKING_FSB           = 'NetbankingFsb';
     const NETBANKING_IOB           = 'NetbankingIob';
     const NETBANKING_DCB           = 'NetbankingDcb';
+    const NETBANKING_UJJIVAN       = 'NetbankingUjjivan';
     const NETBANKING_UBI           = 'NetbankingUbi';
     const NETBANKING_AUSF          = 'NetbankingAusf';
     const NETBANKING_DLB           = 'NetbankingDlb';
@@ -244,6 +245,7 @@ class Base extends Core
         self::TWID                     => [],
         self::VIRTUAL_ACC_ICICI        => [],
         self::NETBANKING_DLB           => ['alerts@dhanbank.co.in'],
+        self::NETBANKING_UJJIVAN           => [],
         self::NETBANKING_TMB           => ['recon@tmbank.in'],
         self::CHECKOUT_DOT_COM         => [],
         self::CARDLESS_EMI_ZESTMONEY   => ['finops.settlements@zestmoney.in'],
@@ -317,6 +319,7 @@ class Base extends Core
         Gateway::NETBANKING_FSB         => self::NETBANKING_FSB,
         Gateway::NETBANKING_IOB         => self::NETBANKING_IOB,
         Gateway::NETBANKING_DCB         => self::NETBANKING_DCB,
+        Gateway::NETBANKING_UJJIVAN     => self::NETBANKING_UJJIVAN,
         Gateway::NETBANKING_UBI         => self::NETBANKING_UBI,
         Gateway::NETBANKING_AUSF        => self::NETBANKING_AUSF,
         Gateway::NETBANKING_KOTAK       => self::NETBANKING_KOTAK_V2,

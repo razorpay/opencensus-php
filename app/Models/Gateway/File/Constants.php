@@ -69,6 +69,7 @@ class Constants
     const HSBC             = 'hsbc';
     const SRCB             = 'srcb';
     const HDFC_CORP        = 'hdfc_corp';
+    const UJVN             = 'ujjivan';
 
     const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
     const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
@@ -164,6 +165,7 @@ class Constants
             self::UCO,
             self::DBS,
             self::HDFC_CORP,
+            self::UJVN,
         ],
         Type::CARDSETTLEMENT => [
             self::AXIS
@@ -288,6 +290,7 @@ class Constants
             self::UCO         => ['uco-netbanking-refunds@razorpay.com'],
             self::DBS         => ['dbs-netbanking-claims@razorpay.com'],
             self::HDFC_CORP   => [],
+            self::UJVN        => [],
             self::RBL_CORP    => [],
         ],
 

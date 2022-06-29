@@ -377,6 +377,7 @@ class Entity
     const BILLDESK_SIHUB         = 'billdesk_sihub';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
     const EMERCHANTPAY           = 'emerchantpay';
+    const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_DBS         = 'netbanking_dbs';
 
     // P2P Service Entities
@@ -1385,6 +1386,7 @@ class Entity
         self::NETBANKING_TMB         => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_IDFC        => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_VIJAYA      => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_UJJIVAN     => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_DBS         => \RZP\Gateway\Netbanking\Base::class,
 
         self::MPI_BLADE              => \RZP\Gateway\Mpi\Base::class,

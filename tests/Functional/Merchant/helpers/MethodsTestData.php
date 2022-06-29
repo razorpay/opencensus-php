@@ -764,6 +764,7 @@ return [
                     ['bank' => 'TNSC'],
                     ['bank' => 'TBSB'],
                     ['bank' => 'UCBA'],
+                    ['bank' => 'UJVN'],
                     ['bank' => 'UBIN'],
                     ['bank' => 'CORP'],
                     ['bank' => 'VARA'],
