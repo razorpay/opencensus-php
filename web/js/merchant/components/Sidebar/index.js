@@ -62,6 +62,11 @@ const BASE_ROUTES = {
 )
 @RTracking(() => window.rzpQ.component('Sidebar'))
 export default class Sidebar extends Component {
+  constructor(props) {
+    super(props);
+    this.hideSidebar = this.hideSidebar.bind(this);
+  }
+
   // currently active routes in tabbed containers
   // populated with initial values
   routes = { ...BASE_ROUTES };
@@ -164,7 +169,9 @@ export default class Sidebar extends Component {
     }
   };
 
-  hideSidebar = () => this.props.showMobileMenu && this.props.toggleMobileMenu();
+  hideSidebar() {
+    return this.props.showMobileMenu && this.props.toggleMobileMenu();
+  }
 
   render() {
     const { user, config, logoURL, showMobileMenu } = this.props;
@@ -176,7 +183,6 @@ export default class Sidebar extends Component {
       isChargeAtWillEnabled: user.isChargeAtWillEnabled,
       isSettlementEnabled: user.isOndemandSettlementEnabled || user.isAutomaticSettlementEnabled,
     };
-
     return (
       <>
         <div className={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
