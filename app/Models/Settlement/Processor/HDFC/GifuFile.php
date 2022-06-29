@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Processor\HDFCCollectNow;
+namespace RZP\Models\Settlement\Processor\HDFC;
 
 use Carbon\Carbon;
 use Exception;
@@ -17,9 +17,11 @@ use RZP\Trace\TraceCode;
 
 class GifuFile extends Base\BaseGifuFile
 {
-    protected $fileToWriteName = 'hdfc_settlements_file';
+    protected $fileToWriteName;
 
     protected $bankName  = 'HDFCCollectNow';
+
+    protected $store = FileStore\Store::S3;  // Adding this so that a file store entity gets created
 
     protected $totalAmount;
 
@@ -37,12 +39,14 @@ class GifuFile extends Base\BaseGifuFile
 
         $date = Carbon::now()->format('d-m-Y');
 
-        $this->fileToWriteName = $this->fileToWriteName . '-' . $date ;
+        $fileDate = Carbon::parse($date)->isoFormat("DD_MM");
+
+        $this->fileToWriteName = 'GEFU' . '_' . $fileDate ;
 
         $this->transferMode = Base\TransferMode::SFTP;
     }
 
-    protected function customFormattingForFile($path)
+    protected function customFormattingForFile($path,FileStore\Creator $creator = null)
     {
 
         /*
@@ -58,6 +62,13 @@ class GifuFile extends Base\BaseGifuFile
         $stringDataForFile = str_replace('"', "", $stringDataFromFile);
 
         file_put_contents($path,$stringDataForFile);
+
+        if(is_null($creator) === false)
+        {
+            $creator->localFilePath($path);
+
+            $creator->save();
+        }
     }
 
 
@@ -74,15 +85,21 @@ class GifuFile extends Base\BaseGifuFile
 
         $date = Carbon::now()->format('d-m-Y');
 
-        $from = $fromTimestamp ?? Carbon::yesterday(Timezone::IST)->addHour(12)->getTimestamp();
+        $from = $fromTimestamp ?? Carbon::yesterday(Timezone::IST)->addHour(13)->getTimestamp(); // 1 pm
 
-        $to = $toTimestamp ?? Carbon::now(Timezone::IST)->addHour(12)->getTimestamp();
+        $to = $toTimestamp ?? Carbon::now(Timezone::IST)->getTimestamp();
 
         $dataFetch = $this->repo->settlement->getSettlementsBetweenTimePeriodForMerchantIds($input,$from,$to);
 
         $modData = $this->groupSettlementsByMid($dataFetch);
 
-        foreach ($input as $mid)
+        $this->trace->info(TraceCode::SETTLEMENT_FILE_MERCHANTS_TO_PROCESS,
+            [
+                'Mids with data' => array_keys($modData)
+            ]
+        );
+
+        foreach ($modData as $mid=>$value)
         {
             try{
                 $accountNumber = (new Merchant\Service())->getBankAccount($mid,[Type::ORG_SETTLEMENT])['account_number'];
@@ -93,9 +110,9 @@ class GifuFile extends Base\BaseGifuFile
                     continue;
                 }
 
-                $amount = $this->getAggregatedSettlementAmount($modData[$mid]);
+                $amount = $this->getAggregatedSettlementAmount($value);
 
-                $narration = $this->getNarration($modData[$mid],$mid);
+                $narration = $this->getNarration($value,$mid);
 
                 $brCode = $this->getBrCode($accountNumber);
             }
@@ -107,7 +124,7 @@ class GifuFile extends Base\BaseGifuFile
                     TraceCode::SETTLEMENT_FILE_CREATE_ERROR,
                     [
                         'exception'      => $exception->getMessage(),
-                        'Failed mids'    => $failedMids
+                        'Failed mid'     => $mid
                     ]
                 );
 
@@ -121,7 +138,7 @@ class GifuFile extends Base\BaseGifuFile
             $dataAdd = [
                 'A/C No'        =>  $accountNumber,
                 'D/C'           =>  'C',
-                'AMT'           =>  $amount,
+                'AMT'           =>  number_format($amount,2),
                 'NARRATION'     =>  substr($narration,0,40),
                 'BR CODE'       =>  $brCode,
                 'Currency'      =>  $currency,
@@ -136,24 +153,27 @@ class GifuFile extends Base\BaseGifuFile
         $poolAcNo = '';
 
         try{
-            $poolAcNo = (new Merchant\Service())->getBankAccount($input[0],[Type::MERCHANT])['account_number'];
+            $poolAcNo = (new Merchant\Service())->getBankAccount(array_key_first($modData),[Type::MERCHANT])['account_number'];
         }
         catch (BadRequestException $exception)
         {
             $this->trace->info(
-                TraceCode::SETTLEMENT_POOL_ACCOUNT_NOT_FOUND
+                TraceCode::SETTLEMENT_POOL_ACCOUNT_NOT_FOUND ,
+                [
+                    'Mid' => array_key_first($modData)
+                ]
             );
         }
 
         $brCodeForPool = $this->getBrCode($poolAcNo);
 
-        $org = $this->repo->merchant->getMerchantOrg($input[0]);
+        $narrationDate = Carbon::parse($date)->isoFormat("DDMMYY");
 
         $dataDebit = [
-            'A/C No'        => $poolAcNo, //Add from env
+            'A/C No'        => $poolAcNo,
             'D/C'           => 'D',
-            'AMT'           => $this->totalAmount,
-            'NARRATION'     => substr($org,0,40),
+            'AMT'           => number_format($this->totalAmount,2),
+            'NARRATION'     => 'GIB Settlement_'.$narrationDate,
             'BR CODE'       => $brCodeForPool,
             'Currency'      => 1,
             'Value Date'    => $date
@@ -183,21 +203,12 @@ class GifuFile extends Base\BaseGifuFile
         return $newData;
     }
 
-
-    /**
-     * @throws \RZP\Exception\BadRequestException
-     */
-    protected function getAccountNumber($id){
-
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        return $this->repo->bank_account->getBankAccount($merchant,[Type::ORG_SETTLEMENT]);
-
-    }
-
     protected function getBrCode($data)
     {
-        return substr($data,0,4);
+        if(empty($data) === false)
+            return substr($data,0,4);
+
+        return '';
     }
 
     protected function getAggregatedSettlementAmount($data)
@@ -209,7 +220,7 @@ class GifuFile extends Base\BaseGifuFile
             $totalSum = $totalSum + $datum->amount;
         }
 
-        return $totalSum;
+        return $totalSum/100;
     }
 
     protected function getNarration($data,$mid): string
@@ -218,37 +229,54 @@ class GifuFile extends Base\BaseGifuFile
         // narration -> mid:setl_id:cards_tid/upi_tid
 
         $params['status'] = 'activated';
-        $params['enabled'] = true;
-        $params['card'] = true;
+        $params['enabled'] = '1';
+        $method = 'card';
         $params['gateway'] = 'hdfc';
 
         $terminals = $this->repo->terminal->fetch($params,$mid);
 
         if($terminals->count() === 0)
         {
-            $params['upi'] = true;
-            unset($params['card']);
-            $params['gateway'] = 'upi_mindgate';
-
-            $terminals = $this->repo->terminal->fetch($params,$mid);
+           $method = 'upi';
+           $params['gateway'] = 'upi_mindgate';
+           $terminals = $this->repo->terminal->fetch($params,$mid);
         }
+
+        $terminal = $this->filterTerminalBasedOnMethod($terminals,$method);
 
         $tId = '';
 
-        if($terminals->count()>0)
-            $tId = $terminals[0]->id;
+        if(is_null($terminal) === false)
+            $tId = $terminal['gateway_terminal_id'];
 
         $this->trace->info(
             TraceCode::SETTLEMENT_FILE_TERMINAL_FETCH,
             [
                 'Terminals Fetch Params' => $params,
-                'Terminals Count'        => $terminals->count()
+                'Terminals Count'        => $terminals->count(),
+                'Terminal picked'        => $terminals,
             ]
         );
 
         $setlId = $data[0]->id;
 
         return $mid . ":" . $setlId . ":" . $tId;
+    }
+
+    protected function filterTerminalBasedOnMethod($terminals,$method)
+    {
+        if($terminals->count() === 0)
+            return null;
+
+        foreach ($terminals as $terminal)
+        {
+            if($terminal->$method === true)
+            {
+               return $terminal;
+            }
+        }
+
+        return null;
     }
 
     protected function getBucketConfig()

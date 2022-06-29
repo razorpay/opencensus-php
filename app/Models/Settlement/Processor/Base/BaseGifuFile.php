@@ -70,8 +70,6 @@ abstract class BaseGifuFile extends Base\Core
 
         $path  = storage_path('files/filestore').'/'.$fileData['file_name'];
 
-        $this->customFormattingForFile($path);
-
         $file = new UploadedFile($path, $fileData['file_name'],null,null,true);
 
         $responseFromUfhUpload = $this->uploadFileToUfh($file, $this->type);
@@ -90,7 +88,7 @@ abstract class BaseGifuFile extends Base\Core
 
     abstract public function getGifuData($input,$from,$to);
 
-    abstract protected function customFormattingForFile($path);
+    abstract protected function customFormattingForFile($path,FileStore\Creator $creator = null);
 
     public function uploadFileToUfh(UploadedFile $file, string $type): array
     {
@@ -119,8 +117,6 @@ abstract class BaseGifuFile extends Base\Core
 
     public function generateGifuFile(array $gifuData, array $metadata = []): array
     {
-        $store = FileStore\Store::LOCAL;
-
         $fileName = $this->getFileToWriteName();
 
         $creator = new FileStore\Creator;
@@ -128,7 +124,7 @@ abstract class BaseGifuFile extends Base\Core
         $creator->extension(static::EXTENSION)
             ->content($gifuData)
             ->name($fileName)
-            ->store($store)
+            ->store($this->store)
             ->type($this->type)
             ->metadata($metadata);
 
@@ -136,10 +132,12 @@ abstract class BaseGifuFile extends Base\Core
 
         $creator->save();
 
+        $this->customFormattingForFile($creator->getFullFilePath(),$creator);
+
         $file = $creator->get();
 
         return [
-            'file_name'  => basename($file['local_file_path']),
+            'file_name'  => basename($file['local_file_path'])
         ];
 
     }

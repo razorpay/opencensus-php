@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Settlement;
 
+use Illuminate\Support\Facades\DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
@@ -2687,7 +2688,7 @@ class SettlementTest extends TestCase
 
         $org = $this->fixtures->create('org',[
         'id' => 'IUXvshap3Hbzos',
-        'display_name' => 'HDFCCollectNow Bank'
+        'display_name' => 'HDFC CollectNow Bank'
         ]);
 
         $this->fixtures->create('feature', [
@@ -2712,6 +2713,7 @@ class SettlementTest extends TestCase
                     'gateway' => 'hdfc',
                     'gateway_merchant_id' => '250000002',
                     'gateway_secure_secret' => "1231424",
+                    'gateway_terminal_id' => '250000004',
                     'card' => 1,
                     'emi'  => 1,
                     'mode' => 2,
@@ -2768,9 +2770,13 @@ class SettlementTest extends TestCase
 
         $this->initiateSettlements(Channel::AXIS);
 
+        Carbon::setTestNow(Carbon::tomorrow(Timezone::IST));
+
         $this->ba->cronAuth();
 
         $this->startTest();
+
+        Carbon::setTestNow();
     }
 
     public function testGefuFileCreationWithoutPoolAccount()
@@ -2781,7 +2787,7 @@ class SettlementTest extends TestCase
 
         $org = $this->fixtures->create('org',[
             'id' => 'IUXvshap3Hbzos',
-            'display_name' => 'HDFCCollectNow Bank'
+            'display_name' => 'HDFC CollectNow Bank'
         ]);
 
         $this->fixtures->create('feature', [
@@ -2804,6 +2810,7 @@ class SettlementTest extends TestCase
                     'gateway' => 'hdfc',
                     'gateway_merchant_id' => '250000002',
                     'gateway_secure_secret' => "1231424",
+                    'gateway_terminal_id'   => '250000003',
                     'card' => 1,
                     'emi'  => 1,
                     'mode' => 2,
@@ -2826,6 +2833,17 @@ class SettlementTest extends TestCase
                 'bank_account',
                 [
                     'entity_id' => $merchantId,
+                    'account_number'       => random_integer(14),
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'merchant'
+                ]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number'  => random_integer(14),
                     'beneficiary_name' => random_string_special_chars(10) ,
                     'merchant_id' =>$merchantId,
                     'type'      => 'org_settlement'
@@ -2850,9 +2868,13 @@ class SettlementTest extends TestCase
 
         $this->initiateSettlements(Channel::AXIS);
 
+        Carbon::setTestNow(Carbon::tomorrow(Timezone::IST));
+
         $this->ba->cronAuth();
 
         $this->startTest();
+
+        Carbon::setTestNow();
     }
 
 }

@@ -25,6 +25,8 @@ class GifuFile extends Base\BaseGifuFile
 
     protected $totalAmount;
 
+    protected $store = FileStore\Store::LOCAL;
+
     protected $mailAddress = Constants::MAIL_ADDRESSES[Constants::CROSS_BORDER_TECH];
 
     protected $jobNameStage = BeamConstants::NIUM_STAGE_JOB_NAME;
@@ -44,7 +46,7 @@ class GifuFile extends Base\BaseGifuFile
 
     }
 
-    protected function customFormattingForFile($path)
+    protected function customFormattingForFile($path,$creator = null)
     {
         // Do nothing
     }
