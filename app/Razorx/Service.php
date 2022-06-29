@@ -260,7 +260,8 @@ class Service extends Base\Service
             'set_pref_corporate_cards',
             'capital_addon_cards_statement_export',
             'optimizer_onboarding',
-            'rx_yellow_ai_enabled'
+            'rx_yellow_ai_enabled',
+            'rx_zoho_bank_account_sync'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
