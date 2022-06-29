@@ -65,6 +65,48 @@ class InternalTest extends TestCase
         $this->runRequestResponseFlow($requestData);
     }
 
+    public function testInternalEntityCreateForTestPayout()
+    {
+        $testData = [
+            'request' => [
+                'content' => [
+                    'utr'                => '999999999',
+                    'amount'             => '1',
+                    'base_amount'        => '1',
+                    'transaction_date'   => 1611132045,
+                    'currency'           => 'INR',
+                    'type'               => 'credit',
+                    'merchant_id'        => 'sampleMerchant',
+                    'source_entity_id'   => 'sampleEntityId',
+                    'source_entity_type' => 'payout',
+                    'mode'               => 'IMPS',
+                    'bank_name'          => 'HDFC Bank',
+                    'remarks'            => 'test_payout',
+                ],
+                'url'     => '/internal',
+                'method'  => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'        => 'sampleMerchant',
+                    'status'             => 'expected',
+                    'type'               => 'credit',
+                    'currency'           => 'INR',
+                    'amount'             => 1,
+                    'base_amount'        => 1,
+                    'utr'                => '999999999',
+                    'source_entity_id'   => 'sampleEntityId',
+                    'source_entity_type' => 'payout',
+                    'mode'               => 'IMPS',
+                    'bank_name'          => 'HDFC Bank',
+                    'remarks'            => 'test_payout',
+                ],
+            ],
+        ];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testInternalEntityFail()
     {
         $defaultValues = [

@@ -131,6 +131,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
+    public function getBankName()
+    {
+        return $this->getAttribute(self::BANK_NAME);
+    }
+
     // ****************** End of public getters ******************
 
     //****************** Start of public setters ******************

@@ -24271,6 +24271,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout->getId(), $internalEntity->getEntityId());
         $this->assertEquals('payout', $internalEntity->getEntityType());
         $this->assertEquals('test_payout', $internalEntity->getRemarks());
+        $this->assertEquals('Yes Bank', $internalEntity->getBankName());
 
 
         $initiatedLedgerPayload = $ledgerSnsPayloadArray[0];
@@ -24361,6 +24362,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout->getId(), $internalEntity->getEntityId());
         $this->assertEquals('payout', $internalEntity->getEntityType());
         $this->assertEquals('test_payout', $internalEntity->getRemarks());
+        // bank name will be null if payout is made to vpa
+        $this->assertNull($internalEntity->getBankName());
 
 
         $initiatedLedgerPayload = $ledgerSnsPayloadArray[0];
@@ -24559,6 +24562,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout->getId(), $internalEntity->getEntityId());
         $this->assertEquals('payout', $internalEntity->getEntityType());
         $this->assertEquals('test_payout', $internalEntity->getRemarks());
+        $this->assertNull($internalEntity->getBankName());
 
         //Pushed once for payout create transaction
         Queue::assertPushed(Transactions::class, 1);

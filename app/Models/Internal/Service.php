@@ -48,31 +48,33 @@ class Service extends Base\Service
 
     public function createOnPayout(Payout\Entity $payout, bool $isTestPayout = false): array
     {
-        $this->trace->info(TraceCode::INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA, [
-            Payout\Entity::ID          => $payout->getPublicId(),
-            Payout\Entity::AMOUNT      => $payout->getAmount(),
-            Payout\Entity::BASE_AMOUNT => $payout->getBaseAmount(),
-            Payout\Entity::UTR         => $payout->getUtr(),
-            Payout\Entity::CURRENCY    => $payout->getCurrency(),
-            Payout\Entity::TYPE        => self::TYPE_CREDIT,
-            Payout\Entity::UPDATED_AT  => $payout->getUpdatedAt(),
-            Payout\Entity::MODE        => $payout->getMode(),
-            Constants::IS_TEST_PAYOUT  => $isTestPayout,
-        ]);
+        $this->trace->info(TraceCode::INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA,
+                           [
+                               Payout\Entity::ID          => $payout->getPublicId(),
+                               Payout\Entity::AMOUNT      => $payout->getAmount(),
+                               Payout\Entity::BASE_AMOUNT => $payout->getBaseAmount(),
+                               Payout\Entity::UTR         => $payout->getUtr(),
+                               Payout\Entity::CURRENCY    => $payout->getCurrency(),
+                               Payout\Entity::TYPE        => self::TYPE_CREDIT,
+                               Payout\Entity::UPDATED_AT  => $payout->getUpdatedAt(),
+                               Payout\Entity::MODE        => $payout->getMode(),
+                               Constants::IS_TEST_PAYOUT  => $isTestPayout,
+                           ]);
 
         $remarks        = null;
-        $bankName       = null;
+        $beneBankName   = null;
         $beneMerchantId = null;
 
         if ($isTestPayout === true)
         {
-            list($isBeneWhitelisted, $beneMerchantId) = $this->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
-
+            [$beneBankName, $beneMerchantId] = $this->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
+            // This remark will be used by ART team to differentiate between regular inter-nodal transfers and
+            // inter account test payouts and help in reconciliation of the same.
             $remarks = self::TEST_PAYOUT_REMARK;
         }
         else
         {
-            list($bankName, $beneMerchantId) = $this->getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
+            list($beneBankName, $beneMerchantId) = $this->getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
         }
 
         if (empty($beneMerchantId) === true)
@@ -89,7 +91,7 @@ class Service extends Base\Service
                                  Entity::MODE             => $payout->getMode(),
                                  Entity::ENTITY_ID        => $payout->getId(),
                                  Entity::ENTITY_TYPE      => $payout->getEntity(),
-                                 Entity::BANK_NAME        => $bankName,
+                                 Entity::BANK_NAME        => $beneBankName,
                                  Entity::CURRENCY         => $payout->getCurrency(),
                                  Entity::TYPE             => self::TYPE_CREDIT,
                                  Entity::TRANSACTION_DATE => $payout->getUpdatedAt(),
@@ -205,14 +207,15 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_BALANCE_NOT_FOUND);
         }
         $bankingAccount = $this->repo->banking_account->getFromBalanceId($balance->getId());
-        if (empty($bankingAccount) === true) {
+        if (empty($bankingAccount) === true)
+        {
             // throw exception
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND);
         }
 
         // make ledger create request
         $journal = $this->createJournal([
-            Entity::MERCHANT_ID      => $internal[Entity::MERCHANT_ID],
+            Entity::MERCHANT_ID      => $internal->getMerchantId(),
             Entity::CURRENCY         => $internal[Entity::CURRENCY],
             Entity::AMOUNT           => strval($internal[Entity::AMOUNT]),
             Entity::BASE_AMOUNT      => strval($internal[Entity::BASE_AMOUNT]),
@@ -238,15 +241,22 @@ class Service extends Base\Service
 
     public function getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted(Payout\Entity $payout)
     {
-        $beneAccount = $payout->fundAccount->account;
+        $beneMerchantId           = null;
+        $beneBankName             = null;
+        $beneAccount              = $payout->fundAccount->account;
+        $beneAccountType          = $beneAccount->getEntity();
+        $internalTestAccounts     = (new AdminService())->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS]);
 
-        if ($beneAccount === null)
+        if (empty($internalTestAccounts) === true)
         {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
-        }
+            $this->trace->error(TraceCode::REDIS_CONFIG_VALUE_EMPTY,
+                                [
+                                    'config_key'   => ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS,
+                                    'config_value' => $internalTestAccounts
+                                ]);
 
-        $beneAccountType      = $beneAccount->getEntity();
-        $internalTestAccounts = (new AdminService())->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS]);
+            return [$beneBankName, $beneMerchantId];
+        }
 
         foreach ($internalTestAccounts as $testAccount)
         {
@@ -260,18 +270,24 @@ class Service extends Base\Service
                 if ($beneAccountType === Constants::VPA and
                     $beneAccount->getAddress() === $testAccount[Constants::ADDRESS])
                 {
-                    return [true, $testAccount[self::MERCHANT_ID]];
+                    $beneMerchantId = $testAccount[Entity::MERCHANT_ID];
+                    break;
                 }
 
                 if ($beneAccountType === Constants::BANK_ACCOUNT and
                     $beneAccount->getAccountNumber() === $testAccount[self::ACCOUNT_NUMBER])
                 {
-                    return [true, $testAccount[self::MERCHANT_ID]];
+                    $beneIfsc = $beneAccount->getIfscCode();
+
+                    $beneBankName = (new BankName())->getName($beneIfsc);
+                    $beneMerchantId = $testAccount[Entity::MERCHANT_ID];
+                    break;
                 }
             }
         }
 
-        return [false, null];
+        // $beneBankName call be null if payout was made to VPA type fund account
+        return [$beneBankName, $beneMerchantId];
     }
 
     public function getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted(Payout\Entity $payout)
@@ -307,6 +323,18 @@ class Service extends Base\Service
         // RZP_INTERNAL_ACCOUNTS contains list of internal accounts belonging to Razorpay
         // Check if the account belongs to RZP Internal accounts and it's an RZPX Account
         $rzpInternalAccounts = (new AdminService)->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
+
+        if (empty($rzpInternalAccounts) === true)
+        {
+            $this->trace->error(TraceCode::REDIS_CONFIG_VALUE_EMPTY,
+                                [
+                                    'config_key'   => ConfigKey::RZP_INTERNAL_ACCOUNTS,
+                                    'config_value' => $rzpInternalAccounts,
+                                ]);
+
+            return [$bankName, $beneMerchantId];
+        }
+
         for ($i = 0; $i < count($rzpInternalAccounts); $i++)
         {
             if (isset($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER])

@@ -2997,9 +2997,14 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
-        // else return true or false based on whether the bene account is whitelisted or not
-        list($isBeneWhitelisted, $beneMerchantId) = (new \RZP\Models\Internal\Service())->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($this);
+        // else return true or false based on whether the bene mid is present in redis config or not
+        list($beneBankName, $beneMerchantId) = (new \RZP\Models\Internal\Service())->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($this);
 
-        return $isBeneWhitelisted;
+        if ($beneMerchantId === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
