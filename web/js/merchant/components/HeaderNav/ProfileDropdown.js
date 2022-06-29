@@ -20,6 +20,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isLoggedInViaMobile } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
 import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 @withRouter
 @connect(
@@ -204,7 +205,7 @@ export default class ProfileDropdown extends Component {
     return (
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger
-          class={`dropdown-toggle${
+          className={`dropdown-toggle${
             !user.isAnnouncementTextEnabled && !user.isWhatsNewTextEnabled
               ? ' dropdown-toggle--large-icon'
               : ''
@@ -399,7 +400,7 @@ export default class ProfileDropdown extends Component {
               <div className="media-body">
                 <div>Logged in as</div>
                 <p className="account-details">
-                  <i class="i i-account" />
+                  <i className="i i-account" />
                   {isLoggedInViaMobile() ? (
                     <span title={user.user.contact_mobile}>{user.user.contact_mobile}</span>
                   ) : (
@@ -426,21 +427,23 @@ export default class ProfileDropdown extends Component {
                 </button>
               </div>
             </div>
-            {user.role === rolesList.OWNER && user.partner_type === null && (
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.role === rolesList.OWNER &&
+                user.partner_type === null &&
+                !isOrgFeatureExist('hide_razorpay_text_link')
+              }
+            >
               <div className="media loggedin-as">
                 <div className="media-body">
                   <p className="small-txt">Partner with us and start earning on every referral</p>
 
-                  <a
-                    className="partner-link"
-                    style={{ color: '#528ff0', fontSize: '14px' }}
-                    onClick={this.showPartnerIntent}
-                  >
+                  <a className="partner-link" onClick={this.showPartnerIntent}>
                     <strong>Explore Partner Program</strong>{' '}
                   </a>
                 </div>
               </div>
-            )}
+            </ShowWhen>
           </div>
         </DropdownContent>
       </Dropdown>

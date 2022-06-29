@@ -25,6 +25,7 @@ import {
 } from 'merchant/reducers/ModalConfigApi';
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import OffersForYou from 'common/ui/OffersForYou';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -162,23 +163,23 @@ class HeaderNav extends Component {
     };
 
     return (
-      <div class="nav-wrapper">
-        <nav class="navbar navbar-default navbar-fixed-top">
-          <div class="container-fluid navbar-container">
+      <div className="nav-wrapper">
+        <nav className="navbar navbar-default navbar-fixed-top">
+          <div className="container-fluid navbar-container">
             <div className="navbar-collapse" id="headerNav">
               {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
                 <img
                   src="/img/branding/powered-by-razorpay-dashboard.png"
-                  class="rzp-branding-logo logo-header"
+                  className="rzp-branding-logo logo-header"
                   alt="Powered by Razorpay"
                 />
               )}
               {showMobileNav && (
                 <div className="pull-left navbar-toggle-container">
                   <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
-                    <span class="i-bar" />
-                    <span class="i-bar" />
-                    <span class="i-bar" />
+                    <span className="i-bar" />
+                    <span className="i-bar" />
+                    <span className="i-bar" />
                   </button>{' '}
                   {activePageName || 'Dashboard'}
                 </div>
@@ -223,14 +224,18 @@ class HeaderNav extends Component {
                     </ErrorBoundary>
                   </li>
                 </ShowWhen>
-                {this.props.user.isOrgRZP && this.props.user.isInternalStatusPageEnabled && (
+                {user?.isOrgRZP && user?.isInternalStatusPageEnabled && (
                   <li id="status-details">
                     <StatusDetails AppMode={mode} showMobileNav={showMobileNav} />
                   </li>
                 )}
                 <ShowWhen
                   additionalCondition={(usr) =>
-                    usr.isAppSwitcherEnabled && usr.isAccepted && !usr.isOrgAxis && !usr.isOrgKotak
+                    usr?.isAppSwitcherEnabled &&
+                    usr?.isAccepted &&
+                    !usr?.isOrgAxis &&
+                    !usr?.isOrgKotak &&
+                    !isOrgFeatureExist('hide_razorpay_text_link')
                   }
                 >
                   <li id="app-switcher">

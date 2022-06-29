@@ -15,6 +15,8 @@ import MainNavLink from 'merchant_common/components/MainNavLink';
 import MainNavLinkGroup from './MainNavLinkGroup';
 import MerchantNavLinks from './MerchantNavLinks';
 import PartnerNavLinks from './PartnerNavLinks';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -177,15 +179,15 @@ export default class Sidebar extends Component {
 
     return (
       <>
-        <div class={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
-          <section class="brand-logo">
+        <div className={`sidebar${showMobileMenu ? ' show-mobile-menu' : ''}`}>
+          <section className="brand-logo">
             <Link to="/dashboard" onClick={this.hideSidebar}>
               <img src={logoURL || RZPLogoFullPNG} />
             </Link>
           </section>
           <nav>
             {isMerchant && (
-              <div class="nav">
+              <div className="nav">
                 {!user.isOrgAxis ? (
                   <ActivationProgress
                     onSidebarBannerClick={this.onSidebarBannerClick}
@@ -199,15 +201,16 @@ export default class Sidebar extends Component {
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />
                 )}
-
-                <div className="open">
-                  <MainNavLink
-                    label="App Store"
-                    icon="i i-app-store text-primary"
-                    to="/app-store"
-                    customBadge="NEW"
-                  />
-                </div>
+                <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_razorpay_text_link')}>
+                  <div className="open">
+                    <MainNavLink
+                      label="App Store"
+                      icon="i i-app-store text-primary"
+                      to="/app-store"
+                      customBadge="NEW"
+                    />
+                  </div>
+                </ShowWhen>
               </div>
             )}
           </nav>
@@ -278,7 +281,7 @@ class PartnerSidebar extends Component {
     return (
       <div className={`nav-group ${fuxEnabledClass}`}>
         <MainNavLinkGroup
-          title={<>{isPartnershipFUX ? null : <i class="i i-partner text-primary" />}Partner</>}
+          title={<>{isPartnershipFUX ? null : <i className="i i-partner text-primary" />}Partner</>}
           onToggleClick={this.toggle('partnerOpen')}
           value={this.state.partnerOpen}
         >
@@ -286,7 +289,9 @@ class PartnerSidebar extends Component {
         </MainNavLinkGroup>
 
         <MainNavLinkGroup
-          title={<>{isPartnershipFUX ? null : <i class="i i-products text-success" />}Products</>}
+          title={
+            <>{isPartnershipFUX ? null : <i className="i i-products text-success" />}Products</>
+          }
           onToggleClick={this.toggle('merchantOpen')}
           value={this.state.merchantOpen}
         >

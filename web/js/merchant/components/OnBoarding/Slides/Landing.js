@@ -4,6 +4,7 @@ import DataList from './DataList';
 import RTracking from 'react-tracking';
 import track from '../track';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { isOrgFeatureExist } from 'merchant/models/User';
 @RTracking((props) => window.rzpQ.component(`${props.feature}_onboarding_landing_page`))
 export default class OnBoardingLanding extends React.PureComponent {
   componentDidMount() {
@@ -34,14 +35,14 @@ export default class OnBoardingLanding extends React.PureComponent {
       ctaText,
       className = '',
     } = this.props;
-
+    const hideRzpTextLink = isOrgFeatureExist('hide_razorpay_text_link');
     return (
       <div
-        class={`OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing ${className}`}
+        className={`OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing ${className}`}
         key="LandingSlide"
       >
         {ytVideoUrl && (
-          <div class="Landing--Video">
+          <div className="Landing--Video">
             <iframe
               width="560"
               height="315"
@@ -56,29 +57,35 @@ export default class OnBoardingLanding extends React.PureComponent {
 
         {imageUrl && (
           <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-            <div class="Landing--Image">
+            <div className="Landing--Image">
               <img src={imageUrl} alt="landing-image" />
             </div>
           </ShowWhen>
         )}
 
-        <div class="Product--Details">
-          <div class="Details-heading">
-            <span class="dash" /> Razorpay
-          </div>
+        <div className="Product--Details">
+          <ShowWhen additionalCondition={() => !hideRzpTextLink}>
+            <div className="Details-heading">
+              <span className="dash" /> Razorpay
+            </div>
+          </ShowWhen>
+          <div className="Details-title">{title}</div>
 
-          <div class="Details-title">{title}</div>
-
-          <div class="Details-heading">{heading}</div>
-
-          <div class="Details-desc">{desc}</div>
-
+          <div className="Details-heading">{heading}</div>
+          <ShowWhen additionalCondition={() => !hideRzpTextLink}>
+            <div className="Details-desc">{desc}</div>
+          </ShowWhen>
           {pros && <DataList horizontalDivider>{pros}</DataList>}
 
-          <div class="callout">{callout}</div>
+          <div className="callout">{callout}</div>
 
-          <div class="Button-Container">
-            <Button class="Forward-Button" iconAfter="arrow-forward" onClick={this.handleNexButton}>
+          <div className="Button-Container">
+            <Button
+              type="button"
+              className="Forward-Button"
+              iconAfter="arrow-forward"
+              onClick={this.handleNexButton}
+            >
               {ctaText || 'Read More'}
             </Button>
           </div>
