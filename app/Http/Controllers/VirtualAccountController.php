@@ -30,7 +30,19 @@ class VirtualAccountController extends Controller
 
         $response = $this->service()->createForOrder($id, $input);
 
-        return ApiResponse::json($response);
+        $resp = ApiResponse::json($response);
+
+        if (isset($response['receivers']) and
+            (isset($response['receivers'][0]['bank_name'])) and
+            (isset($response['receivers'][0]['entity'])) and
+            ($response['receivers'][0]['bank_name'] === 'HDFC Bank') and
+            ($response['receivers'][0]['entity'] === 'bank_account'))
+        {
+            $resp->headers->set('content-security-policy', "default-src 'self' https:");
+            $resp->headers->set('x-content-type-options', "nosniff");
+        }
+
+        return $resp;
     }
 
     public function closeVirtualAccount(string $id)
