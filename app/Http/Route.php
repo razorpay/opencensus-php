@@ -12668,7 +12668,8 @@ class Route
             'loc_mail',
             'user_fetch',
             'feature_delete_entity_internal',
-            'feature_add_internal'
+            'feature_add_internal',
+            'feature_get_multiple_internal'
         ],
 
         'leegality' => [
