@@ -259,6 +259,48 @@ class OrgTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_PAYMENT_PAGES,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_PAYMENT_BUTTONS,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_SUBS_BUTTONS,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_MARKETPLACE,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_STORES,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_OFFERS,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => Constants::WHITE_LABELLED_CHECKOUT_REWARDS,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
         $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
 
         $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
@@ -276,7 +318,16 @@ class OrgTest extends TestCase
 
         $features = $result['features'];
 
-        $expectedFeatures = [Constants::ORG_CUSTOM_BRANDING,];
+        $expectedFeatures = [
+                Constants::ORG_CUSTOM_BRANDING,
+                Constants::WHITE_LABELLED_PAYMENT_PAGES,
+                Constants::WHITE_LABELLED_PAYMENT_BUTTONS,
+                Constants::WHITE_LABELLED_SUBS_BUTTONS,
+                Constants::WHITE_LABELLED_MARKETPLACE,
+                Constants::WHITE_LABELLED_STORES,
+                Constants::WHITE_LABELLED_OFFERS,
+                Constants::WHITE_LABELLED_CHECKOUT_REWARDS,
+            ];
 
         $this->assertEquals(2, count($hostnames));
         $this->assertEquals($expectedFeatures, $features);

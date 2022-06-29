@@ -775,10 +775,18 @@ class Constants
      */
     const WHITE_LABELLED_INVOICES                = 'white_labelled_invoices';
     const WHITE_LABELLED_ROUTE                   = 'white_labelled_route';
-    const WHITE_LABELLED_VA                      = 'white_labelled_va';
-    const WHITE_LABELLED_QRCODES                 = 'white_labelled_qrcodes';
-    const WHITE_LABELLED_PL                      = 'white_labelled_pl';
-    const WHITE_LABELLED_SUBS                    = 'white_labelled_subs';
+    const WHITE_LABELLED_VA                      = 'white_labelled_va'; // Virtual accounts
+    const WHITE_LABELLED_QRCODES                 = 'white_labelled_qrcodes'; // QR codes
+    const WHITE_LABELLED_PL                      = 'white_labelled_pl'; // payment links
+    const WHITE_LABELLED_SUBS                    = 'white_labelled_subs'; // subscriptions
+
+    const WHITE_LABELLED_PAYMENT_PAGES           = 'white_labelled_pp';
+    const WHITE_LABELLED_PAYMENT_BUTTONS         = 'white_labelled_pb';
+    const WHITE_LABELLED_SUBS_BUTTONS            = 'white_labelled_sb';
+    const WHITE_LABELLED_MARKETPLACE             = 'white_labelled_mp';
+    const WHITE_LABELLED_STORES                  = 'white_labelled_stores';
+    const WHITE_LABELLED_OFFERS                  = 'white_labelled_offers';
+    const WHITE_LABELLED_CHECKOUT_REWARDS        = 'white_labelled_chk_reward';
 
     /*
      * Org level feature to hide activation form by deafult
@@ -1790,6 +1798,13 @@ class Constants
         self::WHITE_LABELLED_QRCODES          => true,
         self::WHITE_LABELLED_PL               => true,
         self::WHITE_LABELLED_SUBS             => true,
+        self::WHITE_LABELLED_PAYMENT_PAGES    => true,
+        self::WHITE_LABELLED_PAYMENT_BUTTONS  => true,
+        self::WHITE_LABELLED_SUBS_BUTTONS     => true,
+        self::WHITE_LABELLED_MARKETPLACE      => true,
+        self::WHITE_LABELLED_STORES           => true,
+        self::WHITE_LABELLED_OFFERS           => true,
+        self::WHITE_LABELLED_CHECKOUT_REWARDS => true,
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
