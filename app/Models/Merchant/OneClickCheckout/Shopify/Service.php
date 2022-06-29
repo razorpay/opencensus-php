@@ -40,6 +40,7 @@ class Service extends Base\Service
         'GkUeUmMJI0xrIN',   //Asa industries
         'FPAhixNh1FSnch',   //Rahul Trading and Lubricants
         '5IXXDp7kTi2BtJ',   //Cyahi
+        'JCdhfzRcU0ymaX',   //LAMRIM LLP
     ];
 
     const farziEnabledMids = [
