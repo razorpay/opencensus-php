@@ -19,4 +19,8 @@ class Header
     const X_PASSPORT_ATTRS_MISMATCH     = 'X-PAM';
     // User for internal use. This will be consumed by edge layer
     const X_ROUTE_NAME                  = 'X-Route-Name';
+    // Used to detect if extra header need to pass in response
+    const X_EDGE_ROUTE_DETAILS          = 'X-Edge-Route-Details';
+    // Used to pass the product for filtering out logs on developer-console
+    const X_DC_PRODUCT_NAME             = 'X-DC-Product-Name';
 }

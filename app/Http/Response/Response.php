@@ -281,8 +281,18 @@ class Response
 
         $response->setData($data);
         $response->setStatusCode($status);
-        // TODO: uncomment after edge goes live
-        // $response->header(Header::X_ROUTE_NAME, $route);
+
+        $edgeHeader = $this->request->headers->get(Header::X_EDGE_ROUTE_DETAILS);
+
+        if (empty($edgeHeader) === false &&
+            $edgeHeader === 'true')
+        {
+            $product = $this->ba->getRequestOriginProduct();
+
+            $response->header(Header::X_ROUTE_NAME, $route);
+
+            $response->header(Header::X_DC_PRODUCT_NAME, $product);
+        }
 
         $this->stopBrowserCaching($response);
 
