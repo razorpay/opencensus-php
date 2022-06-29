@@ -107,7 +107,17 @@ class GatewayRefundFileTest extends TestCase
 
         $paymentId1 = $this->fixtures->create('payment:captured', [
             'gateway' => 'cybersource',
-            'captured_at'=>$capturedAt,
+            'captured_at' => Carbon::yesterday(Timezone::IST)->addHours(18)->getTimestamp()+1,
+            'notes' => [
+                'GST' => 'GST 5',
+                'CorporateName' => 'Corp 5',
+                'MTR' => 'paymentRefId_5'
+            ],
+        ])->getId();
+
+        $paymentId2 = $this->fixtures->create('payment:captured', [
+            'gateway' => 'cybersource',
+            'captured_at' => Carbon::today(Timezone::IST)->getTimestamp()+1,
             'notes' => [
                 'GST' => 'GST 3',
                 'CorporateName' => 'Corp 1',
@@ -115,9 +125,9 @@ class GatewayRefundFileTest extends TestCase
             ],
         ])->getId();
 
-        $paymentId2 = $this->fixtures->create('payment:captured', [
+        $paymentId3 = $this->fixtures->create('payment:captured', [
             'gateway' => 'cybersource',
-            'captured_at'=>$capturedAt,
+            'captured_at'=>Carbon::today(Timezone::IST)->addHours(12)->getTimestamp()+1,
             'notes' => [
                 'GST' => 'GST 2',
                 'CorporateName' => 'Corp 2',
@@ -125,13 +135,23 @@ class GatewayRefundFileTest extends TestCase
             ],
         ])->getId();
 
-        $paymentId3 = $this->fixtures->create('payment:captured', [
+        $paymentId4 = $this->fixtures->create('payment:captured', [
             'gateway' => 'cybersource',
-            'captured_at'=>$capturedAt,
+            'captured_at'=>Carbon::today(Timezone::IST)->addHours(14)->getTimestamp(),
             'notes' => [
                 'GST' => 'GST2 1',
                 'CorporateName' => 'Corp 3',
                 'MTR' => 'paymentRefId_3'
+            ],
+        ])->getId();
+
+        $paymentId5 = $this->fixtures->create('payment:captured', [
+            'gateway' => 'cybersource',
+            'captured_at'=>Carbon::today(Timezone::IST)->addHours(17)->getTimestamp()+1,
+            'notes' => [
+                'GST' => 'GST5 1',
+                'CorporateName' => 'Corp 4',
+                'MTR' => 'paymentRefId_4'
             ],
         ])->getId();
 
@@ -140,6 +160,10 @@ class GatewayRefundFileTest extends TestCase
         $this->fixtures->edit('payment',$paymentId2,['reference_2'=>'abcdefgh']);
 
         $this->fixtures->edit('payment',$paymentId3,['reference_2'=>'abcdefgh']);
+
+        $this->fixtures->edit('payment',$paymentId4,['reference_2'=>'abcdefgh']);
+
+        $this->fixtures->edit('payment',$paymentId5,['reference_2'=>'abcdefgh']);
 
         $pay = $this->getLastEntity('payment', true);
 

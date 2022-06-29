@@ -56,18 +56,7 @@ class Axis extends Base
      */
     public function fetchEntities(): PublicCollection
     {
-        //calculating end time based on window timings. Cron is running after 5 mins of window cutoff.
-        //window timings for axis are 12 am , 12 pm , 2 pm , 5 pm
-        $end = (int)(Carbon::now()->timestamp / 1800) * 1800;
-
-        if (($end % 3600) === 0)
-        {
-            $end = $end - 1800;
-        }
-
-        $begin = (new AdminService)->getConfigKey([
-            'key' => ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
-        ]);
+        list($begin, $end) = $this->calculateBeginEndForFile(Carbon::now()->timestamp);
 
         $begin = $this->gatewayFile->getBegin() > 946684800 ? $this->gatewayFile->getBegin() : $begin;
 
@@ -128,15 +117,6 @@ class Axis extends Base
                          ->fetchCardPaymentsForGatewayAndMerchantBetween($begin,
                                                                          $end,
                                                                          $merchantIds);
-
-        if ($payments->isNotEmpty() === true)
-        {
-            $lastTimestampOfPayments = $payments[0]['captured_at'];
-
-            (new AdminService)->setConfigKeys(
-                [ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $lastTimestampOfPayments]
-            );
-        }
 
         return $payments;
     }
@@ -287,7 +267,9 @@ class Axis extends Base
                         $rrn . self::PIPE_SEPARATOR .
                         $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementPayment->getAmount() . self::PIPE_SEPARATOR .
-                        Carbon::createFromTimestamp($settlementPayment['captured_at'])->format('d-M-y H:i:s')  . self::PIPE_SEPARATOR .
+                        Carbon::createFromTimestamp($settlementPayment['captured_at'])
+                            ->setTimezone(Timezone::IST)
+                            ->format('d-M-y H:i:s')  . self::PIPE_SEPARATOR .
                         $this->getAuthCode($settlementPayment) . self::PIPE_SEPARATOR .
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '5' . self::PIPE_SEPARATOR .
@@ -333,7 +315,9 @@ class Axis extends Base
                         $rrn . self::PIPE_SEPARATOR .
                         $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementRefunds->getBaseAmount() . self::PIPE_SEPARATOR .
-                        Carbon::createFromTimestamp($settlementRefunds['processed_at'])->format('d-M-y H:i:s') . self::PIPE_SEPARATOR .
+                        Carbon::createFromTimestamp($settlementRefunds['processed_at'])
+                            ->setTimezone(Timezone::IST)
+                            ->format('d-M-y H:i:s') . self::PIPE_SEPARATOR .
                         '' . self::PIPE_SEPARATOR .
                         $this->getCardTokenBIN($cardToken) . self::PIPE_SEPARATOR .
                         '6' . self::PIPE_SEPARATOR .
@@ -469,6 +453,60 @@ class Axis extends Base
                     'file_name' => $fullFileName,
                 ]);
         }
+    }
+
+    /**
+     * @param $now
+     * @return array($begin, $end))
+     *
+     * The files have to be generated 4 times in a day. Each file will consist of txn from prev window.
+     *
+     * 1. 00:00 hrs
+     * 2. 12:00 hrs
+     * 3. 14:00 hrs
+     * 4. 17:00 hrs
+     *
+     * Logic: Generate file for prev window wrt current timestamp
+     */
+    protected function calculateBeginEndForFile($now)
+    {
+        if ( ($now >= Carbon::today(Timezone::IST)->getTimestamp()) and
+             ($now < Carbon::today(Timezone::IST)->addHours(12)->getTimestamp()))
+        {
+            return array(Carbon::yesterday(Timezone::IST)->addHours(17)->getTimestamp(),
+                Carbon::today(Timezone::IST)->getTimestamp()-1);
+        }
+
+        if ( ($now >= Carbon::today(Timezone::IST)->addHours(12)->getTimestamp()) and
+            ($now < Carbon::today(Timezone::IST)->addHours(14)->getTimestamp()))
+        {
+            return array(Carbon::today(Timezone::IST)->getTimestamp(),
+                Carbon::today(Timezone::IST)->addHours(12)->getTimestamp()-1);
+        }
+
+        if ( ($now >= Carbon::today(Timezone::IST)->addHours(14)->getTimestamp()) and
+            ($now < Carbon::today(Timezone::IST)->addHours(17)->getTimestamp()))
+        {
+            return array(Carbon::today(Timezone::IST)->addHours(12)->getTimestamp(),
+                Carbon::today(Timezone::IST)->addHours(14)->getTimestamp()-1);
+        }
+
+        if ( ($now >= Carbon::today(Timezone::IST)->addHours(17)->getTimestamp()) and
+            ($now < Carbon::tomorrow(Timezone::IST)->getTimestamp()))
+        {
+            return array(Carbon::today(Timezone::IST)->addHours(14)->getTimestamp(),
+                Carbon::today(Timezone::IST)->addHours(17)->getTimestamp()-1);
+        }
+
+        throw new GatewayFileException
+        (
+            ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+            [
+                'id'      => $this->gatewayFile->getId(),
+                'message' => "Begin, End timestamps could not be generated for the file",
+                'timestamp $now' => $now,
+            ]
+        );
     }
 
     protected function getBucketConfig()
