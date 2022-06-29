@@ -117,3 +117,15 @@ export const isTestEnvironment = () => {
   const { isTestEnv } = getURLQueryParams(window.location.search);
   return !!window.isTestEnv || isTestEnv === 'true';
 };
+
+/**
+ * window.autoReadOtpSignup is set by A/B client
+ * or else this can be passed via URL param as well
+ * Eg: https://dashboard.qa.razorpay.in/signup?autoReadOtpSignup=true
+ * In both case signup will have auto otp read feature enabled
+ * @returns {boolean}.
+ */
+export const isAutoReadOtpSignup = () => {
+  const { autoReadOtpSignup } = getURLQueryParams(window.location.search);
+  return !!window.autoReadOtpSignup || autoReadOtpSignup === 'true';
+};
