@@ -7289,6 +7289,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REDIS_CONFIG_VALUE_EMPTY                              = 'REDIS_CONFIG_VALUE_EMPTY';
 
 
+    const PARTNER_NOT_ONBOARDED_ON_NSS                      = 'PARTNER_NOT_ONBOARDED_ON_NSS';
+    const ZERO_OR_MORE_THAN_ONE_PARENTS_FOUND               = 'ZERO_OR_MORE_THAN_ONE_PARENTS_FOUND';
+    const PARENT_ID_FOR_SUBMERCHANT_NSS_MIGRATION           = 'PARENT_ID_FOR_SUBMERCHANT_NSS_MIGRATION';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

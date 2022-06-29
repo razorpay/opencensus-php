@@ -3,9 +3,12 @@
 
 namespace Functional\Merchant;
 
+use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\MerchantApplications;
 
+use RZP\Models\User\Role;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -129,6 +132,76 @@ class MerchantCoreTest extends OAuthTestCase
             ->getMerchantUserMapping('101submerchant', User::MERCHANT_USER_ID)
             ->toArray();
         $this->assertEmpty($submerchantUserMapping);
+    }
+
+    public function testFetchPartnerIdForSubmerchantNSSMigration()
+    {
+        $this->setUpNonPurePlatformPartnerAndSubmerchant('10000000000000','100submerchant');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_SETTLEMENT_SERVICE]);
+
+        $result = (new Core())->fetchAggregateSettlementForNSSParent('100submerchant');
+
+        $this->assertEquals($result,'10000000000000');
+    }
+
+    public function testFetchPartnerIdForSubmerchantNSSMigrationWithFeatureDisabled()
+    {
+        $this->setUpNonPurePlatformPartnerAndSubmerchant('10000000000000','100submerchant');
+
+        $result = (new Core())->fetchAggregateSettlementForNSSParent('100submerchant');
+
+        $this->assertEquals($result,'');
+    }
+
+    public function testFetchPartnerIdForSubmerchantNSSMigrationWithNoPartner()
+    {
+        $this->fixtures->merchant->createAccount('100submerchant');
+
+        $result = (new Core())->fetchAggregateSettlementForNSSParent('100submerchant');
+
+        $this->assertEquals($result,'');
+    }
+
+    public function testFetchPartnerIdForSubmerchantNSSMigrationWithMultiplePartners()
+    {
+        $this->setUpNonPurePlatformPartnerAndSubmerchant('10000000000000','100submerchant');
+
+        $this->createAggregatorPartnerAndLinkSubmerchant('10000000000001', '100submerchant');
+
+        $result = (new Core())->fetchAggregateSettlementForNSSParent('100submerchant');
+
+        $this->assertEquals($result,'');
+    }
+
+    protected function createAggregatorPartnerAndLinkSubmerchant(string $partnerId, string $submerchantId)
+    {
+        $partnerType = 'aggregator';
+
+        $this->fixtures->merchant->createAccount($partnerId);
+
+        $attributes =  ['merchant_id' => $partnerId, 'partner_type' => $partnerType];
+
+        $this->createPartnerApplicationAndGetClientByEnv('dev',$attributes);
+
+        $this->fixtures->merchant->edit($partnerId, ['partner_type' => $partnerType]);
+
+        $user = $this->fixtures->user->createUserForMerchant($partnerId, [], Role::OWNER, Mode::LIVE);
+
+        $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
+
+        $appIds = (new MerchantApplications\Core)->getMerchantAppIds($partnerId, [MerchantApplications\Entity::MANAGED]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'id'              => 'J00dqRlTehtNbv',
+                'merchant_id'     => $submerchantId,
+                'entity_id'       => $appIds[0],
+                'entity_type'     => 'application',
+                'entity_owner_id' => $partnerId,
+            ]
+        );
     }
 
     protected function createAggregatorPartnerAndSubmerchantAndFetchMocks(string $merchantId = '10000000000000', string $submerchantId = '100submerchant', string $newAppId = '8ckeirnw84ifke')

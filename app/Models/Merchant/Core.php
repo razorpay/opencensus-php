@@ -7713,6 +7713,58 @@ class Core extends Base\Core
                            [ 'partner_id' => $partnerId ]);
     }
 
+    public function fetchAggregateSettlementForNSSParent(string $submerchantId): string
+    {
+        $merchantAccessMapList = $this->repo
+            ->merchant_access_map
+            ->fetchAffiliatedPartnersForSubmerchant($submerchantId);
+
+        if (($merchantAccessMapList->isEmpty() === true) or ($merchantAccessMapList->count() > 1))
+        {
+            $this->trace->info(TraceCode::ZERO_OR_MORE_THAN_ONE_PARENTS_FOUND,[
+                'sub_merchant_id'   => $submerchantId,
+                'merchant_list'     => $merchantAccessMapList,
+                'count'             => $merchantAccessMapList->count()
+            ]);
+
+            return '';
+        }
+        else
+        {
+            $parentMerchantID = $merchantAccessMapList->first()->getEntityOwnerId();
+
+            $nssFeature = $this->repo
+                ->feature
+                ->findByEntityTypeEntityIdAndName(Constants::MERCHANT, $parentMerchantID, FeatureConstants::NEW_SETTLEMENT_SERVICE);
+
+            $featureResult = ($nssFeature === null) ? false : true;
+
+            if($featureResult === false)
+            {
+                $this->trace->info(TraceCode::PARTNER_NOT_ONBOARDED_ON_NSS,[
+                    'sub_merchant_id'      => $submerchantId,
+                    'parent_merchant_id'   => $parentMerchantID,
+                    'feature_result'       => $featureResult,
+                    'action'               => 'Merchant Migration on NSS'
+                ]);
+
+                return '';
+            }
+
+            if ($parentMerchantID === $submerchantId)
+            {
+                return '';
+            }
+
+            $this->trace->info(TraceCode::PARENT_ID_FOR_SUBMERCHANT_NSS_MIGRATION,[
+                'sub_merchant_id'      => $submerchantId,
+                'parent_merchant_id'   => $parentMerchantID,
+            ]);
+
+            return $parentMerchantID;
+        }
+    }
+
     public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
     {
         try
