@@ -580,9 +580,9 @@ class FtsTest extends TestCase
         $testPayload = &$this->testData[__FUNCTION__]['request']['content']['payload'];
 
         $testPayload['instrument']['bank'] = 'ICICI';
-        $testPayload['include_merchants'] = ["ALL"];
+        $testPayload['include_merchants'] = ["10000000000013"];
         $testPayload['begin'] = 1640431729;
-        $testPayload['exclude_merchants'] = ["10000000000015"];
+        $testPayload['exclude_merchants'] = [];
 
         $this->startTest();
 
@@ -595,7 +595,51 @@ class FtsTest extends TestCase
                 'ICIC'               => [
                     'last_down_at' => 1640431729
                 ],
-                'affected_merchants' => ["ALL"]
+                'affected_merchants' => ["10000000000015", "10000000000013"]
+            ],
+        ];
+
+        $partnerBankHealthStatus = $this->getDbLastEntity('partner_bank_health', Mode::LIVE)->toArrayPublic();
+        $this->assertArraySelectiveEquals($expectedPartnerBankHealthStatus, $partnerBankHealthStatus);
+
+        Mail::assertSent(PartnerBankHealthMail::class, 2);
+        $sentMails = Mail::sent(PartnerBankHealthMail::class)->toArray();
+
+        // Since include_list was 10000000000013, email should be sent to 10000000000013 only
+        $this->assertSame($sentMails[1]->to, [['address' => '300@gmail.com', 'name' => 'Merchant 10000000000013'],
+                                              ['address' => '301@gmail.com', 'name' => 'Merchant 10000000000013']]);
+
+        $expectedEmailParams = [
+            'source'     => 'RazorpayX',
+            'mode'       => 'UPI',
+            'start_time' => '25 Dec 4:58 pm',
+            'status'     => 'down'
+        ];
+        //all the three mails sent in must have the same params as that of expectedEmailParams
+        $mailParams = array_intersect($expectedEmailParams, $sentMails[1]->params);
+
+        $this->assertArraySelectiveEquals($mailParams, $expectedEmailParams);
+
+        $testPayload['instrument']['bank'] = 'AXIS';
+        $testPayload['include_merchants'] = ["ALL"];
+        $testPayload['begin'] = 1640432729;
+        $testPayload['exclude_merchants'] = ["10000000000015", "10000000000013"];
+
+        $this->startTest();
+
+        $expectedPartnerBankHealthStatus = [
+            'event_type' => 'fail_fast_health.shared.upi',
+            'value'      => [
+                'YESB'               => [
+                    'last_down_at' => 1640430729,
+                ],
+                'ICIC'               => [
+                    'last_down_at' => 1640431729
+                ],
+                'UTIB'               => [
+                    'last_down_at' => 1640432729
+                ],
+                'affected_merchants' => ["ALL"],
             ],
         ];
 
@@ -607,11 +651,8 @@ class FtsTest extends TestCase
 
         // Since include_list was all and exclude_list was 10000000000015, email should be sent to 10000000000013,
         // 10000000000014 and 10000000000016
-        $this->assertSame($sentMails[1]->to, [['address' => '600@gmail.com', 'name' => 'Merchant 10000000000016'],
+        $this->assertSame($sentMails[2]->to, [['address' => '600@gmail.com', 'name' => 'Merchant 10000000000016'],
                                               ['address' => '601@gmail.com', 'name' => 'Merchant 10000000000016']]);
-
-        $this->assertSame($sentMails[2]->to, [['address' => '300@gmail.com', 'name' => 'Merchant 10000000000013'],
-                                              ['address' => '301@gmail.com', 'name' => 'Merchant 10000000000013']]);
 
         $this->assertSame($sentMails[3]->to, [['address' => '400@gmail.com', 'name' => 'Merchant 10000000000014'],
                                               ['address' => '401@gmail.com', 'name' => 'Merchant 10000000000014']]);
@@ -619,11 +660,11 @@ class FtsTest extends TestCase
         $expectedEmailParams = [
             'source'     => 'RazorpayX',
             'mode'       => 'UPI',
-            'start_time' => '25 Dec 4:58 pm',
+            'start_time' => '25 Dec 5:14 pm',
             'status'     => 'down'
         ];
         //all the three mails sent in must have the same params as that of expectedEmailParams
-        $mailParams = array_intersect($expectedEmailParams, $sentMails[1]->params, $sentMails[2]->params, $sentMails[3]->params);
+        $mailParams = array_intersect($expectedEmailParams, $sentMails[2]->params, $sentMails[3]->params);
 
         $this->assertArraySelectiveEquals($mailParams, $expectedEmailParams);
     }

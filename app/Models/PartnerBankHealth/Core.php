@@ -278,8 +278,8 @@ class Core extends \RZP\Models\Base\Core
                  * Otherwise, we add the merchant ids from the include_list who are not present in the current affected
                  * merchants list since post this downtime event, these merchants will face issues with their payouts.
                  */
-                $newAffectedMerchants = $currentAffectedMerchants + array_diff($payload[Constants::INCLUDE_MERCHANTS],
-                                                                               $currentAffectedMerchants);
+                $newAffectedMerchants = array_unique(array_merge($currentAffectedMerchants,
+                                                                 $payload[Constants::INCLUDE_MERCHANTS]));
                 break;
 
             case Status::UP:
