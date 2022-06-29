@@ -22,12 +22,13 @@ class Entity extends Base\PublicEntity
 
     // For current account on X for RBL , while processing of account statement , closing balance may be negative
     // because of some charges levied by bank on merchants account. We want to allow -ve balance for all merchants on
-    // current account(RBL) for X. We can't decide on max allowed for each merchant. There By setting a high value
-    // 90 lakhs common for each merchant. Earlier limit was 30 lakhs. Since that limit is exceeded, increased it to
-    // 90 lakhs. Slack link for ref: https://razorpay.slack.com/archives/CR3K6S6C8/p1650284863967039
+    // current account(RBL) for X. We can't decide on max allowed for each merchant. Thereby setting a high value of
+    // 40 Cr common for all merchants. Earlier limit was 30 lakhs and then it was set to 90 lakhs. Since that limit is
+    // exceeded, increased it to 40 Cr. Slack link for ref: https://razorpay.slack.com/archives/CR3K6S6C8/p1650284863967039
     // for more ref https://docs.google.com/document/d/1b_CsSdwC4n-Sld46g7i2TxhtCZQ6Kdeh8VK39HGyk2s/edit
-    const BANKING_MAX_NEGATIVE_FOR_RBL = 900000000;
-    const BANKING_MAX_NEGATIVE_FOR_ICICI = 900000000;
+    // TODO : Change negative limit post confirmation from bank
+    const BANKING_MAX_NEGATIVE_FOR_RBL = 40000000000;
+    const BANKING_MAX_NEGATIVE_FOR_ICICI = 40000000000;
 
     const ID                                   = 'id';
     const BALANCE_ID                           = 'balance_id';
