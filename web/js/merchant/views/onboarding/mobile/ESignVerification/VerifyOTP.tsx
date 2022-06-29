@@ -154,7 +154,7 @@ const VerifyOTP: React.FC<VerifyOtpPropsT> = ({
       }
     },
     onError: (err: { response: { errors: Array<string> } }) => {
-      if (err.response.errors[0].includes('Internal Server Error')) {
+      if (err && err.response && err.response.errors[0]?.includes('Internal Server Error')) {
         handleDownTimeError(err.response);
       }
     },
