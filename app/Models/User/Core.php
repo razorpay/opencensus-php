@@ -3172,15 +3172,21 @@ class Core extends Base\Core
 
     private function fetchUserPermissions($merchant)
     {
+        $isCACEnabled = $this->isCACEnabled($merchant);
 
-        /*
-        if ( $this->isCACEnabled($merchant))
+        $this->trace->info(TraceCode::CAC_EXPERIMENT_STATUS,
+            [
+                'cac_status' => $isCACEnabled,
+                'merchant_id' => $merchant[Entity::ID]
+            ]);
+
+        if ( $isCACEnabled === true)
         {
-             // We have to fetch authz_roles from access_control_roles entity ($merchant[Entity::BANKING_ROLE])
-             // pass authz_roles in this api
-            return (new AuthzAdmin\Service())->adminAPIListPolicy([$merchant[Entity::BANKING_ROLE]]);
+
+            $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
+
+            return (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
         }
-        */
 
         // Fetch static role permissions map
         $basePermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);

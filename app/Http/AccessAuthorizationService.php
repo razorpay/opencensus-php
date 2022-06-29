@@ -8,8 +8,10 @@ class AccessAuthorizationService
 {
     private static $routeNameResourceAndActionMap;
 
-    const RAZORPAYX_SYSTEM_SUBJECT = 'RAZORPAYX';
+    const RAZORPAYX_SYSTEM_SUBJECT = 'razorpayx';
     const RAZORPAYX_ORG_NAME = 'razorpayx';
+
+    const AUTHZ_ACTION = 'post';
 
     private static function init()
     {
@@ -45,6 +47,18 @@ class AccessAuthorizationService
         }
 
         return self::$routeNameResourceAndActionMap;
+    }
+
+    public static function hasAccessAllowedV2(string $permission,
+                                            array $role,
+                                            string $subject = self:: RAZORPAYX_SYSTEM_SUBJECT,
+                                            string $org = self::RAZORPAYX_ORG_NAME) : bool
+    {
+        $resourceAndAction = [$permission, self::AUTHZ_ACTION];
+
+        $response = (new AuthzEnforcer\Service())->enforcerAPIEnforce($resourceAndAction, $role, $subject, $org);
+
+        return $response->getIsAllowed();
     }
 
     public static function hasAccessAllowed(string $routeName,

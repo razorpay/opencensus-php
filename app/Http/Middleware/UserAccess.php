@@ -5,11 +5,13 @@ namespace RZP\Http\Middleware;
 use Closure;
 use ApiResponse;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Http\AxisCardsUser;
 use RZP\Http\Route;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Attribute\Group;
+use RZP\Models\User\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -222,11 +224,49 @@ class UserAccess
         }
     }
 
+    private function isCACEnabled() :bool
+    {
+        $isCACExperimentEnabled = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
+                RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                MODE::LIVE);
+
+        return $isCACExperimentEnabled === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
+    private function isCACDisabledForGithubTestSuites() :bool
+    {
+        $isCACExperimentEnabled = $this->razorx->getTreatment($this->ba->getMerchant()->getId(),
+            RazorxTreatment::DISABLE_CAC_FOR_GITHUB_TEST_SUITES,
+            MODE::LIVE);
+
+        return $isCACExperimentEnabled === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
     private function validateBankingUserAccess(string $route)
     {
         try
         {
-            $this->validateBankingUserRoutePolicy($route);
+            // check if cac is enabled
+            $isCACEnabled = $this->isCACEnabled();
+
+            // check if disable cac for gihub test suites is on. We are checking this in order to bypass the
+            // authorization from authz when the test cases are running via github actions.
+            $isCACDisabledForGithubTestSuites = $this->isCACDisabledForGithubTestSuites();
+
+            $this->trace->info(TraceCode::CAC_EXPERIMENT_STATUS,
+                [
+                    'route' => $route,
+                    'cac_status' => $isCACEnabled,
+                    'merchant_id' => $this->ba->getMerchant()->getId()
+                ]);
+
+            if ($isCACEnabled === true && $isCACDisabledForGithubTestSuites === false)
+            {
+                $this->validateBankingUserRoutePolicyV2($route);
+            }
+            else {
+                $this->validateBankingUserRoutePolicy($route);
+            }
         }
         catch (\Throwable $e)
         {
@@ -297,6 +337,29 @@ class UserAccess
      *
      * @throws BadRequestException
      */
+
+    private function validateBankingUserRoutePolicyV2($route)
+    {
+        $userRole = $this->getUserRole();
+
+        $routePermission = $this->getRoutePermission($route);
+
+        // Allow route to all roles having wildcard permission
+        if ($routePermission === self::WILDCARD_PERMISSION)
+        {
+            return;
+        }
+
+        $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($userRole);
+
+        $isRoleAllowedAccess = AccessAuthorizationService::hasAccessAllowedV2($routePermission, $authzRoles);
+
+        if ($isRoleAllowedAccess !== true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+    }
+
     private function validateBankingUserRoutePolicy($route)
     {
         $userRole = $this->getUserRole();

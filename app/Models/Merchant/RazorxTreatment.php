@@ -534,4 +534,7 @@ final class RazorxTreatment
 
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 
+    /** This is a mock experiment and used to control the test suite behaviour **/
+    public const DISABLE_CAC_FOR_GITHUB_TEST_SUITES = "disable_cac_for_github_test_suites";
+
 }

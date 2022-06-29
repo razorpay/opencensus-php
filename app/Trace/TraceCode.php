@@ -7271,6 +7271,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ROLE_ACCESS_POLICY_MAP_UPDATE_REQUEST                 = 'ROLE_ACCESS_POLICY_MAP_UPDATE_REQUEST';
     const ROLE_ACCESS_POLICY_MAP_UPDATE_RESPONSE                = 'ROLE_ACCESS_POLICY_MAP_UPDATE_RESPONSE';
 
+    const CAC_EXPERIMENT_STATUS                                 = 'CAC_EXPERIMENT_STATUS';
+
     const CREATING_ACCESS_CONTROL_UPDATE_HISTORY                = 'CREATING_ACCESS_CONTROL_UPDATE_HISTORY';
     const DB_QUERY_EXCEPTION                                    = 'DB_QUERY_EXCEPTION';
 
