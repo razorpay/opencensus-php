@@ -1020,6 +1020,8 @@ class Constants
      */
     const ONE_CLICK_DUAL_CHECKOUT = 'one_cc_dual_checkout';
 
+    const ONE_CLICK_OVERRIDE_THEME = 'one_cc_override_theme';
+
     const ONE_CC_REPORTING_TEST  = 'one_cc_reporting_test';
 
     const ONE_CC_MERCHANT_DASHBOARD = 'one_cc_merchant_dashboard';
@@ -1443,7 +1445,8 @@ class Constants
         self::HDFC_CHECKOUT_2,
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB,
         self::ONE_CLICK_DUAL_CHECKOUT,
-        self::ONE_CC_REPORTING_TEST
+        self::ONE_CC_REPORTING_TEST,
+        self::ONE_CLICK_OVERRIDE_THEME
     ];
 
     const ONE_CC_FEATURES = [
@@ -1454,7 +1457,8 @@ class Constants
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
         self::ONE_CLICK_DUAL_CHECKOUT,
-        self::ONE_CC_REPORTING_TEST
+        self::ONE_CC_REPORTING_TEST,
+        self::ONE_CLICK_OVERRIDE_THEME
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1928,6 +1932,7 @@ class Constants
         self::DEDUPE_CONTACT_ON_REPLICA       => true,
         self::INTER_ACCOUNT_TEST_PAYOUT       => true,
         self::CART_API_AMOUNT_CHECK           => true,
+        self::ONE_CLICK_OVERRIDE_THEME        =>true
     ];
 
     // Entity type constants

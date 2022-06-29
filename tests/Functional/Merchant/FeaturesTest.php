@@ -3258,4 +3258,11 @@ Regards,
             self::DEFAULT_MERCHANT_ID,
             ['recurring_chkout_dot_com']);
     }
+
+    public function test1CCOverrideTheme()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 }
