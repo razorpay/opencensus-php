@@ -26,6 +26,8 @@ export const BANK_NAMES = {
   BAJAJ: 'bajaj',
   /** https://kotak.razorpay.com/signin */
   KKBK: 'KKBK',
+  /** https://axiseasypay.razorpay.com/signin */
+  AXIS_EASY_PAY: 'UTIB',
 };
 
 export const getCookie = (name) => {

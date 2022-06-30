@@ -32,6 +32,8 @@ const bankBackgroundColors = {
   [BANK_NAMES.ICICI]: theme.colors.background[600],
   [BANK_NAMES.AXIS]: theme.colors.background[600],
   [BANK_NAMES.KKBK]: theme.colors.background[600],
+  [BANK_NAMES.AXIS_EASY_PAY]: '#97144d',
+  [BANK_NAMES.JKB]: 'linear-gradient(314deg, #54a5ff -40%, #03299C)',
 };
 
 const createPrimaryColors = (color) => {
@@ -107,6 +109,13 @@ export const getBankingCaptchaColor = (org) => {
       return {
         primary: { desktop: 'light.900', mobile: 'dark.900' },
         secondary: { desktop: 'light.970', mobile: 'dark.970' },
+      };
+
+    case BANK_NAMES.JKB:
+    case BANK_NAMES.AXIS_EASY_PAY:
+      return {
+        primary: { desktop: 'light.900', mobile: 'dark.900' },
+        secondary: { desktop: 'light.900', mobile: 'dark.900' },
       };
 
     default:
