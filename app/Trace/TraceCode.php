@@ -2985,6 +2985,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARE_SERVICE_REQUEST                                  = 'CARE_SERVICE_REQUEST';
     const CARE_SERVICE_RESPONSE                                 = 'CARE_SERVICE_RESPONSE';
 
+    const CUSTOMER_FLOW_CAPTCHA_NOT_BEING_SENT                  = 'CUSTOMER_FLOW_CAPTCHA_NOT_BEING_SENT';
+
     const FRESHDESK_DISPUTE_REQUEST                             = 'FRESHDESK_DISPUTE_REQUEST';
     const FRESHDESK_OLD_INSTANCE                                = 'FRESHDESK_OLD_INSTANCE';
     const FRESHDESK_DISPUTE_REQUEST_ERROR                       = 'FRESHDESK_DISPUTE_REQUEST_ERROR';

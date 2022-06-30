@@ -269,6 +269,55 @@ class Validator extends Base\Validator
         'attachments'           => 'sometimes',
     ];
 
+    protected static $postOtpRules = [
+        'email'                => 'required_without:phone|email',
+        'phone'                => 'required_without:email|max:15|contact_syntax',
+        'g_recaptcha_response' => 'sometimes|string|custom',
+    ];
+
+    protected function validateGRecaptchaResponse($attribute, $captchaResponse)
+    {
+        $this->validateInvisibleCaptcha($attribute, $captchaResponse);
+    }
+
+    protected function validateInvisibleCaptcha($attribute, $captchaResponse)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app->environment('production') === false)
+        {
+            return;
+        }
+
+        $clientIpAddress = $_SERVER['HTTP_X_IP_ADDRESS'] ?? $app['request']->ip();
+
+        $noCaptchaSecret = config('app.signup.invisible_captcha_secret');
+
+        $input = [
+            'secret'   => $noCaptchaSecret,
+            'response' => $captchaResponse,
+            'remoteip' => $clientIpAddress,
+        ];
+
+        $captchaQuery = http_build_query($input);
+
+        $url = Constants::GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT. "?". $captchaQuery;
+
+        $response = \Requests::get($url);
+
+        $output = json_decode($response->body);
+
+        if ($output->success !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CAPTCHA_FAILED,
+                null,
+                [
+                    'captcha' => $captchaResponse
+                ]);
+        }
+    }
+
     protected function validateCaptcha($attribute, $captchaResponse)
     {
         $app = App::getFacadeRoot();

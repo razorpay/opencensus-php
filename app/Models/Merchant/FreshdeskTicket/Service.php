@@ -25,11 +25,6 @@ use RZP\Models\Merchant\FreshdeskTicket\Processor as FreshdeskWebhookProcessor;
 
 class Service extends Base\Service
 {
-    protected $otpRules = [
-        'email'          => 'required_without:phone|email',
-        'phone'          => 'required_without:email|max:15|contact_syntax'
-    ];
-
     /*
      * Default ticket properties
      * Priority = 1 (Low)
@@ -283,7 +278,18 @@ class Service extends Base\Service
      */
     public function postOtp(array $input): array
     {
-        (new JitValidator)->rules($this->otpRules)->input($input)->validate();
+        (new Validator)->validateInput(__FUNCTION__, $input);
+
+        if (array_key_exists(Constants::G_RECAPTCHA_RESPONSE, $input) === false)
+        {
+            $this->trace->info(TraceCode::CUSTOMER_FLOW_CAPTCHA_NOT_BEING_SENT, [
+                'log' => 'captcha is not being sent'
+            ]);
+        }
+        else
+        {
+            unset($input[Constants::G_RECAPTCHA_RESPONSE]);
+        }
 
         if (empty($input[Constants::PHONE]) === false)
         {

@@ -63,6 +63,7 @@ class Constants
     const OTP_RECEIVER                          = 'receiver';
     const OTP_CUSTOMER_SUPPORT_SOURCE           = 'customer_support';
     const SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY = 'sms.support.account_recovery_otp';
+    const G_RECAPTCHA_RESPONSE                  = 'g_recaptcha_response';
 
     const GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT = 'https://www.google.com/recaptcha/api/siteverify';
 
