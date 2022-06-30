@@ -70,6 +70,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_WEBHOOK,
                  Permission::CREATE_WEBHOOK,
                  Permission::VIEW_REPORTING,
+                 Permission::VIEW_BUSINESS_REPORTS,
                  Permission::CREATE_REPORTING,
                  Permission::UPDATE_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
@@ -98,6 +99,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
                  Permission::UPDATE_MERCHANT_2FA_SETTING,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::VIEW_TDS_CATEGORIES,
                  Permission::GET_SIGNED_URL,
                  Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
@@ -126,6 +128,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS_AUTO,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENT_SETTINGS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
                  Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
                  Permission::UPDATE_MERCHANT_PREFERENCE,
@@ -229,6 +232,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_WEBHOOK,
                  Permission::CREATE_WEBHOOK,
                  Permission::VIEW_REPORTING,
+                 Permission::VIEW_BUSINESS_REPORTS,
                  Permission::CREATE_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::CREATE_INVITATION,
@@ -249,6 +253,7 @@ class UserRolePermissionsMap
                  Permission::DELETE_MERCHANT_DOCUMENT,
                  Permission::UPDATE_MERCHANT_BANK_ACCOUNT_STATUS,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::VIEW_TDS_CATEGORIES,
                  Permission::GET_SIGNED_URL,
                  Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
@@ -272,6 +277,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS,
                  Permission::UPDATE_TAX_PAYMENT_SETTINGS_AUTO,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENT_SETTINGS,
                  Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
                  Permission::UPDATE_MERCHANT_PREFERENCE,
                  Permission::VIEW_MERCHANT_PREFERENCE,
@@ -353,6 +359,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_WEBHOOK,
                  Permission::CREATE_WEBHOOK,
                  Permission::VIEW_REPORTING,
+                 Permission::VIEW_BUSINESS_REPORTS,
                  Permission::CREATE_REPORTING,
                  Permission::VIEW_TRANSACTION_STATEMENT,
                  Permission::CREATE_SELF_SERVE_REPORT,
@@ -367,6 +374,7 @@ class UserRolePermissionsMap
                  Permission::UPDATE_TEST_MERCHANT_BALANCE,
                  Permission::VIEW_VIRTUAL_ACCOUNT,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::VIEW_TDS_CATEGORIES,
                  Permission::GET_SIGNED_URL,
                  Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS,
@@ -382,6 +390,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_TAX_PAYMENTS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENT_SETTINGS,
 
                  Permission::CREATE_ACCOUNTING_INTEGRATION,
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
@@ -440,6 +449,7 @@ class UserRolePermissionsMap
                   * Following are the new permissions added for Vendor-Payments micro-service
                   */
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::VIEW_TDS_CATEGORIES,
                  Permission::GET_SIGNED_URL,
                  Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::CREATE_VENDOR_PAYMENTS_EMAIL,
@@ -449,6 +459,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_TAX_STATES,
 
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENT_SETTINGS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
@@ -477,6 +488,7 @@ class UserRolePermissionsMap
                  //BankingRoute permissions for reporting API's
                  Permission::GET_SELF_SERVE_REPORT,
                  Permission::VIEW_REPORTING,
+                 Permission::VIEW_BUSINESS_REPORTS,
                  Permission::CREATE_REPORTING,
                  Permission::DOWNLOAD_REPORTING,
 
@@ -487,6 +499,7 @@ class UserRolePermissionsMap
 
                  //View tax payments
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENT_SETTINGS,
                  Permission::VIEW_TRANSACTION_STATEMENT,
 
                  // Download payout attachments
@@ -516,6 +529,7 @@ class UserRolePermissionsMap
                  Permission::VIEW_WEBHOOK,
                  Permission::VIEW_WEBHOOK_EVENT,
                  Permission::VIEW_REPORTING,
+                 Permission::VIEW_BUSINESS_REPORTS,
                  Permission::CREATE_REPORTING,
                  Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
                  Permission::VIEW_TRANSACTION_STATEMENT,
@@ -525,9 +539,11 @@ class UserRolePermissionsMap
                  Permission::ONBOARDING_PAYOUT_LINKS,
                  Permission::SUMMARY_PAYOUT_LINKS,
                  Permission::VIEW_VENDOR_PAYMENTS,
+                 Permission::VIEW_TDS_CATEGORIES,
                  Permission::GET_SIGNED_URL,
                  Permission::GENERATE_VP_INVOICE_ZIP,
                  Permission::VIEW_TAX_PAYMENTS,
+                 Permission::VIEW_TAX_PAYMENT_SETTINGS,
                  Permission::GENERATE_TDS_CHALLAN_ZIP,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::WAITLIST_ACCOUNTING_INTEGRATION,

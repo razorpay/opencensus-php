@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch;
 
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -22,7 +23,8 @@ class Service extends Base\Service
     private function validateBatchTypeForUserRole($input)
     {
         if (($this->auth->isProxyAuth() === true) and
-            (empty($this->auth->getAdmin()) === true))
+            (empty($this->auth->getAdmin()) === true) and
+            $this->auth->getProduct() !== Product::BANKING)
         {
             $mode = $this->mode ?? 'live';
 

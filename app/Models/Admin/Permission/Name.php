@@ -331,6 +331,7 @@ class Name
     const BANK_TRANSFER_INSERT                = 'bank_transfer_insert';
     const BANK_TRANSFER_MODIFY_PAYER_ACCOUNT  = 'bank_transfer_modify_payer_account';
     const GET_SELF_SERVE_REPORT               = 'get_self_serve_report';
+    const VIEW_BUSINESS_REPORTS               = 'view_business_reports';
     const CREATE_SELF_SERVE_REPORT            = 'create_self_serve_report';
     const REPORT_CONFIG_FULL_OPERATIONS       = 'report_config_full_operations';
     const CREATE_GATEWAY_DOWNTIME             = 'create_gateway_downtime';
@@ -578,6 +579,7 @@ class Name
     const EDIT_VENDOR_PAYMENTS                = 'edit_vendor_payments';
     const CANCEL_VENDOR_PAYMENTS              = 'cancel_vendor_payments';
     const VIEW_VENDOR_PAYMENTS                = 'view_vendor_payments';
+    const VIEW_TDS_CATEGORIES                 = 'view_tds_categories';
     const VENDOR_PORTAL_PERMISSION            = 'vendor_portal_permission';
     const GET_SIGNED_URL                      = 'get_signed_url';
     const GENERATE_VP_INVOICE_ZIP             = 'generate_vp_invoice_zip';
@@ -666,6 +668,7 @@ class Name
     const UPDATE_TAX_PAYMENT_SETTINGS         = 'update_tax_payment_settings';
     const UPDATE_TAX_PAYMENT_SETTINGS_AUTO    = 'update_tax_payment_settings_auto';
     const VIEW_TAX_PAYMENTS                   = 'view_tax_payments';
+    const VIEW_TAX_PAYMENT_SETTINGS           = 'view_tax_payment_settings';
 
     // permission to raise needs clarification on workflow
     const MERCHANT_CLARIFICATION_ON_WORKFLOW  = 'merchant_clarification_on_workflow';
