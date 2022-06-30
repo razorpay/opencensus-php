@@ -44,6 +44,7 @@ class Method
     protected static $nonEsAutomaticMethods = [
         self::EMANDATE      => 'E-Mandate',
         self::BANK_TRANSFER => 'Bank Transfer',
+        self::OFFLINE       => 'Offline',
     ];
 
     protected static $preAuthorizeGooglePayMethods = [
@@ -74,6 +75,7 @@ class Method
     public static $methodsWithoutAmountValidation = [
         self::TRANSFER,
         self::BANK_TRANSFER,
+        self::OFFLINE,
     ];
 
     public static $recurringMethods = [

@@ -4658,6 +4658,9 @@ class Processor
             case Receiver::VPA :
                 $receiver = $this->repo->$entity->findbyPublicIdAndMerchantAlsoWithTrash($receiverInput['id'], $this->merchant);
                 break;
+            case Receiver::OFFLINE_CHALLAN:
+                $receiver = $this->repo->$entity->findbyPublicId($receiverInput['id']);
+                break;
             case Receiver::POS :
                 $payment->setReceiverType(Receiver::POS);
                 break;
@@ -6487,7 +6490,8 @@ class Processor
 
     protected function shouldCallGatewayFunction(): bool
     {
-        if ($this->payment->isCoD() === true)
+        if ($this->payment->isCoD() === true or
+            ($this->payment->isOffline() === true))
         {
             return false;
         }

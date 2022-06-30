@@ -85,7 +85,7 @@ class Validator extends Base\Validator
         'order_id'                      => 'sometimes|filled',
         'customer_id'                   => 'sometimes|public_id|filled',
         'subscription_id'               => 'sometimes|public_id',
-        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer|associative_array|filled|custom',
+        'receiver'                      => 'sometimes_if:method,card,upi,bank_transfer,offline|associative_array|filled|custom',
         'receiver.type'                 => 'required_with:receiver|filled|string',
         'receiver.id'                   => 'required_if:receiver,vpa,qr_code,bank_transfer|filled|public_id',
         'payment_link_id'               => 'sometimes|public_id|size:17',
@@ -649,10 +649,12 @@ class Validator extends Base\Validator
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
+            Payment\Method::OFFLINE,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
-            (empty($input[Entity::EMAIL]) === true))
+            (empty($input[Entity::EMAIL]) === true)
+        )
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The email field is required.', Entity::EMAIL);
@@ -1251,6 +1253,7 @@ class Validator extends Base\Validator
             Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
+            Payment\Method::OFFLINE,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and

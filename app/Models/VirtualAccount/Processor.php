@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use App;
 use Exception;
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use Razorpay\IFSC;
 use RZP\Models\Feature;
 use RZP\Models\Base;
@@ -21,8 +22,9 @@ use RZP\Models\FundAccount\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
+use RZP\Models\OfflinePayment\StatusCode as OfflineStatusCode;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;use function Aws\or_chain;
 
 abstract class Processor extends Base\Core
 {
@@ -111,6 +113,9 @@ abstract class Processor extends Base\Core
                 case Constants\Entity::BHARAT_QR:
                     throw new LogicException(TraceCode::BHARAT_QR_PAYMENT_DUPLICATE_NOTIFICATION);
 
+                case Constants\Entity::OFFLINE_PAYMENT:
+                    throw new LogicException(TraceCode::OFFLINE_PAYMENT_DUPLICATE_REQUEST);
+
                 default:
                     return null;
             }
@@ -120,9 +125,11 @@ abstract class Processor extends Base\Core
 
         $entity->setExpected($paymentExpected);
 
-        if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
+        if ((($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
             ($entity->getGateway() === Provider::HDFC_ECMS) and
-            ($entity->getUnexpectedReason() !== null))
+            ($entity->getUnexpectedReason() !== null)) or
+            (($entity->getEntityName() === Constants\Entity::OFFLINE_PAYMENT) and
+            ($entity->getUnexpectedReason() !== null)))
         {
             return $entity;
         }
@@ -402,6 +409,16 @@ abstract class Processor extends Base\Core
                 return false;
             }
 
+            if ($entity->getEntityName() === Constants\Entity::OFFLINE_PAYMENT)
+            {
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_OFFLINE_PAYMENT_CALLBACK_UNEXPECTED,
+                    $entity->toArray()
+                );
+
+                return false;
+            }
+
             $data = [];
 
             switch ($entity->getEntityName())
@@ -455,6 +472,15 @@ abstract class Processor extends Base\Core
 
                 $this->trace->info(
                     TraceCode::VIRTUAL_ACCOUNT_ECMS_DUE_TO_BE_CLOSED,
+                    $entity->toArray());
+            }
+            elseif ($entity->getEntityName() === Constants\Entity::OFFLINE_PAYMENT)
+            {
+
+                $this->setUnexpectedReason($entity, OfflineStatusCode::CHALLAN_EXPIRED);
+
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_OFFLINE_DUE_TO_BE_CLOSED,
                     $entity->toArray());
             }
             else
@@ -586,6 +612,67 @@ abstract class Processor extends Base\Core
 
                     $this->trace->info(
                         TraceCode::VIRTUAL_ACCOUNT_ECMS_MAXIMUM_AMOUNT_THRESHOLD_BREACH,
+                        $entity->toArray());
+
+                    return false;
+                }
+            }
+        }
+
+
+        if ($entity->getEntityName() === Constants\Entity::OFFLINE_PAYMENT)
+        {
+            if ($this->virtualAccount->getStatus() === Status::PAID)
+            {
+                $this->setUnexpectedReason($entity, OfflineStatusCode::ALREADY_PROCESSED);
+
+                $this->trace->info(
+                    TraceCode::VIRTUAL_ACCOUNT_CALLBACK_ALREADY_PROCESSED,
+                    $entity->toArray());
+
+                return true;
+            }
+
+            $expectedAmount = $this->virtualAccount->getAmountExpected();
+
+            $amountReceived = $entity->getAmount();
+
+            $order = $this->virtualAccount->entity;
+
+            $partialPayment = $order->isPartialPaymentAllowed();
+
+            if (($expectedAmount !== $amountReceived) and ($amountReceived > 0) and ($partialPayment === false))
+            {
+
+                if ($merchant->isFeatureEnabled(Feature\Constants::EXCESS_ORDER_AMOUNT) === false &&
+                    ($expectedAmount < $amountReceived))
+                {
+                    $this->setUnexpectedReason($entity, OfflineStatusCode::HIGHER_PAYMENT_AMOUNT);
+
+                    $this->trace->info(
+                        TraceCode::VIRTUAL_ACCOUNT_OFFLINE_HIGHER_PAYMENT_AMOUNT,
+                        $entity->toArray());
+
+                    return true;
+                }
+                if ($merchant->isFeatureEnabled(Feature\Constants::ACCEPT_LOWER_AMOUNT) === false &&
+                    $expectedAmount > $amountReceived)
+                {
+                    $this->setUnexpectedReason($entity, OfflineStatusCode::LOWER_PAYMENT_AMOUNT);
+
+                    $this->trace->info(
+                        TraceCode::VIRTUAL_ACCOUNT_OFFLINE_LOWER_PAYMENT_AMOUNT,
+                        $entity->toArray());
+
+                    return true;
+                }
+
+                if ($merchant->getMaxPaymentAmount() < $amountReceived)
+                {
+                    $this->setUnexpectedReason($entity, OfflineStatusCode::MAXIMUM_AMOUNT_THRESHOLD_BREACH);
+
+                    $this->trace->info(
+                        TraceCode::VIRTUAL_ACCOUNT_OFFLINE_MAXIMUM_AMOUNT_THRESHOLD_BREACH,
                         $entity->toArray());
 
                     return false;

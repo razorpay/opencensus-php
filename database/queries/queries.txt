@@ -6781,6 +6781,30 @@ CREATE TABLE offline_challans
     ADD INDEX offline_challans_challan_number_index ('challan_number')
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+CREATE TABLE offline_payments (
+  id char(14) NOT NULL collate utf8mb4_bin,
+  virtual_account_id char(14) NOT NULL collate utf8mb4_bin,
+  merchant_id char(14) NOT NULL collate utf8mb4_bin,
+  payment_id char(14) NOT NULL collate utf8mb4_bin,
+  challan_number char(16) NOT NULL,
+  amount bigint(20) NOT NULL,
+  mode varchar(50) NOT NULL,
+  status varchar(50) NOT NULL,
+  description varchar(50),
+  currency char(3) DEFAULT 'INR' NOT NULL,
+  bank_reference_number varchar(50),
+  payment_instrument_details json DEFAULT NULL,
+  payer_details json DEFAULT NULL,
+  payment_timestamp varchar(50),
+  additional_info json DEFAULT NULL,
+  client_code varchar(50) NOT NULL,
+  created_at int NOT NULL,
+  updated_at int NOT NULL,
+  deleted_at int DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY `offline_payments_challan_number_index` (`challan_number`)
+  ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_bin;
+
 ALTER TABLE payouts_details
     ADD COLUMN tds_category_id INTEGER UNSIGNED DEFAULT NULL,
     ADD COLUMN tax_payment_id VARCHAR(30) DEFAULT NULL,

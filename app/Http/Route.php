@@ -562,6 +562,7 @@ class Route
         'bank_transfer_strip_payer_accounts'       => ['put',      'bank_transfers/payer_bank_account/strip',        'BankTransferController@stripPayerBankAccounts'                     ],
         'bank_transfer_insert'                     => ['post',     'bank_transfers/{provider}',                      'BankTransferController@insertBankTransfer'                         ],
         'bank_transfer_payment_receiver_backfill'  => ['post',     'payment/bank_transfer_backfill',                 'PaymentController@updateReceiverData'                              ],
+        'offline_payment_credit'                   => ['post',     'credit/ecollect/offline',                        'OfflinePaymentController@processOfflinePayment'                    ],
         'payment_card_vault_migrate'               => ['post',     'payments/cards',                                 'PaymentController@paymentCardVaultMigrate'                         ],
         'payments_card_es_sync_cron'               => ['post',     'payments_cards/payments/es_sync',                'PaymentController@paymentsCardEsSyncCron'                          ],
         'refund_processed_at_backfill'             => ['post',     'refunds/processed_at_backfill',                  'RefundController@updateProcessedAt'                                ],
@@ -4327,6 +4328,7 @@ class Route
         'bank_transfer_process_yesbank_internal',
         'bank_transfer_process_hdfc_ecms',
         'offline_challan_validate',
+        'offline_payment_credit',
         'bank_transfer_refund_retry',
         'bank_transfer_edit_payer_account_internal',
         'batch_process_file',
@@ -12605,7 +12607,8 @@ class Route
         ],
 
         'hdfc_otc' => [
-            'offline_challan_validate'
+            'offline_challan_validate',
+            'offline_payment_credit',
         ],
 
         'rbl' => [
@@ -13199,6 +13202,7 @@ class Route
 
     public static $tlsRoutes = [
         'offline_challan_validate',
+        'offline_payment_credit',
     ];
 
     protected static $jsonpRoutes = [

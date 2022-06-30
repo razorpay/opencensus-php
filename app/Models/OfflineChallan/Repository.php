@@ -4,6 +4,8 @@ namespace RZP\Models\OfflineChallan;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Models\Base\PublicEntity;
+use Rzp\Models\Merchant;
 Use RZP\Models\OfflineChallan\Entity as Entity;
 
 class Repository extends Base\Repository
@@ -15,4 +17,11 @@ class Repository extends Base\Repository
                         ->where(Entity::CHALLAN_NUMBER, '=', $challanNumber)
                         ->first();
         }
+
+    public function findbyPublicId($id) {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $id)
+                    ->first();
+    }
+
 }

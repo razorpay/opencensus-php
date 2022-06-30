@@ -1102,7 +1102,8 @@ trait Capture
 
         if (($payment->isBankTransfer() === false) and
             ($payment->isBharatQr() === false) and
-            ($payment->isUpiTransfer() === false))
+            ($payment->isUpiTransfer() === false) and
+            ($payment->isOffline() === false))
         {
             return;
         }
@@ -1324,6 +1325,10 @@ trait Capture
         {
             $virtualAccount = $payment->upiTransfer->virtualAccount;
         }
+        else if($payment->isOffline() === true)
+        {
+            $virtualAccount = $payment->offlinePayment->virtualAccount;
+        }
 
         if (($virtualAccount->hasAmountExpected() === true) and
                 ($virtualAccount->getAmountPaid() >= $virtualAccount->getAmountExpected()))
@@ -1439,10 +1444,11 @@ trait Capture
         }
 
         if (($payment->isBankTransfer() === true) or
-            ($payment->isUpiTransfer() === true))
+            ($payment->isUpiTransfer() === true) or
+            ($payment->isOffline() === true))
         {
             /*
-             *  If any payment is a Bank Transfer and If amount
+             *  If any payment is a Bank Transfer or offline and If amount
              *  paid is not lesser than amount expected, then
              *  we will mark the Virtual Account as paid.
              */

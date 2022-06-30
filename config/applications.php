@@ -1339,7 +1339,8 @@ return [
     ],
 
     'tls_config' => [
-        'offline_challan_validate' => env('OFFLINE_CHALLAN_VALIDATE_DOMAINS')
+        'offline_challan_validate' => env('OFFLINE_CHALLAN_VALIDATE_DOMAINS'),
+        'offline_payment_credit'   => env('OFFLINE_PAYMENT_CREDIT_DOMAINS')
     ],
 
     'whatcms' => [

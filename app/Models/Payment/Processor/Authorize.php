@@ -8487,6 +8487,18 @@ trait Authorize
         }
     }
 
+    protected function verifyOfflineEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isOfflineEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
     protected function verifyAepsEnabled()
     {
         $merchantMethods = $this->methods;
@@ -10933,6 +10945,10 @@ trait Authorize
 
             case Payment\Method::BANK_TRANSFER:
                 $this->verifyBankTransferEnabled();
+                break;
+
+            case Payment\Method::OFFLINE:
+                $this->verifyOfflineEnabled();
                 break;
 
             case Payment\Method::AEPS:

@@ -16,7 +16,9 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\OfflinePayment;
 use RZP\Models\Order\Repository as OrderRepository;
+use RZP\Trace\TraceCode;
 
 /**
  * @property Vpa\Entity          $vpa
@@ -486,7 +488,6 @@ class Entity extends Base\PublicEntity
     /**
      * Post-processing, VA amount fields are to be updated.
      * Status change is done inside incrementAmountPaid.
-     *
      * @param BankTransfer\Entity $bankTransfer
      */
     public function updateWithBankTransfer(BankTransfer\Entity $bankTransfer)
@@ -515,6 +516,28 @@ class Entity extends Base\PublicEntity
     public function updateWithBankTransferForBanking(BankTransfer\Entity $bankTransfer)
     {
         $paidAmount = $bankTransfer->getAmount();
+
+        $this->incrementAmountPaid($paidAmount);
+        $this->incrementAmountReceived($paidAmount);
+    }
+
+    public function updateWithOfflinePayment(OfflinePayment\Entity $offlinePayment)
+    {
+        $paidAmount = $offlinePayment->payment->getAdjustedAmountWrtCustFeeBearer();
+
+        if ($paidAmount < 0)
+        {
+            $this->trace->info(
+                TraceCode::VIRTUAL_ACCOUNT_OFFLINE_HIGHER_PAYMENT_AMOUNT,
+                $paidAmount
+            );
+
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
+                OfflinePayment\Entity::AMOUNT,
+                $offlinePayment->getAmount()
+            );
+        }
 
         $this->incrementAmountPaid($paidAmount);
         $this->incrementAmountReceived($paidAmount);

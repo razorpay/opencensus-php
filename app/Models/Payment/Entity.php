@@ -40,6 +40,7 @@ use RZP\Models\Transaction;
 use RZP\Models\PaymentLink;
 use RZP\Models\UpiTransfer;
 use RZP\Models\BankTransfer;
+use RZP\Models\OfflinePayment;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Settlement\Holidays;
@@ -67,6 +68,7 @@ use RZP\Models\Partner\Commission\CommissionSourceInterface;
  * @property Card\Entity            $card
  * @property BankTransfer\Entity    $bankTransfer
  * @property UpiTransfer\Entity     $upiTransfer
+ * @property OfflinePayment\Entity  $offlinePayment
  * @property PaymentLink\Entity     $paymentLink
  * @property Order\Entity           $order
  * @property Transaction\Entity     $transaction
@@ -2445,6 +2447,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::BANK_TRANSFER);
     }
 
+    public function isOfflineChallan()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::OFFLINE);
+    }
+
     public function isRoutedThroughCardPayments()
     {
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::CARD_PAYMENT_SERVICE);
@@ -3250,6 +3257,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::AEPS:
                 return [$method, ''];
             case Method::BANK_TRANSFER:
+                return [$method, ''];
+            case Method::OFFLINE:
                 return [$method, ''];
             case Method::EMANDATE:
                 return [$method, $this->getBankName()];
