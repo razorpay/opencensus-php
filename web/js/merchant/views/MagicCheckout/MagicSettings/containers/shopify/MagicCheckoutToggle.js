@@ -55,6 +55,7 @@ const MagicCheckoutToggle = ({
           ? '1ccclickedenablemagiccheckout'
           : '1ccdisablemagiccheckoutconfirmationshown',
         actionName: checked ? 'behav' : 'render',
+        screen: 'platform settings l1',
         properties: analyticsProperties,
       });
 
@@ -79,6 +80,7 @@ const MagicCheckoutToggle = ({
         ? '1ccclickednoondisablemagiccheckoutfeedback'
         : '1ccclickednoondisablemagiccheckout',
       actionName: 'behav',
+      screen: 'platform settings l1',
       properties: analyticsProperties,
     });
     setShowModal(false);
@@ -110,6 +112,7 @@ const MagicCheckoutToggle = ({
       analyticsTrack({
         objectName: '1ccclickedyesondisablemagiccheckoutfeedback',
         actionName: 'behav',
+        screen: 'platform settings l1',
         properties: {
           reason_selected: reason,
           reason_description: description,
@@ -131,6 +134,7 @@ const MagicCheckoutToggle = ({
           analyticsTrack({
             objectName: '1ccmagiccheckoutdisabled',
             actionName: 'behav',
+            screen: 'platform settings l1',
             properties: analyticsProperties,
           });
         })
@@ -139,6 +143,7 @@ const MagicCheckoutToggle = ({
             analyticsTrack({
               objectName: '1ccclickedyesondisablemagiccheckout',
               actionName: 'behav',
+              screen: 'platform settings l1',
               properties: analyticsProperties,
             });
             showNotification({
@@ -152,14 +157,16 @@ const MagicCheckoutToggle = ({
       analyticsTrack({
         objectName: '1ccclickedyesondisablemagiccheckout',
         actionName: 'behav',
-        properties: analyticsProperties,
-      });
-      analyticsTrack({
-        objectName: '1ccdisablemagiccheckoutfeedbackshown',
-        actionName: 'render',
+        screen: 'platform settings l1',
         properties: analyticsProperties,
       });
       setShowModal(MODAL_WITH_FORM);
+      analyticsTrack({
+        objectName: '1ccdisablemagiccheckoutfeedbackshown',
+        actionName: 'render',
+        screen: 'platform settings l1',
+        properties: analyticsProperties,
+      });
       setIsFormInValid(true);
     }
   };

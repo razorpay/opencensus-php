@@ -92,6 +92,7 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings }) => {
     analyticsTrack({
       objectName: '1ccclickedsaveplatformsettings',
       actionName: 'behav',
+      screen: 'platform settings l1',
       properties: {
         buy_now: one_cc_buy_now_button,
         auto_fetch_coupon: one_cc_auto_fetch_coupons,

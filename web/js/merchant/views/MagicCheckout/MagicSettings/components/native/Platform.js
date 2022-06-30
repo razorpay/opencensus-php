@@ -11,6 +11,7 @@ const NativePlatform = ({ status, merchantId, updateSettings }) => {
     analyticsTrack({
       objectName: '1ccclickednextonplatformsettings',
       actionName: 'behav',
+      screen: 'platform settings l0',
       properties: {
         platform: PLATFORMS.VALUES.NATIVE,
         merchant_id: merchantId,

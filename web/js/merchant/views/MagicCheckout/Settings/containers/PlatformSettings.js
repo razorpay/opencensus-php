@@ -48,14 +48,16 @@ const PlatformSettings = ({
       let analyticsProperties;
       if (pageType === NESTED_VIEW_TYPE.PLATFORM_SELECTION) {
         analyticsProperties = {
-          eventName: '1ccplatformsettingsl0shown',
+          objectName: '1ccplatformsettingsl0shown',
           actionName: 'render',
+          screen: 'platform settings l0',
           properties: { merchant_id: merchantId },
         };
       } else {
         analyticsProperties = {
-          eventName: '1ccplatformsettingsl1shown',
+          objectName: '1ccplatformsettingsl1shown',
           actionName: 'render',
+          screen: 'platform settings l1',
           properties: {
             magic_checkout_enabled: settings?.one_click_checkout,
             platform: settings?.platform,

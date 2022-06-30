@@ -31,6 +31,7 @@ const PlatformSubText = ({
       analyticsTrack({
         objectName: '1ccclickededitplatforml1screen',
         actionName: 'behav',
+        screen: 'platform settings l1',
         properties: {
           magic_checkout_enabled: one_click_checkout,
           platform,

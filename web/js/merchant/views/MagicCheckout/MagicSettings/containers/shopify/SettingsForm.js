@@ -54,6 +54,7 @@ const SettingsForm = ({ settings, updateSettings, merchantId }) => {
     analyticsTrack({
       objectName: '1ccclickednextonplatformsettings',
       actionName: 'behav',
+      screen: 'platform settings l0',
       properties: {
         platform: PLATFORMS.VALUES.SHOPIFY,
         store_id: `${shopId}.myshopify.com`,

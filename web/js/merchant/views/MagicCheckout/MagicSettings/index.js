@@ -36,6 +36,7 @@ const MagicSettings = ({ settings, openModal, closeModal }) => {
       analyticsTrack({
         objectName: '1cceditplatform',
         actionName: 'behav',
+        screen: 'platform settings l1',
       });
       if (e?.target?.value === PLATFORMS_DROPDOWN[0]?.name) {
         setPlatform(e?.target?.value);
