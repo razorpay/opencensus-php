@@ -108,6 +108,18 @@ const VerifyOtp = ({
           setWrongOtp(true);
           setError('invalid_input_to_karza');
           setIsApiCall(false);
+          trackEvent(
+            window.rzpQ.onbr().initiated('kyc.e-aadhar_OTP_submit', {
+              error_code: 'invalid otp',
+              trigger: true,
+            }),
+          );
+          analyticsTrack({
+            objectName: 'kyc.e-aadhar OTP submit',
+            actionName: 'OTP verify failed',
+            screen: 'Submit OTP on Activation page',
+            ...analyticsProperties,
+          });
           return;
         }
 
@@ -132,7 +144,6 @@ const VerifyOtp = ({
         if (res.success && res?.data.is_success) {
           mobileLinkedOnChange(true);
           setScreen('Success');
-          return;
         }
 
         if (res.success && res.data.is_valid) {
@@ -183,11 +194,18 @@ const VerifyOtp = ({
             }),
           );
         }
+
+        const errorCode = res.data?.error_code || res?.data?.code;
+
         analyticsTrack({
           objectName: 'kyc.e-aadhar OTP submit',
           actionName: 'OTP verified successfully',
           screen: 'Submit OTP on Activation page',
-          ...analyticsProperties,
+          properties: {
+            ...analyticsProperties.properties,
+            error_code: errorCode ? errorCode : null,
+            status: errorCode ? 'Failure' : 'Success',
+          },
         });
       })
       .catch((err) => {
@@ -224,18 +242,20 @@ const VerifyOtp = ({
   }, [otp]);
 
   useEffect(() => {
-    analyticsTrack({
-      objectName: 'Form Field',
-      actionName: 'Validation Failed',
-      screen: 'home page',
-      eventAction: 'Error',
-      properties: {
-        error: 'Invalid OTP. Try again',
-        fieldLabel: 'Aadhar Verification',
-        tab: 'Documents Verification',
-        aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
-      },
-    });
+    if (wrongOtp) {
+      analyticsTrack({
+        objectName: 'Form Field',
+        actionName: 'Validation Failed',
+        screen: 'home page',
+        eventAction: 'Error',
+        properties: {
+          error: 'Invalid OTP. Try again',
+          fieldLabel: 'Aadhar Verification',
+          tab: 'Documents Verification',
+          aadhaar_ekyc_mode: isDigilockerEkyc ? 'Digilocker native' : 'UIDAInative',
+        },
+      });
+    }
   }, [wrongOtp, isDigilockerEkyc]);
 
   return (
