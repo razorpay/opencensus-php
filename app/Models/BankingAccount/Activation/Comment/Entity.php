@@ -8,9 +8,12 @@ use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankingAccount;
+use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
+    use NotesTrait;
+
     const ADMIN_ID = 'admin_id'; // id of admin who added comment
 
     const BANKING_ACCOUNT_ID = 'banking_account_id';
@@ -45,6 +48,18 @@ class Entity extends Base\PublicEntity
 
     const ADMIN_NAME = 'admin_name';
 
+    const NOTES = 'notes';
+
+    const FIRST_DISPOSITION = 'first_disposition';
+
+    const SECOND_DISPOSITION = 'second_disposition';
+
+    const THIRD_DISPOSITION = 'third_disposition';
+
+    const DATE_TIME = 'date_time';
+
+    const OPS_CALL_COMMENT = 'ops_call_comment';
+
     protected $entity = 'banking_account_comment';
 
     protected $table = Table::BANKING_ACCOUNT_COMMENT;
@@ -60,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
+        self::NOTES,
         self::SOURCE_TEAM_TYPE,
         self::TYPE,
         self::SOURCE_TEAM,
@@ -71,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
+        self::NOTES,
         self::SOURCE_TEAM_TYPE,
         self::SOURCE_TEAM,
         self::TYPE,
@@ -84,12 +101,17 @@ class Entity extends Base\PublicEntity
         self::ADMIN_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
+        self::NOTES,
         self::SOURCE_TEAM_TYPE,
         self::SOURCE_TEAM,
         self::TYPE,
         self::ADDED_AT,
         self::CREATED_AT,
         self::ADMIN
+    ];
+
+    protected $defaults = [
+      self::NOTES    => [],
     ];
 
     protected $dates = [

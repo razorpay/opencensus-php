@@ -2879,6 +2879,7 @@ class Route
         'banking_account_comments_create'         => ['post',     'banking_accounts/activation/{id}/comments',                 'BankingAccountController@createActivationComment'        ],
         'banking_account_comments_list'           => ['get',      'banking_accounts/activation/{id}/comments',                 'BankingAccountController@getActivationComments'          ],
         'banking_account_comment_edit'            => ['patch',    'banking_accounts/activation/comments/{id}',                 'BankingAccountController@patchUpdateActivationComment'   ],
+        'banking_account_comments_create_batch'   => ['post',     'banking_accounts/activation/comments/batch',                'BankingAccountController@postActivationCommentsFromBatchService'],
         'banking_account_call_log_list'           => ['get',      'banking_accounts/activation/{id}/call_logs',                'BankingAccountController@getActivationCallLogs'          ],
         'banking_account_activation_details'.
         '_via_batch'                              => ['post',     'banking_accounts/activation/details/batch',                'BankingAccountController@postUpdateActivationDetailsFromBatchService' ],
@@ -4623,6 +4624,7 @@ class Route
         'setl_execution_reminder',
         'setl_status_update',
         'setl_transactions_verify',
+        'banking_account_comments_create_batch',
         'banking_account_activation_details_via_batch',
         'payout_create_on_internal_contact',
         'tax_payments_payout_cron',
@@ -12867,6 +12869,7 @@ class Route
             'terminal_create_bulk',
             'mpans_bulk',
             'upi_terminal_onboarding_bulk',
+            'banking_account_comments_create_batch',
             'banking_account_activation_details_via_batch',
             'create_payment_config_bulk_via_batch',
             'linked_account_create_batch',

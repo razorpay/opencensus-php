@@ -15,6 +15,7 @@ class Validator extends Base\Validator
         Entity::BANKING_ACCOUNT_ID  => 'required|string|size:14',
         Entity::ADMIN_ID            => 'required|string|size:14',
         Entity::COMMENT             => 'required|filled|string',
+        Entity::NOTES               => 'sometimes|array|max:3',
         Entity::SOURCE_TEAM_TYPE    => 'required|max:255|in:internal,external',
         Entity::SOURCE_TEAM         => 'required|max:255|in:product,sales,ops,bank',
         Entity::TYPE                => 'required|max:64|in:internal,external',
@@ -23,6 +24,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::COMMENT             => 'sometimes|string',
+        Entity::NOTES               => 'sometimes|array|max:3',
         Entity::SOURCE_TEAM_TYPE    => 'sometimes|max:255|in:internal,external',
         Entity::SOURCE_TEAM         => 'sometimes|max:255|in:product,sales,ops,bank',
         Entity::TYPE                => 'sometimes|max:64|in:internal,external,external_resolved',

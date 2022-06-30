@@ -1123,6 +1123,14 @@ class Header
     const API_ONBOARDING_LOGIN_DATE = 'API Onboarding Login Date';
     const MID_OFFICE_POC_NAME       = 'Called By';
 
+    // RBL Bulk Upload Comments
+    const BANKING_ACCOUNT_ID        = 'Banking Account ID';
+    const DATE_TIME                 = 'Date-time';
+    const FIRST_DISPOSITION         = 'First Disposition';
+    const SECOND_DISPOSITION        = 'Second Disposition';
+    const THIRD_DISPOSISTION        = 'Third Disposition';
+    const OPS_CALL_COMMENT          = 'OPS Call Comment';
+
     // ICICI STP MIS
     const STP_ACCOUNT_NO                         = 'Account number';
     const STP_FCRM_SR_DATE                       = 'FCRM SR date';
@@ -4098,6 +4106,17 @@ class Header
                 self::API_ONBOARDED_DATE,
                 self::API_ONBOARDING_LOGIN_DATE,
                 self::MID_OFFICE_POC_NAME,
+            ],
+        ],
+
+        Type::RBL_BULK_UPLOAD_COMMENTS => [
+            self::INPUT => [
+                self::BANKING_ACCOUNT_ID,
+                self::DATE_TIME,
+                self::FIRST_DISPOSITION,
+                self::SECOND_DISPOSITION,
+                self::THIRD_DISPOSISTION,
+                self::OPS_CALL_COMMENT,
             ],
         ],
 

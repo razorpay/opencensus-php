@@ -30,7 +30,7 @@ class Core extends Base\Core
 
         $newComment->bankingAccount()->associate($bankingAccount);
 
-        $newComment->saveOrFail();
+        $this->repo->saveOrFail($newComment);
 
         return $newComment;
     }

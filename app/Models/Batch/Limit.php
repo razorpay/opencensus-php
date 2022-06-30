@@ -38,6 +38,7 @@ class Limit
         'emandate_debit_sbi'                        => 10000,
         Type::BANKING_ACCOUNT_ACTIVATION_COMMENTS   => 10000,
         Type::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS=> 10000,
+        Type::RBL_BULK_UPLOAD_COMMENTS              => 10000,
         Type::ELFIN                                 => 5000,
         Type::PARTNER_SUBMERCHANTS                  => 5000,
         Type::ENTITY_MAPPING                        => 10000,

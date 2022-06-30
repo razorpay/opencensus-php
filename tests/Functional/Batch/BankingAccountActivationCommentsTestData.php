@@ -60,4 +60,19 @@ return [
             ],
         ],
     ],
+
+    'testBatchUploadForRblBulkUploadComments'   => [
+          'request' => [
+              'url'  => '/admin/batches',
+              'method'  => 'post',
+              'content' =>  [
+                  'type'    => 'rbl_bulk_upload_comments',
+              ]
+          ],
+          'response'  =>    [
+              'content' =>  [
+                  'status'      =>     'CREATED'
+              ],
+          ],
+    ],
 ];

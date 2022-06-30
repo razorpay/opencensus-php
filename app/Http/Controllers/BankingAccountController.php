@@ -125,6 +125,15 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postActivationCommentsFromBatchService()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::BANKING_ACCOUNT_COMMENT)->createCommentFromBatch($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getActivationComments(string $id)
     {
         $input = Request::all();

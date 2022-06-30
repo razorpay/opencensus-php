@@ -6,6 +6,7 @@ namespace RZP\Tests\Functional\Batch;
 use RZP\Models\Batch;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class BankingAccountActivationCommentsTest extends TestCase
 {
@@ -283,6 +284,58 @@ class BankingAccountActivationCommentsTest extends TestCase
 
         $this->testBatchUploadIciciStpMis($entries);
     }
+
+    public function testBatchUploadForRblBulkUploadComments(array $entries = [])
+    {
+        if (empty($entries) === true)
+        {
+            $ba = $this->createBankingAccount();
+
+            $ba_id = $ba->getId();
+
+            $entries = [
+                [
+                    Batch\Header::BANKING_ACCOUNT_ID        =>  $ba_id,
+                    Batch\Header::DATE_TIME                 =>  '12/05/2022 12:00:00',
+                    Batch\Header::FIRST_DISPOSITION         =>  'first_disposition',
+                    Batch\Header::SECOND_DISPOSITION        =>  'second_disposition',
+                    Batch\Header::THIRD_DISPOSISTION        =>  'third_disposition',
+                    Batch\Header::OPS_CALL_COMMENT          =>  'comment'
+                ],
+                [
+                    Batch\Header::BANKING_ACCOUNT_ID        =>  $ba_id,
+                    Batch\Header::DATE_TIME                 =>  '12/05/2022 12:05:00',
+                    Batch\Header::FIRST_DISPOSITION         =>  'first_disposition1',
+                    Batch\Header::SECOND_DISPOSITION        =>  'second_disposition1',
+                    Batch\Header::THIRD_DISPOSISTION        =>  'third_disposition1',
+                    Batch\Header::OPS_CALL_COMMENT          =>  'comment1'
+                ]
+            ];
+        }
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testBatchUploadForRblBulkUploadCommentsIncorrectHeaders()
+    {
+        $ba = $this->createBankingAccount();
+
+        $ba_id = $ba->getId();
+
+        $entries = [
+            [
+                Batch\Header::BANKING_ACCOUNT_ID        =>  $ba_id,
+                'date_time'                             =>  '12/05/2022 12:05:00',
+            ],
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->testBatchUploadForRblBulkUploadComments($entries);
+    }
+
 }
 
 

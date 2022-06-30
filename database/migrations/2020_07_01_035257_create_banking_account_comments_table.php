@@ -27,6 +27,8 @@ class CreateBankingAccountCommentsTable extends Migration
 
             $table->text(Entity::COMMENT);
 
+            $table->text(Entity::NOTES);
+
             $table->char(Entity::SOURCE_TEAM_TYPE, 255);
 
             $table->char(Entity::SOURCE_TEAM, 255);

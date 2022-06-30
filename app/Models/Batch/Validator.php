@@ -325,6 +325,12 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $rblBulkUploadCommentsCreateRules = [
+        Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE        => 'required|in:rbl_bulk_upload_comments',
+        Entity::CONFIG      => 'filled|array',
+    ];
+
     protected static $iciciStpMisCreateRules = [
         Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:icici_stp_mis',
@@ -2583,6 +2589,20 @@ class Validator extends Base\Validator
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_ACCOUNT_NO);
+            }
+        }
+    }
+
+    protected function validateRblBulkUploadCommentsEntries(array &$entries, array $params, ME $merchant)
+    {
+        foreach($entries as $entry)
+        {
+            $mid = $entry[Header::BANKING_ACCOUNT_ID];
+
+            if (empty($mid) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BANK_ACCOUNT_ID_MISSING);
             }
         }
     }
