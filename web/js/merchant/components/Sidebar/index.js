@@ -57,6 +57,7 @@ const BASE_ROUTES = {
   (state) => ({
     showMobileMenu: state.app.showMobileMenu,
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
+    org: state.session.org,
   }),
   { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal, ...EventsActions },
 )
@@ -174,9 +175,13 @@ export default class Sidebar extends Component {
   }
 
   render() {
-    const { user, config, logoURL, showMobileMenu } = this.props;
+    const { user, config, logoURL, showMobileMenu, org } = this.props;
     const routes = this.routes;
     const isMerchant = !!user.current;
+    const showExternalRedirect =
+      isOrgFeatureExist('enable_external_redirect') &&
+      org?.external_redirect_url_text &&
+      org?.external_redirect_url;
 
     const merchantNavLinkProps = {
       routes,
@@ -215,6 +220,20 @@ export default class Sidebar extends Component {
                       to="/app-store"
                       customBadge="NEW"
                     />
+                  </div>
+                </ShowWhen>
+                <ShowWhen additionalCondition={() => showExternalRedirect}>
+                  <div className="external-link-container">
+                    <a
+                      className="NavLink"
+                      href={org?.external_redirect_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <i className="i i-external-link text-primary" />
+                      &nbsp;
+                      <span>{org?.external_redirect_url_text}</span>
+                    </a>
                   </div>
                 </ShowWhen>
               </div>
