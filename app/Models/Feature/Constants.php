@@ -1411,6 +1411,8 @@ class Constants
 
     const ALLOW_NEGATIVE_DISPUTE = "allow_negative_dispute";
 
+    const SHOW_PAYMENT_RECEIVER_TYPE = 'show_pmt_receiver_type';
+
     const CART_API_AMOUNT_CHECK  =  "cart_api_amount_check";
 
     /**
@@ -1941,6 +1943,7 @@ class Constants
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
         self::ONE_CC_REPORTING_TEST           => true,
+        self::SHOW_PAYMENT_RECEIVER_TYPE      => true,
         self::HANDLE_VA_TO_VA_PAYOUT          => true,
         self::RECURRING_CHECKOUT_DOT_COM      => true,
         self::ALLOW_NEGATIVE_DISPUTE          => true,

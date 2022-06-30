@@ -12265,7 +12265,8 @@ class Route
             'dispute_reason_fetch_internal',
             'payment_meta_fetch_by_payment_id_action',
             'payment_fetch_by_id_internal',
-            'order_fetch_by_id_internal'
+            'order_fetch_by_id_internal',
+            'internal_payment_authorize_refund',
         ],
 
         'cron' => [

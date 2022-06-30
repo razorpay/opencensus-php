@@ -507,7 +507,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
-        self::TOKEN
+        self::RECEIVER_TYPE,
+        self::TOKEN,
     ];
 
     protected $reconAppInternal = [

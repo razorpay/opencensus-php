@@ -2925,6 +2925,12 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
         }
 
+        if ($payment->isPos() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         if (($this->getPaymentRefundType($input, $payment) === Payment\RefundStatus::PARTIAL) and
             (in_array($payment->getGateway(), Payment\Gateway::$partialRefundDisabledGateways) === true))
         {
