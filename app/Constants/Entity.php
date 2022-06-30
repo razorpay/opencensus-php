@@ -942,7 +942,8 @@ class Entity
         Entity::FEE_BREAKUP,
         Entity::ENTITY_ORIGIN,
         Entity::UPI_METADATA,
-        Entity::BATCH_FUND_TRANSFER
+        Entity::BATCH_FUND_TRANSFER,
+        Entity::ENTITY_OFFER
     ];
 
     public static $namespace = [
