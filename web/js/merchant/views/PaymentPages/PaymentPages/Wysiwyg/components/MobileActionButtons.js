@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import Button from 'common/new-ui/Button';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
 
 import { isEmail, isPhone } from 'common/utils/validators';
 
@@ -43,7 +43,9 @@ export default function MobileActionButtons(props) {
             <i class="i i-chevron-left" /> Previous
           </Button.Transparent>
           <div class="m-r" />
-          <Button.Primary onClick={props.handlePublishPage}>Publish Page</Button.Primary>
+          <AsyncBtn.Primary onClick={props.handlePublishPage} pendingState="Publishing">
+            Publish Page
+          </AsyncBtn.Primary>
         </>
       )}
     </div>

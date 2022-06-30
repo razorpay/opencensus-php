@@ -892,7 +892,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           </Button.Transparent>
           <AsyncBtn.Primary
             onClick={() => {
-              this.handleSavePublish(
+              return this.handleSavePublish(
                 payment_page_id ? 'Save and Update Page' : 'Create and Publish Page',
               );
             }}
