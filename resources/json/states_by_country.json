@@ -6976,7 +6976,7 @@
     "country_code": "IN",
     "states": [
       {
-        "name": "Andaman and Nicobar Islands",
+        "name": "Andaman & Nicobar Islands",
         "state_code": "AN"
       },
       {
@@ -7004,8 +7004,12 @@
         "state_code": "CT"
       },
       {
-        "name": "Dadra and Nagar Haveli and Daman and Diu",
-        "state_code": "DH"
+        "name": "Dadra & Nagar Haveli",
+        "state_code": "DN"
+      },
+      {
+        "name": "Daman & Diu",
+        "state_code": "DD"
       },
       {
         "name": "Delhi",
@@ -7028,7 +7032,7 @@
         "state_code": "HP"
       },
       {
-        "name": "Jammu and Kashmir",
+        "name": "Jammu & Kashmir",
         "state_code": "JK"
       },
       {
