@@ -169,18 +169,18 @@ class Service extends Base\Service
 
         $ampEmail = $this->repo->amp_email->findByPublicId($request->getToken());
 
-        $this->merchant = $this->repo->merchant->findByPublicId($ampEmail->getEntityId());
+        $merchant = $this->repo->merchant->findByPublicId($ampEmail->getEntityId());
 
+        $this->app['basicauth']->setMerchant($merchant);
+        
         $success = true;
 
         try
         {
 
-            return $this->repo->transactionOnLiveAndTest(function() use ($ampEmail, $formInput) {
+            $this->repo->transactionOnLiveAndTest(function() use ($ampEmail, $formInput) {
 
-                $formInput[MDEntity::ACTIVATION_FORM_MILESTONE]=DEConstants::L1_SUBMISSION;
-
-                (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($formInput, $this->merchant);
+                (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($formInput);
 
                 $input = [
                     Entity::STATUS => Constants::CLOSE
@@ -212,9 +212,16 @@ class Service extends Base\Service
         $formInput["L1Submission_status"] = $success ? Constants::SUCCESS : Constants::FAILED;
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $this->merchant, $formInput, SegmentEvent::AMP_EMAIL_L1_SUBMISSION);
+            $merchant, $formInput, SegmentEvent::AMP_EMAIL_L1_SUBMISSION);
 
-        if ($success === false)
+        if ($success === true)
+        {
+            $input = [MDEntity::ACTIVATION_FORM_MILESTONE => DEConstants::L1_SUBMISSION];
+
+            (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($input);
+
+        }
+        else
         {
             {
                 throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
