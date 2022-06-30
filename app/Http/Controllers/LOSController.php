@@ -233,7 +233,7 @@ class LOSController extends Controller
         $permissionCategories = Config::get('heimdall.permissions');
         $capitalPermissions = $permissionCategories[PermissionCategory::RAZORPAY_CAPITAL];
         foreach ($permissions as $permission) {
-            if (isset($capitalPermissions[$permission])) {
+            if (isset($capitalPermissions[$permission]) || str_starts_with($permission, "capital_los_")) {
                 $permissionsString .= $permission.":";
             }
         }
