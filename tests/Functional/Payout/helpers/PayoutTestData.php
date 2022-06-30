@@ -488,7 +488,7 @@ return [
     'testPayoutInitiatedInLedgerCron' => [
         'request'  => [
             'method'  => 'POST',
-            'url'     => '/create_journal_cron',
+            'url'     => '/ledger_service/create_journal_cron',
             'content' => [
                 'entity' => 'payout',
             ],
@@ -17704,7 +17704,7 @@ return [
     'testPayoutWithJournalLedgerCronInLedgerReverseShadow' => [
         'request' => [
             'method'    => 'POST',
-            'url'       => '/create_journal_cron',
+            'url'       => '/ledger_service/create_journal_cron',
             'content'   => [
                 'entity'        => 'payout',
             ]
@@ -17719,7 +17719,7 @@ return [
     'testPayoutWithJournalLedgerCronInLedgerReverseShadowWithWhitelistIds' => [
         'request' => [
             'method'    => 'POST',
-            'url'       => '/create_journal_cron',
+            'url'       => '/ledger_service/create_journal_cron',
             'content'   => [
                 'whitelist_ids' => ['IwHCToefEWVgpi'],
                 'entity'        => 'payout',
@@ -17735,7 +17735,7 @@ return [
     'testPayoutReversalWithJournalLedgerCronInLedgerReverseShadow' => [
         'request' => [
             'method'    => 'POST',
-            'url'       => '/create_journal_cron',
+            'url'       => '/ledger_service/create_journal_cron',
             'content'   => [
                 'entity'        => 'reversal',
             ]

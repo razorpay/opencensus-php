@@ -84,7 +84,6 @@ class Repository extends Base\Repository
 
         $adjIdColumn            = $this->repo->adjustment->dbColumn(Entity::ID);
         $adjTransactionIdColumn = $this->repo->adjustment->dbColumn(Entity::TRANSACTION_ID);
-        $adjStatusColumn        = $this->repo->adjustment->dbColumn(Entity::STATUS);
         $adjBalanceIdColumn     = $this->repo->adjustment->dbColumn(Entity::BALANCE_ID);
 
         $adjAttrs = $this->dbColumn('*');
@@ -92,7 +91,6 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $adjBalanceIdColumn)
                     ->select($adjAttrs)
-                    ->where($adjStatusColumn, '=', Status::CREATED)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
                     ->whereNull($adjTransactionIdColumn)

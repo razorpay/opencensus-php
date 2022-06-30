@@ -1892,7 +1892,6 @@ class Repository extends Base\Repository
 
         $payoutIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
         $payoutTransactionIdColumn = $this->repo->payout->dbColumn(Entity::TRANSACTION_ID);
-        $payoutStatusColumn        = $this->repo->payout->dbColumn(Entity::STATUS);
         $payoutBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
 
         $payoutAttrs = $this->dbColumn('*');
@@ -1900,7 +1899,6 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutBalanceIdColumn)
                     ->select($payoutAttrs)
-                    ->where($payoutStatusColumn, '=', Status::CREATED)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
                     ->whereNull($payoutTransactionIdColumn)

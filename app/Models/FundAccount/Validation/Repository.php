@@ -153,7 +153,6 @@ class Repository extends Base\Repository
 
         $favIdColumn              = $this->repo->fund_account_validation->dbColumn(Entity::ID);
         $favTransactionIdColumn   = $this->repo->fund_account_validation->dbColumn(Entity::TRANSACTION_ID);
-        $favStatusColumn          = $this->repo->fund_account_validation->dbColumn(Entity::STATUS);
         $favBalanceIdColumn       = $this->repo->fund_account_validation->dbColumn(Entity::BALANCE_ID);
         $favFundAccountTypeColumn = $this->repo->fund_account_validation->dbColumn(Entity::FUND_ACCOUNT_TYPE);
 
@@ -162,7 +161,6 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $favBalanceIdColumn)
                     ->select($favAttrs)
-                    ->where($favStatusColumn, '=', Status::CREATED)
                     ->where($favFundAccountTypeColumn, '=', Type::BANK_ACCOUNT)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)

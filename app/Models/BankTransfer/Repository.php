@@ -162,7 +162,6 @@ class Repository extends Base\Repository
 
         $btIdColumn            = $this->repo->bank_transfer->dbColumn(Entity::ID);
         $btTransactionIdColumn = $this->repo->bank_transfer->dbColumn(Entity::TRANSACTION_ID);
-        $btStatusColumn        = $this->repo->bank_transfer->dbColumn(Entity::STATUS);
         $btBalanceIdColumn     = $this->repo->bank_transfer->dbColumn(Entity::BALANCE_ID);
 
         $btAttrs = $this->dbColumn('*');
@@ -170,7 +169,6 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $btBalanceIdColumn)
                     ->select($btAttrs)
-                    ->where($btStatusColumn, '=', Status::CREATED)
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
                     ->whereNull($btTransactionIdColumn)

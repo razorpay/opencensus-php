@@ -3466,7 +3466,7 @@ class Route
         'fetch_ledger_config_form_field_options_ledger'   => ['post',      'ledger_service/fetch_ledger_config_form_field_options', 'LedgerController@fetchLedgerConfigFormFieldOptions'],
         'fetch_account_types_ledger'                      => ['post',      'ledger_service/fetch_account_types',                    'LedgerController@fetchAccountTypes'],
         'delete_merchants_ledger'                         => ['post',      'ledger_service/delete_merchants',                       'LedgerController@deleteMerchants'],
-        'create_ledger_journal_cron'                      => ['post',      'create_journal_cron',                                   'LedgerController@createJournalCron'],
+        'create_ledger_journal_cron'                      => ['post',      'ledger_service/create_journal_cron',                                   'LedgerController@createJournalCron'],
 
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
