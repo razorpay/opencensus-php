@@ -62,11 +62,18 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
             $date = Carbon::createFromTimestamp($row['payment']['created_at'],
                 Timezone::IST)->format('d-M-y H:i:s');
 
+            $transAmount = $this->formatAmount($row['payment']['amount']);
+            $flexmoneyMdr = $this->formatAmount($row['payment']['amount'])*0.016; //since this is 1.6 percent of the amount
+            $flexmoneyMdrGst =  $flexmoneyMdr*0.18; //18 percent of flexmoneymdr
             $col = [
-                'PG Transaction ID'          => $row['payment']['id'],
+                'PG Transaction ID'         => $row['payment']['id'],
                 'Flexpay Transaction ID'    => $row['cardless_emi']['gateway_reference_id'],
-                'Transaction Amount'        => $this->formatAmount($row['payment']['amount']),
+                'Transaction Amount'        => $transAmount,
                 'Transaction Date'          => $date,
+                'Lender ID'                 => '502',
+                'Flexmoney MDR Share'       => $flexmoneyMdr,
+                'GST on MDR'                => $flexmoneyMdrGst,
+                'Settlement Value'          => $transAmount-$flexmoneyMdr-$flexmoneyMdrGst,
             ];
 
             $this->content($col, 'payment_recon');

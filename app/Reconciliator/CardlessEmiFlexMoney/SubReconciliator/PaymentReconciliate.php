@@ -13,6 +13,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const GATEWAY_TRANSACTION_ID    = 'flexpay_transaction_id';
     const TRANSACTION_AMOUNT        = 'transaction_amount';
     const TRANSACTION_DATE          = 'transaction_date';
+    const LENDER_ID                 = 'lender_id';
+    const FLEXMONEY_MDR_SHARE       = 'flexmoney_mdr_share';
+    const GST_ON_MDR                = 'gst_on_mdr';
+    const SETTLEMENT_AMOUNT         = 'settlement_amount';
 
     const BLACKLISTED_COLUMNS = [];
 
@@ -36,6 +40,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return null;
     }
 
+    protected function getGatewayFee($row)
+    {
+        // Convert fee into basic unit of currency. (ex: paise)
+        return floatval($row[self::FLEXMONEY_MDR_SHARE]) * 100 ?? null;
+
+    }
+
+    protected function getGatewayServiceTax($row)
+    {
+        // Convert fee into basic unit of currency. (ex: paise)
+        return floatval($row[self::GST_ON_MDR]) * 100 ?? null;
+    }
     protected function getReconPaymentAmount(array $row)
     {
         if (empty($row[self::TRANSACTION_AMOUNT]) === false)

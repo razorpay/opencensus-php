@@ -88,6 +88,10 @@ class CardlessEmiReconciliationTest extends TestCase
             $transaction = $this->getEntityById('transaction', $transactionId, true);
 
             $this->assertNotNull($transaction['reconciled_at']);
+
+            $this->assertEquals('800',$transaction['gateway_fee']);
+
+            $this->assertEquals('144',$transaction['gateway_service_tax']);
         }
 
         $this->assertEquals(Status::PROCESSED, $batch['status']);
