@@ -48,7 +48,7 @@ class Service extends Base\Service
      */
     public function createCommentFromBatch(array $input) : array
     {
-        // $input['date_time'] must be in Month/Day/Year Hour:Minute:Sec format
+        // $input['date_time'] must be in Day/Month/Year Hour:Minute:Sec format
         // example: 05/12/2022 12:00:10
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_COMMENT_CREATE_BATCH,
@@ -61,7 +61,7 @@ class Service extends Base\Service
 
         $commentPayload = [
             Entity::SOURCE_TEAM         => 'ops',
-            Entity::ADDED_AT            => strtotime($input[Entity::DATE_TIME]),
+            Entity::ADDED_AT            => DateTime::createFromFormat("d/m/Y H:i:s", $input[Entity::DATE_TIME], new \DateTimeZone('Asia/Kolkata'))->getTimestamp(),
             Entity::COMMENT             => $input[Entity::OPS_CALL_COMMENT],
             Entity::SOURCE_TEAM_TYPE    => 'internal',
             Entity::TYPE                => 'internal',
