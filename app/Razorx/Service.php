@@ -261,7 +261,9 @@ class Service extends Base\Service
             'capital_addon_cards_statement_export',
             'optimizer_onboarding',
             'rx_yellow_ai_enabled',
-            'rx_zoho_bank_account_sync'
+            'rx_zoho_bank_account_sync',
+            'rx_tally_bank_account_sync',
+            'rx_quickbooks_bank_account_sync'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
