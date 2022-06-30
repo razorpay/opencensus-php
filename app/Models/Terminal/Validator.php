@@ -399,6 +399,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                                 => 'required|in:billdesk_optimizer',
         Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
         Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE                     => 'required|string',
         Entity::TYPE                                    => 'required|array',
         Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
@@ -862,6 +863,7 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
     ];
