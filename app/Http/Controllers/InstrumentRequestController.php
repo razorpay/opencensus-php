@@ -211,7 +211,7 @@ class InstrumentRequestController extends BaseController
             $input,
             \Requests::POST,
             'v2/merchant_instrument_request',
-            ['timeout' => 0.5],
+            ['timeout' => 2],
             $this->getMerchantHeadersForInstrumentRequest());
 
         //For sending 400 Error to FE, we need to throw BadRequestException(not possible to send capture_info json), so send status_code explicitly with capture info json in response
