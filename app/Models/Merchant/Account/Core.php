@@ -60,13 +60,19 @@ class Core extends Merchant\Core
             $parentMerchant,
             $merchantDetailsInput)
         {
-            $account = (new Merchant\Core)->createSubMerchant(
-                $input,
-                $parentMerchant,
-                true,
-                true);
+            $account = Tracer::inSpan(['name'=>'merchant.account.create_sub_merchant'], function() use($input, $parentMerchant)
+            {
+                return (new Merchant\Core)->createSubMerchant(
+                                $input,
+                                $parentMerchant,
+                                true,
+                                true);
+            });
 
-            (new Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
+            Tracer::inSpan(['name'=>'merchant.account.save_merchant_details'], function() use($merchantDetailsInput, $account)
+            {
+                (new Detail\Core)->saveMerchantDetails($merchantDetailsInput, $account);
+            });
 
             return $account;
 

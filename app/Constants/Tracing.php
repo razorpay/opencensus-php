@@ -243,6 +243,9 @@ class Tracing
             'transfer_fetch_multiple',
             'payment_transfer',
             'payment_fetch_transfers',
+            'beta_account_create',
+            'merchant_sub_create',
+            'linked_account_create_batch',
 
             // tokenization
             'token_create',

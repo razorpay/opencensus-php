@@ -335,25 +335,6 @@ return [
         ],
     ],
 
-    'testUpdateBankAccountForLinkedAccountWithPennyTesting' => [
-        'request' => [
-            'method' => 'post',
-            'content' => [
-                'beneficiary_name'  => 'Emma Stone',
-                'account_number'    => '123412341234',
-                'ifsc_code'         => 'SBIN0000004',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'status'            => 'verification_pending',
-                'beneficiary_name'  => 'Emma Stone',
-                'account_number'    => '123412341234',
-                'ifsc_code'         => 'SBIN0000004',
-            ],
-        ],
-    ],
-
     'addSettlementDestination' => [
         'request'  => [
             'content' => [
