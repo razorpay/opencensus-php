@@ -808,6 +808,10 @@ class Core extends Base\Core
         {
             $tokenItems = & $tokens['items'];
 
+            $this->trace->info(
+                TraceCode::DEDUP_RECURRING_TOKEN_JSON
+            );
+
             $tokenItems = array_filter($tokenItems, function ($item)
             {
                 global $distinctCardTokensData;

@@ -501,7 +501,7 @@ class Processor
             }
 
 
-            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) and 
+            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) and
                 ($merchant->isHeadlessEnabled() === false))
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::JSON_V2_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -509,7 +509,7 @@ class Processor
                 if ($result !== 'on')
                 {
                     return false;
-                }   
+                }
             }
 
 
@@ -520,7 +520,7 @@ class Processor
                 if ($result !== 'on')
                 {
                     return false;
-                }   
+                }
             }
 
 
@@ -648,7 +648,7 @@ class Processor
                 }
             }
 
-        
+
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
             $isIVR = (in_array(Card\IIN\Flow::IVR, $enabledFlows, true) === true);
@@ -1072,23 +1072,6 @@ class Processor
 
                 $input['save'] = "1";
             }
-
-            // TODO: Remove this after gating logic is live
-            if($isRecurringInitialPayment and
-                ($isRecurringFlow or isset($input[Payment\Entity::SUBSCRIPTION_ID])) and
-                (isset($input['save']) === false) and (isset($input['token']) === false))
-            {
-                $this->trace->info(
-                    TraceCode::EXPLICIT_CONSENT_COLLECTED_RECURRING,
-                    [
-                        'merchant_id' => $this->app['basicauth']->getMerchantId(),
-                        'library' => $library
-                    ]
-                );
-
-                $input['save'] = "1";
-            }
-
         }
         catch (\Throwable $e)
         {
@@ -1169,6 +1152,14 @@ class Processor
                $userConsentGiven === false)
             {
                 $recurringSavedCardToken = (new Customer\Token\Repository)->getByTokenAndMerchant($input['token'], $this->merchant);
+
+                $this->trace->info(
+                    TraceCode::EXPLICIT_CONSENT_COLLECTED_RECURRING_SAVED_CARD,
+                    [
+                        'merchant_id' => $this->app['basicauth']->getMerchantId(),
+                        'library' => $library
+                    ]
+                );
 
                 $this->app['cache']->put($redisKey, $recurringSavedCardToken->getAcknowledgedAt(), $ttl);
             }

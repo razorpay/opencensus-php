@@ -11081,6 +11081,12 @@ trait Authorize
             //consent will be a non boolean value (acknowledged_at time) in case of CAW saved card flow
             if($consent !== true)
             {
+                $this->trace->info(
+                    TraceCode::FETCH_AND_STORE_CONSENT_FROM_REDIS_RECURRING,
+                    [
+                        'consent' => $consent,
+                    ]
+                );
                 $tokenEntity->setAcknowledgedAt($consent);
             }
             else
