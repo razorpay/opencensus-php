@@ -505,7 +505,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.abcd.xyz.com', '/logos/random_image.png');
 
         $this->ba->publicAuth();
 
@@ -555,7 +555,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant',null, '/logos/random_image.png', 'Billing Name');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', null, '/logos/random_image.png', 'Billing Name');
 
         $this->ba->publicAuth();
 
@@ -582,7 +582,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant',null, '/logos/random_image.png', null, 'Business Name');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', null, '/logos/random_image.png', null, 'Business Name');
 
         $this->ba->publicAuth();
 
@@ -636,7 +636,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://abcd@xyz.com', '/logos/random_image.png', 'Billing Name');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'http://abcd@xyz.com', '/logos/random_image.png', 'Billing Name');
 
         $this->ba->publicAuth();
 
@@ -690,7 +690,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://127.0.0.1:5000/', null, 'Billing Name');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'http://127.0.0.1:5000/', null, 'Billing Name');
 
         $this->ba->publicAuth();
 
@@ -717,7 +717,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','www.testing.com');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'www.testing.com');
 
         $this->ba->publicAuth();
 
@@ -744,7 +744,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','http://2001');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'http://2001');
 
         $this->ba->publicAuth();
 
@@ -771,7 +771,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.google.com');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.google.com');
 
         $this->ba->publicAuth();
 
@@ -798,7 +798,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://play.google.com/store/apps/details?id=com.apexlearningapp.EducationalApp');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://play.google.com/store/apps/details?id=com.apexlearningapp.EducationalApp');
 
         $this->ba->publicAuth();
 
@@ -825,7 +825,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://apps.apple.com/us/app/la-milano-pizzeria/id1568854744');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://apps.apple.com/us/app/la-milano-pizzeria/id1568854744');
 
         $this->ba->publicAuth();
 
@@ -852,7 +852,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.abcd.xyz.com', '/logos/random_image.png');
 
         $cardId = $this->createCardFixture();
 
@@ -893,7 +893,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.abcd.xyz.com', '/logos/random_image.png');
 
         $cardId = $this->createCardFixture();
 
@@ -926,11 +926,73 @@ class CustomerTokenTest extends TestCase
         $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId1]);
     }
 
+    public function testFetchAppTokensV2OnlyFetchesCardTokens()
+    {
+        $this->mockSession();
+
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.abcd.xyz.com', '/logos/random_image.png');
+
+        $cardId = $this->createCardFixture();
+
+        $tokenId = $this->createTokenFixture($cardId, '111111Razorpay');
+
+        $token = $this->fixtures->create('token', [
+                'method'      => 'wallet',
+                'card_id'     => null,
+                'customer_id' => '10000gcustomer',
+                'merchant_id' => '111111Razorpay',
+                'used_at'     => Carbon::now()->getTimestamp(),
+            ]
+        );
+
+        $walletTokenId = $token->id;
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData['testFetchAppTokensV2MultipleCardsDifferentMerchantsSuccessful'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $response = $this->startTest();
+
+        $this->assertEquals($tokenId, $response['cards'][0]['tokens'][0]['id']);
+
+        $this->assertEquals('10000custgcard', $response['cards'][1]['tokens'][0]['id']);
+
+        $merchantDetails = [
+            'website_name'  => 'xyz',
+            'name'          => 'test merchant',
+            'logo_url'      => 'https://dummycdn.razorpay.com/logos/random_image_original.png'
+        ];
+
+        $tokenMerchantId1 = $response['cards'][0]['tokens'][0]['merchant_id'];
+
+        $tokenMerchantId2 = $response['cards'][1]['tokens'][0]['merchant_id'];
+
+        $this->assertEquals($tokenMerchantId1, $tokenMerchantId2);
+
+        $tokenIds = [];
+
+        for ($i = 0, $iMax = count($response['cards'][0]['tokens']); $i < $iMax; $i++)
+        {
+            $tokenIds[] = $response['cards'][0]['tokens'][$i]['id'];
+        }
+
+        for ($i = 0, $iMax = count($response['cards'][1]['tokens']); $i < $iMax; $i++)
+        {
+            $tokenIds[] = $response['cards'][1]['tokens'][$i]['id'];
+        }
+
+        $this->assertNotContains($walletTokenId, $tokenIds);
+
+        $this->assertArraySelectiveEquals($merchantDetails, $response['mappings']['merchants'][$tokenMerchantId1]);
+    }
+
     public function testFetchAppTokensV2SingleCardMultipleTokensDifferentMerchantsSuccessful()
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.abcd.xyz.com', '/logos/random_image.png');
 
         $merchantId2 =  $this->createMerchantFixture();
 
@@ -975,7 +1037,7 @@ class CustomerTokenTest extends TestCase
     {
         $this->mockSession();
 
-        $this->attachDifferentMerchantWithSessionCustomer('test merchant','https://www.abcd.xyz.com', '/logos/random_image.png');
+        $this->attachDifferentMerchantWithSessionCustomer('test merchant', 'https://www.abcd.xyz.com', '/logos/random_image.png');
 
         $merchantId2 =  $this->createMerchantFixture();
 

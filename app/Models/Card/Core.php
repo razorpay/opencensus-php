@@ -1097,6 +1097,11 @@ class Core extends Base\Core
     {
         $card = $token->card;
 
+        if ($card === null)
+        {
+            return;
+        }
+
         // Fetching card details as a unique key for each token as card id will be different for each token
         // even if the tokens are of the same card
         $uniqueCardCombination = $card->getCardDetailsAsKey();

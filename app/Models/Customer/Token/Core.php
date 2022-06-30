@@ -2676,7 +2676,12 @@ class Core extends Base\Core
 
         $tokens = $this->repo->token->getByCustomer($customer);
 
-        foreach ($tokens as $token)
+        $cardTokens = $tokens->filter(static function (Entity $token) {
+            // Remove non card tokens
+            return $token->isCard();
+        });
+
+        foreach ($cardTokens as $token)
         {
             $tokenIdList[] = $token->getId();
         }
@@ -2685,7 +2690,7 @@ class Core extends Base\Core
             Card\Constants::TOKENS  => $tokenIdList
         ]);
 
-        foreach ($tokens as $token)
+        foreach ($cardTokens as $token)
         {
             $merchant = $token->merchant;
 
