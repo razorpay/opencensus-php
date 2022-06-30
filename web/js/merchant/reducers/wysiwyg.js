@@ -11,7 +11,10 @@ import {
 } from 'common/utils/immutable';
 
 import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
-import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
+import {
+  fetchPaymentPageEntity,
+  fetchCustomDomain,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 
 // TODO: Remove dependency from here
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
@@ -20,6 +23,7 @@ const INIT_DEFAULT_FORM_ITEMS = 'INIT_DEFAULT_FORM_ITEMS';
 const FETCH_ENTITY = 'FETCH_ENTITY';
 const REFRESH_PAGE_DATA = 'REFRESH_PAGE_DATA';
 const UPDATE_DATA = 'UPDATE_DATA';
+const UPDATE_SETTINGS = 'UPDATE_SETTINGS';
 const SETTINGS_MODAL = 'SETTINGS_MODAL';
 const SHIPROCKET_MODAL = 'SHIPROCKET_MODAL';
 const DELETE_IN_FORM_ITEMS = 'DELETE_IN_FORM_ITEMS';
@@ -30,6 +34,8 @@ const MARK_DATA_SAVED = 'MARK_DATA_SAVED';
 const REORDER_FORM_ITEMS = 'REORDER_FORM_ITEMS';
 const UPDATE_RECEIPT_DETAILS = 'UPDATE_RECEIPT_DETAILS';
 const PREFILL_CONTACT_DETAILS = 'PREFILL_CONTACT_DETAILS';
+const FETCH_CUSTOM_DOMAIN = 'FETCH_CUSTOM_DOMAIN';
+const UPDATE_CUSTOM_DOMAIN = 'UPDATE_CUSTOM_DOMAIN';
 
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
@@ -66,6 +72,20 @@ export const fetchPaymentPage = (id, isIntentDuplicate) => {
     payload: fetchPaymentPageEntity(id),
     isIntentDuplicate,
     id,
+  };
+};
+
+export const fetchCustomDomainDetails = () => {
+  return {
+    type: FETCH_CUSTOM_DOMAIN,
+    payload: fetchCustomDomain(),
+  };
+};
+
+export const updateCustomDomainDetails = (payload = {}) => {
+  return {
+    type: UPDATE_CUSTOM_DOMAIN,
+    payload,
   };
 };
 
@@ -138,6 +158,7 @@ const initialState = {
         email: FIXED_FIELDS.email.name, // email key in form to be used in prefill checkout
         phone: FIXED_FIELDS.phone.name, // phone key in form to be used in prefill checkout
       },
+      custom_domain: '', // if custom domain used at page level ('' -> pages.razorpay.com being used)
     },
     receipt: {
       enable_receipt: '1',
@@ -151,6 +172,11 @@ const initialState = {
   isPageDirty: false,
   isSettingsOpened: false,
   isShiprocketOpened: false, // Modal used to enable Shiprocket
+  customDomain: {
+    value: '',
+    isLoading: false,
+    isError: false,
+  }, // custom domain details at a merchant level
 };
 
 export const reorderFormItems = ({
@@ -162,6 +188,11 @@ export const reorderFormItems = ({
     payload: { oldIndexInFormItems, newIndexInFormItems },
   };
 };
+
+export const updateSettings = (updatedSettings = {}) => ({
+  type: UPDATE_SETTINGS,
+  payload: updatedSettings,
+});
 
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -271,6 +302,48 @@ export default (state = initialState, action) => {
     case `${FETCH_ENTITY}::ERROR`:
       return set(state, 'paymentPageEntity', null);
 
+    case `${FETCH_CUSTOM_DOMAIN}::PENDING`:
+      return {
+        ...state,
+        customDomain: merge(state.customDomain, {
+          isLoading: true,
+          isError: false,
+        }),
+      };
+
+    case `${FETCH_CUSTOM_DOMAIN}::SUCCESS`: {
+      let domainName = '';
+
+      if (action.payload.data?.count) {
+        domainName = action.payload.data.items?.[0].domain_name;
+      }
+
+      return {
+        ...state,
+        customDomain: merge(state.customDomain, {
+          isLoading: false,
+          value: domainName,
+          isError: false,
+        }),
+      };
+    }
+
+    case `${FETCH_CUSTOM_DOMAIN}::ERROR`:
+      return {
+        ...state,
+        customDomain: merge(state.customDomain, {
+          isLoading: false,
+          isError: true,
+          value: '',
+        }),
+      };
+
+    case UPDATE_CUSTOM_DOMAIN:
+      return {
+        ...state,
+        customDomain: merge(state.customDomain, action.payload),
+      };
+
     case UPDATE_DATA:
       if (action.formItems.hasOwnProperty('id')) {
         // re-Initialise FE if ID is changed to other ID/null
@@ -293,6 +366,12 @@ export default (state = initialState, action) => {
           ),
         };
       }
+
+    case UPDATE_SETTINGS: {
+      const newSettings = { ...state.paymentPageEntity.settings, ...action.payload };
+
+      return set(state, 'paymentPageEntity.settings', newSettings);
+    }
 
     case DELETE_IN_FORM_ITEMS:
       return {

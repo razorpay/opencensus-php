@@ -178,14 +178,20 @@ class Success extends React.Component {
 
   // Update settings in store
   handleSaveSettings = (formData) => {
-    const { paymentPageEntity } = this.props;
+    const { paymentPageEntity, customDomain } = this.props;
 
     const reqPayload = {};
 
     reqPayload.expire_by = formData.expire_by || null;
 
-    if (formData.slug) {
-      reqPayload.slug = formData.slug.trim();
+    /* 
+      - While creation, if a slug has not been entered, the slug key is not sent in the payload in the normal flow 
+        (pages.razorpay.com). Backend automatically generates a slug in that case. 
+      - In the custom domain flow, the user can have an empty string as slug to use the root domain, hence 
+        explicitly sending an empty string in the slug in that case.
+    */
+    if (formData.slug || formData.domainType === 'custom') {
+      reqPayload.slug = (formData.slug || '').trim();
     }
 
     reqPayload.settings = {};
@@ -203,6 +209,8 @@ class Success extends React.Component {
     reqPayload.settings.payment_success_redirect_url = formData.payment_success_redirect_url
       ? autoPrefixUrls(formData.payment_success_redirect_url)
       : '';
+
+    reqPayload.settings.custom_domain = formData.domainType === 'custom' ? customDomain.value : '';
 
     editPaymentPage(paymentPageEntity.id, reqPayload)
       .then(() => {
@@ -239,10 +247,12 @@ class Success extends React.Component {
             <PageSettingsModal
               handleClose={this.togglePageSettingsModal.bind(null, false)}
               openModal={this.props.openModal}
+              closeModal={this.props.closeModal}
               paymentPageEntity={paymentPageEntity}
               handleAction={this.handleSaveSettings}
               isNew={this.props.id}
               isTestMode={this.props.mode.toLowerCase() === 'test'}
+              customDomain={this.props.customDomain}
             />
           )}
 

@@ -380,6 +380,18 @@
       bottom: 2px
       right: 8px
 
+  .Button--primary--invert
+    font-weight: bold
+    margin-right: 0
+    font-size: 13px
+    padding: 5px
+    color: rgb(11,112,231)
+    background: #FAFCFF
+
+    &:not(:disabled):hover
+      background: rgba(11,112,231,0.05)
+      color: rgb(11,112,231)
+
   .Settings-form
     @media (max-width: $screen-xs-max)
       height: 100vh
@@ -420,6 +432,29 @@
 
     &.fade-out
       border: 3px solid #0B70E7
+
+    .cta-section
+      font-size: 13px
+      display: flex
+      align-items: center
+      margin: 10px 0
+
+      .badge
+        margin-right: 5px
+        border-radius: 2px
+        padding: 2px 4px
+
+    .remove-domain
+      color: #D12D2D
+      margin-top: 8px
+      cursor: pointer
+
+      i
+        margin-right: 5px
+
+    .Input--radio
+      .Input-content 
+        margin: 10px 0
 
   // shiprocket styles
   .shiprocket-section

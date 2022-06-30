@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import moment from 'moment';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import Form from 'common/new-ui/Form';
@@ -6,17 +7,22 @@ import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Alert from 'common/new-ui/Alert';
-import { lenientUrl, validateSlug } from 'common/utils/validators';
+import { lenientUrl } from 'common/utils/validators';
 import { DocLink } from 'merchant/components/DocsLink';
-import { trackPageSettingsData } from '../../ga';
-import track from '../../Wysiwyg/track';
+import { trackPageSettingsData } from '../../../ga';
+import track from '../../../Wysiwyg/track';
 
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
-import PluginsAndAddOns from './PluginsAndAddOns';
-import ShiprocketImage from '../../../../../../../css/assets/payment_pages/shiprocket.svg';
+import PluginsAndAddOns from '../PluginsAndAddOns';
+import ShiprocketImage from '../../../../../../../../css/assets/payment_pages/shiprocket.svg';
+import CustomURL from './CustomUrl';
 
 export default class PaymentPageSettings extends React.Component {
   state = this.initState();
+
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
 
   initState() {
     const paymentPageEntity = this.props.paymentPageEntity;
@@ -83,6 +89,40 @@ export default class PaymentPageSettings extends React.Component {
   };
 
   onSubmit = (formData) => {
+    /*
+      - showing a confirmation modal when payment page is using 
+        1. custom domain now
+        2. with an empty slug 
+        3. and earlier it was set to pages.razorpay.com
+      - else regular saving flow
+    */
+    if (
+      formData.domainType === 'custom' &&
+      !formData.slug &&
+      !this.props.paymentPageEntity.settings.custom_domain
+    ) {
+      this.context.confirm({
+        header: 'Use your domain’s root as URL?',
+        message: (
+          <div>
+            Are you sure that you want to use {this.props.customDomain.value} to point to this
+            payment page?
+            <br />
+            <br />
+          </div>
+        ),
+        affirmativeLabel: 'Yes, proceed',
+        abortLabel: 'No, go back',
+        action: () => {
+          this.saveSettingsData(formData);
+        },
+      });
+    } else {
+      this.saveSettingsData(formData);
+    }
+  };
+
+  saveSettingsData = (formData) => {
     track.settings.save(
       !!formData.expire_by,
       !!formData.payment_success_message,
@@ -169,39 +209,14 @@ export default class PaymentPageSettings extends React.Component {
             </div>
             <Form class="Settings-form" onSubmit={this.onSubmit} onChange={this.onChange}>
               <div class="Settings-form--body">
-                <div class="settings-section custom-url" tabIndex={-1}>
-                  <Input
-                    name="slug"
-                    class="Input--vTop"
-                    label="Choose custom URL for this page"
-                    defaultValue={slug}
-                    addonValueBefore="https://pages.razorpay.com/"
-                    disabled={isTestMode}
-                    validator={(val) => {
-                      const isEditMode = !!this.props.paymentPageEntity.id;
-                      const toValidate = !isTestMode && isEditMode; // Validate only when live mode and editing page
-
-                      if (toValidate) {
-                        if (val && !validateSlug(val.trim())) {
-                          return 'Please enter valid Url';
-                        }
-
-                        if (val.length < 4) {
-                          return 'Url must be at least 4 characters long';
-                        } else if (val.length > 30) {
-                          return 'Url must be maximum 30 characters long';
-                        }
-                      }
-                      return '';
-                    }}
-                    onBlur={track.settings.enterCustomUrl}
-                  />
-                  {isTestMode && (
-                    <div style={{ marginTop: 4, fontSize: 13 }}>
-                      Custom slug is only available in <b>Live Mode</b>
-                    </div>
-                  )}
-                </div>
+                <CustomURL
+                  paymentPageId={this.props.paymentPageEntity.id}
+                  isTestMode={isTestMode}
+                  slug={slug}
+                  openModal={this.props.openModal}
+                  closeModal={this.props.closeModal}
+                  paymentPageCustomUrl={paymentPageEntity.settings.custom_domain}
+                />
                 <div class="settings-section">
                   <Input.Radio
                     name="theme"

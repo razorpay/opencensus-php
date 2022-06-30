@@ -137,11 +137,10 @@ export function exportReportCSV(
   extension,
 ) {
   if (!configId) {
-    return;
+    return '';
   }
 
   const entityCreatedAt = paymentPageEntity.created_at;
-  const nowDate = new Date();
 
   const reqPayload = {
     config_id: configId,
@@ -160,7 +159,7 @@ export function _prepareTemplate(paymentPageEntity, extension) {
   const udfKeys = {};
 
   UDF_SCHEMA.forEach((udf) => {
-    udfKeys[udf.name] = ['payments.notes.' + udf.name];
+    udfKeys[udf.name] = [`payments.notes.${udf.name}`];
   });
 
   const templateOverrides = {
@@ -252,5 +251,48 @@ export function saveReceipt(paymentId, receipt) {
     headers: {
       'content-type': 'application/json',
     },
+  });
+}
+
+export function fetchCustomDomain() {
+  return merchantFetch({
+    url: 'payment_pages/cds/domains',
+  });
+}
+
+export function getIfDomainAlreadyLinked(domain_name) {
+  return merchantFetch({
+    url: 'payment_pages/cds/domains/exists',
+    data: { domain_name },
+  });
+}
+
+export function getIfSubDomain(domain_name) {
+  return merchantFetch({
+    url: 'payment_pages/cds/subdomain',
+    data: { domain_name },
+  });
+}
+
+export function checkDNSPropogation(domain_name) {
+  return merchantFetch({
+    url: 'payment_pages/cds/propagation',
+    data: { domain_name },
+  });
+}
+
+export function createCustomDomainEntry(domain_name) {
+  return merchantFetch({
+    url: 'payment_pages/cds/domains',
+    method: 'post',
+    data: { domain_name },
+  });
+}
+
+export function removeCustomDomainEntry(domain_name) {
+  return merchantFetch({
+    url: 'payment_pages/cds/domains',
+    method: 'delete',
+    data: { domain_name },
   });
 }

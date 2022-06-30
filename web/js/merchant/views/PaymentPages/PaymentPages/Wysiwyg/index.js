@@ -347,8 +347,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     data.expire_by = formData.expire_by;
 
-    if (formData.slug) {
-      data.slug = formData.slug.trim();
+    /* 
+      - While creation, if a slug has not been entered, the slug key is not sent in the payload in the normal flow 
+        (pages.razorpay.com). Backend automatically generates a slug in that case. 
+      - In the custom domain flow, the user can have an empty string as slug to use the root domain, hence 
+        explicitly sending an empty string in the slug in that case.
+    */
+    if (formData.slug || formData.domainType === 'custom') {
+      data.slug = (formData.slug || '').trim();
     }
 
     data.settings = {};
@@ -366,6 +372,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     data.settings.payment_success_redirect_url = formData.payment_success_redirect_url
       ? autoPrefixUrls(formData.payment_success_redirect_url)
       : '';
+
+    data.settings.custom_domain =
+      formData.domainType === 'custom' ? this.props.customDomain.value : '';
 
     // Update in store
     this.props.updateData(data);
@@ -552,6 +561,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     reqPayload.settings.checkout_options = {
       ...settings.checkout_options,
     };
+
+    if (this.props.user.isPaymentPageCustomDomainEnabled) {
+      reqPayload.settings.custom_domain = settings.custom_domain;
+    }
 
     reqPayload.settings.payment_button_label = settings.payment_button_label;
     reqPayload.payment_page_items = paymentPageItems;
@@ -963,12 +976,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           <PPSettingsView
             handleClose={this.togglePageSettings}
             openModal={this.props.openModal}
+            closeModal={this.props.closeModal}
             paymentPageEntity={paymentPageEntity}
             handleAction={this.handleSaveSettings}
             isNew={this.props.id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
             handleShiprocket={this.handleShiprocket}
             isShiprocket={isShiprocket}
+            customDomain={this.props.customDomain}
           />
         )}
 

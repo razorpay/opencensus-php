@@ -407,6 +407,10 @@ export default class User {
     return this.isFeatureEnabled('contact_optional');
   }
 
+  get isPaymentPageCustomDomainEnabled() {
+    return this.isFeatureEnabled('pp_custom_domain');
+  }
+
   get isInvoiceCreateFlowUXOptimizationEnabled() {
     return this.getExpStatus('inv_create_flow_ux');
   }
