@@ -793,6 +793,10 @@ class Constants
      */
     const ORG_HIDE_ACTIVATION_FORM  = 'hide_activation_form';
 
+    /**
+     * Org level flag to show custom Logo on checkout page
+     */
+    const ORG_CUSTOM_CHECKOUT_LOGO = 'custom_checkout_logo';
 
     /**
      * Control enablement of Admin Dashboard Reports for Orgs
@@ -1824,6 +1828,7 @@ class Constants
         self::ORG_ADMIN_REPORT_ENABLE         => true,
         self::ORG_HDFC_VAS_CARDS_SURCHARGE    => true,
         self::HDFC_CHECKOUT_2                 => true,
+        self::ORG_CUSTOM_CHECKOUT_LOGO        => true,
         self::ORG_HIDE_SETTLEMENT_DETAILS     => true,
         self::ORG_ENABLE_EXTERNAL_REDIRECT    => true,
         self::ORG_HIDE_RAZORPAY_TEXT_LINKS    => true,

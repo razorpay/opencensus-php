@@ -301,6 +301,12 @@ class OrgTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->fixtures->create('feature', [
+            'name'          => Constants::ORG_CUSTOM_CHECKOUT_LOGO,
+            'entity_id'     => $org->getId(),
+            'entity_type'   => 'org',
+        ]);
+
         $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
 
         $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
@@ -327,6 +333,7 @@ class OrgTest extends TestCase
                 Constants::WHITE_LABELLED_STORES,
                 Constants::WHITE_LABELLED_OFFERS,
                 Constants::WHITE_LABELLED_CHECKOUT_REWARDS,
+                Constants::ORG_CUSTOM_CHECKOUT_LOGO
             ];
 
         $this->assertEquals(2, count($hostnames));

@@ -27,8 +27,6 @@ class HdfcCheckoutTest extends TestCase
 
     public function testHdfcCheckoutHit()
     {
-        $this->generateViewMocks();
-
         $org = $this->fixtures->org->createHdfcOrg();
 
         $this->fixtures->merchant->edit('10000000000000',
@@ -36,6 +34,8 @@ class HdfcCheckoutTest extends TestCase
                 'org_id'      =>  $org->getId(),
             ]
         );
+
+        $this->generateViewMocks($org->getCustomCode());
 
         $this->mockRazorxTreatmentV2('hdfc_checkout_2', 'on');
 
@@ -48,17 +48,17 @@ class HdfcCheckoutTest extends TestCase
 
     public function testHdfcCheckoutNotHit()
     {
-        $this->generateViewMocks();
+        $this->generateViewMocks('');
 
         $this->startTest();
     }
 
-    protected function generateViewMocks()
+    protected function generateViewMocks($customCode)
     {
         $arr = [
             'key' => 'rzp_test_TheTestAuthKey',
             'options' => '{"receiver_types":"qr_code"}',
-            'meta' => '{}',
+            'meta' => '{"custom_code":"rzp","checkout_logo_url":null,"custom_checkout_logo_enabled":false}',
             'script' => 'https://cdn.razorpay.com/static/hosted/embedded-entry.js',
             'urls' => '{}'
         ];
@@ -70,7 +70,7 @@ class HdfcCheckoutTest extends TestCase
 
         // For HDFC Checkout 2.0 case
         $arr['script'] = 'https://cdn.razorpay.com/static/hosted/standard-vas.js';
-        $arr['meta'] = '{"type":"hdfcvas"}';
+        $arr['meta'] = '{"type":"hdfcvas","custom_code":"'.$customCode.'","checkout_logo_url":null,"custom_checkout_logo_enabled":false}';
         $resp = ['type' => 'hdfc'];
 
         View::shouldReceive('make')

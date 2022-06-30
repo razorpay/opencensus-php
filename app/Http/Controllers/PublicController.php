@@ -148,6 +148,12 @@ class PublicController extends Controller
 
         $merchant = $this->ba->authCreds->getMerchant();
 
+        $meta['custom_code'] = $merchant->org->getCustomCode();
+
+        $meta['checkout_logo_url'] = $merchant->org->getCheckoutLogo();
+
+        $meta['custom_checkout_logo_enabled'] = $merchant->org->isFeatureEnabled(Feature\Constants::ORG_CUSTOM_CHECKOUT_LOGO);
+
         $app = \App::getFacadeRoot();
 
         if( (isset($meta['type']) === true) and
