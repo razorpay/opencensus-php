@@ -38,6 +38,13 @@ class CareProxyController extends Controller
     const CHAT_GET_MERCHANT  = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
     const CHAT_FETCH_TICKETS = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
 
+    //chat timing config
+    const CHAT_GET_TIMINGS_CONFIG         = 'twirp/rzp.care.chat.v1.ChatService/GetChatTimingsConfig';
+    const CHAT_PUT_TIMINGS_CONFIG         = 'twirp/rzp.care.chat.v1.ChatService/PutChatTimingsConfig';
+    const CHAT_GET_HOLIDAYS               = 'twirp/rzp.care.chat.v1.ChatService/GetChatHolidays';
+    const CHAT_PUT_HOLIDAYS               = 'twirp/rzp.care.chat.v1.ChatService/PutChatHolidays';
+    const CHAT_CHECK_AVAILABILITY         = 'twirp/rzp.care.chat.v1.ChatService/CheckChatAvailability';
+
     const CALLBACK_GET_DATE_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/getDateSlotConfig';
     const CALLBACK_GET_WEEK_CONFIG = 'twirp/rzp.care.admin.v1.CallbackConfigService/getWeekSlotConfig';
 
@@ -80,8 +87,6 @@ class CareProxyController extends Controller
     const FAQ_CONFIG_DELETE_DASHBOARD_ID   = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteDashboardGuide';
     const FAQ_CONFIG_FETCH_DASHBOARD_ID    = 'twirp/rzp.care.faq.v1.FaqConfigService/FetchDashboardGuide';
 
-
-
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -113,10 +118,14 @@ class CareProxyController extends Controller
         self::FAQ_CONFIG_ADD_FAQ_RANKING              => Name::FAQ_CONFIG_EDIT,
         self::FAQ_CONFIG_DELETE_FAQ_RANKING           => Name::FAQ_CONFIG_EDIT,
         self::FAQ_CONFIG_UPDATE_FAQ_RANKING           => Name::FAQ_CONFIG_EDIT,
-        self:: FAQ_CONFIG_CREATE_DASHBOARD            => Name::FAQ_CONFIG_EDIT,
-        self:: FAQ_CONFIG_EDIT_DASHBOARD              => Name::FAQ_CONFIG_EDIT,
-        self:: FAQ_CONFIG_DELETE_DASHBOARD_ID         => Name::FAQ_CONFIG_EDIT,
-        self:: FAQ_CONFIG_FETCH_DASHBOARD_ID          => Name::FAQ_CONFIG_VIEW,
+        self::FAQ_CONFIG_CREATE_DASHBOARD             => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_EDIT_DASHBOARD               => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_DELETE_DASHBOARD_ID          => Name::FAQ_CONFIG_EDIT,
+        self::FAQ_CONFIG_FETCH_DASHBOARD_ID           => Name::FAQ_CONFIG_VIEW,
+        self::CHAT_PUT_HOLIDAYS                       => Name::MANAGE_FRESHCHAT,
+        self::CHAT_GET_HOLIDAYS                       => Name::MANAGE_FRESHCHAT,
+        self::CHAT_GET_TIMINGS_CONFIG                 => Name::MANAGE_FRESHCHAT,
+        self::CHAT_PUT_TIMINGS_CONFIG                 => Name::MANAGE_FRESHCHAT,
     ];
 
     const MERCHANT_ROUTES = [
@@ -129,6 +138,7 @@ class CareProxyController extends Controller
         self::GET_CALLBACK,
         self::CHAT_INIT,
         self::TICKET_CONFIG_FETCH_SUBCATEGORY_ITEM_MERCHANT,
+        self::CHAT_CHECK_AVAILABILITY,
     ];
 
     const CRON_ROUTES = [
@@ -173,10 +183,14 @@ class CareProxyController extends Controller
         self::FAQ_CONFIG_DELETE_FAQ_RANKING,
         self::FAQ_CONFIG_ADD_FAQ_RANKING,
         self::FAQ_CONFIG_UPDATE_FAQ_RANKING,
-        self:: FAQ_CONFIG_CREATE_DASHBOARD,
-        self:: FAQ_CONFIG_EDIT_DASHBOARD,
-        self:: FAQ_CONFIG_DELETE_DASHBOARD_ID,
-        self:: FAQ_CONFIG_FETCH_DASHBOARD_ID,
+        self::FAQ_CONFIG_CREATE_DASHBOARD,
+        self::FAQ_CONFIG_EDIT_DASHBOARD,
+        self::FAQ_CONFIG_DELETE_DASHBOARD_ID,
+        self::FAQ_CONFIG_FETCH_DASHBOARD_ID,
+        self::CHAT_GET_HOLIDAYS,
+        self::CHAT_PUT_HOLIDAYS,
+        self::CHAT_GET_TIMINGS_CONFIG,
+        self::CHAT_PUT_TIMINGS_CONFIG,
     ];
 
     const CHAT_ROUTES = [

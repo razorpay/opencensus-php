@@ -166,11 +166,90 @@ class CareServiceTest extends TestCase
             ],
             [
                 self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.chat.v1.ChatService/GetChatTimingsConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/GetChatTimingsConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['manage_freshchat'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.chat.v1.ChatService/PutChatTimingsConfig',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/PutChatTimingsConfig',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['manage_freshchat'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.chat.v1.ChatService/GetChatHolidays',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/GetChatHolidays',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['manage_freshchat'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
+                self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.chat.v1.ChatService/PutChatHolidays',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/PutChatHolidays',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'admin' => [
+                        'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::API_REQUEST_BODY                    => [],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::PERMISSIONS                         => ['manage_freshchat'],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'admin',
                 self::API_ROUTE                           => '/care_service/admin/twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.callback.v1.CallbackService/UpsertOperator',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                     'admin' => [
                         'id' => 'RzrpySprAdmnId',
+                    ],
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'proxy',
+                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.chat.v1.ChatService/CheckChatAvailability',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/CheckChatAvailability',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                    'merchant' => [
+                        'id' => '10000000000000',
+                        'user_id' => User::MERCHANT_USER_ID,
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [

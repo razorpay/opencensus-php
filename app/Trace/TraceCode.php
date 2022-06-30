@@ -2984,6 +2984,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CARE_SERVICE_REQUEST                                  = 'CARE_SERVICE_REQUEST';
     const CARE_SERVICE_RESPONSE                                 = 'CARE_SERVICE_RESPONSE';
+    const CARE_SERVICE_ERROR                                    = 'CARE_SERVICE_ERROR';
+
+    const CLICK_TO_CALL_REQUEST                                 = 'CLICK_TO_CALL_REQUEST';
 
     const CUSTOMER_FLOW_CAPTCHA_NOT_BEING_SENT                  = 'CUSTOMER_FLOW_CAPTCHA_NOT_BEING_SENT';
 
