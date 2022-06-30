@@ -8,6 +8,7 @@ import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { fetchFeatureStatus as fnFetchFeatureStatus } from 'merchant/reducers/config';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 function WhatsappNotification({
   currentUser,
@@ -23,7 +24,7 @@ function WhatsappNotification({
   const [isWhatsAppOptPending, setIsWhatsAppOptPending] = useState(false);
   const [isWhatsappOrg, setWhatsappOrg] = useState(false);
   const [isWhatsappMid, setWhatsappMid] = useState(false);
-
+  const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
   if (location.hash.startsWith('#whatsapp_enable') && whatsappEnableSection.current) {
     window.rzpAnalytics?.({
       eventCategory: 'Whatsapp Enable',
@@ -175,7 +176,7 @@ function WhatsappNotification({
           )}
           {currentUser?.user?.contact_mobile ? (
             <div className="description">
-              Receive notifications from Razorpay via WhatsApp{' '}
+              Receive notifications {hideRazorpayTextLink ? '' : 'from Razorpay'} via WhatsApp&nbsp;
               <span>
                 on your number <strong>+91 - {currentUser.user.contact_mobile}</strong>
               </span>

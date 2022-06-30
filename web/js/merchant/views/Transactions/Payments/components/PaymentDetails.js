@@ -25,6 +25,7 @@ import { OptimizerDetails } from 'merchant/views/Transactions/Payments/component
 import { isInteger } from 'common/utils/validators';
 import track from '../track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 function PaymentDetails(props) {
   const {
@@ -48,6 +49,7 @@ function PaymentDetails(props) {
     goToLink,
   } = props;
 
+  const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
   const isFromHomePage = location.state?.fromHomePage;
   const paymentId = payment?.id;
   const bankReference = bankTransfer?.details?.bank_reference;
@@ -369,7 +371,8 @@ function PaymentDetails(props) {
                   <Definition>
                     <Amount value={payment.fee} />
                     <span>
-                      Razorpay Fee - <Amount value={payment.fee - payment.tax} currency="INR" />
+                      {hideRazorpayTextLink ? '' : 'Razorpay '}Fee -&nbsp;
+                      <Amount value={payment.fee - payment.tax} currency="INR" />
                     </span>
                     <span>
                       GST - <Amount value={payment.tax} currency="INR" />

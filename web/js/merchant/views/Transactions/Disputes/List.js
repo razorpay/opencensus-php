@@ -19,17 +19,18 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCustomURL } from '../../../components/DocsLink';
 import { bindActionCreators } from 'redux';
 import EmptyList from 'merchant/components/EmptyList';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
   if (daysLeft < 0) {
-    return <span class="text-muted">Passed</span>;
+    return <span className="text-muted">Passed</span>;
   } else if (daysLeft === 0) {
-    return <strong class="text-danger">Today</strong>;
+    return <strong className="text-danger">Today</strong>;
   } else if (daysLeft === 1) {
-    return <strong class="text-danger">Tomorrow</strong>;
+    return <strong className="text-danger">Tomorrow</strong>;
   } else {
-    return <strong class="text-danger">{getTime('expiresOn', 'll')({ expiresOn })}</strong>;
+    return <strong className="text-danger">{getTime('expiresOn', 'll')({ expiresOn })}</strong>;
   }
 };
 
@@ -56,14 +57,17 @@ const createdAt = {
 class Dispute extends ListContainer {
   render() {
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive>
           <ShowWhen
-            additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}
+            additionalCondition={(user) =>
+              user?.isOrgAllowedFunctionality('external_links') &&
+              !isOrgFeatureExist('hide_razorpay_text_link')
+            }
           >
             <a
-              class="btn btn-link"
+              className="btn btn-link"
               href={getCustomURL('https://razorpay.com/docs/payments/disputes/')}
               target="_blank"
               rel="noopener noreferrer"
@@ -103,8 +107,8 @@ class Dispute extends ListContainer {
           {...this.props}
         />
 
-        <div class="row">
-          <div class="col-md-10 col-md-offset-1 col-sm-12 text-center">
+        <div className="row">
+          <div className="col-md-10 col-md-offset-1 col-sm-12 text-center">
             <p>
               A dispute is a situation that arises when your customer or the issuing bank questions
               the validity of payment. It could arise due to reasons such as unauthorised charges,

@@ -10,11 +10,11 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import { SMS_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
-// eslint-disable-next-line no-shadow
 function SmsNotification({ currentUser, showNotification }) {
   const [sms_optin, setSmsOptin] = useState(null);
-
+  const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
   function fetchSmsOptin() {
     return merchantFetch({
       url: `settlements/sms_notification/status`,
@@ -120,26 +120,31 @@ function SmsNotification({ currentUser, showNotification }) {
   };
 
   return (
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <span class="title">
+    <div className="panel panel-default">
+      <div className="panel-heading">
+        <span className="title">
           <TextHighlighter hashedWith={SMS_NOTIF}>SMS Notifications</TextHighlighter>
         </span>
 
-        <span class="toggler-btn">
+        <span className="toggler-btn">
           <SwitchField
             checked={!!sms_optin}
             onChange={(_, cb) => toggleSmsNotification(!sms_optin, cb)}
             type="prime"
           />
-          {sms_optin ? <b class="text-primary">Enabled</b> : <b class="text-faded">Disbaled</b>}
+          {sms_optin ? (
+            <b className="text-primary">Enabled</b>
+          ) : (
+            <b className="text-faded">Disbaled</b>
+          )}
         </span>
       </div>
 
-      <div class="panel-body">
-        <form class="form-horizontal">
-          <div class="description">
-            Receive notifications from Razorpay via SMS on your number{' '}
+      <div className="panel-body">
+        <form className="form-horizontal">
+          <div className="description">
+            Receive notifications {hideRazorpayTextLink ? '' : 'from Razorpay'} via SMS on
+            your&nbsp;
             <strong>+91 - {currentUser.contact_mobile}</strong>
           </div>
         </form>

@@ -15,9 +15,13 @@ import { connect } from 'react-redux';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 const MyAccount = (props) => {
   const [isWebView, setWebView] = useState(false);
+  const isTrustedBadge = props?.user?.isOrgAxis
+    ? false
+    : !isOrgFeatureExist('hide_razorpay_text_link');
   useEffect(() => {
     if (getMobileDetect().isWebView()) {
       setWebView(true);
@@ -36,7 +40,7 @@ const MyAccount = (props) => {
               <NavLink to="/profile">Profile</NavLink>
             </ShowWhen>
 
-            <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
+            <ShowWhen additionalCondition={() => isTrustedBadge}>
               <NavLink to="/trustedbadge">Trusted Badge</NavLink>
             </ShowWhen>
 
