@@ -2,8 +2,6 @@
 
 namespace RZP\Models\BankAccount;
 
-use Mail;
-
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -28,12 +26,9 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
-use RZP\Models\Settlement\SettlementServiceMigration;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
-use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
-use RZP\Models\Contact\Validator as fundAccountValidator;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
 use RZP\Notifications\Dashboard\Events as MerchantDashboardEvent;
@@ -672,7 +667,6 @@ class Core extends Base\Core
         if ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === true)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCOUNT_ACTION_NOT_SUPPORTED);
-
         }
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_FUNDS_ON_HOLD, [
@@ -699,7 +693,19 @@ class Core extends Base\Core
 
         $this->validateNotLaxmiVilasBank($newBankAccount);
 
-        $validationId = $this->triggerBankAccountBvsValidation($input, $merchant);
+        $validation = $this->triggerBankAccountBvsValidation($input, $merchant, true);
+
+        //if sync validation fails due to wrong merchant input, throw error
+        if($this->validationFailureDueToInputError($validation) === true)
+        {
+            $result = explode(':', $validation->getErrorDescription());
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, [
+                'error code' => $result[0],
+                'error description' => $result[1],
+            ], $validation->getErrorDescription());
+        }
+
+        $validationId = $validation->getValidationId();
 
         $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
 
@@ -713,7 +719,27 @@ class Core extends Base\Core
             Merchant\BvsValidation\Entity::VALIDATION_ID => $validationId
         ]);
 
-        return $newBankAccount;
+        if($validation->getValidationStatus() != BvsValidationConstants::CAPTURED) {
+            [$merchant, $merchantDetails] = (new Detail\Core())->getMerchantAndSetBasicAuth($merchant->getMerchantId());
+            $this->handleBankAccountUpdateCallback($merchant, $merchantDetails, $validation);
+        }
+
+        switch ($validation->getValidationStatus())
+        {
+            case BvsValidationConstants::SUCCESS:
+                $response[Constants::NEW_BANK_ACCOUNT] = $newBankAccount;
+                $response[Constants::SYNC_FLOW] = true;
+                break;
+            case BvsValidationConstants::FAILED:
+                $response[Constants::WORKFLOW_CREATED] = true;
+                $response[Constants::SYNC_FLOW] = true;
+                break;
+            default:
+                $response[Constants::SYNC_FLOW] = false;
+        }
+
+        return $response;
+
     }
 
     public function handlePennyTestingEventForBankAccountUpdate(array $favInput, MerchantEntity $merchant, string $status, array $pennyTestAndFuzzyMatchResult)
@@ -739,18 +765,18 @@ class Core extends Base\Core
         }
     }
 
-    protected function triggerBankAccountBvsValidation($input, $merchant)
+    protected function triggerBankAccountBvsValidation($input, $merchant, $shouldNotInvokeHandler)
     {
         $payload = $this->getBankAccountUpdateBvsPayload($input, $merchant);
 
-        $validation = (new BvsCore)->verify($this->merchant->getId(), $payload);
+        $validation = (new BvsCore($this->merchant, $this->merchant->merchantDetail))->verify($this->merchant->getId(), $payload, $shouldNotInvokeHandler);
 
         if ($validation === null)
         {
             throw new Exception\ServerErrorException('', ErrorCode::SERVER_ERROR);
         }
 
-        return $validation->getValidationId();
+        return $validation;
     }
 
     /**
@@ -765,39 +791,22 @@ class Core extends Base\Core
         $accountHolderNames = array_values($merchantAttributesForFuzzyMatch);
 
         return [
-            BvsConstant::CUSTOM_CALLBACK_HANDLER  => Constants::BANK_ACCOUNT_UPDATE_CALLBACK_HANDLER_BVS,
-            BvsConstant::ARTEFACT_TYPE            => BvsConstant::BANK_ACCOUNT,
-            BvsConstant::CONFIG_NAME              => (new BankAccountRequestDispatcher($merchant, $merchant->merchantDetail))->getConfigName(),
-            BvsConstant::VALIDATION_UNIT          => BvsValidationConstants::IDENTIFIER,
-            BvsConstant::DETAILS                  => [
-                BvsConstant::ACCOUNT_NUMBER       => $input[BvsConstant::ACCOUNT_NUMBER],
-                BvsConstant::IFSC                 => $input[Entity::IFSC_CODE],
-                BvsConstant::BENEFICIARY_NAME     => $input[BvsConstant::BENEFICIARY_NAME],
-                BvsConstant::ACCOUNT_HOLDER_NAMES => $accountHolderNames,
+            BvsConstant::CUSTOM_CALLBACK_HANDLER        => Constants::BANK_ACCOUNT_UPDATE_CALLBACK_HANDLER_BVS,
+            BvsConstant::ARTEFACT_TYPE                  => BvsConstant::BANK_ACCOUNT,
+            BvsConstant::CONFIG_NAME                    => (new BankAccountRequestDispatcher($merchant, $merchant->merchantDetail))->getConfigName(),
+            BvsConstant::VALIDATION_UNIT                => BvsValidationConstants::IDENTIFIER,
+            BvsConstant::DETAILS                        => [
+                BvsConstant::ACCOUNT_NUMBER             => $input[BvsConstant::ACCOUNT_NUMBER],
+                BvsConstant::IFSC                       => $input[Entity::IFSC_CODE],
+                BvsConstant::BENEFICIARY_NAME           => $input[BvsConstant::BENEFICIARY_NAME],
+                BvsConstant::ACCOUNT_HOLDER_NAMES       => $accountHolderNames,
             ],
         ];
     }
 
     public function handleBankAccountUpdateCallback($merchant, $merchantDetails,$validation)
     {
-        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
-
-        $data = $this->getBankAccountUpdatePennyTestingData($merchant);
-
-        $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
-
-        $status = (new BankAccountStatusUpdater($merchant, $merchantDetails,$validation))->getDocumentValidationStatus($validation);
-
-        try
-        {
-            $this->pushBvsResultToSegmentForBankAccountUpdate($merchant, $validation, $status);
-        }
-        catch (\Throwable $exception)
-        {
-            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_SEGMENT_EVENT_PUSH_FAILED, [
-                Constants::ERROR_MESSAGE => $exception->getMessage()
-            ]);
-        }
+        list($data, $cacheKey, $status) = $this->getBankAccountUpdatePennyTestingStatus($validation, $merchant, $merchantDetails);
 
         switch ($validation->getValidationStatus())
         {
@@ -1297,5 +1306,41 @@ class Core extends Base\Core
             ($newBankAccount->getBankCode() === Netbanking::LAVB_C)) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_LAXMI_VILAS_BANK_PROHIBITED);
         }
+    }
+
+    /**
+     * @param $validation
+     * @param $merchant
+     * @param $merchantDetails
+     * @return array
+     * @throws Exception\LogicException
+     */
+    private function getBankAccountUpdatePennyTestingStatus($validation, $merchant, $merchantDetails): array
+    {
+        $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_BVS_CALLBACK_RECEIVED, $validation->toArrayPublic());
+
+        $data = $this->getBankAccountUpdatePennyTestingData($merchant);
+
+        $cacheKey = $this->getBankAccountUpdatePennyTestingCacheKey($merchant);
+
+        $status = (new BankAccountStatusUpdater($merchant, $merchantDetails, $validation))->getDocumentValidationStatus($validation);
+
+        try {
+            $this->pushBvsResultToSegmentForBankAccountUpdate($merchant, $validation, $status);
+        } catch (\Throwable $exception) {
+            $this->app['trace']->error(TraceCode::BANK_ACCOUNT_UPDATE_SEGMENT_EVENT_PUSH_FAILED, [
+                Constants::ERROR_MESSAGE => $exception->getMessage()
+            ]);
+        }
+        return array($data, $cacheKey, $status);
+    }
+
+    /**
+     * @param Merchant\BvsValidation\Entity $validation
+     * @return bool
+     */
+    private function validationFailureDueToInputError(Merchant\BvsValidation\Entity $validation): bool
+    {
+        return $validation->getValidationStatus() == BvsValidationConstants::FAILED and $validation->getErrorCode() == BvsValidationConstants::INPUT_DATA_ISSUE;
     }
 }

@@ -54,9 +54,9 @@ class DefaultProcessor implements Processor
         Constant::LLP_DEED                                   => 2,
         Constant::PERSONAL_PAN                               => 3,
         Constant::BUSINESS_PAN                               => 3,
-        Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => 2,
-        Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => 2,
-        Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => 2,
+        Constant::BANK_ACCOUNT_WITH_PERSONAL_PAN             => 5,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN             => 5,
+        Constant::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN => 5,
         Constant::AADHAAR                                    => 2,
         Constant::AADHAAR_WITH_PAN                           => 2,
         Constant::VOTERS_ID                                  => 2,
@@ -294,6 +294,11 @@ class DefaultProcessor implements Processor
         )
         {
             return Constant::ASYNC;
+        }
+
+        if ($this->app['config']['services.bvs.sync.flow'] == true)
+        {
+            return Constant::SYNC;
         }
 
         $experiment = $this->experimentMap[$this->configName];

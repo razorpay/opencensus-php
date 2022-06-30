@@ -25,6 +25,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient\BvsProbeClient;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\CompanySearchMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\ProbeMocks\GetGstDetailsMock;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ValidationBaseResponse;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\CompanySearchBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\GetGstDetailsArtefactCuratorBaseResponse;
@@ -82,7 +83,7 @@ class Core extends Base\Core
      *
      * @return BvsValidation\Entity|null
      */
-    public function verify(string $ownerId, array $input): ?BvsValidation\Entity
+    public function verify(string $ownerId, array $input, bool $shouldNotInvokeHandler = false): ?BvsValidation\Entity
     {
         $input[Constant::OWNER_ID] = $ownerId;
 
@@ -99,13 +100,18 @@ class Core extends Base\Core
 
             $response = $processor->Process();
 
+            $this->trace->info(TraceCode::BVS_GET_VALIDATION_RESPONSE, [
+                'response' => $response->getResponseData()]);
+
             $validationObject = $this->getValidationObject($input, $response);
 
             $bvsCore = new BvsValidation\Core($this->merchantDetails);
 
             $validation = $bvsCore->create($validationObject,$this->document);
 
-            $bvsCore->setCustomCallbackHandlerIfApplicable($validation, $input);
+            if($shouldNotInvokeHandler === false or $validation->getValidationStatus() === BvsValidationConstant::CAPTURED) {
+                $bvsCore->setCustomCallbackHandlerIfApplicable($validation, $input);
+            }
         }
         catch (\Exception $ex)
         {

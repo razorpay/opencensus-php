@@ -309,5 +309,8 @@ class Constant
 
     const EXCLUDED_CONFIGS = [
         self::GSTIN,
+        self::BANK_ACCOUNT_WITH_PERSONAL_PAN,
+        self::BANK_ACCOUNT_WITH_BUSINESS_PAN,
+        self::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN
     ];
 }

@@ -484,19 +484,23 @@ class Core extends Base\Core
 
             $customHandlerKey = $this->getCustomHandlerKey($validation);
 
-
             $this->cache->put($customHandlerKey, $customHandler, self::BVS_VALIDATION_CUSTOM_CALLBACK_HANDLER_TTL_IN_SEC);
         }
         else
         {
-            if (isset($input[Constant::CUSTOM_CALLBACK_HANDLER]) === false)
-            {
-                $customHandler = self::DEFAULT_CALLBACK_HANDLER_FUNCTION;
-            }
-            else
+            if (isset($input[Constant::CUSTOM_CALLBACK_HANDLER]) === true)
             {
                 $customHandler = studly_case($input[Constant::CUSTOM_CALLBACK_HANDLER]);
             }
+            else
+            {
+                $customHandler = self::DEFAULT_CALLBACK_HANDLER_FUNCTION;
+            }
+
+            $this->trace->info(TraceCode::BVS_USING_CUSTOM_CALLBACK_PROCESSOR, [
+                'validation_id' => $validation->getValidationId(),
+                'handler'       => $customHandler,
+            ]);
 
             $merchantId = $this->getMerchantId($validation);
             $this->$customHandler(

@@ -3498,6 +3498,79 @@ class MerchantTest extends TestCase
         $this->assertEquals($admin->toArray()['name'], $action['maker']);
     }
 
+    public function testBankAccountUpdateSyncFlowAdminProxyAuthCreateWorkflow()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTestingWorkflowCreatedSyncFlow'];
+
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        Config(['services.bvs.response' => 'failure']);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $admin = $this->ba->getAdmin();
+
+        $this->fixtures->admin->edit($admin['id'], ['allow_all_merchants' => true]);
+
+        $this->ba->adminProxyAuth($merchantId, 'rzp_test_' . $merchantId);
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
+
+        $this->assertEquals($admin->getId(), $action['maker_id']);
+        $this->assertEquals('admin', $action['maker_type']);
+        $this->assertEquals($admin->toArray()['name'], $action['maker']);
+    }
+
+    public function testBankAccountUpdateSyncFlowAdminProxyAuthInputDataIssue()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testBankAccountUpdateSyncFlowAdminProxyAuthInputDataIssue'];
+
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        Config(['services.bvs.response' => 'failure']);
+
+        Config(['services.bvs.input.error' => true]);
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, false);
+
+        $this->startTest();
+
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
+
+            return true;
+        });
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
     public function testUpdateBankAccountWithAddressProof()
     {
         $documentType = 'address_proof_url';
@@ -3516,8 +3589,10 @@ class MerchantTest extends TestCase
         $this->assertFalse($this->getBankAccountChangeStatusForMerchant('10000000000000'));
     }
 
-    public function testUpdateBankAccountViaPennyTesting()
+    public function testUpdateBankAccountAsyncViaPennyTesting()
     {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
         Config(['services.bvs.mock' => true]);
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
@@ -3544,6 +3619,31 @@ class MerchantTest extends TestCase
         $this->assertEquals($beforeCount, $afterCount);
 
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountSyncViaPennyTesting()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
+
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->startTest();
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'ICIC0001206',
+            'account_number'    => '0000009999999999999',
+        ]);
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
     }
 
     public function testUpdateBankAccountViaPennyTestingWithoutExistingBankAccountFail()
@@ -3582,12 +3682,12 @@ class MerchantTest extends TestCase
 
     public function testUpdateBankAccountViaPennyTestingAlreadyInProgressFail()
     {
-        $this->testUpdateBankAccountViaPennyTesting(); // to trigger a bank account update request via penny testing
+        $this->testUpdateBankAccountAsyncViaPennyTesting(); // to trigger a bank account update request via penny testing
 
         $this->startTest();
     }
 
-    public function testUpdateBankAccountPennyTestingEvent()
+    public function testUpdateBankAccountAsyncPennyTestingEvent()
     {
         Config(['services.bvs.mock' => true]);
 
@@ -3608,6 +3708,43 @@ class MerchantTest extends TestCase
         $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'success');
 
         $this->processBvsResponse($bvsResponse);
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'ifsc'             => 'ICIC0001206',
+            'account_number'   => '0000009999999999999',
+            'name'             => 'Test R4zorpay:',
+        ]);
+
+        $this->assertBankAccountUpdateRequestAndAccountChangedMailQueued();
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountSyncFlowPennyTestingEvent()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'    => Org::RZP_ORG,
+        ]);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'success');
 
         $this->assertBankAccountForMerchant($merchantId, [
             'ifsc'             => 'ICIC0001206',
@@ -3649,6 +3786,33 @@ class MerchantTest extends TestCase
         ]);
 
        $this->assertBankAccountUpdateRequestAndAccountChangedMailQueued($org);
+    }
+
+    public function testUpdateBankAccountSyncFlowPennyTestingEventAccountChangeMailsForCustomBrandinOrg()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'success');
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'ifsc'             => 'ICIC0001206',
+            'account_number'   => '0000009999999999999',
+            'name'             => 'Test R4zorpay:',
+        ]);
+
+        $this->assertBankAccountUpdateRequestAndAccountChangedMailQueued($org);
     }
 
     public function testUpdateBankAccountPennyTestingEventNameMismatch()
@@ -3792,6 +3956,65 @@ class MerchantTest extends TestCase
         $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
 
         $this->processBvsResponse($bvsResponse);
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        // get workflow action details in Admin Auth
+        $this->ba->adminAuth('test');
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/w-actions/' . $workflowAction['id'] . '/details',
+            'content' => []
+        ];
+
+        $this->addPermissionToBaAdmin(PermissionName::VIEW_WORKFLOW_REQUESTS);
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($res['id'], $workflowAction['id']);
+
+        $expectedComment1 = 'verification_status : failed, account_status : active, account_holder_names : name 1,name 2';
+
+        $this->assertEquals($res['comments'][0]['comment'], $expectedComment1);
+
+        $expectedComment2 = 'dedupe_status: true, matchedMIDs = {10000000000}';
+
+        $this->assertEquals($res['comments'][0]['comment'], $expectedComment1);
+
+        $this->assertEquals($res['comments'][1]['comment'], $expectedComment2);
+    }
+
+    public function testAddCommentForSyncBankAccountUpdateWorkflow()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTestingWorkflowCreatedSyncFlow'];
+
+        Config(['services.bvs.mock' => true]);
+
+        Config(['services.bvs.sync.flow' => true]);
+
+        Config(['services.bvs.response' => 'failure']);
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $this->mockMerchantImpersonated();
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [
+            'promoter_pan_name' => 'pan_name'
+        ]);
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
 
         // as a workflow is created, assert bank account is not changed for the merchant still
         $this->assertBankAccountForMerchant($merchantId, [

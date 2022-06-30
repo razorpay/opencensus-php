@@ -37,4 +37,7 @@ class Constants
     const MATCH_PERCENTAGE                                  = 'match_percentage';
     const NAME_MATCH_RESULT                                 = 'name_match_result';
     const PENNY_TEST_RESULT                                 = 'penny_test_result';
+    const NEW_BANK_ACCOUNT                                  = 'new_bank_account';
+    const SYNC_FLOW                                         = 'sync_flow';
+    const WORKFLOW_CREATED                                  = 'workflow_created';
 }

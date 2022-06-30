@@ -2329,9 +2329,7 @@ class Service extends Base\Service
     {
         $merchant = app('basicauth')->getMerchant();
 
-        $ba =  (new BankAccount\Core)->bankAccountUpdate($merchant, $input);
-
-        return $ba->toArray();
+        return (new BankAccount\Core)->bankAccountUpdate($merchant, $input);
     }
 
     public function bankAccountUpdatePostPennyTestingWorkflow(array $input)

@@ -2764,9 +2764,60 @@ return [
         ],
         'response' => [
             'content' => [
+                'sync_flow' => FALSE
+            ]
+        ]
+    ],
+
+    'testUpdateBankAccountViaPennyTestingSyncFlow' => [
+        'request'  => [
+            'content' => [
                 'ifsc_code'        => 'ICIC0001206',
                 'account_number'   => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'new_bank_account' => [
+                    'notes' => [],
+                    'beneficiary_country' => 'IN',
+                    'ifsc_code' => 'ICIC0001206',
+                    'account_number' => '0000009999999999999',
+                    'beneficiary_name' => 'Test R4zorpay:',
+                    'type' => 'merchant',
+                    'name' => 'Test R4zorpay:',
+                    'ifsc' =>  'ICIC0001206',
+                    'mpin_set' => FALSE,
+                    'bank_name' => 'ICICI Bank',
+                ],
+                'sync_flow' => TRUE
+            ]
+        ]
+    ],
+
+    'testUpdateBankAccountViaPennyTestingWorkflowCreatedSyncFlow' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST',
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'workflow_created' => TRUE,
+                'sync_flow' =>  TRUE
             ]
         ]
     ],
@@ -2851,6 +2902,34 @@ return [
         ],
         'exception' => [
             'internal_error_code' => 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
+    'testBankAccountUpdateSyncFlowAdminProxyAuthInputDataIssue' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'The merchant has not yet provided his bank account details',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND',
             'class'               => BadRequestException::class,
         ]
     ],
@@ -12263,10 +12342,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'merchant_id'      => '10000000000000',
-                'ifsc_code'        => 'HDFC0001206',
-                'account_number'   => '0002020000304030434',
-                'beneficiary_name' => 'Test Merchant',
+                'sync_flow' => FALSE
             ],
         ],
     ],

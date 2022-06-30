@@ -91,19 +91,37 @@ class DefaultProcessorMock extends DefaultProcessor
 
                 $error = new Error();
 
+                $bvsValidation = new BvsValidationEntity();
+
+                $bvsValidation->generateId();
+
                 if ($this->requestMode() == Constant::SYNC)
                 {
                     $validationResponse = new ValidationResponseV2();
 
-                    $validationResponse->setErrorCode("BAD_REQUEST_VALIDATION_ERROR");
+                    $validationResponse->setValidationId($bvsValidation->getId());
 
-                    $validationResponse->setErrorDescription("merchant type is not supported");
+                    $validationResponse->setStatus('failed');
 
+                    if($this->app['config']['services.bvs.input.error'] == true)
+                    {
+                        $validationResponse->setErrorCode("INPUT_DATA_ISSUE");
+
+                        $validationResponse->setErrorDescription("KC07: Account Closed");
+                    }
+                    else
+                    {
+                        $validationResponse->setErrorCode("BAD_REQUEST_VALIDATION_ERROR");
+
+                        $validationResponse->setErrorDescription("merchant type is not supported");
+                    }
                     return new ValidationBaseResponseV2($validationResponse);
                 }
                 else
                 {
                     $validationResponse = new ValidationResponseV1();
+
+                    $validationResponse->setStatus('failed');
 
                     $validationResponse->setErrorCode("BAD_REQUEST_VALIDATION_ERROR");
 
