@@ -37,7 +37,7 @@ class AccessControlPrivileges extends Migration
 
             $table->string(Entity::LABEL, 100);
 
-            $table->integer(Entity::ORDERING)->default(10000);
+            $table->integer(Entity::VIEW_POSITION)->default(10000);
 
             $table->bigInteger(Entity::CREATED_AT);
 

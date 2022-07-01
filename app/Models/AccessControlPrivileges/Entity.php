@@ -9,13 +9,13 @@ use RZP\Models\AccessPolicyAuthzRolesMap;
 
 class Entity extends PublicEntity
 {
-    const NAME         = 'name';
-    const LABEL        = 'label';
-    const DESCRIPTION  = 'description';
-    const PARENT_ID    = 'parent_id';
-    const VISIBILITY   = 'visibility';
-    const EXTRA_DATA   = 'extra_data';
-    const ORDERING     = 'ordering';
+    const NAME             = 'name';
+    const LABEL            = 'label';
+    const DESCRIPTION      = 'description';
+    const PARENT_ID        = 'parent_id';
+    const VISIBILITY       = 'visibility';
+    const EXTRA_DATA       = 'extra_data';
+    const VIEW_POSITION    = 'view_position';
 
     const ACTIONS = 'actions';
 
@@ -40,7 +40,7 @@ class Entity extends PublicEntity
         self::PARENT_ID,
         self::VISIBILITY,
         self::EXTRA_DATA,
-        self::ORDERING
+        self::VIEW_POSITION
     ];
 
     protected $visible = [
@@ -53,7 +53,7 @@ class Entity extends PublicEntity
         self::EXTRA_DATA,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::ORDERING
+        self::VIEW_POSITION
     ];
 
     protected $public = [
@@ -64,7 +64,7 @@ class Entity extends PublicEntity
         self::PARENT_ID,
         self::EXTRA_DATA,
         self::ACTIONS,
-        self::ORDERING
+        self::VIEW_POSITION
     ];
 
     public function setName(string $name)

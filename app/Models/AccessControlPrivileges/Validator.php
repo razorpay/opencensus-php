@@ -13,6 +13,6 @@ class Validator extends Base\Validator
         Entity::PARENT_ID       => 'sometimes|string|size:14',
         Entity::VISIBILITY      => 'sometimes|int',
         Entity::EXTRA_DATA      => 'sometimes|array',
-        Entity::ORDERING        => 'required|int',
+        Entity::VIEW_POSITION   => 'required|int',
     ];
 }

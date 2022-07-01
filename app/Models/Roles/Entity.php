@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
 
     const STANDARD_ROLE_MERCHANT_ID             = '100000Razorpay';
     const ORG_ID_FOR_ROLES                      = '100000razorpay';
+    const USER_ID_FOR_SYSTEM                    = '10000000system';
 
     const COPY_DISABLE                          = 'copy_disable';
 
