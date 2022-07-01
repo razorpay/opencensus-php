@@ -1142,6 +1142,9 @@ class Constants
      */
     const NETWORK_TOKENIZATION_LIVE = 'network_tokenization_live';
 
+    /** Feature flag for custom checkout merchants to enable network tokenization in live mode */
+    const NETWORK_TOKENIZATION_PAID = 'network_tokenization_paid';
+
      /**
       * Feature flag to allow network tokens in response
      */
@@ -1875,6 +1878,7 @@ class Constants
         self::NETWORK_TOKENIZATION            => true,
         self::CREATE_SOURCE_V2                => true,
         self::NETWORK_TOKENIZATION_LIVE       => true,
+        self::NETWORK_TOKENIZATION_PAID       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
         self::MERCHANT_ROUTE_WA_INFRA         => true,
         self::BENE_EMAIL_NOTIFICATION         => true,

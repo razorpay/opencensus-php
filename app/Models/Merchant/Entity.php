@@ -1038,6 +1038,11 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN);
     }
 
+    public function isCustomCheckoutNetworkTokenisationEnabled(): bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_PAID);
+    }
+
     public function isCollectConsentEnabledForMerchant(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_COLLECT_CONSENT) === false);
