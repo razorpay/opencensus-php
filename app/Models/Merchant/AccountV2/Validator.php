@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AccountV2;
 
+use RZP\Constants\IndianStates;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -67,7 +68,7 @@ class Validator extends Merchant\Validator
         Constants::STREET1     => 'required|string|max:100',
         Constants::STREET2     => 'required|string|max:100',
         Constants::CITY        => 'required|string',
-        Constants::STATE       => 'required|string',
+        Constants::STATE       => 'required|string|custom',
         Constants::POSTAL_CODE => 'required|integer',
         Constants::COUNTRY     => 'required|string',
     ];
@@ -76,7 +77,7 @@ class Validator extends Merchant\Validator
         Constants::STREET1     => 'filled|string|max:100',
         Constants::STREET2     => 'filled|string|max:100',
         Constants::CITY        => 'filled|string',
-        Constants::STATE       => 'filled|string',
+        Constants::STATE       => 'filled|string|custom',
         Constants::POSTAL_CODE => 'filled|integer',
         Constants::COUNTRY     => 'filled|string',
     ];
@@ -351,6 +352,15 @@ class Validator extends Merchant\Validator
         {
             //validate the merchant details NC fields as per merchant details edit rules
             $merchantDetails->getValidator()->validateInput('edit', $merchantDetailInput);
+        }
+    }
+
+    protected function validateState(string $attribute, string $value)
+    {
+        //check if a valid state code exists for the input
+        if(IndianStates::getStateCode($value) === null)
+        {
+            throw new Exception\BadRequestValidationFailureException('State name entered is incorrect. Please provide correct state name.', Constants::STATE);
         }
     }
 }

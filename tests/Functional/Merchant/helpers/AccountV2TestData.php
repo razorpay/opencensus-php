@@ -276,6 +276,22 @@ return [
         ],
     ],
 
+    'testCreateAccountV2WithInvalidStateName' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'State name entered is incorrect. Please provide correct state name.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest' => [
         'request'  => [
             'url'     => '/v2/accounts',

@@ -120,6 +120,25 @@ class AccountV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAccountV2WithInvalidStateName()
+    {
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $testData['request']['content']['profile']['addresses']['registered']['state'] = 'NonExistingState';
+
+        $testData['response'] = $this->testData['testCreateAccountV2WithInvalidStateName']['response'];
+
+        $testData['exception'] = $this->testData['testCreateAccountV2WithInvalidStateName']['exception'];
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest()
     {
         $this->setUpPartnerWithKycHandled();
