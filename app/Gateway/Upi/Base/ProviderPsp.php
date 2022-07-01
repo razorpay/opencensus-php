@@ -21,6 +21,7 @@ class ProviderPsp
     const DIGI_BANK         = 'digi_bank';
     const BHIM_DLB_UPI      = 'bhim_dlb_upi';
     const PAYZAPP           = 'payzapp';
+    const BHIM_INDUSPAY     = 'bhim_induspay';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

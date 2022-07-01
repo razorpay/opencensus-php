@@ -409,6 +409,7 @@ class ProviderCode
         ProviderPsp::DIGI_BANK,
         ProviderPsp::BHIM_DLB_UPI,
         ProviderPsp::PAYZAPP,
+        ProviderPsp::BHIM_INDUSPAY
     ];
 
     /**
@@ -436,6 +437,7 @@ class ProviderCode
         self::DLB           => ProviderPsp::BHIM_DLB_UPI,
         self::SLICEAXIS     => ProviderPsp::BHIM_AXISPAY,
         self::PZ            => ProviderPsp::PAYZAPP,
+        self::INDUS         => ProviderPsp::BHIM_INDUSPAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

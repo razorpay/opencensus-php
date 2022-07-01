@@ -19,6 +19,7 @@ class ProviderApp
     const BHIM_AXISPAY          = 'com.upi.axispay';
     const DAKPAY_UPI_IPBB       = 'com.fss.ippbpsp';
     const MOBIKWIK              = 'com.mobikwik_new';
+    const BHIM_INDUSPAY_APP     = 'com.mgs.induspsp';
 
     // For all other PSP Apps
     const OTHER             = 'other';
