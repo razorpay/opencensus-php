@@ -175,4 +175,15 @@ class Repository extends Base\Repository
                     ->whereIn($btIdColumn, $ids)
                     ->get();
     }
+
+    public function addQueryParamBalanceType($query, $params)
+    {
+        $balance = Table::BALANCE;
+        $balanceIdForeignColumn = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $bankTransferBalanceIdColumn = $this->repo->bank_transfer->dbColumn(Entity::BALANCE_ID);
+
+        return  $query->select(Table::BANK_TRANSFER . ".*")
+                    ->join($balance, $balanceIdForeignColumn, '=', $bankTransferBalanceIdColumn)
+                    ->where('balance.type', $params['balance_type']);
+    }
 }

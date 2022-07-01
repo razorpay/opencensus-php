@@ -10,6 +10,8 @@ use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Card;
 use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
+use RZP\Models\FundAccount;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 
@@ -323,5 +325,18 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Token\Entity::ID, $id)
             ->update($updateData);
+    }
+
+    public function addQueryParamFundAccountType($query, $params)
+    {
+        $fundAccount = Table::FUND_ACCOUNT;
+        $cardsIdColumn = $this->repo->card->dbColumn(Entity::ID);
+        $fundAccountIdForeignColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_ID);
+
+        $query->from(\DB::raw(Table::CARD.' USE INDEX (cards_created_at_index)'));
+
+        return $query->select(Table::CARD . ".*")
+                    ->join($fundAccount, $cardsIdColumn, '=', $fundAccountIdForeignColumn)
+                    ->where('fund_accounts.account_type', $params['fund_account_type']);
     }
 }

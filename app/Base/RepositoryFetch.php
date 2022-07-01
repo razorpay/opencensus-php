@@ -17,6 +17,7 @@ use RZP\Models\Base\EsRepository;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -144,6 +145,8 @@ trait RepositoryFetch
         $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
+
+        $this->attachRoleBasedQueryParams($params);
 
         $query = $this->newQuery();
 
@@ -990,6 +993,8 @@ trait RepositoryFetch
             $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType))->with($expands);
         }
 
+        $this->attachRoleBasedQueryParams($params);
+
         $this->buildQueryWithParams($query, $params);
 
         return $query;
@@ -1043,6 +1048,33 @@ trait RepositoryFetch
             if ($merchantId === null)
             {
                 throw new InvalidArgumentException('Merchant Id is required for fetch query');
+            }
+        }
+    }
+
+    /**
+     * @param array $params
+     */
+    protected function attachRoleBasedQueryParams(array &$params)
+    {
+        $basicAuth = app('basicauth');
+
+        $adminRoles = $basicAuth->getPassport()['roles'] ?? [];
+
+        if (in_array(TenantRoles::ENTITY_BANKING, $adminRoles))
+        {
+            $entity = $this->getEntityObject();
+
+            $func = 'getFilterForRole';
+
+            if (method_exists($entity, $func))
+            {
+                $filters = $entity->$func(TenantRoles::ENTITY_BANKING);
+
+                foreach ($filters as $key => $value)
+                {
+                    $params[$key] = $value;
+                }
             }
         }
     }

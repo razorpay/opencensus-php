@@ -16,6 +16,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use Razorpay\Trace\Facades\Trace;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\HasBalance;
 
 /**
@@ -668,5 +669,17 @@ class Entity extends Base\PublicEntity
         }
 
         return $data;
+    }
+
+    public function getFilterForRole(string $role): array
+    {
+        if ($role === TenantRoles::ENTITY_BANKING)
+        {
+            return [
+                'balance_type'  =>   Merchant\Balance\Type::BANKING
+            ];
+        }
+
+        return [];
     }
 }

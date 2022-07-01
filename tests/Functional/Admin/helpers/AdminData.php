@@ -1908,4 +1908,96 @@ return [
             ],
         ],
     ],
+
+    'testAdminFetchBankTransfersWithBankingRole' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/bank_transfer'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "admin"=> true,
+            ]
+        ]
+    ],
+
+    'testAdminFetchCardsWithBankingRole' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/card'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "collection",
+                "admin"=> true,
+            ]
+        ]
+    ],
+
+    'testAdminFetchCardByIdWithBankingRole' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/card'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "card",
+                "admin"=> true,
+            ]
+        ],
+    ],
+
+    'testAdminFetchCardByIdNotFound' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/card'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testAdminFetchBankTransferByIdWithBankingRole' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/bank_transfer'
+        ],
+        'response' => [
+            'content' => [
+                "entity"=> "bank_transfer",
+                "admin"=> true,
+            ]
+        ],
+    ],
+
+    'testAdminFetchBankTransferByIdNotFound' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/admin/bank_transfer'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ID,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
 ];

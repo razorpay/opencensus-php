@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Models\Base\Traits\ExternalOwner;
 use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -1316,5 +1317,17 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::COUNTRY] = $this->getCountry()!==null?$this->getCountry():null;
         }
+    }
+
+    public function getFilterForRole(string $role): array
+    {
+        if ($role === TenantRoles::ENTITY_BANKING)
+        {
+            return [
+                'fund_account_type'  =>   \RZP\Models\FundAccount\Type::CARD
+            ];
+        }
+
+        return [];
     }
 }

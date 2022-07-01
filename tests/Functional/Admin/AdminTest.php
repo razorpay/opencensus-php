@@ -2129,6 +2129,20 @@ class AdminTest extends TestCase
         return $entities;
     }
 
+    protected function createTenantBankingRoleFor($admin)
+    {
+        $role = $this->fixtures->create('role', [
+            'org_id'    => Org::RZP_ORG,
+            'name'      => 'tenant:banking'
+        ]);
+
+        DB::table('role_map')->insert([
+            'role_id'     => $role->getId(),
+            'entity_type' => 'admin',
+            'entity_id'   => $admin->getId(),
+        ]);
+    }
+
     public function testEnableInstantRefunds()
     {
         $merchant = $this->fixtures->create('merchant', ['id' => '20000000000000']);
@@ -2245,5 +2259,191 @@ class AdminTest extends TestCase
         $adminRoles = $admin->roles()->pluck('id');
         $this->assertEquals(2, count($adminRoles));
         $this->assertEquals([Org::CHECKER_ROLE, Org::MANAGER_ROLE], $adminRoles->toArray());
+    }
+
+    public function testAdminFetchBankTransfersWithBankingRole()
+    {
+        $this->ba->adminAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $merchantForBanking = $this->fixtures->create('merchant', ['id' => '12345678901234']);
+        $merchantForPrimary = $this->fixtures->create('merchant', ['id' => '12345678905678']);
+
+        $balanceTypeBanking = $this->fixtures->create('balance', [
+            'type'           => 'banking',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626903',
+            'merchant_id'    => $merchantForBanking->getId(),
+            'balance'        => 300000
+        ]);
+        $balanceTypePrimary = $this->fixtures->create('balance', [
+            'type'           => 'primary',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626904',
+            'merchant_id'    => $merchantForPrimary->getId(),
+            'balance'        => 400000
+        ]);
+
+        $bankTransferForBankingMerchant = $this->fixtures->create('bank_transfer', [
+            'id'             => "random12345678",
+            'utr'            => "1111",
+            'balance_id'     => $balanceTypeBanking->getId(),
+            'merchant_id'    => $merchantForBanking->getId()
+        ]);
+        $bankTransferForPrimaryMerchant = $this->fixtures->create('bank_transfer', [
+            'id'             => "random87654321",
+            'utr'            => "2222",
+            'balance_id'     => $balanceTypePrimary->getId(),
+            'merchant_id'    => $merchantForPrimary->getId()
+        ]);
+
+        // Test when tenant:banking role is not assigned to the admin
+        $response = $this->startTest($testData);
+
+        // assert that both the bank transfers are fetched
+        $this->assertEquals("bt_" . $bankTransferForPrimaryMerchant->getId(), $response["items"][0]["id"]);
+        $this->assertEquals("bt_" . $bankTransferForBankingMerchant->getId(), $response["items"][1]["id"]);
+
+        $admin = $this->ba->getAdmin();
+        $this->createTenantBankingRoleFor($admin);
+
+        // Test when tenant:banking role is assigned to the admin
+        $response = $this->startTest($testData);
+
+        // assert that only the bank transfer with a banking merchant is fetched
+        $this->assertEquals(1, $response["count"]);
+        $this->assertEquals($bankTransferForBankingMerchant->getUtr(), $response["items"][0]["utr"]);
+    }
+
+    public function testAdminFetchCardsWithBankingRole()
+    {
+        $this->ba->adminAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '12345678901234']);
+
+        $cardForFundAccount = $this->fixtures->create('card', [
+            'id'           => 'Jhfh8uSCfIvYgU',
+            'merchant_id'  => $merchant->getId(),
+            'name'         => 'bankingCard',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+        ]);
+        $this->fixtures->create('fund_account', [
+            'account_type'   => 'card',
+            'account_id'     => $cardForFundAccount->getId(),
+            'merchant_id'    => $merchant->getId()
+        ]);
+
+        $cardWithoutFundAccount = $this->fixtures->create('card', [
+            'id'           => 'Jhfi1KOH0orayB',
+            'name'         => 'PrimaryCard',
+            'expiry_month' => 2,
+            'expiry_year'  => 2024,
+        ]);
+
+        // Test when tenant:banking role is not assigned to the admin
+        $response = $this->startTest($testData);
+
+        // Assert that both cards are fetched
+        $this->assertEquals("card_" . $cardWithoutFundAccount->getId(), $response["items"][0]["id"]);
+        $this->assertEquals("card_" . $cardForFundAccount->getId(), $response["items"][1]["id"]);
+
+        $admin = $this->ba->getAdmin();
+        $this->createTenantBankingRoleFor($admin);
+
+        // Test when tenant:banking role is assigned to the admin
+        $response = $this->startTest($testData);
+
+        // Assert that only the card linked to a fund account is fetched
+        $this->assertEquals(1, $response["count"]);
+        $this->assertEquals("card_" . $cardForFundAccount->getId(), $response["items"][0]["id"]);
+    }
+
+    public function testAdminFetchBankTransferByIdWithBankingRole()
+    {
+        $this->ba->adminAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $merchantForPrimary = $this->fixtures->create('merchant', ['id' => '12345678905678']);
+        $balanceTypePrimary = $this->fixtures->create('balance', [
+            'type'           => 'primary',
+            'account_type'   => 'shared',
+            'account_number' => '2224440041626904',
+            'merchant_id'    => $merchantForPrimary->getId(),
+            'balance'        => 400000
+        ]);
+        $bankTransferForPrimaryMerchant = $this->fixtures->create('bank_transfer', [
+            'id'             => "random87654321",
+            'utr'            => "2222",
+            'balance_id'     => $balanceTypePrimary->getId(),
+            'merchant_id'    => $merchantForPrimary->getId()
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . '/' . $bankTransferForPrimaryMerchant->getId();
+
+        // Test when tenant:banking role is not assigned to the admin
+        $response = $this->startTest($testData);
+
+        // Assert that the card is fetched
+        $this->assertEquals("bt_" . $bankTransferForPrimaryMerchant->getId(), $response["id"]);
+
+        $admin = $this->ba->getAdmin();
+        $this->createTenantBankingRoleFor($admin);
+
+        $testData = $this->testData['testAdminFetchBankTransferByIdNotFound'];
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $bankTransferForPrimaryMerchant->getId();
+
+        // Assert that ID not found error is thrown when tenant:banking role is assigned to the admin
+        $this->startTest($testData);
+    }
+
+    public function testAdminFetchCardByIdWithBankingRole()
+    {
+        $this->ba->adminAuth();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '12345678901234']);
+
+        $cardForFundAccount = $this->fixtures->create('card', [
+            'id'           => 'Jhfh8uSCfIvYgU',
+            'merchant_id'  => $merchant->getId(),
+            'name'         => 'bankingCard',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+        ]);
+        $this->fixtures->create('fund_account', [
+            'account_type'   => 'card',
+            'account_id'     => $cardForFundAccount->getId(),
+            'merchant_id'    => $merchant->getId()
+        ]);
+
+        $cardWithoutFundAccount = $this->fixtures->create('card', [
+            'id'           => 'Jhfi1KOH0orayB',
+            'name'         => 'PrimaryCard',
+            'expiry_month' => 2,
+            'expiry_year'  => 2024,
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $this->testData[__FUNCTION__]['request']['url'] . '/' . $cardWithoutFundAccount->getId();
+
+        // Test when tenant:banking role is not assigned to the admin
+        $response = $this->startTest($testData);
+
+        // Assert that the card is fetched
+        $this->assertEquals("card_" . $cardWithoutFundAccount->getId(), $response["id"]);
+
+        $admin = $this->ba->getAdmin();
+        $this->createTenantBankingRoleFor($admin);
+
+        $testData = $this->testData['testAdminFetchCardByIdNotFound'];
+        $testData['request']['url'] = $testData['request']['url'] . '/' . $cardWithoutFundAccount->getId();
+
+        // Assert that ID not found error is thrown when tenant:banking role is assigned to the admin
+        $this->startTest($testData);
     }
 }
