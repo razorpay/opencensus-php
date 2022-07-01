@@ -2974,13 +2974,7 @@ class Service extends Base\Service
                             $payment->isRecurring() and
                             $payment->getRecurringType() === Payment\RecurringType::INITIAL)
                         {
-                            $nachToken = $this->repo->token->findByIdAndMerchantId($payment->getTokenId(), $payment->getMerchantId());
-
-                            $nachToken->setRecurringStatus(Token\RecurringStatus::REJECTED);
-
-                            $nachToken->setRecurringFailureReason(RegisterErrorCodes::NCEX);
-
-                            $nachToken->saveOrFail();
+                            $this->moveTimedoutRecurringNachPaymentTokensToRejectedState($payment);
                         }
 
                         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
@@ -4595,6 +4589,13 @@ class Service extends Base\Service
                         ->setPayment($payment)
                         ->timeoutPayment();
 
+                    if ($payment->getMethod() === Payment\Method::NACH and
+                        $payment->isRecurring() and
+                        $payment->getRecurringType() === Payment\RecurringType::INITIAL)
+                    {
+                       $this->moveTimedoutRecurringNachPaymentTokensToRejectedState($payment);
+                    }
+
                     $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_DROPPED, $payment);
 
                     $payment->reload();
@@ -5283,4 +5284,16 @@ class Service extends Base\Service
             'failed'  => $failedCount
         ];
     }
+
+    private function moveTimedoutRecurringNachPaymentTokensToRejectedState($payment)
+    {
+        $nachToken = $this->repo->token->findByIdAndMerchantId($payment->getTokenId(), $payment->getMerchantId());
+
+        $nachToken->setRecurringStatus(Token\RecurringStatus::REJECTED);
+
+        $nachToken->setRecurringFailureReason(RegisterErrorCodes::NCEX);
+
+        $nachToken->saveOrFail();
+    }
+
 }
