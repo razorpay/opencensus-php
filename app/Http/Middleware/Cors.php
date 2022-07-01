@@ -57,7 +57,7 @@ class Cors
     {
         $env = \App::environment();
 
-        if ($env === 'stage')
+        if (($env === 'stage') or ($env === 'beta'))
         {
             return true;
         }
