@@ -18,7 +18,6 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Repository;
 use RZP\Models\Merchant\Account;
-use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Tests\Functional\TestCase;
@@ -907,13 +906,6 @@ class RefundTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest($payment['id']);
-    }
-
-    public function testRefundByMerchantForPosPayment()
-    {
-        $payment = $this->fixtures->create('payment:card_authorized', [PaymentEntity::RECEIVER_TYPE => 'pos']);
-
-        $this->startTest($payment['public_id'], 1000000);
     }
 
     public function testRefundWithNegativeAmount()
