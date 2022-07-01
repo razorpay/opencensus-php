@@ -371,23 +371,24 @@ class Authenticate
      */
     private function resolveOAuthLocally(): bool
     {
-        if ($this->requestContext->hasPassportJwt === false or empty($this->requestContext->passport) === true)
-        {
-            return false;
-        }
-        $passportUtil = (new PassportUtil($this->requestContext->passport));
-
-        if ($passportUtil->canPassportBeUsedForOauth() === false)
-        {
-            return false;
-        }
-
-        if ($this->app['env'] === 'testing' or $this->app['env'] === 'bvt')
-        {
-            return true;
-        }
-
-        return $this->isRazorXEnabledForResolvingOAuthLocally();
+        return false;
+        //if ($this->requestContext->hasPassportJwt === false or empty($this->requestContext->passport) === true)
+        //{
+        //    return false;
+        //}
+        //$passportUtil = (new PassportUtil($this->requestContext->passport));
+        //
+        //if ($passportUtil->canPassportBeUsedForOauth() === false)
+        //{
+        //    return false;
+        //}
+        //
+        //if ($this->app['env'] === 'testing' or $this->app['env'] === 'bvt')
+        //{
+        //    return true;
+        //}
+        //
+        //return $this->isRazorXEnabledForResolvingOAuthLocally();
     }
 
     //TODO : Need to remove this experiment after sometime
