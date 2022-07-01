@@ -46,6 +46,7 @@ class Base extends BaseProcessor
         Constants::UBI,
         Constants::IBK,
         Constants::AUBL,
+        Constants::AUBL_CORP,
         Constants::KOTAK_CORP,
         Constants::DLB,
         Constants::TMB,

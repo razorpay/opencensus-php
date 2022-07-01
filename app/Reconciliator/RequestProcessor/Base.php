@@ -98,6 +98,7 @@ class Base extends Core
     const NETBANKING_UJJIVAN       = 'NetbankingUjjivan';
     const NETBANKING_UBI           = 'NetbankingUbi';
     const NETBANKING_AUSF          = 'NetbankingAusf';
+    const NETBANKING_AUSF_CORP     = 'NetbankingAusfCorp';
     const NETBANKING_DLB           = 'NetbankingDlb';
     const NETBANKING_TMB           = 'NetbankingTmb';
     const NETBANKING_KOTAK_V2      = 'NetbankingKotakV2';
@@ -204,6 +205,7 @@ class Base extends Core
         self::NETBANKING_DCB           => ['sandesh.kadam@dcbbank.com', 'arif.shaikh@dcbbank.com'],
         self::NETBANKING_UBI           => [],
         self::NETBANKING_AUSF          => [],
+        self::NETBANKING_AUSF_CORP     => [],
         self::NETBANKING_KOTAK_V2      => ['bankalerts@kotak.com'],
         self::NETBANKING_NSDL          => [],
         self::JIOMONEY                 => [],

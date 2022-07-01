@@ -2766,6 +2766,7 @@ class Gateway
         Netbanking::IDIB_C => Gateway::NETBANKING_IBK,
         Netbanking::RATN_C => Gateway::NETBANKING_RBL,
         Netbanking::HDFC_C => Gateway::NETBANKING_HDFC,
+        Netbanking::AUBL_C => Gateway::NETBANKING_AUSF,
 
         // retail banks
         IFSC::IDFB         => Gateway::NETBANKING_IDFC,

@@ -58,6 +58,7 @@ class Constants
     const DCB              = 'dcb';
     const UBI              = 'ubi';
     const AUBL             = 'aubl';
+    const AUBL_CORP        = 'aubl_corp';
     const KOTAK_CORP       = 'kotak_corp';
     const DLB              = 'dlb';
     const TMB              = 'tmb';
@@ -156,6 +157,7 @@ class Constants
             self::UBI,
             self::IBK,
             self::AUBL,
+            self::AUBL_CORP,
             self::KOTAK_CORP,
             self::DLB,
             self::TMB,
@@ -243,6 +245,7 @@ class Constants
             self::UPI_SBI       => ['refunds@razorpay.com'],
             self::CBI           => ['cbi.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
             self::AUBL          => ['ausf-netbanking-refunds@razorpay.com'],
+            self::AUBL_CORP     => ['ausf-corp-netbanking-refunds@razorpay.com'],
             self::ICICI_EMI     => ['icicicards.emi@razorpay.com'],
             self::HDFC_CORP     => [],
         ],
@@ -281,6 +284,7 @@ class Constants
             self::UBI         => ['ubi-netbanking-refunds@razorpay.com'],
             self::IBK         => ['ibk-netbanking-refunds@razorpay.com'],
             self::AUBL        => ['ausf-netbanking-refunds@razorpay.com'],
+            self::AUBL_CORP   => ['ausf-corp-netbanking-refunds@razorpay.com'],
             self::KOTAK_CORP  => ['kotak-corp-netbanking-refunds@razorpay.com'],
             self::DLB         => ['dlb-netbanking-refunds@razorpay.com'],
             self::TMB         => ['tmb-netbanking-refunds@razorpay.com'],

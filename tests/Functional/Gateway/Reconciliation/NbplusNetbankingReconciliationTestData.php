@@ -123,6 +123,23 @@ return [
         'MERCHANT_URL'                  => 'https://www.razorpay.com',
     ],
 
+    'testAusfCorpSuccessRecon' => [
+        'TRANSACTION TYPE'              => 'PAYMENT',
+        'CHANNEL_REF_NO'                => 'PG-20210205195519793000000',
+        'PAYMENT_ID_EXT'                => 'JHvB2k2UByIFkn',
+        'MERCHANT_ID'                   => 'RAZORPAYPGCNB',
+        'USERREFERENCENO'               => '31080422006',
+        'HOST_REF_NO'                   => 'CBSFund1612535152270',
+        'EXTERNALREFERENCEID_EXT'       => 'JHvB2k2UByIFkn',
+        'PAYMENT_DATE'                  => '16-02-22 1:57:42.795000 AM',
+        'PAYMENT_AMT'                   => '55',
+        'REFUND_AMOUNT'                 => '0',
+        'DEBIT_ACCOUNT_NO'              => '1721220614979099',
+        'STATUS'                        => 'S',
+        'MERCHANT_ACCT_NO'              => '2121201131751367',
+        'MERCHANT_URL'                  => 'https://www.razorpay.com',
+    ],
+
     'testKotakV2SuccessRecon' => [
         'Entity Code'               => '123456',
         'Merchant Code'             => '123456',
