@@ -71,6 +71,9 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::TRANSACTION_ID,
         self::UTR,
+        self::PAYER_NAME,
+        self::PAYER_ACCOUNT,
+        self::PAYER_IFSC,
         self::CREATED_AT,
         self::PROCESSED_AT,
         self::FAILED_AT,
@@ -115,10 +118,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT
     ];
 
-    protected $publicSetters = [
-        self::ID,
-    ];
-
     // ----------------------- Associations ------------------------------------
 
     public function merchant()
@@ -161,6 +160,26 @@ class Entity extends Base\PublicEntity
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getPayerName()
+    {
+        return $this->getAttribute(self::PAYER_NAME);
+    }
+
+    public function getPayerAccount()
+    {
+        return $this->getAttribute(self::PAYER_ACCOUNT);
+    }
+
+    public function getPayerIfsc()
+    {
+        return $this->getAttribute(self::PAYER_IFSC);
     }
 
     public function getTransactionId()

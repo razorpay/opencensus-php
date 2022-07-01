@@ -285,7 +285,8 @@ class Entity extends LedgerEntry\Entity
                 CreditTransfer\Entity::UTR,
                 CreditTransfer\Entity::PROCESSED_AT,
                 CreditTransfer\Entity::PAYER_NAME,
-                CreditTransfer\Entity::PAYER_ACCOUNT
+                CreditTransfer\Entity::PAYER_ACCOUNT,
+                CreditTransfer\Entity::PAYER_IFSC,
             ]);
     }
 

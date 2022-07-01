@@ -840,7 +840,7 @@ class Repository extends Base\Repository
         $credit_transfer = $this->repo->credit_transfer->findByPublicIdAndMerchant($id, $merchant);
         $transaction[Service::SOURCE] = $credit_transfer->toArrayPublic();
 
-        // Calling statement entity function to set public attributes for adjustment entity.
+        // Calling statement entity function to set public attributes for credit_transfer entity.
         $statement = new Statement\Entity();
         $statement->setPublicSourceAttributeForCreditTransfer($transaction);
     }

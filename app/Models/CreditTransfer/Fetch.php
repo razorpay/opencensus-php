@@ -29,8 +29,12 @@ class Fetch extends BaseFetch
             Entity::TRANSACTION_ID
         ],
         AuthType::PRIVILEGE_AUTH => [
+            Entity::ID,
             Entity::MERCHANT_ID,
+            Entity::BALANCE_ID,
+            Entity::ENTITY_ID,
             Entity::UTR,
+            Entity::TRANSACTION_ID
         ],
     ];
 }

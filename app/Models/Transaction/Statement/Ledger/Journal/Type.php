@@ -13,6 +13,7 @@ class Type
     const EXTERNAL                = 'external';
     const ADJUSTMENT              = 'adjustment';
     const BANK_TRANSFER           = 'bank_transfer';
+    const CREDIT_TRANSFER         = 'credit_transfer';
     const FUND_ACCOUNT_VALIDATION = 'fund_account_validation';
 
     const BANKING_TYPE = [
@@ -21,6 +22,7 @@ class Type
         self::REVERSAL,
         self::ADJUSTMENT,
         self::EXTERNAL,
+        self::CREDIT_TRANSFER,
         self::FUND_ACCOUNT_VALIDATION,
     ];
 

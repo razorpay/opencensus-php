@@ -14926,6 +14926,30 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertEquals($creditTransfer->transaction->getId(), $ledgerSnsPayloadArray[1]['api_transaction_id']);
         $this->assertEquals($bankingBalance->bankingAccount->getPublicId(), $ledgerSnsPayloadArray[1]['identifiers']['banking_account_id']);
+
+        // test statement fetch for credit_transfer entity
+        $statementRequest = [
+            'url'    => '/transactions/' . $creditTransfer->transaction->getPublicId(),
+            'method' => 'get',
+        ];
+
+        // changing auth to the destination merchant context
+        $key = $this->getDbLastEntity('key');
+
+        $this->fixtures->edit('key', $key['id'],
+            [
+                'merchant_id'   => '100000Razorpay'
+            ]);
+
+        $this->ba->privateAuth();
+
+        $statementResponse = $this->makeRequestAndGetContent($statementRequest);
+
+        $this->assertEquals('credit_transfer', $statementResponse['source']['entity']);
+        $this->assertEquals($creditTransfer->getPublicId(), $statementResponse['source']['id']);
+        $this->assertEquals($creditTransfer->getPayerName(), $statementResponse['source']['payer_name']);
+        $this->assertEquals($creditTransfer->getPayerAccount(), $statementResponse['source']['payer_account']);
+        $this->assertEquals($creditTransfer->getDescription(), $statementResponse['source']['description']);
     }
 
     // tests for va to va transfers using creditTransfer
