@@ -683,6 +683,7 @@ return [
                 ],
                 'netbanking' => [
                     ['bank' => 'AUBL'],
+                    ['bank' => 'AUBL_C'],
                     ['bank' => 'AIRP'],
                     ['bank' => 'ANDB'],
                     ['bank' => 'ANDB_C'],

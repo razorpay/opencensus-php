@@ -1322,6 +1322,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $netbankingAusfEditTerminalRules = [
@@ -1331,6 +1332,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
     ];
 
     protected static $netbankingDlbTerminalRules = [

@@ -151,6 +151,7 @@ function disableEmptyInputs(form) {
                 <option value="UJVN">Ujjivan Small Finance Bank</option>
                 <option value="SRCB">Saraswat Bank</option>
                 <option value="DBSS">DBS Bank</option>
+                <option value="AUBL_C">AU Small Finance Bank - Corporate</option>
             </select>
         </td>
     </tr>
