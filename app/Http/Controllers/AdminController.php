@@ -109,7 +109,7 @@ class AdminController extends Controller
                     $view = 'admin.capital';
                     $build_sub_path = 'capital/';
                     $cdn = \Config::get('app.cdn_base_url');
-                    
+
                     if($env !== 'production'){
                         $branch_name = isset($_GET['branch']) ? $_GET['branch'] . '/' : 'master/';
                         $build_sub_path .= $branch_name;
@@ -118,7 +118,7 @@ class AdminController extends Controller
 
                 return view($view, [
                     'cdn' => $cdn,
-                    'build_sub_path' => $build_sub_path, 
+                    'build_sub_path' => $build_sub_path,
                     'org'   => $org,
                     'user'  => $admin['data'],
                 ]);
@@ -138,7 +138,7 @@ class AdminController extends Controller
         }
 
         // /admin/merchants → /admin, to avoid google oauth error (redirect_uri_mismatch)
-        
+
         $admin_validation_route = array('admin_catchall', 'razorx_catchall', 'capital_catchall');
         if (in_array($currentRouteName , $admin_validation_route, true)) {
             return redirect(self::REDIRECT_TO);
@@ -429,6 +429,13 @@ class AdminController extends Controller
         if (empty($error) === false)
         {
             return AppResponse::jsonResponse($error);
+        }
+
+        $originDomain = \Request::server('HTTP_X_ORIGIN_PRODUCT');
+
+        if ($originDomain === config('app.banking_service_url'))
+        {
+            return AppResponse::jsonResponse(null);
         }
 
         return redirect('/');
