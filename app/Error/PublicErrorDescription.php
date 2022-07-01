@@ -1655,4 +1655,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_OTP_VERIFICATION_LOG                                          = 'Contact mobile must be same as merchant business mobile number';
     const BAD_REQUEST_OTP_NOT_REQUIRED                                              = 'otp is/are not required and should not be sent';
+
+    const BAD_REQUEST_SUBMERCHANT_UNLINKING_FAILED                                  = 'Aggregate Settlement submerchant unlinking failed';
 }

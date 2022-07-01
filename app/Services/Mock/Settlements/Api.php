@@ -2,10 +2,20 @@
 
 namespace RZP\Services\Mock\Settlements;
 
+use RZP\Error\ErrorCode;
 use RZP\Services\Settlements\Api as BaseSettlementsApi;
 
 class Api extends BaseSettlementsApi
 {
+    private   $mockStatus;
+
+    public function __construct($app, string $mockStatus = 'success')
+    {
+        parent::__construct($app);
+
+        $this->mockStatus = $mockStatus;
+    }
+
     public function migrateMerchantConfigCreate(array $input, $mode = null) : array
     {
         return $this->getDefaultMerchantConfigArray();
@@ -14,6 +24,23 @@ class Api extends BaseSettlementsApi
     public function migrateMerchantConfigUpdate(array $input, $mode = null) : array
     {
         return $this->getDefaultMerchantConfigArray();
+    }
+
+    public function merchantConfigGet(array $input, $mode = null): array
+    {
+        $merchantConfig = $this->getDefaultMerchantConfigArray();
+
+        if ($this->mockStatus === 'failure')
+        {
+            throw new \Exception(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        else if ($this->mockStatus === 'settle_to_enabled')
+        {
+            $merchantConfig['config']['types']['aggregate']['enable'] = true;
+        }
+
+        return $merchantConfig;
     }
 
     public function migrateBankAccount($input, $mode, $via = 'payout')

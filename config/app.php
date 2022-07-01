@@ -423,4 +423,6 @@ return array(
     'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
 
     'merchant_kyc_update_to_partner_exp_id'    => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
+
+    'subm_unlinking_request_to_nss_exp_id'     => env('SUBM_UNLINKING_REQUEST_TO_NSS_EXP_ID'),
 );

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant\Partner;
 
+use Config;
 use DB;
 use Mail;
 use Mockery;
@@ -12,13 +13,17 @@ use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\User\Role;
 use Razorpay\OAuth\Application;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
+use RZP\Tests\Traits\MocksSplitz;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccessMap;
+use RZP\Services\Mock\Settlements\Api;
 use RZP\Services\SalesForceClient;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Mail\Merchant\PartnerOnBoarded;
@@ -33,6 +38,8 @@ use RZP\Models\Merchant\MerchantApplications\Entity;
 
 class PartnerTest extends OAuthTestCase
 {
+    use TestsMetrics;
+    use MocksSplitz;
     use PartnerTrait;
     use BatchTestTrait;
 
@@ -710,6 +717,93 @@ class PartnerTest extends OAuthTestCase
         $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
                                                                       'entity_owner_id' => '10000000000000'], 'test');
         $this->assertNull($accessMapEntity);
+    }
+
+    public function testPartnerSubmerchantDeLinkViaBatchWithNssExpEnabled()
+    {
+        $this->testPartnerSubmerchantLinkViaBatch();
+
+        $this->mockSplitzEvaluation();
+
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'settle_to_enabled');
+        });
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], self::DEFAULT_SUBMERCHANT_ID);
+
+        $expectedDimensions = [
+            'partner_id'     => '10000000000000',
+        ];
+
+        $metricCaptured = false;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $this->mockAndCaptureCountMetric(MerchantMetric::AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_SUCCESS,
+            $metricsMock, $metricCaptured, $expectedDimensions);
+
+        $testData = $this->testData['testPartnerSubmerchantDeLinkViaBatch'];
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                                                                            'entity_owner_id' => '10000000000000'], 'live');
+        $this->assertNull($accessMapEntity);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                                                                            'entity_owner_id' => '10000000000000'], 'test');
+        $this->assertNull($accessMapEntity);
+    }
+
+    public function testPartnerSubmerchantDeLinkFailureViaBatchWithNssExpEnabled()
+    {
+        $this->testPartnerSubmerchantLinkViaBatch();
+
+        $this->mockSplitzEvaluation();
+
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'failure');
+        });
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], self::DEFAULT_SUBMERCHANT_ID);
+
+        $testData = $this->testData['testPartnerSubmerchantDeLinkViaBatch'];
+
+        $this->startTest($testData);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                                                                            'entity_owner_id' => '10000000000000'], 'live');
+        $this->assertNotNull($accessMapEntity);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+                                                                            'entity_owner_id' => '10000000000000'], 'test');
+        $this->assertNotNull($accessMapEntity);
+    }
+
+    private function mockSplitzEvaluation()
+    {
+        $input = [
+            "experiment_id" => "JmNwFyivyRzcg3",
+            "id" => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 
     public function testPartnerSubmerchantTypeUpdateViaBatch()

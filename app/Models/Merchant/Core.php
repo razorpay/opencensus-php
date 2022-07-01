@@ -3833,10 +3833,87 @@ class Core extends Base\Core
     {
         $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant) {
 
+            $isExpEnabled = $this->isExpEnableForSendingUnlinkingRequestToNSS($partner);
+
+            if ($isExpEnabled === true)
+            {
+                $this->sendUnlinkRequestToNSS($partner, $submerchant);
+            }
+
             $this->deletePartnerSubmerchantAccessMap($partner, $submerchant);
 
             $this->detachSubMerchantOwnerIfApplicable($partner, $submerchant);
         });
+    }
+
+    public function isExpEnableForSendingUnlinkingRequestToNSS(Entity $partner)
+    {
+        $properties = [
+            'id'            => $partner->getId(),
+            'experiment_id' => $this->app['config']->get('app.subm_unlinking_request_to_nss_exp_id'),
+        ];
+
+        return $this->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    public function sendUnlinkRequestToNSS(Entity $partner, Entity $submerchant)
+    {
+        $nssFeature = $this->repo
+            ->feature
+            ->findByEntityTypeEntityIdAndName(Constants::MERCHANT, $submerchant->getId(), FeatureConstants::NEW_SETTLEMENT_SERVICE);
+
+        $featureResult = ($nssFeature === null) ? false : true;
+
+        $this->trace->info(TraceCode::UNLINK_AGGREGATE_SETTLEMENT_REQUEST,[
+            'submerchant_id'            => $submerchant->getId(),
+            'subM_feature_enabled'      => $featureResult
+        ]);
+
+        if($featureResult === false)
+        {
+            return ;
+        }
+
+        $dimensions = [
+            'partner_id'     => $partner->getId(),
+        ];
+
+        try
+        {
+            $req = [
+                'merchant_id' => $submerchant->getId()
+            ];
+
+            $response =  app('settlements_api')->merchantConfigGet($req, $this->mode);
+
+            if($response['config']['types']['aggregate']['enable'] === true)
+            {
+                $response['config']['types']['aggregate']['enable'] = false;
+                $response['config']['types']['default']['enable'] = true;
+                $response['config']['types']['aggregate']['settle_to'] = '';
+
+                unset($response['config']['active']);
+
+                $request = array_merge($req, $response);
+
+                $result = app('settlements_api')->migrateMerchantConfigUpdate($request, $this->mode);
+
+                $this->trace->info(TraceCode::AGGREGATE_SETTLEMENT_UNLINKING_UPDATE_SUCCESS,[
+                    'request' => $request,
+                    'result'  => $result
+                ]);
+
+                $this->trace->count(Metric::AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_SUCCESS, $dimensions);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::AGGREGATE_SETTLEMENT_UNLINK_REQUEST_UNSUCCESSFUL);
+
+            $this->trace->count(Metric::AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_FAILURE, $dimensions);
+
+            throw (new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SUBMERCHANT_UNLINKING_FAILED));
+        }
     }
 
     /**
