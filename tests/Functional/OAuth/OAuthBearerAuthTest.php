@@ -7,15 +7,20 @@ use Mockery;
 use Carbon\Carbon;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
+use Razorpay\Edge\Passport\Passport;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Cache\Events\CacheHit;
+use Razorpay\Edge\Passport\OAuthClaims;
 use Illuminate\Cache\Events\CacheMissed;
 
 use RZP\Models\Feature;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
+use Razorpay\Edge\Passport\ConsumerClaims;
+use Razorpay\Edge\Passport\CredentialClaims;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
+use Razorpay\Edge\Passport\ImpersonationClaims;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use RZP\Http\OAuthCache;
@@ -892,5 +897,89 @@ class OAuthBearerAuthTest extends OAuthTestCase
         $this->assertPassport();
         $this->assertPassportKeyExists('oauth.client_id');
         $this->assertPassportKeyExists('oauth.app_id');
+    }
+
+    public function testBearerAuthWithPassport()
+    {
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport();
+
+        $tokenEntityAttributes = $tokenEntity->toArrayAdmin();
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $passport = new Passport;
+        $passport->identified    = true;
+        $passport->authenticated = true;
+        $passport->mode          = 'test';
+        $passport->roles         = ['oauth::scope::read_only'];
+        //set consumer
+        $consumer           = new ConsumerClaims;
+        $consumer->id       = '10000000000000';
+        $consumer->type     = 'merchant';
+        $passport->consumer = $consumer;
+        //set credential
+        $credential            = new CredentialClaims;
+        $credential->username  = null;
+        $credential->publicKey = 'rzp_test_oauth_'.$tokenEntityAttributes['public_token'];
+        $passport->credential  = $credential;
+        //set oauth
+        $oauth                = new OAuthClaims;
+        $oauth->ownerType     = 'merchant';
+        $oauth->ownerId       = '10000000000000';
+        $oauth->accessTokenId = $tokenEntityAttributes['id'];
+        $oauth->clientId      = $tokenEntityAttributes['client_id'];
+        $oauth->appId         =  $tokenEntity->getApplicationIdAttribute();
+        $oauth->env           = 'test';
+        $oauth->userId        = '20000000000000';
+        $passport->oauth      = $oauth;
+
+        app('request.ctx.v2')->passport = $passport;
+        app('request.ctx.v2')->hasPassportJwt = true;
+
+        $this->startTest();
+    }
+
+    public function testBearerAuthWithUnusablePassport()
+    {
+        [$accessToken, $tokenEntity] = $this->generateOAuthAccessTokenForPassport();
+
+        $tokenEntityAttributes = $tokenEntity->toArrayAdmin();
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $this->fixtures->create('payment', ['id' => '10000000000000']);
+
+        $passport = new Passport;
+        $passport->identified    = true;
+        $passport->authenticated = true;
+        $passport->mode          = 'test';
+        //$passport->roles         = ['oauth::scope::read_only'];
+        //set consumer
+        $consumer           = new ConsumerClaims;
+        $consumer->id       = '10000000000000';
+        $consumer->type     = 'merchant';
+        $passport->consumer = $consumer;
+        //set credential
+        $credential            = new CredentialClaims;
+        $credential->username  = null;
+        $credential->publicKey = 'rzp_test_oauth_'.$tokenEntityAttributes['public_token'];
+        $passport->credential  = $credential;
+        //set oauth
+        $oauth                = new OAuthClaims;
+        $oauth->ownerType     = 'merchant';
+        $oauth->ownerId       = '10000000000000';
+        $oauth->accessTokenId = $tokenEntityAttributes['id'];
+        $oauth->clientId      = $tokenEntityAttributes['client_id'];
+        $oauth->appId         =  $tokenEntity->getApplicationIdAttribute();
+        $oauth->env           = 'test';
+        $oauth->userId        = '20000000000000';
+        $passport->oauth      = $oauth;
+
+        app('request.ctx.v2')->passport = $passport;
+        app('request.ctx.v2')->hasPassportJwt = true;
+
+        $this->startTest();
     }
 }

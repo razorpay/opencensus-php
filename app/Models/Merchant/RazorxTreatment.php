@@ -513,6 +513,11 @@ final class RazorxTreatment
     //Experiment to validate Urls, emails, html tags inclusions in Linked Account name, business_name
     public const URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME = 'url_validation_for_linked_account_name';
 
+    /** @var string Experiment to use passport params for authentication.(required for removal of OAuth Library
+     * oauth verification which is redundant)
+     */
+    const USE_EDGE_PASSPORT_FOR_AUTH = 'use_edge_passport_for_auth';
+
     // Experiment to control sync/async call on scrooge
     public const SCROOGE_SYNC_CALL = 'scrooge_sync_call';
 

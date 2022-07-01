@@ -2155,6 +2155,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVALID_APP_PASSPORT_CLAIMS                           = 'INVALID_APP_PASSPORT_CLAIMS';
     const NO_APP_CONFIG                                         = 'NO_APP_CONFIG';
     const INVALID_APP_CONFIG                                    = 'INVALID_APP_CONFIG';
+    const RESOLVE_OAUTH_LOCALLY_RAZORX_VARIANT                  = 'RESOLVE_OAUTH_LOCALLY_RAZORX_VARIANT';
+    const PASSPORT_AUTHENTICATION_FAILED                        = 'PASSPORT_AUTHENTICATION_FAILED';
+    const PASSPORT_AUTHENTICATION_SUCCEEDED                     = 'PASSPORT_AUTHENTICATION_SUCCEEDED';
+    const PASSPORT_AUTHENTICATION_RESULT                        = 'PASSPORT_AUTHENTICATION_RESULT';
 
     const NODAL_INTEGRATION_ERROR                               = 'NODAL_INTEGRATION_ERROR';
     const REPORTING_SERVICE_API_REQUEST                         = 'REPORTING_SERVICE_API_REQUEST';
@@ -3254,6 +3258,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const APP_MERCHANT_ACCESS_MAP                               = 'APP_MERCHANT_ACCESS_MAP';
     const APP_MERCHANT_ACCESS_MAP_DELETE                        = 'APP_MERCHANT_ACCESS_MAP_DELETE';
     const OAUTH_TOKEN_WITH_PARTNER_ACCOUNT                      = 'OAUTH_TOKEN_WITH_PARTNER_ACCOUNT';
+
+    const PASSPORT_NOT_FOUND                                    = 'PASSPORT_NOT_FOUND';
+    const EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH                    = 'EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH';
+    const EDGE_PASSPORT_CONSUMER_ID_MISMATCH                    = 'EDGE_PASSPORT_CONSUMER_ID_MISMATCH';
 
     const RAZORX_REQUEST                                        = 'RAZORX_REQUEST';
     const RAZORX_REQUEST_FAILED                                 = 'RAZORX_REQUEST_FAILED';

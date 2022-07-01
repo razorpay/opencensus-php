@@ -4,7 +4,9 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
+use RZP\Http\Edge\PassportUtil;
 use Illuminate\Support\Facades\App;
+use Razorpay\Edge\Passport\Passport;
 use Razorpay\OAuth\Application\Repository;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
@@ -22,6 +24,7 @@ class OAuth
 {
     use OAuthCache;
     const PUBLIC_TOKEN_LENGTH = 29;
+    const PUBLIC_KEY = 'public_key';
     const ID = 'id';
 
     protected $app;
@@ -48,6 +51,12 @@ class OAuth
      * @var string
      */
     protected $accountId;
+
+    /**
+     * Used to access passport related information stored during PreAuthenticate.
+     * @var Passport
+     */
+    protected $passport;
 
     public function __construct()
     {
@@ -179,7 +188,7 @@ class OAuth
 
                 $response = $oauthServer->authenticateWithBearerToken($token);
 
-                $storeCache =  true;
+                $storeCache = true;
             }
 
         }
@@ -321,7 +330,8 @@ class OAuth
      * @param array       $response
      * @param string      $auth
      *
-     * @return array
+     * @return mixed (error array/ void)
+     * @throws Exception\BadRequestException
      */
     protected function parseOAuthServerResponse(array $response, string $auth)
     {
@@ -410,6 +420,13 @@ class OAuth
         $application = (new Repository())->findOrFail($response[OAuthToken::APPLICATION_ID]);
         $this->ba->setPartnerMerchantId($application->getMerchantId());
 
+        $this->setPassportMetadata($response, $application->getMerchantId(), $auth, $tokenScopes);
+
+        return null;
+    }
+
+    private function setPassportMetadata(array $response, string $mid, string $auth, $tokenScopes)
+    {
         $this->ba->setPassportOAuthClaims(
             BasicAuth::PASSPORT_OAUTH_OWNER_TYPE_MERCHANT,
             $response[OAuthToken::MERCHANT_ID],
@@ -420,7 +437,7 @@ class OAuth
 
         $this->ba->setPassportConsumerClaims(
             BasicAuth::PASSPORT_CONSUMER_TYPE_MERCHANT,
-            $application->getMerchantId(),
+            $mid,
             $auth === AuthType::PRIVATE_AUTH // The function parseOAuthServerResponse is called for both public and private flows.
         );
 
@@ -462,7 +479,7 @@ class OAuth
         // TODO: Add an API <> OAuth Exception map
     }
 
-    protected function handleAccountAuthIfApplicable()
+    public function handleAccountAuthIfApplicable()
     {
         $partnerMerchant = $this->ba->authCreds->getMerchant();
 
@@ -544,7 +561,7 @@ class OAuth
         }
     }
 
-    protected function isBankingRoute(): bool
+    public function isBankingRoute(): bool
     {
         $route = $this->router->currentRouteName();
 

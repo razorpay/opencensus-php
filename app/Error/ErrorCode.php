@@ -1628,6 +1628,7 @@ class ErrorCode
     const BAD_REQUEST_USER_ROLE_INVALID                                             = 'BAD_REQUEST_USER_ROLE_INVALID';
     const BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID                                   = 'BAD_REQUEST_USER_OAUTH_PROVIDER_INVALID';
     const BAD_REQUEST_OLD_PASSWORD_MISMATCH                                         = 'BAD_REQUEST_OLD_PASSWORD_MISMATCH';
+    const BAD_REQUEST_OAUTH_ROLE_NOT_FOUND                                          = 'BAD_REQUEST_OAUTH_ROLE_NOT_FOUND';
     const BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID                                       = 'BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID';
     const BAD_REQUEST_CAPTCHA_FAILED                                                = 'BAD_REQUEST_CAPTCHA_FAILED';
     const BAD_REQUEST_CAPTCHA_SCORE_LOW                                             = 'BAD_REQUEST_CAPTCHA_SCORE_LOW';

@@ -1648,6 +1648,7 @@ class PublicErrorDescription
     const BAD_REQUEST_AUTH_NOT_SUPPORTED_FOR_PAYOUT_WITH_ATTACHMENTS                = 'Payout with attachments not supported via private auth';
     const BAD_REQUEST_INVALID_TAX_PAYMENT_ID                                        = 'Invalid tax_payment_id';
     const SERVER_ERROR_GET_ATTACHMENTS_FAILURE                                      = 'Failed to get attachments for the payouts';
+    const BAD_REQUEST_OAUTH_ROLE_NOT_FOUND                                          = 'OAuth Role not found';
 
     const BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS                       = 'Set Default Methods is in progress for the merchant';
     const BAD_REQUEST_ENABLE_NON_3DS_REQUEST_MADE_IN_LAST_30_DAYS                   = 'Bad request enable non-3ds card processing request made in last 30 days';

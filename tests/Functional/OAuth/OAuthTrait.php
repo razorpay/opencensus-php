@@ -129,6 +129,26 @@ trait OAuthTrait
         return $this->generateOAuthAccessTokenForClient($attributes, $client);
     }
 
+    public function generateOAuthAccessTokenForPassport(array $attributes = [], string $env = 'dev')
+    {
+        $client = $this->createOAuthApplicationAndGetClientByEnv($env);
+
+        return $this->generateOAuthAccessTokenPassposrtForClient($attributes, $client);
+    }
+
+    public function generateOAuthAccessTokenPassposrtForClient(array $attributes = [], $client)
+    {
+        $defaultValues = $this->getDefaultAccessTokenValues($client);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $accessToken = factory(Token\Entity::class)->create($attributes);
+
+        $jwt = (new OAuthTestHelper)->getJWT($accessToken);
+
+        return [$jwt, $accessToken];
+    }
+
     public function generateOAuthAccessTokenForClient(array $attributes = [], $client)
     {
         $defaultValues = $this->getDefaultAccessTokenValues($client);

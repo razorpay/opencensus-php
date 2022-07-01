@@ -3,8 +3,11 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
+use RZP\Constants\Mode;
 use Illuminate\Support\Str;
+use RZP\Http\Edge\PassportUtil;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\RazorxTreatment;
 use Symfony\Component\HttpFoundation\Response;
 
 use ApiResponse;
@@ -86,20 +89,32 @@ class Authenticate
 
         $this->ba->init();
 
-        $bearerToken = $this->getBearerTokenFromHeaders($request);
+        $bearerToken = null;
 
-        //
-        // If the request was sent with Bearer auth (OAuth),
-        // authenticate with the access token, else go for the
-        // otherwise existing key-secret flow
-        //
-        if (empty($bearerToken) === false)
+        [$successfulExecution, $error] = $this->authenticateUsingPassport();
+        $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_RESULT,
+                                  ['successfulExecution' => $successfulExecution, 'error' => $error]);
+
+        if ($successfulExecution === true)
         {
-            $ret = $this->authenticateBearerAuth($route, $bearerToken);
+            $ret = $error;
         }
         else
         {
-            $ret = $this->authenticateBasicAuth($route);
+            $bearerToken = $this->getBearerTokenFromHeaders($request);
+            //
+            // If the request was sent with Bearer auth (OAuth),
+            // authenticate with the access token, else go for the
+            // otherwise existing key-secret flow
+            //
+            if (empty($bearerToken) === false)
+            {
+                $ret = $this->authenticateBearerAuth($route, $bearerToken);
+            }
+            else
+            {
+                $ret = $this->authenticateBasicAuth($route);
+            }
         }
 
         app()->trace->histogram(
@@ -347,6 +362,52 @@ class Authenticate
         return $res;
     }
 
+    /**
+     * This is to check if the auth should be done by Edge Passport only
+     * or have a redundant auth at API also
+     *
+     *
+     * @return bool
+     */
+    private function resolveOAuthLocally(): bool
+    {
+        if ($this->requestContext->hasPassportJwt === false or empty($this->requestContext->passport) === true)
+        {
+            return false;
+        }
+        $passportUtil = (new PassportUtil($this->requestContext->passport));
+
+        if ($passportUtil->canPassportBeUsedForOauth() === false)
+        {
+            return false;
+        }
+
+        if ($this->app['env'] === 'testing' or $this->app['env'] === 'bvt')
+        {
+            return true;
+        }
+
+        return $this->isRazorXEnabledForResolvingOAuthLocally();
+    }
+
+    //TODO : Need to remove this experiment after sometime
+    private function isRazorXEnabledForResolvingOAuthLocally(): bool{
+
+        $requestId = $this->app['request']->getId();
+        $mode      =  Mode::LIVE;
+        $variant   = $this->app->razorx->getTreatment($requestId, RazorxTreatment::USE_EDGE_PASSPORT_FOR_AUTH, $mode);
+
+        $log = [
+            'request_id' => $requestId,
+            'experiment' => $variant,
+            'mode'       => $mode,
+        ];
+
+        $this->app['trace']->info(TraceCode::RESOLVE_OAUTH_LOCALLY_RAZORX_VARIANT, $log);
+
+        return (strtolower($variant) === 'on');
+    }
+
     private function verifyTlsCertWhitelisted($request, $route)
     {
         if (in_array($route, Route::$tlsRoutes) === false)
@@ -408,5 +469,46 @@ class Authenticate
         );
 
         throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+    }
+
+    /**
+     * if the auth should be done by Edge Passport only, then authenticate the request.
+     *
+     *
+     * @return array [bool $executedSuccessfully, mixed $error]
+     */
+    private function authenticateUsingPassport(): array
+    {
+        if ($this->resolveOAuthLocally() === true)
+        {
+            try
+            {
+                $passportOauth = new \RZP\Http\Edge\PassportAuth\OAuth();
+
+                $ret = $passportOauth->authenticate(AuthType::PRIVATE_AUTH);
+            }
+            catch (\Throwable $exception)
+            {
+                $dimensions = [
+                    'key_id' => $this->ba->getPublicKey()
+                ];
+                $log        = [
+                    'request_id'    => $this->app['request']->getId(),
+                    'error'         => $exception->getMessage(),
+                    'code'          => $exception->getCode(),
+                    'passport'      => $dimensions,
+                    'edge_trace_id' => $this->requestContext->edgeTraceId,
+
+                ];
+                $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_FAILED, $log);
+
+                return [false, null];
+            }
+            $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_SUCCEEDED,
+                                      ['request_id'    => $this->app['request']->getId()]);
+            // returns true only if oauth can be resolved locally and has executed successfully.
+            return [true, $ret];
+        }
+        return [false, null];
     }
 }

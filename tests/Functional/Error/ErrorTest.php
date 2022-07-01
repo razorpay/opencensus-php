@@ -64,7 +64,7 @@ class ErrorTest extends TestCase
             "BAD_REQUEST_BATCH_TYPE_PERMISSION_MISSING",
             "BAD_REQUEST_BATCH_FILE_INVALID_ACCOUNT_NO",
             "BAD_REQUEST_FETCH_LOGO_FROM_URL_FAILED",
-            "BAD_REQUEST_NO_MATCHING_ENTITY",
+            "BAD_REQUEST_NO_MATCHING_ENTITY", "BAD_REQUEST_OAUTH_ROLE_NOT_FOUND"
         ];
 
         $errorCodeBatches = array();
