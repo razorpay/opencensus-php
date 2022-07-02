@@ -6,6 +6,7 @@ use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Preferences;
 
 class PaymentLinkServiceBase extends Mailable
 {
@@ -68,6 +69,12 @@ class PaymentLinkServiceBase extends Mailable
     protected function addHtmlView()
     {
         $this->view($this->data['view']);
+        $merchantId = $this->data['merchant']['id'];
+        switch ($merchantId) {
+            case Preferences::MID_BAGIC_2:
+                $this->view('emails.invoice.customer.custom.bagic_email');
+                break;
+        }
 
         return $this;
     }
