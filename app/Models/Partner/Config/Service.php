@@ -8,13 +8,15 @@ use RZP\Exception\BaseException;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Models\Partner\Metric;
+use RZP\Models\Feature as Feature;
 use RZP\Models\Merchant\Account;
 
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Config\Validator;
-use RZP\Models\Partner\Metric;
-use RZP\Trace\TraceCode;
+use RZP\Models\Partner\Config\Constants as ConfigConstants;
 
 class Service extends Base\Service
 {

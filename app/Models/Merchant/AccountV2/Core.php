@@ -459,4 +459,11 @@ class Core extends Merchant\Core
 
         return false;
     }
+
+    public function isSubmNoDocOnboardingEnabledForMid(string $merchantId): bool
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        return ($merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true);
+    }
 }

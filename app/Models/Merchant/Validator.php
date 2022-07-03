@@ -15,6 +15,7 @@ use RZP\Models\Bank\BankCodes;
 use RZP\Models\Order\Status;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\User;
 use FuzzyWuzzy\Fuzz;
 use RZP\Models\Feature;
@@ -2036,6 +2037,7 @@ class Validator extends Base\Validator
             );
         }
     }
+
     /**
      * @param Entity $merchant
      *

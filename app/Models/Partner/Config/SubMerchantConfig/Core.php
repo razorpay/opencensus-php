@@ -13,7 +13,6 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Partner\Config\Constants;
 use RZP\Models\Workflow\Action\Differ;
 
-
 class Core extends Base\Core
 {
     public function fetchPartnerSubMerchantConfig(Merchant\Entity $partner,string $attributeName)
@@ -26,7 +25,7 @@ class Core extends Base\Core
         }
         $subMerchantConfig = $partnerConfig->getSubMerchantConfig();
 
-        if(empty($subMerchantConfig) == true)
+        if(empty($subMerchantConfig) == true or empty($subMerchantConfig[$attributeName]) == true)
         {
             return null;
         }
@@ -135,7 +134,7 @@ class Core extends Base\Core
                 'old_config' => $subMerchantConfig,
                 'new_config' => $newSubMerchantConfig,
             ]);
-        
+
         $dimensionsForPartnersSubmerchantConfig =  [
             Constants::ATTRIBUTE_NAME   => $attributeName
         ];
@@ -174,7 +173,7 @@ class Core extends Base\Core
             $config[$key] = $value;
         }
 
-        if(empty($subMerchantConfig) === true or empty($subMerchantConfig[$attributeName]) === true )
+        if(empty($subMerchantConfig) === true or empty($subMerchantConfig[$attributeName]) === true)
         {
             $subMerchantConfig[$attributeName] = [$config];
         }

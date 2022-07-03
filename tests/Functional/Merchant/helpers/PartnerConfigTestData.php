@@ -823,6 +823,50 @@ return [
         ],
     ],
 
+    'testCreatePartnersSubMerchantConfigGmvLimitForNoDoc' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'gmv_limit',
+                'parameters'     => ['set_for' => 'no_doc_submerchants'],
+                'value'=> 5100000,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity_id'   => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            ],
+        ],
+    ],
+
+    'testSetGmvLimitForNonNoDocPartnerNegative' => [
+        'request'  => [
+            'url'     => '/partner_configs/submerchant/config',
+            'method'  => 'POST',
+            'content' => [
+                'partner_id'     => '100nonplatform',
+                'attribute_name' => 'gmv_limit',
+                'parameters'     => ['set_for' => 'no_doc_submerchants'],
+                'value'=> 2000011,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SUBM_NO_DOC_ONBOARDING_NOT_ENABLED_FOR_PARTNER,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBM_NO_DOC_ONBOARDING_NOT_ENABLED_FOR_PARTNER,
+        ],
+    ],
+
     'testCreatePartnersSubMerchantConfigWithConfigInDB' => [
         'request'  => [
             'url'     => '/partner_configs/submerchant/config',

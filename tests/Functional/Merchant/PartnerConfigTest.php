@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Http\OAuth;
 use RZP\Models\Merchant;
+use RZP\Models\Feature as Feature;
 use RZP\Models\Partner\Config\Entity;
 use RZP\Tests\Functional\Partner\Constants;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -695,6 +697,180 @@ class PartnerConfigTest extends OAuthTestCase
         $this->assertNotNull($partnerConfig['sub_merchant_config']);
 
         $this->assertEquals('{"max_payment_amount":[{"value":"2000011","business_type":"individual"}]}' , $partnerConfig['sub_merchant_config'] );
+    }
+
+    public function testCreatePartnersSubMerchantConfigGmvLimitForNoDoc()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Feature\Core())->create($featureParams, true);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+        $this->startTest();
+
+        $partnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertNotNull($partnerConfig['sub_merchant_config']);
+
+        $this->assertEquals('{"gmv_limit":[{"value":"5100000","set_for":"no_doc_submerchants"}]}' , $partnerConfig['sub_merchant_config'] );
+    }
+
+    public function testDeletePartnersSubMerchantConfigGmvLimitForNoDoc()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Feature\Core())->create($featureParams, true);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'sub_merchant_config' => json_decode('{"gmv_limit":[{"value":4000000,"set_for":"no_doc_submerchants"}]}'),
+        ]);
+
+        $testData = $this->testData['testCreatePartnersSubMerchantConfigGmvLimitForNoDoc'];
+
+        $testData['request']['method'] = 'PUT';
+
+        $this->startTest($testData);
+
+        $partnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertNotNull($partnerConfig['sub_merchant_config']);
+
+        $this->assertEquals('{"gmv_limit":[]}' , $partnerConfig['sub_merchant_config']);
+    }
+
+    public function testSetGmvLimitForNonNoDocPartnerNegative()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'sub_merchant_config' => json_decode('{"gmv_limit":[{"value":4000000,"set_for":"no_doc_submerchants"}]}'),
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testInvalidCreatePartnersSubMerchantConfigGmvLimitForNoDoc()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Feature\Core())->create($featureParams, true);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+        ]);
+
+        $testData = $this->testData['testCreatePartnersSubMerchantConfigInvalidParameters'];
+
+        $testData['request']['content']['attribute_name'] = 'gmv_limit';
+        $testData['request']['content']['parameters'] = ['set_for' => 'invalid_value'];
+
+        $this->startTest($testData);
+    }
+
+    public function testMultiplePartnersSubMerchantConfigs()
+    {
+        $this->allowAdminToAccessMerchant(Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Feature\Core())->create($featureParams, true);
+
+        $this->ba->adminAuth();
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => Constants::DEFAULT_NON_PLATFORM_APP_ID,
+            'entity_type' => 'application',
+            'default_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            'sub_merchant_config' => json_decode('{"max_payment_amount":[{"value":"2000011","business_type":"not_yet_registered"}]}'),
+        ]);
+
+        $testData = $this->testData['testCreatePartnersSubMerchantConfigGmvLimitForNoDoc'];
+
+        $this->startTest($testData);
+
+        $partnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertNotNull($partnerConfig['sub_merchant_config']);
+
+        $this->assertEquals('{"max_payment_amount":[{"value":"2000011","business_type":"not_yet_registered"}],"gmv_limit":[{"value":"5100000","set_for":"no_doc_submerchants"}]}' , $partnerConfig['sub_merchant_config'] );
     }
 
     public function testCreatePartnersSubMerchantConfigWithConfigInDB()
