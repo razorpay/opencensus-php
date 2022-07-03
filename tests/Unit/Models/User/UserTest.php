@@ -3100,7 +3100,7 @@ class UserTest extends TestCase
         $this->hubspotMock->shouldReceive('trackConfirmEmailEvent')->andReturn([]);
 
         // RepositoryManager Mocking
-        $this->repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app]);
+        $this->repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
 
         $this->repoMock->shouldReceive('transactionOnLiveAndTest')->andReturn([]);
 

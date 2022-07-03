@@ -6,6 +6,7 @@ use phpDocumentor\Reflection\Types\Boolean;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\User;
+use RZP\Models\Roles;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
@@ -87,7 +88,14 @@ class Validator extends Base\Validator
         }
         else if ($product === Product::BANKING)
         {
-            $dashboardRoles = array_values(array_diff(User\BankingRole::getAllRoles(), [User\Role::OWNER]));
+            if ($role === User\BankingRole::OWNER)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_ROLE_INVALID);
+            }
+
+            $roleEntity = (new Roles\Repository())->fetchRole($role);
+
+            $dashboardRoles = ( empty($roleEntity) === false) ? [ $role ] : [];
         }
         else
         {

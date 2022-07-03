@@ -661,6 +661,30 @@ return [
         ]
     ],
 
+    'testGetPendingInvitationsForBanking' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role'        => 'owner',
+                    'email'       => 'pending1@razorpay.com',
+                    'merchant_id' => '10000000000000',
+                ],
+                [
+                    'role'        => 'finance',
+                    'email'       => 'pending2@razorpay.com',
+                    'merchant_id' => '1000InviteMerc',
+                ],
+            ],
+        ]
+    ],
+
     'testGetPendingInvitationsWhichAreNotDraft' => [
         'request' => [
             'url'    => '/invitations',

@@ -4413,6 +4413,13 @@ class Core extends Base\Core
             // Push pivot's role to one of the keys in response basis product type.
             $key = $merchant[Entity::PRODUCT] === Product::BANKING ? Entity::BANKING_ROLE : Entity::ROLE;
             $merchantsUnique[$id][$key] = $role;
+
+            if($merchant[Entity::PRODUCT] === Product::BANKING)
+            {
+                $merchantsUnique[$id][Entity::BANKING_ROLE_NAME] =
+                    $this->repo->roles->fetchRoleName($merchantsUnique[$id][$key]);
+            }
+
         });
 
         return array_values($merchantsUnique);

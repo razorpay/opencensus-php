@@ -7,6 +7,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Table;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
@@ -675,6 +676,39 @@ class InvitationTest extends TestCase
         $this->assertEquals(count($response), 2);
     }
 
+    public function testGetPendingInvitationsForBanking()
+    {
+        $this->merchantUser = $this->fixtures->user->createEntityInTestAndLive('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'user_id'     => $this->merchantUser['id'],
+            'role'        => 'finance_l1',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID, $this->merchantUser->getId());
+
+        $this->fixtures->create('invitation',
+            [
+                'email'   => 'pending1@razorpay.com',
+                'role'    => 'owner',
+                'product' => 'banking']);
+
+        $this->fixtures->create('invitation',
+            [
+                'email'       => 'pending2@razorpay.com',
+                'role'        => 'finance_l1',
+                'product'     => 'banking'
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals(count($response), 2);
+    }
+
     public function testGetPendingInvitationsWhichAreNotDraft()
     {
         $this->fixtures->create('invitation',
@@ -923,6 +957,8 @@ class InvitationTest extends TestCase
 
     public function testDraftInvitationsSendMail()
     {
+        $this->createStandardRole('authorised_signatory');
+
         $invitation = $this->fixtures->create('invitation', ['email' => 'testteaminvite@razorpay.com']);
 
         $xMerchantUser = $this->createXMerchantUser();
@@ -930,6 +966,38 @@ class InvitationTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function createStandardRole(string $role = 'owner_test', string $mid = self::DEFAULT_X_MERCHANT_ID)
+    {
+
+        DB::connection('live')->table('access_control_roles')
+            ->insert([
+                'id'          => $role,
+                'name'        => $role,
+                'description' => 'Standard role - '. $role,
+                'merchant_id' => self::DEFAULT_X_MERCHANT_ID,
+                'type'        => 'standard',
+                'created_by'  => 'test@rzp.com',
+                'updated_by'  => 'test@rzp.com',
+                'created_at'  => Carbon::now(Timezone::IST)->timestamp,
+                'updated_at'  => Carbon::now(Timezone::IST)->timestamp,
+                'org_id'      => '100000razorpay'
+            ]);
+
+        DB::connection('test')->table('access_control_roles')
+            ->insert([
+                'id'          => $role,
+                'name'        => $role,
+                'description' => 'Standard role - '.$role,
+                'merchant_id' => self::DEFAULT_X_MERCHANT_ID,
+                'type'        => 'standard',
+                'created_by'  => 'test@rzp.com',
+                'updated_by'  => 'test@rzp.com',
+                'created_at'  => Carbon::now(Timezone::IST)->timestamp,
+                'updated_at'  => Carbon::now(Timezone::IST)->timestamp,
+                'org_id'      => '100000razorpay'
+            ]);
     }
 
     public function testEmailDraftInvitations()

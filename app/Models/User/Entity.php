@@ -1,7 +1,7 @@
 <?php
 
 namespace RZP\Models\User;
-
+use App;
 use Hash;
 use RZP\Models\Base;
 use RZP\Models\Admin;
@@ -69,7 +69,9 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID                   = 'merchant_id';
     const MERCHANTS                     = 'merchants';
     const ROLE                          = 'role';
+    const ROLE_NAME                     = 'role_name';
     const BANKING_ROLE                  = 'banking_role';
+    const BANKING_ROLE_NAME             = 'banking_role_name';
     const PIVOT                         = 'pivot';
     const OWNER                         = 'owner';
     const CONFIRMED                     = 'confirmed';
@@ -548,7 +550,11 @@ class Entity extends Base\PublicEntity
     {
         $attributes = $this->toArrayPublic();
 
+        $app = App::getFacadeRoot();
+
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
+
+        $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($attributes[self::ROLE]);
 
         return $attributes;
     }

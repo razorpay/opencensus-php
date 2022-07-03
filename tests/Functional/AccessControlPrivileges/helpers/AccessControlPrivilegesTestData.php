@@ -4,7 +4,7 @@ return [
     'testFetchAllPrivileges' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/access/privileges',
+            'url'     => '/cac/privileges',
             'server' => [
                 'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
             ],

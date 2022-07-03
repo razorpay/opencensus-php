@@ -96,6 +96,8 @@ class Fixtures
 
         $this->seedP2pFixture();
 
+        $this->seedCacDataFixture();
+
         $this->create('gateway_rule:hitachi');
     }
 
@@ -287,5 +289,17 @@ class Fixtures
     protected function seedP2pFixture()
     {
         \Artisan::call('db:seed', ['--class' => 'P2pSeeder']);
+    }
+
+    protected function seedCacDataFixture()
+    {
+        \Artisan::call('db:seed', array_filter([
+            '--database' => 'live',
+            '--class' => 'CACStaticDataSeeder',
+        ]));
+        \Artisan::call('db:seed', array_filter([
+            '--database' => 'test',
+            '--class' => 'CACStaticDataSeeder',
+        ]));
     }
 }

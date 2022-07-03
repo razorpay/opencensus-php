@@ -110,5 +110,16 @@ class Repository extends Base\Repository
     }
 
 
+    public function fetchRoleName($roleId)
+    {
+        $roleEntity =  $this->fetchRole($roleId);
+
+        if(empty($roleEntity) === true)
+        {
+            return null;
+        }
+        return $roleEntity->getName();
+    }
 }
+
 

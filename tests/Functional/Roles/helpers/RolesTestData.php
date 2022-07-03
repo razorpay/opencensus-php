@@ -51,22 +51,12 @@ return [
                         0 =>
                             array (
                                 'id' => 'admin',
-                                'merchant_id' => '100000merchant',
-                                'name' => 'admin',
-                                'description' => 'Standard role - admin',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Admin',
+                                'description' => 'Perform all tasks except for team management',
                                 'type' => 'standard',
                                 'members' => 0,
                                 'copy_disable' => true,
-                            ),
-                        1 =>
-                            array (
-                                'id' => 'finance_l1',
-                                'merchant_id' => '100000merchant',
-                                'name' => 'finance_l1',
-                                'description' => 'Standard role - finance_l1',
-                                'type' => 'standard',
-                                'members' => 0,
-                                'copy_disable' => false,
                             ),
                     ),
             ),

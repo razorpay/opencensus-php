@@ -9,6 +9,7 @@ use RZP\Base;
 use Lib\PhoneBook;
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Models\Roles;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -532,8 +533,10 @@ class Validator extends Base\Validator
 
     protected function validateRole(string $attribute, string $role)
     {
+        $bankingRole = (new Roles\Repository())->fetchRole($role);
+
         if ((Role::exists($role) === false) and
-            (BankingRole::exists($role) === false))
+            (empty($bankingRole) === true))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,

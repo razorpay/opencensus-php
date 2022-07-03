@@ -2,11 +2,12 @@
 
 namespace RZP\Models\User;
 
+use RZP\Models\Roles;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use RZP\Exception\LogicException;
-use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 
 class Role
@@ -133,8 +134,14 @@ class Role
                 break;
 
             case Product::BANKING:
-                $productRoles = array_merge(BankingRole::getAllRoles(), BankingRole::getVendorPortalRoles());
-                break;
+
+                $roleEntity = (new Roles\Repository())->fetchRole($role);
+
+                if(empty($roleEntity))
+                {
+                    return false;
+                }
+                return true;
 
             default:
                 throw new LogicException('Logic not defined for product: ' . $product);

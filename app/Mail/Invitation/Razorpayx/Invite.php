@@ -99,17 +99,26 @@ class Invite extends Mailable
 
         $inviteLink = sprintf(self::INVITE_LINK_FORMAT, $bankingUrl, $invitation->getToken());
 
+        $roleName = $this->getRoleName($invitation);
+
         $this->with(
             [
                 'business_name' => $this->getBusinessName(),
                 'sender_name'   => $this->senderName,
-                'role'          => $this->getLabel($invitation->getRole() != null ? $invitation->getRole() : ''),
+                'role'          => $this->getLabel($roleName != null ? $roleName : ''),
                 'invite_link'   => $inviteLink,
                 'support_url'   => self::SUPPORT_URL,
             ]
         );
 
         return $this;
+    }
+
+    private function getRoleName($invitation)
+    {
+        $app = App::getFacadeRoot();
+
+        return $app['repo']->roles->fetchRoleName($invitation->getRole()) ?? $invitation->getRole();
     }
 
     protected function getBusinessName()

@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Invitation;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Models\Merchant;
+use RZP\Constants\Product;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
@@ -16,6 +17,7 @@ class Entity extends Base\PublicEntity
     const EMAIL        = 'email';
     const TOKEN        = 'token';
     const ROLE         = 'role';
+    const ROLE_NAME    = 'role_name';
     const DELETED_AT   = 'deleted_at';
     const PRODUCT      = 'product';
 
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::PRODUCT,
         self::MERCHANT_ID,
         self::IS_DRAFT,
+        self::ROLE_NAME
     ];
 
     protected $fillable = [
@@ -55,6 +58,10 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::EMAIL,
+    ];
+
+    protected $publicSetters    = [
+        self::ROLE_NAME
     ];
 
     // --------------------- Modifiers ---------------------------------------------
@@ -124,8 +131,22 @@ class Entity extends Base\PublicEntity
         $input[self::IS_DRAFT] = $state ;
     }
 
+    public function setPublicRoleNameAttribute(array & $attributes)
+    {
+        if($this->getAttribute(self::PRODUCT) ===  Product::BANKING)
+        {
+            $app = App::getFacadeRoot();
+
+            $roleName = $app['repo']->roles->fetchRoleName($this->getAttribute(self::ROLE));
+
+            $attributes[self::ROLE_NAME] = $roleName;
+        }
+    }
+
     public function toArrayUser()
     {
+        $app = App::getFacadeRoot();
+
         $attributes = [
             self::ID            => $this->getAttribute(self::ID),
             self::EMAIL         => $this->getAttribute(self::EMAIL),
@@ -136,6 +157,11 @@ class Entity extends Base\PublicEntity
             self::IS_DRAFT      => $this->getAttribute(self::IS_DRAFT),
             self::MERCHANT_NAME => $this->merchant->getName(),
         ];
+
+        if($this->getAttribute(self::PRODUCT) ===  Product::BANKING)
+        {
+            $attributes[self::ROLE_NAME] = $app['repo']->roles->fetchRoleName($this->getAttribute(self::ROLE));
+        }
 
         return $attributes;
     }
