@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Services\PGRouter;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use RZP\Constants\Entity as E;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Config;
 use RZP\Jobs\SyncOrderPgRouter;
@@ -803,7 +804,7 @@ class Core extends Base\Core
             $data['late_auth_config_id'] = $lateAuthConfigId;
         }
 
-        $bankAccount = $this->createBankAccountForTpv($input);
+        $bankAccount = $this->createBankAccountForTpv($input, $order);
 
         if (empty($bankAccount) === false)
         {
@@ -841,7 +842,7 @@ class Core extends Base\Core
         return $data;
     }
 
-    private function createBankAccountForTpv($input)
+    private function createBankAccountForTpv($input, $order)
     {
         if (isset($input[Entity::BANK_ACCOUNT]) === false)
         {
@@ -851,6 +852,10 @@ class Core extends Base\Core
         $ba = new BankAccount\Entity;
 
         $ba->merchant()->associate($this->merchant);
+
+        $ba->setAttribute(BankAccount\Entity::ENTITY_ID, $order->getId());
+
+        $ba->setAttribute(BankAccount\Entity::TYPE, E::ORDER);
 
         $ba = $ba->build($input[Entity::BANK_ACCOUNT], 'addTpvBankAccount');
 

@@ -1853,4 +1853,57 @@ class CaptureTest extends TestCase
         $this->assertEquals('failed', $payment['status']);
         $this->assertEquals($internalErrorCode, $payment['internal_error_code']);
     }
+
+    public function testAutoRefundCaptureOnLateAuthorizedPaymentWithAutoRefund()
+    {
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_refund_delay'      => '2 days',
+                'auto_capture_late_auth' => true,
+            ]);
+
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id'              => '100000000order',
+                'payment_capture' => true,
+            ]);
+
+        $payment2 = $this->fixtures->create('payment:failed', [
+            'email'         => 'a@b.com',
+            'amount'        => 1000000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => 'payumoney',
+            'gateway'       => 'wallet_payumoney',
+            'card_id'       => null,
+            'order_id'      => '100000000order'
+        ]);
+
+        $payment1 = $this->getDefaultPaymentArray();
+
+        $payment1['amount'] = 1000000;
+
+        $payment1['order_id'] = 'order_100000000order';
+
+        $payment1 = $this->doAuthPayment($payment1);
+
+        $payment1 = $this->getDbLastEntity('payment');
+
+        $payment2 = $this->authorizeFailedPayment($payment2->getPublicId());
+
+        $order   = $this->getLastEntity('order', true);
+
+        $now = Carbon::now()->getTimestamp();
+
+        $this->assertEquals('captured', $payment1->getStatus());
+
+        $this->assertEquals('authorized', $payment2['status']);
+
+        $this->assertLessThanOrEqual( $now, $payment2['refund_at']);
+
+        $this->assertEquals('paid', $order['status']);
+    }
+
 }

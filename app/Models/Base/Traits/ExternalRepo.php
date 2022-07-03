@@ -4,6 +4,7 @@ namespace RZP\Models\Base\Traits;
 
 use App;
 use RZP\Exception;
+use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
@@ -45,6 +46,10 @@ trait ExternalRepo
         try
         {
             $entity = parent::findByPublicIdAndMerchant($id, $merchant, $params);
+
+            $class = Entity::getExternalRepoSingleton($this->entity);
+
+            $this->handleOrderExpands($params,$this->entity, $entity, $id, $class, $merchant->getId());
 
             return $entity;
         }
@@ -239,6 +244,8 @@ trait ExternalRepo
     {
         if (($entityType === Entity::ORDER) and (array_key_exists("expands",$expands) === true))
         {
+            $id = Order\Entity::verifyIdAndSilentlyStripSign($id);
+            
             //relations --> payments,payments.card
             if (in_array("payments.card",  $expands['expands']) === true)
             {

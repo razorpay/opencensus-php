@@ -41,7 +41,7 @@ class SelfServeCreditsTest extends TestCase
 
         $bankAccount = $this->getDbLastEntity('bank_account');
 
-        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ORBC0101685']);
+        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ORBC0101685', 'beneficiary_name' => 'testBankAccount']);
 
         $this->ba->proxyAuth();
 
@@ -59,7 +59,7 @@ class SelfServeCreditsTest extends TestCase
 
         $bankAccount = $this->getDbLastEntity('bank_account');
 
-        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ORBC0101685']);
+        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ORBC0101685', 'beneficiary_name' => 'testBankAccount']);
 
         $this->ba->proxyAuth();
 
@@ -77,7 +77,7 @@ class SelfServeCreditsTest extends TestCase
 
         $bankAccount = $this->getDbLastEntity('bank_account');
 
-        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ORBC0101685']);
+        $this->fixtures->edit('bank_account', $bankAccount->getId(), ['ifsc' => 'ORBC0101685', 'beneficiary_name' => 'testBankAccount']);
 
         $this->ba->proxyAuth();
 

@@ -434,6 +434,10 @@ class PGRouter
 
     public function fetchOrder(string $id, string $merchantId, array $input)
     {
+        if ($this->mode === Mode::TEST)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
         $endpoint = 'v1/orders/' . $id;
 
         if (empty($merchantId) === false)
