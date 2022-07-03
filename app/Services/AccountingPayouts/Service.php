@@ -54,6 +54,7 @@ class Service
     const SYNC_CHART_OF_ACCOUNTS      = 'SyncChartOfAccounts';
     const ADD_OR_UPDATE_SETTINGS      = 'AddOrUpdateSettings';
     const GET_ALL_SETTINGS            = 'GetAllSettings';
+    const GET_BANK_STATEMENT_REPORT   = 'BankStatementReport';
     const ZOHO_STATEMENT_SYNC         = 'TriggerZohoBankStatementSync';
     const GET_TALLY_BANK_TRANSACTIONS = 'FetchBankTransactionsTally';
     const ACK_TALLY_BANK_TRANSACTIONS = 'AckBankTransactionsTally';
@@ -92,6 +93,16 @@ class Service
 
         $this->repo = $app['repo'];
     }
+
+    public function getBankStatementReport(MerchantEntity $merchant = null, array $input = [])
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_BANK_STATEMENT_REPORT);
+
+        $app = array_pull($input, 'app', '');
+
+        return $this->makeRequest($merchant, $url, $input, $app, [], 'POST', MODE::LIVE);
+    }
+
 
     public function acknowledgeCashFlowEntries(MerchantEntity $merchant, array $input)
     {

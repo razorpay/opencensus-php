@@ -219,6 +219,16 @@ return [
         ]
     ],
 
+    'testGetBankStatementReportMethod' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/accounting-integration/bank-statement/report',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
     'testCreateTallyVendorsServiceMethod' => [
         'request' => [
             'method' => 'POST',

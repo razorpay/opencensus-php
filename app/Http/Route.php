@@ -1706,6 +1706,7 @@ class Route
         'accounting_integration_tally_create_contact'           => ['post',     'accounting-integration/tally/vendors',                     'AccountingPayoutsController@createTallyVendors'        ],
         'accounting_integration_tally_sync_status'              => ['get',      'accounting-integration/tally/vendors/sync-status',         'AccountingPayoutsController@fetchSyncStatus'           ],
         'accounting_integration_tally_tax_slab_rates'           => ['get',      'accounting-integration/tally/tax-slabs',                   'AccountingPayoutsController@getTaxSlabs'               ],
+        'accounting_integration_get_bank_statement_report'      => ['get',     'accounting-integration/bank-statement/report',             'AccountingPayoutsController@getBankStatementReport'    ],
 
         'accounting_integration_tally_banking_accounts'                  => ['get',      'accounting-integration/tally/banking-accounts',                       'AccountingPayoutsController@getMerchantBankingAccountsForTally'   ],
         'accounting_integration_update_rx_tally_ledger_mapping'          => ['post',     'accounting-integration/tally/banking-accounts/mapping',               'AccountingPayoutsController@updateRxTallyLedgerMapping'           ],
@@ -1714,6 +1715,7 @@ class Route
 
         'accounting_integration_add_or_update_settings'   => ['post',     'accounting-integration/settings',                          'AccountingPayoutsController@addOrUpdateSettings'       ],
         'accounting_integration_get_all_settings'         => ['get',      'accounting-integration/settings',                          'AccountingPayoutsController@getAllSettings'            ],
+
 
         'accounting_integration_get_chart_of_accounts'          => ['get',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@getChartOfAccounts'        ],
         'accounting_integration_put_chart_of_accounts'          => ['put',      'accounting-integration/chart-of-accounts/{app}',           'AccountingPayoutsController@putChartOfAccounts'        ],
@@ -5606,6 +5608,7 @@ class Route
         'accounting_payouts_app_credentials',
         'accounting_payouts_delete_integration',
         'accounting_payouts_sync_status',
+        'accounting_integration_get_bank_statement_report',
         'accounting_payouts_sync',
         'accounting_payouts_waitlist',
 
@@ -8242,6 +8245,7 @@ class Route
         'accounting_integration_get_all_settings'         => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_add_or_update_settings'   => Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_tally_delete_integration' => Permission::DELETE_ACCOUNTING_INTEGRATION,
+        'accounting_integration_get_bank_statement_report' => Permission::VIEW_ACCOUNTING_INTEGRATION,
 
         'merchant_primary_balance_fetch'               => '*',
         'ufh_upload_file'                              => '*',
@@ -9027,6 +9031,7 @@ class Route
             'accounting_integration_tally_tax_slab_rates',
             'accounting_integration_tally_banking_accounts',
             'accounting_integration_update_rx_tally_ledger_mapping',
+            'accounting_integration_get_bank_statement_report',
             'activate_live_offline_device',
             'activate_test_offline_device',
             'add_additional_website_self_serve',
@@ -10200,6 +10205,7 @@ class Route
             'accounting_integration_get_chart_of_accounts',
             'accounting_integration_put_chart_of_accounts',
             'accounting_integration_sync_chart_of_accounts',
+            'accounting_integration_get_bank_statement_report',
             'action_checker_create',
             'action_comment_create',
             'action_diff_get',
@@ -13866,6 +13872,7 @@ class Route
         'accounting_integration_tally_tax_slab_rates',
         'accounting_integration_tally_banking_accounts',
         'accounting_integration_update_rx_tally_ledger_mapping',
+        'accounting_integration_get_bank_statement_report',
 
         'contact_get',
         'contact_list',

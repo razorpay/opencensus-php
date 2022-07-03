@@ -331,6 +331,21 @@ class AccountingPayoutsTest extends TestCase
         $apMock->shouldHaveReceived('addOrUpdateSettings');
     }
 
+    public function testGetBankStatementReportMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getBankStatementReport')->andReturn([]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getBankStatementReport');
+    }
+
     public function testCreateTallyVendorsServiceMethod()
     {
         $this->ba->privateAuth();

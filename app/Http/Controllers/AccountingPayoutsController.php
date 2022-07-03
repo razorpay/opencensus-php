@@ -14,6 +14,11 @@ class AccountingPayoutsController extends Controller
         $this->service = $this->app['accounting-payouts'];
     }
 
+    public function getBankStatementReport()
+    {
+        return $this->service->getBankStatementReport($this->ba->getMerchant(), $this->input);
+    }
+
     public function addOrUpdateSettings()
     {
         return $this->service->addOrUpdateSettings($this->ba->getMerchant(), $this->input);
