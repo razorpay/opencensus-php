@@ -7,6 +7,10 @@
     username = "rzp_test_10000000000000"
     password = "RANDOM_DASH_PASSWORD"
 
+[Payments]
+    username = "rzp_test_1DP5mmOlF5G5ag"
+    password = "thisissupersecret"
+
 [SubMerchant]
     user = "7HQnhEQDgBIdlv"
     role = "owner"

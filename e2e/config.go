@@ -11,6 +11,7 @@ type Configuration struct {
 	ApiDb                 db.Config
 	VirtualAccount        VirtualAccountConfig
 	OnboardingAPIsPartner OnboardingAPIsPartnerConfig
+	Payments              PaymentCreateConfig
 }
 
 type AppConfig struct {
@@ -21,6 +22,11 @@ type PaymentPageConfig struct {
 	// user for creating PP
 	User     string
 	Role     string
+	Username string
+	Password string
+}
+
+type PaymentCreateConfig struct {
 	Username string
 	Password string
 }
