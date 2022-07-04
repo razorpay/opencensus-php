@@ -317,6 +317,22 @@ class UserRolesScope
             'payment_handle_suggestion'                => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
             'payment_handle_amount_encryption'         => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
 
+            // payment button
+
+            'payment_button_create'                    => Role::WRITER_ROLES,
+            'payment_button_list'                      => Role::WRITER_ROLES,
+            'payment_button_get_details'               => Role::WRITER_ROLES,
+            'payment_button_update'                    => Role::WRITER_ROLES,
+            'payment_button_item_update'               => Role::WRITER_ROLES,
+            'payment_button_activate'                  => Role::WRITER_ROLES,
+            'payment_button_deactivate'                => Role::WRITER_ROLES,
+            'payment_button_send_receipt'              => Role::WRITER_ROLES,
+            'payment_button_set_receipt_details'       => Role::WRITER_ROLES,
+            'payment_button_get_invoice_details'       => Role::WRITER_ROLES,
+            'payment_button_set_merchant_details'      => Role::WRITER_ROLES,
+            'payment_button_fetch_merchant_details'    => Role::WRITER_ROLES,
+            'payment_button_save_receipt_for_payment'  => Role::WRITER_ROLES,
+
             'patch_dispute_contest_by_id'              => Role::READER_ROLES,
             'post_dispute_accept_by_id'                => Role::READER_ROLES,
 
