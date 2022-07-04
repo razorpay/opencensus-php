@@ -1274,7 +1274,7 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
-    public function buildTokenisedTokenForMandateHQ($tokenNumber=null) : array
+    public function buildTokenisedTokenForMandateHub($tokenNumber=null) : array
     {
         if ($tokenNumber !== null){
 

@@ -2,6 +2,9 @@
 
 namespace RZP\Models\CardMandate\MandateHubs\BillDeskSIHub;
 
+use Exception;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use Carbon\Carbon;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Card;
@@ -13,7 +16,6 @@ use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
-use RZP\Trace\TraceCode;
 
 class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 {
@@ -47,7 +49,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         // TODO add appropriate checks
         $cardMandate->setStatus(CardMandate\Status::MANDATE_APPROVED);
 
-        return $this->getMandateFromSIHubResponse($response['data'],$billDeskInput['card']);
+        if(array_key_exists(Constants::CARD, $billDeskInput)) {
+            return $this->getMandateFromSIHubResponse($response['data'], $billDeskInput['card']);
+        }
+
+        return $this->getMandateFromSIHubResponse($response['data']);
     }
 
     /**
@@ -178,7 +184,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             $endTime = $card->getExpiryTimestamp();
         }
 
-        return [
+        $inputResponse = [
             Constants::PAYMENT          => $payment->toArray(),
             Constants::TERMINAL         => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY          => MandateHubs::BILLDESK_SIHUB,
@@ -188,6 +194,8 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::CARD_MANDATE     => $cardMandate->toArray(),
             Constants::END_TIME         => $endTime,
         ];
+
+        return $this->getTokenDetails($payment, $inputResponse);
     }
 
     /**
@@ -200,7 +208,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     protected function getReportInitialPaymentInput(Payment\Entity $payment,
                                                     CardMandate\Entity $cardMandate, array $authenticationData, array $authorizationData): array
     {
-        return [
+        $inputResponse = [
             Constants::PAYMENT              => $payment->toArray(),
             Constants::GATEWAY              => MandateHubs::BILLDESK_SIHUB,
             Constants::CARD                 => $payment->card->toArray(),
@@ -211,6 +219,25 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::AUTHORIZATION        => $authorizationData,
             Constants::CARD_MANDATE         => $cardMandate->toArray(),
         ];
+
+        $token = $payment->localToken;
+
+        try {
+            $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
+            $networkToken = $tokenInput['token'];
+            $inputResponse[Constants::TOKEN] = $networkToken;
+
+            return $inputResponse;
+
+        } catch (Exception $e){
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+        }
+
+        return $inputResponse;
     }
 
     /**
@@ -244,7 +271,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
 
-        return [
+        $inputResponse = [
             Constants::PAYMENT      => $payment->toArray(),
             Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
@@ -254,6 +281,36 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::MERCHANT     => $payment->merchant->toArray(),
             Constants::CARD_MANDATE => $cardMandate->toArray(),
         ];
+
+        return $this->getTokenDetails($payment, $inputResponse);
+
+    }
+
+    protected function getTokenDetails(Payment\Entity $payment, array $inputResponse) {
+
+        $token = $payment->localToken;
+
+        if ($token->card->isRzpSavedCard() == false)
+        {
+            try {
+                $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
+                $networkToken = $tokenInput['token'];
+                $tokenData = array_merge($inputResponse[Constants::TOKEN], $networkToken);
+                $inputResponse[Constants::TOKEN] = $tokenData;
+                unset($inputResponse[Constants::CARD]);
+
+                return $inputResponse;
+
+            } catch (Exception $e){
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+            }
+        }
+
+        return $inputResponse;
     }
 
     /**

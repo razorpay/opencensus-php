@@ -295,7 +295,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         if ($token->card->isRzpSavedCard() === false)
         {
             try {
-                $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
+                $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
                 $networkToken = $tokenInput['token'];
                 $inputResponse[Constants::TOKEN] = $networkToken;
 
@@ -387,9 +387,9 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             try {
                 if ($isTokenPan === true){
                     // In case of token requester merchant
-                    $tokenInput = $token->card->buildTokenisedTokenForMandateHQ($this->getCardNumber($token->card,$payment->getGateway()));
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHub($this->getCardNumber($token->card,$payment->getGateway()));
                 } else {
-                    $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
                 }
                 $networkToken = $tokenInput['token'];
                 $inputResponse[Constants::TOKEN] = $networkToken;
