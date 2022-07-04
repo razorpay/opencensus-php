@@ -22,8 +22,10 @@ use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Models\QrCode\Constants;
+use Illuminate\Http\UploadedFile;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\FileStore\Type as FileType;
 use RZP\Mail\Invoice\PaymentLinkServiceBase;
 use RZP\Models\QrCode\Generator as QrCodeGenerator;
 
@@ -615,7 +617,7 @@ class Service extends Base\Service
         return $results;
     }
 
-    public function generateQrCodeImageFromIntentUrl($input)
+    public function getSignedUrlForQrCodeImage($input)
     {
         $renderer = new Renderer\Image\Png;
 
@@ -647,9 +649,42 @@ class Service extends Base\Service
 
         imagedestroy($qrCodeImage);
 
-        $image = 'data:image/bmp;base64,' . base64_encode(file_get_contents($localFilePath));
+        $uploadedFile = new UploadedFile(
+            $localFilePath,
+            $input['invoice']['id']. '.jpeg',
+            'image/jpeg',
+            filesize($localFilePath),
+            null,
+            true
+        );
 
-        return $image;
+        $ufhService  = (new FileUploadUfh())->getUfhService();
+
+        if($ufhService !== null)
+        {
+            $ufhResponse = $ufhService->uploadFileAndGetUrl(
+                $uploadedFile,
+                $input['invoice']['id'],
+                FileType::QR_CODE_IMAGE,
+                []
+            );
+
+            $this->trace->info(
+                TraceCode::INVOICE_IMAGE_UFH_FILE_UPLOAD_RESPONSE,
+                $ufhResponse
+            );
+        }
+
+        $fileId = $ufhResponse['file_id'];
+
+        $response = $ufhService->getSignedUrl($fileId);
+
+        $this->trace->info(
+            TraceCode::INVOICE_PDF_SIGNED_URL_FETCH_RESPONSE,
+            $response
+        );
+
+        return $response['signed_url'];
     }
 
     public function checkIfQronEmailExperimentEnabled()
@@ -682,7 +717,7 @@ class Service extends Base\Service
 
         if (empty($input['intent_url']) === false)
         {
-            $input['qr_code_image_address'] = $this->generateQrCodeImageFromIntentUrl($input);
+            $input['qr_code_image_address'] = $this->getSignedUrlForQrCodeImage($input);
 
             $this->trace->info(TraceCode::QR_ON_EMAIL_IMAGE_ADDRESS,
                                [
