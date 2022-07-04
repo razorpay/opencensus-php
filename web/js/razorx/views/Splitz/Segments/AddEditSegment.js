@@ -89,6 +89,7 @@ export default function AddEditSegment(props) {
     if (segmentType === SQL) {
       payload.segment.cron_expression = form.cronExpression;
       payload.segment.sql_query = form.sqlQuery;
+      payload.segment.inputFileID = data.inputFileID || '';
     } else if (segmentType === CSV && isEdit && !fileId) {
       payload.segment.inputFileID = data.inputFileID;
     } else {

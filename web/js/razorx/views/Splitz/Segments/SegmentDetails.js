@@ -252,6 +252,8 @@ export default class SegmentDetails extends React.Component {
           )}
           {data.source_type === 'SQL' && (
             <div>
+              <br />
+              <br />
               <div className="flex-row">
                 <div className="flex-row-item">
                   <div className="label">Cron Expression</div>
