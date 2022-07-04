@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
 use Requests_Hooks;
 use RZP\Exception;
 use RZP\Models\Order;
@@ -12,6 +13,8 @@ use RZP\Gateway\Base\Verify;
 use RZP\Models\Emi\Migration;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment\Gateway;
+use RZP\Reconciliator\Base\InfoCode;
+use RZP\Reconciliator\Service;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Entity;
@@ -240,6 +243,52 @@ class CardPaymentService
         if ($action === Action::VERIFY)
         {
             unset($input['payment']['billing_address']);
+        }
+
+        if (!empty($input['token']) and ($input['payment']['recurring'] === true) and ($input['payment']['recurring_type'] === 'auto'))
+        {
+
+            if (!empty($input['token']['card']) and ($input['token']['card']['network'] === 'Visa'))
+            {
+                $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($input['token']['id'], $input['merchant']['id']);
+
+                $paymentId = $initialPayment->getId();
+
+                $request = [
+                    'fields'        => ['network_transaction_id'],
+                    'payment_ids'   => [$paymentId],
+                ];
+
+                $input['payment']['network_transaction_id'] = '039217544591994';
+
+                try
+                {
+                    $response = $this->app['card.payments']->fetchAuthorizationData($request);
+
+                    $this->trace->info(
+                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                        [
+                            'info_code'     => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                            'response'      => $response,
+                        ]);
+
+                    if ($response[$paymentId]['network_transaction_id'] !== "")
+                    {
+                        $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
+                    }
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->info(
+                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                        [
+                            'info_code'            => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                            'initial_payment_id'   => $paymentId,
+                        ]);
+                }
+
+            }
+
         }
 
         $content = [
@@ -506,6 +555,7 @@ class CardPaymentService
                 'payment.notes'                     => 'content.input.payment.notes',
                 'payment.gateway'                   => 'content.input.payment.gateway',
                 'payment.billing_address'           => 'content.input.payment.billing_address',
+                'payment.network_transaction_id'    => 'content.input.payment.network_transaction_id',
                 'merchant.id'                       => 'content.input.merchant.id',
                 'merchant.name'                     => 'content.input.merchant.name',
                 'merchant.features'                 => 'content.input.merchant.features',

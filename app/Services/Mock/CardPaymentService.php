@@ -51,6 +51,7 @@ class CardPaymentService extends BaseCardPaymentService
             Constants::STATUS                    => 'failed',
             Constants::AUTH_CODE                 => '',
             Constants::GATEWAY_TRANSACTION_ID    => '1234456789',
+            Constants::NETWORK_TRANSACTION_ID    => '0392166726767771',
         ];
 
         $response = [];

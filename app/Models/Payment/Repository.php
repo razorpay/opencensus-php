@@ -3024,4 +3024,14 @@ EOT;
             'did_use_elastic'   => $didUseElasticSearch,
         ]);
     }
+
+    public function fetchInitialPaymentIdForToken($tokenId, $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->status(Payment\Status::CAPTURED)
+            ->where(Entity::TOKEN_ID, '=', $tokenId)
+            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+            ->where(Payment\Entity::MERCHANT_ID, $merchantId)
+            ->first();
+    }
 }

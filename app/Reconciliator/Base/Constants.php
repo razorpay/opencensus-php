@@ -62,6 +62,7 @@ class Constants
     const STATUS                 = 'status';
     const AUTH_CODE              = 'auth_code';
     const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
+    const NETWORK_TRANSACTION_ID = 'network_transaction_id';
 
     const CPS_PARAMS = [
         Constants::RRN,
