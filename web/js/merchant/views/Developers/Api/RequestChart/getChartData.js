@@ -22,6 +22,7 @@ export function getChartData(data, aggregation, duration, filteredStatusCodeList
   return (canvas) => {
     const statDataMap = {
       '2xx': [],
+      '3xx': [],
       '4xx': [],
       '5xx': [],
       all: [],
@@ -61,6 +62,7 @@ export function getChartData(data, aggregation, duration, filteredStatusCodeList
       const label = getLabel(aggregation, timestamp);
       const dataForLabel = labelToDataMap[label] || {
         '2xx': 0,
+        '3xx': 0,
         '4xx': 0,
         '5xx': 0,
         all: 0,
@@ -92,6 +94,10 @@ export function getChartData(data, aggregation, duration, filteredStatusCodeList
     gradientFillAll.addColorStop(0, 'rgba(37, 41, 57, 1)');
     gradientFillAll.addColorStop(0.5, 'rgba(37, 41, 57, 0)');
 
+    const gradientFill3xx = ctx.createLinearGradient(0, 0, 0, 250);
+    gradientFillAll.addColorStop(0, 'rgba(37, 41, 57, 1)');
+    gradientFillAll.addColorStop(0.5, 'rgba(37, 41, 57, 0)');
+
     const gradientFill4xx = ctx.createLinearGradient(0, 0, 0, 250);
     gradientFillAll.addColorStop(0, 'rgba(37, 41, 57, 1)');
     gradientFillAll.addColorStop(0.5, 'rgba(37, 41, 57, 0)');
@@ -107,6 +113,14 @@ export function getChartData(data, aggregation, duration, filteredStatusCodeList
         fill: false,
         backgroundColor: gradientFill2xx,
         borderColor: '#01B358',
+        borderWidth: 1,
+      },
+      {
+        label: '3xx',
+        data: statDataMap['3xx'],
+        fill: false,
+        backgroundColor: gradientFill3xx,
+        borderColor: '#5bc0de',
         borderWidth: 1,
       },
       {
@@ -286,6 +300,12 @@ function computeLabelDataForTimestamp(timestampToStatMap, timestamp, dataForLabe
    *    },
    *    count: 4
    *  },
+   *  {
+   *    {
+   *      http_status_code: 301
+   *    },
+   *    count: 4
+   *  },
    * {
    *    {
    *      http_status_code: 400
@@ -306,6 +326,8 @@ function computeLabelDataForTimestamp(timestampToStatMap, timestamp, dataForLabe
     updatedDataForLabel.all += count;
     if (http_status_code < 300) {
       updatedDataForLabel['2xx'] += count;
+    } else if (http_status_code < 400) {
+      updatedDataForLabel['3xx'] += count;
     } else if (http_status_code < 500) {
       updatedDataForLabel['4xx'] += count;
     } else {

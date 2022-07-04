@@ -7,6 +7,7 @@ import RequestLegend from '../../components/RequestChartLegend';
 const legend = [
   { value: '5xx', title: '5xx', color: 'red' },
   { value: '4xx', title: '4xx', color: 'yellow' },
+  { value: '3xx', title: '3xx', color: 'blue' },
   { value: '2xx', title: '2xx', color: 'green' },
   { value: 'all', title: 'All', color: 'black' },
 ];
@@ -68,7 +69,7 @@ export const aggregations = [
   {
     value: 'day',
     label: 'Daily',
-    isEnabled: (startDate, endDate) => moment(endDate).diff(moment(startDate), 'days') <= 7,
+    isEnabled: (startDate, endDate) => moment(endDate).diff(moment(startDate), 'days') >= 7,
     disabledText: 'Available for 7 days date range',
   },
 ];

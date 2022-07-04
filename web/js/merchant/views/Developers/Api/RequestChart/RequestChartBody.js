@@ -36,7 +36,7 @@ export default function RequestChartBody(props) {
       {!data.loading && !data.error && !data.data?.stats?.length ? (
         <NoDataMessage title="No request logs found for selected time range" />
       ) : null}
-      {!data.loading && data.data ? (
+      {!data.loading && !data.error && data.data?.stats?.length ? (
         <Line
           options={chartOptions}
           data={getChartData(data.data, selectedAggregation, duration, filteredStatusCodeList)}

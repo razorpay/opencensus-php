@@ -21,15 +21,36 @@ import StatusLabel from '../../components/StatusLabel';
   ...ApiLogsActions,
 })
 export default class RequestLogs extends ListContainer {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...super.state,
+      status: {},
+      shouldCtasBeDisabled: false,
+    };
+  }
+
   componentDidUpdate(prevProps) {
     const { from: prevPropsFrom, to: prevPropsTo } = prevProps.selectedFilters.duration;
     const { from, to } = this.props.selectedFilters.duration;
 
     if (prevPropsFrom !== from || prevPropsTo !== to) {
-      this.search({
-        from,
-        to,
-      });
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState(
+        {
+          httpStatus: '',
+          searchField: '',
+        },
+        () => {
+          this.search({
+            from,
+            to,
+          }).then((data) => {
+            // CTAs should only be disabled be dates have changed and there's no data in that date range
+            this.setState({ shouldCtasBeDisabled: !data.data?.body?.result?.length });
+          });
+        },
+      );
     }
   }
 
@@ -37,6 +58,7 @@ export default class RequestLogs extends ListContainer {
     const requestData = {
       ...params,
       httpStatus: this.state.httpStatus,
+      searchField: this.state.searchField,
       from: params.from || this.props.selectedFilters.duration.from,
       to: params.to || this.props.selectedFilters.duration.to,
     };
@@ -54,7 +76,7 @@ export default class RequestLogs extends ListContainer {
     const { duration, dateRange } = selectedFilters;
     const fromDate = moment(duration.from).format('DD MMM');
     const toDate = moment(duration.to).format('DD MMM');
-    const { status } = this.state;
+    const { status, shouldCtasBeDisabled } = this.state;
 
     return (
       <div className="api-logs-container content-wrapper" style={{ marginTop: 20 }}>
@@ -83,7 +105,7 @@ export default class RequestLogs extends ListContainer {
               value={this.state.httpStatus}
               onChange={(e) => this.setState({ httpStatus: e.target.value })}
               onBlur={() => trackApiLogsSearchHttpStatusChanged()}
-              disabled={!apiLogs?.length}
+              disabled={shouldCtasBeDisabled}
             >
               <option value="all">All</option>
               <option value="2xx">2xx</option>
@@ -97,7 +119,7 @@ export default class RequestLogs extends ListContainer {
               class="btn btn-primary btn-sm"
               type="button"
               onClick={this.handleSearchClick}
-              disabled={!apiLogs?.length}
+              disabled={shouldCtasBeDisabled}
             >
               Search
             </button>
@@ -107,7 +129,7 @@ export default class RequestLogs extends ListContainer {
               onClick={() => {
                 this.setState({ searchField: '', httpStatus: '' }, () => this.search());
               }}
-              disabled={!apiLogs?.length}
+              disabled={shouldCtasBeDisabled}
             >
               Clear
             </button>

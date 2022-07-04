@@ -8,7 +8,7 @@ const API_LOGS = 'API_LOGS';
 export const fetchApiLogs = (params) => {
   const statusMap = {
     '2xx': [200, 201, 202, 204],
-    '3xx': [301, 302],
+    '3xx': [300, 301, 302, 304],
     '4xx': [400, 401, 403, 404],
     '5xx': [500, 502, 503],
   };
