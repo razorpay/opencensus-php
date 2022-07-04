@@ -1,7 +1,6 @@
 name: SecurityChecks
 on:
   workflow_dispatch:
-  deployment:
   pull_request: {}
   push:
     branches: [ "master" ]
