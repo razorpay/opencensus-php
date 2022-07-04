@@ -2324,6 +2324,25 @@ return [
         ],
     ],
 
+    'testSetMobileNumberForMerchantEnabled2FAForXWithNewSmsTemplateAndSendsViaStork' => [
+        'request' => [
+            'url'     => '/users/2fa_setup/contact_mobile',
+            'method'  => 'PATCH',
+            'server'  => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id'  => '20000000000000'
+            ],
+            'content' => [
+                'contact_mobile'        => '9999999999',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testFailedLogin2faForXWithNewSmsTemplateAndSendsViaStork' => [
         'request' => [
             'url'     => '/users/login',

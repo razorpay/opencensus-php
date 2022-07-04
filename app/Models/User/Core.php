@@ -2710,9 +2710,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($user);
 
+        $action = (
+            $this->app['basicauth']->getRequestOriginProduct() === ProductType::BANKING and
+            $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), Constants::API_STORK_RX_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on')
+            ? Constants::X_SECOND_FACTOR_AUTH_ACTION
+            : Entity::SECOND_FACTOR_AUTH;
+
         $input += [
-            Entity::MEDIUM => 'sms',
-            Entity::ACTION => Entity::SECOND_FACTOR_AUTH,
+            Entity::MEDIUM => Entity::MEDIUM_SMS,
+            Entity::ACTION => $action,
             Entity::TOKEN  => $user->getId()
         ];
 

@@ -3402,6 +3402,25 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testSetMobileNumberForMerchantEnabled2FAForXWithNewSmsTemplateAndSendsViaStork()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['second_factor_auth' => 1]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000'], 'admin');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.x_second_factor_auth', '9999999999', []);
+
+        $this->startTest();
+    }
+
     public function testFailedLogin2faForXWithNewSmsTemplateAndSendsViaStork()
     {
         $this->enableRazorXTreatmentForRazorX();
