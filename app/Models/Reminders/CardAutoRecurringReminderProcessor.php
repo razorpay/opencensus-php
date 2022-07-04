@@ -5,6 +5,7 @@ namespace RZP\Models\Reminders;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\CardMandate\CardMandateNotification;
 
 class CardAutoRecurringReminderProcessor extends ReminderProcessor
@@ -55,7 +56,9 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         $iin = $this->app['repo']->iin->find($card['iin']);
 
-        if ($card->isRzpSavedCard() === false)
+        if (($card->isRzpSavedCard() === false) and
+            ($this->isExperimentEnabledForTokenisedCard($token->getMerchantId()) === true) and
+            ($this->shouldRecurringAutoPaymentGoThroughTokenisedCard($card) === true))
         {
             $cardInput = $processor->createCardForNetworkTokenCardMandate($card, []);
         }
@@ -76,5 +79,64 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
             'card' => $cardInput,
             'iin'  => $iin->toArray(),
         ];
+    }
+
+    protected function isExperimentEnabledForTokenisedCard($merchantId): bool
+    {
+        try
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::RECURRING_SUBSEQUENT_TOKENISATION_RAZORX_EXPERIMENT
+            );
+        }
+
+        return false;
+    }
+
+    protected function shouldRecurringAutoPaymentGoThroughTokenisedCard(Card\Entity $card): bool
+    {
+        try
+        {
+            $experimentKey = implode('_', [
+                $card->getNetworkCode(),
+                $card->getIssuer()
+            ]);
+
+            $variant = $this->app['razorx']->getTreatment(
+                $experimentKey,
+                Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::RECURRING_SUBSEQUENT_TOKENISATION_RAZORX_EXPERIMENT
+            );
+        }
+
+        return false;
     }
 }

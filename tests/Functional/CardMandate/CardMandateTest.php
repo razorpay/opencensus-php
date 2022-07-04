@@ -1536,6 +1536,66 @@ class CardMandateTest extends TestCase
         $this->assertEquals('captured', $payment->getStatus());
     }
 
+    public function testCreateCardMandateAutoPaymentWithAfaUsingTokenisedCard()
+    {
+        $this->testCreateCardMandatePaymentWithTokenisationSuccess();
+
+        $this->mockCreatePreDebitNotification(false, true);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $this->setMockRazorxTreatment(['payment_process_through_tokenised_card' => 'on',
+                                       'recurring_subsequent_through_tokenised_card' => 'on']);
+
+        $this->mockCardVaultWithCryptogram();
+
+        // Explicitly setting the tokens.status as active to pass the validation in subsequent payment for tokenised card
+        $token = $this->getDbLastEntity(E::TOKEN);
+        $token->setStatus('active');
+        $token->saveOrFail();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('failed', $cardMandateNotification->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
+
+        $this->mockPostDebitNotification();
+        $this->mockValidatePayment();
+
+        $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->notification_id;
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('failed', $cardMandateNotification->getStatus());
+        $this->assertEquals('approved', $cardMandateNotification->getAfaStatus());
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment->getStatus());
+    }
+
     public function testCreateCardMandateOptOutOfPayment()
     {
         $this->markTestSkipped('until fixed');
