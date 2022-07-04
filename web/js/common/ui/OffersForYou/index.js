@@ -180,7 +180,7 @@ const OffersForYou = ({
   };
 
   return (
-    <li className={!showMobileNav ? 'offers-for-you' : ''}>
+    <li className={!showMobileNav ? 'offers-for-you' : 'offers-for-you-mobile'}>
       <a onClick={handleClick}>
         <OffersForYouIcon setIsStopped={setIsStopped} isStopped={isStopped} />
         {!showMobileNav ? 'Exclusive Offer' : null}

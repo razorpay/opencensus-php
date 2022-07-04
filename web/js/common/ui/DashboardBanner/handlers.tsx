@@ -8,6 +8,7 @@ import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
 } from '../../../merchant/reducers/app';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { sendDataToSalesForce } from '../../utils/common-api';
 import CatalystCampaign from '../GrowthCustomizeModal/CatalystCampaign';
@@ -22,6 +23,11 @@ const getClickHandler = (id = '', type = '', variant = '') => {
   const closeModal = (payload) => store.dispatch(closeModalProp(payload));
   const setActivePageName = (payload) => store.dispatch(fnSetActivePageName(payload));
   const setBaseLocation = (payload) => store.dispatch(fnSetBaseLocation(payload));
+  const MODAL = {
+    DEFAULT: 'default',
+    THANKYOU: 'thank-you',
+    CENTERCTA: 'center-cta',
+  };
 
   const openRazorpayXNitroModal = () => {
     openModal({
@@ -62,10 +68,16 @@ const getClickHandler = (id = '', type = '', variant = '') => {
     });
   };
 
-  const showThankYouModal = () => {
+  const showGSThankYouModal = () => {
     return openModal({
       size: 'medium',
       component: <ThankYouModal template_id={id} />,
+    });
+  };
+
+  const showGSModalMobile = () => {
+    return openModal({
+      component: <GrowthServiceModal template_id={id} />,
     });
   };
 
@@ -74,20 +86,40 @@ const getClickHandler = (id = '', type = '', variant = '') => {
     setActivePageName('Connected Banking');
   };
 
-  switch (type) {
-    case 'MODAL':
-      switch (variant) {
-        case 'default':
-          return showGSModal;
-        case 'center-cta':
-          return showGSCenterCTAModal;
-        case 'thank-you':
-          return showThankYouModal;
-        default:
+  const isMWeb = isMobileAndTablet();
+  const isSubAssetEnabled = type?.length && variant?.length;
+  if (isSubAssetEnabled) {
+    if (isMWeb) {
+      switch (type) {
+        case 'MODAL':
+          switch (variant) {
+            case MODAL.DEFAULT:
+              return showGSModalMobile;
+            case MODAL.THANKYOU:
+              return showGSThankYouModal;
+            default:
+              break;
+          }
           break;
+        default:
       }
-      break;
-    default:
+    } else {
+      switch (type) {
+        case 'MODAL':
+          switch (variant) {
+            case MODAL.DEFAULT:
+              return showGSModal;
+            case MODAL.THANKYOU:
+              return showGSThankYouModal;
+            case MODAL.CENTERCTA:
+              return showGSCenterCTAModal;
+            default:
+              break;
+          }
+          break;
+        default:
+      }
+    }
   }
 
   switch (id) {
