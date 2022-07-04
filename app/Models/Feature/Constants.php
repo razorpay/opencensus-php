@@ -1156,6 +1156,11 @@ class Constants
     const MISSED_ORDERS_PLINK = 'missed_orders_plink';
 
     /**
+     * Feature flag to allow custom domain linking with payment pages
+     */
+    const PP_CUSTOM_DOMAIN = 'pp_custom_domain';
+
+    /**
      * Feature flag to onboard merchants on network tokenization in live mode
      */
     const ONBOARD_TOKENIZATION = 'onboard_tokenization';
@@ -1956,7 +1961,8 @@ class Constants
         self::DEDUPE_CONTACT_ON_REPLICA       => true,
         self::INTER_ACCOUNT_TEST_PAYOUT       => true,
         self::CART_API_AMOUNT_CHECK           => true,
-        self::ONE_CLICK_OVERRIDE_THEME        =>true
+        self::ONE_CLICK_OVERRIDE_THEME        => true,
+        self::PP_CUSTOM_DOMAIN                => true,
     ];
 
     // Entity type constants
@@ -2732,6 +2738,11 @@ class Constants
             'feature'      => self::CAN_ROLE_VIEW_TRXN_CARDS,
             'display_name' => 'View Transaction/Cards banner in test mode',
             'description'  => 'This feature, allows view_only, fl1, fl2, fl3 roles to see transaction cards and banners on homepage',
+        ],
+        self::PP_CUSTOM_DOMAIN => [
+            'feature'      => self::PP_CUSTOM_DOMAIN,
+            'display_name' => 'Custom Domain for Payment Pages',
+            'description'  => 'This feature is to allow merchants to link their payment pages with a custom domain',
         ],
 
         //TODO:: Handle vai custom roles

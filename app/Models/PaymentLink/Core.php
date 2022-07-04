@@ -117,14 +117,25 @@ class Core extends Base\Core
             $paymentLink->build($input);
         });
 
-        if((array_key_exists(Entity::SLUG, $input) === true) and
-            ($paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE))
+        $validator = new Validator;
+
+        if(array_key_exists(Entity::SLUG, $input) === true
+            && $paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
+            && array_get($settings, Entity::CUSTOM_DOMAIN, "") === "")
         {
-            (new Validator)->validateSlug('validateSlug', $input[Entity::SLUG]);
+            $validator->validateInput('slug', [Entity::SLUG => $input[Entity::SLUG]]);
         }
 
-        Tracer::inSpan(['name' => 'payment_page.create.short_url'], function() use ($paymentLink, $input) {
-            $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null);
+        if($paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
+            && array_get($settings, Entity::CUSTOM_DOMAIN, "") !== "")
+        {
+            $validator->validateInput('customDomainSlug', [Entity::CUSTOM_DOMAIN_SLUG => array_get($input, Entity::SLUG)]);
+
+            $validator->validateUniqueNocodeSlug($input[Entity::SLUG], $settings[Entity::CUSTOM_DOMAIN]);
+        }
+
+        Tracer::inSpan(['name' => 'payment_page.create.short_url'], function() use ($paymentLink, $input, $settings) {
+            $this->createAndSetShortUrl($paymentLink, $input[Entity::SLUG] ?? null, array_get($settings, Entity::CUSTOM_DOMAIN));
         });
 
         $this->repo->transaction(function() use ($paymentLink, $settings, $input)
@@ -141,7 +152,7 @@ class Core extends Base\Core
                 $this->createPaymentPageItems($input, $paymentLink);
             });
 
-            $this->createCustomUrl($paymentLink, $input[Entity::SLUG] ?? null);
+            $this->createCustomUrl($paymentLink, $input[Entity::SLUG] ?? null, array_get($settings, Entity::CUSTOM_DOMAIN));
         });
 
         Tracer::inSpan(['name' => 'payment_page.create.load_relations'], function() use ($paymentLink) {
@@ -396,6 +407,23 @@ class Core extends Base\Core
 
                 $paymentLink->edit($input);
 
+                $validator = new Validator;
+
+                if(array_key_exists(Entity::SLUG, $input) === true
+                    && $paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
+                    && array_get($settings, Entity::CUSTOM_DOMAIN, "") === "")
+                {
+                    $validator->validateInput('slug', [Entity::SLUG => $input[Entity::SLUG]]);
+                }
+
+                if($paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
+                    && array_get($settings, Entity::CUSTOM_DOMAIN, "") !== "")
+                {
+                    $validator->validateInput('customDomainSlug', [Entity::CUSTOM_DOMAIN_SLUG => array_get($input, Entity::SLUG)]);
+
+                    $validator->validateUniqueNocodeSlug($input[Entity::SLUG], $settings[Entity::CUSTOM_DOMAIN], $paymentLink);
+                }
+
                 $this->changeStatusAfterUpdateIfApplicable($paymentLink);
 
                 Tracer::inSpan(['name' => 'payment_page.update.upsert_settings'], function() use($paymentLink, $settings)
@@ -414,7 +442,7 @@ class Core extends Base\Core
             $this->repo->transaction(function () use ($paymentLink, $input) {
                 $this->repo->payment_link->lockForUpdateAndReload($paymentLink);
 
-                $this->createCustomUrl($paymentLink, $input[Entity::SLUG] ?? null);
+                $this->createCustomUrl($paymentLink, $input[Entity::SLUG] ?? null, array_get($input, Entity::SETTINGS . "." . Entity::CUSTOM_DOMAIN));
             });
 
             Tracer::inSpan(['name' => 'payment_page.update.load_relations'], function() use($paymentLink)
@@ -433,6 +461,28 @@ class Core extends Base\Core
     }
 
     /**
+     * @param \RZP\Models\PaymentLink\Entity $entity
+     *
+     * @return array
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function getSlugAndDomain(Entity $entity): array
+    {
+        $nocodeCore = new NocodeCustomUrl\Core;
+
+        $nocodeEntity = $nocodeCore->getExistingLinkedEntity($entity->getId(), $entity->getMerchantId());
+
+        if (empty($nocodeEntity) === true)
+        {
+            [$domain] = $this->getShortenUrlRequestParams($entity);
+
+            return [$entity->getSlugFromShortUrl(), $domain];
+        }
+
+        return [$nocodeEntity->getSlug(), $nocodeEntity->getDomain()];
+    }
+
+    /**
      * Attempts recreating short URL for payment link in case of new slug in patch input
      *
      * @param Entity $paymentLink
@@ -443,15 +493,21 @@ class Core extends Base\Core
      */
     public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
-        if ((($slug = $input[Entity::SLUG] ?? null) !== null) and
+        [$entitySlug, $entityDomain] = $this->getSlugAndDomain($paymentLink);
+
+        $inputDomain = array_get($input, Entity::SETTINGS . "." . Entity::CUSTOM_DOMAIN, "");
+
+        if ((($slug = $input[Entity::SLUG] ?? null) !== null ||
             // In patch requests frontned can send same slug as input and gimli
             // request will fail with duplicate slug/alias, so just ignore.
-            ($slug !== $paymentLink->getSlugFromShortUrl()) and
+            $slug !== $entitySlug || $inputDomain !== $entityDomain) and
             ($this->isTestMode() === false))
         {
-            Tracer::inSpan(['name' => 'payment_page.create_and_set_short_url'], function() use($paymentLink, $slug)
+            $customDomain = array_get($input, Entity::SETTINGS . '.' . Entity::CUSTOM_DOMAIN);
+
+            Tracer::inSpan(['name' => 'payment_page.create_and_set_short_url'], function() use($paymentLink, $slug, $customDomain)
             {
-                $this->createAndSetShortUrl($paymentLink, $slug);
+                $this->createAndSetShortUrl($paymentLink, $slug, $customDomain);
             });
 
             Tracer::inSpan(['name' => 'payment_page.update_url.save_or_fail'], function() use($paymentLink)
@@ -1763,13 +1819,16 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity      $paymentLink
-     * @param string|null $slug
+     * @param \RZP\Models\PaymentLink\Entity $paymentLink
+     * @param string|null                    $slug
+     * @param string|null                    $customDomain
      *
-     * @throws BadRequestException
-     * @throws BaseException
+     * @return void
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\BaseException
      */
-    protected function createAndSetShortUrl(Entity $paymentLink, string $slug = null)
+    protected function createAndSetShortUrl(Entity $paymentLink, ?string $slug = null, ?string $customDomain = null)
     {
         //
         // Temporary: We ignore custom slug in test mode. Practical case is
@@ -1783,13 +1842,20 @@ class Core extends Base\Core
             $slug = null;
         }
 
-        [$url, $params, $fail] = $this->getShortenUrlRequestParams($paymentLink, $slug);
+        [$url, $params, $fail] = $this->getShortenUrlRequestParams($paymentLink, $slug, $customDomain);
 
         try {
             $useCustomUrlModule = $this->shouldUseCustomUrlModule($paymentLink);
 
             if ($useCustomUrlModule)
             {
+                if (empty($customDomain) === false)
+                {
+                    // No shortening for custom domain flow on upsert in nocode custom urls table
+                    $paymentLink->setShortUrl($url);
+                    return;
+                }
+
                 $skipShortning = $this->shouldSkipShortner($paymentLink, $slug, $url);
 
                 if ($skipShortning)
@@ -1832,7 +1898,7 @@ class Core extends Base\Core
         }
     }
 
-    public function getShortenUrlRequestParams(Entity $paymentLink, string $slug = null): array
+    public function getShortenUrlRequestParams(Entity $paymentLink, ?string $slug = null, ?string $customDomain = null): array
     {
         // Following are default set of parameters, when there is no slug passed in input
         // URL: https://pages.razorpay.in/pl_10000000000000/view OR https://pages.razorpay.in/AlphaNumMin4Max30Slug
@@ -1847,7 +1913,7 @@ class Core extends Base\Core
 
             default:
 
-                $hostedBaseUrl = $this->plHostedBaseUrl;
+                $hostedBaseUrl = empty($customDomain) === true ? $this->plHostedBaseUrl : $this->buildHostedCustomDomainUrl($customDomain);
 
                 break;
         }
@@ -3166,20 +3232,21 @@ class Core extends Base\Core
     /**
      * @param \RZP\Models\PaymentLink\Entity $paymentLink
      * @param string|null                    $slug
+     * @param string|null                    $customDomain
      *
      * @return void
      */
-    private function createCustomUrl(Entity $paymentLink, ?string $slug)
+    private function createCustomUrl(Entity $paymentLink, ?string $slug, ?string $customDomain = null)
     {
-        if ($this->mode !== Mode::LIVE || empty($slug) === true || ! $this->shouldUseCustomUrlModule($paymentLink))
+        if ($this->mode !== Mode::LIVE || $slug === null || ! $this->shouldUseCustomUrlModule($paymentLink))
         {
             return;
         }
 
-        Tracer::inSpan(['name' => Constants::HT_PP_NOCODE_CUSTOM_URL_UPSERT], function() use($paymentLink, $slug) {
+        Tracer::inSpan(['name' => Constants::HT_PP_NOCODE_CUSTOM_URL_UPSERT], function() use($paymentLink, $slug, $customDomain) {
             $customUrlCore = new NocodeCustomUrl\Core();
 
-            [$url, $params] = $this->getShortenUrlRequestParams($paymentLink, $slug);
+            [$url, $params] = $this->getShortenUrlRequestParams($paymentLink, $slug, $customDomain);
 
             try
             {
@@ -3220,7 +3287,7 @@ class Core extends Base\Core
      */
     private function shouldSkipShortner(Entity $paymentLink, ?string $slug, string $url): bool
     {
-        if (empty($slug) === true || $this->isTestMode())
+        if ($slug === null || $this->isTestMode())
         {
             return false;
         }
@@ -3245,7 +3312,7 @@ class Core extends Base\Core
      */
     private function updateExistingShortUrl(?string $slug, Entity $paymentLink)
     {
-        if (empty($slug) === true)
+        if ($slug === null)
         {
             return;
         }
@@ -3490,5 +3557,17 @@ class Core extends Base\Core
         }
 
        return $slugMetaData;
+    }
+
+    /**
+     * @param string $customDomain
+     *
+     * @return string
+     */
+    private function buildHostedCustomDomainUrl(string $customDomain): string
+    {
+        $protocol = $this->config->get("services.custom_domain_service.hosted.protocol");
+
+        return $protocol . "://" . $customDomain;
     }
 }

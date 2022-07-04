@@ -220,11 +220,28 @@ class Entity extends Base\PublicEntity
 
         $host = array_get($parsed, 'host');
 
-        if (empty($host) === true)
+        if (empty($host) !== true)
         {
-            throw new BadRequestValidationFailureException("Domain could not be determined.");
+            return $host;
         }
 
-        return $host;
+        // the above simpler parsing did not yield a host
+        // let's use regex now
+
+        $regex = "/^((?!-)[A-Za-z0-9-]" .
+            "{1,63}(?<!-)\\.)" .
+            "+[A-Za-z]{2,6}/";
+
+        $matched = preg_match($regex, $url);
+
+        if($matched && filter_var($url, FILTER_VALIDATE_DOMAIN))
+        {
+            // it's a valid url as per PHP's FILTER_VALIDATE_DOMAIN
+            // to be on the safer side using slpit by / and taking the first index value
+            // for example: somedomain.com/v1/execute, we need to extract only somedomain.com
+            return explode("/", $url)[0];
+        }
+
+        throw new BadRequestValidationFailureException("Domain could not be determined.");
     }
 }

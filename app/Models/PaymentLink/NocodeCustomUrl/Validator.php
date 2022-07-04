@@ -12,7 +12,7 @@ class Validator extends Base\Validator
      * @var string[]
      */
     protected static $upsertRules = [
-        Entity::SLUG            => 'required|min:3|max:' . Entity::SLUG_LEN,
+        Entity::SLUG            => 'max:' . Entity::SLUG_LEN,
         Entity::DOMAIN          => 'required|min:3|max:' . Entity::DOMAIN_LEN . '|custom',
         Entity::PRODUCT         => 'required|custom',
         Entity::META_DATA       => 'nullable|array',

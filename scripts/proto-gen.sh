@@ -16,6 +16,10 @@
 parentdir=$(dirname `pwd`)
 [ -d generated/proto ] || mkdir generated/proto
 
+protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/custom-domain-service/app/v1/*
+protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/custom-domain-service/domain/v1/*
+protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/custom-domain-service/propagation/v1/*
+
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/common/mode/v1/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/credcase/apikey/v1/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/credcase/consumer/v1/*

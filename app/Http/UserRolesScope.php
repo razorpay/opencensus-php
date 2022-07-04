@@ -286,6 +286,13 @@ class UserRolesScope
             'payment_page_get_details'                 => Role::WRITER_ROLES,
             'payment_page_list'                        => Role::WRITER_ROLES,
             'payment_page_create'                      => Role::WRITER_ROLES,
+            'payment_page_cds_domain_create'            => Role::WRITER_ROLES,
+            'payment_page_cds_domain_list'              => Role::WRITER_ROLES,
+            'payment_page_cds_domain_delete'            => Role::WRITER_ROLES,
+            'payment_page_cds_check_propagation'        => Role::WRITER_ROLES,
+            'payment_page_cds_domain_exists'            => Role::WRITER_ROLES,
+            'payment_page_cds_subdomain'                => Role::WRITER_ROLES,
+
             'payment_page_update'                      => Role::WRITER_ROLES,
             'payment_page_notify'                      => Role::WRITER_ROLES,
             'payment_page_deactivate'                  => Role::WRITER_ROLES,

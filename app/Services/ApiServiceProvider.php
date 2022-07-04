@@ -731,6 +731,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerAuthzXPlatformAdminClient();
 
         $this->registerCommissionService();
+
+        $this->registerCdsHttpClients();
     }
 
     protected function registerCacheManager()
@@ -811,7 +813,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             Acs\SyncEventManager::SINGLETON_NAME,
             'outbox',
             'splitzService',
-            'bbpsService'
+            'bbpsService',
+            'cds_http_client',
         ];
     }
 
@@ -2065,6 +2068,26 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             }
 
             return new RZP\Services\CommissionService\CommissionService();
+        });
+    }
+
+    /**
+     * register cds http client
+     *
+     * @return void
+     */
+    protected function registerCdsHttpClients()
+    {
+        $this->app->singleton('cds_http_client', function($app) {
+            if ($app->runningUnitTests() === true)
+            {
+                return new Psr18ClientMock;
+            }
+
+            $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
+            $options         = ['timeout' => 5];
+
+            return new MultiCurl($responseFactory, $options);
         });
     }
 }

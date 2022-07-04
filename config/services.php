@@ -205,4 +205,20 @@ return [
         'url'   => env('APACHE_PINOT_URL'),
         'mock'   => env('APACHE_PINOT_MOCK', true),
     ],
+
+    'custom_domain_service' => [
+        'mock'          => env('CDS_MOCK', false),
+        'host'          => env('CDS_HOST', 'https://cds.razorpay.com'),
+        'app_name'      => env('CDS_APP_NAME'),
+        'secret'        => env('CDS_APP_SECRET'),
+        'hosted'        => [
+            "protocol"      => env('CUSTOM_DOMAIN_HOSTED_PROTOCOL', 'https'),
+        ],
+        'cache'       => [
+            "ttl"       => env('CUSTOM_DOMAIN_CACHE_TTL', 86400),
+            "prefix"    => env('CUSTOM_DOMAIN_CACHE_PREFIX', "CDS"),
+        ],
+        'admin_user'    => env('CDS_ADMIN_USER'),
+        'admin_secret'  => env('CDS_ADMIN_SECRET'),
+    ],
 ];

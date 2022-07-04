@@ -768,4 +768,156 @@ class Service extends Base\Service
             return (new ElfinWrapper(ElfinService::GIMLI))->expandAndGetMetadata($slug, $domain);
         });
     }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function cdsCallback(array $input): array
+    {
+        $this->trace->info(TraceCode::CDS_CALLBACK_RECIEVED, $input);
+
+        $processor = CustomDomain\Factory::getWebHookHandler();
+
+        // TODO: Make it async
+        $processor->process($input)->handle();
+
+        return [];
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function cdsDomainCreate(array $input): array
+    {
+        $this->trace->info(TraceCode::CDS_DOMAIN_CREATE_RECIEVED, $input);
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        $domainClient = CustomDomain\Factory::getDomainClient();
+
+        return $domainClient->createDomain($input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function cdsDomainList(array $input): array
+    {
+        $this->trace->info(TraceCode::CDS_DOMAIN_LIST_RECIEVED, $input);
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        $domainClient = CustomDomain\Factory::getDomainClient();
+
+        return $domainClient->listDomain($input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function cdsDomainDelete(array $input): array
+    {
+        $this->trace->info(TraceCode::CDS_DOMAIN_DELETE_RECIEVED, $input);
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        $domainClient = CustomDomain\Factory::getDomainClient();
+
+        return $domainClient->deleteDomain($input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function cdsPropagation(array $input): array
+    {
+        $this->trace->info(TraceCode::CDS_PROPAGATION_RECIEVED, $input);
+
+        $propagationClient = CustomDomain\Factory::getPropagationClient();
+
+        return $propagationClient->checkPropagation($input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function cdsIsSubDomain(array $input): array
+    {
+        $this->trace->info(TraceCode::CDS_PROPAGATION_RECIEVED, $input);
+
+        $domainClient = CustomDomain\Factory::getDomainClient();
+
+        $input['merchant_id'] = $this->merchant->getId();
+
+        return $domainClient->isSubDomain($input);
+    }
+
+    /**
+     * @param $origin
+     *
+     * @return bool
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function cdsHas($origin): bool
+    {
+        if (empty($origin) === true)
+        {
+            return false;
+        }
+
+        $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($origin);
+
+        $fromCache = CustomDomain\Helper::getDomainFromCache($domain);
+
+        if (empty($fromCache) !== true)
+        {
+            return true;
+        }
+
+        $input['domain_name'] = $domain;
+
+        $domainClient = CustomDomain\Factory::getDomainClient();
+
+        $domains = $domainClient->listDomain($input);
+
+        if ($domains['count'] == 0)
+        {
+            return false;
+        }
+
+        CustomDomain\Helper::cacheDomain($domains['items']['0']);
+
+        return true;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return bool[]
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \RZP\Exception\IntegrationException
+     */
+    public function cdsDomainExists(array $input): array
+    {
+        return [
+            "exists"    => $this->cdsHas(array_get($input, 'domain_name'))
+        ];
+    }
 }

@@ -71,4 +71,8 @@ final class Metric
 
     const PAYMENT_PAGE_IMAGE_UPLOAD_COUNT           = 'payment_page_image_upload_count';
     const PAYMENT_PAGE_IMAGE_COMPRESSION_HISTOGRAM  = 'payment_page_image_compression_histogram';
+
+    // Cloudflare metrics
+    const CF_REQUEST_COUNT                      = 'cf_request_count';
+    const CF_REQUEST_LATENCY_MILLISECONDS       = 'cf_request_latency_milliseconds';
 }

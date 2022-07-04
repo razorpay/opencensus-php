@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use App;
 use RZP\Base;
 use RZP\Constants\Mode;
+use RZP\Constants\Table;
 use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
@@ -47,6 +48,14 @@ class Validator extends Base\Validator
         "vimeo.com",
         ];
 
+    protected static $customDomainSlugRules = [
+        Entity::CUSTOM_DOMAIN_SLUG => 'custom'
+    ];
+
+    protected static $slugRules = [
+        Entity::SLUG => 'filled|min:4|max:30'
+    ];
+
     protected static $createRules = [
         Entity::CURRENCY        => 'filled|string|currency|custom',
         Entity::EXPIRE_BY       => 'sometimes|epoch|nullable|custom',
@@ -55,7 +64,7 @@ class Validator extends Base\Validator
         Entity::TITLE           => 'required|string|min:3|max:80|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8|custom', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
-        Entity::SLUG            => 'filled|min:4|max:30', // need to call validate slug separately for regex validation
+        Entity::SLUG            => 'string', // need to call validate slug separately for regex validation
         Entity::SUPPORT_CONTACT => 'nullable|contact_syntax',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048|utf8',
@@ -92,7 +101,7 @@ class Validator extends Base\Validator
         Entity::TITLE           => 'string|min:3|max:80|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8|custom', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
-        Entity::SLUG            => 'filled|min:4|max:30|custom',
+        Entity::SLUG            => 'string',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048|utf8',
@@ -380,6 +389,32 @@ class Validator extends Base\Validator
     }
 
     /**
+     * @param string|null $attribute
+     * @param string|null $value
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateCustomDomainSlug(string $attribute, ?string $value)
+    {
+        if (is_null($value) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'slug required for page with custom domain.',
+                Entity::SLUG,
+                compact('value')
+            );
+        }
+
+        if ($attribute === "")
+        {
+            return;
+        }
+
+        $this->validateSlug($attribute, $value);
+    }
+
+    /**
      * Validates user provided slug value, allows alpha numeric, _ and - chars.
      * @param  string $attribute
      * @param  string $value
@@ -387,6 +422,8 @@ class Validator extends Base\Validator
      */
     public function validateSlug(string $attribute, string $value)
     {
+        $this->validateInput('slug', [Entity::SLUG => $attribute]);
+
         $valid = preg_match('/^[A-Za-z0-9-_]+$/', $value);
 
         if ($valid !== 1 )
@@ -1109,6 +1146,34 @@ class Validator extends Base\Validator
             ]);
 
             return false;
+        }
+    }
+
+    /**
+     * @param                                     $slug
+     * @param                                     $domain
+     * @param \RZP\Models\PaymentLink\Entity|null $entity
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateUniqueNocodeSlug($slug, $domain, ?Entity $entity = null): void
+    {
+        $core = new NocodeCustomUrl\Core;
+
+        $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($domain);
+
+        if ($entity !== null)
+        {
+            $core->validateAndDetermineShouldCreate($slug, $domain, $entity, $entity->merchant);
+            return;
+        }
+
+        $nocodeEntity = $core->getUniqueEntity($slug, $domain);
+
+        if ($nocodeEntity !== null && ! $nocodeEntity->trashed())
+        {
+            throw new BadRequestValidationFailureException(NocodeCustomUrl\Core::ENTITY_DUPLICATE_ERROR);
         }
     }
 }

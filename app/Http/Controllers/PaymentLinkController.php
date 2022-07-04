@@ -7,6 +7,9 @@ use Request;
 use ApiResponse;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Models\PaymentLink\Metric as PLMetric;
 use RZP\Constants\Entity as E;
 use Illuminate\Http\Request  as CurrentRequest;
 use RZP\Error\ErrorCode;
@@ -14,6 +17,7 @@ use RZP\Models\PaymentLink\Entity;
 use RZP\Models\PaymentLink\ViewType;
 use RZP\Exception\BadRequestException;
 use RZP\Http\Controllers\Traits\HasCrudMethods;
+use RZP\Models\PaymentLink\CustomDomain;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class PaymentLinkController extends Controller
@@ -188,12 +192,23 @@ class PaymentLinkController extends Controller
     }
 
     /**
+     * @return mixed
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function viewByEmptySlug()
+    {
+        return $this->viewBySlug("");
+    }
+
+    /**
      * Renders hosted view for payment link with given slug
      * @param string $slug
      */
     public function viewBySlug(string $slug)
     {
-        $host = request()->url();
+        $this->cloudflareRequest();
+
+        $host = $this->getHost();
 
         $slugMetadata = $this->service()->getSlugMetaData($slug, $host);
 
@@ -242,6 +257,8 @@ class PaymentLinkController extends Controller
 
     public function createOrder(string $id)
     {
+        $this->cloudflareRequest();
+
         $response = Tracer::inSpan(['name' => 'payment_page.order.create'], function() use($id)
         {
             return $this->service()->createOrder($id, $this->input);
@@ -252,6 +269,8 @@ class PaymentLinkController extends Controller
 
     public function createOrderOptions(string $id, CurrentRequest $request)
     {
+        $this->cloudflareRequest();
+
         $response = ApiResponse::json([]);
 
         $origin = $request->headers->get('origin');
@@ -267,7 +286,7 @@ class PaymentLinkController extends Controller
             $urlHosts[] = $this->identifyHost($url);
         }
 
-        if (in_array($originHost, $urlHosts) === true)
+        if (in_array($originHost, $urlHosts) === true || $this->service()->cdsHas($origin))
         {
             $response->headers->set('Access-Control-Allow-Origin', $origin);
 
@@ -445,6 +464,78 @@ class PaymentLinkController extends Controller
     }
 
     /**
+     * @return mixed
+     */
+    public function cdsDomainCreate()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cdsDomainCreate($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsDomainList()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cdsDomainList($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsDomainDelete()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cdsDomainDelete($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsPropagation()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cdsPropagation($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsDomainExists()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cdsDomainExists($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function cdsIsSubDomain()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->cdsIsSubDomain($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * @param string $url
      *
      * @return string
@@ -456,5 +547,82 @@ class PaymentLinkController extends Controller
         $hostArray = array_slice($explods, 0, 3);
 
         return implode("/", $hostArray);
+    }
+
+    /**
+     * @return void
+     */
+    private function cloudflareRequest(): void
+    {
+        $request = request();
+
+        $customDomainHeader = CustomDomain\Constants::CF_CUSTOM_DOMAIN_HEADER;
+        $customDomainTimeSecHeader = CustomDomain\Constants::CF_REQUEST_RECIEVED_SEC_HEADER;
+        $customDomainTimeMilliSecHeader = CustomDomain\Constants::CF_REQUEST_RECIEVED_MSEC_HEADER;
+
+        $headers = $request->headers;
+
+        if (! $headers->has($customDomainHeader)
+            || !$headers->has($customDomainTimeSecHeader)
+            || !$headers->has($customDomainTimeMilliSecHeader))
+        {
+            return;
+        }
+
+        $contextHeader = [
+            $customDomainHeader             => $headers->get($customDomainHeader),
+            $customDomainTimeSecHeader      => $headers->get($customDomainTimeSecHeader),
+            $customDomainTimeMilliSecHeader => $headers->get($customDomainTimeMilliSecHeader),
+        ];
+
+        $cfMillSec = $headers->get($customDomainTimeSecHeader)
+            .$this->appendZeroIfRequired($headers->get($customDomainTimeMilliSecHeader));
+
+        $cfMillSec = (int) $cfMillSec;
+
+        $diff = millitime() - $cfMillSec;
+
+        $this->trace->info(TraceCode::CLOUD_FLARE_REQUEST_RECIEVED, [
+            'headers'   => $contextHeader,
+            'time_diff' => $diff
+        ]);
+
+        $this->trace->count(PLMetric::CF_REQUEST_COUNT, [
+            Metric::LABEL_ROUTE => $request->route()->getName(),
+        ]);
+
+        $this->trace->histogram(PLMetric::CF_REQUEST_LATENCY_MILLISECONDS, $diff, [
+            Metric::LABEL_ROUTE => $request->route()->getName(),
+        ]);
+    }
+
+    /**
+     * @param $msec
+     *
+     * @return string
+     */
+    private function appendZeroIfRequired($msec): string
+    {
+        while (strlen($msec) < 3)
+        {
+            $msec = '0' . $msec;
+        }
+
+        return $msec;
+    }
+
+    /**
+     * @return string
+     */
+    private function getHost(): string
+    {
+        $customDomain = request()->header(CustomDomain\Constants::CF_CUSTOM_DOMAIN_HEADER);
+
+        if (empty($customDomain) !== true)
+        {
+            return $customDomain;
+        }
+
+        return request()->url();
     }
 }

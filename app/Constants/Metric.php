@@ -7,6 +7,8 @@ namespace RZP\Constants;
  */
 class Metric
 {
+    const CF_REQUEST_LATENCY_MILLISECONDS       = 'cf_request_latency_milliseconds';
+
     // Counters type metric names
     const HTTP_REQUESTS_TOTAL                   = 'http_requests_total';
     const CACHE_HITS_TOTAL                      = 'cache_hits_total';

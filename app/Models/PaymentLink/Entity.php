@@ -180,6 +180,9 @@ class Entity extends Base\PublicEntity
     const ENTITY_BASE_CACHE_KEY                         = "hosted:entity";
     const SERIALIZE_PP_CACHE_KEY                        = "paymentlink:serialized";
 
+    const CUSTOM_DOMAIN                         = 'custom_domain';
+    const CUSTOM_DOMAIN_SLUG                    = 'custom_domain_slug'; // This is only for validation key
+
     const SETTINGS_KEYS                = [
         self::THEME,
         self::UDF_SCHEMA,
@@ -201,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::PP_FB_EVENT_PAYMENT_COMPLETE,
         self::GOAL_TRACKER,
         self::PARTNER_WEBHOOK_SETTINGS,
+        self::CUSTOM_DOMAIN,
     ];
 
     const INVOICE_DETAILS_KEYS          = [
