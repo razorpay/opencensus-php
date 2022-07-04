@@ -28,7 +28,21 @@ export const BANK_NAMES = {
   KKBK: 'KKBK',
   /** https://axiseasypay.razorpay.com/signin */
   AXIS_EASY_PAY: 'UTIB',
+  /** https://hdfcbankcollectnow.razorpay.com/signin */
+  HDFC_COLLECT_NOW: 'HDFC',
+  /** https://yesbank.razorpay.com/signin */
+  YES_BANK: 'YESB',
+  /** https://hdfcgig.razorpay.com/signin */
+  HDFC_GIG: 'HDFC GIG',
+  /** https://sib.razorpay.com/signin */
+  SIB: 'SIBL',
 };
+
+export const IGNORE_BG_IMAGES_BANKS = [
+  BANK_NAMES.HDFC_COLLECT_NOW,
+  BANK_NAMES.YES_BANK,
+  BANK_NAMES.HDFC_GIG,
+];
 
 export const getCookie = (name) => {
   const value = `; ${document.cookie}`;

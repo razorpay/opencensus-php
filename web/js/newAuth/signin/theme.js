@@ -27,13 +27,20 @@ const bankPrimaryColors = {
   [BANK_NAMES.HDFC]: 'rgb(8, 76, 141)',
 };
 
+const OLD_BLUE_GRADIENT = 'linear-gradient(314deg, #54a5ff -40%, #03299C)';
+
 const bankBackgroundColors = {
   [BANK_NAMES.BOB]: '#FF5D27',
   [BANK_NAMES.ICICI]: theme.colors.background[600],
   [BANK_NAMES.AXIS]: theme.colors.background[600],
   [BANK_NAMES.KKBK]: theme.colors.background[600],
   [BANK_NAMES.AXIS_EASY_PAY]: '#97144d',
-  [BANK_NAMES.JKB]: 'linear-gradient(314deg, #54a5ff -40%, #03299C)',
+  [BANK_NAMES.JKB]: OLD_BLUE_GRADIENT,
+  [BANK_NAMES.HDFC_COLLECT_NOW]: '#004b8e',
+  [BANK_NAMES.YES_BANK]: '#ffffff',
+  [BANK_NAMES.HDFC_GIG]: '#f0f3f4',
+  [BANK_NAMES.SIB]: '#c4161b',
+  [BANK_NAMES.CITI]: OLD_BLUE_GRADIENT,
 };
 
 const createPrimaryColors = (color) => {
@@ -91,21 +98,19 @@ export const getTheme = (orgData) => {
 
 export const getBankingCaptchaColor = (org) => {
   switch (org) {
+    // works for white/light bg
     case BANK_NAMES.ICICI:
     case BANK_NAMES.AXIS:
     case BANK_NAMES.KKBK:
+    case BANK_NAMES.YES_BANK:
+    case BANK_NAMES.HDFC_GIG:
       return {
         primary: { desktop: 'dark.970', mobile: 'dark.970' },
         secondary: { desktop: 'primary.900', mobile: 'primary.900' },
       };
 
-    case BANK_NAMES.HDFC:
-      return {
-        primary: { desktop: 'light.970', mobile: 'dark.970' },
-        secondary: { desktop: 'red.900', mobile: 'red.900' },
-      };
-
     case BANK_NAMES.BOB:
+    case BANK_NAMES.SIB:
       return {
         primary: { desktop: 'light.900', mobile: 'dark.900' },
         secondary: { desktop: 'light.970', mobile: 'dark.970' },
@@ -113,6 +118,9 @@ export const getBankingCaptchaColor = (org) => {
 
     case BANK_NAMES.JKB:
     case BANK_NAMES.AXIS_EASY_PAY:
+    case BANK_NAMES.HDFC_COLLECT_NOW:
+    case BANK_NAMES.HDFC:
+    case BANK_NAMES.CITI:
       return {
         primary: { desktop: 'light.900', mobile: 'dark.900' },
         secondary: { desktop: 'light.900', mobile: 'dark.900' },

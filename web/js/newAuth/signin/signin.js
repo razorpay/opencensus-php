@@ -8,7 +8,7 @@ import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
 import { fetchOrg, transformFetchOrgData } from './apis';
 import { getBankingCaptchaColor, getTheme } from './theme';
-import { BANK_NAMES, getHostName, isTestEnvironment } from '../utils';
+import { BANK_NAMES, getHostName, isTestEnvironment, IGNORE_BG_IMAGES_BANKS } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';
 import {
   Container,
@@ -94,6 +94,27 @@ const Signin = () => {
     window.location.href = '/signup';
   };
 
+  const getBackgroundImage = () => {
+    if (IGNORE_BG_IMAGES_BANKS.some((bank) => orgData.orgName === bank)) {
+      return null;
+    } else if (orgData.backgroundImgUrl) {
+      return <Image src={orgData.backgroundImgUrl} alt="background image" />;
+    }
+    return null;
+  };
+
+  const getHeader = () => {
+    // if backgroundImgUrl is present we need to hide header
+    // Exception: hdfcCollectNow bank
+
+    if (!orgData.backgroundImgUrl) {
+      return <Header handleOnClick={handleSignUpClick} orgData={orgData} />;
+    } else if (IGNORE_BG_IMAGES_BANKS.some((bank) => orgData.orgName === bank)) {
+      return <Header handleOnClick={handleSignUpClick} orgData={orgData} />;
+    }
+    return null;
+  };
+
   const captchaTextColor = getBankingCaptchaColor(orgData.orgName);
 
   return (
@@ -103,13 +124,11 @@ const Signin = () => {
       ) : (
         <Size minheight="100vh">
           <Container org={orgData.orgName}>
-            {orgData.backgroundImgUrl && <Image src={orgData.backgroundImgUrl} />}
+            {getBackgroundImage()}
             <Size maxWidth="830px">
               <Flex flexDirection="column">
                 <ContentContainer>
-                  {!orgData.backgroundImgUrl && (
-                    <Header handleOnClick={handleSignUpClick} orgData={orgData} /> // dont show logo as header when background url is present
-                  )}
+                  {getHeader()}
                   <RelativeView>
                     <DesktopOnlyView>
                       <Space padding={[5]}>
