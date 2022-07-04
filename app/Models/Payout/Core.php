@@ -2292,14 +2292,11 @@ class Core extends Base\Core
             }
         }
 
-        $isInterAccountPayout = $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT;
-        $isInterAccountTestPayout = $payout->merchant->isFeatureEnabled(FeatureConstants::INTER_ACCOUNT_TEST_PAYOUT) === true;
-        $shouldCreateInternalEntityForPayout = ($isInterAccountPayout or $isInterAccountTestPayout);
-
-        if ($shouldCreateInternalEntityForPayout === true)
+        if ($payout->isInterAccountPayout() === true)
         {
             try
             {
+                $isInterAccountTestPayout = $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT ? false : true;
                 $internalEntityService = new \RZP\Models\Internal\Service();
                 $internalEntityService->createOnPayout($payout, $isInterAccountTestPayout);
             }

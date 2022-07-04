@@ -24615,5 +24615,72 @@ class PayoutTest extends OAuthTestCase
         // pushed once for payout creation transaction and once for reversal transaction
         Queue::assertPushed(Transactions::class, 2);
     }
+
+    public function testNoCreationOfInternalEntityForTestPayoutWhenBeneAccountIsNotWhitelisted()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::INTER_ACCOUNT_TEST_PAYOUT]);
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS => [
+                                                   [
+                                                       'merchant_id'    => 'merchant200000',
+                                                       'account_type'   => 'bank_account',
+                                                       'account_number' => '35860000002',
+                                                       'entity'         => 'RZPX'
+                                                   ],
+                                               ],
+                                           ]);
+
+        $ledgerSnsPayloadArray = [];
+
+        // During payout creation, there has been push to SNS topic for creating this transaction in Ledger service.
+        // Mocking ledger sns because call to ledger is currently async via SNS. Once it is in sync, this will be removed.
+        $this->mockLedgerSns(2, $ledgerSnsPayloadArray);
+
+        $fundAccount = $this->getDbLastEntity('fund_account');
+
+        $bankAccount = $this->getDbEntity('bank_account', ['id' => $fundAccount->getAccountId()]);
+
+        $this->fixtures->edit('bank_account', $bankAccount->getId(),
+                              [
+                                  'account_number' => '3434123456789012',
+                                  'ifsc_code'      => 'YESB0000022'
+                              ]);
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->updateFtaAndSource($payout->getId(), 'processed', '12341234');
+
+        $payout->reload();
+
+        $initiatedLedgerPayload = $ledgerSnsPayloadArray[0];
+        $processedLedgerPayload = $ledgerSnsPayloadArray[1];
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'             => 'X',
+                'transactor_id'      => $payout->getPublicId(),
+                'transactor_event'   => 'payout_initiated',
+                'amount'             => strval($payout->getAmount()),
+                'api_transaction_id' => $payout->transaction->getId(),
+            ], $initiatedLedgerPayload);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'           => 'X',
+                'transactor_id'    => $payout->getPublicId(),
+                'transactor_event' => 'payout_processed',
+                'amount'           => strval($payout->getAmount()),
+                'transaction_date' => $payout->getProcessedAt(),
+            ], $processedLedgerPayload);
+
+        $internalEntity = $this->getDbLastEntity('internal');
+        $this->assertNull($internalEntity);
+    }
  }
 
