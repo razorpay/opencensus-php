@@ -110,6 +110,10 @@ class Service extends Base\Service
         $invitation         = $partnerInvitation['invitation'];
         $invitationToken    = $partnerInvitation['invitationToken'];
 
+        $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
+
+        unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
+
         $heimdallTokenData = $this->handleHeimdallInvitation($input);
 
         if (empty($input[Entity::OAUTH_PROVIDER]) === false)
@@ -182,6 +186,22 @@ class Service extends Base\Service
         else
         {
             $data = $this->createMerchant($user, $referrer, $businessName, $partnerIntent, $input, $heimdallTokenData, $sendConfirmation);
+
+            $merchantId = $data['id'];
+
+            $experiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
+
+            if ((empty($signupCampaign) === false) and
+                ($experiment === true))
+            {
+                $ddInput = [
+                    DeviceDetail\Entity::MERCHANT_ID        => $merchantId,
+                    DeviceDetail\Entity::USER_ID            => $user['id'],
+                    DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+                ];
+
+                (new DeviceDetail\Core)->createDeviceDetail($ddInput);
+            }
         }
 
         $signupMethod = Constants::PASSWORD;
