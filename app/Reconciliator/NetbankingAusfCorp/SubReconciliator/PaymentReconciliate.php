@@ -19,12 +19,24 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getPaymentId(array $row)
     {
-        return $row[Constants::USERREFERENCENO] ?? null;
+        $paymentId = $row[Constants::USERREFERENCENO] ?? null;
+        if($paymentId !== null)
+        {
+            // Trimming the first char in file to clean up the data
+            $paymentId = substr($paymentId, 1);
+        }
+        return $paymentId;
     }
 
     protected function getReferenceNumber($row)
     {
-        return $row[Constants::EXTERNALREFERENCEID_EXT] ?? null;
+        $referenceNumber = $row[Constants::EXTERNALREFERENCEID_EXT] ?? null;
+        if($referenceNumber !== null)
+        {
+            // Trimming the first char in file to clean up the data
+            $referenceNumber = substr($referenceNumber, 1);
+        }
+        return $referenceNumber;
     }
 
     protected function getAccountDetails($row)

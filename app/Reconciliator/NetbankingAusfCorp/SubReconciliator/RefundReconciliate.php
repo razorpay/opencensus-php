@@ -12,7 +12,13 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate{
 
     protected function getRefundId(array $row)
     {
-        return $row[Constants::PAYMENT_ID_EXT] ?? null;
+        $refundId = $row[Constants::PAYMENT_ID_EXT] ?? null;
+        if($refundId !== null)
+        {
+            // Trimming the first char in file to clean up the data
+            $refundId = substr($refundId, 1);
+        }
+        return $refundId;
     }
 
     protected function getReconRefundAmount(array $row)
@@ -22,34 +28,6 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate{
 
     protected function getGatewaySettledAt(array $row)
     {
-        if (empty($row[self::PAYMENT_DATE]) === true)
-        {
-            return null;
-        }
-
-        $columnSettledAt = strtolower($row[self::PAYMENT_DATE]);
-
-        $gatewaySettledAt = null;
-
-        try
-        {
-            $gatewaySettledAt = Carbon::createFromFormat('dd-mm-yy', $columnSettledAt, Timezone::IST);
-            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Logger::INFO,
-                TraceCode::RECON_INFO_ALERT,
-                [
-                    'info_code' => Base\InfoCode::INCORRECT_DATE_FORMAT,
-                    'message'   => 'Unable to parse settlement date -> ' . $ex->getMessage(),
-                    'date'      => $columnSettledAt,
-                    'gateway'   => $this->gateway,
-                ]);
-        }
-
-        return $gatewaySettledAt;
+        return $row[Constants::PAYMENT_DATE] ?? null;
     }
 }
