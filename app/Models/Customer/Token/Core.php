@@ -3132,4 +3132,38 @@ class Core extends Base\Core
 
         return $existingToken;
     }
+
+    /**
+     * This method takes in the current token collection, removes the
+     * card tokens which are network tokenised but status is not active
+     *
+     * @param $tokens
+     *
+     * @return mixed
+     */
+    public function removeNonActiveTokenisedCardTokens($tokens)
+    {
+        if (Base\PublicCollection::isPublicCollection($tokens) === true)
+        {
+            return $tokens->filter(static function (Entity $token) {
+                // If token has network tokenised card, and status is not active, remove it
+                if (($token->hasCard()) &&
+                    (!$token->card->isRzpTokenisedCard()) &&
+                    ($token->getStatus() !== Entity::ACTIVE)) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        // Added this log for checking if this edge case occurs
+        // If this gets logged, will have to handle that case as well
+        // Else will remove it after 1 week
+        $this->trace->warn(TraceCode::TOKENS_NOT_A_PUBLIC_COLLECTION, [
+            'tokens_data_type' => gettype($tokens),
+        ]);
+
+        return $tokens;
+    }
 }

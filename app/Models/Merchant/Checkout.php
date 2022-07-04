@@ -733,6 +733,8 @@ class Checkout
 
             $savedTokens = $tokenCore->removeDuplicateCardRecurringTokensIfAny($savedTokens,$merchant);
 
+            $savedTokens = $tokenCore->removeNonActiveTokenisedCardTokens($savedTokens);
+
             $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens, $merchant);
             $custData['tokens'] = $savedTokens->toArrayPublic();
 
@@ -859,14 +861,18 @@ class Checkout
                     {
                         $tokens = $response['tokens'];
 
+                        $tokenCore = (new Customer\Token\Core());
+
                         // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
-                        $tokensWithoutEmandate = (new Customer\Token\Core)->removeEmandateRecurringTokens($tokens);
+                        $tokensWithoutEmandate = $tokenCore->removeEmandateRecurringTokens($tokens);
 
-                        $tokensWithoutDisabledCardNetwork = (new Customer\Token\Core)->removeDisabledNetworkTokens($tokensWithoutEmandate, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
+                        $tokensWithoutDisabledCardNetwork = $tokenCore->removeDisabledNetworkTokens($tokensWithoutEmandate, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
-                        $tokensWithoutCardName = (new Customer\Token\Core)->removeCardTokensWithoutName($tokensWithoutDisabledCardNetwork);
+                        $tokensWithoutCardName = $tokenCore->removeCardTokensWithoutName($tokensWithoutDisabledCardNetwork);
 
-                        $data['customer']['tokens'] = $tokensWithoutCardName;
+                        $tokensWithoutNonActiveTokenisedCards = $tokenCore->removeNonActiveTokenisedCardTokens($tokensWithoutCardName);
+
+                        $data['customer']['tokens'] = $tokensWithoutNonActiveTokenisedCards;
                     }
                 }
                 // add saved addresses status

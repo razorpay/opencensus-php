@@ -180,6 +180,7 @@ class Entity extends Base\PublicEntity
     /*
     * status field values
     */
+    const ACTIVE              = 'active';
     const DEACTIVATED         = 'deactivated';
     const EXPIRED             = 'expired';
     const DEACTIVATED_BY_BANK = 'deactivated_by_bank';

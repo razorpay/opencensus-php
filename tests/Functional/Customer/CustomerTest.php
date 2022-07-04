@@ -769,6 +769,61 @@ class customerTest extends TestCase
         $this->assertNotContains('token_100022xtokenl2', $tokenIds);
     }
 
+    public function testOtpVerifyResponseDoesNotContainStatusInactiveCardTokens(): void
+    {
+        $this->ba->publicAuth();
+
+        $this->mockRaven();
+
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'rzpvault']);
+        $this->fixturesToCreateToken('100022xtokenl2', '100000003card2', '411141', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'active']);
+        $this->fixturesToCreateToken('100022xtokenl3', '100000003card3', '411142', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
+        $this->fixturesToCreateToken('100022xtokenl4', '100000003card4', '411143', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'deactivated']);
+        $this->fixturesToCreateToken('100022xtokenl5', '100000003card5', '411144', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'deleted']);
+
+        // send OTP
+        $this->sendOtp('9988776655');
+
+        // verify OTP
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
+
+        $this->assertEquals($content['success'], 1);
+        $this->assertNotEquals($content['tokens'], null);
+
+        $tokenIds = $this->getTokenIds($content['tokens']['items']);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertContains('token_100022xtokenl2', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl3', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl4', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl5', $tokenIds);
+    }
+
+    public function testFetchTokensResponseContainsStatusInactiveCardTokens(): void
+    {
+        $this->ba->privateAuth();
+
+        $payload = $this->testData['testGetCustomerTokens'];
+
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000', '100000customer', ['vault' => 'rzpvault']);
+        $this->fixturesToCreateToken('100022xtokenl2', '100000003card2', '411141', '10000000000000', '100000customer', ['vault' => 'visa', 'status' => 'active']);
+        $this->fixturesToCreateToken('100022xtokenl3', '100000003card3', '411142', '10000000000000', '100000customer', ['vault' => 'visa']);
+        $this->fixturesToCreateToken('100022xtokenl4', '100000003card4', '411143', '10000000000000', '100000customer', ['vault' => 'visa', 'status' => 'deactivated']);
+        $this->fixturesToCreateToken('100022xtokenl5', '100000003card5', '411144', '10000000000000', '100000customer', ['vault' => 'visa', 'status' => 'deleted']);
+
+        $payload['response']['content'] = [];
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->getTokenIds($response['items']);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertContains('token_100022xtokenl2', $tokenIds);
+        $this->assertContains('token_100022xtokenl3', $tokenIds);
+        $this->assertContains('token_100022xtokenl4', $tokenIds);
+        $this->assertContains('token_100022xtokenl5', $tokenIds);
+    }
+
     protected function getTokenIds($tokens): array
     {
         $tokenIds = [];
@@ -818,7 +873,7 @@ class customerTest extends TestCase
                 'network'       => $inputFields['network'] ?? 'Visa',
                 'last4'         => '1111',
                 'type'          => 'debit',
-                'vault'         => 'rzpvault',
+                'vault'         => $inputFields['vault'] ?? 'rzpvault',
                 'vault_token'   => 'test_token',
                 'international' => $inputFields['international'] ?? null,
             ]
@@ -834,6 +889,7 @@ class customerTest extends TestCase
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+                'status'          => $inputFields['status'] ?? NULL,
             ]
         );
     }

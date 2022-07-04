@@ -2710,6 +2710,31 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertContains('token_10002tokenlcl1', $tokenIds);
     }
 
+    public function testPreferencesResponseDoesNotContainStatusInactiveCardTokens(): void
+    {
+        $this->ba->publicAuth();
+
+        $this->mockSession();
+
+        $payload = $this->testData['testGetCheckoutPreferencesForDedupeLocalTokensOverGlobalTokens'];
+
+        $this->fixturesToCreateCardToken('100022xtokenl1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'rzpvault']);
+        $this->fixturesToCreateCardToken('100022xtokenl2', '100000003card2', '411141', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'active']);
+        $this->fixturesToCreateCardToken('100022xtokenl3', '100000003card3', '411142', '10000000000000', '10000gcustomer', ['vault' => 'visa']);
+        $this->fixturesToCreateCardToken('100022xtokenl4', '100000003card4', '411143', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'deactivated']);
+        $this->fixturesToCreateCardToken('100022xtokenl5', '100000003card5', '411144', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'deleted']);
+
+        $response = $this->startTest($payload);
+
+        $tokenIds = $this->extractTokenIdsFromResponse($response);
+
+        $this->assertContains('token_100022xtokenl1', $tokenIds);
+        $this->assertContains('token_100022xtokenl2', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl3', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl4', $tokenIds);
+        $this->assertNotContains('token_100022xtokenl5', $tokenIds);
+    }
+
     protected function extractTokenIdsFromResponse(array $response): array
     {
         $tokenIds = [];
@@ -2761,7 +2786,7 @@ class CheckoutPreferencesTest extends TestCase
                 'network'       => $inputFields['network'] ?? 'Visa',
                 'last4'         => '1111',
                 'type'          => 'debit',
-                'vault'         => 'rzpvault',
+                'vault'         => $inputFields['vault'] ?? 'rzpvault',
                 'vault_token'   => 'test_token',
                 'international' => $inputFields['international'] ?? null,
             ]
@@ -2777,6 +2802,7 @@ class CheckoutPreferencesTest extends TestCase
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
+                'status'          => $inputFields['status'] ?? NULL,
             ]
         );
     }
