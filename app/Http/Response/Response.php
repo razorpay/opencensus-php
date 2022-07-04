@@ -10,6 +10,7 @@ use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Product;
 use RZP\Constants\Environment;
 use Illuminate\Http\JsonResponse;
 
@@ -284,14 +285,15 @@ class Response
 
         $edgeHeader = $this->request->headers->get(Header::X_EDGE_ROUTE_DETAILS);
 
+        // Adding routeName and productName header used by developer-console
+        // Checking the X routes using product key to block X request also
+        // And filtering S2S routes so that no cards data will flow to developer-console
         if (empty($edgeHeader) === false &&
-            $edgeHeader === 'true')
+            $edgeHeader === 'true' &&
+            $this->ba->getRequestOriginProduct() !== Product::BANKING &&
+            in_array($route, route::S2S_PAYMENT_ROUTES, true) === false)
         {
-            $product = $this->ba->getRequestOriginProduct();
-
             $response->header(Header::X_ROUTE_NAME, $route);
-
-            $response->header(Header::X_DC_PRODUCT_NAME, $product);
         }
 
         $this->stopBrowserCaching($response);
