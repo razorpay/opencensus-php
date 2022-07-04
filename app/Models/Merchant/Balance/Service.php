@@ -9,11 +9,25 @@ use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
+use RZP\Services\PayoutService;
+use RZP\Models\Feature\Constants;
 use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
     const FREE_PAYOUT_UPDATE_MUTEX_LOCK_TIMEOUT = 60;
+
+    /**
+     * @var PayoutService\UpdateFreePayout
+     */
+    protected $payoutServiceUpdateFreePayoutClient;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->payoutServiceUpdateFreePayoutClient = $this->app[PayoutService\UpdateFreePayout::PAYOUT_SERVICE_UPDATE_FREE_PAYOUT];
+    }
 
     public function createCapitalBalance($input)
     {
@@ -123,38 +137,48 @@ class Service extends Base\Service
                 ]);
         }
 
-        $mutexResource = sprintf('UPDATE_FREE_PAYOUT_%s_%s',
-            $id,
-            $this->mode);
+        $merchantId = $balance->getMerchantId();
 
-        return $this->app['api.mutex']->acquireAndRelease(
-            $mutexResource,
-            function() use ($balance, $input)
-            {
-                (new Validator)->validateInput(Validator::UPDATE_FREE_PAYOUTS_ATTRIBUTES, $input);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                $this->trace->info(
-                    TraceCode::UPDATE_FREE_PAYOUTS_ATTRIBUTES_REQUEST,
-                    [
-                        'balance_id' => $balance->getId(),
-                        'input' => $input,
-                    ]
-                );
+        if ($merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS))
+        {
+            return $this->payoutServiceUpdateFreePayoutClient->updateFreePayoutAttributesViaMicroservice($id, $input);
+        }
+        else
+        {
+            $mutexResource = sprintf('UPDATE_FREE_PAYOUT_%s_%s',
+                $id,
+                $this->mode);
 
-                $updatePayoutsAttributes = $this->createCounterForBalance($balance, $input);
+            return $this->app['api.mutex']->acquireAndRelease(
+                $mutexResource,
+                function () use ($balance, $input) {
+                    (new Validator)->validateInput(Validator::UPDATE_FREE_PAYOUTS_ATTRIBUTES, $input);
 
-                $this->trace->info(
-                    TraceCode::UPDATE_FREE_PAYOUTS_ATTRIBUTES_SUCCESS,
-                    [
-                        'balance_id' => $balance->getId(),
-                        'updated_free_payouts_data' => $updatePayoutsAttributes,
-                    ]
-                );
+                    $this->trace->info(
+                        TraceCode::UPDATE_FREE_PAYOUTS_ATTRIBUTES_REQUEST,
+                        [
+                            'balance_id' => $balance->getId(),
+                            'input' => $input,
+                        ]
+                    );
 
-                return $updatePayoutsAttributes;
-            },
-            self::FREE_PAYOUT_UPDATE_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS);
+                    $updatePayoutsAttributes = $this->createCounterForBalance($balance, $input);
+
+                    $this->trace->info(
+                        TraceCode::UPDATE_FREE_PAYOUTS_ATTRIBUTES_SUCCESS,
+                        [
+                            'balance_id' => $balance->getId(),
+                            'updated_free_payouts_data' => $updatePayoutsAttributes,
+                        ]
+                    );
+
+                    return $updatePayoutsAttributes;
+                },
+                self::FREE_PAYOUT_UPDATE_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS);
+        }
     }
 
     public function createCounterForBalance($balance, $input)

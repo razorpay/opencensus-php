@@ -1243,6 +1243,48 @@ return [
         ],
     ],
 
+    'testUpdateFreePayoutsCountAndMode' => [
+        'request'  => [
+            'url'     => '/balance/{id}/free_payout',
+            'method'  => 'post',
+            'content' => [
+                'free_payouts_count'           => 12,
+                'free_payouts_supported_modes' => ['IMPS']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'free_payouts_count'           => 12,
+                'free_payouts_supported_modes' => ['IMPS']
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateFreePayoutsServiceFailure' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/balance/{id}/free_payout',
+            'content' => [
+                'free_payouts_count'           => 12,
+                'free_payouts_supported_modes' => ['IMPS']
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Service Failure',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
     'testDccPayoutsDetailsFetch' => [
         'request'  => [
             'method' => 'POST',

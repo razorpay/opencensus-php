@@ -15,7 +15,9 @@ use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -23,12 +25,14 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Services\PayoutService\DataConsistencyChecker;
 use RZP\Services\PayoutService\Get as PayoutServiceGet;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Models\Merchant\Balance\AccountType as AccountType;
 use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
+use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
 
 class PayoutServiceTest extends TestCase
 {
@@ -423,6 +427,76 @@ class PayoutServiceTest extends TestCase
                     "failure_reason"    =>   null,
                     "created_at"        =>   1614325826,
                     "fee_type"          =>   null
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
+        }
+
+        return $response;
+    }
+
+    public function mockPayoutServiceFreePayoutSet($fail = false, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $freePayoutSetMock = Mockery::mock('RZP\Services\PayoutService\UpdateFreePayout',
+            [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $freePayoutSetMock->shouldReceive('sendRequest')
+            ->withArgs(
+                function($arg) use ($request) {
+                    try
+                    {
+                        // Using this method only here as we want to check if the keys in the
+                        // request are coming properly or not.
+                        $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                        return true;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        return false;
+                    }
+                }
+            )
+            ->andReturn(
+            // We are returning this response only as we don't have a use case of supporting
+            // response based on $request, if needed, that can also be added here using
+            // andReturnUsing method instead of andReturn
+                $this->freePayoutSetResponseForPayoutServiceMock($fail)
+            );
+
+        $this->app->instance(PayoutServiceUpdateFreePayout::PAYOUT_SERVICE_UPDATE_FREE_PAYOUT, $freePayoutSetMock);
+    }
+
+    public function freePayoutSetResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"       => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                    'free_payouts_count'           => 12,
+                    'free_payouts_supported_modes' => ['IMPS']
                 ]);
             $response->status_code = 200;
             $response->success = true;
@@ -2399,6 +2473,46 @@ class PayoutServiceTest extends TestCase
         $this->assertNotNull($payout);
         $this->assertEquals($payout['workflow_feature'], 1);
         $this->assertEquals($payout['is_payout_service'], false);
+    }
+
+    public function testUpdateFreePayoutsCountAndMode()
+    {
+        $this->mockPayoutServiceFreePayoutSet();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $balance = $this->fixtures->create('balance',
+            [
+                Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                Balance::TYPE         => Type::BANKING,
+            ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->startTest();
+    }
+
+    public function testUpdateFreePayoutsServiceFailure()
+    {
+        $this->mockPayoutServiceFreePayoutSet(true);
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/balance/' . $balance[Balance::ID] . '/free_payout';
+
+        $this->startTest();
     }
 
     public function testDccPayoutsDetailsFetch()
