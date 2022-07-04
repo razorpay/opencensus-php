@@ -16,6 +16,7 @@ use RZP\Models\Invoice\Type;
 use RZP\Models\Invoice\Entity;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Preferences;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants as Feature;
 use Illuminate\Http\Response as ResponseCodes;
 
@@ -65,7 +66,7 @@ class InvoiceController extends Controller
     {
         $input = Request::all();
 
-        if ($this->shouldForwardToPaymentLinkService() === true)
+        if ($this->shouldForwardToPaymentLinkService([], false, $id) === true)
         {
             try
             {
@@ -677,6 +678,10 @@ class InvoiceController extends Controller
                 }
                 catch (\Exception $e)
                 {
+                    if($e->getMessage() === PublicErrorDescription::BAD_REQUEST_FORBIDDEN)
+                    {
+                        throw $e;
+                    }
                     // do nothing. will return true since id doesnt exist in api
                 }
             }
