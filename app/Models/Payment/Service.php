@@ -4364,6 +4364,10 @@ class Service extends Base\Service
             "fee_split" => $feeSplit,
         ];
 
+        $esInput['payment_ids'] = array($id);
+
+        $this->paymentsCardEsSyncCron($esInput);
+
         return $response;
     }
 
@@ -5242,17 +5246,27 @@ class Service extends Base\Service
     {
         $backfill = false;
 
-        if (empty($input['backfill']) == false)
+        if (empty($input['payment_ids']) === false)
         {
-            $backfill = true;
+            $paymentIds = $input['payment_ids'];
+        }
+        else 
+        {
+            if (empty($input['backfill']) == false)
+            {
+                $backfill = true;
+            }
+
+            $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
+            
+            $paymentIds = $response['data'];    
         }
 
-        $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
 
         $successCount = 0;
         $failedCount = 0;
 
-        foreach ($response['data'] as $paymentId)
+        foreach ($paymentIds as $paymentId)
         {
             // If $mode is provided use that else default to set rzp.mode
             $mode = $this->app['rzp.mode'];
