@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 use App;
 use Throwable;
 use RZP\Exception;
+use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
@@ -55,13 +57,18 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_CHECKOUT_RES,
-            ['body' => $body, 'response' => $response, 'time' => millitime() - $start]
+            [
+                'type' => 'place_shopify_checkout',
+                'body' => $body,
+                'response' => $response,
+                'time' => millitime() - $start
+            ]
         );
 
         if (empty($response['errors']) === false)
         {
             $this->trace->info(
-                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                  [
                      'type'     => 'error_creating_checkout',
                      'response' => $response,
@@ -79,7 +86,7 @@ class Core extends Base\Core
         if (empty($checkoutCreate['checkoutUserErrors']) === false)
         {
             $this->trace->info(
-                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                  [
                      'type'     => 'error_creating_checkout',
                      'response' => $response,
@@ -164,7 +171,12 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
-            ['checkoutId' => $checkoutId, 'time' => millitime() - $start]);
+            [
+                'type' => 'update_checkout_email',
+                'checkoutId' => $checkoutId,
+                'time' => millitime() - $start
+            ]
+        );
 
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
@@ -214,7 +226,12 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_SHIPPING_BODY,
-            ['checkoutId' => $checkoutId, 'shippingAddress' => $shippingAddress]);
+            [
+                'type' => 'update_shipping_address',
+                'checkoutId' => $checkoutId,
+                'shippingAddress' => $shippingAddress
+            ]
+        );
 
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
@@ -243,7 +260,7 @@ class Core extends Base\Core
               or empty($body['checkoutUserErrors']) === false)
             {
                 $this->trace->info(
-                     TraceCode::SHOPIFY_1CC_API_ERROR,
+                     TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
                      [
                          'type'       => 'invalid_response_fetching_rates',
                          'response'   => $body,
@@ -272,8 +289,9 @@ class Core extends Base\Core
                 $rates = (new Core)->parseShippingRates($shippingRates);
 
                 $this->trace->info(
-                    TraceCode::SHOPIFY_1CC_SHIPPING_RESPONSE,
+                    TraceCode::SHOPIFY_1CC_API_SHIPPING_RESPONSE,
                     [
+                        'type' => 'shipping_api_response',
                         'checkout'     => $checkout,
                         'currentTries' => $currentTries,
                         'time'         => millitime() - $start,
@@ -287,7 +305,7 @@ class Core extends Base\Core
         } while ($currentTries < $maxTries);
 
         $this->trace->info(
-             TraceCode::SHOPIFY_1CC_API_ERROR,
+             TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
              [
                  'type'       => 'rety_limit_exceeded_fetching_rates',
                  'checkoutId' => $checkoutId,
@@ -408,6 +426,7 @@ class Core extends Base\Core
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
                 [
+                    'type'      => 'hmac_validation_failed',
                     'query'     => $query,
                     'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
                     'hmac'      => $hmac,
@@ -434,7 +453,7 @@ class Core extends Base\Core
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
                     'type'             => 'duplicate_order_received',
-                    'error'            => 'Order has already been placed for this payment',
+                    'error'            => 'SQS error: Order has already been placed for this payment, nothing to worry here',
                     'order_id'         => $orderId,
                     'from_shopify_api' => $fromShopifyApi,
                 ]
@@ -450,9 +469,211 @@ class Core extends Base\Core
         $this->cache->put($key, 1, self::CACHE_VALIDITY_TTL);
     }
 
-    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment): array
+    public function exceptionPlaceShopifyOrderAPI($e, array $rzpOrder, array $rzpPayment, array $body): array 
     {
         $start = millitime();
+        
+        $orderId = $rzpOrder['id'];
+
+        $client = $this->getShopifyClientByMerchant();
+
+        $message = strtolower($e->getMessage());
+
+        $errorInventory = "unable to reserve inventory";
+
+        $errorPhone = "phone has already been taken";
+
+        $errorCustomer = "has already been taken";
+
+        $errorBadGateway = "502 bad gateway";
+
+        $errorService = "503 service unavailable";
+
+        $retry = false;
+
+        if(strpos($message, $errorPhone) !== false || strpos($message, $errorCustomer) !== false)
+        {
+            $body['customer']['phone'] = null;
+
+            $retry = true;
+        } 
+        else if (strpos($message, $errorBadGateway) !== false || strpos($message, $errorService) !== false) 
+        {
+            $retry = true;
+        } 
+
+        // Inventory case we are delegating it to SQS job.
+        if(strpos($message, $errorInventory) !== false)
+        {           
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_PLACE_ORDER_DELEGATED_SQS,
+                [
+                    'type'          => 'order_place_api_delegated_sqs',
+                    'order_id'      => $orderId,
+                    'strategy'      => 'inventory not available, delegated to SQS job',
+                    'error_message' => $message
+                ]
+            );
+
+            throw new Exception\BadRequestException(
+              ErrorCode::BAD_REQUEST_ERROR,
+              null,
+              null,
+              'INSUFFICIENT_INVENTORY'
+            );  
+        } 
+
+        // Retry work: retry only once only for User click journey not for SQS job order creation
+        // We are retrying once and if it fails again then we bank on SQS worker flow to try and place the order again
+        if ($retry === true) 
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY,
+                [
+                    'type'          => 'order_place_api_retry_initiated',
+                    'order_id'      => $orderId,
+                    'strategy'      => 'retry',
+                    'error_message' => $message
+                ]
+            );
+
+            try
+            {
+                $order = $client->sendRestApiRequest(
+                    json_encode(['order' => $body]),
+                    'POST',
+                    '/orders.json'
+                );
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR,
+                    [
+                        'type'     => 'order_place_api_retry_failed',
+                        'order_id' => $orderId,
+                        'error'    => $e->getMessage()
+                    ]
+                );
+
+                throw new Exception\BadRequestException(
+                  ErrorCode::BAD_REQUEST_ERROR,
+                  null,
+                  null,
+                  'RETRY_FAILED'
+                );  
+            }
+
+            $order = json_decode($order, true);
+
+            $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
+                [
+                    'type'             => 'order_place_api_retry_success',
+                    'order_id'         => $orderId,
+                    'shopify_order_id' => $order['order']['id'],
+                    'time'             => millitime() - $start
+                ]
+            );
+
+            return $order;
+        }
+        
+        return [];
+    }
+
+    public function exceptionPlaceShopifyOrderSQS($e, array $rzpOrder, array $rzpPayment): array 
+    {
+        $orderId = $rzpOrder['id'];
+        
+        $notes = $rzpOrder['notes'];
+
+        $message = strtolower($e->getMessage());
+
+        $errorInventory = "unable to reserve inventory";
+
+        // For SQS, we will refund the money back to the customer when we have an error
+        // We need to refund in SQS backend job if not, the customers money would be held with no order with Merchant
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_SQS_PLACE_ORDER_REFUND,
+            [
+                'type'           => 'sqs_order_place_refund_initiated',
+                'order_id'       => $orderId,
+                'strategy'       => 'refund', 
+                'error_message'  => $message,
+                'payment_method' => $rzpPayment['method']
+            ]
+        );  
+
+        // Refund if applicable, please double check
+        if (strtolower($rzpPayment['method']) !== 'cod')
+        {
+            $paymentId = $rzpPayment['id'];
+
+            $refundData = [
+                'amount' => $rzpPayment['amount'],
+            ];
+
+            try 
+            {
+                (new Payment\Service)->refund($paymentId, $refundData);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::SHOPIFY_1CC_SQS_PAYMENT_REFUND_FAILURE,
+                    [
+                        'type'     => 'sqs_order_place_refund_failed',
+                        'order_id' => $orderId,
+                        'payment_id' => $paymentId,
+                        'error'    => $e->getMessage()
+                    ]
+                );
+            }
+
+            //Update Razorpay Order with the error message
+            if (strpos($message, $errorInventory) !== false)
+            {
+                $notes['error'] = "Refund initiated to customer. Order could not be placed, lack of inventory.";
+            }
+            else
+            {
+                $notes['error'] = "Refund initiated to customer. Order could not be placed, due to error on shopify.";
+            }
+
+            (new Order\Service)->update($orderId, array('notes'=> $notes));
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_SQS_PLACE_ORDER_ERROR,
+                [
+                    'type'     => 'sqs_order_place_error',
+                    'order_id' => $orderId,
+                    'error'    => $e->getMessage()
+                ]
+            );
+
+            throw new Exception\BadRequestException(
+              ErrorCode::BAD_REQUEST_ERROR,
+              null,
+              null,
+              'SQS_ORDER_PLACE_ERROR'
+            );  
+        }
+
+        return [];
+    }
+
+    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi): array
+    {
+        $start = millitime();
+
+        $finalErrorCode = "";
+                    
+        $orderId = $rzpOrder['id'];
+
+        $notes = $rzpOrder['notes'];
 
         $client = $this->getShopifyClientByMerchant();
 
@@ -468,27 +689,59 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
+            $exceptionHandlerResponse = null;
+
+            if ($fromShopifyApi === true) 
+            {
+                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($e, $rzpOrder, $rzpPayment, $body);
+
+                $finalErrorCode = "DELEGATED_TO_SQS";
+            } 
+            else 
+            {
+                $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($e, $rzpOrder, $rzpPayment);
+
+                $finalErrorCode = "SQS_TOO_FAILED";
+            }
+
+            if (!empty($exceptionHandlerResponse)) 
+            {
+                return $exceptionHandlerResponse;
+            }
+
+            // Ensure we have this trace and exception at the end of this overall catch block
+            // Why: We are trying to handle the order errors with different strategies like retry and/or refund.
+            //      if we couldnt do any of these resolutions, these are the errors we need to handle in the future
             $this->trace->info(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
+                TraceCode::SHOPIFY_1CC_API_ORDER_ERROR,
                 [
-                    'error' => $e->getMessage()
+                    'type'     => 'order_place_api_error',
+                    'order_id' => $orderId,
+                    'errorcode'=> $finalErrorCode,
+                    'error'    => $e->getMessage()
                 ]
             );
-            throw new Exception\ServerErrorException(
-                'Error while calling URL',
-                ErrorCode::SERVER_ERROR,
-                null,
-                $e
-            );
-        }
 
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                $finalErrorCode 
+              );  
+        }
+ 
         $order = json_decode($order, true);
 
         $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
-            ['shopify_order_id' => $order['order']['id'], 'time' => millitime() - $start]
+            [
+                'type'             => 'order_place_api_response',
+                'order_id'         => $orderId,
+                'shopify_order_id' => $order['order']['id'],
+                'time'             => millitime() - $start
+            ]
         );
 
         return $order;
@@ -546,9 +799,9 @@ class Core extends Base\Core
 
         // NOTE: updating the contact causes conflicts in creating customer accounts
         // as shopify allows only single email per phone number
-        // $body['customer'] = [
-        //     'phone' => $customerDetails['contact'],
-        // ];
+        $body['customer'] = [
+            'phone' => $customerDetails['contact'],
+        ];
 
         if (empty($rzpOrder['promotions']) === false)
         {
@@ -621,7 +874,11 @@ class Core extends Base\Core
 
           $this->trace->info(
               TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
-              ['body' => $body, 'time' => millitime() - $start]
+              [
+                'type' => 'update_transaction_initiated',
+                'body' => $body,
+                'time' => millitime() - $start
+              ]
           );
 
           return json_decode($order, true);
@@ -629,9 +886,49 @@ class Core extends Base\Core
         catch (\Exception $e)
         {
             $this->trace->info(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
-                ['error' => $e->getMessage(), 'time' => millitime() - $start]
+                TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR,
+                [
+                    'type' => 'update_transaction_failed',
+                    'error' => $e->getMessage(),
+                    'time' => millitime() - $start
+                ]
             );
+
+            $message = strtolower($e->getMessage());
+
+            $errorBadGateway = "502 bad gateway";
+
+
+            if(strpos($message, $errorBadGateway) !== false)
+            {   
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_API_ERROR,
+                    [
+                        'type' => 'update_transaction_retry_initiated',
+                        'strategy' => 'retry', 
+                        'error_message' => $message
+                    ]
+                );
+
+                try
+                {
+                    $order = $client->sendRestApiRequest(
+                        json_encode($body),
+                        'POST',
+                        '/orders/' . strval($merchantOrderId) . '/transactions.json'
+                    );
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->info(
+                        TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR,
+                        [
+                            'type' => 'update_transaction_retry_failed',
+                            'error' => $e->getMessage()
+                        ]
+                    );
+                }
+            }
         }
     }
 
@@ -767,7 +1064,12 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_UPDATE_CHECKOUT,
-                ['input' => $input, 'status' => 'not_updated']);
+                [
+                    'type' => 'update_checkout',
+                    'input' => $input,
+                    'status' => 'not_updated'
+                ]
+            );
 
             return;
         }
@@ -789,7 +1091,12 @@ class Core extends Base\Core
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_CHECKOUT,
-            ['input' => $input, 'status' => 'updated']);
+            [
+                'type' => 'update_checkout',
+                'input' => $input,
+                'status' => 'updated'
+            ]
+        );
     }
 
     protected function formatShippingAddressForCheckout($shippingAddress): array

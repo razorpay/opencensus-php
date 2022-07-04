@@ -151,7 +151,7 @@ class Service extends Base\Service
         catch (\Throwable $e)
         {
             $this->trace->error(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
+                TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
                     'type'  => 'update_checkout_failed',
                     'input' => $input,
@@ -164,6 +164,15 @@ class Service extends Base\Service
 
     public function completeCheckoutWithLock(array $input, bool $fromShopifyApi = true): array
     {
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_MUTEX_INITIATED,
+            [
+                'type'           => 'mutex_initiated',
+                'input'          => $input,
+                'fromShopifyApi' => $fromShopifyApi,
+            ]
+        );
+            
         $key = (new Core)->getMutexKeyForOrder($input['razorpay_order_id']);
 
         $res = $this->mutex->acquireAndRelease(
@@ -230,9 +239,11 @@ class Service extends Base\Service
         // NOTE: Logging the response to debug an issue where the FE is not receiving data
         // for analytics
         $this->trace->info(
-            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
+            TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_RESPONSE,
             [
-                'response'   => $response,
+                'type'     => 'order_complete_response',
+                'order_id' => $orderId,
+                'response' => $response,
             ]);
 
         return $response;
@@ -245,16 +256,17 @@ class Service extends Base\Service
 
         (new Core)->canShopifyOrderBePlaced($order, $fromShopifyApi);
 
-        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic());
+        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi);
 
         (new Core)->saveShopifyOrderAsPlaced($order->getId());
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,
             [
-                'order_id'   => $order->getId(),
-                'payment_id' => $payment->getId(),
-                'time'       => millitime() - $start,
+                'type'             => 'order_place_request',
+                'order_id'         => $order->getId(),
+                'payment_id'       => $payment->getId(),
+                'time'             => millitime() - $start,
                 'from_shopify_api' => $fromShopifyApi,
             ]
         );
@@ -281,7 +293,7 @@ class Service extends Base\Service
         if (empty($checkout['data']['node']) === true)
         {
             $this->trace->error(
-                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 TraceCode::SHOPIFY_1CC_API_COUPONS_ERROR,
                  [
                      'type'       => 'invalid_checkout_id',
                      'checkoutId' => $checkoutId,
@@ -407,7 +419,7 @@ class Service extends Base\Service
         {
           // address has pincode and state so we can log it (no PII)
           $this->trace->info(
-              TraceCode::SHOPIFY_1CC_API_ERROR,
+              TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
               [
                   'type'       => 'update_address_failed',
                   'response'   => $response,

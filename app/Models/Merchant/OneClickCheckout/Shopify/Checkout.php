@@ -108,7 +108,7 @@ class Checkout extends Base\Core
         catch (\Exception $e)
         {
             $this->trace->error(
-                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                  [
                      'type'       => 'get_admin_checkout',
                      'error'      => $e->getMessage(),
@@ -177,7 +177,7 @@ class Checkout extends Base\Core
         if (empty($order->getNotes()['storefront_id']) === true)
         {
             $this->trace->error(
-                 TraceCode::SHOPIFY_1CC_API_ERROR,
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                  [
                      'type'     => 'update_checkout_url',
                      'order_id' => $orderId,
@@ -245,7 +245,7 @@ class Checkout extends Base\Core
         catch (\Exception $e)
         {
             $this->trace->error(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
+                TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
                     'type'        => 'update_checkout',
                     'error'       => $e->getMessage(),
@@ -322,7 +322,7 @@ class Checkout extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->error(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
+                TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
                     'type'  => 'update_attributes_failed',
                     'input' => $input,

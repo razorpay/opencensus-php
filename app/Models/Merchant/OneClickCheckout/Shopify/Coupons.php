@@ -29,7 +29,7 @@ class Coupons extends Base\Core
         if (empty($response['errors']) !== true)
         {
           $this->trace->error(
-               TraceCode::SHOPIFY_1CC_API_ERROR,
+               TraceCode::SHOPIFY_1CC_API_COUPONS_ERROR,
                [
                    'type'     => 'invalid_checkout_id',
                    'input'    => $input,
