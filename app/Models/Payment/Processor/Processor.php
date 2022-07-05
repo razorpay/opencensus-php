@@ -1733,6 +1733,8 @@ class Processor
         if (($payment->merchant->isPhoneOptional() === true) and
             ($payment->getContact() === Payment\Entity::DUMMY_PHONE))
         {
+            unset($input['payment']);
+
             $coproto = [
                 'type'    => 'respawn',
                 'request' => [
