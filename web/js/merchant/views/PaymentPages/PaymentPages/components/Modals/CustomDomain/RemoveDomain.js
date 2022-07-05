@@ -9,6 +9,7 @@ import Alert from 'common/new-ui/Alert';
 import { removeCustomDomainEntry } from '../../../model';
 import { updateCustomDomainDetails, updateSettings } from '../../../../../../reducers/wysiwyg';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import track from '../../../Wysiwyg/track';
 
 const RemoveDomainModal = ({
   domainName,
@@ -18,6 +19,8 @@ const RemoveDomainModal = ({
   showNotification,
 }) => {
   const handleSubmit = () => {
+    track.settings.removeDomainConfirm();
+
     return removeCustomDomainEntry(domainName)
       .then(() => {
         updateCustomDomainDetails({ value: '' });

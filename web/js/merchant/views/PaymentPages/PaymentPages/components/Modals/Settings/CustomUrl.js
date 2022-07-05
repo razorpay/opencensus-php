@@ -61,6 +61,8 @@ const CustomURL = ({
       className: 'pp-custom-domain',
       component: <DomainAddressModal openModal={openModal} closeModal={closeModal} />,
     });
+
+    track.settings.clickConnectDomain();
   };
 
   const openRemoveModal = () => {
@@ -71,6 +73,8 @@ const CustomURL = ({
         <RemoveDomainModal openModal={openModal} closeModal={closeModal} domainName={value} />
       ),
     });
+
+    track.settings.removeDomainClick();
   };
 
   // logic to calculate left padding based on length of addonValueBefore
@@ -178,6 +182,8 @@ const CustomURL = ({
                   defaultValue={urlType}
                   onChange={(e) => {
                     setUrlType(e.target.value);
+
+                    track.settings.clickDomainType(e.target.value);
                   }}
                   key={urlType} // passing key here to force rerender on urlType change
                 />

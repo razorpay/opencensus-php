@@ -13,6 +13,7 @@ import GlobeImage from '../../../../../../../../css/assets/payment_pages/globe.s
 
 import { getIfDomainAlreadyLinked, getIfSubDomain } from '../../../model';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import track from '../../../Wysiwyg/track';
 
 // allowing user to enter domain like https://mydomain.com/ for better UX, pruning later
 const DOMAIN_SUBDOMAIN_REGEX = new RegExp(
@@ -37,6 +38,8 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification }) => {
   };
 
   const handleSubmit = () => {
+    track.settings.clickNextDomainAddress(value);
+
     let isDomainAlreadyUsed, isSubdomain;
 
     // extracting domain/subdomain
@@ -61,29 +64,31 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification }) => {
       isSubdomain = response.data.is_sub_domain;
     });
 
-    return Promise.all([domainAlreadyLinkedPromise, ifSubDomainPromise]).then(() => {
-      if (!isDomainAlreadyUsed) {
-        closeModal();
+    return Promise.all([domainAlreadyLinkedPromise, ifSubDomainPromise])
+      .then(() => {
+        if (!isDomainAlreadyUsed) {
+          closeModal();
 
-        openModal({
-          size: 'medium',
-          className: 'pp-custom-domain',
-          component: (
-            <UpdateDNSModal
-              openModal={openModal}
-              closeModal={closeModal}
-              domainName={prunedDomainName}
-              isSubdomain={isSubdomain}
-            />
-          ),
-        }).catch(() => {
-          showNotification({
-            type: 'error',
-            message: 'Something went wrong, please try again later',
+          openModal({
+            size: 'medium',
+            className: 'pp-custom-domain',
+            component: (
+              <UpdateDNSModal
+                openModal={openModal}
+                closeModal={closeModal}
+                domainName={prunedDomainName}
+                isSubdomain={isSubdomain}
+              />
+            ),
           });
+        }
+      })
+      .catch(() => {
+        showNotification({
+          type: 'error',
+          message: 'Something went wrong, please try again later',
         });
-      }
-    });
+      });
   };
 
   const handleClose = () => {
@@ -116,6 +121,7 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification }) => {
             placeholder="mydomain.com"
             validator={validateDomainOrSubdomain}
             onChange={handleInputChange}
+            onBlur={track.settings.enterDomainAddress}
           />
           <div class="help-text spacing">
             <b>Need help?</b> Refer to{' '}

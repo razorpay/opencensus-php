@@ -8,13 +8,14 @@ import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import PropagationStatusModal from './PropagationStatus';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { DocLink } from 'merchant/components/DocsLink';
 
 import GlobeImage from '../../../../../../../../css/assets/payment_pages/globe.svg';
 
 import { checkDNSPropogation, createCustomDomainEntry } from '../../../model';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateCustomDomainDetails, updateSettings } from '../../../../../../reducers/wysiwyg';
-import { DocLink } from 'merchant/components/DocsLink';
+import track from '../../../Wysiwyg/track';
 
 const GENERIC_ERROR_MESSAGE = 'Something went wrong, please try again later';
 
@@ -79,10 +80,14 @@ const UpdateDNSModal = ({
 
   const handleCheckbox = (e) => {
     setChecked(e.target.checked);
+
+    track.settings.checkDnsConfigUpdated(e.target.checked);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    track.settings.clickVerifyConnection();
 
     return checkDNSPropogation(domainName)
       .then((response) => {
@@ -100,6 +105,8 @@ const UpdateDNSModal = ({
 
                 updateCustomDomainDetails({ value: domainName });
                 updateSettings({ custom_domain: domainName });
+
+                track.settings.domainPropagationSuccess(domainName);
               } else {
                 showNotification({
                   type: 'error',
@@ -121,6 +128,8 @@ const UpdateDNSModal = ({
             className: 'pp-custom-domain',
             component: <PropagationStatusModal closeModal={closeModal} status="failure" />,
           });
+
+          track.settings.domainPropagationFailure();
         }
 
         return '';
@@ -173,7 +182,11 @@ const UpdateDNSModal = ({
                     <CustomClipboard
                       value={staticData.pointsTo[window.APP_ENV] || staticData.pointsTo.production}
                     >
-                      <button class="btn btn-default btn-xs">
+                      <button
+                        type="button"
+                        class="btn btn-default btn-xs"
+                        onClick={track.settings.copyDnsConfig}
+                      >
                         <i class="i i-copy" />
                         COPY
                       </button>

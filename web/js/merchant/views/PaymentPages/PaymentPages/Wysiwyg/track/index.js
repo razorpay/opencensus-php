@@ -182,6 +182,50 @@ function _track() {
       clickShiprocketDashboard: () => {
         sendToSegment('settings', 'shiprocket dashboard');
       },
+      clickConnectDomain: () => {
+        sendToLumberjack('settings.custom_domain.connect_domain');
+        sendToSegment('settings connect domain', 'click');
+      },
+      enterDomainAddress: () => {
+        sendToLumberjack('settings.custom_domain.domain_address_input');
+        sendToSegment('settings domain address', 'input');
+      },
+      clickNextDomainAddress: (domainName) => {
+        sendToLumberjack('settings.custom_domain.domain_address_next', { domainName });
+        sendToSegment('settings domain address', 'next', { domainName });
+      },
+      copyDnsConfig: () => {
+        sendToLumberjack('settings.custom_domain.copy_dns_config');
+        sendToSegment('settings custom domain dns config', 'copy');
+      },
+      checkDnsConfigUpdated: (checked) => {
+        sendToLumberjack('settings.custom_domain.check_dns_config', { checked });
+        sendToSegment('settings custom domain dns config', 'check', { checked });
+      },
+      clickVerifyConnection: () => {
+        sendToLumberjack('settings.custom_domain.verify_connection_click');
+        sendToSegment('settings custom domain verify connection', 'click');
+      },
+      domainPropagationSuccess: (domainName) => {
+        sendToLumberjack('settings.custom_domain.propagation_success', { domainName });
+        sendToSegment('settings custom domain propagation', 'success', { domainName });
+      },
+      domainPropagationFailure: () => {
+        sendToLumberjack('settings.custom_domain.propagation_failure');
+        sendToSegment('settings custom domain propagation', 'failure');
+      },
+      clickDomainType: (type) => {
+        sendToLumberjack('settings.custom_domain.domain_type_click', { type });
+        sendToSegment('settings custom domain type', 'click', { type });
+      },
+      removeDomainClick: () => {
+        sendToLumberjack('settings.custom_domain.remove_domain');
+        sendToSegment('settings custom domain remove domain', 'click');
+      },
+      removeDomainConfirm: () => {
+        sendToLumberjack('settings.custom_domain.remove_domain_confirm');
+        sendToSegment('settings custom domain remove domain', 'confirm');
+      },
     },
 
     success: {
