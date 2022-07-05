@@ -2581,6 +2581,8 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($expectedPayoutDetails[0]['status'], $actualPayoutDetails[0]['status']);
         $this->assertEquals($expectedPayoutDetails[0]['transaction_id'], $actualPayoutDetails[0]['transaction_id']);
         $this->assertEquals($expectedPayoutDetails[0]['pricing_rule_id'], $actualPayoutDetails[0]['pricing_rule_id']);
+        $this->assertEquals($expectedPayoutDetails[0]['fts_transfer_id'], $actualPayoutDetails[0]['fts_transfer_id']);
+        $this->assertEquals($expectedPayoutDetails[0]['queued_reason'], $actualPayoutDetails[0]['queued_reason']);
 
         // Payout Status Detail assertions
         $expectedPayoutStatusDetails = $expectedPayoutDetails[0]['status_details'];

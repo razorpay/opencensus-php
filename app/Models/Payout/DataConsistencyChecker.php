@@ -30,9 +30,9 @@ class DataConsistencyChecker extends Core
 
         foreach ($entityArray as $entity)
         {
-            $key = Entity::stripDefaultSign($entity[$key]);
+            $entityKey = Entity::stripDefaultSign($entity[$key]);
 
-            $entityMapByKey[$key] = $entity;
+            $entityMapByKey[$entityKey] = $entity;
         }
 
         return $entityMapByKey;

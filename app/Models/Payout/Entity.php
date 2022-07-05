@@ -530,6 +530,8 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_AT,
         self::STATUS_DETAILS_ID,
         self::STATUS_DETAILS,
+        self::FTS_TRANSFER_ID,
+        self::QUEUED_REASON,
     ];
 
     protected $public = [
