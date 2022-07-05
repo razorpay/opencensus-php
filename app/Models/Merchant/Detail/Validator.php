@@ -149,6 +149,7 @@ class Validator extends Base\Validator
         BDConstants::OTHERS                     => 'sometimes|string',
         BDConstants::WEBSITE_PRESENT            => 'sometimes|boolean',
         BDConstants::IOS_APP_PRESENT            => 'sometimes|boolean',
+        BDConstants::OTHERS_PRESENT             => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT        => 'sometimes|boolean',
     ];
 
@@ -260,6 +261,7 @@ class Validator extends Base\Validator
         BDConstants::OTHERS                              => 'sometimes|string',
         BDConstants::WEBSITE_PRESENT                     => 'sometimes|boolean',
         BDConstants::IOS_APP_PRESENT                     => 'sometimes|boolean',
+        BDConstants::OTHERS_PRESENT                      => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT                 => 'sometimes|boolean',
         Entity::IEC_CODE                                 => 'sometimes|string|max:20',
     ];

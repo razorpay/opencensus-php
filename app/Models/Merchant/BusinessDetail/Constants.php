@@ -25,6 +25,7 @@ class Constants
     const WEBSITE_PRESENT            = 'website_present';
     const ANDROID_APP_PRESENT        = 'android_app_present';
     const IOS_APP_PRESENT            = 'ios_app_present';
+    const OTHERS_PRESENT             = 'others_present';
 
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';
@@ -60,5 +61,6 @@ class Constants
         self::WEBSITE_PRESENT,
         self::ANDROID_APP_PRESENT,
         self::IOS_APP_PRESENT,
+        self::OTHERS_PRESENT,
     ];
 }

@@ -126,6 +126,7 @@ class Entity extends Base\PublicEntity
             Constants::WEBSITE_PRESENT            => false,
             Constants::ANDROID_APP_PRESENT        => false,
             Constants::IOS_APP_PRESENT            => false,
+            Constants::OTHERS_PRESENT             => false,
         ];
     }
 
