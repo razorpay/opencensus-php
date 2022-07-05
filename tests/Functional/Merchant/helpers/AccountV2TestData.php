@@ -261,7 +261,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => 'BAD_REQUEST_ERROR',
-                    'description' => 'The business registered city may only contain alphabets and spaces.',
+                    'description' => 'The business registered city may only contain alphabets, digits and spaces.',
                     'source' => 'business',
                     'step' => 'payment_initiation',
                     'reason' => 'input_validation_failed',
