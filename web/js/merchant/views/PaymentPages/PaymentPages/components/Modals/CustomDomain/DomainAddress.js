@@ -9,8 +9,6 @@ import Input from 'common/new-ui/Input';
 import UpdateDNSModal from './UpdateDNSValues';
 import { DocLink } from 'merchant/components/DocsLink';
 
-import GlobeImage from '../../../../../../../../css/assets/payment_pages/globe.svg';
-
 import { getIfDomainAlreadyLinked, getIfSubDomain } from '../../../model';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import track from '../../../Wysiwyg/track';
@@ -99,7 +97,7 @@ const DomainAddressModal = ({ openModal, closeModal, showNotification }) => {
     <ModalContent>
       <div class="main-title">
         <div class="heading">
-          <img src={GlobeImage} alt="globe" width="20px" />
+          <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Enter your domain address
         </div>
         <i className="i i-close" onClick={handleClose} />

@@ -10,8 +10,6 @@ import PropagationStatusModal from './PropagationStatus';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { DocLink } from 'merchant/components/DocsLink';
 
-import GlobeImage from '../../../../../../../../css/assets/payment_pages/globe.svg';
-
 import { checkDNSPropogation, createCustomDomainEntry } from '../../../model';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateCustomDomainDetails, updateSettings } from '../../../../../../reducers/wysiwyg';
@@ -150,7 +148,7 @@ const UpdateDNSModal = ({
     <ModalContent>
       <div class="main-title">
         <div class="heading">
-          <img src={GlobeImage} alt="globe" width="20px" />
+          <img src="https://cdn.razorpay.com/static/assets/globe.svg" alt="globe" width="20px" />
           Update DNS values
         </div>
         <i className="i i-close" onClick={handleClose} />
