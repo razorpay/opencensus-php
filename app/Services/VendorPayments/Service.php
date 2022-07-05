@@ -22,6 +22,7 @@ use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
  * This will be as dummy as possible, and will only do conversions
  * Between the Restful API calls and the RPC API calls that the MS understands
  */
+
 class Service
 {
     const LIST_CONTACTS                 = 'SearchContacts';
@@ -64,7 +65,7 @@ class Service
     const TRIGGER_VENDOR_INVITE         = 'TriggerEiVendorInvitationEmail';
     const DISABLE_VENDOR_PORTAL         = 'DisableVendorPortal';
     const ENABLE_VENDOR_PORTAL          = 'EnableVendorPortal';
-    const FETCH_ENTITY                  = 'FetchEntity';
+    const FETCH_ENTITY                  = 'FetchEntities';
     const FETCH_ENTITY_BY_ID            = 'FetchEntityById';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
@@ -672,22 +673,22 @@ class Service
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::FETCH_ENTITY);
 
-        $data = [];
+        $data = [
+            'from'          => $input['from'] ?? 0,
+            'to'            => $input['to'] ?? 0,
+            'skip'          => $input['skip'] ?? 0,
+            'count'         => $input['count'] ?? 20,
+            'entity_name'   => $entity,
+        ];
 
-        $data['entity_type'] = $entity;
+        unset($input['from']);
+        unset($input['to']);
+        unset($input['skip']);
+        unset($input['count']);
 
-        $data['skip'] = $input['skip'];
-
-        $data['count'] = $input['count'];
-
-        if (isset($input['from']))
+        if (empty($input) === false)
         {
-            $data['from'] = $input['from'];
-        }
-
-        if (isset($input['to']))
-        {
-            $data['to'] = $input['to'];
+            $data['filter'] = $input;
         }
 
         $response = $this->makeRequest(null, $url, $data, [], 'POST');

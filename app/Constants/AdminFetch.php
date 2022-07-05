@@ -1630,9 +1630,72 @@ class AdminFetch
 
             Entity::VENDOR_PAYMENTS_VENDOR_PAYMENTS => [
             ],
-//            Entity::VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS => [
-//            ]
+            Entity::VENDOR_PAYMENTS_TAX_PAYMENTS => [
+                'id' => [
+                    Fetch::LABEL        => 'Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id' => [
+                    Fetch::LABEL        => 'Merchant Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'tax_type_id' => [
+                    Fetch::LABEL        => 'Tax type id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
+            ],
+            Entity::VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS => [
+                'tax_payment_id' => [
+                    Fetch::LABEL        => 'Tax Payment id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'merchant_id' => [
+                    Fetch::LABEL        => 'Merchant Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'cin' => [
+                    Fetch::LABEL        => 'CIN',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
+            ],
+            Entity::VENDOR_PAYMENTS_DIRECT_TAX_PAYMENTS => [
+                'id' => [
+                    Fetch::LABEL        => 'Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'tax_payment_id' => [
+                    Fetch::LABEL        => 'Tax Payment id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'tan' => [
+                    Fetch::LABEL        => 'TAN',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'email' => [
+                    Fetch::LABEL        => 'Email',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ]
+            ],
+            Entity::VENDOR_PAYMENTS_PG_PAYMENTS => [
+                'direct_tax_payment_id' => [
+                    Fetch::LABEL        => 'Direct Tax Payment Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'order_id' => [
+                    Fetch::LABEL        => 'Order Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'payment_id' => [
+                    Fetch::LABEL        => 'Payment Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+                'refund_id' => [
+                    Fetch::LABEL        => 'Refund Id',
+                    Fetch::TYPE         => Fetch::TYPE_STRING
+                ],
+            ]
         ];
+
     }
 
     public static function entities()

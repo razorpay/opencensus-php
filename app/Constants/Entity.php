@@ -557,6 +557,9 @@ class Entity
 
     const VENDOR_PAYMENTS_VENDOR_PAYMENTS         = 'vendor_payments.vendor_payments';
     const VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS  = 'vendor_payments.icici_tax_pay_requests';
+    const VENDOR_PAYMENTS_TAX_PAYMENTS            = 'vendor_payments.tax_payments';
+    const VENDOR_PAYMENTS_DIRECT_TAX_PAYMENTS     = 'vendor_payments.direct_tax_payments';
+    const VENDOR_PAYMENTS_PG_PAYMENTS             = 'vendor_payments.pg_payments';
 
     // Service: Payments UPi
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
@@ -1582,6 +1585,9 @@ class Entity
 
         self::VENDOR_PAYMENTS_VENDOR_PAYMENTS                       => \RZP\Services\VendorPayments\Service::class,
         self::VENDOR_PAYMENTS_ICICI_TAX_PAY_REQUESTS                => \RZP\Services\VendorPayments\Service::class,
+        self::VENDOR_PAYMENTS_TAX_PAYMENTS                          => \RZP\Services\VendorPayments\Service::class,
+        self::VENDOR_PAYMENTS_DIRECT_TAX_PAYMENTS                   => \RZP\Services\VendorPayments\Service::class,
+        self::VENDOR_PAYMENTS_PG_PAYMENTS                           => \RZP\Services\VendorPayments\Service::class,
     ];
 
     protected static $syncedInLiveAndTest = [
