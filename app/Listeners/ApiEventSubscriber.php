@@ -285,6 +285,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onAccountNoDocOnboardingGmvLimitWarning($merchant)
+    {
+        $payload = $this->withPayload;
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountUnsuspended($merchant)
     {
         $this->dispatchEventToPlService($merchant);

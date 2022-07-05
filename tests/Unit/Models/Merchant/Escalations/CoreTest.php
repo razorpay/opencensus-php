@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Escalations;
 use RZP\Models\Merchant\Escalations\Actions;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail as MerchantDetail;
 use RZP\Services\Mock\DruidService as MockDruidService;
 
 class CoreTest extends TestCase
@@ -270,69 +271,94 @@ class CoreTest extends TestCase
         $this->assertEmpty($escalation);
     }
 
-    public function testHardLimitNoDocEscalation()
+    public function testHardLimitNoDocEscalationWithIncompleteKYC()
     {
-        $this->createAndFetchMocks(true);
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
-
-        $this->app['basicauth']->setOrgId('100000razorpay');
-
-        $merchant = $this->fixtures->on('live')->create('merchant', [
-            'live'       => true,
-            'activated'  => 1,
-            'hold_funds' => false
-        ]);
-
-        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+        $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
             'merchant_id'       => $merchant['id'],
             'activation_status' => 'activated_kyc_pending',
             'business_website'  => 'http://hello.com'
         ]);
 
-        $this->fixtures->create('feature', [
-            'name'        => 'no_doc_onboarding',
-            'entity_id'   => $merchant->id,
-            'entity_type' => 'merchant'
-        ]);
-
-        $this->fixtures->create('merchant_product', [
-            'merchant_id'       => $merchant->id,
-            'product_name'      => 'payment_gateway',
-            'activation_status' => 'activated'
-        ]);
-
-        $this->createTransaction($merchant->getId(), 'payment', 55000);
+        $this->createTransaction($merchant->getId(), 'payment', 55600);
 
         (new Escalations\Core())->handleNoDocLimitBreach();
 
-        $escalationV2 = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
-        self::assertNotEmpty($escalationV2);
-        self::assertEquals('merchant', $escalationV2->getAttribute('escalated_to'));
-        self::assertEquals('hard_limit_no_doc', $escalationV2->getAttribute('milestone'));
-        self::assertEquals(Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD, $escalationV2->getAttribute('threshold'));
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY, MerchantDetail\Status::NEEDS_CLARIFICATION);
 
-        $merchant = $this->getDbEntityById('merchant', $merchant->id);
-        self::assertEquals(true, $merchant->getAttribute('hold_funds'));
-        self::assertEquals('GMV hard limit for no-doc onboarding breached for the merchant.', $merchant->getAttribute('hold_funds_reason'));
-
-        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchant->id);
-        self::assertEquals('needs_clarification', $merchantDetail->getAttribute('activation_status'));
+        $this->assertFundHoldsForNoDoc($merchant, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
     }
 
-    public function testHardLimitNoDocEscalationWithGmvLessThanThreshold()
+    public function testHardLimitNoDocEscalationWithCompleteKYC()
     {
-        $this->createAndFetchMocks(true);
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
 
-        $this->app->instance("rzp.mode", Mode::LIVE);
-
-        $this->app['basicauth']->setOrgId('100000razorpay');
-
-        $merchant = $this->fixtures->on('live')->create('merchant', [
-            'live'       => true,
-            'activated'  => 1,
-            'hold_funds' => false
+        //submitting docs during this call( with createValidFields). Also marking gst status as verified to check 3-way flow
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id'                   => $merchant['id'],
+            'activation_status'             => 'activated_kyc_pending',
+            'business_website'              => 'http://hello.com',
+            'gstin_verification_status'     => 'verified'
         ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 556000);
+
+        (new Escalations\Core())->handleNoDocLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_3_WAY, MerchantDetail\Status::UNDER_REVIEW);
+
+        $this->assertFundHoldsForNoDoc($merchant, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+    }
+
+    public function testNoDocEscalationWithPartnerConfigGmvValue()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        //submitting docs during this call( with createValidFields). Also marking gst status as verified to check 3-way flow
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id'                   => $merchant['id'],
+            'activation_status'             => 'activated_kyc_pending',
+            'business_website'              => 'http://hello.com',
+            'gstin_verification_status'     => 'verified'
+        ]);
+
+        $randomApplicationId = str_random(14);
+
+        $this->fixtures->create('merchant_access_map', [
+            'entity_owner_id' => '10000000000000',
+            'merchant_id'     => $merchant->getId(),
+            'entity_type'     => 'application',
+            'entity_id'       => $randomApplicationId
+        ]);
+
+        $this->fixtures->create('merchant_application', [
+            'merchant_id'     => '10000000000000',
+            'type'            => 'managed',
+            'application_id'  => $randomApplicationId
+        ]);
+
+        $this->fixtures->create("partner_config", [
+            'entity_id' => $randomApplicationId,
+            'entity_type' => 'application',
+            'sub_merchant_config' => json_decode('{"gmv_limit":[{"value":10100000,"set_for":"no_doc_submerchants"}]}', 1)
+        ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 10110000);
+
+        (new Escalations\Core())->handleNoDocLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
+            10100000, MerchantDetail\Status::UNDER_REVIEW);
+
+        $this->assertFundHoldsForNoDoc($merchant, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+    }
+
+    public function testNinetyPercentileGmvWarningForNoDoc()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'merchant_id'       => $merchant['id'],
@@ -340,13 +366,51 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
-        $this->fixtures->create('feature', [
-            'name'        => 'no_doc_onboarding',
-            'entity_id'   => $merchant->id,
-            'entity_type' => 'merchant'
+        $this->createTransaction($merchant->getId(), 'payment', 45000);
+
+        (new Escalations\Core())->handleNoDocLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::NO_DOC_P90_GMV,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
+            MerchantDetail\Status::ACTIVATED_KYC_PENDING);
+
+        $this->assertFundHoldsForNoDoc($merchant, false);
+    }
+
+    public function testNinetyOnePercentileGmvWarningForNoDoc()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'activated_kyc_pending',
+            'business_website'  => 'http://hello.com'
         ]);
 
-        $this->createTransaction($merchant->getId(), 'payment', 45000);
+        $this->createTransaction($merchant->getId(), 'payment', 47000);
+
+        (new Escalations\Core())->handleNoDocLimitBreach();
+
+        $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::NO_DOC_P91_GMV,
+            Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
+            MerchantDetail\Status::ACTIVATED_KYC_PENDING);
+
+        $this->assertFundHoldsForNoDoc($merchant, false);
+    }
+
+    public function testNoDocEscalationWithGmvLessThanNinetyPercentOfThreshold()
+    {
+        $merchant = $this->createPrerequisiteForNoDocEscalation();
+
+        $this->createAndFetchMocks(true);
+
+        $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'activated_kyc_pending',
+            'business_website'  => 'http://hello.com'
+        ]);
+
+        $this->createTransaction($merchant->getId(), 'payment', 40000);
 
         (new Escalations\Core())->handleNoDocLimitBreach();
 
@@ -357,7 +421,55 @@ class CoreTest extends TestCase
         self::assertEquals(false, $merchant->getAttribute('hold_funds'));
 
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchant->id);
-        self::assertEquals('activated_kyc_pending', $merchantDetail->getAttribute('activation_status'));
+        self::assertEquals(MerchantDetail\Status::ACTIVATED_KYC_PENDING, $merchantDetail->getAttribute('activation_status'));
+    }
+
+    private function performAssertionsForNoDocTests(MerchantEntity $merchant, string $expEscalationMilestone,
+                                                    string $expEscalationThreshold, string $expectedActivationStatus)
+    {
+        $escalationV2 = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
+        self::assertNotEmpty($escalationV2);
+        self::assertEquals('merchant', $escalationV2->getAttribute('escalated_to'));
+        self::assertEquals($expEscalationMilestone, $escalationV2->getAttribute('milestone'));
+        self::assertEquals($expEscalationThreshold, $escalationV2->getAttribute('threshold'));
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchant->id);
+        self::assertEquals($expectedActivationStatus, $merchantDetail->getAttribute('activation_status'));
+    }
+
+    private function assertFundHoldsForNoDoc(MerchantEntity $merchant, bool $expHoldFunds, string $expHoldFundsReason = null)
+    {
+        $merchant = $this->getDbEntityById('merchant', $merchant->id);
+
+        self::assertEquals($expHoldFunds, $merchant->getAttribute('hold_funds'));
+        self::assertEquals($expHoldFundsReason, $merchant->getAttribute('hold_funds_reason'));
+    }
+
+    private function createPrerequisiteForNoDocEscalation()
+    {
+        $this->createAndFetchMocks(true);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId('100000razorpay');
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'    => '100000razorpay',
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        $merchant = $this->fixtures->on('live')->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => false
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => 'no_doc_onboarding',
+            'entity_id'   => $merchant->id,
+            'entity_type' => 'merchant'
+        ]);
+        return $merchant;
     }
 
     private function createAndFetchMocks($razorXEnabled)

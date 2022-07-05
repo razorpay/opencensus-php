@@ -18,6 +18,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
@@ -427,10 +428,12 @@ class Core extends Merchant\Core
      *
      * @return bool
      */
-    public function isNoDocOnboardingGmvLimitExhausted(string $merchantId): bool
+    public function isNoDocOnboardingGmvLimitExhausted(Merchant\Entity $merchant): bool
     {
-        $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchantId,
-            EscalationConstants::HARD_LIMIT_NO_DOC, EscalationConstants::HARD_LIMIT_KYC_PENDING_THRESHOLD);
+        $threshold = $this->getGmvLimitForNoDocMerchant($merchant);
+
+        $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchant->getId(),
+            EscalationConstants::HARD_LIMIT_NO_DOC, $threshold);
 
         if (empty($escalations) === false)
         {
@@ -438,6 +441,63 @@ class Core extends Merchant\Core
         }
 
         return false;
+    }
+
+    /**
+     * This function fetches the gmv limit of a no-doc onboarded sub-merchant based upon below rules:
+     * 1. If sub-merchant's gst is not verified(2-way onboarded), then gmv limit = 50k
+     * 2. If sub-merchant's gst is verified(3-way onboarded), then gmv limit:
+     *    a. Gmv limit set in sub_merchant_config of sub-merchant's partner's managed application,
+     *    b. If not set, then default gmv limit = 5 lakhs
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return int
+     */
+    public function getGmvLimitForNoDocMerchant(Merchant\Entity $merchant): int
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $threshold = EscalationConstants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY;
+
+        if($merchantDetail->getGstinVerificationStatus() === Detail\Constants::VERIFIED)
+        {
+            $threshold = EscalationConstants::HARD_LIMIT_KYC_PENDING_THRESHOLD_3_WAY;
+
+            $accessMaps = $this->repo
+                ->merchant_access_map
+                ->getMappingByApplicationType($merchant->getId(), Merchant\MerchantApplications\Entity::MANAGED);
+
+            $accessMap = $accessMaps->first();
+
+            if(empty($accessMap) === false)
+            {
+                $partnerAppId = $accessMap['entity_id'];
+
+                $applicationConfig = $this->repo->partner_config->getApplicationConfig($partnerAppId);
+
+                if(empty($applicationConfig) === false)
+                {
+                    $submerchantConfig = $applicationConfig->getSubMerchantConfig();
+
+                    if(empty($submerchantConfig) === false and
+                        array_key_exists(ConfigConstants::GMV_LIMIT,$submerchantConfig) === true and
+                        empty($submerchantConfig[ConfigConstants::GMV_LIMIT]) === false)
+                    {
+                        foreach ($submerchantConfig[ConfigConstants::GMV_LIMIT] as $gmvLimit)
+                        {
+                            if($gmvLimit[ConfigConstants::SET_FOR] === ConfigConstants::NO_DOC_SUBMERCHANTS)
+                            {
+                                $threshold = $gmvLimit[ConfigConstants::VALUE];
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $threshold;
     }
 
     /**
@@ -450,7 +510,7 @@ class Core extends Merchant\Core
      */
     public function isNoDocEnabledAndGmvLimitExhausted(Merchant\Entity $merchant): bool
     {
-        $isNoDocGmvLimitExhausted = $this->isNoDocOnboardingGmvLimitExhausted($merchant->getId());
+        $isNoDocGmvLimitExhausted = $this->isNoDocOnboardingGmvLimitExhausted($merchant);
 
         if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocGmvLimitExhausted === true)
         {

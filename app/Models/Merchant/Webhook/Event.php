@@ -137,6 +137,8 @@ class Event
     const PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING = 'product.payment_gateway.activated_kyc_pending';
     const PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   = 'product.payment_links.activated_kyc_pending';
 
+    const NO_DOC_ONBOARDING_GMV_LIMIT_WARNING           = 'account.no_doc_onboarding_gmv_limit_warning';
+
     //toeknisation events
     const TOKEN_SERVICE_PROVIDER_ACTIVATED                   = 'token.service_provider.activated';
     const TOKEN_SERVICE_PROVIDER_SUSPENDED                   = 'token.service_provider.cancelled';
@@ -260,6 +262,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_NEEDS_CLARIFICATION,
         self::PAYMENT_LINKS_PRODUCT_REJECTED,
         self::PAYMENT_LINKS_PRODUCT_UNDER_REVIEW,
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING,
         self::ZAPIER_PAYMENT_PAGE_PAID_V1,
         self::SHIPROCKET_PAYMENT_PAGE_PAID_V1,
         self::TOKEN_SERVICE_PROVIDER_ACTIVATED,
@@ -384,6 +387,7 @@ class Event
         self::PAYOUT_CREATION_FAILED,
         self::PAYMENT_GATEWAY_PRODUCT_INSTANTLY_ACTIVATED,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING,
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_INSTANTLY_ACTIVATED,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING,
@@ -524,6 +528,8 @@ class Event
 
         self::PAYOUT_LINK_PENDING                         => 52,
         self::PAYOUT_LINK_REJECTED                        => 53,
+
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => 54,
     ];
 
     /**
@@ -649,6 +655,7 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => [Product::PRIMARY],
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => [Product::PRIMARY],
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => [Product::PRIMARY],
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING           => [Product::PRIMARY],
 
     ];
 
@@ -730,6 +737,7 @@ class Event
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING => Entity::MERCHANT,
         self::PAYOUT_LINK_ISSUED                => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSED             => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSING            => Entity::PAYOUT_LINK,
@@ -858,7 +866,7 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_PENDING                               => Feature\Constants::ONE_CLICK_CHECKOUT,
-
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => Feature\Constants::NO_DOC_ONBOARDING,
     ];
 
     /**

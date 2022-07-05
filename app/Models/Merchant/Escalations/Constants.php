@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Escalations\Actions\Handlers\EscalationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\FundsOnHoldHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\CommunicationHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\NoDocLimitWarnHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\DisablePaymentsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\NoDocLimitHandler;
 
@@ -45,6 +46,7 @@ class Constants
     const PARAMS        = 'params';
     const MILESTONE     = 'milestone';
     const ENABLE        = 'enable';
+    const CURRENT_GMV   = 'current_gmv';
     const SOFT_LIMIT_LEVEL_1 = 'soft_limit_level_1';
     const HARD_LIMIT_LEVEL_1 = 'hard_limit_level_1';
     const CMMA_SOFT_LIMIT_BREACH = 'SOFT-LIMIT-BREACH-LV1';
@@ -67,7 +69,10 @@ class Constants
     ];
 
     // hard limit for sub-merchant no-doc onboarding
-    const HARD_LIMIT_KYC_PENDING_THRESHOLD          = 5000000;
+    const HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY    = 5000000;  // 50 k
+    const HARD_LIMIT_KYC_PENDING_THRESHOLD_3_WAY    = 50000000; // 5 lakhs
+    const NO_DOC_P90_GMV                            = 'no_doc_p90_gmv';
+    const NO_DOC_P91_GMV                            = 'no_doc_p91_gmv';
     const HARD_LIMIT_NO_DOC                         = 'hard_limit_no_doc';
 
     // keys
@@ -232,27 +237,6 @@ class Constants
                 self::ENABLE      => false
             ],
         ],
-        5000000 => [
-            [
-                self::DESCRIPTION => "hard limit breach on activated kyc pending",
-                self::TO          => self::MERCHANT,
-                self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
-                    FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
-                ],
-                self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
-                self::ACTIONS     => [
-                    [
-                        self::HANDLER   => NoDocLimitHandler::class,
-                        self::PARAMS    => [
-                            self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
-                            Entity::THRESHOLD => 5000000
-                        ]
-                    ]
-                ],
-                self::ENABLE    => false
-            ]
-        ],
         10000000 => [
             [
                 self::DESCRIPTION => "funds on hold on activated mcc pending",
@@ -291,6 +275,76 @@ class Constants
                         self::HANDLER => DisablePaymentsHandler::class,
                     ]
                 ]
+            ]
+        ]
+    ];
+
+    /**
+     * This config is based on milestone as key instead of threshold, since for no_doc onboarded merchants the gmv limit threshold can vary.
+     * The config format here is similar to the payment escalation matrix config as given above
+     */
+    const NO_DOC_PAYMENTS_ESCALATION_MATRIX = [
+        self::NO_DOC_P90_GMV => [
+            [
+                self::DESCRIPTION => "gmv limit 90% reached warning on activated kyc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => self::NO_DOC_P90_GMV,
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER   => NoDocLimitWarnHandler::class,
+                        self::PARAMS    => [
+                            self::MILESTONE   => self::NO_DOC_P90_GMV,
+                            Entity::THRESHOLD => null
+                        ]
+                    ]
+                ],
+                self::ENABLE    => false
+            ]
+        ],
+        self::NO_DOC_P91_GMV => [
+            [
+                self::DESCRIPTION => "gmv limit 91% reached warning on activated kyc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => self::NO_DOC_P91_GMV,
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER   => NoDocLimitWarnHandler::class,
+                        self::PARAMS    => [
+                            self::MILESTONE   => self::NO_DOC_P91_GMV,
+                            Entity::THRESHOLD => null
+                        ]
+                    ]
+                ],
+                self::ENABLE    => false
+            ]
+        ],
+        self::HARD_LIMIT_NO_DOC => [
+            [
+                self::DESCRIPTION => "gmv limit breach on activated kyc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS  => Status::ACTIVATED_KYC_PENDING,
+                    FeatureConstants::FEATURE   => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER   => NoDocLimitHandler::class,
+                        self::PARAMS    => [
+                            self::MILESTONE   => self::HARD_LIMIT_NO_DOC,
+                            Entity::THRESHOLD => null
+                        ]
+                    ]
+                ],
+                self::ENABLE    => false
             ]
         ]
     ];

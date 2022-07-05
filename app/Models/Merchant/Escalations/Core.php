@@ -14,6 +14,7 @@ use RZP\Services\ApachePinotClient;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\Segment as SegmentAnalytics;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\Coupon\Constants as CouponCodeConstants;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -23,7 +24,6 @@ use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Account as MerchantAccount;
 use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
-use RZP\Models\Merchant\M2MReferral\Service as M2MService;
 
 class Core extends Base\Core
 {
@@ -55,6 +55,33 @@ class Core extends Base\Core
             {
                 if ((new Handler)->canTriggerEscalation($merchantDetails, $config) === true)
                 {
+                    return $config;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function getEscalationConfigForNoDocThresholdAndMilestone($merchantDetails, $threshold, $breachedAmount, $milestone)
+    {
+        if (isset(Constants::NO_DOC_PAYMENTS_ESCALATION_MATRIX[$milestone]) === false)
+        {
+            return null;
+        }
+
+        $configs = Constants::NO_DOC_PAYMENTS_ESCALATION_MATRIX[$milestone];
+
+        foreach ($configs as $config)
+        {
+            if ($config[Constants::MILESTONE] === $milestone)
+            {
+                if ((new Handler)->canTriggerEscalation($merchantDetails, $config) === true)
+                {
+                    $config[Constants::ACTIONS][0][Constants::PARAMS][Entity::THRESHOLD] = $threshold;
+
+                    $config[Constants::ACTIONS][0][Constants::PARAMS][Constants::CURRENT_GMV] = $breachedAmount;
+
                     return $config;
                 }
             }
@@ -891,9 +918,38 @@ class Core extends Base\Core
 
                 $amount = $merchantsGmvMap[$merchantId][0];
 
+                //checking if escalation entry exist for the merchant with the respective milestone & threshold, so that we do not re-trigger same escalation again
+                $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchant->getId(), $milestone, $threshold);
+
+                if (empty($escalations) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                        [
+                            'merchant'  => $merchant->getId(),
+                            'threshold' => $threshold,
+                            'milestone' => $milestone,
+                            'reason'    => 'Escalation skipped since merchant has already been escalated before with given threshold and milestone',
+                        ]
+                    );
+                    continue;
+                }
+
+                if ($merchant->isNoDocOnboardingEnabled() === false)
+                {
+                    $this->trace->info(
+                        TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                        [
+                            'merchant' => $merchant->getId(),
+                            'reason'   => 'Escalation skipped for merchant since it does not have no_doc_onboarding feature enabled',
+                        ]
+                    );
+                    continue;
+                }
+
                 $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchant->getId());
 
-                $escalationConfig = $this->getEscalationConfigForThresholdAndMilestone($merchantDetails, $threshold, $milestone);
+                $escalationConfig = $this->getEscalationConfigForNoDocThresholdAndMilestone($merchantDetails, $threshold, $amount, $milestone);
 
                 if (empty($escalationConfig) === true)
                 {
@@ -929,14 +985,54 @@ class Core extends Base\Core
 
     public function handleNoDocLimitBreach()
     {
-        $threshold = Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD;
-
-        $milestone = Constants::HARD_LIMIT_NO_DOC;
+        $thresholdToMerchantMapping = [];
 
         $merchantIds = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus([DetailStatus::ACTIVATED_KYC_PENDING]);
 
-        $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold($merchantIds, MConstants::PAYMENT, $threshold);
+        $merchants = $this->repo->merchant->findManyOrFailPublic($merchantIds);
 
+        if($merchants->count() > 0)
+        {
+            foreach ($merchants as $merchant)
+            {
+                $threshold = (new Merchant\AccountV2\Core())->getGmvLimitForNoDocMerchant($merchant);
+
+                $thresholdToMerchantMapping[$threshold][] = $merchant->getId();
+            }
+
+            foreach ($thresholdToMerchantMapping as $threshold => $merchantIds)
+            {
+                [$merchantsGmvList, $merchantsNinetyOnePercentileGmvList, $merchantsNinetyPercentileGmvList] =
+                    $this->repo->transaction->fetchTotalAmountByTransactionTypeWithThresholdInRange($merchantIds, MConstants::PAYMENT, $threshold);
+
+                $this->handleNoDocOnboardingEscalation($merchantsNinetyPercentileGmvList, Constants::NO_DOC_P90_GMV, $threshold);
+
+                $this->handleNoDocOnboardingEscalation($merchantsNinetyOnePercentileGmvList, Constants::NO_DOC_P91_GMV, $threshold);
+
+                $this->handleNoDocOnboardingEscalation($merchantsGmvList, Constants::HARD_LIMIT_NO_DOC, $threshold);
+            }
+
+            $this->trace->info(
+                TraceCode::NO_DOC_ONBOARDING_ESCALATION_MERCHANTS,
+                [
+                    'merchants' => $merchantIds,
+                    'reason'    => 'No doc onboarding escalation completed',
+                ]
+            );
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                [
+                    'reason'    => 'no merchants found',
+                ]
+            );
+        }
+    }
+
+    public function handleNoDocOnboardingEscalation(array $merchantsGmvList, string $milestone, int $threshold)
+    {
         $merchantIdList = array_map(function($element) {
             return $element[Entity::MERCHANT_ID];
         }, $merchantsGmvList);
@@ -948,7 +1044,7 @@ class Core extends Base\Core
                 [
                     'threshold' => $threshold,
                     'milestone' => $milestone,
-                    'reason'    => 'no merchants found',
+                    'reason'    => 'no merchants found for mentioned threshold and milestone',
                 ]
             );
 

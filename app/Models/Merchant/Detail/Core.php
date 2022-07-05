@@ -3288,7 +3288,7 @@ class Core extends Base\Core
         // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick only the specified validation fields.
         if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
         {
-            $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->getMerchantId());
+            $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->merchant);
 
             if ($isGmvLimitExhausted === false)
             {

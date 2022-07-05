@@ -229,7 +229,7 @@ class Service extends Base\Service
 
             Tracer::inspan(['name' => HyperTrace::UPDATE_NC_FIELDS_ACKNOWLEDGED_FOR_NO_DOC], function () use ($accountV2Core, $merchant, $merchantDetails) {
 
-                $noDocGmvLimitExhausted = $accountV2Core->isNoDocOnboardingGmvLimitExhausted($merchant->getId());
+                $noDocGmvLimitExhausted = $accountV2Core->isNoDocOnboardingGmvLimitExhausted($merchant);
 
                 if ($noDocGmvLimitExhausted === true) {
                     (new NeedsClarification\Core())->updateNCFieldsAcknowledgedIfApplicableForNoDoc($merchant, $merchantDetails);
@@ -341,7 +341,7 @@ class Service extends Base\Service
         foreach ($zippedICICIFIRSdocuments as $zipDocument)
         {
             if($this->checkZippedFirsDocumentStatus($zipDocument) === true)
-            {    
+            {
                 $documentResponse = [
                     Entity::ID              => $zipDocument->getId(),
                     Entity::DOCUMENT_TYPE   => $zipDocument->getDocumentType(),
@@ -349,7 +349,7 @@ class Service extends Base\Service
                     Entity::FILE_STORE_ID   => $zipDocument->getFileStoreId(),
                     Entity::CREATED_AT      => $zipDocument->getCreatedAt(),
                 ];
-                
+
                 array_push($documentMetaData,$documentResponse);
             }
         }
@@ -382,7 +382,7 @@ class Service extends Base\Service
 
     /*  Function returns the signed_url to download the FIRS zip files for a month and year.
         Disabling Use of this function because removing download all option from frontend
-        which was to used to zip individual documents in realtime, removing now because of 
+        which was to used to zip individual documents in realtime, removing now because of
         zipped files are now shown for icici firs documents.
     */
 
@@ -432,14 +432,14 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('firsZippingCronRequest',$input);
 
-        /* 
+        /*
          * Job is responsible for creating zip files by aggregating individual pdf files and
          * expects merchant_id, month, year and force_create.
-         * 
-         * force_create flag is responsible for deleting older zip files and its entries and 
+         *
+         * force_create flag is responsible for deleting older zip files and its entries and
          * creating new ones. This is just a failsafe to ensure, if any zip_file was stuck or
          * wasn't able to process gracefully.
-        */ 
+        */
 
         $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_CRON_REQUEST,[
             'input'   => $input
@@ -451,21 +451,21 @@ class Service extends Base\Service
         {
             $month = $input['month'];
             $year = $input['year'];
-            
+
             $iterationNumber = 0;
-            
+
             foreach ($input['merchant_ids'] as $merchantId)
             {
                 $payload = [
                     'merchant_id'   => $merchantId,
                     'month'         => $month,
                     'year'          => $year,
-                    'force_create'  => true 
+                    'force_create'  => true
                 ];
 
                 // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
                 MerchantFirsDocumentsZip::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
-                
+
                 $iterationNumber++;
 
                 $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_JOB_DISPATCH,$payload);
@@ -476,28 +476,28 @@ class Service extends Base\Service
             $currentTimeStamp = Carbon::now(Timezone::IST)->getTimeStamp();
             $currentMonth = explode('/',date('m/d/Y', $currentTimeStamp))[0];
             $currentYear = explode('/',date('m/d/Y', $currentTimeStamp))[2];
-    
+
             $previousMonth = Carbon::now(Timezone::IST)->subMonth();
-            
+
             // year and month for which we are generating firs zipped file containing all icici firs documents
             $year  = $previousMonth->year;
             $month = $previousMonth->month;
-    
+
             $from = strtotime($month.'/01/'.$year);
             $to = $currentTimeStamp;
             $documentType = 'firs_icici_file';
-            
+
             $merchantEntries = $this->repo->merchant_document->findAllMerchantsAndDistinctDatedDocumentsAddedInRangeWithDocumentType($documentType,$from,$to);
-    
+
             $iterationNumber = 0;
-            
+
             foreach ($merchantEntries as $entry)
             {
                 $merchantId = $entry[Entity::MERCHANT_ID];
                 $documentDate = $entry[Entity::DOCUMENT_DATE];
-                
+
                 list($month,$date,$year) = explode('/',date('m/d/Y', $documentDate));
-    
+
                 if($month === $currentMonth && $year === $currentYear){
                     continue;
                 }
@@ -506,18 +506,18 @@ class Service extends Base\Service
                     'merchant_id'   => $merchantId,
                     'month'         => $month,
                     'year'          => $year,
-                    'force_create'  => false 
+                    'force_create'  => false
                 ];
 
                 // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
                 MerchantFirsDocumentsZip::dispatch($payload)->delay($iterationNumber*$minimumDelay % 901);
-            
+
                 $iterationNumber++;
-                
+
                 $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_JOB_DISPATCH,$payload);
             }
         }
-        
+
         return ['success' => true];
     }
 
@@ -539,5 +539,5 @@ class Service extends Base\Service
             return false;
         }
     }
- 
+
 }

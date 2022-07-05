@@ -592,7 +592,34 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchTotalAmountByTransactionTypeWithThresholdInRange(
+        array $merchantIdList, string $type, int $threshold): array
+    {
+        $query = $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->where($this->dbColumn(Entity::TYPE), '=', $type)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->groupBy(Entity::MERCHANT_ID)
+            ->selectRaw('SUM(' . Entity::AMOUNT . ') as total,' . Entity::MERCHANT_ID);
 
+        $query1 = clone $query;
+        $query2 = clone $query;
+
+        $merchantsGmvList = $query->having('total', '>=' , $threshold)
+                        ->get()
+                        ->toArray();
+
+        $merchantsNinetyOnePercentileGmvList = $query1->having('total', '>=' , $threshold * 0.91)
+                        ->having('total', '<' , $threshold)
+                        ->get()
+                        ->toArray();
+
+        $merchantsNinetyPercentileGmvList = $query2->having('total', '>=' , $threshold * 0.90)
+                        ->having('total', '<' , $threshold * 0.91)
+                        ->get()
+                        ->toArray();
+
+        return [$merchantsGmvList, $merchantsNinetyOnePercentileGmvList, $merchantsNinetyPercentileGmvList];
+    }
 
     public function updateSettledAtToNow($txn)
     {

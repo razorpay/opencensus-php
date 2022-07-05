@@ -47,7 +47,7 @@ class NeedsClarificationReasonsList
     const CIN_DATA_UNAVAILABLE                              = 'cin_data_unavailable';
     const LLPIN_DATA_UNAVAILABLE                            = 'llpin_data_unavailable';
     const NO_DOC_LIMIT_BREACH                               = 'no_doc_limit_breach';
-    const GMV_LIMIT_BREACHED_FOR_NO_DOC_ONBOARDING          = 'Your Rs 50,000 GMV limit has been breached, kindly share additional details to get your account reactivated.';
+    const GMV_LIMIT_BREACHED_FOR_NO_DOC_ONBOARDING          = 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.';
 
     //Not Used please use these fields if required in future.
     const SHOP_ESTABLISHMENT_DATA_NOT_MATCHED               = 'shop_establishment_data_not_matched';
@@ -161,7 +161,7 @@ class NeedsClarificationReasonsList
         self::COMPANY_NAME_NOT_MATCHED                                => [
             NeedsClarificationMetaData::DESCRIPTION => 'Entered Business Name doesn\'t match company incorporation records, please enter correct Business Name.',],
         self::NO_DOC_LIMIT_BREACH                                     => [
-            NeedsClarificationMetaData::DESCRIPTION => 'Your Rs 50,000 GMV limit has been breached, kindly share additional details to get your account reactivated.',],
+            NeedsClarificationMetaData::DESCRIPTION => 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.',],
         ];
 
 

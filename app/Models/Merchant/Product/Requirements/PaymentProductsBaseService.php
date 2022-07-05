@@ -245,6 +245,8 @@ class PaymentProductsBaseService extends Base\Service
 
                 foreach ($requirements as & $requirement)
                 {
+                    $requirement[Constants::STATUS] = Constants::REQUIRED;
+
                     $requirement[Constants::DESCRIPTION] = Detail\NeedsClarificationReasonsList::GMV_LIMIT_BREACHED_FOR_NO_DOC_ONBOARDING;
                 }
             }
