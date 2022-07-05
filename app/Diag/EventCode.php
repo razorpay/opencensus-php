@@ -352,6 +352,11 @@ class EventCode
         'name'  => 'payment.verification.status.not.for.verify'
     ];
 
+    const PAYMENT_VERIFICATION_STATUS_MISMATCH_POSSIBLE_FRAUD    = [
+        'group' => 'verification',
+        'name'  => 'payment.verification.status.mismatch.possible.fraud'
+    ];
+
     const PAYMENT_TIMEOUT_SCHEDULER_INITIATED = [
         'group' => 'timeout',
         'name'  => 'payment.timeout.scheduler.initiated'

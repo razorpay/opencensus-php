@@ -1713,10 +1713,33 @@ class Verify extends Base\Core
 
         if (($verify->apiSuccess === true) and ($verify->gatewaySuccess === false))
         {
-            throw new Exception\LogicException(
-                "Should not have reached here. apiSuccess cannot be true when gatewaySuccess is false.",
-                null,
-                $verify->getDataToTrace());
+//            $ex = new Exception\LogicException(
+//                "Should not have reached here. apiSuccess cannot be true when gatewaySuccess is false.",
+//                null,
+//                $verify->getDataToTrace());
+
+            $ex = new Exception\RuntimeException(
+                'apiSuccess cannot be true when gatewaySuccess is false, transaction might be possible fraud',
+                [
+                    'payment_id' => $payment->getId(),
+                    'gateway'    => $payment->getGateway(),
+                ]);
+
+            $extraProperties = [
+                'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
+                'api_success'  => $verify->apiSuccess,
+                'gateway_success' => $verify->gatewaySuccess,
+                'amount_mismatch' => $verify->amountMismatch
+            ];
+
+            $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_STATUS_MISMATCH_POSSIBLE_FRAUD, $payment, null, $extraProperties);
+
+            $this->trace->warning(
+                TraceCode::PAYMENT_VERIFY_POSSIBLE_FRAUD,
+                $this->getAuthExceptionTraceBody($payment, $ex)
+            );
+
+            throw $ex;
         }
         else
         {

@@ -4451,7 +4451,7 @@ class Service extends Base\Service
     {
         $data = [];
 
-        $statusToVerify = [Payment\Status::FAILED, Payment\Status::CREATED];
+        $statusToVerify = [Payment\Status::FAILED, Payment\Status::CREATED, Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
 
         $payment =  $this->repo->payment->find($id);
 

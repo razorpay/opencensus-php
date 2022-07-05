@@ -6690,6 +6690,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_VERIFICATION_INITIATED                                = 'PAYMENT_VERIFY_EVENT_DATA';
     const PAYMENT_NOT_FOUND_FOR_VERIFY                                  = 'PAYMENT_NOT_FOUND_FOR_VERIFY';
     const PAYMENT_VERIFY_GATEWAY_NULL                                   = 'PAYMENT_VERIFY_GATEWAY_NULL';
+    const PAYMENT_VERIFY_POSSIBLE_FRAUD                                 = 'PAYMENT_VERIFY_POSSIBLE_FRAUD';
     const PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS                  = 'PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS';
 
     const DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING                    = 'DOWNTIME_NOTIFICATION_MERCHANT_KEY_MISSING';
