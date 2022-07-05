@@ -1098,6 +1098,9 @@ class Entity extends Base\PublicEntity
                         'token'   => $this->getPublicId(),
                     ]);
             }
+            unset($publicArray['card'][Card\Entity::NAME]);
+            unset($publicArray['card'][Card\Entity::EXPIRY_MONTH]);
+            unset($publicArray['card'][Card\Entity::EXPIRY_YEAR]);
         }
 
         if ($this->isNachToken() === true and (new Merchant\Core)->isRazorxExperimentEnable(

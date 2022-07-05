@@ -1683,7 +1683,6 @@ class PaymentFetchTest extends TestCase
                                 'auth_type'=>'3ds',
                                 'card' => [
                                     'merchant_id'       =>  '10000000000000',
-                                    'name'              =>  'test',
                                     'network'           =>  'RuPay',
                                     'expiry_month'      =>  '12',
                                     'expiry_year'       =>  '2100',
