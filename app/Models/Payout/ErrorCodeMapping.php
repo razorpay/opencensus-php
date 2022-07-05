@@ -186,7 +186,8 @@ class ErrorCodeMapping
         'VAULT_INVALID_HASH'                    => 'Payout failed. Contact support for help.',
         'VAULT_TOKEN_EXPIRED'                   => 'Payout failed. Contact support for help.',
         'VAULT_PANREF_NOT_FOUND'                => 'Payout failed. Contact support for help.',
-        'CARD_NUMBER_UNAVAILABLE'               => 'Payout failed as the card number is not available. Please retry.'
+        'CARD_NUMBER_UNAVAILABLE'               => 'Payout failed as the card number is not available. Please retry.',
+        'PBANK_TECHNICAL_ERROR_PENDING'        => 'Payout failed. Temporary Issue at Partner bank.'
     ];
 
     public static $alternateFailureReasonMapping = [

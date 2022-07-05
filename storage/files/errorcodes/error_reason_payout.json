@@ -556,5 +556,17 @@
       "reason": "card_number_unavailable",
       "description": "Payout failed as the card number is not available. Please retry"
     }
+  },
+  "PBANK_TECHNICAL_ERROR_PENDING": {
+    "initiated": {
+      "source": "gateway",
+      "reason": "gateway_pending",
+      "description": "Payout confirmation is pending from partner bank."
+    },
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank."
+    }
   }
 }
