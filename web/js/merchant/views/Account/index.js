@@ -2,6 +2,7 @@ import { Route, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 import Profile from 'merchant/views/Account/Profile';
+import WebsiteAppDetails from 'merchant/views/Account/WebsiteAppDetails';
 import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
 import ManageTeam from 'merchant/views/Account/ManageTeam';
@@ -40,6 +41,9 @@ const MyAccount = (props) => {
               <NavLink to="/profile">Profile</NavLink>
             </ShowWhen>
 
+            <ShowWhen additionalCondition={(_) => false}>
+              <NavLink to="/website-app-details">Website/App details</NavLink>
+            </ShowWhen>
             <ShowWhen additionalCondition={() => isTrustedBadge}>
               <NavLink to="/trustedbadge">Trusted Badge</NavLink>
             </ShowWhen>
@@ -96,6 +100,7 @@ const MyAccount = (props) => {
         <content>
           <Route path="/trustedbadge" component={TrustedBadge} />
           <Route path="/profile" component={Profile} />
+          <Route path="/website-app-details" component={WebsiteAppDetails} />
           <Route path="/credits" component={Credits} />
           <Route path="/addfunds" component={Balances} />
           <Route path="/referrals" component={Referrals} />

@@ -1,0 +1,127 @@
+.website-app-details-container
+  width: 100%
+  display: flex
+  flex-direction: row
+  justify-content: center
+
+  .section-content
+    width: 100%
+    height: 100%
+    background-color: white
+    box-shadow: 0px 4px 10px rgba(11, 112, 231, 0.05)
+    margin: 20px 0px
+
+    .section-footer
+      padding: 30px 45px
+
+    .section-footer
+      button{
+        background: rgba(11, 112, 231, 0.05);
+        color #2B83EA
+        border: 1px solid rgba(11, 112, 231, 0.74)
+        border-radius: 2px
+        padding: 8px
+        width: 100%
+        font-weight: bold
+      }
+
+    .section-body
+      padding-left: 45px
+      padding-right: 45px
+
+      span{
+        color:#162F56
+        font-weight: 400
+        font-size: 12px
+        opacity:.54
+      }
+
+      p{
+        font-weight: 700
+        font-size: 14px
+        line-height: 20px
+        color: #536582
+
+      }
+
+      >div{
+        margin-bottom: 12px
+      }
+
+    .section-header
+      padding: 30px 45px 20px 45px
+
+      .status
+        border-radius: 15px
+        padding: 5px 10px
+
+        &.verified
+          background-color: rgba(31, 137, 14, 0.1)
+          color: #1F890E
+
+        &.action-required
+          background-color: rgba(209, 45, 45, 0.1)
+          color: #D12D2D
+
+        &.under-review
+          background-color: rgba(11, 112, 231, 0.1)
+          color:#2A8CFF
+
+        &.details-required
+          background-color: rgba(205, 130, 20, 0.1)
+          color: #CD8214
+
+        p{
+          display: inline-block
+          font-weight: 700
+          line-height: 14px
+          font-size: 10px
+        }
+
+      > p{
+        font-size: 14px
+        font-weight: 700
+        line-height: 20px
+        color: #162F56
+        opacity:.87
+        margin-top: 15px
+      }
+
+      .comment
+        border: 1px solid #E7EBF1
+        border-radius: 4px
+        background: #F9FBFE
+        padding: 10px
+        font-size: 14px
+        line-height: 20px
+        margin-top: 10px
+        color: rgba(22, 47, 86, 0.87)
+
+        p{
+          display: inline-block
+          color: #2B83EA
+          font-weight: 400
+        }
+
+
+@media (max-width:500px ) {
+  .website-app-details-container{
+    margin-top: 20px
+
+    .section-content{
+      margin: 0px
+
+      .section-footer, .section-body, .section-header{
+        padding: 15px 15px
+      }
+    }
+  }
+}
+
+@media (min-width:500px ) {
+  .website-app-details-container{
+    .section-content{
+      width: 45%
+    }
+  }
+}

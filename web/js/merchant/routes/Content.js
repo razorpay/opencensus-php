@@ -529,6 +529,13 @@ export default class Content extends Component {
             component={MyAccount}
             additionalCondition={(user) => user.isAllowedView('profile') || !user.userRole}
           />
+
+          <ShowWhenRoute
+            path="/website-app-details"
+            component={MyAccount}
+            additionalCondition={(_) => true}
+          />
+
           <ShowWhenRoute
             path="/addfunds"
             component={MyAccount}
