@@ -6,7 +6,7 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 
 const SettlementGuideText = ({ user }) => {
   const showRzpBranding =
-    user?.isOrgAllowedFunctionality('external_links') &&
+    user?.isOrgAllowedFunctionality?.('external_links') &&
     !isOrgFeatureExist('hide_razorpay_text_link');
   return (
     <div className="settlement-row">
