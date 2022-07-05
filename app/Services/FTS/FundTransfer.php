@@ -523,6 +523,10 @@ class FundTransfer extends Base
                 $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = true;
                 $request[Constants::ACCOUNT][Constants::CARD][Constants::BU_NAMESPACE] = Card\BuNamespace::PAYMENTS_TOKEN_PAN;
             }
+            else
+            {
+                $request[Constants::ACCOUNT][Constants::CARD][Constants::TOKENISED] = false;
+            }
         }
 
         if (($this->fta->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true) and
