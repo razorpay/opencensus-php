@@ -64,6 +64,7 @@ class Service
 
     const GET_MERCHANT_BANKING_ACCOUNTS_FOR_TALLY  = 'GetMerchantBankingAccountsForTally';
     const UPDATE_RX_TALLY_LEDGER_MAPPING           = 'UpdateRxTallyLedgerMapping';
+    const GET_BANK_TRANSACTIONS_SYNC_STATUS        = 'GetBankTransactionsSyncStatus';
 
     const X_RAZORPAY_TASKID_HEADER    = 'X-Razorpay-TaskId';
     const X_REQUEST_ID                = 'X-Request-ID';
@@ -508,6 +509,15 @@ class Service
         $input[self::MERCHANT_ID] = $merchant->getId();
 
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::UPDATE_RX_TALLY_LEDGER_MAPPING);
+
+        return $this->makeRequest(null, $url, $input);
+    }
+
+    public function getBankTransactionsSyncStatus(MerchantEntity $merchant, array $input)
+    {
+        $input[self::MERCHANT_ID] = $merchant->getId();
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_BANK_TRANSACTIONS_SYNC_STATUS);
 
         return $this->makeRequest(null, $url, $input);
     }

@@ -529,4 +529,41 @@ return [
             ]
         ]
     ],
+
+    'testGetBankTransactionsSyncStatus' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integration/bank-transactions/sync-status',
+            'content' => [
+                'txn_id-1',
+                'txn_id-2',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'entity' => 'collection',
+                'items' => [
+                    [
+                        'entity_id' => 'txn_id-1',
+                        'entity_type' => 'transaction',
+                        'reason' => '',
+                        'status' => 'ready-to-sync',
+                        'sync_completed_at' => 0,
+                        'sync_failed_at' => 0,
+                        'sync_started_at' => 12345688,
+                    ],
+                    [
+                        'entity_id' => 'txn_id-2',
+                        'entity_type' => 'transaction',
+                        'reason' => '',
+                        'status' => 'syncing',
+                        'sync_completed_at' => 0,
+                        'sync_failed_at' => 0,
+                        'sync_started_at' => 12345688,
+                    ]
+                ]
+            ]
+        ]
+    ],
 ];

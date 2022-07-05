@@ -1760,6 +1760,7 @@ class Route
         'accounting_integration_zoho_bank_statement_sync_cron'           => ['post',     'accounting-integration/zoho/bank-statement/sync-cron',          'AccountingPayoutsController@zohoStatementSyncCron'              ],
         'accounting_integration_bank_statement_fetch_trigger_cron'       => ['post',     'accounting-integration/bank-statement/fetch-trigger-cron',      'AccountingPayoutsController@bankStatementFetchTriggerCron'      ],
         'accounting_integration_bank_statement_fetch_trigger_merchant'   => ['post',     'accounting-integration/bank-statement/fetch-trigger-merchant',  'AccountingPayoutsController@bankStatementFetchTriggerMerchant'  ],
+        'accounting_integration_bank_transactions_sync_status'           => ['get',      'accounting-integration/bank-transactions/sync-status',          'AccountingPayoutsController@getBankTransactionsSyncStatus'      ],
 
         // Tax Payments
         'tax_payments_add_penalty_cron'              => ['post',    'tax-payments/addPenalty',                         'TaxPaymentController@addPenalty'                                   ],
@@ -5687,6 +5688,7 @@ class Route
         'accounting_integration_put_chart_of_accounts',
         'accounting_integration_sync_chart_of_accounts',
         'accounting_integration_bank_statement_fetch_trigger_merchant',
+        'accounting_integration_bank_transactions_sync_status',
 
         // Virtual VPA Prefix
         'virtual_vpa_prefix_validate',
@@ -8306,6 +8308,7 @@ class Route
         'accounting_integration_put_chart_of_accounts'    => Permission::UPDATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_sync_chart_of_accounts'   => Permission::SYNC_ACCOUNTING_INTEGRATION,
         'accounting_integration_bank_statement_fetch_trigger_merchant' => Permission::SYNC_ACCOUNTING_INTEGRATION,
+        'accounting_integration_bank_transactions_sync_status'         => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_get_all_settings'         => Permission::VIEW_ACCOUNTING_INTEGRATION,
         'accounting_integration_add_or_update_settings'   => Permission::CREATE_ACCOUNTING_INTEGRATION,
         'accounting_integration_tally_delete_integration' => Permission::DELETE_ACCOUNTING_INTEGRATION,
@@ -9080,6 +9083,7 @@ class Route
             'accounting_integration_put_chart_of_accounts',
             'accounting_integration_sync_chart_of_accounts',
             'accounting_integration_bank_statement_fetch_trigger_merchant',
+            'accounting_integration_bank_transactions_sync_status',
             'accounting_integration_tally_invoices',
             'accounting_integration_tally_fetch_invoice',
             'accounting_integration_tally_cancel_invoice',
@@ -13969,6 +13973,7 @@ class Route
         'accounting_integration_put_chart_of_accounts',
         'accounting_integration_sync_chart_of_accounts',
         'accounting_integration_bank_statement_fetch_trigger_merchant',
+        'accounting_integration_bank_transactions_sync_status',
         'accounting_integration_tally_invoices',
         'accounting_integration_tally_fetch_invoice',
         'accounting_integration_tally_cancel_invoice',

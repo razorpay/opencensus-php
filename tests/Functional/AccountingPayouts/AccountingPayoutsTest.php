@@ -761,4 +761,42 @@ class AccountingPayoutsTest extends TestCase
 
         $apMock->shouldHaveReceived('updateRxTallyLedgerMapping');
     }
+
+    public function testGetBankTransactionsSyncStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $apMock = Mockery::mock('RZP\Services\AccountingPayouts');
+
+        $apMock->shouldReceive('getBankTransactionsSyncStatus')->andReturn([
+            'count' => 2,
+            'entity' => 'collection',
+            'items' => [
+                [
+                    'entity_id' => 'txn_id-1',
+                    'entity_type' => 'transaction',
+                    'reason' => '',
+                    'status' => 'ready-to-sync',
+                    'sync_completed_at' => 0,
+                    'sync_failed_at' => 0,
+                    'sync_started_at' => 12345688,
+                ],
+                [
+                    'entity_id' => 'txn_id-2',
+                    'entity_type' => 'transaction',
+                    'reason' => '',
+                    'status' => 'syncing',
+                    'sync_completed_at' => 0,
+                    'sync_failed_at' => 0,
+                    'sync_started_at' => 12345688,
+                ]
+            ]
+        ]);
+
+        $this->app->instance('accounting-payouts', $apMock);
+
+        $this->startTest();
+
+        $apMock->shouldHaveReceived('getBankTransactionsSyncStatus');
+    }
 }

@@ -218,4 +218,9 @@ class AccountingPayoutsController extends Controller
     {
         return $this->service->ackTallyBankTransactions($this->ba->getMerchant(), $this->input);
     }
+
+    public function getBankTransactionsSyncStatus()
+    {
+        return $this->service->getBankTransactionsSyncStatus($this->ba->getMerchant(), $this->input);
+    }
 }
