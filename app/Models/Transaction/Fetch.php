@@ -11,7 +11,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             Entity::SETTLED         => 'sometimes|in:0,1',
             Entity::ON_HOLD         => 'sometimes|in:0,1',
-            Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment,commission',
+            Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment,commission,payout,credit_transfer',
             Entity::SETTLEMENT_ID   => 'sometimes|alpha_dash|min:14|max:19',
             Entity::ENTITY_ID       => 'sometimes|alpha_dash|min:14',
             Entity::MERCHANT_ID     => 'sometimes|alpha_num',
