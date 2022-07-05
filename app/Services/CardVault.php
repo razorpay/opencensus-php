@@ -44,6 +44,7 @@ class CardVault
     const CARD      =   'card';
     const MPAN      =   'mpan';
     const RAZORPAYX =   'razorpayx';
+    const BU_NAMESPACE_MPAN = 'payments_mpan';
 
     const TOKENIZATION_ROUTES = array(Card\Constants::FETCH_PAR_VAL, Card\Constants::TOKENS_CRYPTOGRAM, Card\Constants::TOKENS, Card\Constants::TOKENS_MIGRATE, Card\Constants::TOKENS_FETCH, Card\Constants::TOKENS_DELETE, Card\Constants::TOKENS_UPDATE);
 
@@ -150,6 +151,11 @@ class CardVault
             ];
 
             $key = $this->namespace. '_' . $input['secret'];
+
+            if ($this->namespace === self::MPAN)
+            {
+                $buNamespace = self::BU_NAMESPACE_MPAN;
+            }
         }
         else
         {
@@ -256,6 +262,11 @@ class CardVault
             self::TOKEN         => $token,
         ];
 
+        if ($this->namespace === self::MPAN)
+        {
+            $buNamespace = self::BU_NAMESPACE_MPAN;
+        }
+
         if (isset($buNamespace) === true ) {
 
             $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
@@ -271,7 +282,6 @@ class CardVault
                 ];
             }
         }
-
 
         $response = $this->sendRequest('detokenize', 'post', $input);
 
