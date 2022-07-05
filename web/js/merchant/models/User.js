@@ -18,6 +18,15 @@ import {
   antiOrgsFeatures,
 } from 'merchant/helpers/permissions';
 
+const ORG_CUSTOM_CODE_MAP = {
+  RAZORPAY: 'rzp',
+  AXIS_BANK: 'axis',
+  ICICI_BANK: 'icic',
+  HDFC_SMART_HUB: 'hdfc',
+  HDFC_COLLECT_NOW: 'HDFC',
+  KOTAK_MAHINDRA_BANK: 'KKBK',
+};
+
 const PRODUCT_KEY_MAPS = [
   'invoices',
   'payment_links',
@@ -33,8 +42,19 @@ const PRODUCT_KEY_MAPS = [
   'checkoutrewards',
 ];
 
-const ORG_CUSTOM_CODE_MAP = {
-  KOTAK_MAHINDRA_BANK: 'KKBK',
+const FEATURE_FLAG_MAPS = {
+  invoices: 'invoices',
+  payment_links: 'pl',
+  payment_pages: 'pp',
+  payment_buttons: 'pb',
+  subscription_buttons: 'sb',
+  marketplace: 'mp',
+  subscriptions: 'subs',
+  qr_codes: 'qrcodes',
+  stores: 'stores',
+  virtual_accounts: 'va',
+  offers: 'offers',
+  checkoutrewards: 'chk_reward',
 };
 
 // TODO: Rename fn. name
@@ -108,26 +128,53 @@ export default class User {
     return this.user.confirmed;
   }
 
+  get orgCustomCode() {
+    return getOrg()?.custom_code;
+  }
+
+  get isWhiteLabelledOrg() {
+    const custom_code = this.orgCustomCode;
+    return custom_code?.toLowerCase() !== ORG_CUSTOM_CODE_MAP.RAZORPAY;
+  }
+
   get isOrgRZP() {
-    const org = getOrg();
+    const custom_code = this.orgCustomCode;
+    return custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.RAZORPAY;
+  }
 
-    if (org && org.custom_code && org.custom_code.toLowerCase() === 'rzp') {
-      return true;
-    }
+  get isOrgAxis() {
+    const custom_code = this.orgCustomCode;
+    return custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.AXIS_BANK;
+  }
 
-    return false;
+  get isOrgKotak() {
+    const custom_code = this.orgCustomCode;
+    return custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.KOTAK_MAHINDRA_BANK;
+  }
+
+  /* Check case-insensitive tag check */
+  findTag(tag) {
+    return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
   }
 
   isProductHiddenForWhiteLabelledOrg(moduleName) {
-    if (!PRODUCT_KEY_MAPS.includes(moduleName)) {
-      return false;
-    }
+    // show all products to Razorpay ORG
+    if (!this.isWhiteLabelledOrg) return false;
 
-    if (!this.isWhiteLabelledOrg) {
-      return false;
-    }
+    // show all products apart from the PRODUCT_KEY_MAPS list
+    if (!PRODUCT_KEY_MAPS.includes(moduleName)) return false;
 
-    return !this.findTag(`white_labelled_${moduleName}`);
+    // show product/s to merchant who has specific product tag
+    if (this.findTag(`white_labelled_${moduleName}`)) return false;
+
+    // For AXIS ORG, by default all the product apps has to be hidden
+    if (this.isOrgAxis) return true;
+
+    // since there is char constraint for feature flag we have shortforms for each product. Hence using FEATURE_FLAG_MAPS
+    const orgFeatureFlag = FEATURE_FLAG_MAPS[moduleName] ?? moduleName;
+
+    // hide product/s to ORG if there is specific product tag
+    return isOrgFeatureExist(`white_labelled_${orgFeatureFlag}`);
   }
 
   isOrgAllowedFunctionality(featureName) {
@@ -732,11 +779,6 @@ export default class User {
     return this.getExpStatus('pb_direct_plugin_links');
   }
 
-  /* Check case-insensitive tag check existence */
-  findTag(tag) {
-    return this.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
-  }
-
   /*
    * Detects whether user is partner or not.
    * If check has to be made for specific type of partners,
@@ -1252,30 +1294,10 @@ export default class User {
     return this.getExpStatus('app_switcher');
   }
 
-  get isOrgAxis() {
-    const currentOrg = getOrg().custom_code;
-
-    return currentOrg === 'axis';
-  }
-
-  get isOrgKotak() {
-    const currentOrg = getOrg()?.custom_code;
-
-    return currentOrg === ORG_CUSTOM_CODE_MAP.KOTAK_MAHINDRA_BANK;
-  }
-
   get isSourceRX() {
     const query = QueryString.parse(window.location.search);
     const isSourceRX = !!(query && query.merchant && query.merchant === 'x');
     return isSourceRX;
-  }
-
-  get isWhiteLabelledOrg() {
-    return this.isOrgAxis;
-  }
-
-  get orgCustomCode() {
-    return getOrg().custom_code;
   }
 
   get showOnDemandDeduction() {
@@ -1614,7 +1636,8 @@ function getSplitzExperimentVariant(experimentName) {
   return splitzExperimentVariant || {};
 }
 
+/* Check case-insensitive feature flag check */
 export function isOrgFeatureExist(feature) {
-  const org = getOrg();
-  return org?.features?.indexOf(feature) > -1;
+  const features = getOrg()?.features;
+  return features?.indexOf(feature) > -1;
 }
