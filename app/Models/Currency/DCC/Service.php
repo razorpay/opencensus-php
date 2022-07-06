@@ -18,7 +18,7 @@ class Service extends Base\Service
 
     const TIME_INTERVAL_MINS = 60;
 
-    const DCC_MARK_UP_PERCENTAGE = 6;
+    const DCC_MARK_UP_PERCENTAGE = 8;
 
     public function __construct()
     {
