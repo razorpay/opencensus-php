@@ -17,7 +17,7 @@ class Validator extends Merchant\Validator
     protected static $createAccountRules = [
         Constants::REFERENCE_ID                    => 'sometimes',
         Constants::EMAIL                           => 'required|email',
-        Constants::PHONE                           => 'required|numeric',
+        Constants::PHONE                           => 'required|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u',
         Constants::CONTACT_NAME                    =>  array ('sometimes','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::LEGAL_BUSINESS_NAME             => 'required|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',
@@ -33,7 +33,7 @@ class Validator extends Merchant\Validator
     ];
 
     protected static $editAccountRules = [
-        Constants::PHONE                           => 'filled|numeric',
+        Constants::PHONE                           => 'filled|regex:/^\+?[1-9]{1}[0-9]{7,14}$/u',
         Constants::CONTACT_NAME                    =>  array ('sometimes','max:255','regex:/^[\p{L} ,@#-.%\/]{1,255}$/u'),
         Constants::LEGAL_BUSINESS_NAME             => 'sometimes|string',
         Constants::CUSTOMER_FACING_BUSINESS_NAME   => 'sometimes|string',

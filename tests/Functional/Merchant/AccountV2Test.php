@@ -610,4 +610,57 @@ class AccountV2Test extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testCreateAccountV2WithInvalidPhone()
+    {
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $testData['request']['content']['phone'] = '+91.8721302112';
+
+        $testData['response'] = $this->testData[__FUNCTION__]['response'];
+
+        $testData['exception'] = $this->testData[__FUNCTION__]['exception'];
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreateAccountV2WithPhoneNumbersExceeding()
+    {
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $testData['request']['content']['phone'] = '+919048721302112';
+
+        $testData['response'] = $this->testData[__FUNCTION__]['response'];
+
+        $testData['exception'] = $this->testData[__FUNCTION__]['exception'];
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testEditAccountV2WithInvalidPhone()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
 }
