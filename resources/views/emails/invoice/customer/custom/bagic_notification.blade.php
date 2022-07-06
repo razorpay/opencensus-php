@@ -20,17 +20,13 @@
         $amountPaidFormatted = number_format($amountPaid / 100, 2);
         $amountDueFormatted  = number_format($amountDue / 100, 2);
 
-
-        $lob = '';
-        $policy_number = '';
         $policy_expire = '';
+        $bagic_des = '';
         if(isset($invoice['notes'])){
             $notes = $invoice['notes'];
-            $lob = $notes['lob'] ?? $lob;
-            $policy_number = $notes['policy_number'] ?? $policy_number;
             $policy_expire = $notes['term_end_date'] ?? $policy_expire;
         }
-        $bagic_description = 'Renewal for '.$lob.' policy '.$policy_number;
+        $bagic_description = $invoice['description'] ?? $bagic_des;
         $reportEmailUrl = 'https://razorpay.com/support/payments/report-merchant/?e=' . base64_encode($invoice['id']) . '&m=' . base64_encode($invoice['customer_details']['customer_email']) . '&s=' . base64_encode('customer_email');
         $showReportMailFlag = false;
         if (isset($view_preferences['exempt_customer_flagging']) === true) {
@@ -136,9 +132,9 @@
                             <label style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; font-size: 12px; color: #9B9B9B; font-weight: bold; text-transform: uppercase;">BANK DETAILS</label>
                             <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E;">
                                 <div>Bank: {{$invoice['subscription_registration']['bank_account']['bank_name']}}</div>
-                                <div>Name on Account: {{$invoice['subscription_registration']['bank_account']['name']}}</>
+                                <div>Name on Account: {{$invoice['subscription_registration']['bank_account']['name']}}</div>
                                 <div>IFSC: {{$invoice['subscription_registration']['bank_account']['ifsc']}}</div>
-                                <div>Account Number: {{$invoice['subscription_registration']['bank_account']['account_number']}}</>
+                                <div>Account Number: {{$invoice['subscription_registration']['bank_account']['account_number']}}</div>
                             </div>
                         </div>
                     </td>
