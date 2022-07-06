@@ -3982,8 +3982,6 @@ class Processor
 
             $ex->setData($data);
 
-            $this->disableTerminalIfApplicable($terminal, $error);
-
             $this->changeTerminalCapabilityIfApplicable($terminal, $error);
 
             $this->addBackupMethodForRetry($this->payment, $this->merchant, $ex);

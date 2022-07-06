@@ -100,8 +100,6 @@ trait Omnichannel
         {
             $error = $ex->getError();
 
-            $this->disableTerminalIfApplicable($terminal, $error);
-
             throw $ex;
         }
     }

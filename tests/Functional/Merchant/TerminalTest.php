@@ -2136,6 +2136,7 @@ class TerminalTest extends TestCase
 
     public function testTerminalCheckAutoDisable()
     {
+        $this->markTestSkipped();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
