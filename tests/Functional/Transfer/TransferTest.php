@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Transfer;
 
 use Mail;
+use Mockery;
+
 use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
@@ -1240,6 +1242,281 @@ class TransferTest extends TestCase
         $this->assertEquals('transfer', $reversal['entity_type']);
         $this->assertEquals($transferId, 'trf_' . $reversal['entity_id']);
         $this->assertEquals(800, $reversal['amount']);
+    }
+
+    public function testRearchPaymentTransferMarketplace()
+    {
+        $this->enablePgRouterConfig();
+
+        $transaction = $this->fixtures->create('transaction', [
+            'entity_id' =>'GfnS1Fj048VHo2',
+            'type' =>'payment',
+            'merchant_id' =>'10000000000000',
+            'amount' =>50000,
+            'fee' =>1000,
+            'mdr' =>1000,
+            'tax' =>0,
+            'pricing_rule_id' => NULL,
+            'debit' =>0,
+            'credit' =>49000,
+            'currency' =>'INR',
+            'balance' =>2025400,
+            'gateway_amount' => NULL,
+            'gateway_fee' =>0,
+            'gateway_service_tax' =>0,
+            'api_fee' =>0,
+            'gratis' =>FALSE,
+            'fee_credits' =>0,
+            'escrow_balance' =>0,
+            'channel' =>'axis',
+            'fee_bearer' =>'platform',
+            'fee_model' =>'prepaid',
+            'credit_type' =>'default',
+            'on_hold' =>FALSE,
+            'settled' =>FALSE,
+            'settled_at' =>1614641400,
+            'gateway_settled_at' => NULL,
+            'settlement_id' => NULL,
+            'reconciled_at' => NULL,
+            'reconciled_type' => NULL,
+            'balance_id' =>'10000000000000',
+            'reference3' => NULL,
+            'reference4' => NULL,
+            'balance_updated' =>TRUE,
+            'reference6' => NULL,
+            'reference7' => NULL,
+            'reference8' => NULL,
+            'reference9' => NULL,
+            'posted_at' => NULL,
+            'created_at' =>1614262078,
+            'updated_at' =>1614262078,
+
+        ]);
+
+        $hdfc = $this->fixtures->create('hdfc', [
+            'payment_id' => 'GfnS1Fj048VHo2',
+            'refund_id' => NULL,
+            'gateway_transaction_id' => 749003768256564,
+            'gateway_payment_id' => NULL,
+            'action' => 5,
+            'received' => TRUE,
+            'amount' => '500',
+            'currency' => NULL,
+            'enroll_result' => NULL,
+            'status' => 'captured',
+            'result' => 'CAPTURED',
+            'eci' => NULL,
+            'auth' => '999999',
+            'ref' => '627785794826',
+            'avr' => 'N',
+            'postdate' => '0225',
+            'error_code2' => NULL,
+            'error_text' => NULL,
+            'arn_no' => NULL,
+            'created_at' => 1614275082,
+            'updated_at' => 1614275082,
+        ]);
+
+        $card = $this->fixtures->create('card', [
+                'merchant_id' =>'10000000000000',
+                'name' =>'Harshil',
+                'expiry_month' =>12,
+                'expiry_year' =>2024,
+                'iin' =>'401200',
+                'last4' =>'3335',
+                'length' =>'16',
+                'network' =>'Visa',
+                'type' =>'credit',
+                'sub_type' =>'consumer',
+                'category' =>'STANDARD',
+                'issuer' =>'HDFC',
+                'international' =>FALSE,
+                'emi' =>TRUE,
+                'vault' =>'rzpvault',
+                'vault_token' =>'NDAxMjAwMTAzODQ0MzMzNQ==',
+                'global_fingerprint' =>'==QNzMzM0QDOzATMwAjMxADN',
+                'trivia' => NULL,
+                'country' =>'IN',
+                'global_card_id' => NULL,
+                'created_at' =>1614256967,
+                'updated_at' =>1614256967,
+        ]);
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $paymentData = [
+            'body' => [
+                "data" => [
+                    "payment" => [
+                        'id' =>'GfnS1Fj048VHo2',
+                        'merchant_id' =>'10000000000000',
+                        'amount' =>50000,
+                        'currency' =>'INR',
+                        'base_amount' =>50000,
+                        'method' =>'card',
+                        'status' =>'captured',
+                        'two_factor_auth' =>'not_applicable',
+                        'order_id' => NULL,
+                        'invoice_id' => NULL,
+                        'transfer_id' => NULL,
+                        'payment_link_id' => NULL,
+                        'receiver_id' => NULL,
+                        'receiver_type' => NULL,
+                        'international' =>FALSE,
+                        'amount_authorized' =>50000,
+                        'amount_refunded' =>0,
+                        'base_amount_refunded' =>0,
+                        'amount_transferred' =>0,
+                        'amount_paidout' =>0,
+                        'refund_status' => NULL,
+                        'description' =>'description',
+                        'card_id' =>$card->getId(),
+                        'bank' => NULL,
+                        'wallet' => NULL,
+                        'vpa' => NULL,
+                        'on_hold' =>FALSE,
+                        'on_hold_until' => NULL,
+                        'emi_plan_id' => NULL,
+                        'emi_subvention' => NULL,
+                        'error_code' => NULL,
+                        'internal_error_code' => NULL,
+                        'error_description' => NULL,
+                        'global_customer_id' => NULL,
+                        'app_token' => NULL,
+                        'global_token_id' => NULL,
+                        'email' =>'a@b.com',
+                        'contact' =>'+919918899029',
+                        'notes' =>[
+                            'merchant_order_id' =>'id',
+                        ],
+                        'transaction_id' => $transaction->getId(),
+                        'authorized_at' =>1614253879,
+                        'auto_captured' =>FALSE,
+                        'captured_at' =>1614253880,
+                        'gateway' =>'hdfc',
+                        'terminal_id' =>'1n25f6uN5S1Z5a',
+                        'authentication_gateway' => NULL,
+                        'batch_id' => NULL,
+                        'reference1' => NULL,
+                        'reference2' => NULL,
+                        'cps_route' =>0,
+                        'signed' =>FALSE,
+                        'verified' => NULL,
+                        'gateway_captured' =>TRUE,
+                        'verify_bucket' =>0,
+                        'verify_at' =>1614253880,
+                        'callback_url' => NULL,
+                        'fee' =>1000,
+                        'mdr' =>1000,
+                        'tax' =>0,
+                        'otp_attempts' => NULL,
+                        'otp_count' => NULL,
+                        'recurring' =>FALSE,
+                        'save' =>FALSE,
+                        'late_authorized' =>FALSE,
+                        'convert_currency' => NULL,
+                        'disputed' =>FALSE,
+                        'recurring_type' => NULL,
+                        'auth_type' => NULL,
+                        'acknowledged_at' => NULL,
+                        'refund_at' => NULL,
+                        'reference13' => NULL,
+                        'settled_by' =>'Razorpay',
+                        'reference16' => NULL,
+                        'reference17' => NULL,
+                        'created_at' =>1614253879,
+                        'updated_at' =>1614253880,
+                        'captured' =>TRUE,
+                        'reference2' => '12343123',
+                        'entity' =>'payment',
+                        'fee_bearer' =>'platform',
+                        'error_source' => NULL,
+                        'error_step' => NULL,
+                        'error_reason' => NULL,
+                        'dcc' =>FALSE,
+                        'gateway_amount' =>50000,
+                        'gateway_currency' =>'INR',
+                        'forex_rate' => NULL,
+                        'dcc_offered' => NULL,
+                        'dcc_mark_up_percent' => NULL,
+                        'dcc_markup_amount' => NULL,
+                        'mcc' =>FALSE,
+                        'forex_rate_received' => NULL,
+                        'forex_rate_applied' => NULL,
+                    ]
+                ]
+            ]
+        ];
+
+        $this->cpsCount = 0;
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry) use ($card, $transaction, $paymentData)
+            {
+                if ($method === 'GET')
+                {
+                    if ($this->cpsCount === 1)
+                    {
+                        $paymentData['body']['data']['payment']['amount_transferred'] = 1000;
+                    }
+
+                    return $paymentData;
+                }
+
+                if ($method === 'POST')
+                {
+                    return [];
+                }
+
+            });
+
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure) use ($card, $transaction, $paymentData)
+            {
+                if ($method === 'GET')
+                {
+                    if ($this->cpsCount === 1)
+                    {
+                        $paymentData['body']['data']['payment']['amount_transferred'] = 1000;
+                    }
+
+                    return  $paymentData;
+
+                }
+
+                if ($method === 'POST')
+                {
+                    $this->cpsCount += 1;
+
+                    if ($this->cpsCount === 1)
+                    {
+                        $this->assertEquals($data['amount_transferred'], 1000);    
+                    }
+
+                    if ($this->cpsCount === 2)
+                    {
+                        $this->assertEquals($data['amount_transferred'], 800);    
+                    }
+                    
+                    return [];
+                }
+
+            });
+
+        $testData = & $this->testData['testPaymentAfterTransferReversal'];
+
+        $testData['request']['url'] = '/payments/' . 'pay_GfnS1Fj048VHo2' . '/transfers';
+
+        $this->ba->privateAuth();
+
+        $transfers = $this->startTest($testData);
+
+        $this->createReversal($transfers['items'][0]['id'], 200);
     }
 
     // ---- Helpers -----

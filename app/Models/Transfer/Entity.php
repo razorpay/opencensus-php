@@ -208,8 +208,8 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL,
         self::PROCESSED_AT,
     ];
-
-    protected $ignoreRelations = [
+    
+    protected $ignoredRelations = [
         'source',
         'to',
     ];
@@ -729,6 +729,15 @@ class Entity extends Base\PublicEntity
             $this->source()->associate($order);
 
             return $order;
+        }
+
+        if ($this->getSourceType() === Constant::PAYMENT)
+        {
+            $payment = (new Payment\Repository)->findOrFailPublic($this->getSourceId());
+
+            $this->source()->associate($payment);
+
+            return $payment;
         }
 
         return null;

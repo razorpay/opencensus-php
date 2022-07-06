@@ -53,7 +53,13 @@ trait Reversal
         {
             $sourcePayment = $transfer->source;
 
-            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
+            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);    
+            
+            if ($sourcePayment->isExternal() === false)
+            {
+                $this->repo->saveOrFail($sourcePayment);
+            }
+            
         }
         else if ($transfer->getSourceType() === E::ORDER)
         {

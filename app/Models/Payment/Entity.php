@@ -1642,9 +1642,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->setAttribute(self::METHOD, $method);
     }
 
+    public function setAmountTransferred(string $amount)
+    {
+        $this->setAttribute(self::AMOUNT_TRANSFERRED, $amount);
+    }
+
     public function decrementAmountTransferred(int $amount)
     {
-        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
+        if ($this->isExternal() === true)
+        {
+            $this->setAmountTransferred($this->getAmountTransferred() - $amount);
+            return;
+        }
+
+        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);    
     }
 
     public function setEmiSubvention(string $subvention)

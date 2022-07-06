@@ -4887,6 +4887,11 @@ class Processor
      */
     protected function lockForUpdateAndReload(Payment\Entity $payment)
     {
+        if ($payment->isExternal() === true)
+        {
+            return;
+        }
+
         $lockedPayment = $this->paymentRepo->lockForUpdate($payment->getKey());
 
         //

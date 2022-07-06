@@ -3025,6 +3025,26 @@ EOT;
         ]);
     }
 
+    public function reload(&$payment)
+    {
+        if ($payment->isExternal() === false)
+        {
+            return parent::reload($payment);
+        }
+        
+        return $payment;
+    }
+
+    public function lockForUpdateAndReload($paymentEntity, bool $withTrashed = false)
+    {
+        if ($paymentEntity->isExternal() === true)
+        {
+            return;
+        }
+
+        parent::lockForUpdateAndReload($paymentEntity, $withTrashed);
+    }
+    
     public function fetchInitialPaymentIdForToken($tokenId, $merchantId)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
