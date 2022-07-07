@@ -56,6 +56,30 @@ class Service extends Base\Service
         $this->mutex = App::getFacadeRoot()['api.mutex'];
     }
 
+    public function shopifyCartLineItems(array $checkout) : array
+    { 
+        //Cart line items for the modal
+        $lineItems = $checkout['lineItems']['edges'];
+
+        foreach ($lineItems as $item) 
+        {
+            $item=$item['node'];
+            $cartLineItems[] = [
+                'variant_id'        => substr(strval($item['variant']['id']),0,128),
+                'tax_amount'        => 0,
+                'sku'               => substr(strval($item['variant']['sku']),0,128),
+                'price'             => (int)(floatval($item['variant']['price']) * 100), 
+                'quantity'          => (int)floatval($item['quantity']),
+                'name'              => substr(strval($item['title']),0,128),
+                'description'       => substr($item['variant']['product']['description'],0,256),
+                'weight'            => (int)floatval($item['variant']['weight']),
+                'image_url'         => $item['variant']['image']['src'] ?? ""
+            ];
+        }
+        
+        return $cartLineItems;
+    }
+
     /**
      * starts the 1cc flow for shopify
      * amount from checkout and order should be the same
@@ -83,6 +107,7 @@ class Service extends Base\Service
             'payment_capture'  => 1,
             'line_items_total' => $amount,
             'notes'            => (new Checkout)->getNotesForCheckout($checkout, $cartId),
+            'line_items'       => $this->shopifyCartLineItems($checkout),
         ]);
 
         $formattedOrder = (new Order\Core)->getFormattedDataForCheckout($order, $this->merchant);

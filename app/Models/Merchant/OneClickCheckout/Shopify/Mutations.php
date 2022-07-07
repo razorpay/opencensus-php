@@ -767,6 +767,13 @@ class Mutations
                   quantity
                   variant {
                     id
+                    weight
+                    price
+                    image {
+                      id
+                      src
+                    }
+                    sku
                     title
                     priceV2 {
                       amount
@@ -776,6 +783,7 @@ class Mutations
                       id
                       handle
                       title
+                      description
                     }
                   }
                   customAttributes {
