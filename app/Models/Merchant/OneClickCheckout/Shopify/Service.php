@@ -261,7 +261,7 @@ class Service extends Base\Service
 
         $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
 
-        $this->updateRzpOrder($order, $shopifyOrder['order']['id']);
+        $this->updateRzpOrder($order, $shopifyOrder);
 
         $orderArray = $order->toArrayPublic();
 
@@ -314,12 +314,24 @@ class Service extends Base\Service
         return $shopifyOrder;
     }
 
-    // TODO: consider 1cc order meta
-    protected function updateRzpOrder($order, string $id)
+    // Updating the Razorpay order with the necessary details
+    protected function updateRzpOrder($rzpOrder, $shopifyOrder)
     {
-        $order->setReceipt($id);
+        $rzpOrderArray = $rzpOrder->toArrayPublic();
 
-        $this->repo->saveOrFail($order);
+        $rzpOrderId = $rzpOrderArray['id'];
+
+        $notes = $rzpOrderArray['notes'];
+
+        $notes['shopify_order_id'] = strval($shopifyOrder['order']['id']);
+
+        (new Order\Service)->update($rzpOrderId, array('notes'=> $notes));
+
+        $shopifyOrderNumber = strval($shopifyOrder['order']['order_number']);
+
+        $rzpOrder->setReceipt($shopifyOrderNumber);
+
+        $this->repo->saveOrFail($rzpOrder);
     }
 
     // returns list of coupons, filter out personal and shipping coupons
