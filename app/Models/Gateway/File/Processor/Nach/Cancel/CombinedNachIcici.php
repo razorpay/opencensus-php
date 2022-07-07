@@ -102,7 +102,7 @@ class CombinedNachIcici extends Base
             'channel'   => 'nach',
             'filetype'  => FileStore\Type::ICICI_NACH_COMBINED_CANCEL,
             'subject'   => 'File Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
 
         $this->sendBeamRequest($data, [], $mailInfo, true);

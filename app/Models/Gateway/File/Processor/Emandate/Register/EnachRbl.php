@@ -187,7 +187,7 @@ class EnachRbl extends Base
             'channel' => 'nach',
             'filetype' => FileStore\Type::RBL_ENACH_REGISTER,
             'subject' => 'Enach RBL Register File Beam Send failure',
-            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
+            'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::SUBSCRIPTIONS_APPS]
         ];
 
         $this->sendBeamRequest($data, $timelines, $mailInfo, true);

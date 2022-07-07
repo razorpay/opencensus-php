@@ -23,6 +23,7 @@ class Constants
     const ADMIN                         = 'admin';
     const ACTIVATION                    = 'activation';
     const SUBSCRIPTIONS                 = 'subscriptions';
+    const SUBSCRIPTIONS_APPS            = 'subscriptions_apps';
     const IRCTC                         = 'irctc';
     const EMANDATE                      = 'emandate';
     const DISPUTES                      = 'disputes';
@@ -77,6 +78,7 @@ class Constants
         self::SETTLEMENTS               => 'settlements@razorpay.com',
         self::INVOICES                  => 'invoices@razorpay.com',
         self::SUBSCRIPTIONS             => 'subscriptions@razorpay.com',
+        self::SUBSCRIPTIONS_APPS        => 'payment-apps-subscriptions@razorpay.com',
         self::NOTIFICATIONS             => 'notifications@razorpay.com',
         self::REPORTS                   => 'reports@razorpay.com',
         self::CARE                      => 'care@razorpay.com',
