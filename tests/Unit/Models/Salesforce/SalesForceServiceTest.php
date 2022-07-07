@@ -53,6 +53,16 @@ class SalesForceServiceTest extends OAuthTestCase {
                                    return;
                                }));
 
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id'   => $merchant->getId(),
+                'product'       => 'banking',
+                'group'         => 'x_merchant_preferences',
+                'type'          => 'x_signup_platform',
+                'value'         => 'x_mobile',
+                'updated_at'    => time(),
+                'created_at'    => time()
+            ]);
 
         //When
         $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
@@ -70,6 +80,7 @@ class SalesForceServiceTest extends OAuthTestCase {
             'average_monthly_balance'       => '5000',
             'current_ca'                    => 'HDFC',
             'use_case'                      => 'Salary',
+            'source_detail'                 => 'x_mobile'
         ];
 
         unset($actualData['event_submission_date']); //Because it changes day by day

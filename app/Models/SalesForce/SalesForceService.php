@@ -4,9 +4,15 @@ namespace RZP\Models\SalesForce;
 
 use RZP\Models\Merchant\Entity;
 use RZP\Services\SalesForceClient;
+use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\Attribute\Repository;
+use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
+use RZP\Models\BankingAccountService\Constants as BankingAccountServiceConstants;
 
 class SalesForceService {
 
@@ -27,6 +33,10 @@ class SalesForceService {
 
             return;
         }
+
+        $merchantAttribute = (new Repository())->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, ['x_signup_platform'])->first();
+
+        $eventPayload[BankingAccountServiceConstants::SOURCE_DETAIL] = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? BankingAccountServiceConstants::X_DASHBOARD;
 
         $this->salesForceClient->sendEventToSalesForce($eventPayload);
     }
