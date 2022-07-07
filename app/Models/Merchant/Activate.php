@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -31,6 +32,7 @@ use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\Admin\Org\Hostname\Entity as HostNameEntity;
 use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
@@ -134,6 +136,8 @@ class Activate extends Base\Core
         $merchantBalance = $merchantCore->createBalance($merchant, 'live');
 
         $merchantCore->createBalanceConfig($merchantBalance, 'live');
+
+        $this->updateLedger($merchant);
 
         $phResponse = (new PaymentLink\Service)->createPaymentHandle($merchant->getPublicId());
 
@@ -309,6 +313,8 @@ class Activate extends Base\Core
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
 
+        $this->updateLedger($merchant);
+
         $this->trace->info(TraceCode::MERCHANT_HOLD_FUNDS_PRE_TRANSCACTION,$merchant->toArrayPublic());
 
         $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantDetail, $merchantCore)
@@ -360,6 +366,39 @@ class Activate extends Base\Core
 
                     $this->addFeatures($featureParams);
             }
+        }
+    }
+
+    protected function updateLedger(Entity $merchant)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $isExperimentEnabledForLedgerPGMerchant = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetail->getMerchantId(),
+            RazorxTreatment::LEDGER_ONBOARDING_PG_MERCHANT);
+
+        if($isExperimentEnabledForLedgerPGMerchant === true) {
+
+            $balance = $this->repo->balance->getMerchantBalanceByType(
+                $merchant->getId(),
+                BalanceType::PRIMARY,
+                $this->mode);
+
+            //fetches fee and amount credits from credits table
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCredits($merchant->getId());
+
+            (new LedgerCore())->createPGLedgerAccount(
+                $merchant,
+                $this->mode,
+                $balance->getBalance(),
+                $creditBalances
+            );
+
+            $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT,[
+                "merchantId"                  => $merchantDetail->getMerchantId(),
+                "isExpEnable"                 => $isExperimentEnabledForLedgerPGMerchant,
+                "businessType"                => $merchantDetail->getBusinessType()
+            ]);
+
         }
     }
 
