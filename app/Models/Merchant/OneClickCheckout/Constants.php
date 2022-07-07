@@ -113,4 +113,20 @@ class Constants
         self::FETCH_COUPONS_URL,
         self::APPLY_COUPON_URL
     ];
+
+    const ONE_CLICK_CHECKOUT_ENABLED = "oneClickCheckoutEnabled";
+    const BUY_NOW_ENABLED = "buyNowEnabled";
+    const MAGIC_CHECKOUT = "magic_checkout";
+    const BOOLEAN = "boolean";
+    const FALSE = "false";
+    const TRUE = "true";
+
+    const KEY = "key";
+    const NAMESPACE = "namespace";
+    const TYPE = "type";
+    const VALUE = "value";
+    const METAFIELD = "metafield";
+
+    const POST = "POST";
+    const METAFIELD_ENDPOINT = "/metafields.json";
 }

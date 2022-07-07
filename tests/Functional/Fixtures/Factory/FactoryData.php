@@ -2026,6 +2026,10 @@ final class FactoryData
             'id'        => $faker->uniqueid,
         ]);
 
+        $factory(\RZP\Models\Merchant\OneClickCheckout\AuthConfig\Entity::class, [
+            'id'        => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\Store\Entity::class, [
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',

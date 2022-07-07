@@ -111,6 +111,21 @@ class Service extends Base\Service
         return array_merge($checkoutParams, ['order' => $formattedOrder]);
     }
 
+    public function controlMagicCheckout(string $key, string $value)
+    {
+        $start = millitime();
+        $data = $this->core()->setMetaFieldValue($key,$value);
+        $this->trace->info(
+            TraceCode::METAFIELD_KEY_VALUE_SET,
+            [
+                'merchant_id'=>$this->merchant->getId(),
+                'key'=>$key,
+                'value'=> $value,
+                'time'=> millitime() - $start
+            ]);
+        return $data;
+    }
+
     public function shopifyGetCheckoutOptions(array $input): array
     {
         $this->trace->info(

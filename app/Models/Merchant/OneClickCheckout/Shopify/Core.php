@@ -102,6 +102,47 @@ class Core extends Base\Core
         return $checkoutCreate['checkout'];
     }
 
+    public function setMetaFieldValue(string $key, string $value)
+    {
+        $client = $this->getShopifyClientByMerchant();
+        $body[OneClickCheckout\Constants::METAFIELD] = [
+          OneClickCheckout\Constants::NAMESPACE => OneClickCheckout\Constants::MAGIC_CHECKOUT,
+          OneClickCheckout\Constants::KEY => $key,
+          OneClickCheckout\Constants::VALUE => $value,
+          OneClickCheckout\Constants::TYPE => OneClickCheckout\Constants::BOOLEAN
+        ];
+        $method = OneClickCheckout\Constants::POST;
+        $resource = OneClickCheckout\Constants::METAFIELD_ENDPOINT;
+        $res = array();
+        try {
+            $res = $client->sendRestApiRequest(json_encode($body), $method, $resource);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'merchant_id'=>$this->merchant->getId(),
+                    'error' => $e->getMessage()
+                ]
+            );
+            return [];
+        }
+        $res = json_decode($res,true);
+        if (json_last_error() !== JSON_ERROR_NONE)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'merchant_id'=>$this->merchant->getId(),
+                    'error' => 'Invalid json response'
+                ]
+            );
+            throw new Exception\RuntimeException('Invalid json response');
+        }
+        return $res;
+    }
+
     public function getAvailableShippingRates($checkoutId)
     {
         $client = $this->getShopifyClientByMerchant();

@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Utils as ShopifyUtils;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -174,6 +175,30 @@ class Service extends Base\Service
                 }
             }
         );
+
+        if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]) || isset($input[Type::ONE_CC_BUY_NOW_BUTTON]))) {
+
+            $configOneClickCheckout = $this->merchant->get1ccConfig(Type::ONE_CLICK_CHECKOUT);
+            $oneClickCheckoutValue = ($configOneClickCheckout !== null && $configOneClickCheckout->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
+            (new Merchant\OneClickCheckout\Shopify\Service())->controlMagicCheckout(Constants::ONE_CLICK_CHECKOUT_ENABLED, $oneClickCheckoutValue);
+            $this->trace->info(
+                TraceCode::MAGIC_CHECKOUT_ENABLED,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'MAGIC_CHECKOUT_VALUE' => $oneClickCheckoutValue
+                ]);
+
+            $configBuyNow = $this->merchant->get1ccConfig(Type::ONE_CC_BUY_NOW_BUTTON);
+            $buyNowValue = ($configBuyNow !== null && $configBuyNow->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
+            $buyNowValue = $oneClickCheckoutValue === Constants::FALSE ? $oneClickCheckoutValue : $buyNowValue;
+            (new Merchant\OneClickCheckout\Shopify\Service())->controlMagicCheckout(Constants::BUY_NOW_ENABLED, $buyNowValue);
+            $this->trace->info(
+                TraceCode::BUY_NOW_BUTTON_ENABLED_OR_DISABLED,
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'BUY_NOW_ENABLED/DISABLED' => $buyNowValue
+                ]);
+        }
     }
 
     public function get1ccConfig()
@@ -368,6 +393,27 @@ class Service extends Base\Service
                 }
             }
         );
+        $configOneClickCheckout = $this->merchant->get1ccConfig(Type::ONE_CLICK_CHECKOUT);
+        $oneClickCheckoutValue = ($configOneClickCheckout !== null && $configOneClickCheckout->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
+        (new Merchant\OneClickCheckout\Shopify\Service())->controlMagicCheckout(Constants::ONE_CLICK_CHECKOUT_ENABLED,$oneClickCheckoutValue);
+        $this->trace->info(
+            TraceCode::MAGIC_CHECKOUT_DISABLED,
+            [
+                'merchant_id'=>$this->merchant->getId(),
+                'MAGIC_CHECKOUT_VALUE'=> $oneClickCheckoutValue
+            ]);
+
+        $configBuyNow = $this->merchant->get1ccConfig(Type::ONE_CC_BUY_NOW_BUTTON);
+        $buyNowValue = ($configBuyNow !==  null && $configBuyNow->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
+        $buyNowValue = $oneClickCheckoutValue === Constants::FALSE ? $oneClickCheckoutValue : $buyNowValue;
+        (new Merchant\OneClickCheckout\Shopify\Service())->controlMagicCheckout(Constants::BUY_NOW_ENABLED,$buyNowValue);
+        $this->trace->info(
+            TraceCode::BUY_NOW_BUTTON_ENABLED_OR_DISABLED,
+            [
+                'merchant_id'=>$this->merchant->getId(),
+                'BUY_NOW_ENABLED/DISABLED'=> $buyNowValue
+            ]);
+
     }
 
 
@@ -406,6 +452,4 @@ class Service extends Base\Service
 
         return $response;
     }
-
-
 }
