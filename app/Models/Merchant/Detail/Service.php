@@ -130,6 +130,7 @@ class Service extends Base\Service
             'merchant_brand_logo'               => $this->merchant->getFullLogoUrlWithSize(),
             'merchant_brand_color'              => $this->merchant->getBrandColorElseDefault(),
             'merchant_contrast_color'           => $this->merchant->getContrastOfBrandColor(),
+            Merchant\Entity::EMAIL              => $this->merchant->getEmail(),
         ];
 
         $bankingAccountList = $this->merchant->activeBankingAccounts();
@@ -137,7 +138,7 @@ class Service extends Base\Service
             return $account[BankingAccount\Entity::ACCOUNT_TYPE] === 'current';
         }));
 
-        if (!empty($currentAccount)) {
+        if (empty($currentAccount) === false) {
             $response['bank_account'] = [
                 "name"           => $currentAccount[BankingAccount\Entity::BENEFICIARY_NAME],
                 "ifsc"           => $currentAccount[BankingAccount\Entity::ACCOUNT_IFSC],
