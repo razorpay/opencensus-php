@@ -697,7 +697,7 @@ const initialState = {
               icon: 'sezzle',
             },
             {
-              name: 'Walnut369',
+              name: 'Axio',
               description: '',
               status: 'greyed',
               slug: 'cardless_emi.walnut369',
