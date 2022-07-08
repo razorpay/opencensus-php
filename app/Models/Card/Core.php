@@ -299,7 +299,7 @@ class Core extends Base\Core
 
     public function checkIfCardHasProperVaultToken($vaultToken, $merchant, $input)
     {
-        if (($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) and
+        if (($merchant->isFeatureEnabled(Feature\Constants::VAULT_COMPLIANCE_CHECK) === true) and
             (isset($input[Card\Entity::TOKENISED]) === true) and
             (isset($vaultToken) === true))
         {

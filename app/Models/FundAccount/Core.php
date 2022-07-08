@@ -495,6 +495,8 @@ class Core extends Base\Core
 
                 $this->trace->info(TraceCode::TRANSFORM_INPUT_FOR_CARD_FUND_ACCOUNT_CREATION, $traceRequest);
 
+                $this->checkIfTokenPanIsValid($accountInput, $merchant);
+
                 if ((isset($accountInput[Card\Entity::TOKEN_ID]) === true) and
                     ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true))
                 {
@@ -572,6 +574,34 @@ class Core extends Base\Core
         }
 
         unset($accountInput[Card\Entity::INPUT_TYPE]);
+    }
+
+    public function checkIfTokenPanIsValid($accountInput, $merchant)
+    {
+        if ((empty($accountInput[Card\Entity::TOKENISED]) === false) and
+            (boolval($accountInput[Card\Entity::TOKENISED]) === true) and
+            (array_key_exists(Card\Entity::NUMBER, $accountInput) === true))
+        {
+            $tokenizedRange = substr($accountInput[Card\Entity::NUMBER], 0, 9);
+
+            $iinNumber = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? null;
+
+            if ($iinNumber === null)
+            {
+                $this->trace->error(TraceCode::INVALID_TOKEN_PAN_PROVIDED,
+                                    [
+                                        'tokenized_range' => $tokenizedRange,
+                                        'is_tokenised'    => $accountInput[Card\Entity::TOKENISED]
+                                    ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                    null,
+                    [],
+                    "Token Pan not supported for fund account creation."
+                );
+            }
+        }
     }
 
     public function update(Entity $fundAccount, array $input): Entity

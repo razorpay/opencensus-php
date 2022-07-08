@@ -369,7 +369,8 @@ class CompositePayoutTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->fixtures->create('iin', [
             'iin'     => 340169,
@@ -423,7 +424,8 @@ class CompositePayoutTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->fixtures->create('iin', [
             'iin'     => 340169,
@@ -576,7 +578,8 @@ class CompositePayoutTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->fixtures->create('iin', [
             'iin'     => 416021,

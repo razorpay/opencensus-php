@@ -2642,7 +2642,7 @@ return [
                 'contact_id'   => 'cont_1000000contact',
                 'card'         => [
                     'name'           => 'chirag',
-                    'number'         => '4111111111111111',
+                    'number'         => '4610151724696781',
                     'expiry_month'   => 11,
                     'expiry_year'    => 2024,
                     'input_type'     => 'service_provider_token',
@@ -2657,6 +2657,38 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Card not supported for fund account creation',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
+    'testCreateSavedCardOtherTSPFundAccountWithInvalidTokenPan' => [
+        'request'   => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'name'           => 'chirag',
+                    'number'         => '4111111111111111',
+                    'expiry_month'   => 11,
+                    'expiry_year'    => 2024,
+                    'input_type'     => 'service_provider_token',
+                    'token_provider' => 'xyz'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Token Pan not supported for fund account creation.',
                 ],
             ],
             'status_code' => 400,

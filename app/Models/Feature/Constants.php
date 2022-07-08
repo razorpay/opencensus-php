@@ -1316,6 +1316,12 @@ class Constants
     const PAYOUT_NAMESPACE_CHANGES = 'payout_namespace_changes';
 
     /**
+     * Feature flag to check if the vault token generated from card vault is proper
+     * according to the payout to cards flow
+     */
+    const VAULT_COMPLIANCE_CHECK = 'vault_compliance_check';
+
+    /**
      * Feature flag to show entire error description for each row in error csv file generated in case
      * of bulk validation during batch payouts
      */
@@ -1928,6 +1934,7 @@ class Constants
         self::SUBM_NO_DOC_ONBOARDING          => true,
         self::ALLOW_NON_SAVED_CARDS           => true,
         self::PAYOUT_NAMESPACE_CHANGES        => true,
+        self::VAULT_COMPLIANCE_CHECK          => true,
         self::ALLOW_COMPLETE_ERROR_DESC       => true,
         self::ACCEPT_LOWER_AMOUNT             => true,
         self::SET_VA_DEFAULT_EXPIRY           => true,

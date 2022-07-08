@@ -1416,7 +1416,8 @@ class FundAccountsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION    => 'on']);
 
@@ -1507,7 +1508,8 @@ class FundAccountsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -1591,7 +1593,8 @@ class FundAccountsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -1660,7 +1663,8 @@ class FundAccountsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
-                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
 
         $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
 
@@ -1702,6 +1706,28 @@ class FundAccountsTest extends TestCase
         $cardCountAfter = count($this->getDbEntities('card'));
 
         $this->assertEquals(0, $cardCountAfter - $cardCountBefore);
+    }
+
+    public function testCreateSavedCardOtherTSPFundAccountWithInvalidTokenPan()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
     }
 
     public function testCreateFundAccountWithVariousInputTypeValidation()
