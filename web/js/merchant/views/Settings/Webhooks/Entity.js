@@ -102,7 +102,8 @@ class WebhookEntity extends Component {
           return this.props
             .deleteWebhook(webhookData)
             .then(() => {
-              this.props.fetchWebhooks();
+              const params = { skip: '0', count: '25' };
+              this.props.fetchWebhooks(params);
               this.props.showNotification({
                 type: 'success',
                 message: 'Webhook deleted successfully',
