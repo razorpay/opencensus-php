@@ -512,23 +512,37 @@ abstract class Processor extends Base\Core
             return true;
         }
 
+        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
+
         if ($this->virtualAccount->isClosed() === true)
         {
-            $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_CLOSED,
                 $entity->toArray());
+                
+            if ($isBusinessBankingVa === true)
+            {
+                return true;
+            }
+  
+            $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
+               
             $this->isPaymentExpected = false;
+
             return false;
         }
 
         if ($this->isVirtualAccountDueToBeClosed($entity) === true)
         {
             $this->isPaymentExpected = false;
+
+            if ($isBusinessBankingVa === true)
+            {
+                return true;
+            }
+
             return false;
         }
-
-        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
 
         if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
             ($isBusinessBankingVa === false) and

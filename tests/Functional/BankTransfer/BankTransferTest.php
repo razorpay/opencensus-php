@@ -987,6 +987,79 @@ class BankTransferTest extends TestCase
         $this->assertEquals("IOBA0002897", $bankTransfer->payerBankAccount['ifsc_code']);
     }
 
+
+    public function testBankTransferYesbankMISForClosedVirtualAccount()
+    {
+        $ifsc = Provider::IFSC[Provider::YESBANK];
+
+        $balance1 = $this->getDbEntity('balance',
+            [
+                'merchant_id' => '10000000000000',
+            ], 'live');
+
+        // This makes sure that the refunds for failed fund loadings on X happen via X
+        (new Service)->setConfigKeys([ConfigKey::RX_FUND_LOADING_REFUNDS_VIA_X => true]);
+
+        $this->setUpCommonMerchantForBusinessBankingLive(true, 1000000);
+
+        $this->fixtures->on('live')->edit('balance', $balance1->getId(), [
+            'type'           => 'banking',
+            'account_number' => 4564562235678281,
+        ]);
+
+        $ba = $this->fixtures->on('live')->create('bank_account',
+            [
+                'merchant_id'    => '10000000000000',
+                'entity_id'      => '100000000000va',
+                'type'           => 'virtual_account',
+                'ifsc_code'      => $ifsc,
+                'account_number' => 4564562235678281,
+            ]);
+
+        $this->fixtures->on('live')->create('virtual_account',
+            [
+                'id'              => '100000000000va',
+                'merchant_id'     => '10000000000000',
+                'status'          => 'closed',
+                'bank_account_id' => $ba->getId(),
+                'balance_id'      => $balance1->getId(),
+            ]);
+
+        $this->fixtures->on('live')->create('banking_account_tpv',
+            [
+                'balance_id' => $balance1->getId(),
+                'status'     => 'approved',
+                'payer_ifsc' => 'IOBA0002897',
+                'payer_account_number' => '9876543210123456789'
+            ]);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = 4564562235678281;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['valid']);
+        $this->assertEquals($request['content']['transaction_id'], $response['transaction_id']);
+
+        $bankTransfer =  $this->getDbLastEntity('bank_transfer',  'live');
+
+        $payout =  $this->getDbLastEntity('payout',  'live');
+
+        $this->assertEquals(5000000, $payout['amount']);
+        $this->assertEquals('refund', $payout['purpose']);
+
+        $this->assertEquals(5000000, $bankTransfer['amount']);
+        $this->assertEquals("9020", $bankTransfer['payer_ifsc']);
+
+        $this->assertEquals("IOBA0002897", $bankTransfer->payerBankAccount['ifsc_code']);
+    }
+
+
     public function testBankTransferImpsUnmappedBankCode()
     {
         $accountNumber = $this->bankAccount['account_number'];
