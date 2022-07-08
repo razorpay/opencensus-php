@@ -263,7 +263,8 @@ class Service extends Base\Service
             'rx_yellow_ai_enabled',
             'rx_zoho_bank_account_sync',
             'rx_tally_bank_account_sync',
-            'rx_quickbooks_bank_account_sync'
+            'rx_quickbooks_bank_account_sync',
+            'rx_receivables'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
