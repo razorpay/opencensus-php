@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout\Direct;
 
 use RZP\Models\Payout;
+use RZP\Models\Feature;
 use RZP\Models\Pricing;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -144,7 +145,10 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
-        $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === false)
+        {
+            $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        }
 
         $payout->setFees($fees);
 

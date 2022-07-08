@@ -3375,22 +3375,18 @@ class Base extends BaseCore
 
             $payout->setAmount($params[Entity::AMOUNT]);
 
-            /*
-                Setting some default value here since this is needed to identify downstream processor
-                Since actual channel identification happens in FTS and we don't have any overrided functions
-                in any of the channel specific class, setting some default value. All the calls will go to
-                base method only
-            */
-            $payout->setChannel(BankingAccount\Channel::YESBANK);
+            $payout->setMode($params[Entity::MODE]);
 
-            if (isset($input[Entity::PURPOSE]) === true)
+            $payout->setChannel($params[Entity::CHANNEL]);
+
+            if (isset($params[Entity::PURPOSE]) === true)
             {
                 $payout->setPurpose($params[Entity::PURPOSE]);
             }
 
-            if (isset($input[Entity::FEE_TYPE]) === true)
+            if (isset($params[Entity::FEE_TYPE]) === true)
             {
-                $payout->setPurpose($params[Entity::FEE_TYPE]);
+                $payout->setFeeType($params[Entity::FEE_TYPE]);
             }
 
             $merchantId = $params[Payout\Entity::MERCHANT_ID];

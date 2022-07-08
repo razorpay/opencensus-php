@@ -3,10 +3,12 @@
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Method;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Payout\QueuedReasons;
+use RZP\Models\BankingAccount\Channel;
 
 return [
     'testCreatePayoutEntry' => [
@@ -74,6 +76,8 @@ return [
                 Entity::MERCHANT_ID => "10000000000000",
                 Entity::METHOD      => Method::FUND_TRANSFER,
                 Entity::AMOUNT      => 100,
+                Entity::MODE        => Mode::NEFT,
+                Entity::CHANNEL     => Channel::ICICI,
             ],
         ],
         'response' => [
@@ -97,6 +101,8 @@ return [
                 Entity::MERCHANT_ID => "10000000000000",
                 Entity::METHOD      => Method::FUND_TRANSFER,
                 Entity::AMOUNT      => 50,
+                Entity::MODE        => Mode::NEFT,
+                Entity::CHANNEL     => Channel::ICICI,
             ],
         ],
         'response' => [
@@ -119,6 +125,8 @@ return [
                 Entity::MERCHANT_ID => "10000000000000",
                 Entity::METHOD      => "invalid_method",
                 Entity::AMOUNT      => 100,
+                Entity::MODE        => Mode::NEFT,
+                Entity::CHANNEL     => Channel::ICICI,
             ],
         ],
         'response' => [

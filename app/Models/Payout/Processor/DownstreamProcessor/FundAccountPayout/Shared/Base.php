@@ -416,7 +416,8 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false)
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false &&
+            $payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === false)
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
         }

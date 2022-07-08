@@ -413,8 +413,9 @@ class Validator extends Base\Validator
         Entity::BALANCE_ID           => 'required|alpha_num|size:14',
         Entity::AMOUNT               => 'required|integer|min:100',
         Entity::METHOD               => 'required|string',
+        Entity::MODE                 => 'required|string',
+        Entity::CHANNEL              => 'required|string',
         Entity::PURPOSE              => 'sometimes|nullable|string',
-        Entity::CHANNEL              => 'sometimes|nullable|string',
         Entity::FEE_TYPE             => 'sometimes|nullable|string'
     ];
 
