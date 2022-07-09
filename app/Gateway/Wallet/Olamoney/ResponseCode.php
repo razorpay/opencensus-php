@@ -37,10 +37,12 @@ class ResponseCode
             ErrorCode::BAD_REQUEST_PAYMENT_OLA_MONEY_ACCOUNT_DOES_NOT_EXIST_FOR_NUMBER,
         'OC_021'                                                                                        =>
             ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+        'OC_010'                                                                                        =>
+            ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
     ];
 
     public static $eligible = [
-        'OC_000', 'OC_010'
+        'OC_000'
     ];
 
     protected static $success = [

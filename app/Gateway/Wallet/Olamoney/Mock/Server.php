@@ -26,10 +26,6 @@ class Server extends Base\Mock\Server
         {
             $responseContent[ResponseFields::ELIGIBILITY] = [ResponseFields::STATUS_CODE => 'OC_011'];
         }
-        elseif ($content[RequestFields::USER_INFO][RequestFields::MOBILE_NUMBER] === '9011219027')
-        {
-            $responseContent[ResponseFields::ELIGIBILITY] = [ResponseFields::STATUS_CODE => 'OC_010'];
-        }
         else
         {
             $responseContent[ResponseFields::ELIGIBILITY] = [ResponseFields::STATUS_CODE => 'OC_000'];
