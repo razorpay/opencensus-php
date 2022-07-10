@@ -9,6 +9,7 @@ use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Service;
+use RZP\Models\Merchant\Document;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\MocksSplitz;
@@ -33,6 +34,29 @@ class AccountV2Test extends TestCase
     use RequestResponseFlowTrait;
 
     const RZP_ORG = '100000razorpay';
+
+    const OPTIONAL_REGISTERED_NO_DOC_FIELDS = [
+        Detail\Entity::CONTACT_NAME,
+        Detail\Entity::PROMOTER_PAN_NAME,
+        Detail\Entity::BUSINESS_DBA,
+        Detail\Entity::BUSINESS_INTERNATIONAL,
+        Detail\Entity::BUSINESS_NAME,
+        Detail\Entity::BUSINESS_OPERATION_ADDRESS,
+        Detail\Entity::BUSINESS_OPERATION_CITY,
+        Detail\Entity::BUSINESS_OPERATION_PIN,
+        Detail\Entity::BUSINESS_OPERATION_STATE,
+        Detail\Entity::BUSINESS_PAN_URL,
+        Detail\Entity::BUSINESS_PROOF_URL,
+        Detail\Entity::PROMOTER_ADDRESS_URL,
+    ];
+
+    const OPTIONAL_UNREGISTERED_NO_DOC_FIELDS = [
+        Detail\Entity::CONTACT_MOBILE,
+        Detail\Entity::CONTACT_NAME,
+        Detail\Entity::PROMOTER_PAN_NAME,
+        Document\Type::AADHAR_FRONT,
+        Document\Type::AADHAR_BACK,
+    ];
 
     protected function setUp(): void
     {
@@ -460,10 +484,12 @@ class AccountV2Test extends TestCase
 
         $expectedRequiredFields = Detail\ValidationFields::DEFAULT_REGISTERED_NO_DOC_FIELDS;
 
+        $expectedOptionalFields = self::OPTIONAL_REGISTERED_NO_DOC_FIELDS;
+
         $this->assertNotNull($data);
         $this->assertEquals($expectedRequiredFields, $data[0]);
         $this->assertEquals([], $data[1]);
-        $this->assertEquals([], $data[2]);
+        $this->assertEquals($expectedOptionalFields, $data[2]);
 
         $testData = $this->testData['testGetValidationFieldsForNoDocOnboarding'];
 
@@ -479,10 +505,12 @@ class AccountV2Test extends TestCase
 
         $expectedRequiredFields = Detail\ValidationFields::UNREGISTERED_NO_DOC_FIELDS;
 
+        $expectedOptionalFields = self::OPTIONAL_UNREGISTERED_NO_DOC_FIELDS;
+
         $this->assertNotNull($data);
         $this->assertEquals($expectedRequiredFields, $data[0]);
         $this->assertEquals([], $data[1]);
-        $this->assertEquals([], $data[2]);
+        $this->assertEquals($expectedOptionalFields, $data[2]);
     }
 
 

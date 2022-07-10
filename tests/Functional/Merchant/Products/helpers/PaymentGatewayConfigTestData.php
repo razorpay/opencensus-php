@@ -947,8 +947,20 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -956,6 +968,24 @@ return [
                         'field_reference' => 'settlements.account_number',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'optional',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                 ],
@@ -996,8 +1026,20 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -1005,6 +1047,24 @@ return [
                         'field_reference' => 'settlements.account_number',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'optional',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                 ],
@@ -1032,8 +1092,20 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -1041,6 +1113,24 @@ return [
                         'field_reference' => 'settlements.account_number',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'optional',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                 ],
@@ -2006,8 +2096,20 @@ return [
                 ],
                 'requirements'         => [
                     [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
                     ],
@@ -2015,6 +2117,24 @@ return [
                         'field_reference' => 'settlements.account_number',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'optional',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'kyc.pan',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                 ]

@@ -85,6 +85,7 @@ class Constants
 
     //status
     const REQUIRED            = 'required';
+    const OPTIONAL            = 'optional';
     const NEEDS_CLARIFICATION = 'needs_clarification';
 
     //Helper variables

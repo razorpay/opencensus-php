@@ -208,10 +208,13 @@ class ValidationFields
 
 
     const DEFAULT_REGISTERED_NO_DOC_FIELDS = [
+        Entity::PROMOTER_PAN_NAME,
         Entity::BUSINESS_NAME,
         Entity::CONTACT_MOBILE,
         Entity::COMPANY_PAN,
+        Entity::BANK_ACCOUNT_NAME,
         Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_BRANCH_IFSC,
         Entity::BUSINESS_REGISTERED_ADDRESS,
         Entity::BUSINESS_OPERATION_ADDRESS
     ];
@@ -221,7 +224,9 @@ class ValidationFields
         Entity::BUSINESS_NAME,
         Entity::CONTACT_MOBILE,
         Entity::PROMOTER_PAN,
+        Entity::BANK_ACCOUNT_NAME,
         Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_BRANCH_IFSC,
         Entity::BUSINESS_REGISTERED_ADDRESS
     ];
 
@@ -230,7 +235,9 @@ class ValidationFields
         Entity::BUSINESS_NAME,
         Entity::CONTACT_MOBILE,
         Entity::PROMOTER_PAN,
+        Entity::BANK_ACCOUNT_NAME,
         Entity::BANK_ACCOUNT_NUMBER,
+        Entity::BANK_BRANCH_IFSC,
         Entity::BUSINESS_REGISTERED_ADDRESS,
         Entity::BUSINESS_OPERATION_ADDRESS
     ];
@@ -336,23 +343,7 @@ class ValidationFields
         return [$requiredFields, $selectiveRequiredFields, $optionalFields];
     }
 
-    /**
-     * Get validation fields corresponding to the feature 'no_doc_onboarding' enabled for the merchant
-     *
-     * @param Entity $merchantDetails
-     *
-     * @return array
-     */
-    public static function getValidationFieldsForNoDocOnboarding(Entity $merchantDetails): array
-    {
-            $requiredFields = self::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
-            $selectiveRequiredFields = [];
-            $optionalFields = [];
-
-            return [$requiredFields, $selectiveRequiredFields, $optionalFields];
-    }
-
-    protected static function getRequiredFieldsForNoDocOnboarding(string $businessType) : array
+    public static function getRequiredFieldsForNoDocOnboarding(string $businessType) : array
     {
         switch ($businessType)
         {

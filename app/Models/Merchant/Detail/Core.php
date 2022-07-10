@@ -3285,19 +3285,6 @@ class Core extends Base\Core
     {
         // @todo: Activation flow will define its own validation fields
 
-        // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick only the specified validation fields.
-        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
-        {
-            $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->merchant);
-
-            if ($isGmvLimitExhausted === false)
-            {
-                [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFieldsForNoDocOnboarding($merchantDetails);
-
-                return [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields];
-            }
-        }
-
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = ValidationFields::getValidationFields($merchantDetails);
 
         if (self::shouldSkipBankAccountRegistration() === true)
@@ -3361,6 +3348,33 @@ class Core extends Base\Core
                 $kycValidationFields = RequiredFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
 
                 $validationFields = array_merge($validationFields, $kycValidationFields);
+            }
+        }
+
+        // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick all the required and optional validation fields.
+        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->merchant);
+
+            if ($isGmvLimitExhausted === false)
+            {
+                $noDocValidationFields = ValidationFields::getRequiredFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
+
+                $noDocOptionalValidationFields = array_diff_key(array_merge($validationFields, $validationOptionalFields), $noDocValidationFields);
+
+                $documentsResponse = $this->documentCore()->documentResponse($merchant);
+
+                //calculate selective optional validation fields for no doc onboarding merchants
+                if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
+                {
+                    $this->calculateRequiredDocumentFields(
+                        $merchant,
+                        $validationSelectiveRequiredFields,
+                        $documentsResponse,
+                        $noDocOptionalValidationFields);
+                }
+
+                return [$noDocValidationFields, [], $noDocOptionalValidationFields];
             }
         }
 
@@ -5050,6 +5064,13 @@ class Core extends Base\Core
                 'status'              => 'pending',
                 'activation_progress' => 100,
             ];
+
+            if($merchant->isNoDocOnboardingEnabled() === true)
+            {
+                $response['verification'] = [
+                    'optional_fields'     => $validationOptionalFields,
+                ];
+            }
 
             $response['can_submit'] = true;
         }
@@ -7106,7 +7127,7 @@ class Core extends Base\Core
         $response['merchant_business_details']=$merchantDetails->businessDetail;
 
         $response['documents'] = $merchant->merchantDocuments;
-        
+
         $response['stakeholder']=$merchantDetails->stakeholder;
 
         //escalations

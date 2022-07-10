@@ -108,11 +108,13 @@ class PaymentProductsBaseService extends Base\Service
 
         else
         {
-            $requirements = $this->getRequirements($merchant, $merchantDetails, $merchantProduct);
+            [$requirements, $optionalRequirements] = $this->getRequirements($merchant, $merchantDetails, $merchantProduct);
 
-            $requirements = $this->updateResolutionUrl($merchantDetails, $merchantProduct, $requirements);
+            $allRequirements = array_merge($requirements, $optionalRequirements);
 
-            return $requirements;
+            $allRequirements = $this->updateResolutionUrl($merchantDetails, $merchantProduct, $allRequirements);
+
+            return $allRequirements;
         }
 
     }
@@ -191,11 +193,15 @@ class PaymentProductsBaseService extends Base\Service
 
         $requirements = [];
 
+        $optionalRequirements = [];
+
         $verificationResponse = [];
 
         [$tncRequirement, $tncIpRequirement] = $this->getTncRequirements($merchant);
 
         $otpVerificationLogRequirement = $this->getOtpVerificationLogRequirements($merchant);
+
+        $isNoDocEnabledAndGmvLimitExhausted = (new AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
 
         if (empty($otpVerificationLogRequirement) == false)
         {
@@ -218,28 +224,39 @@ class PaymentProductsBaseService extends Base\Service
 
             if ($verificationResponse['can_submit'] === true)
             {
-                return $requirements;
+                if($merchant->isNoDocOnboardingEnabled() === true)
+                {
+                    $allOptionalFields = $verificationResponse['verification']['optional_fields'];
+
+                    [$documentFieldRequirements, $fieldRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements] = $this->getDocAndNonDocFieldRequirements([], $merchant, false, [], $allOptionalFields);
+
+                    $optionalRequirements = array_merge($optionalRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements);
+                }
+
+                return [$requirements, $optionalRequirements];
             }
             else
             {
                 $allRequiredFields = $verificationResponse['verification']['required_fields'];
 
-                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements($allRequiredFields, $merchant, false, []);
+                $allOptionalFields = $verificationResponse['verification']['optional_fields'];
+
+                [$documentFieldRequirements, $fieldRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements] = $this->getDocAndNonDocFieldRequirements($allRequiredFields, $merchant, false, [], $allOptionalFields);
 
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
+
+                $optionalRequirements = array_merge($optionalRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements);
             }
         }
         else if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION)
         {
-            $isNoDocEnabledAndGmvLimitExhausted = (new AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
-
             if ($isNoDocEnabledAndGmvLimitExhausted === true)
             {
                 $verificationResponse = $this->merchantDetailCore->setVerificationDetails($merchantDetails, $merchant, $verificationResponse, true);
 
                 $allRequiredFields = $verificationResponse['verification']['required_fields'];
 
-                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements($allRequiredFields, $merchant, true, []);
+                [$documentFieldRequirements, $fieldRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements] = $this->getDocAndNonDocFieldRequirements($allRequiredFields, $merchant, true, [], []);
 
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
 
@@ -258,10 +275,21 @@ class PaymentProductsBaseService extends Base\Service
 
                 $ncFields = $clarificationReasons[Constants::FIELDS] ?? [];
 
-                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements(array_keys($ncFields), $merchant, true, $clarificationReasons);
+                [$documentFieldRequirements, $fieldRequirements] = $this->getDocAndNonDocFieldRequirements(array_keys($ncFields), $merchant, true, $clarificationReasons, []);
 
                 $requirements = array_merge($requirements, $documentFieldRequirements, $fieldRequirements);
             }
+        }
+
+        if($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted == false and empty($optionalRequirements) == true)
+        {
+            $verificationResponse = $this->merchantDetailCore->setVerificationDetails($merchantDetails, $merchant, $verificationResponse, true);
+
+            $allOptionalFields = $verificationResponse['verification']['optional_fields'];
+
+            [$documentFieldRequirements, $fieldRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements] = $this->getDocAndNonDocFieldRequirements([], $merchant, false, [], $allOptionalFields);
+
+            $optionalRequirements = array_merge($optionalRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements);
         }
 
         $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALL_REQUIREMENTS,
@@ -270,9 +298,10 @@ class PaymentProductsBaseService extends Base\Service
                                'requirements'          => $requirements,
                                'merchant_product_id'   => $merchantProduct->getId(),
                                'merchant_product_name' => $merchantProduct->getProduct(),
+                               '$optionalRequirements' => $optionalRequirements,
                            ]);
 
-        return $requirements;
+        return [$requirements, $optionalRequirements];
     }
 
     protected function getTncRequirements(Merchant\Entity $merchant): array
@@ -393,26 +422,32 @@ class PaymentProductsBaseService extends Base\Service
      * @return array
      * @throws LogicException
      */
-    private function getDocAndNonDocFieldRequirements(array $requiredFields, Merchant\Entity $merchant, bool $isSubmitted, array $clarificationReasons): array
+    private function getDocAndNonDocFieldRequirements(array $requiredFields, Merchant\Entity $merchant, bool $isSubmitted, array $clarificationReasons, array $optionalFields): array
     {
         $merchantDetails = $merchant->merchantDetail;
 
         $requirementsByType = $this->getRequiredFieldsByTypeFromPendingVerificationFields($requiredFields);
 
+        $optionalRequirementsByType = $this->getRequiredFieldsByTypeFromPendingVerificationFields($optionalFields);
+
         $requirementsByTypeDocument = $requirementsByType[Constants::DOCUMENT_FIELDS] ?? [];
+
+        $optionalRequirementsByTypeDocument = $optionalRequirementsByType[Constants::DOCUMENT_FIELDS] ?? [];
 
         if ($merchantDetails->getActivationStatus() === Detail\Status::NEEDS_CLARIFICATION and $merchant->isNoDocOnboardingEnabled() === false)
         {
             $requirementsByTypeDocument = [];
         }
 
-        $documentFieldRequirements = $this->getDocumentFieldRequirements($merchant, $merchantDetails, $requirementsByTypeDocument, $isSubmitted, $clarificationReasons);
+        [$documentFieldRequirements, $optionalDocumentFieldRequirements] = $this->getDocumentFieldRequirements($merchant, $merchantDetails, $requirementsByTypeDocument, $isSubmitted, $clarificationReasons, $optionalRequirementsByTypeDocument);
 
         $requirementsByTypeField = $requirementsByType[Constants::FIELDS] ?? [];
 
-        $fieldRequirements = $this->getFieldRequirements($merchantDetails, $requirementsByTypeField, $clarificationReasons);
+        $optionalRequirementsByTypeField = $optionalRequirementsByType[Constants::FIELDS] ?? [];
 
-        return [$documentFieldRequirements, $fieldRequirements];
+        [$fieldRequirements, $optionalFieldRequirements] = $this->getFieldRequirements($merchantDetails, $requirementsByTypeField, $clarificationReasons, $optionalRequirementsByTypeField);
+
+        return [$documentFieldRequirements, $fieldRequirements, $optionalDocumentFieldRequirements, $optionalFieldRequirements];
     }
 
     /**
@@ -427,11 +462,13 @@ class PaymentProductsBaseService extends Base\Service
      * @return array
      * @throws LogicException
      */
-    private function getDocumentFieldRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, array $fields, bool $submitted, array $clarificationReasons): array
+    private function getDocumentFieldRequirements(Merchant\Entity $merchant, Detail\Entity $merchantDetails, array $fields, bool $submitted, array $clarificationReasons, array $optionalFields): array
     {
         $requirements = [];
 
         $missingDocumentRequirements = [];
+
+        $missingOptionalDocumentRequirements = [];
 
         $documentRequirementsFromSubmittedDocuments = [];
 
@@ -450,7 +487,9 @@ class PaymentProductsBaseService extends Base\Service
 
             $missingDocuments = array_diff_key($fields, $documentByType);
 
-            $missingDocumentRequirements = $this->getMissingDocumentRequirements($merchantDetails, $missingDocuments);
+            $missingOptionalDocuments = array_diff_key($optionalFields, $documentByType);
+
+            [$missingDocumentRequirements, $missingOptionalDocumentRequirements] = $this->getMissingDocumentRequirements($merchantDetails, $missingDocuments, $missingOptionalDocuments);
         }
         else
         {
@@ -472,7 +511,7 @@ class PaymentProductsBaseService extends Base\Service
 
         $requirements = array_merge($requirements, $missingDocumentRequirements, $documentRequirementsFromSubmittedDocuments);
 
-        return $requirements;
+        return [$requirements, $missingOptionalDocumentRequirements];;
     }
 
     /**
@@ -517,11 +556,15 @@ class PaymentProductsBaseService extends Base\Service
      *
      * @return array
      */
-    private function getMissingDocumentRequirements(Detail\Entity $merchantDetails, array $requiredDocuments): array
+    private function getMissingDocumentRequirements(Detail\Entity $merchantDetails, array $requiredDocuments, array $optionalDocuments): array
     {
         $missingDocumentRequirements = [];
 
-        foreach ($requiredDocuments as $field => $fieldData)
+        $missingOptionalDocumentRequirements = [];
+
+        $missingDocuments = array_merge($requiredDocuments, $optionalDocuments);
+
+        foreach ($missingDocuments as $field => $fieldData)
         {
             $documentType = $fieldData[Constants::FIELD];
 
@@ -538,14 +581,28 @@ class PaymentProductsBaseService extends Base\Service
 
             $requirement[Constants::RESOLUTION_URL] = Constants::ENTITY_RESOLUTION_URL_MAPPING[$entity][Constants::DOCUMENT];
 
-            $requirement[Constants::STATUS] = Constants::REQUIRED;
+            $requirement[Constants::STATUS] = (array_key_exists($field, $requiredDocuments) == true) ? Constants::REQUIRED : Constants::OPTIONAL;
 
             $requirement[Constants::REASON_CODE] = Constants::DOCUMENT_MISSING;
 
-            $missingDocumentRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+            if(array_key_exists($field, $requiredDocuments) == true)
+            {
+                $missingDocumentRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+            }
+            else
+            {
+                $missingOptionalDocumentRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+            }
         }
 
-        return array_values($missingDocumentRequirements);
+        $this->trace->info(
+            TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS,
+            [
+                'missing_document_requirements' => $missingDocumentRequirements,
+                'missing_optional_document_requirements' => $missingOptionalDocumentRequirements
+            ]);
+
+        return [array_values($missingDocumentRequirements), array_values($missingOptionalDocumentRequirements)];
     }
 
     /**
@@ -625,9 +682,11 @@ class PaymentProductsBaseService extends Base\Service
      *
      * @return array
      */
-    private function getFieldRequirements(Detail\Entity $merchantDetail, array $fields, array $clarificationReasons): array
+    private function getFieldRequirements(Detail\Entity $merchantDetail, array $fields, array $clarificationReasons, array $optionalFields): array
     {
-        $requirements = [];
+        $missingFieldRequirements = [];
+
+        $missingOptionalFieldRequirements = [];
 
         $needsClarificationFields = $clarificationReasons[Constants::FIELDS] ?? [];
 
@@ -640,7 +699,9 @@ class PaymentProductsBaseService extends Base\Service
             $stakeholder = (new Stakeholder\Core())->createOrFetchStakeholder($merchantDetail);
         }
 
-        foreach ($fields as $field => $fieldData)
+        $allFields = array_merge($fields, $optionalFields);
+
+        foreach ($allFields as $field => $fieldData)
         {
             $resolutionUrlKey = $this->getResolutionUrlKey($stakeholderExists, $fieldData);
 
@@ -675,11 +736,20 @@ class PaymentProductsBaseService extends Base\Service
 
             if (is_bool($fieldValue) === false && empty($fieldValue) === true)
             {
-                $requirement[Constants::STATUS] = Constants::REQUIRED;
-
                 $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
 
-                $requirements[] = $requirement;
+                if(array_key_exists($field, $fields) === true)
+                {
+                    $requirement[Constants::STATUS] = Constants::REQUIRED;
+
+                    $missingFieldRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+                }
+                else
+                {
+                    $requirement[Constants::STATUS] = Constants::OPTIONAL;
+
+                    $missingOptionalFieldRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+                }
             }
             else
             {
@@ -694,14 +764,28 @@ class PaymentProductsBaseService extends Base\Service
 
                     $requirement[Constants::DESCRIPTION] = $needsClarificationFields[$field][0][NeedsClarification\Constants::REASON_DESCRIPTION];
 
-                    $requirement[Constants::STATUS] = Constants::REQUIRED;
+                    if($entityStr === Entity::STAKEHOLDER)
+                    {
+                        $field = Stakeholder\Constants::MERCHANT_DETAILS_STAKEHOLDER_MAPPING[$field];
+                    }
 
-                    $requirements[] = $requirement;
+                    if(array_key_exists($field, $fields) === true)
+                    {
+                        $requirement[Constants::STATUS] = Constants::REQUIRED;
+
+                        $missingFieldRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+                    }
+                    else
+                    {
+                        $requirement[Constants::STATUS] = Constants::OPTIONAL;
+
+                        $missingOptionalFieldRequirements[$requirement[Constants::FIELD_REFERENCE]] = $requirement;
+                    }
                 }
             }
         }
 
-        return $requirements;
+        return [array_values($missingFieldRequirements), array_values($missingOptionalFieldRequirements)];
     }
 
     private function getResolutionUrlKey(bool $stakeholderExists, array $fieldData): string
