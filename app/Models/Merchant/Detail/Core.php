@@ -3351,7 +3351,10 @@ class Core extends Base\Core
             }
         }
 
+        //
         // If no doc onboarding feature is enabled and gmv limit is not exhausted then pick all the required and optional validation fields.
+        // Here $validationSelectiveRequiredFields will work as selective optional fields.
+        //
         if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
         {
             $isGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchantDetails->merchant);
@@ -3362,19 +3365,7 @@ class Core extends Base\Core
 
                 $noDocOptionalValidationFields = array_diff_key(array_merge($validationFields, $validationOptionalFields), $noDocValidationFields);
 
-                $documentsResponse = $this->documentCore()->documentResponse($merchant);
-
-                //calculate selective optional validation fields for no doc onboarding merchants
-                if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
-                {
-                    $this->calculateRequiredDocumentFields(
-                        $merchant,
-                        $validationSelectiveRequiredFields,
-                        $documentsResponse,
-                        $noDocOptionalValidationFields);
-                }
-
-                return [$noDocValidationFields, [], $noDocOptionalValidationFields];
+                return [$noDocValidationFields, $validationSelectiveRequiredFields, $noDocOptionalValidationFields];
             }
         }
 
@@ -5010,9 +5001,18 @@ class Core extends Base\Core
 
         $merchantDetailsArr = $merchantDetails->toArray();
 
+        $isNoDocEnabledAndGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
+
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails, $addMissingValidationFields);
 
-        $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
+        if($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
+        {
+            $totalFields = count($validationFields);
+        }
+        else
+        {
+            $totalFields = count($validationFields) + count($validationSelectiveRequiredFields);
+        }
 
         $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use ($merchant) {
             return $this->documentCore()->documentResponse($merchant);
@@ -5037,11 +5037,23 @@ class Core extends Base\Core
 
         if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
         {
-            $this->calculateRequiredDocumentFields(
-                $merchant,
-                $validationSelectiveRequiredFields,
-                $documentsResponse,
-                $requiredFields);
+            //calculate selective optional validation fields for no doc onboarding merchants
+            if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
+            {
+                $this->calculateRequiredDocumentFields(
+                    $merchant,
+                    $validationSelectiveRequiredFields,
+                    $documentsResponse,
+                    $validationOptionalFields);
+            }
+            else
+            {
+                $this->calculateRequiredDocumentFields(
+                    $merchant,
+                    $validationSelectiveRequiredFields,
+                    $documentsResponse,
+                    $requiredFields);
+            }
         }
 
         if ($this->canSubmitActivationForm($merchantDetails, $merchant, $requiredFields) === false)

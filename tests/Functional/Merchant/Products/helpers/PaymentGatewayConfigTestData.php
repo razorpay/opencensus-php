@@ -941,9 +941,27 @@ return [
             'content' => [
                 'requirements'         => [
                     [
-                        'field_reference' => 'otp',
+                        'field_reference' => 'otp.contact_mobile',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.external_reference_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_submission_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_verification_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                     [
@@ -1008,9 +1026,27 @@ return [
             'content' => [
                 'requirements'         => [
                     [
-                        'field_reference' => 'otp',
+                        'field_reference' => 'otp.contact_mobile',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.external_reference_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_submission_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_verification_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                     [
@@ -1086,9 +1122,27 @@ return [
             'content' => [
                 'requirements'         => [
                     [
-                        'field_reference' => 'otp',
+                        'field_reference' => 'otp.contact_mobile',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.external_reference_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_submission_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_verification_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
                         'reason_code'     => 'field_missing'
                     ],
                     [

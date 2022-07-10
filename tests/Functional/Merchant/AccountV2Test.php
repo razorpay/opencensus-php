@@ -47,15 +47,12 @@ class AccountV2Test extends TestCase
         Detail\Entity::BUSINESS_OPERATION_STATE,
         Detail\Entity::BUSINESS_PAN_URL,
         Detail\Entity::BUSINESS_PROOF_URL,
-        Detail\Entity::PROMOTER_ADDRESS_URL,
     ];
 
     const OPTIONAL_UNREGISTERED_NO_DOC_FIELDS = [
         Detail\Entity::CONTACT_MOBILE,
         Detail\Entity::CONTACT_NAME,
         Detail\Entity::PROMOTER_PAN_NAME,
-        Document\Type::AADHAR_FRONT,
-        Document\Type::AADHAR_BACK,
     ];
 
     protected function setUp(): void
@@ -488,8 +485,8 @@ class AccountV2Test extends TestCase
 
         $this->assertNotNull($data);
         $this->assertEquals($expectedRequiredFields, $data[0]);
-        $this->assertEquals([], $data[1]);
-        $this->assertEquals($expectedOptionalFields, $data[2]);
+        $this->assertNotNull($data[1]);
+        $this->assertEquals($expectedOptionalFields, array_values($data[2]));
 
         $testData = $this->testData['testGetValidationFieldsForNoDocOnboarding'];
 
@@ -509,8 +506,8 @@ class AccountV2Test extends TestCase
 
         $this->assertNotNull($data);
         $this->assertEquals($expectedRequiredFields, $data[0]);
-        $this->assertEquals([], $data[1]);
-        $this->assertEquals($expectedOptionalFields, $data[2]);
+        $this->assertNotNull($data[1]);
+        $this->assertEquals($expectedOptionalFields, array_values($data[2]));
     }
 
 

@@ -59,6 +59,10 @@ class Constants
         Detail\Entity::BUSINESS_TYPE
     ];
 
+    const REQUIRED_OTP_FIELDS = [
+        Util\Constants::CONTACT_MOBILE
+    ];
+
     //Requirements array constants
     const INTERNAL_STATUS = [BvsValidation\Constants::INITIATED, BvsValidation\Constants::PENDING, BvsValidation\Constants::FAILED];
     const NOT_APPLICABLE  = 'not_applicable';

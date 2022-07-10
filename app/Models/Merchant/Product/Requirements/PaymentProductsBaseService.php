@@ -199,14 +199,9 @@ class PaymentProductsBaseService extends Base\Service
 
         [$tncRequirement, $tncIpRequirement] = $this->getTncRequirements($merchant);
 
-        $otpVerificationLogRequirement = $this->getOtpVerificationLogRequirements($merchant);
+        $this->getOtpVerificationLogRequirements($requirements, $merchant);
 
         $isNoDocEnabledAndGmvLimitExhausted = (new AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
-
-        if (empty($otpVerificationLogRequirement) == false)
-        {
-            array_push($requirements, $otpVerificationLogRequirement);
-        }
 
         if (empty($tncRequirement) === false)
         {
@@ -972,26 +967,30 @@ class PaymentProductsBaseService extends Base\Service
         return $url;
     }
 
-    protected function getOtpVerificationLogRequirements(Merchant\Entity $merchant): array
+    protected function getOtpVerificationLogRequirements(&$requirements, Merchant\Entity $merchant)
     {
-        $requirement = [];
-
         $merchantDetail = $merchant->merchantDetail;
 
         $hasPendingOtpLog = $this->otpCore->hasPendingOtpLog($merchant->getMerchantId(), $merchantDetail->getContactMobile());
 
         if ($merchant->isNoDocOnboardingEnabled() and $hasPendingOtpLog === true)
         {
-            $requirement[Constants::FIELD_REFERENCE] = Constants::OTP;
+            $entityFieldMapping = FieldMapping::FIELD_MAPPING[Entity::MERCHANT_OTP_VERIFICATION_LOGS];
 
-            $requirement[Constants::RESOLUTION_URL] = Constants::PAYMENT_CONFIG_RESOLUTION_URL;
+            foreach ($entityFieldMapping as $key => $value)
+            {
+                $requirement = [];
 
-            $requirement[Constants::STATUS] = Constants::REQUIRED;
+                $requirement[Constants::FIELD_REFERENCE] = $value;
 
-            $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
+                $requirement[Constants::RESOLUTION_URL] = Constants::PAYMENT_CONFIG_RESOLUTION_URL;
+
+                $requirement[Constants::STATUS] = (in_array($key, Constants::REQUIRED_OTP_FIELDS))?Constants::REQUIRED:Constants::OPTIONAL;
+
+                $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
+
+                array_push($requirements, $requirement);
+            }
         }
-
-
-        return $requirement;
     }
 }

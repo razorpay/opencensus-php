@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Product\Requirements;
 
 use RZP\Constants\Entity;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\Stakeholder;
 
 class FieldMapping
@@ -40,6 +41,12 @@ class FieldMapping
         Entity::STAKEHOLDER => [
             Stakeholder\Entity::NAME                      => 'name',
             Stakeholder\Entity::POI_IDENTIFICATION_NUMBER => 'kyc.pan'
+        ],
+        Entity::MERCHANT_OTP_VERIFICATION_LOGS => [
+            Product\Util\Constants::CONTACT_MOBILE              =>'otp.contact_mobile',
+            Product\Util\Constants::REFERENCE_NUMBER            =>'otp.external_reference_number',
+            Product\Util\Constants::OTP_SUBMISSION_TIMESTAMP    =>'otp.otp_submission_timestamp',
+            Product\Util\Constants::OTP_VERIFICATION_TIMESTAMP  =>'otp.otp_verification_timestamp'
         ]
     ];
 }
