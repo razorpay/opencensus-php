@@ -40,6 +40,11 @@ class ReconServiceController extends Controller
             '^recon_rules\/\d+$',
             '^recon_state$',
             '^recon_state\/\d+$',
+            '^extraction_item$',
+            '^extraction_config$',
+            '^extraction_methods$',
+            '^extraction_item\/[[:alnum:]]{14}$',
+            '^extraction_config\/[[:alnum:]]{14}$',
         ],
         self::POST => [
             '^output_email$',
@@ -47,12 +52,17 @@ class ReconServiceController extends Controller
             '^sample_file_parser$',
             '^recon_rules$',
             '^workflow_config$',
+            '^extraction_item$',
+            '^extraction_config$',
+            '^extraction_conflict$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
             '^recon_rules$',
             '^recon_rules\/\d+$',
             '^rule_state_map\/\d+$',
+            '^extraction_item\/[[:alnum:]]{14}$',
+            '^extraction_config\/[[:alnum:]]{14}$',
         ]
     ];
 
