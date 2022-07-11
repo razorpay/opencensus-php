@@ -42,7 +42,7 @@ class ReconServiceController extends Controller
             '^recon_state\/\d+$',
             '^extraction_item$',
             '^extraction_config$',
-            '^extraction_methods$',
+            '^extraction_item\/extraction_methods$',
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
         ],
@@ -54,7 +54,7 @@ class ReconServiceController extends Controller
             '^workflow_config$',
             '^extraction_item$',
             '^extraction_config$',
-            '^extraction_conflict$',
+            '^extraction_item\/conflict$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
