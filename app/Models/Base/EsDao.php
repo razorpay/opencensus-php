@@ -50,6 +50,11 @@ class EsDao
         $heimdallHost = $this->config->get('database.es_audit_host');
 
         $this->es->setHeimdallESClient([$heimdallHost]);
+
+        // By default laravel appending default port 9200 to prevent that we are appending Aws default Es port 443
+        $dedupeHost = $this->config->get('database.dedupe_es_host').':443';
+
+        $this->es->setDedupeEsClient([$dedupeHost]);
     }
 
     public function setIndexNameByValue(string $indexName)
@@ -346,5 +351,32 @@ class EsDao
         ];
 
         return $this->es->updateHeimdall($params);
+    }
+
+    public function searchByIdInDedupeEs($indexName, $documentId)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => '_all',
+            'body'  => [
+                'query' => [
+                    'match' => [
+                        'action_id' => $documentId
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->es->searchDedupe($params);
+    }
+
+    public function storeMerchantDetailsInDedupeEs($params)
+    {
+        $this->es->indexDedupe($params);
+    }
+
+    public function updateMerchantDetailsInDedupeEs($params)
+    {
+        return $this->es->updateDedupe($params);
     }
 }

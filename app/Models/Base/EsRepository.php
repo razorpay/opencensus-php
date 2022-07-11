@@ -355,6 +355,46 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->delete($params);
     }
 
+    /**
+     * @param string $id
+     * @param string $index
+     * @param string $onboardingSource
+     * @param  $document
+     *
+     * This function updates the onboarding source if the record for a given mid already exists else
+     *  it creates a new entry in the merchant_v3_index
+     */
+    public function storeOrUpdateDocument(string $merchantId, string $index, string $onboardingSource, $document)
+    {
+
+        $params = [
+            'index'   => $index,
+            'type'    => '_doc',
+            'id'      => $merchantId,
+            'refresh' => true
+        ];
+
+        $searchResponse = $this->esDao->searchByIdInDedupeEs($index, $merchantId);
+
+        if (empty($searchResponse) === true)
+        {
+            $params['body'] = $document;
+            $this->esDao->storeMerchantDetailsInDedupeEs($params);
+
+            $this->trace->info(TraceCode::STORING_MERCHANT_DETAILS_FOR_DEDUPE_CHECK, ['params' => $params]);
+
+            return;
+        }
+
+        $params['body'] = [
+            'script' => sprintf('ctx._source.onboarding_source="%s";', $onboardingSource)
+        ];
+
+        $this->trace->info(TraceCode::UPDATE_MERCHANT_DETAILS_FOR_DEDUPE_CHECK, $params);
+
+        $this->esDao->updateMerchantDetailsInDedupeEs($params);
+    }
+
     protected function checkForBulkUpdateOperationErrors(array $params, array $res)
     {
         $errors = array_get($res, 'errors', true);

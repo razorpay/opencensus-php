@@ -7386,6 +7386,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ZERO_OR_MORE_THAN_ONE_PARENTS_FOUND               = 'ZERO_OR_MORE_THAN_ONE_PARENTS_FOUND';
     const PARENT_ID_FOR_SUBMERCHANT_NSS_MIGRATION           = 'PARENT_ID_FOR_SUBMERCHANT_NSS_MIGRATION';
 
+    const STORING_MERCHANT_DETAILS_FOR_DEDUPE_CHECK             = 'STORING_MERCHANT_DETAILS_FOR_DEDUPE_CHECK';
+    const UPDATE_MERCHANT_DETAILS_FOR_DEDUPE_CHECK              = 'UPDATE_MERCHANT_DETAILS_FOR_DEDUPE_CHECK';
+
+    const DEDUPE_ES_CONNECTION_FAILURE                                = 'DEDUPE_ES_CONNECTION_FAILURE';
+    const DEDUPE_ES_CONNECTED                                         = 'DEDUPE_ES_CONNECTED';
+
+    const DEDUPE_TRIGGER_RESPONSE                                     = 'DEDUPE_TRIGGER_RESPONSE';
+
+    const DEDUPE_ES_SEARCH_FAILURE                                    = 'DEDUPE_ES_SEARCH_FAILURE';
+
+    const DEDUPE_ES_UPDATE_FAILURE                                    = 'DEDUPE_ES_UPDATE_FAILURE';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

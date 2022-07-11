@@ -7,17 +7,22 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use RZP\Jobs;
 use RZP\Constants\HyperTrace;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use Rzp\Bvs\Validation\V1\TwirpError;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+
 
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Trace\Tracer;
@@ -2787,8 +2792,10 @@ class Core extends Base\Core
                 }
             }
 
-            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING)
+            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING && $this->merchant->isNoDocOnboardingEnabled() === true)
             {
+                $this->storeNoDocOnboardedMerchantDetails();
+
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
             }
 
@@ -2960,6 +2967,27 @@ class Core extends Base\Core
         ]);
 
         return $merchantDetails;
+    }
+
+    public function storeNoDocOnboardedMerchantDetails()
+    {
+        $esRepo = new EsRepository(DetailConstants::DEDUPE_ES_INDEX);
+
+        $body = [];
+
+        $merchantDetailsArr = $this->merchant->merchantDetail->toArray();
+
+        foreach (DetailConstants::NO_DOC_ONBOARDED_MERCHANT_DETAILS_TO_STORE_IN_DEDUPE as $key)
+        {
+            if (isset($merchantDetailsArr[$key]) === true)
+            {
+                $body[$key] = $merchantDetailsArr[$key];
+            }
+        }
+
+        $body[DetailConstants::ONBOARDING_SOURCE] = DetailConstants::XPRESS_ONBOARDING;
+
+        $esRepo->storeOrUpdateDocument($this->merchant->getMerchantId(), DetailConstants::DEDUPE_ES_INDEX, DetailConstants::XPRESS_ONBOARDING, $body);
     }
 
     public function paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails)
@@ -7187,6 +7215,4 @@ class Core extends Base\Core
         return $response;
 
     }
-
-
 }

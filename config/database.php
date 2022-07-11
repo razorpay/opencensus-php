@@ -787,6 +787,10 @@ return array(
 
     'es_audit_mock'           => env('ES_AUDIT_MOCK'),
 
+    'dedupe_es_host'          => env('DEDUPE_ES_HOST'),
+
+    'dedupe_es_mock'          => env('DEDUPE_ES_MOCK'),
+
     'es_workflow_action_mock' => env('ES_WORKFLOW_ACTION_MOCK', false),
 
     'es_entity_index_prefix'  => env('ES_ENTITY_INDEX_PREFIX'),

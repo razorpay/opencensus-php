@@ -26,6 +26,10 @@ class EsClient
 
     protected $heimdallClient;
 
+    protected $dedupeClient;
+
+    protected $dedupeMock;
+
     protected $config;
 
     protected $trace;
@@ -68,6 +72,33 @@ class EsClient
             $this->heimdallClient = ClientBuilder::create()
                                         ->setHosts($hosts)->build();
         }
+    }
+
+    public function setDedupeEsClient($hosts)
+    {
+        try
+        {
+            $this->dedupeMock = $this->config->get('database.dedupe_es_mock');
+
+            if ($this->dedupeMock === false)
+            {
+                $this->dedupeClient = ClientBuilder::create()
+                                                   ->setHosts($hosts)->build();
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DEDUPE_ES_CONNECTION_FAILURE
+            );
+        }
+    }
+
+    public function getDedupeClient()
+    {
+        return $this->dedupeClient;
     }
 
     public function cat(array $params)
@@ -338,6 +369,68 @@ class EsClient
         $this->trace->info(TraceCode::ES_INDEX_REQUEST, ['params' => $paramTrace]);
 
         $this->heimdallClient->index($params);
+    }
+
+    public function updateDedupe($params)
+    {
+        try
+        {
+            if ($this->dedupeMock === true)
+            {
+                return null;
+            }
+
+            $this->trace->info(TraceCode::ES_UPDATE_ACTION, ['params' => $params]);
+
+            $this->dedupeClient->update($params);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DEDUPE_ES_UPDATE_FAILURE
+            );
+        }
+
+        return true;
+    }
+
+    public function indexDedupe($params)
+    {
+        $this->dedupeClient->index($params);
+    }
+
+    public function searchDedupe($params)
+    {
+
+        $entityResults = [];
+
+        try
+        {
+            if ($this->dedupeMock === true)
+            {
+                return null;
+            }
+
+            $searchResponse = $this->dedupeClient->search($params);
+
+            if ($searchResponse[Es::HITS]['total'] === 0)
+            {
+                return null;
+            }
+            $entityResults = $searchResponse[Es::HITS][Es::HITS];
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DEDUPE_ES_SEARCH_FAILURE
+            );
+        }
+
+        return $entityResults;
     }
 
     /**
