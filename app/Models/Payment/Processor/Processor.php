@@ -1044,7 +1044,7 @@ class Processor
      * @param $input
      * @param $paymentData
      */
-    protected function autoSaveUserConsentForRecurring(& $input, $paymentData): void
+    protected function autoSaveUserConsentForRecurring(& $input, $paymentId): void
     {
         // If payment is done via recurring flow and call is from S2S,
         // we are automatically collect the user's consent for card
@@ -1052,7 +1052,11 @@ class Processor
         {
             $library = $input['_']['library'] ?? '';
 
-            $isRecurringInitialPayment = (isset($paymentData['type']) and $paymentData['type'] === 'first');
+            $paymentObject = $this->repo->payment->find(Payment\Entity::stripDefaultSign($paymentId)) ?? null;
+
+            $isRecurringInitialPayment = ($paymentObject !== null and
+                                          $paymentObject->isRecurring() and
+                                          $paymentObject->isRecurringTypeInitial());
 
             $isRecurringFlow = isset($input['recurring']) and
             (($input["recurring"] === '1') or ($input['recurring'] === 'preferred'));
@@ -1097,7 +1101,7 @@ class Processor
             $library = $input['_']['library'] ?? '';
             $allowedLibraries = [Payment\Analytics\Metadata::CHECKOUTJS, Payment\Analytics\Metadata::HOSTED, Payment\Analytics\Metadata::RAZORPAYJS, Payment\Analytics\Metadata::CUSTOM, Payment\Analytics\Metadata::S2S];
 
-            $this->autoSaveUserConsentForRecurring($input, $paymentData);
+            $this->autoSaveUserConsentForRecurring($input, $paymentId);
 
             $this->trace->info(
                 TraceCode::TOKENISATION_CONSENT_LOG,
@@ -1124,8 +1128,11 @@ class Processor
             // we are saving the acknowledged_at value of the original card token in redis for the saved card flow in CAW
             // this value will be set to the new token's acknowledged_at after payment authorization
 
-            $recurringInitialPaymentDataChecksForSavedCardFlow = (isset($paymentData['type']) and
-                                                                  $paymentData['type'] === 'first');
+            $paymentObject = $this->repo->payment->find(Payment\Entity::stripDefaultSign($paymentId)) ?? null;
+
+            $recurringInitialPaymentDataChecksForSavedCardFlow = ($paymentObject !== null and
+                                                                  $paymentObject->isRecurring() and
+                                                                  $paymentObject->isRecurringTypeInitial());
 
             $recurringInitialInputPayloadChecksForSavedCardFlow = (((isset($input['subscription_id'])) or
                                                                     ((isset($input['recurring'])) and
