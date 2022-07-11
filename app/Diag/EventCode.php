@@ -1222,6 +1222,16 @@ class EventCode
         'name'    => 'async_tokenisation.tokenisation_global_customer_local_tokens.failed_while_pushing_to_queue',
     ];
 
+    public const TOKENISATION_CONSENT_SCREEN_REQUEST = [
+        'group'   => 'tokenisation',
+        'name'    => 'tokenisation.consent_screen.request'
+    ];
+
+    public const TOKENISATION_CONSENT_SCREEN_USER_RESPONSE = [
+        'group'   => 'tokenisation',
+        'name'    => 'tokenisation.consent_screen.user_response'
+    ];
+
     public const NETWORK_TOKENISATION_REQUEST_SENT = [
         'group'   => 'token_hq',
         'name'    => 'NETWORK_TOKENISATION.REQUEST.SENT',

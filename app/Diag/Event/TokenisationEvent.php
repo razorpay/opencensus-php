@@ -2,7 +2,7 @@
 
 namespace RZP\Diag\Event;
 
-class AsyncTokenisationEvent extends Event
+class TokenisationEvent extends Event
 {
     const EVENT_TYPE    = 'payment-events';
 

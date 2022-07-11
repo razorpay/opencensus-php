@@ -1050,7 +1050,7 @@ class Service extends Base\Service
 
             $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::ASYNC_TOKENISATION, Feature\Constants::ASYNC_TOKENISATION_RECUR]);
 
-            $this->app['diag']->trackAsyncTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
+            $this->app['diag']->trackTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
                 'merchant_id_count'         => count($merchantIds),
                 'merchant_id_list'          => $merchantIds,
                 'async_tokenization_job_id' => $asyncTokenisationJobId,
@@ -1151,7 +1151,7 @@ class Service extends Base\Service
         $tokenIdsCount = count($tokenIds);
 
         foreach ($tokenIdsChunk as $chunk) {
-            $this->app['diag']->trackAsyncTokenisationEvent(
+            $this->app['diag']->trackTokenisationEvent(
                 EventCode::ASYNC_TOKENISATION_ADMIN_CONSENT_COLLECTION_AND_TOKENISATION_TRIGGER,
                 [
                     'merchant_id' => $merchantId,
@@ -1172,7 +1172,7 @@ class Service extends Base\Service
         {
             $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
 
-            $this->app['diag']->trackAsyncTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
+            $this->app['diag']->trackTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
                 'merchant_id_count'         => 1,
                 'merchant_id_list'          => [Merchant\Account::SHARED_ACCOUNT],
                 'async_tokenization_job_id' => $asyncTokenisationJobId,
@@ -1274,7 +1274,7 @@ class Service extends Base\Service
                 'lastDispatchedTokenId'  => $lastDispatchedTokenId,
             ]);
 
-            app('diag')->trackAsyncTokenisationEvent(
+            app('diag')->trackTokenisationEvent(
                 EVENTCODE::ASYNC_TOKENISATION_TOKENISATION_GLOBAL_CUSTOMER_LOCAL_TOKENS_PUSHED_TO_QUEUE,
                 [
                     'token_id_count'            => count($tokenIds),
@@ -1292,7 +1292,7 @@ class Service extends Base\Service
                 TraceCode::ASYNC_GLOBAL_CUSTOMER_LOCAL_TOKENISATION_ERROR
             );
 
-            app('diag')->trackAsyncTokenisationEvent(
+            app('diag')->trackTokenisationEvent(
                 EVENTCODE::ASYNC_TOKENISATION_TOKENISATION_GLOBAL_CUSTOMER_LOCAL_TOKENS_FAILED_WHILE_PUSHING_TO_QUEUE,
                 [
                     'async_tokenization_job_id' => $asyncTokenisationJobId,
@@ -1321,7 +1321,7 @@ class Service extends Base\Service
             'input'               => $input,
         ]);
 
-        app('diag')->trackAsyncTokenisationEvent(
+        app('diag')->trackTokenisationEvent(
             EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_INITIATED,
             [
                 'token_id_count'         => count($input),

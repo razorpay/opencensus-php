@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use RZP\Diag\EventCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\Token\Core as TokenCore;
@@ -32,6 +33,13 @@ class TokenisationConsent
             'library'     => $input['_']['library'] ?? '',
             'checkout_id' => $input['_']['checkout_id'] ?? '',
         ]);
+
+        app('diag')->trackTokenisationEvent(
+            EVENTCODE::TOKENISATION_CONSENT_SCREEN_REQUEST,
+            [
+                'library'     => $input['_']['library'] ?? '',
+            ]
+        );
     }
 
     public function logRecurringTokenisationConsentViewRequest($input): void
@@ -263,6 +271,14 @@ class TokenisationConsent
                 'checkout_id' => $input['_']['checkout_id'] ?? '',
                 'consent_to_save_card' => $input['consent_to_save_card'] ?? '',
             ]);
+
+            app('diag')->trackTokenisationEvent(
+                EVENTCODE::TOKENISATION_CONSENT_SCREEN_USER_RESPONSE,
+                [
+                    'library' => $input['_']['library'] ?? '',
+                    'consent_to_save_card' => $input['consent_to_save_card'] ?? '',
+                ]
+            );
 
             if(isset($input['card']) === true)
             {

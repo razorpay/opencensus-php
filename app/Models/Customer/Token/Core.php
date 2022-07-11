@@ -2867,7 +2867,7 @@ class Core extends Base\Core
             'duplicateTokenIfExists' => $validationData['existing_token_id'] ?? '',
         ]);
 
-        app('diag')->trackAsyncTokenisationEvent(
+        app('diag')->trackTokenisationEvent(
             EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_INVALID,
             [
                 'token_id'                  => $tokenId,
@@ -2913,7 +2913,7 @@ class Core extends Base\Core
             'fileId'              => $properties['batch_id'],
         ]);
 
-        app('diag')->trackAsyncTokenisationEvent(
+        app('diag')->trackTokenisationEvent(
             EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_SUCCESS,
             [
                 'token_id'               => $tokenId,
@@ -2954,7 +2954,7 @@ class Core extends Base\Core
             'fileId'              => $properties['batch_id'],
         ]);
 
-        app('diag')->trackAsyncTokenisationEvent(
+        app('diag')->trackTokenisationEvent(
             EVENTCODE::ASYNC_TOKENISATION_CREATE_GLOBAL_CUSTOMER_LOCAL_TOKENS_FAILED,
             [
                 'token_id'               => $tokenId,

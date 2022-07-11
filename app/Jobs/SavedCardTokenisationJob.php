@@ -232,7 +232,7 @@ class SavedCardTokenisationJob extends Job
 
         $properties = array_merge($properties, $customProperties);
 
-        app('diag')->trackAsyncTokenisationEvent($eventData, $properties);
+        app('diag')->trackTokenisationEvent($eventData, $properties);
     }
 
     protected function notifyToMandateHqForSuccessfulTokenisation(Token\Entity $token)

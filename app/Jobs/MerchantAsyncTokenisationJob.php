@@ -249,6 +249,6 @@ class MerchantAsyncTokenisationJob extends Job
 
         $properties = array_merge($properties, $customProperties);
 
-        app('diag')->trackAsyncTokenisationEvent($eventData, $properties);
+        app('diag')->trackTokenisationEvent($eventData, $properties);
     }
 }

@@ -6,11 +6,11 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
-use RZP\Diag\Event\AsyncTokenisationEvent as ATE;
+use RZP\Diag\Event\TokenisationEvent as TE;
 
-trait AsyncTokenisationEvent
+trait TokenisationEvent
 {
-    public function trackAsyncTokenisationEvent(array $eventData, array $properties = []): void
+    public function trackTokenisationEvent(array $eventData, array $properties = []): void
     {
         try
         {
@@ -18,11 +18,11 @@ trait AsyncTokenisationEvent
 
             $properties = array_merge($properties, ['timestamp' => $timestamp]);
 
-            $this->trackEvent(ATE::EVENT_TYPE, ATE::EVENT_VERSION, $eventData, $properties);
+            $this->trackEvent(TE::EVENT_TYPE, TE::EVENT_VERSION, $eventData, $properties);
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex, Logger::ERROR, TraceCode::ASYNC_TOKENISATION_EVENT_FAILURE);
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::TOKENISATION_EVENT_FAILURE);
         }
     }
 }
