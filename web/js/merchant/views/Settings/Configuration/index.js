@@ -32,6 +32,7 @@ import {
   REFUND_SETTINGS,
   WHATSAPP_NOTIF,
   SKIP_CARD_MANDATE_SUMMARY,
+  ACCOUNT_SETTINGS,
 } from './deeplink-constants';
 import EasterEgg from 'merchant/components/EasterEgg';
 import Firc from './components/FircAnnouncements/Firc';
@@ -317,12 +318,14 @@ class CongfigurationContainer extends Component {
           </div>
         ) : (
           <div>
-            <CheckoutTheme
-              form="configForm"
-              onSave={this.saveConfig}
-              onSwitchChange={this.handleCovidReliefOptinAndOut}
-              isLoading={this.state.isLoading}
-            />
+            <IntoView hashedWith={ACCOUNT_SETTINGS}>
+              <CheckoutTheme
+                form="configForm"
+                onSave={this.saveConfig}
+                onSwitchChange={this.handleCovidReliefOptinAndOut}
+                isLoading={this.state.isLoading}
+              />
+            </IntoView>
             {user.isOrgAllowedFunctionality('flashcheckout') && (
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <ToggleSetting {...flashCheckoutProps} org={org} />

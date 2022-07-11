@@ -21,7 +21,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import LoaderDots from 'common/ui/LoaderDots';
 import IntoView from 'common/ui/IntoView';
-import { CHECKOUT_LANG } from './deeplink-constants';
+import { ACCOUNT_SETTINGS, CHECKOUT_LANG } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
@@ -258,7 +258,9 @@ class CheckoutTheme extends Component {
       <div className="panel panel-default panel-theme">
         <div className="panel-section--theme">
           <div className="panel-heading">
-            <span className="title">Account Settings</span>
+            <span className="title">
+              <TextHighlighter hashedWith={ACCOUNT_SETTINGS}>Account Settings</TextHighlighter>
+            </span>
           </div>
           <div className="panel-body">
             <form className="form-horizontal">

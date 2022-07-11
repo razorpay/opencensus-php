@@ -24,10 +24,13 @@ function IntoView({ children, location, hashedWith }) {
       : urlSegments.includes(hashedWith);
 
     if (hashPresent && showView.current) {
-      const { offsetTop } = showView.current;
-      if (offsetTop) {
-        scrollTo({ endPos: offsetTop });
-      }
+      // add delay to wait for whole dom to load then scroll to the target element
+      setTimeout(() => {
+        const { offsetTop } = showView.current;
+        if (offsetTop) {
+          scrollTo({ endPos: offsetTop });
+        }
+      }, 500);
     }
   }, []);
 
