@@ -260,7 +260,9 @@ class Service extends Base\Service
             'rx_zoho_bank_account_sync',
             'rx_tally_bank_account_sync',
             'rx_quickbooks_bank_account_sync',
-            'rx_receivables'
+            'rx_receivables',
+            'capital_cards_unbilled_transactions',
+            'capital_cards_statement',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
