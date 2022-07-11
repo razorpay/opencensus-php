@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use Illuminate\Support\Facades\Config;
 use Mail;
 use Requests_Response;
 
@@ -128,6 +129,14 @@ class BeamJob extends Job
 
     public function handleRequest()
     {
+        if(isset($this->request["content"]) && isset(json_decode($this->request["content"])->files) &&
+            isset(json_decode($this->request["content"])->files[0]) &&
+            json_decode($this->request["content"])->files[0] === "rbl-emi/Rbl_Emi_File.zip")
+        {
+            $this->request["url"] = Config::get('applications.chota_beam.url') . "/push";
+        }
+
+
         $this->trace->info(
             TraceCode::BEAM_REQUEST,
             [

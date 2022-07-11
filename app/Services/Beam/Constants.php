@@ -24,6 +24,8 @@ class Constants
 
     const INDUSIND_EMI_FILE_JOB_NAME   = 'indusind_emi';
 
+    const RBL_EMI_FILE_JOB_NAME        = 'rbl_push';
+
     const ICIC_EMI_FILE_JOB_NAME       = 'icici_emi';
 
     const HDFC_COLLECT_NOW_JOB_NAME    =  'hdfc_collect_now_stellements';

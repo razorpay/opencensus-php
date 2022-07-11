@@ -775,6 +775,11 @@ return [
         'mock' => env('BEAM_MOCK', false),
     ],
 
+    'chota_beam' => [
+        'url'  => env('CHOTABEAM_URL'),
+        'mock' => env('CHOTABEAM_MOCK', false),
+    ],
+
     'subscriptions' => [
         'url'      => env('APP_SUBSCRIPTIONS_URL'),
         'username' => 'rzp',

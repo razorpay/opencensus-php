@@ -264,6 +264,7 @@ class GatewayEmiFileTest extends TestCase
     public function testGenerateEmiFileForRbl()
     {
         Mail::fake();
+        Queue::fake();
 
         $this->ba->publicAuth();
 
@@ -292,7 +293,7 @@ class GatewayEmiFileTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
         Mail::assertQueued(EmiMail\Password::class);
-        Mail::assertQueued(EmiMail\File::class);
+        Queue::assertPushed(BeamJob::class, 1);
     }
 
     public function testGenerateEmiFileForIcici()

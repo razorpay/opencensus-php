@@ -3,9 +3,14 @@
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use App;
+use RZP\Mail\Base\Constants;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
+use RZP\Models\FileStore\Storage\Base\Bucket;
+use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Services\Beam\Service;
+use RZP\Trace\TraceCode;
 
 class Rbl extends Base
 {
@@ -14,6 +19,52 @@ class Rbl extends Base
     const FILE_NAME   = 'Rbl_Emi_File';
     const DATE_FORMAT = 'd-m-Y';
 
+
+    protected function sendEmiFile($data)
+    {
+        try {
+            $fullFileName = 'rbl-emi/' . $this->file->getName() . '.' . $this->file->getExtension();
+
+            $fileInfo = [$fullFileName];
+
+            $bucketConfig = $this->getBucketConfig();
+
+            $data = [
+                Service::BEAM_PUSH_FILES          => $fileInfo,
+                Service::BEAM_PUSH_JOBNAME        => BeamConstants::RBL_EMI_FILE_JOB_NAME,
+                Service::BEAM_PUSH_BUCKET_NAME    => 'rzp-1415-prod-sftp',
+                Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
+            ];
+
+            // In seconds
+            $timelines = [];
+
+            $mailInfo = [
+                'fileInfo'  => $fileInfo,
+                'channel'   => 'settlements',
+                'filetype'  => 'emi',
+                'subject'   => 'File Send failure',
+                'recipient' => Constants::MAIL_ADDRESSES[Constants::DEVELOPERS]
+            ];
+
+            $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::BEAM_PUSH_FAILED,
+                [
+                    'job_name'  => BeamConstants::RBL_EMI_FILE_JOB_NAME,
+                    'file_name' => $fullFileName,
+                ]);
+        }
+    }
+
+    protected function getBucketConfig()
+    {
+        $config = $this->app['config']->get('filestore.aws');
+
+        $bucketType = Bucket::getBucketConfigName(self::FILE_TYPE, $this->env);
+
+        return $config[$bucketType];
+    }
 
     protected function formatDataForFile($data)
     {
