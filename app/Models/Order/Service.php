@@ -102,11 +102,6 @@ class Service extends Base\Service
             return false;
         }
 
-        if (isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true)
-        {
-            return false;
-        }
-
         if ($merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === true)
         {
             return false;
@@ -115,6 +110,11 @@ class Service extends Base\Service
         if ($this->isRearchBVTRequest() === true)
         {
             return true;
+        }
+
+        if (isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true)
+        {
+            return $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_CONVENIENCE_FEE_ORDER_TO_PG_ROUTER, $this->mode) === 'on';
         }
 
         $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);

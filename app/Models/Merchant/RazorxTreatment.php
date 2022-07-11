@@ -385,6 +385,8 @@ final class RazorxTreatment
 
     const ROUTE_ORDER_TO_PG_ROUTER = "route_order_to_pg_router";
 
+    const ROUTE_CONVENIENCE_FEE_ORDER_TO_PG_ROUTER = "route_convenience_fee_order_to_pg_router";
+
     //Experiment to allow mtu coupon code application
     const MTU_COUPON_CODE = 'mtu_coupon_code';
 

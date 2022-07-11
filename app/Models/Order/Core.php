@@ -250,7 +250,7 @@ class Core extends Base\Core
             );
         }
 
-        $this->createConvenienceFeeConfig($inputConfig, $order);
+        return $this->createConvenienceFeeConfig($inputConfig, $order);
     }
 
     private function createConvenienceFeeConfig($convenienceFeeConfig, $order)
@@ -268,6 +268,8 @@ class Core extends Base\Core
         $configEntity = $configCore->create($config);
 
         $order->setFeeConfigId($configEntity->getId());
+
+        return $configEntity->getId();
 
     }
 
@@ -837,6 +839,11 @@ class Core extends Base\Core
             $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
 
             $data['token'] = $token->toArrayTokenFields($invoice);
+        }
+
+        if (isset($input['convenience_fee_config']) === true)
+        {
+            $data['convenience_fee_config_id'] = $this->createConvenienceFeeConfigIfApplicable($input, $order);
         }
 
         return $data;
