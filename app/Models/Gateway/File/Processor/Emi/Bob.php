@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use App;
 use Carbon\Carbon;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Emi;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
@@ -17,6 +18,25 @@ class Bob extends Base
     const FILE_NAME   = 'Bob_Emi_File';
     const DATE_FORMAT = 'd/m/Y h:i:s A';
 
+    public function fetchEntities(): PublicCollection
+    {
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
+
+        return $this->repo
+            ->payment
+            ->fetchEmiPaymentsOfCobrandingPartnerAndBankWithRelationsBetween(
+                $begin,
+                $end,
+                null,
+                static::BANK_CODE,
+                [
+                    'card.globalCard',
+                    'emiPlan',
+                    'merchant.merchantDetail',
+                    'terminal'
+                ]);
+    }
     protected function formatDataForFile($data)
     {
         $formattedData = [];
