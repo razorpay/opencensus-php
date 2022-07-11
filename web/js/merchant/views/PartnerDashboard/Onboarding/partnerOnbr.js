@@ -35,7 +35,7 @@ import { analyticsTrack } from 'common/utils/analytics';
   },
 )
 export default class BaseScreen extends React.Component {
-  state = { role: null };
+  state = { role: 'reseller' };
   constructor(props) {
     super(props);
     let landingPageVariantInfo = getCookie('partner-lp-experiment');
@@ -43,7 +43,7 @@ export default class BaseScreen extends React.Component {
       landingPageVariantInfo = JSON.parse(atob(landingPageVariantInfo));
     }
     this.state = {
-      role: null,
+      role: 'reseller',
       lpVariant: landingPageVariantInfo ? landingPageVariantInfo.lpVariant : null,
       lpFold: landingPageVariantInfo ? landingPageVariantInfo.lpFold : null,
       businessTypeName: this.props.user.isUnregisteredBusiness ? 'Unregistered' : 'Registered',
@@ -227,6 +227,8 @@ export default class BaseScreen extends React.Component {
   };
 
   render() {
+    const { user } = this.props;
+    const isHidePartnerType = user?.isOnboardAsResellers && user.role === 'owner';
     return (
       <div className="partner-onboarding-base-screen new-screen">
         <Slider>
@@ -247,23 +249,31 @@ export default class BaseScreen extends React.Component {
           {(sliderProps) => (
             <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
           )}
+          {!isHidePartnerType
+            ? (sliderProps) => (
+                <S2
+                  key={2}
+                  screenName={this.screenName}
+                  sliderProps={sliderProps}
+                  onRoleSelect={this.onRoleSelect}
+                  role={this.state.role}
+                  abort={this.handleCloseClick}
+                  tracking={this.props.tracking}
+                  merchantId={this.props.user.merchant.id}
+                  isMobile={this.props.isMobileResolution}
+                  lpVariant={this.state.lpVariant}
+                  lpFold={this.state.lpFold}
+                  businessTypeName={this.state.businessTypeName}
+                />
+              )
+            : null}
           {(sliderProps) => (
-            <S2
-              key={2}
-              screenName={this.screenName}
+            <S3
+              key={isHidePartnerType ? 2 : 3}
               sliderProps={sliderProps}
-              onRoleSelect={this.onRoleSelect}
-              role={this.state.role}
-              abort={this.handleCloseClick}
-              tracking={this.props.tracking}
-              merchantId={this.props.user.merchant.id}
-              isMobile={this.props.isMobileResolution}
-              lpVariant={this.state.lpVariant}
-              lpFold={this.state.lpFold}
-              businessTypeName={this.state.businessTypeName}
+              onNext={this.onCompleteClick}
             />
           )}
-          {(sliderProps) => <S3 key={3} sliderProps={sliderProps} onNext={this.onCompleteClick} />}
         </Slider>
         {!this.props.disableClose && (
           <button

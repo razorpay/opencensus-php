@@ -9,6 +9,7 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isMerchantValidation,
     isPartnershipNPS,
     isPartnershipFUX,
+    isOnboardAsResellers,
   } = user;
 
   const trackExperiments = useCallback(() => {
@@ -25,6 +26,7 @@ export default function useTrackPartnerExperiments(user: UserT): void {
         isMerchantValidation,
         isPartnershipNPS,
         isPartnershipFUX,
+        isOnboardAsResellers,
       },
     });
   }, [
@@ -34,6 +36,7 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isPartnershipNPS,
     isPartnershipFUX,
     user,
+    isOnboardAsResellers,
   ]);
 
   useEffect(() => {

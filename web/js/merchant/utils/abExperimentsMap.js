@@ -366,6 +366,13 @@ export default {
     //prod
     'JfNOewpSluhNIB',
   ],
+  partnership_onboard_resellers: [
+    // beta
+    'JpWqxoqQa6aMOZ',
+
+    // prod
+    'JpbtDw1u1tmAH2',
+  ],
   developer_console: [
     // beta experiment ids
     'IBpLCtGOiepyF3',

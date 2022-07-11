@@ -48,6 +48,7 @@ export interface ProductListItemT {
 
 interface openModalArgs {
   size: string;
+  className?: string;
   component: JSX.Element;
 }
 export type OpenModalT = (arg: openModalArgs) => void;
@@ -64,6 +65,7 @@ export interface PartnerHomeT {
   showNotification: ShowNotificationT;
   openModal: OpenModalT;
   closeModal: () => void;
+  tracking: RTrackingT;
 }
 
 export interface RTrackingT<P = Record<string, unknown>> {
@@ -71,4 +73,33 @@ export interface RTrackingT<P = Record<string, unknown>> {
    * This function tracks an event, along with related data.
    */
   trackEvent(data: Partial<P>): void;
+}
+
+export interface AggregatorFormT {
+  closeModal: () => void;
+  isMobileAndTablet: boolean;
+  contactNumber: number;
+  mid: string;
+  tracking: RTrackingT;
+  handleSubmitAggregator: (
+    phone_number: number | null,
+    reason: string,
+    will_handle_risk: string,
+    website_url: string,
+    business_type: string,
+    other_business_type: string,
+  ) => void;
+}
+
+export interface AggregatorSuccessT {
+  closeModal: () => void;
+  isMobileAndTablet: boolean;
+}
+
+export interface AggregatorFormErrorT {
+  isError: boolean;
+  phoneNumber: string;
+  reason: string;
+  websiteURL: string;
+  otherBusinessType: string;
 }

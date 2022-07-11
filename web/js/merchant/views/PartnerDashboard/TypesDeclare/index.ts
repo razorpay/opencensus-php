@@ -5,4 +5,5 @@ export interface UserT extends Record<string, unknown> {
   isMerchantValidation: boolean;
   isPartnershipNPS: boolean;
   isPartnershipFUX: boolean;
+  isOnboardAsResellers: boolean;
 }

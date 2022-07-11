@@ -22,6 +22,9 @@ describe('<ReferralGuide /> ', () => {
       openModal: () => {},
       closeModal: () => {},
       handleReferClient: () => {},
+      handleAggregatorApplyNow: () => {},
+      isUserOwner: true,
+      user: { isOnboardAsResellers: true },
     };
     render(setUpComponent(<ReferralGuide {...props} />));
     expect(screen.getByText(`Good Job ${props.partnerName}!! Keep Referring`)).toBeInTheDocument();

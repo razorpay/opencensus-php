@@ -1,3 +1,5 @@
+$partnerDashboardCdn = 'https://cdn.razorpay.com/static/assets/partner-dashboard';
+
 .partner-dashboard-home {
   $screen-xs-max = 767px;
   $desktop-wide = 1170px;
@@ -21,12 +23,7 @@
 
   .referral-guide-card {
     display: flex;
-    background: url('https://cdn.razorpay.com/static/assets/partner-dashboard/fux-cards/referral-guide-bg.svg') no-repeat top left / 90% 100% #fff;
-    padding-bottom: 50px;
-    box-shadow: 0 2px 12px -8px;
-    border-radius: 4px;
     margin: 22px;
-    overflow: hidden;
 
     @media screen and (max-width: $desktop-wide) {
       display: block;
@@ -48,12 +45,18 @@
     }
 
     .referral-guide {
-      width: 50%;
+      width: 48%;
       padding: 25px 0 0 40px;
+      background: #fff;
+      margin-right: 24px;
+      height: 277px;
+      box-shadow: 0 2px 12px -8px;
+      border-radius: 4px;
 
       @media screen and (max-width: $desktop-wide) {
         width: 100%;
-        padding: 16px;
+        padding: 16px 16px 16px 20px;
+        height: 300px;
       }
 
       &__title {
@@ -69,7 +72,7 @@
       }
 
       .referral-action {
-        background: url('https://cdn.razorpay.com/static/assets/partner-dashboard/fux-cards/referral-action-bg.svg') center left -10px / 108% 115%;
+        background: url($partnerDashboardCdn/fux-cards/referral-action-bg.svg) center left -10px / 108% 115%;
         max-width: 510px;
         display: flex;
         margin-top: 15px;
@@ -116,10 +119,22 @@
       }
     }
 
+    .referal-guide-new {
+      width: 50%;
+      box-shadow: none;  
+      margin: 0;
+      border-radius: 0;
+
+       @media (max-width: 756px) {
+          width: 100%;
+        }
+    }
+
     .product-list {
-      margin-top: 45px;
       width: 50%;
       position: relative;
+      overflow: hidden;
+      background: #fff;
 
       @media screen and (max-width: $desktop-wide) {
         margin-top: 0;
@@ -130,7 +145,7 @@
 
       .product-icon {
         position: absolute;
-        bottom: -75px;
+        bottom: -25px;
         right: -5px;
 
         @media screen and (max-width: $desktop-wide) {
@@ -140,12 +155,13 @@
 
       .product-container {
         width: 100%;
-        margin-top: 35px;
+        margin-top: 65px;
         margin-left: 18px;
 
         @media screen and (max-width: $desktop-wide) {
           margin-top: 16px;
           width: 100%;
+          padding-bottom: 16px;
         }
 
         .product-list-item {
@@ -206,6 +222,75 @@
             }
           }
         }
+      }
+    }
+
+    .aggregator-card {
+      padding: 25px 0 0 38px;
+      width: 50%;
+      background: #fff;
+      box-shadow: 0 2px 12px -8px;
+      border-radius: 4px;
+      position: relative;
+      
+      @media screen and (max-width: $desktop-wide) {
+        width: 100%;
+        margin: 20px 0px;
+        padding-bottom: 12px;
+        padding-left: 20px;
+      }
+
+      .agg-content {
+        @media screen and (max-width: $desktop-wide) {
+         margin-bottom: 36px;
+        }  
+      }
+
+      .agg-img-wrap {
+        background: url($partnerDashboardCdn/partner-onboard-resellers/aggregatorCardAnimation.svg) no-repeat;
+        width: 282px;
+        height: 276px;
+        position: absolute;
+        bottom: -28px;
+        right: -30px;
+        
+        @media screen and (max-width: $desktop-wide) {
+         display: none;
+        }  
+
+      }
+
+      .agg-title {
+        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 26px;
+        color: rgba(22,47,86,0.871);
+      }
+
+      .agg-desc {
+        font-weight: 400;
+        font-size: 16px;
+        color: #415575;
+        margin-bottom: 6px;
+      }
+
+      .agg-sub-desc {
+        font-weight: 400;
+        font-size: 14px;
+        color: #6f7691
+        margin-bottom: 21px;
+        width: 60%
+
+        @media screen and (max-width: $desktop-wide) {
+          margin-bottom: 20px;
+          width: 100%;
+        }
+      }
+
+      .agg-sub-desc-note {
+        color: #8A97AA;
+        font-size: 12px;
+        margin-top: 6px;
       }
     }
 
@@ -467,4 +552,212 @@
       opacity: 0.5;
     }
   }
+
+}
+
+.agg-container {
+  width: 850px;
+  height: 565px;
+  display: flex;
+
+  @media (max-width: 756px) {
+    width: auto;
+    height: auto;
+    display: block;
+  }
+
+  .Labelweb__StyledText-sc-1eubdu6-1, .dark-label {
+    color: #626161 !important;  
+  }
+
+  .modal-left-side {
+    background: url($partnerDashboardCdn/partner-onboard-resellers/aggregatorFormBKG.svg) no-repeat;
+    flex: 2;
+    padding: 20px 10px;
+    position: relative;
+
+    @media (max-width: 756px) {
+      background: #e2e5ff;
+      height: 100px;
+      border-bottom: 4px solid #528FF0;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .agg-close {
+      display: none;
+        @media (max-width: 756px) {
+          position: sticky;
+          top: 28px;
+          right: 20px;
+          display: block;
+        }
+      } 
+  
+    .left-content {
+      position: absolute;
+      top: 160px;
+      left: 42px;
+
+      @media (max-width: 756px) {
+        position: relative;
+        top: 0;
+        left: 20px;
+      }
+
+      .agg-content-header {
+        font-weight: 700;
+        font-size: 24px;
+        color: #4555C0;
+
+        @media (max-width: 756px) {
+          font-size: 18px;
+          margin-left: 18px;
+        }
+      }
+
+      .seperator-line {
+        border-top: 4px solid #4555c0;
+        width: 32px;
+        margin: 10px 0px;
+
+        @media (max-width: 756px) {
+          display: none;
+        }
+      }
+
+      .agg-content-list {
+        font-weight: 400;
+        font-size: 14px;
+        color: #4555C0;
+        padding-left: 14px;
+
+        @media (max-width: 756px) {
+          display: none;
+        }
+
+        li {
+          margin: 10px 0px;
+        }
+      }
+
+      .succ-img {
+        width: 100%;
+        height: 170px;
+        background: url(partnerDashboardCdn/partner-onboard-resellers/aggregatorSuccess.svg) no-repeat;
+        max-width: 180px;
+        background-size: contain;
+        margin: 20px auto;
+
+        @media (max-width: 756px) {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .modal-right-side {
+    flex: 3;
+    padding: 10px 32px;
+    overflow: auto;
+
+    .agg-success-card {
+      border: none;
+      background: none;
+      margin: 0;
+      box-shadow: none;  
+    }
+
+    .activation-step__content_agg {
+      width: 75%;  
+      margin-left: 12px;
+    }
+
+    .agg-step-connector {
+      bottom: -40px;  
+    }
+
+    .agg-activation-step {
+      display: flex;
+      margin-top: 40px; 
+    }
+
+    .agg-step-connector {
+      position: absolute;
+      width: 8px;
+      z-index: 0;
+      top: 0;
+      left: 15px;
+      bottom: -40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;  
+
+      .connector {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #eaeaea;  
+      }
+    }
+
+    .right-header {
+      height: 40px;
+      position: fixed;
+      top: 16px;
+      right: 20px;
+
+      .agg-close {
+        @media (max-width: 756px) {
+          position: fixed;
+          top: 28px;
+          right: 20px;
+          display: none;
+        }
+      }  
+    }
+
+    .agg-success-btn {
+      margin-top: 80px;  
+      margin-left: 20px;
+
+      @media (max-width: 756px) {
+        margin-top: 200px;
+      }
+    }
+
+    .form-wrap {
+      margin: 30px 100px 0px 0px;
+
+      @media (max-width: 756px) {
+          margin: 30px 30px;
+      }
+    }
+  }
+}
+
+.agg-container-success {
+  @media (max-width: 756px) {
+    background: url($partnerDashboardCdn/partner-onboard-resellers/Celeb.svg);
+  }
+}
+
+.light-label {
+  font-size: 12px;
+  color: rgba(22,47,86,0.54);
+  font-weight: 400;
+}
+#filled-input-bkg {
+  background-color: rgba(0, 0, 0, 0.007);
+}
+
+.full-screen-mobile {
+  @media (max-width: 756px) {
+    max-width: 756px;
+    margin: 0;
+    height: 100%;  
+    overflow-y: auto;
+    overflow-x: hidden;
+  }  
 }

@@ -13,6 +13,9 @@ interface ReferralGuideT {
   isFirstReferralDone: boolean;
   isFetching: boolean;
   handleReferClient: (source: AddMerchantSource, type?: string) => void;
+  handleAggregatorApplyNow: () => void;
+  isUserOwner: boolean;
+  user: any;
 }
 
 const assetBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards`;
@@ -26,6 +29,9 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
   isFirstReferralDone,
   isFetching,
   handleReferClient,
+  handleAggregatorApplyNow,
+  isUserOwner,
+  user,
 }) => {
   const title = isFirstReferralDone
     ? `Good Job ${partnerName}!! Keep Referring`
@@ -52,13 +58,19 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
       onClickCTA: () => handleReferClient('referral-guide-x', PRODUCT_TYPE.X),
     },
   ];
+
+  const isShowAggregatorCard =
+    !localStorage.getItem('aggregatorApplicationSubmit') &&
+    isUserOwner &&
+    user?.isOnboardAsResellers;
+
   return (
     <div>
       {isFetching ? (
         <ProductShimmer />
       ) : (
         <div className="referral-guide-card">
-          <div className="referral-guide">
+          <div className={`referral-guide ${!isShowAggregatorCard && 'referal-guide-new'}`}>
             <div className="referral-guide__title">{title}</div>
             <div className="referral-guide__sub-title">
               You can use multiple ways to refer merchants for any of the Razorpay products
@@ -84,14 +96,51 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
               </div>
             </div>
           </div>
-          <div className="product-list">
-            <img className="product-icon" src={subIcon} alt="" />
-            <div className="product-container">
-              {productList.map((product) => (
-                <ProductListItem {...product} key={product.title} />
-              ))}
+          {isShowAggregatorCard ? (
+            <div className="aggregator-card">
+              <div className="agg-content">
+                <div className="agg-title">
+                  Do you also manage your merchant’s account and transactions?
+                </div>
+                <div className="agg-sub-desc">
+                  If you want to integrate Razorpay payments on your platform and manage your
+                  sub-merchants transactions, you can become an aggregator partner, read about the
+                  features and requisites &nbsp;
+                  <a href="https://razorpay.com/docs/partners/aggregators/" target="__blank">
+                    here
+                  </a>
+                  .
+                </div>
+                <div
+                  role="button"
+                  className="referral-content__cta"
+                  onClick={handleAggregatorApplyNow}
+                >
+                  <Button>Apply Now</Button>
+                </div>
+                <div className="agg-sub-desc-note">
+                  * Requires &nbsp;
+                  <a
+                    href="https://razorpay.com/docs/partners/aggregators/partner-auth/"
+                    target="__blank"
+                  >
+                    ( Partner Auth )
+                  </a>{' '}
+                  Integration
+                </div>
+              </div>
+              <div className="agg-img-wrap" />
             </div>
-          </div>
+          ) : (
+            <div className="product-list">
+              <img className="product-icon" src={subIcon} alt="" />
+              <div className="product-container">
+                {productList.map((product) => (
+                  <ProductListItem {...product} key={product.title} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1596,6 +1596,11 @@ export default class User {
       !!this.isOrgRZP
     );
   }
+
+  get isOnboardAsResellers() {
+    const variant = getSplitzExperimentVariant('partnership_onboard_resellers');
+    return variant?.name === 'exposed';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
