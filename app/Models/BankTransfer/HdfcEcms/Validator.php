@@ -10,6 +10,9 @@ class Validator extends BankTransfer\Validator
     protected static $allowedModes = [
         BankTransfer\Mode::RTGS,
         BankTransfer\Mode::NEFT,
+        BankTransfer\Mode::IMPS,
+        BankTransfer\Mode::UPI,
+        BankTransfer\Mode::FT
     ];
 
     protected static $hdfcEcmsRules = [
