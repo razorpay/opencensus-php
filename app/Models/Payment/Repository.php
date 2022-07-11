@@ -444,7 +444,7 @@ EOT;
         // such thing.
         if (count($esParams) > 0)
         {
-            return $this->runEsFetch($esParams, $merchantId, $expands);
+            return $this->runEsFetch($esParams, $merchantId, $expands,ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
 
         // Found a bug where Merchant SDK intg private auth calls were
@@ -3031,7 +3031,7 @@ EOT;
         {
             return parent::reload($payment);
         }
-        
+
         return $payment;
     }
 
@@ -3044,7 +3044,7 @@ EOT;
 
         parent::lockForUpdateAndReload($paymentEntity, $withTrashed);
     }
-    
+
     public function fetchInitialPaymentIdForToken($tokenId, $merchantId)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
