@@ -380,7 +380,10 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        Tracer::inSpan(['name' => 'payment_page.update'], function() use($paymentLink, $input)
+        $settingCustomDomain = $paymentLink->getSettings(Entity::CUSTOM_DOMAIN);
+        $settingCustomDomain = is_string($settingCustomDomain) ? $settingCustomDomain : "";
+
+        Tracer::inSpan(['name' => 'payment_page.update'], function() use($paymentLink, $input, $settingCustomDomain)
         {
             $this->repo->transaction(function () use ($paymentLink, $input) {
 
@@ -436,6 +439,8 @@ class Core extends Base\Core
                     $this->repo->saveOrFail($paymentLink);
                 });
             });
+
+            $input[Entity::SETTINGS_CUSTOM_DOMAIN_KEY] = $settingCustomDomain;
 
             $this->updateShortUrlIfApplicable($paymentLink, $input);
 
@@ -497,24 +502,34 @@ class Core extends Base\Core
 
         $inputDomain = array_get($input, Entity::SETTINGS . "." . Entity::CUSTOM_DOMAIN, "");
 
-        if ((($slug = $input[Entity::SLUG] ?? null) !== null ||
-            // In patch requests frontned can send same slug as input and gimli
-            // request will fail with duplicate slug/alias, so just ignore.
-            $slug !== $entitySlug || $inputDomain !== $entityDomain) and
-            ($this->isTestMode() === false))
+        $inputSlug = $input[Entity::SLUG] ?? null;
+
+        $entitySettingsCustomDomain = $input[Entity::SETTINGS_CUSTOM_DOMAIN_KEY];
+
+        if ($inputSlug === null)
         {
-            $customDomain = array_get($input, Entity::SETTINGS . '.' . Entity::CUSTOM_DOMAIN);
-
-            Tracer::inSpan(['name' => 'payment_page.create_and_set_short_url'], function() use($paymentLink, $slug, $customDomain)
-            {
-                $this->createAndSetShortUrl($paymentLink, $slug, $customDomain);
-            });
-
-            Tracer::inSpan(['name' => 'payment_page.update_url.save_or_fail'], function() use($paymentLink)
-            {
-                $this->repo->saveOrFail($paymentLink);
-            });
+            return;
         }
+
+        if ($inputSlug === $entitySlug)
+        {
+            $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($entityDomain);
+
+            if ($inputDomain === $domain || $inputDomain === $entitySettingsCustomDomain)
+            {
+                return;
+            }
+        }
+
+        Tracer::inSpan(['name' => 'payment_page.create_and_set_short_url'], function() use($paymentLink, $inputSlug, $inputDomain)
+        {
+            $this->createAndSetShortUrl($paymentLink, $inputSlug, $inputDomain);
+        });
+
+        Tracer::inSpan(['name' => 'payment_page.update_url.save_or_fail'], function() use($paymentLink)
+        {
+            $this->repo->saveOrFail($paymentLink);
+        });
     }
 
     public function deactivate(Entity $paymentLink): Entity

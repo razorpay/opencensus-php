@@ -182,6 +182,7 @@ class Entity extends Base\PublicEntity
 
     const CUSTOM_DOMAIN                         = 'custom_domain';
     const CUSTOM_DOMAIN_SLUG                    = 'custom_domain_slug'; // This is only for validation key
+    const SETTINGS_CUSTOM_DOMAIN_KEY            = "entity_settings_custom_domain";
 
     const SETTINGS_KEYS                = [
         self::THEME,
