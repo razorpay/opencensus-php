@@ -60,7 +60,6 @@ class CapitalVirtualCardsController extends Controller
         }
         $sessionId = $headers['x-dashboard-user-session-id'][0];
         $this->trace->debug(TraceCode::CAPITAL_VIRTUAL_CARDS_REQUEST, [
-            'sessionId'=> $sessionId,
             'merchantId' =>$this->ba->getUser()->getId(),
         ]);
         $data['token'] = $this->service()->generateToken($sessionId);

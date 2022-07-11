@@ -61,9 +61,6 @@ class Service extends Base\Service
                 return self::getFormattedResponse($code,$response);
             }
             $cardsInfo = $response;
-            $this->trace->debug(TraceCode::CAPITAL_VIRTUAL_CARDS_RESPONSE, [
-                'cardsInfo' => $cardsInfo
-            ]);
             $mozartRequest['program_processor_reference_id'] = $cardsInfo['entity_id'];
             $mozartResponse = $this->core->getMozartResponse(self::MOZART_GET_CARDS,$mozartRequest);
             $cardsList = $mozartResponse["data"]["cardList"];
@@ -139,9 +136,6 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
             }
             $decodedRedisData = json_decode($redisData,true);
-            $this->trace->debug(TraceCode::CAPITAL_VIRTUAL_CARDS_REQUEST, [
-                'sessionRedisData' => $decodedRedisData,
-            ]);
             $request->session()->put('sessionId',$decodedRedisData['sessionId']);
             $request->session()->put('merchantId',$decodedRedisData['merchantId']);
             $request->session()->put('userId',$decodedRedisData['userId']);
@@ -174,7 +168,6 @@ class Service extends Base\Service
         $redisData['companyName'] = $this->auth->getMerchant()->getName() ;
         $redisData['mode'] = $this->auth->getMode() ?? Mode::LIVE;
         $this->trace->debug(TraceCode::CAPITAL_VIRTUAL_CARDS_REQUEST, [
-            'sessionId' => $redisData['sessionId'],
             'merchantId' => $redisData['merchantId'],
             'userId' => $redisData['userId'],
             'mode' => $redisData['mode']
