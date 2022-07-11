@@ -21,5 +21,14 @@ return [
         "invalid case with path"                    => ["razorpay.com/home", false],
         "invalid case with protocol and path"       => ["https://razorpay.com/home", false],
         "invalid case with subdomain and path"      => ["api.razorpay.com/commit", false],
+
+        // refereing https://github.com/publicsuffix/list/blob/master/public_suffix_list.dat
+        "Valid domain razorpay.shop"                => ["razorpay.shop", true],
+        "Valid domain razorpay.aero"                => ["razorpay.aero", true],
+        "Valid domain razorpay.flight.aero"         => ["razorpay.flight.aero", true],
+        "Valid domain razorpay.federation.aero"     => ["razorpay.federation.aero", true],
+        "Valid domain razorpay.cookingchannel"      => ["razorpay.cookingchannel", true],
+        "Valid domain razorpay.foodnetwork"         => ["razorpay.foodnetwork", true],
+        "Valid domain razorpay.lifeinsurance"       => ["razorpay.lifeinsurance", true],
     ]
 ];

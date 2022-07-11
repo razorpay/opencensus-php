@@ -40,10 +40,11 @@ class Validator extends Base\Validator
     public function validateDomain(string $attribute, string $value)
     {
         // source https://websolutionstuff.com/post/how-to-validate-url-in-php-with-regex
-        
+        // also refered https://github.com/publicsuffix/list/blob/master/public_suffix_list.dat
+
         $regex = "([a-z0-9+!*(),;?&=\$_.-]+(\:[a-z0-9+!*(),;?&=\$_.-]+)?@)?";
-        $regex .= "([a-z0-9-.]*)\.([a-z]{2,3})";
-        $regex .= "(\:[0-9]{2,5})?";
+        $regex .= "([a-z0-9-.]*)\.([a-z]{2,15})";
+        $regex .= "(\:[0-9]{2,15})?";
 
         if (preg_match("/^$regex$/i", $value) != 1)
         {
