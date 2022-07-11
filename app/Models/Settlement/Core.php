@@ -861,7 +861,15 @@ class Core extends Base\Core
             $response['config']['preferences']['mode'] = 'NEFT';
         }
 
-        $destinationMerchantId = (new Processor)->settlementToPartner($merchant->getId());
+        $destinationMerchantId= (new MerchantModel\Core())->fetchAggregateSettlementForNSSParent($merchant->getId());
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_MC_MIGRATION_PARENT_DETAILS,
+            [
+                'merchant'          => $merchant->getId(),
+                'destination Mid'   => $destinationMerchantId,
+                'message'           => 'partner details for submerchant',
+            ]);
 
         $isAggregateSettlement = (bool) $destinationMerchantId;
 
