@@ -12,6 +12,8 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Partner\Activation\Entity as PAEntity;
+use RZP\Models\Merchant\Detail\RetryStatus as RetryStatus;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Partner\Activation\Constants as PAConstants;
@@ -25,6 +27,7 @@ class UpdateContextRequirements
     const CLARIFICATION_REFERENCE_KEY = 'clarification_reference_key';
     const STATUS                      = 'status';
     const STATUS_KEY                  = 'status_key';
+    const DEDUPE_KEY                  = 'dedupe_key';
 
     const REQUIRED_VERIFICATION_STATUSES = [
         BvsValidationConstants::VERIFIED, BvsValidationConstants::INCORRECT_DETAILS, BvsValidationConstants::NOT_MATCHED, BvsValidationConstants::FAILED
@@ -146,6 +149,14 @@ class UpdateContextRequirements
         ]
     ];
 
+    const CONTACT_MOBILE = [
+        self::CLARIFICATION_REFERENCE_KEY => Entity::CONTACT_MOBILE
+    ];
+
+    const NO_DOC_DEDUPE_PRIMARY_PARAMS = [
+        self::CONTACT_MOBILE
+    ];
+
     /**
      * Checks merchant context can be updated or not
      *
@@ -162,12 +173,7 @@ class UpdateContextRequirements
         }
         else if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === true)
         {
-            $isNoDocGstValidationCompleted = $this->isNoDocGstValidationCompleted($merchantDetails);
-
-            if ($isNoDocGstValidationCompleted === false)
-            {
-                return false;
-            }
+            return $this->isNoDocVerificationAndValidationCompleted($merchantDetails);
         }
 
         $canUpdateMerchantContext = true;
@@ -179,6 +185,44 @@ class UpdateContextRequirements
         }
 
         return $canUpdateMerchantContext;
+    }
+
+    /**
+     * Validate if dedupe check is already failed then ignore bvs status check for that field
+     * @param Entity $merchantDetails
+     * @param array  $requirementList
+     *
+     * @throws \RZP\Exception\InvalidPermissionException
+     */
+    public function isNoDocVerificationAndValidationCompleted(Entity $merchantDetails)
+    {
+        $merchantDetailCore = (new MerchantDetailCore);
+        $data = (new StoreCore)->fetchValuesFromStore($merchantDetails->getMerchantId(), ConfigKey::ONBOARDING_NAMESPACE,
+                                                      [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+
+        $noDocData = $data[ConfigKey::NO_DOC_ONBOARDING_INFO];
+
+        $fields = $merchantDetailCore->getAllRequiredFieldsForNoDocDedupeAndBvsCheck($merchantDetails);
+
+        foreach ($fields as $field)
+        {
+            if ($this->isDedupeRetryTriggeredAndInPendingState($noDocData, $field) === true)
+            {
+                return true;
+            }
+        }
+
+        return $this->isNoDocGstValidationCompleted($merchantDetails);
+    }
+
+    private function isDedupeRetryTriggeredAndInPendingState(array $noDocData, string $field)
+    {
+        if ($noDocData[DEConstants::DEDUPE][$field][DEConstants::RETRY_COUNT] > 0 and $noDocData[DEConstants::DEDUPE][$field][DEConstants::STATUS] === RetryStatus::PENDING)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -222,6 +266,14 @@ class UpdateContextRequirements
 
         $fields = [];
 
+        if ($entity->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            foreach (self::NO_DOC_DEDUPE_PRIMARY_PARAMS as $field)
+            {
+                array_push($fields, $field[self::CLARIFICATION_REFERENCE_KEY]);
+            }
+        }
+
         foreach ($requirementList as $requirementGroup)
         {
             foreach ($requirementGroup as $requirements)
@@ -248,6 +300,11 @@ class UpdateContextRequirements
 
         $merchantDetails = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->merchantDetail : $entity;
 
+        if ($this->shouldTriggerDedupeNcForNoDocOnboarding($merchantDetails) === true)
+        {
+            return true;
+        }
+
         foreach ($requirementList as $requirementGroup)
         {
             $isRequirementGroupSatisfied = false;
@@ -266,6 +323,24 @@ class UpdateContextRequirements
         }
 
         return $shouldTriggerNeedsClarification;
+    }
+
+    private function shouldTriggerDedupeNcForNoDocOnboarding(Entity $merchantDetail): bool
+    {
+        if ($merchantDetail->merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return false;
+        }
+
+        $store = (new StoreCore());
+        $merchantDetailCore = (new MerchantDetailCore());
+
+        $data = $store->fetchValuesFromStore($merchantDetail->getMerchantId(), ConfigKey::ONBOARDING_NAMESPACE,
+                                             [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+
+        $noDocData = $data[ConfigKey::NO_DOC_ONBOARDING_INFO]??[];
+
+        return $merchantDetailCore->shouldTriggerDedupeNcForNoDocOnboarding($noDocData, $merchantDetail);
     }
 
     /**
@@ -401,9 +476,9 @@ class UpdateContextRequirements
 
         $isPanValidationDone = $this->isNoDocPanValidationCompleted($merchantDetails);
 
-        $noDocGsts = $noDocData['gst'] ?? [];
+        $noDocGsts = $noDocData[DEConstants::DEDUPE][Entity::GSTIN][DEConstants::VALUE] ?? [];
 
-        $currentGstIndex = $noDocData['current_index'] ?? 0;
+        $currentGstIndex = $noDocData[DEConstants::DEDUPE][Entity::GSTIN][DEConstants::CURRENT_INDEX] ?? 0;
 
         $gstVerificationStatus = $merchantDetails->getGstinVerificationStatus();
 

@@ -6,6 +6,7 @@ use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
+use RZP\Models\Merchant\Detail\Entity;
 
 
 class PersonalPan extends Base
@@ -14,14 +15,9 @@ class PersonalPan extends Base
     {
         if ($this->merchant->isNoDocOnboardingEnabled()  === true)
         {
-            switch ($this->merchantDetails->getBusinessType())
+            if ( $this->isDedupeCheckForNoDocOnboardingPass(Entity::PROMOTER_PAN) === false)
             {
-                case BusinessType::NOT_YET_REGISTERED:
-                case BusinessType::PROPRIETORSHIP:
-                    return $this->merchantDetails->getPoiVerificationStatus() === BvsValidationConstants::PENDING;
-
-                default:
-                    return false;
+                return false;
             }
         }
         return $this->merchantDetails->getPoiVerificationStatus() === BvsValidationConstants::PENDING;

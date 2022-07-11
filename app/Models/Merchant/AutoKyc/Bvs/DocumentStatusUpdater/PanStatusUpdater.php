@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Jobs;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature\Core as FeatureCore;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs;
 use RZP\Models\Merchant\Store\ConfigKey;
@@ -15,6 +17,9 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 
 
 class PanStatusUpdater extends DefaultStatusUpdater
@@ -53,6 +58,9 @@ class PanStatusUpdater extends DefaultStatusUpdater
    {
        $artefactType = $this->artefactType;
        $store = new StoreCore();
+       $merchantDetailCore = (new MerchantDetailCore());
+       $featureCore = (new FeatureCore());
+       $artefactType =
 
        $data = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
            [ConfigKey::NO_DOC_ONBOARDING_INFO],StoreConstants::INTERNAL);
@@ -66,11 +74,13 @@ class PanStatusUpdater extends DefaultStatusUpdater
 
        if ($artefactType === Constant::PERSONAL_PAN)
        {
+           $artefact    = Detail\Entity::PROMOTER_PAN;
            $pan = $this->merchantDetails->getPromoterPan();
            $panStatus = $this->merchantDetails->getPoiVerificationStatus();
        }
        else if ($artefactType === Constant::BUSINESS_PAN)
        {
+           $artefact    = Detail\Entity::COMPANY_PAN;
            $pan = $this->merchantDetails->getPan();
            $panStatus = $this->merchantDetails->getCompanyPanVerificationStatus();
        }
@@ -84,14 +94,33 @@ class PanStatusUpdater extends DefaultStatusUpdater
        {
            $gstDetailsFromPan = (new Bvs\Core())->probeGetGstDetails($pan, 'Active');
 
-           $noDocData['gst'] = array_merge($noDocData['gst'], $gstDetailsFromPan);
+           $noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE] = array_merge($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE], $gstDetailsFromPan);
 
-           $data = [
-               ConfigKey::NO_DOC_ONBOARDING_INFO    => $noDocData,
-               StoreConstants::NAMESPACE            => ConfigKey::ONBOARDING_NAMESPACE
-           ];
+           if (empty($gstDetailsFromPan) === false)
+           {
+               $fieldMap = [
+                   'gstin' => $gstDetailsFromPan
+               ];
 
-           $store->updateMerchantStore($this->merchant->getId(), $data, StoreConstants::INTERNAL);
+               $dedupeResponse = $merchantDetailCore->triggerStrictDedupeForNoDocOnboarding($this->merchantDetails, $fieldMap, $noDocConfig, []);
+
+               $merchantDetailCore->processDedupeResponse([DetailEntity::GSTIN], $dedupeResponse, $noDocConfig);
+           }
+
+           $noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE] = array_merge($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE], $gstDetailsFromPan);
+
+           $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
+       }
+       else
+       {
+           $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] = $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] + 1;
+           if ($noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] > 1)
+           {
+               $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
+               $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, false);
+           }
+
+           $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
        }
 
        $isPanValidationDone = (new UpdateContextRequirements())->isNoDocPanValidationCompleted($this->merchantDetails);
@@ -109,9 +138,9 @@ class PanStatusUpdater extends DefaultStatusUpdater
                ]
            );
 
-           if(isset($noDocData['gst']) === true and count($noDocData['gst']) > 0)
+           if(isset($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE]) === true and count($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE]) > 0)
            {
-               $this->triggerGstInValidationJob($noDocData['gst'][0]);
+               $this->triggerGstInValidationJob($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE][0]);
            }
            else
            {

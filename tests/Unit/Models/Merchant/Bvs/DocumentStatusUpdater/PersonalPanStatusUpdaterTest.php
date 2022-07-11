@@ -85,14 +85,61 @@ class PersonalPanStatusUpdaterTest extends TestCase
             ]);
 
         $namespace = ConfigKey::ONBOARDING_NAMESPACE;
+
         $value = [
-            'gst' => [],
+            'value' => ['09AAACR5055K1Z5'],
             'current_index' =>0,
+            'retryCount' => 0,
+            'status' => 'passed',
+        ];
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => $value,
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ],
+            'dedupe'    => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ]
         ];
 
         $data = [
             StoreConstants::NAMESPACE  => $namespace,
-            ConfigKey::NO_DOC_ONBOARDING_INFO => $value
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
         ];
 
         $data = (new StoreCore())->updateMerchantStore($mid, $data, StoreConstants::INTERNAL);
@@ -136,13 +183,59 @@ class PersonalPanStatusUpdaterTest extends TestCase
         (new Core())->create($featureParams,true);
 
         $value = [
-            'gst' => [],
+            'value' => ['09AAACR5055K1Z5'],
             'current_index' =>0,
+            'retryCount' => 0,
+            'status' => 'passed',
+        ];
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => $value,
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ],
+            'dedupe'    => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ]
         ];
 
         $data = [
             StoreConstants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::NO_DOC_ONBOARDING_INFO => $value
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
         ];
 
         $data = (new StoreCore())->updateMerchantStore($mid, $data, StoreConstants::INTERNAL);

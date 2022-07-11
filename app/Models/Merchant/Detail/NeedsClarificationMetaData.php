@@ -7,6 +7,8 @@ use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList as ReasonList;
+use RZP\Models\Merchant\Detail\DeDupe\Constants as DedupeConstant;
+
 
 class NeedsClarificationMetaData
 {
@@ -159,7 +161,9 @@ class NeedsClarificationMetaData
             self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::PERSONAL_PAN,
             Constants::FIELD_NAME                          => Entity::PROMOTER_PAN,
             Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::DEDUPE_CHECK_KEY                    => Entity::PROMOTER_PAN,
             Constants::REASON_MAPPING                      => [
+                DedupeConstant::FIELD_ALREADY_EXIST        => ReasonList::FIELD_ALREADY_EXIST,
                 BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_PERSONAL_PAN_NUMBER,
             ],
         ],
@@ -168,7 +172,9 @@ class NeedsClarificationMetaData
             self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::BUSINESS_PAN,
             Constants::FIELD_NAME                          => Entity::COMPANY_PAN,
             Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::DEDUPE_CHECK_KEY                    => Entity::COMPANY_PAN,
             Constants::REASON_MAPPING                      => [
+                DedupeConstant::FIELD_ALREADY_EXIST        => ReasonList::FIELD_ALREADY_EXIST,
                 BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_COMPANY_PAN_NUMBER,
             ],
         ],
@@ -240,6 +246,16 @@ class NeedsClarificationMetaData
                 BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_SHOP_ESTABLISHMENT_NUMBER,
                 BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::SHOP_ESTABLISHMENT_DATA_UNAVAILABLE,
                 BvsValidationConstant::RULE_EXECUTION_FAILED => ReasonList::SHOP_ESTABLISHMENT_DATA_NOT_MATCHED,
+            ],
+        ],
+        Constants::CONTACT_MOBILE => [
+            self::NEEDS_CLARIFICATION_VERSION              => self::VERSION_V2,
+            self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Entity::CONTACT_MOBILE,
+            Constants::FIELD_NAME                          => Entity::CONTACT_MOBILE,
+            Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::DEDUPE_CHECK_KEY                    => Entity::CONTACT_MOBILE,
+            Constants::REASON_MAPPING                      => [
+                DedupeConstant::FIELD_ALREADY_EXIST          => ReasonList::FIELD_ALREADY_EXIST
             ],
         ]
     ];

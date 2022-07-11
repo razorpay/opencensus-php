@@ -15,6 +15,8 @@ use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
@@ -194,6 +196,10 @@ class Core extends Merchant\Core
             if ($this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
             {
                 $this->addNoDocOnboardingFeature($subMerchantId);
+
+                $mCore = (new MerchantCore());
+
+                $mCore->appendTag($subMerchant, DetailConstants::NO_DOC_ONBOARDING_TAG);
 
                 $this->trace->info(TraceCode::NO_DOC_ONBOARDING_ENABLED_FOR_SUBMERCHANT,[
                     'merchant_id'   => $subMerchantId,

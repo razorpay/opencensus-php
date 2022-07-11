@@ -7,7 +7,9 @@ class Gstin_with_business_pan_for_no_doc extends BaseConfig
     protected $enrichment = [
         'online_provider' => [
             'required_fields' => [
-                'trade_name',
+                'gstin.trade_name',
+                'gstr.compliance_status.is_any_delay',
+                'gstr.compliance_status.is_defaulter'
             ],
         ],
     ];
@@ -47,6 +49,32 @@ class Gstin_with_business_pan_for_no_doc extends BaseConfig
                                 ],
                                 81
                             ]
+                        ]
+                    ]
+                ]
+            ],
+            "1" => [
+                "rule_type" => "string_comparison_rule",
+                "rule_def"  => [
+                    "===" => [
+                        [
+                            "var"=> "artefact.details.compliance_status.is_any_delay.value"
+                        ],
+                        [
+                            "var"=> "enrichments.online_provider.details.compliance_status.is_any_delay.value"
+                        ]
+                    ]
+                ]
+            ],
+            "2" => [
+                "rule_type" => "string_comparison_rule",
+                "rule_def"  => [
+                    "===" => [
+                        [
+                            "var"=> "artefact.details.compliance_status.is_defaulter.value"
+                        ],
+                        [
+                            "var"=> "enrichments.online_provider.details.compliance_status.is_defaulter.value"
                         ]
                     ]
                 ]

@@ -550,9 +550,28 @@ class Constants
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED                           => 'NOT_MATCHED',
     ];
 
-    const DEDUPE_ES_INDEX = "merchant_v3_index";
+    const NO_DOC_ONBOARDING_DEDUPE_CHECK_FIELDS_REGISTERED = [
+        ENTITY::CONTACT_MOBILE,
+        ENTITY::COMPANY_PAN,
+        ENTITY::BANK_ACCOUNT_NUMBER,
+    ];
+
+    const NO_DOC_ONBOARDING_DEDUPE_CHECK_FIELDS_UNREGISTERED = [
+        ENTITY::CONTACT_MOBILE,
+        ENTITY::PROMOTER_PAN,
+        ENTITY::BANK_ACCOUNT_NUMBER,
+    ];
+
+    const NO_DOC_ONBOARDING_TAG = 'no_doc_onboarding';
     const ONBOARDING_SOURCE = 'onboarding_source';
     const XPRESS_ONBOARDING = 'xpress_onboarding';
+    const RETRY_COUNT = 'retryCount';
+    const DEDUPE = 'dedupe';
+    const VALUE = 'value';
+    const CURRENT_INDEX = 'current_index';
+
+    const DEDUPE_CHECK_KEY = 'dedupe_check_key';
+    const DEDUPE_ES_INDEX = "merchant_v3_index";
 
     const NO_DOC_ONBOARDED_MERCHANT_DETAILS_TO_STORE_IN_DEDUPE = [
         Entity::ACTIVATION_STATUS,

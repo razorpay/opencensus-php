@@ -93,4 +93,6 @@ class Constants
             'RULE_EXECUTION_FAILED'
         ]
     ];
+
+    const BANK_ACCOUNT = 'bank_account';
 }

@@ -7,8 +7,14 @@ use RZP\Base\RepositoryManager;
 use RZP\Models\Merchant\AutoKyc;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Detail\RetryStatus as RetryStatus;
+use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\Store\ConfigKey;
+
 abstract class Base implements RequestDispatcher
 {
     protected $merchantCore;
@@ -119,5 +125,20 @@ abstract class Base implements RequestDispatcher
         $input = $this->getRequestPayload();
 
         return (new AutoKyc\Bvs\Core($this->merchant,$this->merchantDetails))->fetchValidationDetails($this->merchantDetails->getEntityId(), $input, $validationId);
+    }
+
+    protected function isDedupeCheckForNoDocOnboardingPass(string $field)
+    {
+        $store = new StoreCore();
+        $data  = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
+                                              [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+        $noDocConfig = $data[ConfigKey::NO_DOC_ONBOARDING_INFO];
+
+        if (isset($noDocConfig[DEConstants::DEDUPE][$field]) === true and $noDocConfig[DEConstants::DEDUPE][$field][DEConstants::STATUS] != RetryStatus::PASSED)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -72,6 +72,10 @@ class Core extends Base\Core
 
         $merchantDetail = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->merchantDetail : $entity;
 
+        $merchantDetailCore = (new MerchantDetailCore());
+        $noDocData          = $merchantDetailCore->fetchNoDocData($merchantDetail);
+
+
         $factory = new Factory($merchantDetail);
 
         foreach ($clarificationKeys as $clarificationKey)
@@ -86,7 +90,7 @@ class Core extends Base\Core
                 continue;
             }
 
-            $reason = $factory->getClarificationReasonComposer($clarificationMetadata)
+            $reason = $factory->getClarificationReasonComposer($clarificationMetadata, $noDocData)
                               ->getClarificationReason();
 
             $kycClarificationReasons = $this->mergeKycClarificationReasons(

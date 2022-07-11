@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Bus;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\Constants;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;

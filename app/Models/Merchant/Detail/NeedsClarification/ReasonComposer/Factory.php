@@ -13,6 +13,8 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\RetryStatus as RetryStatus;
 
 class Factory
 {
@@ -35,7 +37,7 @@ class Factory
      * @return ClarificationReasonComposerInterface
      * @throws LogicException
      */
-    public function getClarificationReasonComposer(array $needsClarificationMetaData): ClarificationReasonComposerInterface
+    public function getClarificationReasonComposer(array $needsClarificationMetaData, array $noDocData=[]): ClarificationReasonComposerInterface
     {
         $needClarificationVersion =
             $needsClarificationMetaData[NeedsClarificationMetaData::NEEDS_CLARIFICATION_VERSION] ?? '';
@@ -43,10 +45,10 @@ class Factory
         switch ($needClarificationVersion)
         {
             case NeedsClarificationMetaData::VERSION_V2 :
-                return $this->getNeedsClarificationReasonComposerForV2($needsClarificationMetaData);
+                return $this->getNeedsClarificationReasonComposerForV2($needsClarificationMetaData, $noDocData);
 
             case NeedsClarificationMetaData::VERSION_V1:
-                return $this->getNeedsClarificationReasonComposerForV1($needsClarificationMetaData);
+                return $this->getNeedsClarificationReasonComposerForV1($needsClarificationMetaData, $noDocData);
 
             default :
                 throw new LogicException(null, ErrorCode::INVALID_NEEDS_CLARIFICATION_VERSION, [
@@ -74,7 +76,7 @@ class Factory
      *
      * @return ClarificationReasonComposerInterface
      */
-    protected function getNeedsClarificationReasonComposerForV2(array $needsClarificationMetaData): ClarificationReasonComposerInterface
+    protected function getNeedsClarificationReasonComposerForV2(array $needsClarificationMetaData, array $noDocData=[]): ClarificationReasonComposerInterface
     {
         $referenceKey = $needsClarificationMetaData[NeedsClarificationMetaData::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY] ?? [];
         $artefactType = Constant::FIELD_ARTEFACT_DETAILS_MAP[$referenceKey][Constant::ARTEFACT_TYPE] ?? '';
@@ -87,6 +89,11 @@ class Factory
             $validationUnit,
             Constant::MERCHANT
         );
+
+        if ($this->merchantDetails->merchant->isNoDocOnboardingEnabled() === true and $this->shouldTriggerDedupeClarificationComposer($noDocData, $needsClarificationMetaData) === true)
+        {
+            return new DedupeClarificationReasonComposer($needsClarificationMetaData, $noDocData);
+        }
 
         if (empty($validation) === true)
         {
@@ -116,8 +123,27 @@ class Factory
      * @param array $needsClarificationMetaData
      * @return ClarificationReasonComposerInterface
      */
-    protected function getNeedsClarificationReasonComposerForV1(array $needsClarificationMetaData): ClarificationReasonComposerInterface
+    protected function getNeedsClarificationReasonComposerForV1(array $needsClarificationMetaData, array $noDocData=[]): ClarificationReasonComposerInterface
     {
+        if ($this->merchantDetails->merchant->isNoDocOnboardingEnabled() === true and $this->shouldTriggerDedupeClarificationComposer($noDocData, $needsClarificationMetaData) === true)
+        {
+            return new DedupeClarificationReasonComposer($needsClarificationMetaData, $noDocData);
+        }
+
         return new BankAccountClarificationComposer($this->merchantDetails,$needsClarificationMetaData);
+    }
+
+    private function shouldTriggerDedupeClarificationComposer(array $noDocData, array $needsClarificationMetaData): bool
+    {
+        if (empty($noDocData) === false and isset($needsClarificationMetaData[DEConstants::DEDUPE_CHECK_KEY]) === true)
+        {
+            $fieldName = $needsClarificationMetaData[DEConstants::DEDUPE_CHECK_KEY];
+            if ($noDocData[DEConstants::DEDUPE][$fieldName][DEConstants::RETRY_COUNT] > 0 and $noDocData[DEConstants::DEDUPE][$fieldName][DEConstants::STATUS] === RetryStatus::PENDING)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

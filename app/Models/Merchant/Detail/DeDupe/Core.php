@@ -16,6 +16,8 @@ use \RZP\Models\User\Entity as UserEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Services\MerchantRiskClient;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
+use RZP\Models\Merchant\Detail\RetryStatus as RetryStatus;
+
 
 class Core extends Base\Core
 {
@@ -369,5 +371,26 @@ class Core extends Base\Core
         }
 
         return $value;
+    }
+
+    public function dedupeMatchWithExistingClientTypeMerchant(string $merchantId, string $clientType, array $fieldList)
+    {
+        $fields = [];
+        foreach ($fieldList as $fieldToCheckDedupe)
+        {
+            $field          = [
+                'field'      => $fieldToCheckDedupe['field'],
+                'list'       => $fieldToCheckDedupe['list'],
+                'config_key' => Constants::MERCHANT_RISK_FIELD_CONFIG_KEY_MAP[$fieldToCheckDedupe['field']]
+            ];
+            $field['value'] = $fieldToCheckDedupe['value'];
+            if ($field['value'] != null)
+            {
+                $fields[] = $field;
+            }
+        }
+
+        return $this->merchantRiskClient->getMerchantRiskScores(
+            $clientType, $merchantId, $fields);
     }
 }

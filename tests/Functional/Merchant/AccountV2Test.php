@@ -280,7 +280,7 @@ class AccountV2Test extends TestCase
 
         $value = (new \RZP\Models\Merchant\Detail\Core())->getApplicableActivationStatus($merchantDetails);
 
-        $this->assertEquals('activated', $value);
+        $this->assertEquals('activated_kyc_pending', $value);
     }
 
     public function testEditAccountV2ProfileAddress()

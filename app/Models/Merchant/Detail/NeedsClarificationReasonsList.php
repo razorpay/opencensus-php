@@ -59,6 +59,8 @@ class NeedsClarificationReasonsList
     const SIGNATORY_NAME_NOT_MATCHED                = 'signatory_name_not_matched';
     const COMPANY_NAME_NOT_MATCHED                  = 'company_name_not_matched';
 
+    const FIELD_ALREADY_EXIST = 'merchant_already_exist_with_same_field_value';
+
     //board resolution documents clarification reasons
     const AUTHORIZED_SIGNATORY_MISMATCH                           = 'authorized_signatory_mismatch';
     const PROVIDE_AUTHORIZED_SIGNATORY_SIGNED_AND_SEALED_DOCUMENT = 'provide_authorized_signatory_signed_and_sealed_document';
@@ -162,6 +164,8 @@ class NeedsClarificationReasonsList
             NeedsClarificationMetaData::DESCRIPTION => 'Entered Business Name doesn\'t match company incorporation records, please enter correct Business Name.',],
         self::NO_DOC_LIMIT_BREACH                                     => [
             NeedsClarificationMetaData::DESCRIPTION => 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.',],
+        self::FIELD_ALREADY_EXIST                                     => [
+            NeedsClarificationMetaData::DESCRIPTION => 'Field value already exist',],
         ];
 
 

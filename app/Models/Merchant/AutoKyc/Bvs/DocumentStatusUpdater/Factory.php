@@ -214,7 +214,7 @@ class Factory
                                                    Entity $merchantDetails,
                                                    ValidationEntity $validation): StatusUpdater
     {
-        if ($validation->getValidationUnit() === Constants::PROOF)
+        if ($validation->getValidationUnit() === Constants::PROOF and $merchant->isNoDocOnboardingEnabled() === false)
         {
             return new DefaultStatusUpdater(
                 $merchant,

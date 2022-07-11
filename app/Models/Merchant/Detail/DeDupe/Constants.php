@@ -328,4 +328,16 @@ class Constants
     ];
 
     const MERCHANT_RISK_CONFIG_NOT_IN_MERCHANT_DETAILS_ENTITY = [self::CLIENT_IP, UserEntity::CLIENT_ID];
+
+    const MERCHANT_RISK_FIELD_CONFIG_KEY_MAP = [
+        Detail\Entity::PROMOTER_PAN  => 'promoter_pan',
+        Detail\Entity::COMPANY_PAN	=> 'company_pan',
+        Detail\Entity::GSTIN =>	'gstin',
+        Detail\Entity::BANK_ACCOUNT_NUMBER => 'bank_account_number',
+        Detail\Entity::CONTACT_MOBILE => 'mobile'
+    ];
+
+    const XPRESS_ONBOARDING_CLIENT_TYPE = "xpress_onboarding";
+
+    const FIELD_ALREADY_EXIST           = 'FIELD_ALREADY_EXIST';
 }

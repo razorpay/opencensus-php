@@ -3,8 +3,16 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Feature\Core as FeatureCore;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\BvsValidation\Entity;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class BankAccount extends DefaultStatusUpdater
 {
@@ -25,5 +33,59 @@ class BankAccount extends DefaultStatusUpdater
     public function getUpdatedActivationStatus(): string
     {
         return (new Detail\Core())->getApplicableActivationStatus($this->merchantDetails);
+    }
+
+    public function updateValidationStatus(): void
+    {
+        $this->processUpdateValidationStatus();
+
+        if ($this->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $this->bankAccountValidationForNoDocOnboarding();
+        }
+        $this->postUpdateValidationStatus();
+    }
+
+    protected function bankAccountValidationForNoDocOnboarding()
+    {
+        $store             = new StoreCore();
+        $merchantDetailCore = (new MerchantDetailCore());
+        $featureCore = (new FeatureCore());
+        $data         = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
+                                                          [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+
+        $noDocData = $data[ConfigKey::NO_DOC_ONBOARDING_INFO]??null;
+        if (empty($noDocData) === true)
+        {
+            $this->postUpdateValidationStatus();
+
+            return;
+        }
+
+        if ($this->merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED)
+        {
+            $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::STATUS] = Detail\RetryStatus::PASSED;
+
+            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
+
+            $merchantDetails = $this->merchantDetails;
+
+            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails) {
+                $this->repo->merchant_detail->saveOrFail($merchantDetails);
+            });
+
+            $this->postUpdateValidationStatus();
+        }
+        else
+        {
+            $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::RETRY_COUNT] = $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::RETRY_COUNT] + 1;
+
+            if ($noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::RETRY_COUNT] > 1)
+            {
+                $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
+                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, false);
+            }
+            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
+        }
     }
 }

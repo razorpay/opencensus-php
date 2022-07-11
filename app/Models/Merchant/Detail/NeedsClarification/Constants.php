@@ -40,4 +40,8 @@ class Constants
      * */
     const BUSINESS_TYPE_REASON_CODE_MAPPING = 'business_type_reason_code_mapping';
     const REASON_TYPE                       = 'reason_type';
+
+    const CONTACT_MOBILE                    = 'contact_mobile';
+
+    const DEDUPE_CHECK_KEY                  = 'dedupe_check_key';
 }

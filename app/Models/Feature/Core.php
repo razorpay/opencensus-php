@@ -1228,4 +1228,20 @@ class Core extends Base\Core
             );
         }
     }
+
+    public function removeFeature(string $featureName, bool $shouldSync = false)
+    {
+        $merchant = $this->merchant;
+
+        $entityId = $merchant->getId();
+        $feature  = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+            Constants::MERCHANT,
+            $entityId,
+            $featureName);
+
+        if ($feature !== null)
+        {
+            $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
+        }
+    }
 }

@@ -25,7 +25,7 @@ class GstinAuth extends Base
 
     public function getRequestPayload(): array
     {
-        return [
+        $requestPayload = [
             Constant::ARTEFACT_TYPE   => Constant::GSTIN,
             Constant::CONFIG_NAME     => $this->getConfigName(),
             Constant::VALIDATION_UNIT => BvsValidationConstants::IDENTIFIER,
@@ -35,6 +35,16 @@ class GstinAuth extends Base
                 Constant::TRADE_NAME => $this->merchantDetails->getBusinessName() ?? ''
             ],
         ];
+
+        if ($this->merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $requestPayload[Constant::COMPLIANCE_STATUS] = [
+                Constant::IS_ANY_DELAY => false,
+                Constant::IS_DEFAULTER => false,
+            ];
+        }
+
+        return $requestPayload;
     }
 
     public function getConfigName()

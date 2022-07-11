@@ -6,6 +6,8 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Detail\Entity;
+use Rzp\Obs\Verification\V1\Detail;
 
 class CompanyPan extends Base
 {
@@ -13,10 +15,16 @@ class CompanyPan extends Base
     {
         $businessTypeValue = $this->merchantDetails->getBusinessTypeValue();
 
+        $isNoDocOnboarding = $this->merchant->isNoDocOnboardingEnabled();
+        if ($isNoDocOnboarding === true and $this->isDedupeCheckForNoDocOnboardingPass(Entity::COMPANY_PAN) === false)
+        {
+            return false;
+        }
+
         //We trigger company pan BVS request for all business types if No Doc Onboarding feature is enabled.
         return (($this->merchantDetails->getCompanyPanVerificationStatus() === BvsValidationConstants::PENDING) and
                 (BusinessType::isCompanyPanEnableBusinessTypes($businessTypeValue) === true or
-                $this->merchant->isNoDocOnboardingEnabled() === true));
+                 $isNoDocOnboarding === true));
     }
 
     public function getRequestPayload(): array

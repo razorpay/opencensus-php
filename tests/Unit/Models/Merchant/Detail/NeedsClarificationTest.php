@@ -1044,12 +1044,13 @@ class NeedsClarificationTest extends TestCase
 
     public function testReasonComposerForIncorrectGstWithNoDocFeature()
     {
-        $input          = [
-            'poi_verification_status'               => 'verified',
-            'bank_details_verification_status'      => 'verified',
-            'gstin_verification_status'             => 'incorrect_details',
-            'business_type'                         => 11
+        $input = [
+            'poi_verification_status'                => 'verified',
+            'bank_details_verification_status'       => 'incorrect_details',
+            'gstin_verification_status'              => 'incorrect_details',
+            'shop_establishment_verification_status' => 'not_matched',
         ];
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
 
         $mid = $merchantDetail->getId();
@@ -1063,13 +1064,59 @@ class NeedsClarificationTest extends TestCase
         (new \RZP\Models\Feature\Core())->create($featureParams,true);
 
         $value = [
-            'gst' => ['09AAACR5055K1Z5'],
+            'value' => ['09AAACR5055K1Z5'],
             'current_index' =>0,
+            'retryCount' => 0,
+            'status' => 'passed',
+        ];
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => $value,
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ],
+            'dedupe'    => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ]
         ];
 
         $data = [
             Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::NO_DOC_ONBOARDING_INFO => $value
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
         ];
 
         $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
@@ -1083,21 +1130,30 @@ class NeedsClarificationTest extends TestCase
             'validation_status' => 'failed'
         ]);
 
-        $kycClarificationReasons =  (new Core())->composeNeedsClarificationReason($merchantDetail);
+        // Test KYC clarification reasons for Partner activation
+        $partnerActivationInput = [
+            'merchant_id'       => $mid,
+            'activation_status' => 'under_review',
+            'submitted'         => true
+        ];
 
-        $expectedKycClarificationReasons = [
-            'clarification_reasons' =>  [
-                'gstin' => [
+        $partnerActivation = $this->fixtures->create('partner_activation', $partnerActivationInput);
+
+        $partnerKycClarificationReasons =  (new Core())->composeNeedsClarificationReason($partnerActivation);
+
+        $expectedPartnerKycClarificationReasons = [
+            'clarification_reasons' => [
+                'gstin' =>  [
                     [
-                        'reason_type' =>  'predefined',
-                        'field_type' => 'text',
-                        'reason_code' => 'invalid_gstin_number'
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'reason_code' => "invalid_gstin_number"
                     ]
                 ]
             ]
         ];
 
-        $this->assertEquals($expectedKycClarificationReasons, $kycClarificationReasons);
+        $this->assertEquals($partnerKycClarificationReasons, $expectedPartnerKycClarificationReasons);
     }
 
     public function testReasonComposerForIncorrectAndNotMatched() {

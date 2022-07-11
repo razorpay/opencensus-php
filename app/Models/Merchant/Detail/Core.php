@@ -7,14 +7,15 @@ use Queue;
 use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Jobs;
 use RZP\Constants\HyperTrace;
 use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use Rzp\Bvs\Validation\V1\TwirpError;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Store\Core as StoreCore;
@@ -110,6 +111,7 @@ use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
+use RZP\Models\Merchant\Detail\DeDupe\Constants as DedupeConstants;
 use RZP\Models\Merchant\Detail\BusinessDetailSearch\InMemoryBusinessSearch;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
@@ -891,8 +893,6 @@ class Core extends Base\Core
 
         $this->markSubmittedAndLock($merchantDetails);
 
-        $this->initializeValidationDetailsForNoDocOnboarding($merchantDetails);
-
         $this->updateActivationSource($merchant, $originProduct);
 
         $this->verifyAadhaarWithPanIfApplicable($merchant, $merchantDetails);
@@ -916,6 +916,38 @@ class Core extends Base\Core
 
         $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
 
+        $canUpdateMerchantContext = false;
+
+        if ($merchant->isNoDocOnboardingEnabled() === true)
+        {
+            $noDocConfig = $this->initializeValidationDetailsForNoDocOnboarding($merchantDetails);
+
+            $fieldMap                         = [];
+            $merchantDetailsArr               = $merchantDetails->toArray();
+            $requiredFieldsforNoDocOnboarding = $this->getAllRequiredFieldsForNoDocDedupeAndBvsCheck($merchantDetails);
+
+            foreach ($requiredFieldsforNoDocOnboarding as $field)
+            {
+                $fieldMap[$field] = [$merchantDetailsArr[$field]];
+            }
+
+            $dedupeResponse = $this->triggerStrictDedupeForNoDocOnboarding($merchantDetails, $fieldMap, $noDocConfig, $input);
+
+            $this->processDedupeResponse($requiredFieldsforNoDocOnboarding, $dedupeResponse, $noDocConfig);
+
+            $this->updateNoDocOnboardingConfig($noDocConfig, (new StoreCore()));
+
+            $this->trace->info(TraceCode::NO_DOC_REDIS_DATA_INITIALIZATION, [
+                'merchant_id'              => $merchant->getId(),
+                'redis_retry_status'       => $noDocConfig
+            ]);
+
+            /**
+             * Dedupe failed NC run
+             */
+            $canUpdateMerchantContext = true;
+        }
+
         $this->triggerValidationRequests($merchant, $merchantDetails);
 
         $this->fireActivationTrigger($merchantDetails, $merchant);
@@ -928,6 +960,11 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchantDetails);
 
+        if ($canUpdateMerchantContext === true)
+        {
+            UpdateMerchantContext::dispatch(Mode::LIVE, $this->merchant->getId(), null);
+        }
+
         $this->submitPartnerActivationFormIfApplicable($merchant, $input);
 
         $this->trace->info(TraceCode::MERCHANT_FORM_SUBMIT_LATENCY, [
@@ -939,18 +976,76 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function initializeValidationDetailsForNoDocOnboarding(Entity $merchantDetails): ?array
+    /**
+     * It initialize redis json for no doc onboarded merchant. In redis it maintains json that contains retry count for
+     * dedupe and bvs check. Maximum allowed retry is 1.
+     * Example:-
+     * {
+     *      "dedupe": {
+     *              "company_pan": {
+     *                  "retryCount": 0,
+     *                  "status" : "Pending"
+     *              }
+     *      },
+     *     "verification": {
+     *              "company_pan" : {
+     *                  "retryCount": 0,
+     *                  "status" : "Pending"
+     *              }
+     *     }
+     * }
+     *
+     * @param Entity $merchantDetails
+     *
+     * @throws Exception\InvalidPermissionException
+     */
+    public function initializeValidationDetailsForNoDocOnboarding(Entity $merchantDetail): array
     {
-        if ($merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
+        $store     = new StoreCore();
+        $data      = $store->fetchValuesFromStore($merchantDetail->getMerchantId(), ConfigKey::ONBOARDING_NAMESPACE,
+                                                  [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+        $noDocData = $data[ConfigKey::NO_DOC_ONBOARDING_INFO] ?? [];
+
+        if (empty($noDocData) === false)
         {
-            return null;
+            return $noDocData;
         }
 
-        $gst = $merchantDetails->getGstin();
+        $gst = $merchantDetail->getGstin();
+        $bvsVerificationConfig = [];
+
+        $gstConfig = [
+            DetailConstants::RETRY_COUNT => 0,
+            DetailConstants::STATUS        => RetryStatus::PENDING,
+            DetailConstants::VALUE         => empty($gst) ? [] : [$gst],
+            DetailConstants::CURRENT_INDEX => 0,
+        ];
+
+
+        $bankConfig = [
+            DetailConstants::RETRY_COUNT   => 0,
+            DetailConstants::STATUS        => RetryStatus::PENDING,
+        ];
+
+        $fields = $this->getAllRequiredFieldsForNoDocDedupeAndBvsCheck($merchantDetail);
+
+        foreach ($fields as $key)
+        {
+            $fieldConfig                 = [
+                DetailConstants::RETRY_COUNT => 0,
+                DetailConstants::STATUS      => RetryStatus::PENDING
+            ];
+            $dedupeConfig[$key]          = $fieldConfig;
+            $bvsVerificationConfig[$key] = $fieldConfig;
+        }
+
+        $bvsVerificationConfig[Entity::GSTIN] = $gstConfig;
+        $bvsVerificationConfig[Entity::BANK_ACCOUNT_NUMBER] = $bankConfig;
+
 
         $noDocData = [
-            'gst'           => empty($gst) ? [] : [$gst],
-            'current_index' => 0,
+            DetailConstants::DEDUPE       => $dedupeConfig,
+            DetailConstants::VERIFICATION => $bvsVerificationConfig
         ];
 
         $data = [
@@ -958,9 +1053,44 @@ class Core extends Base\Core
             StoreConstants::NAMESPACE         => ConfigKey::ONBOARDING_NAMESPACE
         ];
 
-        (new StoreCore())->updateMerchantStore($merchantDetails->getMerchantId(), $data, StoreConstants::INTERNAL);
-
+        (new StoreCore())->updateMerchantStore($merchantDetail->getMerchantId(), $data, StoreConstants::INTERNAL);
         return $noDocData;
+
+    }
+
+    public function getAllRequiredFieldsForNoDocDedupeAndBvsCheck(Entity $merchantDetails): array
+    {
+        switch ($merchantDetails->getBusinessType())
+        {
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::PROPRIETORSHIP:
+                return DetailConstants::NO_DOC_ONBOARDING_DEDUPE_CHECK_FIELDS_UNREGISTERED;
+
+            default:
+                return DetailConstants::NO_DOC_ONBOARDING_DEDUPE_CHECK_FIELDS_REGISTERED;
+        }
+
+    }
+
+    public function shouldTriggerDedupeNcForNoDocOnboarding(array $noDocData, Entity $merchantDetails):bool
+    {
+
+        if (empty($noDocData) === true)
+        {
+            return false;
+        }
+
+        $fields = $this->getAllRequiredFieldsForNoDocDedupeAndBvsCheck($merchantDetails);
+
+        foreach ($fields as $field)
+        {
+            if ($noDocData[DetailConstants::DEDUPE][$field][DetailConstants::RETRY_COUNT] > 0 and $noDocData[DetailConstants::DEDUPE][$field][DetailConstants::STATUS] === RetryStatus::PENDING)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function updateActivationProgress(Merchant\Entity $merchant): array
@@ -4233,14 +4363,7 @@ class Core extends Base\Core
 
         if ($autoKycDone === true)
         {
-            if ($merchantDetails->getGstinVerificationStatus() === DetailConstants::VERIFIED)
-            {
-                return Status::ACTIVATED;
-            }
-            else
-            {
-                return Status::ACTIVATED_KYC_PENDING;
-            }
+            return Status::ACTIVATED_KYC_PENDING;
         }
 
         return Status::UNDER_REVIEW;
@@ -7214,5 +7337,208 @@ class Core extends Base\Core
 
         return $response;
 
+    }
+
+    public function updateNoDocOnboardingConfig(array $data, StoreCore $store)
+    {
+        $input = [
+            StoreConstants::NAMESPACE         => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $data
+        ];
+
+        $store->updateMerchantStore($this->merchant->getId(), $input, StoreConstants::INTERNAL);
+    }
+
+    private function prepareRequestForNoDocDedupeCheck(array $fieldMap, array & $noDocConfig, array $input=[]): array
+    {
+        $fieldList = [];
+        foreach ($fieldMap as $field => $values)
+        {
+            if ($this->isDedupeCheckRequired($field,  $noDocConfig, $input) === true)
+            {
+                foreach ($values as $value)
+                {
+                    $field = [
+                        'field' => $field,
+                        'list'  => DedupeConstants::XPRESS_ONBOARDING_CLIENT_TYPE,
+                        'value' => $value
+                    ];
+                    array_push($fieldList, $field);
+                }
+            }
+        }
+
+        return $fieldList;
+    }
+
+
+    /**
+     * To verify if dedupe check is required or not, if dedupe is already passed but field is updated then return
+     * true and update count as 0. Else return false.
+     * @param string $field
+     * @param array  $input
+     * @param array  $noDocConfig
+     *
+     * @return bool
+     */
+    private function isDedupeCheckRequired(string $field, array & $noDocConfig, array $input=[])
+    {
+        $dedupeConfig = $noDocConfig[DetailConstants::DEDUPE];
+
+        if ($dedupeConfig[$field][DetailConstants::STATUS] === RetryStatus::PASSED)
+        {
+            if (empty($input) === false and $this->isFieldValueUpdated($input, $field) === false)
+            {
+                $dedupeConfig[$field][DetailConstants::STATUS] = RetryStatus::PENDING;
+                $dedupeConfig[$field][DetailConstants::RETRY_COUNT] = 0;
+                return true;
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private function isFieldValueUpdated(array $input, string $field)
+    {
+        if (empty($input) === false and (isset($input[$field]) === true) and ($this->merchant->merchantDetail->getAttribute($field) !== $input[$field]))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Trigger Dedup check for no doc onboarding
+     * @param Entity $merchantDetail
+     * @param array  $fieldMap
+     * @param array  $noDocConfig
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function triggerStrictDedupeForNoDocOnboarding(Entity $merchantDetail, array $fieldMap, array & $noDocConfig, array $input=[]) : array
+    {
+
+        if ($merchantDetail->merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return [];
+        }
+
+        $fieldList = $this->prepareRequestForNoDocDedupeCheck($fieldMap, $noDocConfig, $input);
+
+        return $this->dedupeCore->dedupeMatchWithExistingClientTypeMerchant($merchantDetail->getMerchantId(),DetailConstants::XPRESS_ONBOARDING,  $fieldList);
+    }
+
+    public function isMatched(string $fieldToMatch, array $dedupeResponse): bool
+    {
+        if (empty($dedupeResponse) === true)
+        {
+            return false;
+        }
+
+        foreach ($dedupeResponse['fields'] as $field)
+        {
+            if (isset($field['matched_entity']) === true and $fieldToMatch === $field['field'])
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function findAllMatched(string $fieldToMatch, array $dedupeResponse)
+    {
+        $matchedValueForField = [];
+
+        if (is_null($dedupeResponse) === true or empty($dedupeResponse) === true)
+        {
+            return $matchedValueForField;
+        }
+
+        foreach ($dedupeResponse['fields'] as $field)
+        {
+            if (strcmp($fieldToMatch, $field['field']) === 0 && isset($dedupeResponse['matched_entity']) === true)
+            {
+                array_push($matchedValueForField, $dedupeResponse['matched_entity']['value']);
+            }
+        }
+
+        return $matchedValueForField;
+    }
+
+    public function processDedupeResponse(array $requiredFieldsforNoDocOnboarding, array $dedupeResponse, array & $noDocConfig)
+    {
+        $merchantCore = new Merchant\Core();
+        $dedupeConfig = $noDocConfig[DetailConstants::DEDUPE];
+        foreach ($requiredFieldsforNoDocOnboarding as $field)
+        {
+            if ($field === Entity::GSTIN)
+            {
+                $this->processGstDedupeResponseForNoDocOnboarding($dedupeResponse, $noDocConfig,$merchantCore);
+                return;
+            }
+
+            $isMatched = $this->isMatched($field, $dedupeResponse);
+            if ($isMatched === true)
+            {
+                $retryCountForField = $dedupeConfig[$field][DetailConstants::RETRY_COUNT];
+                $retryCountForField = $retryCountForField + 1;
+
+                if ($retryCountForField > 1)
+                {
+                    $dedupeConfig[$field][DetailConstants::STATUS] = RetryStatus::FAILED;
+                    $noDocConfig[DetailConstants::DEDUPE]          = $dedupeConfig;
+                    $this->merchant->deactivate();
+
+                    $merchantCore->appendTag($this->merchant, DeDupeConstants::DEDUPE_BLOCKED_TAG);
+
+                    return;
+                }
+
+                $dedupeConfig[$field][DetailConstants::RETRY_COUNT] = $retryCountForField;
+                $noDocConfig[DetailConstants::DEDUPE]              = $dedupeConfig;
+
+                continue;
+            }
+            // Dedupe check verified
+            $dedupeConfig[$field][DetailConstants::STATUS] = RetryStatus::PASSED;
+        }
+        $noDocConfig[DetailConstants::DEDUPE]          = $dedupeConfig;
+    }
+
+    private function processGstDedupeResponseForNoDocOnboarding(array $dedupeResponse, array & $noDocConfig, Merchant\Core $merchantCore)
+    {
+        $gsts = $noDocConfig[DetailConstants::VERIFICATION][Entity::GSTIN][DetailConstants::VALUE];
+
+        $matchGsts  = $this->findAllMatched(Entity::GSTIN, $dedupeResponse);
+        $uniqueGsts = array_diff($gsts, $matchGsts);
+
+        if (empty($uniqueGsts) === true)
+        {
+            $this->merchant->deactivate();
+
+            $merchantCore->appendTag($this->merchant, DeDupeConstants::DEDUPE_BLOCKED_TAG);
+            return;
+        }
+
+        // Dedupe passed trigger verification
+        $noDocConfig[DetailConstants::VERIFICATION][Entity::GSTIN][DetailConstants::VALUE] = $uniqueGsts;
+    }
+
+    public function fetchNoDocData(Entity $merchantDetail): array
+    {
+
+        if ($merchantDetail->merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return [];
+        }
+
+        $store     = new StoreCore();
+        $data      = $store->fetchValuesFromStore($merchantDetail->getMerchantId(), ConfigKey::ONBOARDING_NAMESPACE,
+                                                  [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+        return $data[ConfigKey::NO_DOC_ONBOARDING_INFO] ?? [];
     }
 }

@@ -313,4 +313,7 @@ class Constant
         self::BANK_ACCOUNT_WITH_BUSINESS_PAN,
         self::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN
     ];
+    const COMPLIANCE_STATUS               = 'compliance_status';
+    const IS_ANY_DELAY                    = 'is_any_delay';
+    const IS_DEFAULTER                    = 'is_defaulter';
 }
