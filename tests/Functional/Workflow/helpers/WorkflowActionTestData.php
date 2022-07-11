@@ -117,28 +117,6 @@ return [
             ],
         ],
     ],
-    'testWorkflowActionSameMakerCheckerValidation' => [
-        'request' => [
-            'method'    => 'POST',
-            'url'       => '/w-actions/%s/checkers',
-            'content'   => [
-                'approved'      => 1,
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Maker and Checker can not be the same',
-                ]
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CHECKER_CANNOT_BE_SAME_AS_MAKER,
-        ]
-    ],
     'testWorkflowActionApprovedWithComments' => [
         'request' => [
             'method'    => 'POST',

@@ -10,7 +10,6 @@ use RZP\Models\Base\EsDao;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Merchant\Account;
 use Rzp\Models\Admin\Permission;
-use RZP\Models\Workflow\Action\MakerType;
 use RZP\Tests\Functional\TestCase;
 use Rzp\Models\Admin\Admin\Token;
 use RZP\Models\Workflow\Constants;
@@ -218,30 +217,6 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
-    public function testWorkflowActionSameMakerCheckerValidation()
-    {
-        $action = $this->fixtures->create('workflow_action', [
-            'id'            => 'wfActionId1001',
-            'maker_id'      => Org::CHECKER_ADMIN,
-            'maker_type'    => MakerType::ADMIN,
-            'permission_id' => (new AdminPermission\Repository)
-                ->retrieveIdsByNames([AdminPermission\Name::EDIT_ADMIN])[0]->getId(),
-        ]);
-
-        $this->fixtures->create('state', [
-            'action_id'     => $action->getId(),
-            'admin_id'      => Org::CHECKER_ADMIN,
-        ]);
-
-        $this->setDefaultActionIdInUrl(Org::CHECKER_ADMIN_TOKEN, $action->getId());
-
-        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
-
-        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
-
-        $this->startTest();
-    }
-
     public function testWorkflowActionApprovedWithComments()
     {
         $this->setDefaultActionIdInUrl(Org::CHECKER_ADMIN_TOKEN);
@@ -291,13 +266,13 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
-    private function setDefaultActionIdInUrl($adminToken = Org::MAKER_ADMIN_TOKEN, string $actionId = WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID)
+    private function setDefaultActionIdInUrl($adminToken = Org::MAKER_ADMIN_TOKEN)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
         $functionName = $trace[1]['function'];
 
-        $defaultWorkflowActionId = 'w_action_' . $actionId;
+        $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
         $this->ba->adminAuth('test', $adminToken, Org::RZP_ORG_SIGNED);
 
