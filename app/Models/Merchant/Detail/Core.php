@@ -2792,9 +2792,9 @@ class Core extends Base\Core
                 }
             }
 
-            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING && $this->merchant->isNoDocOnboardingEnabled() === true)
+            if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING && $merchant->isNoDocOnboardingEnabled() === true)
             {
-                $this->storeNoDocOnboardedMerchantDetails();
+                $this->storeNoDocOnboardedMerchantDetails($merchant->merchantDetail);
 
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
             }
@@ -2969,13 +2969,13 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    public function storeNoDocOnboardedMerchantDetails()
+    public function storeNoDocOnboardedMerchantDetails(Entity $merchantDetail)
     {
         $esRepo = new EsRepository(DetailConstants::DEDUPE_ES_INDEX);
 
         $body = [];
 
-        $merchantDetailsArr = $this->merchant->merchantDetail->toArray();
+        $merchantDetailsArr = $merchantDetail->toArray();
 
         foreach (DetailConstants::NO_DOC_ONBOARDED_MERCHANT_DETAILS_TO_STORE_IN_DEDUPE as $key)
         {
@@ -2987,7 +2987,7 @@ class Core extends Base\Core
 
         $body[DetailConstants::ONBOARDING_SOURCE] = DetailConstants::XPRESS_ONBOARDING;
 
-        $esRepo->storeOrUpdateDocument($this->merchant->getMerchantId(), DetailConstants::DEDUPE_ES_INDEX, DetailConstants::XPRESS_ONBOARDING, $body);
+        $esRepo->storeOrUpdateDocument($merchantDetail->getMerchantId(), DetailConstants::DEDUPE_ES_INDEX, DetailConstants::XPRESS_ONBOARDING, $body);
     }
 
     public function paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails)

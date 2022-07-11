@@ -80,7 +80,7 @@ class EsClient
         {
             $this->dedupeMock = $this->config->get('database.dedupe_es_mock');
 
-            if ($this->dedupeMock === false)
+            if (empty($this->dedupeMock) === false and $this->dedupeMock === false)
             {
                 $this->dedupeClient = ClientBuilder::create()
                                                    ->setHosts($hosts)->build();
@@ -375,7 +375,7 @@ class EsClient
     {
         try
         {
-            if ($this->dedupeMock === true)
+            if (empty($this->dedupeClient) === true or $this->dedupeMock === true)
             {
                 return null;
             }
@@ -398,7 +398,10 @@ class EsClient
 
     public function indexDedupe($params)
     {
-        $this->dedupeClient->index($params);
+        if (empty($this->dedupeClient) === false)
+        {
+            $this->dedupeClient->index($params);
+        }
     }
 
     public function searchDedupe($params)
@@ -408,7 +411,7 @@ class EsClient
 
         try
         {
-            if ($this->dedupeMock === true)
+            if (empty($this->dedupeClient ) === true or $this->dedupeMock === true)
             {
                 return null;
             }
