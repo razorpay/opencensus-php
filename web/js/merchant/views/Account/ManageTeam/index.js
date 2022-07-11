@@ -17,6 +17,7 @@ import NewInvitation from './components/NewInvitation';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -24,6 +25,11 @@ class ManageTeamContainer extends React.Component {
   };
 
   inviteNewMember = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'New Member Invited',
+      page: 'Team',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: 'invite new member',
       actionName: 'clicked',

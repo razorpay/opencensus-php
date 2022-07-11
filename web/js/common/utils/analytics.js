@@ -114,7 +114,7 @@ export const initAnalytics = () => {
   });
 };
 
-const getDeviceSource = () => {
+export const getDeviceSource = () => {
   if (source === null) {
     const isWebView = getMobileDetect().isWebView();
     if (isWebView) {

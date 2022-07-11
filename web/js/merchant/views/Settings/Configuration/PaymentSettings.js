@@ -64,6 +64,7 @@ const CAPTURE_DETAILS = [
   },
 ];
 
+// eslint-disable-next-line react/no-unsafe
 class PaymentSettings extends Component {
   constructor(props) {
     super(props);

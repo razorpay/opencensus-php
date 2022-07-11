@@ -7,6 +7,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { getClassName, getStatusMessage } from './InternationalPayments';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class PaypalOnboardingButton extends Component {
   is_redirected = false;
@@ -30,6 +31,11 @@ class PaypalOnboardingButton extends Component {
 
   verifyAccount = () => {
     this.setState({ loading: true });
+    selfServeTrackInitiate({
+      selfServeAction: 'International Payments Applied',
+      page: 'Config',
+      screen: 'Settings',
+    });
     analyticsTrack({
       objectName: 'Paypal Change Account',
       actionName: 'clicked',

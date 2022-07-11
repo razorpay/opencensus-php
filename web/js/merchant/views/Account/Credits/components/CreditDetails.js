@@ -10,6 +10,7 @@ import {
   FEE_CREDITS_FAILED,
   REFUND_CREDITS_ADDED,
   REFUND_CREDITS_FAILED,
+  getAnalyticsData,
 } from '../ga';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchant/reducers/credits';
@@ -19,6 +20,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import Loader from 'common/ui/Loader';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const ViewCreditHistoryTable = lazy(() =>
   import(
@@ -91,6 +93,7 @@ function CreditDetails({
     const analyticsData =
       title === 'Fee Credits' ? CLICK_ADD_FEE_CREDITS : CLICK_ADD_REFUND_CREDITS;
     analyticsTrack(analyticsData);
+    selfServeTrackInitiate(getAnalyticsData('add', type));
     openModal({
       size: 'small',
       component: (
@@ -158,11 +161,12 @@ function CreditDetails({
           <button
             class="btn-link toggle-history"
             onClick={() => {
+              selfServeTrackInitiate(getAnalyticsData('view', type));
               openModal({
                 size: 'large',
                 component: (
                   <Suspense fallback={<Loader />}>
-                    <ViewCreditHistoryTable creditItems={creditItems} title={title} />
+                    <ViewCreditHistoryTable creditItems={creditItems} title={title} type={type} />
                   </Suspense>
                 ),
               });

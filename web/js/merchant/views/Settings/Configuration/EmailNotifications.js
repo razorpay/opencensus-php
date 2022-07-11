@@ -15,6 +15,8 @@ import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorV
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateEmailSettings, updateConfig } from 'merchant/reducers/config';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+
 class EmailNotifications extends Component {
   constructor(props) {
     super(props);
@@ -125,9 +127,13 @@ class EmailNotifications extends Component {
 
   handleSubmit = ({ transaction_report_email }) => {
     const emails = transaction_report_email ? transaction_report_email.split(',') : null;
-
     this.transaction_report_email = emails;
 
+    selfServeTrackInitiate({
+      selfServeAction: 'Email Notification Enabled',
+      page: 'Config',
+      screen: 'Settings',
+    });
     return this.handleUpdate({
       transaction_report_email: emails,
     });

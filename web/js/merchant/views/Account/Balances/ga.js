@@ -98,3 +98,16 @@ export const CLICK_SAVE_MANAGE_ALERTS = {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
 };
+
+export const ANALYTICS_OBJ = {
+  current: {
+    selfServeAction: 'Current Funds Added',
+    page: 'Addfunds',
+    screen: 'My Account',
+  },
+  reserve: {
+    selfServeAction: 'Reserve Funds Added',
+    page: 'Addfunds',
+    screen: 'My Account',
+  },
+};

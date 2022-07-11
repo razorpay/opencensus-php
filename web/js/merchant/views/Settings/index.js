@@ -19,6 +19,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const analyticsGoTo = (name) => {
   window.rzpAnalytics?.({
@@ -103,6 +104,11 @@ class Settings extends Component {
                 to="/webhooks"
                 onClick={() => {
                   analyticsGoTo('Webhooks');
+                  selfServeTrackInitiate({
+                    selfServeAction: 'Webhook List Fetched',
+                    page: 'Webhooks',
+                    screen: 'Settings',
+                  });
                   tracking.trackEvent(
                     window.rzpQ.onbr().initiated('dash.settings_action', {
                       action: 'View_Webhook_Tab',

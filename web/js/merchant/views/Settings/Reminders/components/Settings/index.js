@@ -13,6 +13,7 @@ import Footer from './Footer';
 import Header from './Header';
 import AdvancedSettings from './AdvancedSettings';
 import ReminderOptionSetting from './ReminderOptionSetting';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const initState = {
   withExpiry: [],
@@ -159,8 +160,12 @@ class ReminderSettings extends React.Component {
   };
 
   handleChannelChange = (type) => (e) => {
+    selfServeTrackInitiate({
+      selfServeAction: 'PL Reminder Created',
+      page: 'Reminders',
+      screen: 'Settings',
+    });
     const { settings } = this.state;
-
     this.setState({
       settings: {
         ...settings,

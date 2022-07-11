@@ -8,6 +8,7 @@ import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
 import { analyticsTrack } from 'common/utils/analytics';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const LoggedInUserDetails = ({
   isOrgRZP,
@@ -27,6 +28,11 @@ const LoggedInUserDetails = ({
         location: 'profile',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+    });
+    selfServeTrackInitiate({
+      selfServeAction: 'Login Details Updated',
+      page: 'Profile',
+      screen: 'My Account',
     });
     openModal({
       size: 'small',

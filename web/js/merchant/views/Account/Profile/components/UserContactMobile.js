@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import DetailRow from 'merchant/components/DetailRow';
@@ -13,6 +14,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { CONTACT_NUMBER_UPDATE } from '../deeplink-constants';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 @connect(
   (state) => ({
     user: state.session.user.user,
@@ -33,6 +35,11 @@ export default class UserContactMobile extends React.Component {
   };
 
   onChangeContactMobile = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Mobile Updated',
+      page: 'Profile',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: 'change contact number',
       actionName: 'clicked',

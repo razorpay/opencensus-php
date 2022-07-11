@@ -6,6 +6,7 @@ import Button from 'common/new-ui/Button';
 import { PowerSelect } from 'react-power-select';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const filterOptions = (options, selectedReminders, selectedOption) => {
   return options.filter((option) => {
@@ -19,7 +20,11 @@ export default class ReminderOptionSetting extends React.Component {
   handleChange = (id) => ({ option }) => {
     const newList = [...this.props.selectedReminders];
     newList[id] = option;
-
+    selfServeTrackInitiate({
+      selfServeAction: 'PL Reminder Created',
+      page: 'Reminders',
+      screen: 'Settings',
+    });
     this.props.onChange(newList, this.props.name);
   };
 

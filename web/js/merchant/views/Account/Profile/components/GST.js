@@ -18,6 +18,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { UPDATE_GSTIN } from 'merchant/views/Account/Profile/deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class GSTDetails extends Component {
   state = {
@@ -72,7 +73,11 @@ class GSTDetails extends Component {
 
   openEditGSTModal = () => {
     const { business_suggested_address, business_suggested_pin, activationResponse } = this.state;
-
+    selfServeTrackInitiate({
+      selfServeAction: 'GST Updated',
+      page: 'Profile',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: 'Merchant clicks on edit gstin',
       actionName: 'Edit GSTIN clicked',

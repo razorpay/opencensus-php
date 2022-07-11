@@ -38,6 +38,7 @@ import Firc from './components/FircAnnouncements/Firc';
 import ToggleSetting from './ToggleSetting';
 import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
 
+// eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
   state = {
     isLoading: false,

@@ -16,8 +16,14 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT } from '../deeplink-constants';
 import { bindActionCreators } from 'redux';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function linkHandler() {
+  selfServeTrackInitiate({
+    selfServeAction: 'International Payments Applied',
+    page: 'Profile',
+    screen: 'My Account',
+  });
   analyticsTrack({
     objectName: 'Apply for international',
     actionName: 'clicked',

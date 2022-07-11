@@ -6,6 +6,8 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SwitchField from 'common/ui/Forms/SwitchField';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+
 class ToggleSetting extends Component {
   constructor(props) {
     super(props);
@@ -41,6 +43,13 @@ class ToggleSetting extends Component {
     const analyticsLabel = camelize(featureName);
     const analyticsObjName = featureName.toLowerCase() || this.props.featureObjectName;
 
+    if (isToggleTriggered && isFeatureEnabled) {
+      selfServeTrackInitiate({
+        selfServeAction: `${featureName} Enabled`,
+        page: 'Config',
+        screen: 'Settings',
+      });
+    }
     analyticsTrack({
       objectName: isToggleTriggered ? analyticsObjName : `${analyticsObjName} toggle`,
       actionName: isToggleTriggered ? 'toggled' : 'result',
@@ -64,7 +73,11 @@ class ToggleSetting extends Component {
       },
       should_sync: shouldSync,
     };
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Mandate Page Skipped',
+      page: 'Config',
+      screen: 'Settings',
+    });
     this.analyticsForFeatureChange(true, isFeatureEnabled);
 
     try {

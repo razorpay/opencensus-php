@@ -54,6 +54,7 @@ import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/redu
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const FIRCSection = lazy(() =>
   import(
@@ -168,6 +169,11 @@ class Profile extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    selfServeTrackInitiate({
+      selfServeAction: 'Login Details Updated',
+      page: 'Profile',
+      screen: 'My Account',
+    });
     return this.context.criticalFlow({
       modes: ['test', 'live'],
       onUserTwoFaVerified: () => {
@@ -272,6 +278,11 @@ class Profile extends Component {
     }),
   )
   openChangePasswordModal = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Password Updated',
+      page: 'Profile',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: 'change password',
       actionName: 'clicked',

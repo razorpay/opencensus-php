@@ -10,6 +10,7 @@ import ManageCreditAlerts from './ManageCreditAlerts';
 import { CLICK_ON_MANAGE_ALERTS, OPEN_DOCUMENTATION } from '../ga';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { connect } from 'react-redux';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function CreditsList(props) {
   const { creditsData, balanceData, loading, showDocumentation = true, user } = props;
@@ -37,7 +38,11 @@ function CreditsList(props) {
       size: 'large',
       component: <ManageCreditAlerts />,
     });
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Credit Alert Created',
+      page: 'Credits',
+      screen: 'My Account',
+    });
     analyticsTrack(CLICK_ON_MANAGE_ALERTS);
   };
 

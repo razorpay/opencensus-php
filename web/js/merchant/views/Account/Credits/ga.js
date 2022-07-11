@@ -110,3 +110,21 @@ export const OPEN_DOCUMENTATION = {
     ...getCommonAnalyticsProperties(window.rzp_user),
   },
 };
+
+export const getAnalyticsData = (actionType, type) => {
+  let action = '';
+  switch (actionType) {
+    case 'add':
+      action = `${type === 'fee' ? 'Fee' : 'Refund'} Credits Added`;
+      break;
+    case 'view':
+      action = `${type === 'fee' ? 'Fee' : 'Refund'} Credit Listing Viewed`;
+      break;
+    default:
+  }
+  return {
+    selfServeAction: action,
+    page: 'Credits',
+    screen: 'My Account',
+  };
+};

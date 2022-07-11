@@ -21,6 +21,7 @@ import {
   RESERVE_BALANCE_FAILURE,
   OPEN_DOCUMENTATION,
   CLICK_ON_MANAGE_ALERTS,
+  ANALYTICS_OBJ,
 } from './ga';
 import lazy from 'merchant/routes/LazyLoader';
 import DocsLink from 'merchant/components/DocsLink';
@@ -29,6 +30,7 @@ import HeaderAction from 'common/ui/HeaderAction';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const ManageBalanceAlert = lazy(() =>
   import(
@@ -166,8 +168,10 @@ class AddFundsContainer extends Component {
           currentBalance: this.props.account_balance.data?.balance || 0,
         },
       });
+      selfServeTrackInitiate(ANALYTICS_OBJ[type]);
     } else {
       analyticsTrack(CLICK_ADD_FUNDS_ON_RESERVE_BALANCE);
+      selfServeTrackInitiate(ANALYTICS_OBJ[type]);
     }
   };
 
@@ -221,7 +225,11 @@ class AddFundsContainer extends Component {
         </Suspense>
       ),
     });
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Funds Alert Created',
+      page: 'Addfunds',
+      screen: 'My Account',
+    });
     analyticsTrack(CLICK_ON_MANAGE_ALERTS);
   };
 

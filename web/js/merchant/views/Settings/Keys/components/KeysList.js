@@ -9,6 +9,7 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 
 import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const KeysListItem = (props) => {
   const mode = props.mode;
@@ -17,6 +18,11 @@ const KeysListItem = (props) => {
   const context = useTwoFactorVerificationContext();
 
   const onRegenerateKeys = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'API Key Regenerated',
+      page: 'API Keys',
+      screen: 'Settings',
+    });
     analyticsTrack({
       objectName: `regenerate ${mode} key`,
       actionName: 'clicked',

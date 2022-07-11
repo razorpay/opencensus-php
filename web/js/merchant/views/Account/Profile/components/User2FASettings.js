@@ -10,7 +10,7 @@ import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
-
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 class User2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
 
@@ -24,6 +24,11 @@ class User2FASettings extends React.PureComponent {
   };
 
   handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Enable 2FA',
+      page: 'Profile',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: '2fa account',
       actionName: 'toggled',

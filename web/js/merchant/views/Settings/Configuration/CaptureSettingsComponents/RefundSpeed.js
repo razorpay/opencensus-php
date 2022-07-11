@@ -10,6 +10,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { parseTimeoutValues } from './data';
 import { renderTimeoutAsString } from '../PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function RefundSpeed(props) {
   const [refundSpeed, setrefundSpeed] = useState(() => {
@@ -77,6 +78,12 @@ function RefundSpeed(props) {
     } else {
       label = `Change | Manual Capture | Next | Normal Refund | Save`;
     }
+
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Capture Period Updated',
+      page: 'Config',
+      screen: 'Settings',
+    });
 
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',

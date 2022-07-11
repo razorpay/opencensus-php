@@ -26,6 +26,7 @@ import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import EasterEgg from 'merchant/components/EasterEgg';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -37,6 +38,7 @@ const languageOptions = [
   { name: 'Telugu', code: 'tel' },
 ];
 
+// eslint-disable-next-line react/no-unsafe
 class CheckoutTheme extends Component {
   state = { brandColor: this.props.config.brand_color };
 
@@ -94,6 +96,11 @@ class CheckoutTheme extends Component {
   }
 
   uploadLogo = (event) => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Brand Logo Uploaded',
+      page: 'Config',
+      screen: 'Settings',
+    });
     analyticsTrack({
       objectName: 'logo choose file',
       actionName: 'clicked',
@@ -167,6 +174,11 @@ class CheckoutTheme extends Component {
   };
 
   analytics = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Theme Color Changed',
+      page: 'Config',
+      screen: 'Settings',
+    });
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Settings',
       eventAction: 'Change - Checkout Theme',
@@ -207,6 +219,11 @@ class CheckoutTheme extends Component {
 
   saveLocale = (e) => {
     e.preventDefault();
+    selfServeTrackInitiate({
+      selfServeAction: 'Language Changed',
+      page: 'Config',
+      screen: 'Settings',
+    });
     const data = {
       type: 'locale',
       config: this.props.locale.config,

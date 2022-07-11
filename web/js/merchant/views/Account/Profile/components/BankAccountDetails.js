@@ -12,6 +12,7 @@ import NeedsClarificationModal from './WorkflowRequests/NeedsClarificationModal'
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const BankAccountDetails = ({
   bankAccount,
@@ -108,6 +109,11 @@ const BankAccountDetails = ({
             <span
               className="nav-link pull-right"
               onClick={(...e) => {
+                selfServeTrackInitiate({
+                  selfServeAction: 'Bank Account Updated',
+                  page: 'Profile',
+                  screen: 'My Account',
+                });
                 analyticsTrack({
                   objectName: 'bank account edit',
                   actionName: 'clicked',

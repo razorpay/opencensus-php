@@ -49,6 +49,7 @@ const raiseTicket = () => {
     }, 1000);
   }
 };
+// eslint-disable-next-line react/no-unsafe
 class DefaultRefundSpeed extends Component {
   static contextTypes = {
     confirm: PropTypes.func,

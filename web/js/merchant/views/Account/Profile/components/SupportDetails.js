@@ -10,6 +10,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { SUPPORT_DETAILS } from '../deeplink-constants';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
   openModal,
@@ -24,12 +25,17 @@ export default class SupportDetails extends Component {
   openAddSupportDetailModal = (data) => {
     const is_edit = Object.keys(this.props.support_detail.data).length;
     if (is_edit) {
+      selfServeTrackInitiate({
+        selfServeAction: 'Merchant Support Details Updated',
+        page: 'Profile',
+        screen: 'My Account',
+      });
       analyticsTrack({
         objectName: 'support details edit',
         actionName: 'clicked',
         screen: 'my account',
         properties: {
-          supportDetailPresent: this.props.support_detail.data ? true : false,
+          supportDetailPresent: !!this.props.support_detail.data,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });

@@ -8,6 +8,7 @@ import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { fetchFeatureStatus as fnFetchFeatureStatus } from 'merchant/reducers/config';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { isOrgFeatureExist } from 'merchant/models/User';
 
 function WhatsappNotification({
@@ -106,6 +107,11 @@ function WhatsappNotification({
   const toggleWhatsappNotification = (whatsapp_optin_checked, cb) => {
     if (whatsapp_optin_checked) {
       analytics('Enable');
+      selfServeTrackInitiate({
+        selfServeAction: 'Whatsapp Notifications Enabled',
+        page: 'Config',
+        screen: 'Settings',
+      });
     } else {
       analytics('Disable');
     }

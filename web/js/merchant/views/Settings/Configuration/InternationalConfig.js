@@ -20,6 +20,7 @@ import { getItem, setItem } from 'common/utils/localStorage';
 import RequestInitiateModal from './components/InternationalConfigComponents/RequestInitiateModal';
 import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal';
 import Questionnaire from './Questionnaire';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const NO_ACTION_RECEIVED = 'no_action_received';
 const IN_REVIEW = 'in_review';
@@ -252,7 +253,13 @@ function withInternationalConfig(WrappedComponent) {
     )
     toggleInternationalization = (enableInternational, postActionCB) => {
       this.analytics(enableInternational ? 'Enable' : 'Disable');
-
+      if (enableInternational === 'Enable') {
+        selfServeTrackInitiate({
+          selfServeAction: 'International Payments Applied',
+          page: 'Config',
+          screen: 'Settings',
+        });
+      }
       this.setState({ showStatusLabel: enableInternational });
 
       return merchantFetch({

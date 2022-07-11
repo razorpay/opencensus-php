@@ -15,6 +15,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 import DashboardBanner from '../../../../common/ui/DashboardBanner';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
@@ -31,6 +32,11 @@ class WebhooksContainer extends ListContainer {
     const {
       webhooks: { webhooks },
     } = this.props;
+    selfServeTrackInitiate({
+      selfServeAction: 'Webhook Added',
+      page: 'Webhooks',
+      screen: 'Settings',
+    });
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('Webhook.setup', {
         webhook_count: webhooks.length,

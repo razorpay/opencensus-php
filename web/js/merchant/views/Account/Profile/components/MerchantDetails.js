@@ -41,6 +41,7 @@ import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRe
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function isWorkflowChangeAllowed(workflow) {
   return (
@@ -107,6 +108,11 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
           <div>
             <Button.Transparent
               onClick={() => {
+                selfServeTrackInitiate({
+                  selfServeAction: 'Additional Website - App Url Updated',
+                  page: 'Profile',
+                  screen: 'My Account',
+                });
                 handleEditWebsite(FLOWS.ADDITIONAL_WEBSITE);
               }}
             >
@@ -264,6 +270,11 @@ const MerchantDetails = ({
                 <a
                   class="p-l"
                   onClick={(...args) => {
+                    selfServeTrackInitiate({
+                      selfServeAction: 'Display Name Updated',
+                      page: 'Profile',
+                      screen: 'My Account',
+                    });
                     analyticsTrack({
                       objectName: 'dispay name edit',
                       actionName: 'clicked',
@@ -539,6 +550,11 @@ const MerchantDetails = ({
                     <a
                       class="p-l"
                       onClick={(e) => {
+                        selfServeTrackInitiate({
+                          selfServeAction: 'Brand Name Updated',
+                          page: 'Profile',
+                          screen: 'My Account',
+                        });
                         analyticsTrack({
                           objectName: 'Brand name edit',
                           actionName: 'clicked',

@@ -7,6 +7,7 @@ import User from 'merchant/models/User';
 import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class Merchant2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
@@ -21,6 +22,11 @@ class Merchant2FASettings extends React.PureComponent {
   };
 
   handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
+    selfServeTrackInitiate({
+      selfServeAction: '2FA Verification Created',
+      page: 'Team',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: '2fa team',
       actionName: 'toggled',

@@ -14,11 +14,17 @@ import {
 } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function CreditDetails(props) {
   const [showCollapsible, setshowCollapsible] = useState(false);
 
   const openApplyCouponCodeModal = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Coupon Code Applied',
+      page: 'Credits',
+      screen: 'My Account',
+    });
     analyticsTrack({
       objectName: 'apply coupon code',
       actionName: 'clicked',
@@ -37,6 +43,13 @@ function CreditDetails(props) {
 
   const toggleCollapsible = () => {
     if (!showCollapsible) {
+      const SS_DATA = {
+        selfServeAction: 'Past Coupons Listing Viewed',
+        page: 'Credits',
+        screen: 'My Account',
+      };
+      selfServeTrackInitiate(SS_DATA);
+      selfServeTrackSuccess(SS_DATA);
       analyticsTrack({
         objectName: props.toggleText,
         actionName: 'viewed',
