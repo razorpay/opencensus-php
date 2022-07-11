@@ -822,17 +822,17 @@ return [
         ],
     ],
 
-    'testCreateCardWithMaxAmountMoreThan5000' => [
+    'testCreateCardWithMaxAmountMoreThan15000' => [
         'request' => [
             'content' => [
-                'amount'          => 50000,
+                'amount'          => 150000,
                 'currency'        => 'INR',
                 'receipt'         => 'rcptid42',
                 'method'          => 'card',
                 'customer_id'     => 'cust_100000customer',
                 'payment_capture' => 1,
                 'token'           => [
-                    'max_amount'   => 600000,
+                    'max_amount'   => 1600000,
                     'expire_at'    => 1880118306,
                 ]
             ],
@@ -843,7 +843,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The max amount may not be greater than 500000.',
+                    'description' => 'The max amount may not be greater than 1500000.',
                 ],
             ],
             'status_code' => 400,
