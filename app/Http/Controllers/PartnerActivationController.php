@@ -68,4 +68,14 @@ class PartnerActivationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function sendPartnerWeeklyActivationSummaryEmails()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendPartnerWeeklyActivationSummaryEmails($input);
+
+        return ApiResponse::json($response);
+    }
+    
 }

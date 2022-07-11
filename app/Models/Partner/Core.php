@@ -19,11 +19,15 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Activation;
 use RZP\lib\ConditionParser\Parser;
+use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\PartnerActivationMigration;
 use RZP\Models\Merchant\Detail\ValidationFields;
+use RZP\Jobs\SendPartnerWeeklyActivationSummary;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Mail\Merchant\PartnerWeeklyActivationSummary;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Detail\Core
@@ -718,5 +722,150 @@ class Core extends Detail\Core
             $workflowActionData = json_decode($e->getMessage(), true);
             $this->app['workflow']->saveActionIfTransactionFailed($workflowActionData);
         }
+    }
+
+    public function dispatchPartnerWeeklyActivationSummaryMails(?int $limit, ?string $afterId, $mock) : array
+    {
+        $numBatches     = 0;
+        $partnerCount   = 0;
+        $dispatchedIds  = [];
+        $pageSize       = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_JOB_PAGE_SIZE;
+        $batchSize      = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_JOB_BATCH_SIZE;
+        $limit = $limit ?? PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_PARTNER_LIMIT;
+
+        while ($partnerCount < $limit)
+        {
+            $aggregatorPartners = $this->repo->merchant->fetchAggregatorPartners($pageSize, $afterId);
+
+            if ($aggregatorPartners->isEmpty() === true)
+            {
+                break;
+            }
+
+            $afterId = $aggregatorPartners->last()->getId();
+
+            $aggregatorPartners = $aggregatorPartners->getIds();
+
+            $merchantIdsChunks = array_chunk($aggregatorPartners, $batchSize);
+
+            foreach ($merchantIdsChunks as $merchantBatch)
+            {
+                if($partnerCount >= $limit)
+                    break;
+
+                $leftPartnerCount = $limit - $partnerCount;
+                if($leftPartnerCount < $batchSize)
+                    $merchantBatch = array_slice($merchantBatch, 0, $leftPartnerCount);
+
+                if($mock === false)
+                    SendPartnerWeeklyActivationSummary::dispatch($this->mode, $merchantBatch);
+
+                $dispatchedIds = array_merge($dispatchedIds, $merchantBatch);
+                $partnerCount += count($merchantBatch);
+                $numBatches++;   
+            }
+        }
+
+        return [
+            'mode' => $this->mode, 
+            'numBatches' => $numBatches, 
+            'mock' => $mock, 
+            'limit' => $limit, 
+            'afterId' => $afterId, 
+            'partnerCount' => $partnerCount, 
+            'dispatchedIds' => $dispatchedIds
+        ];
+    }
+
+    public function getPayloadForPartnerWeeklyActivationSummaryEmail(Merchant\Entity $partnerMerchant, array $filteredMerchantIds) : array
+    {
+        $merchantCountCap    = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_MERCHANT_COUNT_CAP;
+
+        $countKYCNotInitiatedInTwoMonths = $this->repo->merchant_detail->countSubmerchantsWithKYCNotInitiatedInPastDays($partnerMerchant->getId(), 60);
+
+        $isMerchantCountCapped = count($filteredMerchantIds) >= $merchantCountCap;
+        if ($isMerchantCountCapped)
+        {
+            $filteredMerchantIds = array_slice($filteredMerchantIds, 0, $merchantCountCap);
+        }
+
+        $submerchants = $this->repo->merchant->findMany($filteredMerchantIds);
+
+        $clarificationCore    = new Detail\NeedsClarification\Core();
+        $activationStatusRows = [];
+        foreach ($submerchants as $submerchant)
+        {
+            $activationStatus = $submerchant->merchantDetail->getActivationStatus();
+            $activationStatusLabel = PartnerConstants::$subMActivationStatusLabels[$activationStatus];
+
+            if (is_null($activationStatus))
+            {
+                continue;
+            }
+
+            $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+                $submerchant->merchantDetail->getKycClarificationReasons()
+            );
+
+            $activationStatusRows[$submerchant->getId()] = [
+                'merchant_id'             => $submerchant->getId(),
+                'merchant_name'           => $submerchant->getName(),
+                'activation_status'       => $activationStatus,
+                'activation_status_label' => $activationStatusLabel,
+                'clarification_reasons'   => $clarificationReasons
+            ];
+        };
+
+        $data = [
+            'partner_email'                   => $partnerMerchant->getEmail(),
+            'activationStatusRows'            => $activationStatusRows,
+            'countKYCNotInitiatedInTwoMonths' => $countKYCNotInitiatedInTwoMonths,
+            'isMerchantCountCapped'           => $isMerchantCountCapped
+        ];
+
+        return $data;
+    }
+
+    public function getSubmerchantIdsForWeeklyActivationSummaryEmail(string $partnerMerchantId): array
+    {
+        $merchantCountCap    = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_MERCHANT_COUNT_CAP;
+
+        $merchantIdsInTerminalStateInSevenDays = $this->repo->merchant->getSubmerchantIdsInTerminalStateInPastDays($partnerMerchantId, 7, $merchantCountCap);
+
+        $merchantIdsInstantlyActivatedOrNC     = $this->repo->merchant_detail->getSubmerchantIdsByActivationStatus($partnerMerchantId, [Detail\Status::INSTANTLY_ACTIVATED, Detail\Status::NEEDS_CLARIFICATION], $merchantCountCap);
+
+        $merchantIdsUnderReviewInSevenDays     = $this->repo->merchant_detail->getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays($partnerMerchantId, 7, $merchantCountCap);
+
+        $merchantIds = array_merge($merchantIdsInTerminalStateInSevenDays, $merchantIdsInstantlyActivatedOrNC, $merchantIdsUnderReviewInSevenDays);
+
+        $merchantIds = array_unique($merchantIds);
+
+        return $merchantIds;
+    }
+
+    /**
+     * @param $partnerMerchantId
+     */
+    public function sendPartnerWeeklyActivationSummaryEmails(string $partnerMerchantId): void
+    {
+        $partnerMerchant = $this->repo->merchant->findorFailPublic($partnerMerchantId);
+        if ($partnerMerchant->getEmail() === null)
+        {
+            return;
+        }
+
+        $filteredMerchantIds = $this->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchantId);
+
+        if(count($filteredMerchantIds) === 0){
+            return;
+        }
+
+        $data = $this->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds);
+
+        $org = $partnerMerchant->org ?: $this->repo->org->getRazorpayOrg();
+
+        $email = new PartnerWeeklyActivationSummary($data, $org->toArray());
+
+        Mail::queue($email);
     }
 }

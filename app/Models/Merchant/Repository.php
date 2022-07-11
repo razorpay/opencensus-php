@@ -26,6 +26,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\State\Entity as ActionState;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -1444,6 +1445,26 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchAggregatorPartners($limit = null, $afterId = null)
+    {
+        $query = $this->newQuery()
+                      ->select(Entity::ID)
+                      ->where(Entity::PARTNER_TYPE, Constants::AGGREGATOR)
+                      ->orderBy(Entity::ID);
+
+        if (empty($limit) === false)
+        {
+            $query->take($limit);
+        }
+
+        if (empty($afterId) === false)
+        {
+            $query->where(Entity::ID, '>', $afterId);
+        }
+
+        return $query->get();
+    }
+
     public function findPartnersWithoutPartnerActivation($limit, $afterId = null)
     {
         $merchantIdColumn                  = $this->dbColumn(Entity::ID);
@@ -1525,6 +1546,69 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::ID)
                     ->toArray();
+    }
+
+    public function getActivatedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit){
+        $pastDaysTimestamp        = Carbon::now()->subDays($pastDays)->getTimestamp();
+        
+        $merchantId               = $this->dbColumn(Entity::ID);
+        $activatedAt              = $this->dbColumn(Entity::ACTIVATED_AT);
+        $merchantDetailRepo       = $this->repo->merchant_detail;
+        $activationStatus         = $merchantDetailRepo->dbColumn(Detail\Entity::ACTIVATION_STATUS);
+        $merchantDetailMerchantId = $merchantDetailRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
+        $accessMapRepo           = $this->repo->merchant_access_map;
+        $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                             ->join(Table::MERCHANT_ACCESS_MAP, $merchantId, $accessMapsMerchantId)
+                             ->leftJoin(Table::MERCHANT_DETAIL, $merchantId, $merchantDetailMerchantId)
+                             ->select($merchantId)
+                             ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                             ->where($activatedAt, '>', $pastDaysTimestamp)
+                             ->whereIn($activationStatus, [
+                                 Detail\Status::ACTIVATED,
+                                 Detail\Status::ACTIVATED_KYC_PENDING,
+                                 Detail\Status::ACTIVATED_MCC_PENDING
+                             ])
+                             ->take($limit)
+                             ->get()
+                             ->pluck(Entity::ID)
+                             ->toArray();
+    }
+
+    public function getRejectedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit){
+        $pastDaysTimestamp        = Carbon::now()->subDays($pastDays)->getTimestamp();
+
+        $actionStateRepo      = $this->repo->action_state;
+        $actionStateEntityId  = $actionStateRepo->dbColumn(ActionState::ENTITY_ID);
+        $actionStateName      = $actionStateRepo->dbColumn(ActionState::NAME);
+        $actionStateCreatedAt = $actionStateRepo->dbColumn(ActionState::CREATED_AT);
+
+        $accessMapRepo           = $this->repo->merchant_access_map;
+        $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+
+        return $actionStateRepo->newQueryWithConnection($this->getSlaveConnection())
+                                       ->join(Table::MERCHANT_ACCESS_MAP, $actionStateEntityId, $accessMapsMerchantId)
+                                       ->select($actionStateEntityId)
+                                       ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                                       ->where($actionStateName, Detail\Status::REJECTED)
+                                       ->where($actionStateCreatedAt, '>', $pastDaysTimestamp)
+                                       ->take($limit)
+                                       ->get()
+                                       ->pluck(ActionState::ENTITY_ID)
+                                       ->toArray();
+    }
+
+    public function getSubmerchantIdsInTerminalStateInPastDays(string $partnerMerchantId, int $pastDays, int $limit)
+    {
+        $activatedIds = $this->getActivatedSubMInPastDays($partnerMerchantId, $pastDays, $limit);
+        
+        $rejectedIds = $this->getRejectedSubMInPastDays($partnerMerchantId, $pastDays, $limit);
+
+        return array_merge($activatedIds, $rejectedIds);
     }
 
     public function getMerchantListEligibleForRTB($blacklistedMIDs)

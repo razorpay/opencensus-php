@@ -1,7 +1,14 @@
 <?php
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+
+// Note: relative timestamps for use in createDummyMerchantsForWeeklyActivationSummary
+$withinTwoMonths  = Carbon::now()->subDays(60)->addHour()->timestamp;
+$withinSevenDays  = Carbon::now()->subDays(7)->addHour()->timestamp;
+$outsideTwoMonths = Carbon::now()->subDays(60)->subHour()->timestamp;
+$outsideSevenDays = Carbon::now()->subDays(7)->subHour()->timestamp;
 
 return [
     'testFetchPartnerActivationForNonRegisteredBusiness' => [
@@ -591,5 +598,119 @@ return [
                 'failedItems' => [],
             ],
         ],
+    ],
+
+    'createDummyMerchantsForWeeklyActivationSummary' => [
+        'merchantsData'       => [
+            '10000000000110' => [
+                'merchant'        => ['id' => '10000000000110', 'name' => 'name_10000000000110', 'activated' => 1],
+                'merchant_detail' => ['merchant_id' => '10000000000110', 'activation_status' => 'instantly_activated'],
+            ],
+            '10000000000111' => [
+                'merchant'        => ['id' => '10000000000111', 'name' => 'name_10000000000111', 'activated' => 0, 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000111', 'activation_status' => 'under_review', 'submitted' => 1, 'submitted_at' => $withinSevenDays,  'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+            ],
+            '10000000000120' => [
+                'merchant'                       => ['id' => '10000000000120', 'name' => 'name_10000000000120', 'activated' => 0],
+                'merchant_detail'                => ['merchant_id'               => '10000000000120', 'activation_status' => 'needs_clarification',
+                                                     'kyc_clarification_reasons' => [
+                                                         'clarification_reasons' => [
+                                                             'field1' => [[
+                                                                              'from'        => 'admin',
+                                                                              'reason_type' => 'custom',
+                                                                              'field_value' => 'adnakdad',
+                                                                              'reason_code' => 'Lorem ipsum',
+                                                                          ]],
+                                                             'field3' => [[
+                                                                              'from'        => 'admin',
+                                                                              'reason_type' => 'predefined',
+                                                                              'field_value' => 'adnakdad',
+                                                                              'reason_code' => 'provide_poc',
+                                                                          ]],
+                                                         ],
+                                                         'additional_details'    => [
+                                                             'business_description' => [[
+                                                                                            'from'        => 'admin',
+                                                                                            'reason_type' => 'predefined',
+                                                                                            'field_type'  => 'text',
+                                                                                            'reason_code' => 'provide_poc',
+                                                                                        ]],
+                                                         ],
+                                                     ]
+                ],
+                'expected_clarification_reasons' => [
+                    'fields' => [
+                        'field1'               => [
+                            [
+                                'reason_code'        => "others",
+                                'reason_description' => "Lorem ipsum",
+                                'display_name'       => "Field1"
+                            ]
+                        ],
+                        'field3'               => [
+                            [
+                                'reason_code'        => "provide_poc",
+                                'reason_description' => "Please provide a POC that we can reach out to in case of issues associated with your account.",
+                                'display_name'       => "Field3"
+                            ]
+                        ],
+                        'business_description' => [
+                            [
+                                'reason_code'        => "provide_poc",
+                                'reason_description' => "Please provide a POC that we can reach out to in case of issues associated with your account.",
+                                'display_name'       => "Business Description"
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            '10000000000920' => [
+                'merchant'        => ['id' => '10000000000920', 'name' => 'name_10000000000920', 'activated' => 0,  'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000920', 'activation_status' => 'under_review', 'submitted_at' => $outsideSevenDays,  'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+            ],
+            '10000000000130' => [
+                'merchant'        => ['id' => '10000000000130', 'name' => 'name_10000000000130', 'activated' => 0, 'created_at' => $withinTwoMonths, 'updated_at' => $withinTwoMonths],
+                'merchant_detail' => ['merchant_id' => '10000000000130', 'activation_status' => null, 'created_at' => $withinTwoMonths, 'updated_at' => $withinTwoMonths],
+            ],
+            '10000000000930' => [
+                'merchant'        => ['id' => '10000000000930', 'name' => 'name_10000000000930', 'activated' => 0, 'created_at' => $outsideTwoMonths, 'updated_at' => $outsideTwoMonths],
+                'merchant_detail' => ['merchant_id' => '10000000000930', 'activation_status' => null, 'created_at' => $outsideTwoMonths, 'updated_at' => $outsideTwoMonths],
+            ],
+            '10000000000140' => [
+                'merchant'        => ['id' => '10000000000140', 'name' => 'name_10000000000140', 'activated' => 1, 'activated_at' => $withinSevenDays, 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000140', 'activation_status' => 'activated', 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+            ],
+            '10000000000141' => [
+                'merchant'        => ['id' => '10000000000141', 'name' => 'name_10000000000141', 'activated' => 1, 'activated_at' => $withinSevenDays, 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000141', 'activation_status' => 'activated_mcc_pending', 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+            ],
+            '10000000000142' => [
+                'merchant'        => ['id' => '10000000000142', 'name' => 'name_10000000000142', 'activated' => 1, 'activated_at' => $withinSevenDays, 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000142', 'activation_status' => 'activated_kyc_pending', 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays ],
+            ],
+            '10000000000942' => [
+                'merchant'        => ['id' => '10000000000942', 'name' => 'name_10000000000942', 'activated' => 1, 'activated_at' => $outsideSevenDays, 'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000942', 'activation_status' => 'activated_kyc_pending', 'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+            ],
+            '10000000000143' => [
+                'merchant'        => ['id' => '10000000000143', 'name' => 'name_10000000000143', 'activated' => 0, 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000143', 'activation_status' => 'rejected', 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+                'action_state'    => ['entity_id' => '10000000000143', 'entity_type' => 'workflow_action', 'name' => 'rejected', 'created_at' => $withinSevenDays, 'updated_at' => $withinSevenDays],
+            ],
+            '10000000000943' => [
+                'merchant'        => ['id' => '10000000000943', 'name' => 'name_10000000000943', 'activated' => 0, 'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+                'merchant_detail' => ['merchant_id' => '10000000000943', 'activation_status' => 'rejected', 'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+                'action_state'    => ['entity_id' => '10000000000943', 'entity_type' => 'workflow_action', 'name' => 'rejected', 'created_at' => $outsideSevenDays, 'updated_at' => $outsideSevenDays],
+            ]
+        ],
+        'expectedFilteredIds' => [
+            '10000000000110',
+            '10000000000111',
+            '10000000000120',
+            '10000000000140',
+            '10000000000141',
+            '10000000000142',
+            '10000000000143'
+        ]
     ]
 ];

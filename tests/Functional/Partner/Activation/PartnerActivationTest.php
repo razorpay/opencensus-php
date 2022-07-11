@@ -8,6 +8,8 @@ use RZP\Models\Partner;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant as Merchant;
 use Illuminate\Support\Facades\Artisan;
+use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -19,6 +21,7 @@ use RZP\Mail\Merchant\PartnerActivationRejection;
 use RZP\Mail\Merchant\PartnerActivationConfirmation;
 use RZP\Models\Merchant\Balance\Core as BalanceCore;
 use RZP\Mail\Merchant\PartnerNeedsClarificationEmail;
+use RZP\Mail\Merchant\PartnerWeeklyActivationSummary;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Partner\Activation\Core as ActivationCore;
@@ -702,6 +705,80 @@ class PartnerActivationTest extends OAuthTestCase
         return [
             "merchantCoreMock"    => $mockMC
         ];
+    }
+
+    public function createDummyMerchantsForWeeklyActivationSummary($partnerMerchant)
+    {
+        $merchantIds          = [];
+        $activationStatusRows = [];
+        $merchantsData        = $this->testData[__FUNCTION__]['merchantsData'];
+        $expectedFilteredIds  = $this->testData[__FUNCTION__]['expectedFilteredIds'];
+
+        foreach ($merchantsData as $merchantId => $data)
+        {
+            $this->fixtures->create('merchant', $data['merchant']);
+            $this->fixtures->merchant_detail->createEntityInTestAndLive('merchant_detail', $data['merchant_detail']);
+            $this->fixtures->user->createUserForMerchant($merchantId);
+            $this->fixtures->merchant_access_map->createEntityInTestAndLive('merchant_access_map', [
+                'entity_type'     => 'application',
+                'merchant_id'     => $merchantId,
+                'entity_owner_id' => $partnerMerchant->getId(),
+            ]);
+
+            if (empty($data['action_state']) === false)
+            {
+                $this->fixtures->create('action_state', $data['action_state']);
+            }
+
+            if (in_array($merchantId, $expectedFilteredIds))
+            {
+                $clarificationReasons              = $data['expected_clarification_reasons'] ?? [];
+                $activationStatus = $data['merchant_detail']['activation_status'];
+                $activationStatusRows[$merchantId] = [
+                    'merchant_id'             => $merchantId,
+                    'merchant_name'           => $data['merchant']['name'],
+                    'activation_status'       => $activationStatus,
+                    'activation_status_label' => PartnerConstants::$subMActivationStatusLabels[$activationStatus],
+                    'clarification_reasons'   => $clarificationReasons
+                ];
+            }
+
+            $merchantIds[] = $merchantId;
+        }
+
+        $expectedData = [
+            'countKYCNotInitiatedInTwoMonths' => 1,
+            'isMerchantCountCapped'           => false,
+            'activationStatusRows'            => $activationStatusRows,
+            'partner_email'                   => $partnerMerchant->getEmail()
+        ];
+
+        return [$expectedFilteredIds, $expectedData];
+    }
+
+    public function testSendPartnerWeeklyActivationSummaryEmails()
+    {
+        Mail::fake();
+
+        $partnerCore = new PartnerCore();
+
+        list($partnerMerchant, $_app) = $this->createPartnerAndApplication(['partner_type' => 'aggregator', 'email' => 'test1@razorpay.com']);
+
+        list($expectedFilteredIds, $expectedData) = $this->createDummyMerchantsForWeeklyActivationSummary($partnerMerchant);
+
+        $merchantCountCap = 10;
+        // Test that submerchants were correctly filtered.
+        $filteredMerchantIds = $partnerCore->getSubmerchantIdsForWeeklyActivationSummaryEmail($partnerMerchant->getId(), $merchantCountCap);
+        sort($filteredMerchantIds);
+        $this->assertEquals($expectedFilteredIds, $filteredMerchantIds);
+
+        // Test that correct payload data is created
+        $data = $partnerCore->getPayloadForPartnerWeeklyActivationSummaryEmail($partnerMerchant, $filteredMerchantIds, $merchantCountCap);
+        $this->assertEquals($expectedData, $data);
+
+        // Test that email was queued and received correct data
+        $partnerCore->sendPartnerWeeklyActivationSummaryEmails($partnerMerchant->getId());
+        Mail::assertQueued(PartnerWeeklyActivationSummary::class);
     }
 }
 

@@ -2595,6 +2595,7 @@ class Route
         'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
         'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerActivationController@performAction'                         ],
         'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerActivationController@bulkAssignReviewer'                    ],
+        'partner_send_weekly_activation_summary_emails' => ['post', 'partner/send_weekly_activation_summary_emails', 'PartnerActivationController@sendPartnerWeeklyActivationSummaryEmails'       ],
 
         //route for sending events to partner with pending commission and Incomplete KYC
         'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerActivationController@sendEventsOfPartnersWithCommissionPending'],
@@ -4263,6 +4264,8 @@ class Route
         'merchant_autokyc_soft_limit',
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
+        'partner_send_weekly_activation_summary_emails',
+
 
         // metro routes
         'payout_email_attachments',
@@ -12328,6 +12331,7 @@ class Route
             'merchant_autokyc_soft_limit',
             'merchant_autokyc_hard_limit',
             'merchant_autokyc_escalation',
+            'partner_send_weekly_activation_summary_emails',
 
             // cron for generating merchant report
             'merchant_report',

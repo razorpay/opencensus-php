@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use Carbon\Carbon;
 use Database\Connection;
 use DB;
 
@@ -9,6 +10,7 @@ use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\AccessMap;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
 use RZP\Models\Merchant\Stakeholder;
@@ -447,6 +449,68 @@ class Repository extends Base\Repository
                     })->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    public function getSubmerchantIdsByActivationStatus(string $partnerMerchantId, array $activationStatusList, int $limit): array
+    {
+        $merchantDetailMerchantId       = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantDetailActivationStatus = $this->dbColumn(Entity::ACTIVATION_STATUS);
+
+        $accessMapRepo           = $this->repo->merchant_access_map;
+        $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+        
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
+                    ->select($merchantDetailMerchantId)
+                    ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                    ->whereIn($merchantDetailActivationStatus, $activationStatusList)
+                    ->take($limit)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays(string $partnerMerchantId, int $pastDays, int $limit): array
+    {
+        $fromEpoch                      = Carbon::now()->subDays($pastDays)->getTimestamp();
+        $merchantDetailMerchantId       = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantDetailActivationStatus = $this->dbColumn(Entity::ACTIVATION_STATUS);
+
+        $accessMapRepo           = $this->repo->merchant_access_map;
+        $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
+                    ->select($merchantDetailMerchantId)
+                    ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                    ->where($this->dbColumn(Entity::SUBMITTED_AT), '>=', $fromEpoch)
+                    ->where($this->dbColumn(Entity::SUBMITTED), 1)
+                    ->where($merchantDetailActivationStatus, Status::UNDER_REVIEW)
+                    ->take($limit)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    public function countSubmerchantsWithKYCNotInitiatedInPastDays(string $partnerMerchantId, int $pastDays): int
+    {
+        $fromEpoch                = Carbon::now()->subDays($pastDays)->getTimestamp();
+        $merchantDetailMerchantId = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantDetailCreatedAt  = $this->dbColumn(Entity::CREATED_AT);
+
+        $accessMapRepo           = $this->repo->merchant_access_map;
+        $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
+                    ->select($merchantDetailMerchantId)
+                    ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                    ->where($merchantDetailCreatedAt, '>=', $fromEpoch)
+                    ->whereNull(Entity::ACTIVATION_STATUS)
+                    ->count();
     }
 
     public function findMerchantWithContactNumbersExcludingMerchant(string $merchantIdToBeExcluded, array $numbers)

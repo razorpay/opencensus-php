@@ -69,6 +69,7 @@ class Service extends Base\Service
 
     public function getPartnerActivationDetails()
     {
+
         $this->merchantValidator->validateIsPartner($this->merchant);
 
         $merchantDetails = $this->merchant->merchantDetail;
@@ -165,5 +166,16 @@ class Service extends Base\Service
         }
 
         return ['success' => 'true'];
+    }
+
+    public function sendPartnerWeeklyActivationSummaryEmails(array $input)
+    {
+        $limit = $input['limit'] ?? null;
+
+        $afterId = $input['afterId'] ?? null;
+
+        $mock = json_decode($input['mock'] ?? false);
+
+        return $this->core->dispatchPartnerWeeklyActivationSummaryMails($limit, $afterId, $mock);
     }
 }
