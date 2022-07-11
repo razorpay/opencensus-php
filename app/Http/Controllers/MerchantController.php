@@ -2341,6 +2341,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postMerchantPreferencesBulk(string $group)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_ATTRIBUTE)->upsertBulk($group, $input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      *This is clearly a hack which was done just for nitro, since it was really really required to store
      * this preference in the merchant attributes and the post merchant preferences was unwrapping the array being sent

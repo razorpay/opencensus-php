@@ -5020,6 +5020,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace Code for Merchant status
     const MERCHANT_ATTRIBUTES                                   = 'MERCHANT_ATTRIBUTES';
+    const INSERT_MERCHANT_ATTRIBUTES_FAILED                     = 'INSERT_MERCHANT_ATTRIBUTES_FAILED';
     const MERCHANT_BALANCE_ID                                   = 'MERCHANT_BALANCE_ID';
     const MERCHANT_FETCH                                        = 'MERCHANT_FETCH';
     const MERCHANT_GET_INTERNAL                                 = 'MERCHANT_GET_INTERNAL';

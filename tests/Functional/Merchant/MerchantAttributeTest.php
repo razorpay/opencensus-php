@@ -189,6 +189,21 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantPreferencesBulkViaAdminAuth()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => 'view_activation_form']);
+
+        $role->permissions()->attach($perm->getId());
+
+        $this->startTest();
+    }
+
     public function testMerchantAddingNewPreferencesForIntent()
     {
         $this->ba->proxyAuth();

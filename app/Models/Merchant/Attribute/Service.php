@@ -19,6 +19,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Attribute\Validator;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service
 {
@@ -48,6 +49,26 @@ class Service extends Base\Service
 
         $this->salesforce = $this->app['salesforce'];
 
+    }
+
+    public function upsertBulk(string $group, array $input): array
+    {
+        $mids = array_pull($input, 'merchant_ids');
+
+        foreach ($mids as $mid) {
+            $input[Common::MERCHANT_ID] = $mid;
+            try {
+                $this->upsert($group, $input);
+            }
+            catch (BadRequestValidationFailureException $e)
+            {
+                $this->trace->info(TraceCode::INSERT_MERCHANT_ATTRIBUTES_FAILED, [
+                    'merchant' => $mid ,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        return ['success' => true];
     }
 
     /**

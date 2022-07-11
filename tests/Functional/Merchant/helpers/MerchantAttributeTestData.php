@@ -128,6 +128,28 @@ return [
         ],
     ],
 
+    'testMerchantPreferencesBulkViaAdminAuth' => [
+        'request'  => [
+            'content' => [
+                'preferences' => [
+                    [
+                        'type'  => 'ca_onboarding_flow',
+                        'value' => 'sales_lead'
+                    ]
+                ],
+                'merchant_ids' => ['10000000000000', '1cXSLlUU8V9sXl'],
+                'product'     => 'banking',
+            ],
+            'url'     => '/admin/merchant/preferences/bulk/x_merchant_current_accounts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
     'testMerchantAddingNewPreferencesForIntent' => [
         'request' => [
             'content' => [
