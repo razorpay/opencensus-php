@@ -173,6 +173,7 @@ class Validator extends Base\Validator
         ConfigKey::ENABLE_CRED_ELIGIBILITY_CALL                                        => 'filled|boolean',
         ConfigKey::RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS               => 'filled|array',
         ConfigKey::RX_WEBHOOK_URL_FOR_MFN                                              => 'filled|url',
+        ConfigKey::RX_WEBHOOK_URL_FOR_MFN_TEST_MODE                                    => 'filled|url',
         ConfigKey::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING             => 'filled|array',
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE                           => 'filled|integer',
         ConfigKey::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL                          => 'filled|integer',

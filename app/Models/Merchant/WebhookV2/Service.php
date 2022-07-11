@@ -938,32 +938,6 @@ class Service extends Base\Service
     // setting Webhook URL for all MFN merchants
     public function handleWebhookForMFN(Merchant\Entity $merchantEntity, bool $shouldSync = false)
     {
-        $mfnWebhookUrl = (new AdminService)->getConfigKey(
-            [
-                'key' => ConfigKey::RX_WEBHOOK_URL_FOR_MFN
-            ]);
-
-        if (empty($mfnWebhookUrl) === true)
-        {
-            $mfnWebhookUrl = Constant::MFN_DEFAULT_CUSTOM_WEBHOOK_URL;
-        }
-
-        $webhookCreateInput = [
-            'url'    => $mfnWebhookUrl,
-            'events' => [
-                'payout.processed'       => '1',
-                'payout.failed'          => '1',
-                'payout.reversed'        => '1',
-                'payout.creation.failed' => '1',
-            ],
-        ];
-
-        $this->trace->info(TraceCode::MFN_WEBHOOK_CREATE_REQUEST,
-            [
-                'merchant_id' => $merchantEntity->getId(),
-                'input'       => $webhookCreateInput
-            ]);
-
         $this->merchant = $merchantEntity;
 
         // the requestOriginProduct will be set back to its initial value once the task is done
@@ -973,7 +947,7 @@ class Service extends Base\Service
 
         $this->product = Product::BANKING;
 
-        $this->createWebhookForMFN($webhookCreateInput, $merchantEntity->getId());
+        $this->createWebhookForMFN($merchantEntity->getId());
 
         if ($shouldSync === true)
         {
@@ -986,7 +960,7 @@ class Service extends Base\Service
 
             $this->mode = $invertedModeMapping[$this->mode];
 
-            $this->createWebhookForMFN($webhookCreateInput, $merchantEntity->getId());
+            $this->createWebhookForMFN($merchantEntity->getId());
 
             $this->mode = $invertedModeMapping[$this->mode];
         }
@@ -994,8 +968,56 @@ class Service extends Base\Service
         $this->app['basicauth']->setRequestOriginProduct($previousRequestOriginProduct);
     }
 
-    protected function createWebhookForMFN(array $webhookCreateInput, string $merchantId)
+    protected function getWebhookUrlForMFN()
     {
+        switch ($this->mode)
+        {
+            case Mode::LIVE:
+                $mfnWebhookUrl = (new AdminService)->getConfigKey(['key' => ConfigKey::RX_WEBHOOK_URL_FOR_MFN]);
+
+                if (empty($mfnWebhookUrl) === true)
+                {
+                    $mfnWebhookUrl = Constant::MFN_DEFAULT_CUSTOM_WEBHOOK_URL;
+                }
+
+                return $mfnWebhookUrl;
+
+            case Mode::TEST:
+                $mfnWebhookUrl = (new AdminService)->getConfigKey(['key' => ConfigKey::RX_WEBHOOK_URL_FOR_MFN_TEST_MODE]);
+
+                if (empty($mfnWebhookUrl) === true)
+                {
+                    $mfnWebhookUrl = Constant::MFN_DEFAULT_CUSTOM_WEBHOOK_URL_TEST_MODE;
+                }
+
+                return $mfnWebhookUrl;
+
+            default:
+                return Constant::MFN_DEFAULT_CUSTOM_WEBHOOK_URL;
+        }
+    }
+
+    protected function createWebhookForMFN(string $merchantId)
+    {
+        $mfnWebhookUrl = $this->getWebhookUrlForMFN();
+
+        $webhookCreateInput = [
+            'url' => $mfnWebhookUrl,
+            'events' => [
+                'payout.processed'       => '1',
+                'payout.failed'          => '1',
+                'payout.reversed'        => '1',
+                'payout.creation.failed' => '1',
+            ],
+        ];
+
+        $this->trace->info(TraceCode::MFN_WEBHOOK_CREATE_REQUEST,
+            [
+                'merchant_id' => $merchantId,
+                'input'       => $webhookCreateInput,
+                'mode'        => $this->mode,
+            ]);
+
         try
         {
             $response = $this->createForMerchant($webhookCreateInput);
