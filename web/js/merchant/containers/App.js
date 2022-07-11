@@ -98,7 +98,7 @@ class App extends Component {
       goLiveNPSSurveyPopup: false,
       nonGoLiveNPSSurveyPopup: false,
       isPartnerModeEnabled:
-        this.props.location.pathname.startsWith('/partners/') &&
+        this.props.location.pathname.startsWith('/partners') &&
         this.props?.user?.isIndependentPartnerKYCEnabled,
       isPartnerKYCActivated: false,
       isFeedbackFormCreated: false,
@@ -546,7 +546,7 @@ class App extends Component {
         }
       }
       const newIsPartnerModeEnabled =
-        location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
+        location.pathname.startsWith('/partners') && user.isIndependentPartnerKYCEnabled;
       if (isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,

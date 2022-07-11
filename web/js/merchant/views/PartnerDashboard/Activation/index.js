@@ -173,10 +173,24 @@ const Activation = (props) => {
     const promoterPANName = formState.promoter_pan_name || businessDetails.promoter_pan_name;
     const currentBusinessType = formState.business_type || businessDetails.business_type;
     const isUnregistered = isUnregisteredBusiness(currentBusinessType);
-    const isCompanyPANValid = displayCompanyPAN(currentBusinessType)
-      ? companyPAN && !validateCompanyPAN(companyPAN)
-      : true;
-    const isPromoterPANValid = promoterPan && !validatePersonalPAN(promoterPan);
+    let isCompanyPANValid, isPromoterPANValid, isPromoterPANNameValid, isGSTValid;
+    if (displayCompanyPAN(currentBusinessType)) {
+      // company pan shown
+      if (companyPAN) {
+        const validationError = validateCompanyPAN(companyPAN);
+        isCompanyPANValid = !validationError;
+      }
+      isPromoterPANValid = true; // skip validation as field hidden
+      isPromoterPANNameValid = true; // skip validation as field hidden
+    } else {
+      // company pan hidden
+      isCompanyPANValid = true; // skip validation as field hidden
+      if (promoterPan) {
+        const validationError = validatePersonalPAN(promoterPan);
+        isPromoterPANValid = !validationError;
+      }
+      isPromoterPANNameValid = promoterPANName;
+    }
     const isCompanyNameValid = isUnregistered
       ? true
       : !validateCompanyAB(businessName, contactName, true);
@@ -187,7 +201,6 @@ const Activation = (props) => {
     const isIFSCValid = isValidIFSC(ifscNo);
     const gstin = formState.gstin || businessDetails.gstin;
     const isGSTFilled = gstin && gstin !== '';
-    let isGSTValid;
     const benificiaryName = formState.bank_account_name || businessDetails.bank_account_name;
     const isBankDetailsValid =
       isIFSCValid && bankAccountNumber && isAccountNoMatching && benificiaryName;
@@ -203,7 +216,7 @@ const Activation = (props) => {
       isPromoterPANValid &&
         isCompanyPANValid &&
         isCompanyNameValid &&
-        promoterPANName &&
+        isPromoterPANNameValid &&
         isGSTValid &&
         isBankDetailsValid,
     );
