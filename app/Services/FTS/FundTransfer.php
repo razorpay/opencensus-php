@@ -4,6 +4,7 @@ namespace RZP\Services\FTS;
 
 use App;
 use Carbon\Carbon;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -390,8 +391,23 @@ class FundTransfer extends Base
             $contact = $payout->fundAccount->contact;
 
             $contactNotes += $contact->getNotes()->toArray();
-        }
 
+            /**
+             * Update purpose_code and importer_exporter_code fields in the notes to the latest values.
+             * This is required as contactNotes doesn't store the latest value in case admin/merchant
+             * updates the purpose code or importer exporter code.
+            */
+            $merchantId = $contact->getReferenceId();
+            $merchant = $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+            $latestPurposeCode = $merchant->getPurposeCode();
+            $contactNotes['purpose_code'] = is_null($latestPurposeCode) ? "" : $latestPurposeCode;
+            if(in_array($contactNotes['purpose_code'], PurposeCodeList::IEC_REQUIRED))
+            {
+                $latestIecCode = $merchant->getIecCode();
+                $contactNotes['importer_exporter_code'] = is_null($latestIecCode) ? "" : $latestIecCode;
+            }
+        }
         if ($this->fta->bankAccount !== null)
         {
             $contactNotes += [
