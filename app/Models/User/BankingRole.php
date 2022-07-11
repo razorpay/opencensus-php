@@ -31,6 +31,7 @@ class BankingRole
     const FINANCE_L1 = 'finance_l1';
     const FINANCE_L2 = 'finance_l2';
     const FINANCE_L3 = 'finance_l3';
+    const FINANCE    = 'finance';
 
     const AUTHORISED_SIGNATORY = 'authorised_signatory';
     const CC_ADMIN             = 'cc_admin';

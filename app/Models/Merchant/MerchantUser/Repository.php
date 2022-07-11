@@ -206,12 +206,12 @@ class Repository extends Base\Repository
         return true;
     }
 
-    public function getBankingUserCountByMerchantIdAndRoleId(string $merchantId, string $roleId)
+    public function getBankingUserCountByMerchantIdAndRoleIds(string $merchantId, array $roleIds)
     {
 
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)
-            ->where(Entity::ROLE, $roleId)
+            ->whereIn(Entity::ROLE, $roleIds)
             ->where(Entity::PRODUCT, 'banking')
             ->get()->count();
     }

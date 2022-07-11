@@ -24,9 +24,11 @@ class Service extends Base\Service
     {
         $this->validator->validateInput('view', $input);
 
-        $roles = $this->core->listRolesForMerchant($input);
+        $rolesGrouppedByType = $this->core->listRolesForMerchant($input);
 
-        return $roles;
+        $rolesGrouppedByType[Entity::STANDARD] = $this->core->filterFinanceRoleForMerchant($this->merchant->getId(), $rolesGrouppedByType[Entity::STANDARD]);
+
+        return $rolesGrouppedByType;
     }
 
     public function fetch(string $id, array $input): array
@@ -43,7 +45,7 @@ class Service extends Base\Service
         // get user count for this role for merchant
         $merchantId = $this->merchant->getId();
 
-        $roles[Entity::MEMBERS] = $this->repo->merchant_user->getBankingUserCountByMerchantIdAndRoleId($merchantId, $roles[Entity::ID]);
+        $roles[Entity::MEMBERS] = $this->repo->merchant_user->getBankingUserCountByMerchantIdAndRoleIds($merchantId, [$roles[Entity::ID]]);
 
         return $roles;
     }

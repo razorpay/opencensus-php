@@ -6,6 +6,7 @@ namespace RZP\Models\Roles;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\AccessControlHistoryLogs;
 
@@ -352,6 +353,38 @@ class Core extends Base\Core
             return true;
         }
         return false;
+    }
+
+    //currently roles list will have existing finance roles(fl1, fl2, fl3) and new finance role
+    // So, if merchant has users linked with existing finance role then we show (fl1, fl2, fl3) otherwise just finance role
+    public function filterFinanceRoleForMerchant(string $merchantId, array $roles):  array
+    {
+        $excludedRoles = [
+            BankingRole::FINANCE_L1,
+            BankingRole::FINANCE_L2,
+            BankingRole::FINANCE_L3,
+        ];
+
+        $userCount = $this->repo->merchant_user->getBankingUserCountByMerchantIdAndRoleIds($merchantId, $excludedRoles);
+
+        if ($userCount > 0)
+        {
+            $excludedRoles = [
+                 BankingRole::FINANCE
+            ];
+        }
+
+        $filteredRoles = [];
+
+        foreach($roles as $index => $role)
+        {
+            if( in_array($role['id'], $excludedRoles) === false)
+            {
+                $filteredRoles[] = $role;
+            }
+        }
+
+        return $filteredRoles;
     }
 
     public function checkIfRoleIsStandardRole($roleId) :bool

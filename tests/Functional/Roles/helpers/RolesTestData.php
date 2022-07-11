@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'testFetchRoles' => [
+    'testFetchRolesWithNoExistingFinanceUser' => [
         'request'  => [
             'method'  => 'GET',
             'url'     => '/cac/roles',
@@ -22,8 +22,8 @@ return [
                                 'name' => 'CAC 1',
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
-                                'members' => 3,
                                 'copy_disable' => false,
+                                'members' => 3,
                             ),
                         1 =>
                             array (
@@ -32,8 +32,8 @@ return [
                                 'name' => 'CAC 2',
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
-                                'members' => 2,
                                 'copy_disable' => false,
+                                'members' => 2,
                             ),
                         2 =>
                             array (
@@ -42,8 +42,8 @@ return [
                                 'name' => 'CAC 3',
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
-                                'members' => 1,
                                 'copy_disable' => false,
+                                'members' => 1,
                             ),
                     ),
                 'standard' =>
@@ -55,11 +55,173 @@ return [
                                 'name' => 'Admin',
                                 'description' => 'Perform all tasks except for team management',
                                 'type' => 'standard',
-                                'members' => 0,
                                 'copy_disable' => true,
+                                'members' => 0,
+                            ),
+                        1 =>
+                            array (
+                                'id' => 'chartered_accountant',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Chartered Accountant',
+                                'description' => 'Export reports only. No dashboard access',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        2 =>
+                            array (
+                                'id' => 'finance',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Finance',
+                                'description' => 'Create and issue payouts and contacts',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        3 =>
+                            array (
+                                'id' => 'operations',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Operations',
+                                'description' => 'Create and manage Payout Links',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        4 =>
+                            array (
+                                'id' => 'view_only',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'View Only',
+                                'description' => 'View data only and download reports',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
                             ),
                     ),
-            ),
+            )
+        ],
+    ],
+
+    'testFetchRolesWithExistingFinanceUser' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/cac/roles',
+            'content' => [
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => array (
+                'custom' =>
+                    array (
+                        0 =>
+                            array (
+                                'id' => '100customRole1',
+                                'merchant_id' => '100000merchant',
+                                'name' => 'CAC 1',
+                                'description' => 'Test custom role',
+                                'type' => 'custom',
+                                'copy_disable' => false,
+                                'members' => 3,
+                            ),
+                        1 =>
+                            array (
+                                'id' => '100customRole2',
+                                'merchant_id' => '100000merchant',
+                                'name' => 'CAC 2',
+                                'description' => 'Test custom role',
+                                'type' => 'custom',
+                                'copy_disable' => false,
+                                'members' => 2,
+                            ),
+                        2 =>
+                            array (
+                                'id' => '100customRole3',
+                                'merchant_id' => '100000merchant',
+                                'name' => 'CAC 3',
+                                'description' => 'Test custom role',
+                                'type' => 'custom',
+                                'copy_disable' => false,
+                                'members' => 1,
+                            ),
+                    ),
+                'standard' =>
+                    array (
+                        0 =>
+                            array (
+                                'id' => 'admin',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Admin',
+                                'description' => 'Perform all tasks except for team management',
+                                'type' => 'standard',
+                                'copy_disable' => true,
+                                'members' => 0,
+                            ),
+                        1 =>
+                            array (
+                                'id' => 'chartered_accountant',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Chartered Accountant',
+                                'description' => 'Export reports only. No dashboard access',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        2 =>
+                            array (
+                                'id' => 'finance_l1',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Finance L1',
+                                'description' => 'Create and issue payouts and contacts',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 1,
+                            ),
+                        3 =>
+                            array (
+                                'id' => 'finance_l2',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Finance L2',
+                                'description' => 'Create and issue payouts and contacts',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        4 =>
+                            array (
+                                'id' => 'finance_l3',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Finance L3',
+                                'description' => 'Create and issue payouts and contacts',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        5 =>
+                            array (
+                                'id' => 'operations',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Operations',
+                                'description' => 'Create and manage Payout Links',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        6 =>
+                            array (
+                                'id' => 'view_only',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'View Only',
+                                'description' => 'View data only and download reports',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                    ),
+            )
         ],
     ],
 

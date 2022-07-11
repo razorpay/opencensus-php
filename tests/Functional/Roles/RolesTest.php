@@ -29,7 +29,7 @@ class RolesTest extends TestCase
         $this->ba->proxyAuth();
     }
 
-    public function testFetchRoles()
+    public function testFetchRolesWithNoExistingFinanceUser()
     {
         $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
 
@@ -68,6 +68,49 @@ class RolesTest extends TestCase
 
         $this->createMerchantUserMappingInLiveAndTest($user7['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
         $this->createMerchantUserMappingInLiveAndTest($user8['id'], self::DEFAULT_X_MERCHANT_ID, 'vendor');
+
+        $response = $this->startTest();
+    }
+
+    public function testFetchRolesWithExistingFinanceUser()
+    {
+        $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user2 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user3 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user4 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user5 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user6 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user7 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user8 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+        $user9 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
+
+        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 1', 'id' => '100customRole1','org_id' => "100000razorpay"]);
+
+        $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, $customRole1['id']);
+        $this->createMerchantUserMappingInLiveAndTest($user2['id'], self::DEFAULT_X_MERCHANT_ID, $customRole1['id']);
+        $this->createMerchantUserMappingInLiveAndTest($user3['id'], self::DEFAULT_X_MERCHANT_ID, $customRole1['id']);
+
+        $customRole2 = $this->fixtures->create('roles', ['name' => 'CAC 2', 'id' => '100customRole2','org_id' => "100000razorpay"]);
+
+        $this->createMerchantUserMappingInLiveAndTest($user4['id'], self::DEFAULT_X_MERCHANT_ID, $customRole2['id']);
+        $this->createMerchantUserMappingInLiveAndTest($user5['id'], self::DEFAULT_X_MERCHANT_ID, $customRole2['id']);
+
+        $customRole3 = $this->fixtures->create('roles', ['name' => 'CAC 3', 'id' => '100customRole3', 'org_id' => "100000razorpay"]);
+
+        $this->createMerchantUserMappingInLiveAndTest($user6['id'], self::DEFAULT_X_MERCHANT_ID, $customRole3['id']);
+
+        $this->createMerchantUserMappingInLiveAndTest($user7['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
+        $this->createMerchantUserMappingInLiveAndTest($user8['id'], self::DEFAULT_X_MERCHANT_ID, 'finance_l1');
 
         $response = $this->startTest();
     }

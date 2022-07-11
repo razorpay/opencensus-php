@@ -109,7 +109,6 @@ class Repository extends Base\Repository
         $this->newQueryWithConnection('test')->truncate();
     }
 
-
     public function fetchRoleName($roleId)
     {
         $roleEntity =  $this->fetchRole($roleId);
