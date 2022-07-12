@@ -28,6 +28,8 @@ import {
   RR_UPDATE_WEBSITE,
   RR_ADD_WEBSITE,
   RR_ADD_ADDITIONAL_WEBSITE,
+  ACTION_QUERY_PARAM_KEY,
+  UPDATE_WEBSITE_DETAILS,
 } from '../deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
@@ -41,6 +43,7 @@ import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRe
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function isWorkflowChangeAllowed(workflow) {
@@ -67,14 +70,24 @@ function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
         user.role === 'owner' &&
         user.isAccepted &&
         user.isWebsiteSelfServeOn && (
-          <Button.Transparent
-            type="button"
-            onClick={() => {
-              handleEditWebsite(FLOWS.BUSINESS_WEBSITE);
-            }}
+          <TriggerOnQueryParamMatch
+            queryParamsMapping={[
+              {
+                key: ACTION_QUERY_PARAM_KEY,
+                value: UPDATE_WEBSITE_DETAILS,
+                trigger: handleEditWebsite(FLOWS.BUSINESS_WEBSITE),
+              },
+            ]}
           >
-            <i className="i i-edit p-l" />
-          </Button.Transparent>
+            <Button.Transparent
+              type="button"
+              onClick={() => {
+                handleEditWebsite(FLOWS.BUSINESS_WEBSITE);
+              }}
+            >
+              <i className="i i-edit p-l" />
+            </Button.Transparent>
+          </TriggerOnQueryParamMatch>
         )}
     </div>
   );
@@ -175,6 +188,9 @@ const MerchantDetails = ({
             flowType={flowType}
           />
         ),
+        queryParams: {
+          [ACTION_QUERY_PARAM_KEY]: UPDATE_WEBSITE_DETAILS,
+        },
       });
     } else {
       openModal({
@@ -185,6 +201,9 @@ const MerchantDetails = ({
             onWebsiteAdd={() => fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE)}
           />
         ),
+        queryParams: {
+          [ACTION_QUERY_PARAM_KEY]: UPDATE_WEBSITE_DETAILS,
+        },
       });
     }
 

@@ -15,9 +15,14 @@ import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from '
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { SETTELEMENT_CYCLE } from '../deeplink-constants';
+import {
+  SETTELEMENT_CYCLE,
+  ACTION_QUERY_PARAM_KEY,
+  VIEW_SETTLEMENT_CYCLE,
+} from 'merchant/views/Account/Profile/deeplink-constants';
 import SettlementDetail from 'merchant/views/Settlements/Settlements/components/SettlementDetail';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 
 class SettlementDetails extends Component {
   componentDidMount() {
@@ -49,6 +54,9 @@ class SettlementDetails extends Component {
     openModal({
       size: 'medium',
       component: <SettlementScheduleV2 />,
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: VIEW_SETTLEMENT_CYCLE,
+      },
     });
 
     window.rzpAnalytics?.({
@@ -83,6 +91,15 @@ class SettlementDetails extends Component {
         <div className="panel-heading">
           <TextHighlighter hashedWith={SETTELEMENT_CYCLE}>Settlement Details</TextHighlighter>
           <span className="pull-right">
+            <TriggerOnQueryParamMatch
+              queryParamsMapping={[
+                {
+                  key: ACTION_QUERY_PARAM_KEY,
+                  value: VIEW_SETTLEMENT_CYCLE,
+                  trigger: this.viewSettlementSchedule,
+                },
+              ]}
+            />
             <span className="nav-link" onClick={this.viewSettlementSchedule}>
               View Settlement Cycle
             </span>

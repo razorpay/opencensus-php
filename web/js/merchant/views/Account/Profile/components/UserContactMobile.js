@@ -13,7 +13,12 @@ import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { CONTACT_NUMBER_UPDATE } from '../deeplink-constants';
+import {
+  CONTACT_NUMBER_UPDATE,
+  UPDATE_CONTACT_NUMBER,
+  ACTION_QUERY_PARAM_KEY,
+} from 'merchant/views/Account/Profile/deeplink-constants';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 @connect(
   (state) => ({
@@ -51,6 +56,9 @@ export default class UserContactMobile extends React.Component {
     this.props.openModal({
       size: 'small',
       component: <UpdateContactMobile onComplete={this.onUpdateContactMobileComplete} />,
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: UPDATE_CONTACT_NUMBER,
+      },
     });
   };
   labelHandler = () => {
@@ -59,15 +67,21 @@ export default class UserContactMobile extends React.Component {
   render() {
     const contactMobile = this.props.user.contact_mobile;
     return (
-      <DetailRow
-        label={this.labelHandler}
-        value={() => (
-          <ContactMobileValue
-            contactMobile={contactMobile}
-            onChangeContactMobile={this.onChangeContactMobile}
-          />
-        )}
-      />
+      <TriggerOnQueryParamMatch
+        queryParamsMapping={[
+          { key: 'action', value: UPDATE_CONTACT_NUMBER, trigger: this.onChangeContactMobile },
+        ]}
+      >
+        <DetailRow
+          label={this.labelHandler}
+          value={() => (
+            <ContactMobileValue
+              contactMobile={contactMobile}
+              onChangeContactMobile={this.onChangeContactMobile}
+            />
+          )}
+        />
+      </TriggerOnQueryParamMatch>
     );
   }
 }

@@ -16,8 +16,13 @@ import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRe
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import { UPDATE_GSTIN } from 'merchant/views/Account/Profile/deeplink-constants';
+import {
+  UPDATE_GSTIN,
+  GSTIN_UPDATE,
+  ACTION_QUERY_PARAM_KEY,
+} from 'merchant/views/Account/Profile/deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class GSTDetails extends Component {
@@ -100,6 +105,9 @@ class GSTDetails extends Component {
           fetchStatus={() => this.props.fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_GSTIN)}
         />
       ),
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: GSTIN_UPDATE,
+      },
     });
   };
 
@@ -303,7 +311,19 @@ class GSTDetails extends Component {
                 !this.isWorkFlowRejected() &&
                 !this.isCustomerResponseAwaited() &&
                 !this.didCustomerRespond() &&
-                !gstinWorfklow.loading && <a onClick={this.openEditGSTModal}>Update GST details</a>}
+                !gstinWorfklow.loading && (
+                  <TriggerOnQueryParamMatch
+                    queryParamsMapping={[
+                      {
+                        key: ACTION_QUERY_PARAM_KEY,
+                        value: GSTIN_UPDATE,
+                        trigger: this.openEditGSTModal,
+                      },
+                    ]}
+                  >
+                    <a onClick={this.openEditGSTModal}>Update GST details</a>
+                  </TriggerOnQueryParamMatch>
+                )}
 
               {/* Request was rejected flow  */}
               {this.isWorkFlowRejected() ? (

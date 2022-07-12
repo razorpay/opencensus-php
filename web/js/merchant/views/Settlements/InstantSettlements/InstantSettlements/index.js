@@ -22,6 +22,11 @@ import trackIS, {
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { trackOnDemandSearchClick } from '../../trackEvents';
 import { bindActionCreators } from 'redux';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import {
+  INSTANT_SETTLEMENT,
+  ACTION_QUERY_PARAM_KEY,
+} from 'merchant/views/Settlements/deeplink-constants';
 
 class InstantSettlements extends ListContainer {
   state = {
@@ -159,6 +164,9 @@ class InstantSettlements extends ListContainer {
       ),
       size: 'small',
       disableClose: true,
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: INSTANT_SETTLEMENT,
+      },
     });
   };
 
@@ -226,6 +234,15 @@ class InstantSettlements extends ListContainer {
 
     return (
       <content>
+        <TriggerOnQueryParamMatch
+          queryParamsMapping={[
+            {
+              key: ACTION_QUERY_PARAM_KEY,
+              value: INSTANT_SETTLEMENT,
+              trigger: this.showOndemandSettlementForm,
+            },
+          ]}
+        />
         <div className="content-wrapper">
           {renderSettlementFilterView}
           {renderSettlementView}

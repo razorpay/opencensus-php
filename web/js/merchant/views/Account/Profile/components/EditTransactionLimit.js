@@ -14,8 +14,14 @@ import { fetchWorkflowStatus } from 'merchant/reducers/workflows';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
-import { NC_INCREASE_TXN_LIMIT, RR_INCREASE_TXN_LIMIT } from '../deeplink-constants';
+import {
+  NC_INCREASE_TXN_LIMIT,
+  RR_INCREASE_TXN_LIMIT,
+  ACTION_QUERY_PARAM_KEY,
+  CHANGE_DOMESTIC_TRANSACTION_LIMIT,
+} from 'merchant/views/Account/Profile/deeplink-constants';
 import { bindActionCreators } from 'redux';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function linkHandler() {
@@ -84,6 +90,9 @@ const EditTransactionLimit = (props) => {
           transactionType={transactionType}
         />
       ),
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: CHANGE_DOMESTIC_TRANSACTION_LIMIT,
+      },
     });
 
     // Track when user click on edit limit
@@ -138,9 +147,19 @@ const EditTransactionLimit = (props) => {
             <div>
               {amountValue ? <Amount value={amountValue} currency="INR" /> : 'Not Updated'}
               {showTransactionLimitEdit && (
-                <Button.Transparent type="button" onClick={updateHandler}>
-                  <i className="i i-edit p-l" />
-                </Button.Transparent>
+                <TriggerOnQueryParamMatch
+                  queryParamsMapping={[
+                    {
+                      key: ACTION_QUERY_PARAM_KEY,
+                      value: CHANGE_DOMESTIC_TRANSACTION_LIMIT,
+                      trigger: updateHandler,
+                    },
+                  ]}
+                >
+                  <Button.Transparent type="button" onClick={updateHandler}>
+                    <i className="i i-edit p-l" />
+                  </Button.Transparent>
+                </TriggerOnQueryParamMatch>
               )}
             </div>
           )

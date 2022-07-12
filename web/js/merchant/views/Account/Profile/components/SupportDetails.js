@@ -9,7 +9,12 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { SUPPORT_DETAILS } from '../deeplink-constants';
+import {
+  SUPPORT_DETAILS,
+  ACTION_QUERY_PARAM_KEY,
+  UPDATE_SUPPORT_DETAILS,
+} from 'merchant/views/Account/Profile/deeplink-constants';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
@@ -50,46 +55,66 @@ export default class SupportDetails extends Component {
           supportDetail={data}
         />
       ),
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: UPDATE_SUPPORT_DETAILS,
+      },
     });
   };
 
   render() {
     const { support_detail } = this.props;
-    return (
-      <div className="panel panel-default">
-        <div className="panel-heading">
-          <TextHighlighter hashedWith={SUPPORT_DETAILS}>Support Details</TextHighlighter>
-          <ShowWhen myRole="owner admin manager">
-            <span className="pull-right">
-              <a onClick={() => this.openAddSupportDetailModal(support_detail)}>
-                {Object.keys(support_detail.data).length ? 'Edit Details' : 'Add Details'}
-              </a>
-            </span>
-          </ShowWhen>
-        </div>
-        <div className="list-group details-row-container">
-          <div className="list-group-item">
-            <span>Phone number</span>
-            {support_detail.data.phone ? (
-              <span>
-                {isMobile(support_detail.data.phone) ? '+91-' : ''}
-                {support_detail.data.phone}
-              </span>
-            ) : (
-              <span>--</span>
-            )}
-          </div>
 
-          <div className="list-group-item">
-            <span>Email id</span>
-            {support_detail.data.email ? <span>{support_detail.data.email}</span> : <span>--</span>}
+    const handleOpenAddSupportDetailModal = () => this.openAddSupportDetailModal(support_detail);
+
+    return (
+      <TriggerOnQueryParamMatch
+        queryParamsMapping={[
+          {
+            key: ACTION_QUERY_PARAM_KEY,
+            value: UPDATE_SUPPORT_DETAILS,
+            trigger: handleOpenAddSupportDetailModal,
+          },
+        ]}
+      >
+        <div className="panel panel-default">
+          <div className="panel-heading">
+            <TextHighlighter hashedWith={SUPPORT_DETAILS}>Support Details</TextHighlighter>
+            <ShowWhen myRole="owner admin manager">
+              <span className="pull-right">
+                <a onClick={handleOpenAddSupportDetailModal}>
+                  {Object.keys(support_detail.data).length ? 'Edit Details' : 'Add Details'}
+                </a>
+              </span>
+            </ShowWhen>
           </div>
-          <div className="list-group-item">
-            <span>Website/Contact us link</span>
-            {support_detail.data.url ? <span>{support_detail.data.url}</span> : <span>--</span>}
+          <div className="list-group details-row-container">
+            <div className="list-group-item">
+              <span>Phone number</span>
+              {support_detail.data.phone ? (
+                <span>
+                  {isMobile(support_detail.data.phone) ? '+91-' : ''}
+                  {support_detail.data.phone}
+                </span>
+              ) : (
+                <span>--</span>
+              )}
+            </div>
+
+            <div className="list-group-item">
+              <span>Email id</span>
+              {support_detail.data.email ? (
+                <span>{support_detail.data.email}</span>
+              ) : (
+                <span>--</span>
+              )}
+            </div>
+            <div className="list-group-item">
+              <span>Website/Contact us link</span>
+              {support_detail.data.url ? <span>{support_detail.data.url}</span> : <span>--</span>}
+            </div>
           </div>
         </div>
-      </div>
+      </TriggerOnQueryParamMatch>
     );
   }
 }

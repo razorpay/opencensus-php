@@ -15,6 +15,11 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 import DashboardBanner from '../../../../common/ui/DashboardBanner';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import {
+  ADD_NEW_WEBHOOK,
+  ACTION_QUERY_PARAM_KEY,
+} from 'merchant/views/Settings/deeplink-constants';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class WebhooksContainer extends ListContainer {
@@ -56,6 +61,9 @@ class WebhooksContainer extends ListContainer {
 
     this.props.openModal({
       component: <AddEditWebhook onSave={this.highlightRowAndClose} webhookList={webhooks} />,
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: ADD_NEW_WEBHOOK,
+      },
     });
   };
 
@@ -76,6 +84,15 @@ class WebhooksContainer extends ListContainer {
 
     return (
       <>
+        <TriggerOnQueryParamMatch
+          queryParamsMapping={[
+            {
+              key: ACTION_QUERY_PARAM_KEY,
+              value: ADD_NEW_WEBHOOK,
+              trigger: this.showNewWebhookModal,
+            },
+          ]}
+        />
         <div className="banner-container">
           <DashboardBanner />
           <CSATSurveyBanner user={this.props.user} />

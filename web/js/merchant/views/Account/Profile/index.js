@@ -42,6 +42,12 @@ import {
   RR_UPDATE_BANK_ACC,
   RR_UPDATE_GSTIN,
   UPDATE_GSTIN,
+  CHANGE_PASSWORD,
+  UPDATE_DISPLAY_NAME,
+  ACTION_QUERY_PARAM_KEY,
+  UPDATE_BILLING_LABEL,
+  UPDATE_LOGIN_EMAIL,
+  UPDATE_BANK_ACCOUNT,
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import { compose, bindActionCreators } from 'redux';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
@@ -54,6 +60,7 @@ import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/redu
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const FIRCSection = lazy(() =>
@@ -159,6 +166,7 @@ class Profile extends Component {
 
   handleUpdateClick = () => {
     const { user } = this.props;
+    console.log('🚀 ~ file: index.js ~ line 167 ~ Profile ~ user', user);
     analyticsTrack({
       objectName: 'Edit email',
       actionName: 'Clicked',
@@ -180,6 +188,9 @@ class Profile extends Component {
         this.props.openModal({
           size: 'small',
           component: <EmailSelfServeModal />,
+          queryParams: {
+            [ACTION_QUERY_PARAM_KEY]: UPDATE_LOGIN_EMAIL,
+          },
         });
         analyticsTrack({
           objectName: `Email 2fa result`,
@@ -295,6 +306,9 @@ class Profile extends Component {
     this.props.openModal({
       size: 'small',
       component: <PasswordForm />,
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: CHANGE_PASSWORD,
+      },
     });
   };
 
@@ -412,6 +426,9 @@ class Profile extends Component {
         />
       ),
       className: 'modal-white-background',
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: UPDATE_BILLING_LABEL,
+      },
     });
   };
 
@@ -427,6 +444,9 @@ class Profile extends Component {
           updateMerchantConfig={this.updateMerchantConfig}
         />
       ),
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: UPDATE_DISPLAY_NAME,
+      },
     });
   };
 
@@ -451,6 +471,9 @@ class Profile extends Component {
               onSave={this.saveBankAccountChanges}
             />
           ),
+          queryParams: {
+            [ACTION_QUERY_PARAM_KEY]: UPDATE_BANK_ACCOUNT,
+          },
         });
       },
       onBankAccountUpdateReq: true,
@@ -567,21 +590,46 @@ class Profile extends Component {
               <div className="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
                 {user.user?.signup_via_email || profile.check_password.data.set_password ? (
-                  <a className="pull-right" onClick={this.openChangePasswordModal}>
-                    Change Password
-                  </a>
+                  <TriggerOnQueryParamMatch
+                    queryParamsMapping={[
+                      {
+                        key: ACTION_QUERY_PARAM_KEY,
+                        value: CHANGE_PASSWORD,
+                        trigger: this.openChangePasswordModal,
+                      },
+                    ]}
+                  >
+                    <a className="pull-right" onClick={this.openChangePasswordModal}>
+                      Change Password
+                    </a>
+                  </TriggerOnQueryParamMatch>
                 ) : null}
               </div>
             )}
 
             {user && user.current ? (
-              <MerchantDetails
-                user={user}
-                changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
-                changeBillingLabel={!!this.isAdminOrOwner() && this.openChangeBillingLabel}
-                isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
-                onWebsiteAdd={this.onWebsiteAdd}
-              />
+              <TriggerOnQueryParamMatch
+                queryParamsMapping={[
+                  {
+                    key: ACTION_QUERY_PARAM_KEY,
+                    value: UPDATE_DISPLAY_NAME,
+                    trigger: !!this.isAdminOrOwner() && this.openChangeDisplayName,
+                  },
+                  {
+                    key: ACTION_QUERY_PARAM_KEY,
+                    value: UPDATE_BILLING_LABEL,
+                    trigger: !!this.isAdminOrOwner() && this.openChangeBillingLabel,
+                  },
+                ]}
+              >
+                <MerchantDetails
+                  user={user}
+                  changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
+                  changeBillingLabel={!!this.isAdminOrOwner() && this.openChangeBillingLabel}
+                  isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+                  onWebsiteAdd={this.onWebsiteAdd}
+                />
+              </TriggerOnQueryParamMatch>
             ) : null}
           </div>
           <IntoView hashedWith={SUPPORT_DETAILS}>
@@ -600,6 +648,15 @@ class Profile extends Component {
             additionalCondition={() => bankAccount && !isOrgFeatureExist('hide_settlement_details')}
           >
             <IntoView hashedWith={[UPDATE_BANK_ACC, NC_UPDATE_BANK_ACC, RR_UPDATE_BANK_ACC]}>
+              <TriggerOnQueryParamMatch
+                queryParamsMapping={[
+                  {
+                    key: ACTION_QUERY_PARAM_KEY,
+                    value: UPDATE_BANK_ACCOUNT,
+                    trigger: this.openChangeBankDetailsModal,
+                  },
+                ]}
+              />
               <BankAccountDetails
                 bankAccount={bankAccount}
                 isBankAccountChangeAllowed={this.state.isBankAccountChangeAllowed}
@@ -611,13 +668,23 @@ class Profile extends Component {
           {this.state.loggedInUserRole === 'owner' ||
           this.state.merchantCount > 1 ||
           this.state.loggedInUser.email !== user.email ? (
-            <LoggedInUserDetails
-              isOrgRZP={user.isOrgRZP}
-              loggedInUser={this.state.loggedInUser}
-              loggedInUserRole={this.state.loggedInUserRole}
-              handleUpdateClick={this.handleUpdateClick}
-              isEmailSelfServeEnabled={user.isEmailSelfServeEnabled}
-            />
+            <TriggerOnQueryParamMatch
+              queryParamsMapping={[
+                {
+                  key: ACTION_QUERY_PARAM_KEY,
+                  value: UPDATE_LOGIN_EMAIL,
+                  trigger: this.handleUpdateClick,
+                },
+              ]}
+            >
+              <LoggedInUserDetails
+                isOrgRZP={user.isOrgRZP}
+                loggedInUser={this.state.loggedInUser}
+                loggedInUserRole={this.state.loggedInUserRole}
+                handleUpdateClick={this.handleUpdateClick}
+                isEmailSelfServeEnabled={user.isEmailSelfServeEnabled}
+              />
+            </TriggerOnQueryParamMatch>
           ) : null}
           {invitations.length ? (
             <Invitations
