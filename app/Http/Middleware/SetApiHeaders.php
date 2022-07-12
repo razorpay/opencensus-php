@@ -48,7 +48,7 @@ class SetApiHeaders {
 
         ApiRequest::addHeader('X-Dashboard-User-Session-Id', Session::getId());
 
-			  ApiRequest::addHeader(Headers::DEV_SERVE_USER,$request->header(Headers::DEV_SERVE_USER));
+        ApiRequest::addHeader(Headers::DEV_SERVE_USER,$request->header(Headers::DEV_SERVE_USER));
 
         $csrfToken = $request->session()->token();
 

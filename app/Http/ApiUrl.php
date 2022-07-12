@@ -19,7 +19,7 @@ class ApiUrl
             'https://beta-api.razorpay.in/v1/',
             'https://beta-api-canary.razorpay.in/v1/',
         ],
-   
+
         'charlie'    => [
             'https://charlie-api.razorpay.in/v1/',
         ],
@@ -103,7 +103,9 @@ class ApiUrl
 
         $bankingHost = parse_url(config('app.banking_service_url'), PHP_URL_HOST);
 
-        return ($originHost === $bankingHost);
+        $bankLmsBankingHost = parse_url(config('app.bank_lms_banking_service_url'), PHP_URL_HOST);
+
+        return ($originHost === $bankingHost or $originHost === $bankLmsBankingHost);
     }
 
     public static function isPrimaryOriginRequest()
