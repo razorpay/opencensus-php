@@ -2688,7 +2688,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Token Pan not supported for fund account creation.',
+                    'description' => 'Token not supported for fund account creation.',
                 ],
             ],
             'status_code' => 400,

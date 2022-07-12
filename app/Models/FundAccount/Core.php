@@ -598,7 +598,7 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
                     null,
                     [],
-                    "Token Pan not supported for fund account creation."
+                    "Token not supported for fund account creation."
                 );
             }
         }
