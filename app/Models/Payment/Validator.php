@@ -168,7 +168,7 @@ class Validator extends Base\Validator
         'reference1'                   => 'sometimes|string',
         'reference2'                   => 'sometimes|string',
         'meta'                         => 'required|associative_array',
-        'meta.reference_id'            => 'required|string|size:25',
+        'meta.reference_id'            => 'required|string',
         'notes'                        => 'sometimes|array',
         'notes.*.external_ref_id1'     => 'sometimes|string',
         'notes.*.external_ref_id2'     => 'sometimes|string',
