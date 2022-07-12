@@ -34,18 +34,15 @@ class Service
 
     public function updateOrder($input, $merchantId)
     {
-        $input = $this->addMerchantDetails($input, $merchantId);
 
-        if (isset($input[Header::FULFILLMENT_ORDER_UPDATED_AT]) === true && $input[Header::FULFILLMENT_ORDER_UPDATED_AT] !== '')
-        {
-            $input['source'][Header::FULFILLMENT_ORDER_UPDATED_AT] = $this->validateAndConvertDateFormat($input[Header::FULFILLMENT_ORDER_UPDATED_AT]);
-            unset($input[Header::FULFILLMENT_ORDER_UPDATED_AT]);
-        }
+        $input = $this->addMerchantDetails($input, $merchantId);
 
         if (isset($input[Header::FULFILLMENT_ORDER_STATUS]) == true)
         {
             $input[Header::FULFILLMENT_ORDER_STATUS] = strtolower($input[Header::FULFILLMENT_ORDER_STATUS]);
         }
+
+        $input = $this->addShippingDetails($input);
 
         $params = self::PARAMS[self::UPDATE_FULFILLMENT_ORDER];
 
@@ -61,16 +58,23 @@ class Service
         return $input;
     }
 
-    public function validateAndConvertDateFormat($value)
+    protected function addShippingDetails($input)
     {
-        $expectedFormat = 'd/m/Y';
+        $input['shipping_provider']['provider_type'] = $input[Header::FULFILLMENT_ORDER_SHIPPING_PROVIDER_NAME];
+        $input['shipping_provider']['awb_number'] = $input[Header::FULFILLMENT_ORDER_AWB_NUMBER];
 
-        $d = DateTime::createFromFormat($expectedFormat, $value);
-
-        if (!$d || $d->format($expectedFormat) !== $value)
+        if (!empty($input[Header::FULFILLMENT_ORDER_SHIPPING_CHARGES]))
         {
-            throw new BadRequestValidationFailureException('Invalid Date format, should be d/m/Y');
+
+            if (!is_numeric($input[Header::FULFILLMENT_ORDER_SHIPPING_CHARGES]))
+            {
+                throw new BadRequestValidationFailureException('shipping_charges: should be numeric');
+            }
+
+            $input['shipping_provider'][Header::FULFILLMENT_ORDER_SHIPPING_CHARGES]
+                = $input[Header::FULFILLMENT_ORDER_SHIPPING_CHARGES];
         }
-        return strtotime($value.' Asia/Kolkata');
+
+        return $input;
     }
 }

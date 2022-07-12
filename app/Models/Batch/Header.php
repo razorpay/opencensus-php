@@ -81,7 +81,10 @@ class Header
     //
     const FULFILLMENT_ORDER_MERCHANT_ORDER_ID = 'merchant_order_id';
     const FULFILLMENT_ORDER_STATUS = 'status';
-    const FULFILLMENT_ORDER_UPDATED_AT = 'updated_at';
+    const FULFILLMENT_ORDER_SHIPPING_CHARGES = 'shipping_charges';
+    const FULFILLMENT_ORDER_AWB_NUMBER = 'awb_number';
+    const FULFILLMENT_ORDER_SHIPPING_PROVIDER_NAME = 'shipping_provider_name';
+
 
 
     // CODEligibilityAttribute Headers
@@ -1409,6 +1412,8 @@ class Header
     const MANDATORY_HEADERS_FOR_FULFILLMENT_ORDER = [
         Header::FULFILLMENT_ORDER_MERCHANT_ORDER_ID,
         Header::FULFILLMENT_ORDER_STATUS,
+        Header::FULFILLMENT_ORDER_AWB_NUMBER,
+        Header::FULFILLMENT_ORDER_SHIPPING_PROVIDER_NAME
     ];
 
     // Following is a list of columns that are mandatory headers in the cod eligibility attribute whitelist batch file
@@ -1650,12 +1655,16 @@ class Header
             self::INPUT => [
                 self::FULFILLMENT_ORDER_MERCHANT_ORDER_ID,
                 self::FULFILLMENT_ORDER_STATUS,
-                self::FULFILLMENT_ORDER_UPDATED_AT,
+                self::FULFILLMENT_ORDER_SHIPPING_CHARGES,
+                self::FULFILLMENT_ORDER_AWB_NUMBER,
+                self::FULFILLMENT_ORDER_SHIPPING_PROVIDER_NAME,
             ],
             self::OUTPUT => [
                 self::FULFILLMENT_ORDER_MERCHANT_ORDER_ID,
                 self::FULFILLMENT_ORDER_STATUS,
-                self::FULFILLMENT_ORDER_UPDATED_AT,
+                self::FULFILLMENT_ORDER_SHIPPING_CHARGES,
+                self::FULFILLMENT_ORDER_AWB_NUMBER,
+                self::FULFILLMENT_ORDER_SHIPPING_PROVIDER_NAME,
             ]
         ],
 
