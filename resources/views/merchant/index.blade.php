@@ -173,13 +173,12 @@ _dcs.account = '9421167';
         @include('partials/sentry')
     @endif
     <script>
-      if (window.isNewSigninEnabled) {
-        var newUrl = location.href.replace('/#/access/signin', '');
-        var parserAnchor = document.createElement('a');
-        parserAnchor.href = newUrl;
-        if (location.hash.includes('#/access/signin') || location.hash === '') {
-          location.href = "/signin" + parserAnchor.search;
-        }
+      // redirect all old signin requests to /signin
+      var newUrl = location.href.replace('/#/access/signin', '');
+      var parserAnchor = document.createElement('a');
+      parserAnchor.href = newUrl;
+      if (location.hash.includes('#/access/signin') || location.hash === '') {
+        location.href = "/signin" + parserAnchor.search;
       }
     </script>
     <script src='{{$cdnDashboardUrl}}/js/generated/signup.js'></script>
