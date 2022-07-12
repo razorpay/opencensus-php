@@ -1146,9 +1146,50 @@ class Notifier extends Base\Core
                 break;
 
             case Preferences::MID_EDELWEISS_ECL:
-            case Preferences::MID_EDELWEISS_EHFL:
-            case Preferences::MID_EDELWEISS_ERFL:
+
                 $sender = 'EDELHS';
+
+                if ($subscriptionRegistration->isMethodEmandate() === true or
+                    $subscriptionRegistration->isMethodNach() === true)
+                {
+                    $template = 'sms.custom_invoice.ecl';
+
+                    $params = [
+                        'invoice_link'      => $invoiceLink,
+                    ];
+                }
+
+                break;
+
+            case Preferences::MID_EDELWEISS_EHFL:
+
+                $sender = 'EDELHS';
+
+                if ($subscriptionRegistration->isMethodEmandate() === true or
+                    $subscriptionRegistration->isMethodNach() === true)
+                {
+                    $template = 'sms.custom_invoice.ehfl';
+
+                    $params = [
+                        'invoice_link'      => $invoiceLink,
+                    ];
+                }
+
+                break;
+
+            case Preferences::MID_EDELWEISS_ERFL:
+
+                $sender = 'EDELHS';
+
+                if ($subscriptionRegistration->isMethodEmandate() === true or
+                    $subscriptionRegistration->isMethodNach() === true)
+                {
+                    $template = 'sms.custom_invoice.erfl';
+
+                    $params = [
+                        'invoice_link'      => $invoiceLink,
+                    ];
+                }
 
                 break;
 
