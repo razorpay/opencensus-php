@@ -154,7 +154,13 @@ class DateRangePicker extends Component {
   }
 
   render() {
-    const { icon, numberOfMonths = 2, horizontalMargin = 0, isOutsideRange } = this.props;
+    const {
+      icon,
+      renderCalendarInfo = () => {},
+      numberOfMonths = 2,
+      horizontalMargin = 0,
+      isOutsideRange,
+    } = this.props;
 
     const { presets, selectedPreset, startDate, endDate } = this.state;
 
@@ -184,6 +190,7 @@ class DateRangePicker extends Component {
               numberOfMonths={isMobileDevice() ? 1 : numberOfMonths}
               horizontalMargin={horizontalMargin}
               isOutsideRange={isOutsideRange ? isOutsideRange : (day) => moment().isBefore(day)}
+              renderCalendarInfo={renderCalendarInfo}
             />
           </SuspenseWithLoader>
         </div>

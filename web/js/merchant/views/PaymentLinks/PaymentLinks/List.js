@@ -10,6 +10,7 @@ import {
   getCommonAnalyticsProperties,
   getURLQueryParams,
 } from 'common/utils/rzp-utils';
+import moment from 'moment';
 import { analyticsTrack } from 'common/utils/analytics';
 import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
 import { fetchReminders } from 'merchant/reducers/reminders';
@@ -46,6 +47,10 @@ const dateRangePresets = [
   ['Past 90 Days', -90, 'days'],
 ];
 
+const isOutsideRange = (day) => {
+  return day.isBefore(moment().subtract(18, 'months'));
+};
+
 const getExtraFields = (user, tracking, onDatesChange) => {
   const fields = [];
 
@@ -59,9 +64,9 @@ const getExtraFields = (user, tracking, onDatesChange) => {
           class="form-control input-sm"
           onChange={(event) => {
             tracking.trackEvent(
-              window.rzpQ
-                .paymentLinks()
-                .interaction(`pl.browse.link_type`, { selection: event.target.name }),
+              window.rzpQ.paymentLinks().interaction(`pl.browse.link_type`, {
+                selection: event.target.name,
+              }),
             );
           }}
         >
@@ -80,7 +85,20 @@ const getExtraFields = (user, tracking, onDatesChange) => {
   fields.push(
     <div key="duration" class="form-group datepicker-group">
       <label>Duration</label>
-      <DateRangePicker presets={dateRangePresets} onDatesChange={onDatesChange} />
+      <DateRangePicker
+        isOutsideRange={isOutsideRange}
+        presets={dateRangePresets}
+        onDatesChange={onDatesChange}
+        renderCalendarInfo={() => (
+          <div className="PaymentLinks--Calender-Info">
+            <div className="PaymentLinks--Archive--Banner">
+              <i className="i i-info-circle icon-wrapper" />
+              To search for payment links older than 18 months, please
+              <Link to="/reports"> download a report </Link>& search through it.
+            </div>
+          </div>
+        )}
+      />
     </div>,
   );
 
