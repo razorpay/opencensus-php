@@ -184,6 +184,16 @@ class SavedCardTokenisationJob extends Job
                 'asyncTokenisationJobId' => $this->asyncTokenisationJobId,
             ]);
 
+            $updateData[Token\Entity::STATUS] = "expired";
+
+            $rowsAffected = (new Token\Repository)->updateById($this->tokenId, $updateData);
+
+            $this->trace->info(TraceCode::UPDATE_TOKEN_STATUS_DURING_MIGRATION,
+                [
+                    "rows" => $rowsAffected
+                ]
+            );
+
             $this->delete();
         }
         else

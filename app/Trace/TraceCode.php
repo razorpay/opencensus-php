@@ -2895,6 +2895,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED                 = 'VERIFY_2FA_OTP_EMAIL_FOR_ACTION_FAILED';
     const ADMINS_VERIFY_OTP_FOR_ACTION                           = 'ADMINS_VERIFY_OTP_FOR_ACTION';
     const RESPONSE                                               = 'RESPONSE';
+    const UPDATE_TOKEN_STATUS_DURING_MIGRATION                   = 'UPDATE_TOKEN_STATUS_DURING_MIGRATION';
     const PAYLOAD                                                = 'PAYLOAD';
     const OTP                                                    = 'OTP';
     const ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION                       = 'ADMIN_ACCOUNT_LOCK_UNLOCK_ACTION';
