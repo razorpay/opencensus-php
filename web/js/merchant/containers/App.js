@@ -613,12 +613,21 @@ class App extends Component {
   fireMTUFunnelEvents = (user) => {
     const isUnregisteredBusiness = user.isUnregisteredBusiness;
     const eventLabel = `MTU-Funnel${user.isUnregisteredBusiness ? '-Unreg' : ''}`;
-
     setTrackData({
       eventCategory: 'Dashboard - Instant Activations Live',
       eventAction: 'Login',
       eventLabel,
     })();
+
+    analyticsTrack({
+      objectName: 'New',
+      actionName: 'MTU',
+      screen: 'home page',
+      properties: {
+        eventLabel,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
     let fbEvents = ['live_mtu_funnel', 'live_mtu_audience'];
     const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';
@@ -650,6 +659,16 @@ class App extends Component {
       eventLabel,
     })();
 
+    analyticsTrack({
+      objectName: 'Active',
+      actionName: 'Login',
+      screen: 'home page',
+      properties: {
+        eventLabel,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
     let fbEvents = ['live_mtu_audience'];
     const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';
     fbEvents = [...fbEvents, `live_mtu_audience`, `live_mtu_audience_${bizTypeTerm}`];
@@ -674,6 +693,7 @@ class App extends Component {
     }
 
     live_transaction_done = parseInt(live_transaction_done);
+
     switch (live_transaction_done) {
       case 1:
         updateMerchantLiveTransactionFlag(id)
