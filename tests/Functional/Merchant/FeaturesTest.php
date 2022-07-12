@@ -3265,4 +3265,10 @@ Regards,
 
         $this->startTest();
     }
+    public function test1CCInputEnglish()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 }

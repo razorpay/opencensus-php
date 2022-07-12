@@ -1036,6 +1036,8 @@ class Constants
     /**
      * One click dual checkout
      */
+    const ONE_CC_INPUT_ENGLISH = 'one_cc_input_english';
+
     const ONE_CLICK_DUAL_CHECKOUT = 'one_cc_dual_checkout';
 
     const ONE_CLICK_OVERRIDE_THEME = 'one_cc_override_theme';
@@ -1478,7 +1480,8 @@ class Constants
         self::RECURRING_CARD_MANDATE_BILLDESK_SIHUB,
         self::ONE_CLICK_DUAL_CHECKOUT,
         self::ONE_CC_REPORTING_TEST,
-        self::ONE_CLICK_OVERRIDE_THEME
+        self::ONE_CLICK_OVERRIDE_THEME,
+        self::ONE_CC_INPUT_ENGLISH
     ];
 
     const ONE_CC_FEATURES = [
@@ -1490,7 +1493,8 @@ class Constants
         self::ONE_CC_FB_ANALYTICS,
         self::ONE_CLICK_DUAL_CHECKOUT,
         self::ONE_CC_REPORTING_TEST,
-        self::ONE_CLICK_OVERRIDE_THEME
+        self::ONE_CLICK_OVERRIDE_THEME,
+        self::ONE_CC_INPUT_ENGLISH
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -1977,6 +1981,7 @@ class Constants
         self::CART_API_AMOUNT_CHECK           => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
+        self::ONE_CC_INPUT_ENGLISH            => true,
     ];
 
     // Entity type constants
