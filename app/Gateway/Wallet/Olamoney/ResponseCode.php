@@ -38,7 +38,7 @@ class ResponseCode
         'OC_021'                                                                                        =>
             ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
         'OC_010'                                                                                        =>
-            ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,
+            ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
     ];
 
     public static $eligible = [
