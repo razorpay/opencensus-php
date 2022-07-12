@@ -73,6 +73,12 @@ class SalesForceController extends Controller {
         $input = Request::all();
         $opportunities = $input['opportunity'];
         $merchantDetails = $this->salesForceService->getMerchantDetailsOnOpportunity($mid, $opportunities);
+        if (empty($merchantDetails["unauthorized"]) === false &&
+            $merchantDetails["unauthorized"] === true)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
         return ApiResponse::json($merchantDetails);
     }
 

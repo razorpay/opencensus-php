@@ -3628,6 +3628,13 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('560030', $bankingAccount->getPincode());
     }
 
+    public function testSalesforceOpportunityDetails()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
     public function testGetBankingAccountFromSalesforce()
     {
         $activationDetails = [

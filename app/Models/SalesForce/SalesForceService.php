@@ -2,6 +2,9 @@
 
 namespace RZP\Models\SalesForce;
 
+use App;
+use ApiResponse;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Entity;
 use RZP\Services\SalesForceClient;
 use RZP\Models\Merchant\Attribute\Group;
@@ -42,6 +45,13 @@ class SalesForceService {
     }
 
     public function getMerchantDetailsOnOpportunity(string $merchantId, array $opportunities): array {
+        $app = App::getFacadeRoot();
+        $merchant = $app['basicauth']->getMerchant();
+        if (empty($merchant) === true ||
+            $merchant->getId() !== $merchantId)
+        {
+            return ["unauthorized" => true];
+        }
         $responsePayload = $this->salesForceClient->getMerchantDetailsOnOpportunity($merchantId, $opportunities);
         return $this->parseResponseToMerchantDetail($responsePayload);
     }

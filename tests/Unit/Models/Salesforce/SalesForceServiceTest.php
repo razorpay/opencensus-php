@@ -157,7 +157,6 @@ class SalesForceServiceTest extends OAuthTestCase {
 
     public function testSalesForcePayloadIsParsedAndMerchantDetailIsConstructed() {
         //Given
-        $merchantId = 'random-merchant-id';
         $opportunities = ['Current Account', 'Some other thing'];
 
         $salesForceResponsePayload = [
@@ -222,7 +221,12 @@ class SalesForceServiceTest extends OAuthTestCase {
                                ->willReturn($salesForceResponsePayload);
 
         //When
-        $merchantDetails = $this->salesForceService->getMerchantDetailsOnOpportunity($merchantId, $opportunities);
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '20000000000000']);
+
+        app('basicauth')->setMerchant($merchant);
+
+        $merchantDetails = $this->salesForceService->getMerchantDetailsOnOpportunity($merchant->getId(), $opportunities);
 
         //Then
         $expectedMerchantDetails = [[

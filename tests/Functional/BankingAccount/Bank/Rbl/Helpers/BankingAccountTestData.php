@@ -41,6 +41,25 @@ return [
         ],
     ],
 
+    'testSalesforceOpportunityDetails' => [
+        'request'  => [
+            'url'     => '/merchant/10000000000001/salesforce_opportunity_detail',
+            'method'  => 'GET',
+            'content' => [
+                'opportunity' => ['current_account']
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testGetBankingAccountFromSalesforce' => [
         'request'  => [
             'url'     => '/salesforce/banking_accounts',
