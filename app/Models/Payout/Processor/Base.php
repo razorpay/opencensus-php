@@ -1258,11 +1258,11 @@ class Base extends BaseCore
                 (new PayoutsStatusDetailsCore())->create($payout);
 
                 $this->app->events->dispatch('api.payout.failed', [$payout]);
+
             }
             else
             {
-                if ($highTPSCompositePayoutFlag === false)
-                {
+                if ($highTPSCompositePayoutFlag === false) {
                     $payoutType = $this->getPayoutType();
 
                     $processor = (new Payout\Core)->getProcessor($payoutType);
@@ -1271,11 +1271,18 @@ class Base extends BaseCore
 
                     if (($payout->isStatusBeforeCreate() === false) and
                         ($payout->getBalanceAccountType() === AccountType::SHARED) and
-                        ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
-                    {
+                        ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false)) {
                         (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
                     }
                 }
+            }
+        }
+        else if ($payout->getIsPayoutService() === true)
+        {
+            // We only have to send mail/webhook if the payout fails.
+            if ($payout->getStatus() === Status::FAILED)
+            {
+                (new PayoutsStatusDetailsCore())->create($payout);
             }
         }
 
@@ -3041,6 +3048,11 @@ class Base extends BaseCore
                     // Save payout Entity to database
                     $this->repo->saveOrFail($payout);
 
+                    if($status === Status::PENDING)
+                    {
+                        (new PayoutsStatusDetailsCore())->create($payout);
+                    }
+
                     $sourceDetails = $payout->getInputSourceDetails();
 
                     if (empty($sourceDetails) === false)
@@ -3146,6 +3158,7 @@ class Base extends BaseCore
         {
             // If flow reaches this catch block then workflow got activated.
            $response = $this->handleEarlyWorkflowResponseForPayoutService($payout, $payoutAmountRuleBeforeWorkflow);
+
         }
         catch (\Throwable $t)
         {

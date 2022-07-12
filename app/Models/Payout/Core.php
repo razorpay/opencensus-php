@@ -810,12 +810,39 @@ class Core extends Base\Core
                 }
             }
         }
+        elseif (($ftaStatus === "initiated") and
+            ($isPayoutService === true))
+        {
+            $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
+            $lastId = $payout->getStatusDetailsId();
+
+            if($statusDetails !== null)
+            {
+                if ($lastId !== null)
+                {
+                    $lastStatusDetails = $this->repo->payouts_status_details->fetchStatusReasonFromStatusDetailsId($lastId);
+
+                    // stores status details in case unique status details has come
+                    if (($statusDetails[Attempt\Entity::REASON]) !== $lastStatusDetails['reason'])
+                    {
+                        (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
+                    }
+                }
+
+                //stores status details in case last status details id is null
+                else
+                {
+                    (new PayoutsStatusDetailsCore())->createStatusDetailsProcessingState($payout, $ftaData);
+                }
+            }
+        }
 
         if (($initialUtr === null) and
-            ($payout->getUtr() !== null) and
-            ($isPayoutService === false))
+            ($payout->getUtr() !== null))
         {
             $firePayoutUpdatedWebhook = true;
+            if($isPayoutService === true)
+                $firePayoutUpdatedWebhook = false;
         }
 
         if ($firePayoutUpdatedWebhook === true)
@@ -2878,7 +2905,7 @@ class Core extends Base\Core
     public function handlePayoutReversed(Entity $payout,
                                          string $ftaFailureReason = null,
                                          string $ftaBankStatusCode = null,
-                                         $credit_bas = null,
+                                                $credit_bas = null,
                                          array $ftsSourceAccountInformation = [],
                                          string $ftaStatus = null)
     {
@@ -3209,6 +3236,9 @@ class Core extends Base\Core
                         $ftaBankStatusCode);
                 }
             }
+
+            (new PayoutsStatusDetailsCore())->create($payout);
+
         }
         else
         {
@@ -4659,6 +4689,8 @@ class Core extends Base\Core
 
                         $this->repo->saveOrFail($payout);
 
+                        (new PayoutsStatusDetailsCore())->create($payout);
+
                         return $reversal;
                     });
             },
@@ -4795,6 +4827,9 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payout);
         // webhook handled in payout service
+
+        (new PayoutsStatusDetailsCore())->create($payout);
+
     }
 
     public function handlePayoutReversedForPayoutService(Entity $payout,
