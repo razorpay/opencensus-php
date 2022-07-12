@@ -28,12 +28,24 @@ class Service extends Base\Service
 
         $rolesGrouppedByType[Entity::STANDARD] = $this->core->filterFinanceRoleForMerchant($this->merchant->getId(), $rolesGrouppedByType[Entity::STANDARD]);
 
+        array_multisort(array_column($rolesGrouppedByType[Entity::CUSTOM], Entity::NAME), $rolesGrouppedByType[Entity::CUSTOM]);
+
+        $order = Entity::$displayOrder;
+
+        $is = usort($rolesGrouppedByType[Entity::STANDARD], function ($a, $b) use ($order) {
+            $pos_a = array_search($a['id'], $order);
+            $pos_b = array_search($b['id'], $order);
+            return $pos_a - $pos_b;
+        });
+
         return $rolesGrouppedByType;
     }
 
     public function fetch(string $id, array $input): array
     {
         $input['expand'] = [Entity::ACCESS_POLICY];
+
+        Entity::stripRoleId($id);
 
         $roles = $this->repo->roles->findOrFailByPublicIdWithParams($id, $input)->toArrayPublicWithExpand();
 
@@ -79,6 +91,8 @@ class Service extends Base\Service
             [
                 'input' => $input
             ]);
+
+        Entity::stripRoleId($id);
 
         $accessPolicyIds = array_pull($input, 'access_policy_ids');
 
@@ -154,5 +168,4 @@ class Service extends Base\Service
 
         return $role->toArrayPublic();
     }
-
 }

@@ -47,6 +47,17 @@ class Entity extends Base\PublicEntity
 
     const COPY_DISABLE                          = 'copy_disable';
 
+    public static $displayOrder = [
+        BankingRole::ADMIN,
+        BankingRole::FINANCE_L1,
+        BankingRole::FINANCE_L2,
+        BankingRole::FINANCE_L3,
+        BankingRole::FINANCE,
+        BankingRole::OPERATIONS,
+        BankingRole::CHARTERED_ACCOUNTANT,
+        BankingRole::VIEW_ONLY,
+    ];
+
     protected $fillable = [
         self::NAME,
         self::DESCRIPTION,
@@ -117,6 +128,21 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+
+    public static function stripRoleId(& $id)
+    {
+        $delimiter = 'role'.static::$delimiter;
+
+        $ix = strpos($id, $delimiter);
+
+        if ($ix === false)
+        {
+            return false;
+        }
+
+        $id = substr($id, $ix + 5);
     }
 
 }

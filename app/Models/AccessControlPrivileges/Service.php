@@ -39,6 +39,8 @@ class Service extends Base\Service
 
         $privileges = $privileges->toArrayPublicWithExpand();
 
+        array_multisort(array_column($privileges['items'], Entity::VIEW_POSITION), $privileges['items']);
+
         $this->core->generateResponseTemplate($privileges);
 
         return [Entity::PRIVILEGE_DATA => $privileges];

@@ -60,16 +60,6 @@ return [
                             ),
                         1 =>
                             array (
-                                'id' => 'chartered_accountant',
-                                'merchant_id' => '100000Razorpay',
-                                'name' => 'Chartered Accountant',
-                                'description' => 'Export reports only. No dashboard access',
-                                'type' => 'standard',
-                                'copy_disable' => false,
-                                'members' => 0,
-                            ),
-                        2 =>
-                            array (
                                 'id' => 'finance',
                                 'merchant_id' => '100000Razorpay',
                                 'name' => 'Finance',
@@ -78,12 +68,22 @@ return [
                                 'copy_disable' => false,
                                 'members' => 0,
                             ),
-                        3 =>
+                        2 =>
                             array (
                                 'id' => 'operations',
                                 'merchant_id' => '100000Razorpay',
                                 'name' => 'Operations',
                                 'description' => 'Create and manage Payout Links',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        3 =>
+                            array (
+                                'id' => 'chartered_accountant',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Chartered Accountant',
+                                'description' => 'Export reports only. No dashboard access',
                                 'type' => 'standard',
                                 'copy_disable' => false,
                                 'members' => 0,
@@ -119,19 +119,19 @@ return [
                     array (
                         0 =>
                             array (
-                                'id' => '100customRole1',
+                                'id' => '100customRole3',
                                 'merchant_id' => '100000merchant',
-                                'name' => 'CAC 1',
+                                'name' => 'CAC A',
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
                                 'copy_disable' => false,
-                                'members' => 3,
+                                'members' => 1,
                             ),
                         1 =>
                             array (
                                 'id' => '100customRole2',
                                 'merchant_id' => '100000merchant',
-                                'name' => 'CAC 2',
+                                'name' => 'CAC B',
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
                                 'copy_disable' => false,
@@ -139,13 +139,13 @@ return [
                             ),
                         2 =>
                             array (
-                                'id' => '100customRole3',
+                                'id' => '100customRole1',
                                 'merchant_id' => '100000merchant',
-                                'name' => 'CAC 3',
+                                'name' => 'CAC C',
                                 'description' => 'Test custom role',
                                 'type' => 'custom',
                                 'copy_disable' => false,
-                                'members' => 1,
+                                'members' => 3,
                             ),
                     ),
                 'standard' =>
@@ -162,16 +162,6 @@ return [
                             ),
                         1 =>
                             array (
-                                'id' => 'chartered_accountant',
-                                'merchant_id' => '100000Razorpay',
-                                'name' => 'Chartered Accountant',
-                                'description' => 'Export reports only. No dashboard access',
-                                'type' => 'standard',
-                                'copy_disable' => false,
-                                'members' => 0,
-                            ),
-                        2 =>
-                            array (
                                 'id' => 'finance_l1',
                                 'merchant_id' => '100000Razorpay',
                                 'name' => 'Finance L1',
@@ -180,7 +170,7 @@ return [
                                 'copy_disable' => false,
                                 'members' => 1,
                             ),
-                        3 =>
+                        2 =>
                             array (
                                 'id' => 'finance_l2',
                                 'merchant_id' => '100000Razorpay',
@@ -190,7 +180,7 @@ return [
                                 'copy_disable' => false,
                                 'members' => 0,
                             ),
-                        4 =>
+                        3 =>
                             array (
                                 'id' => 'finance_l3',
                                 'merchant_id' => '100000Razorpay',
@@ -200,12 +190,22 @@ return [
                                 'copy_disable' => false,
                                 'members' => 0,
                             ),
-                        5 =>
+                        4 =>
                             array (
                                 'id' => 'operations',
                                 'merchant_id' => '100000Razorpay',
                                 'name' => 'Operations',
                                 'description' => 'Create and manage Payout Links',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        5 =>
+                            array (
+                                'id' => 'chartered_accountant',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Chartered Accountant',
+                                'description' => 'Export reports only. No dashboard access',
                                 'type' => 'standard',
                                 'copy_disable' => false,
                                 'members' => 0,

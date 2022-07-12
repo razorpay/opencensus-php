@@ -94,18 +94,18 @@ class RolesTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
 
-        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 1', 'id' => '100customRole1','org_id' => "100000razorpay"]);
+        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC C', 'id' => '100customRole1','org_id' => "100000razorpay"]);
 
         $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, $customRole1['id']);
         $this->createMerchantUserMappingInLiveAndTest($user2['id'], self::DEFAULT_X_MERCHANT_ID, $customRole1['id']);
         $this->createMerchantUserMappingInLiveAndTest($user3['id'], self::DEFAULT_X_MERCHANT_ID, $customRole1['id']);
 
-        $customRole2 = $this->fixtures->create('roles', ['name' => 'CAC 2', 'id' => '100customRole2','org_id' => "100000razorpay"]);
+        $customRole2 = $this->fixtures->create('roles', ['name' => 'CAC B', 'id' => '100customRole2','org_id' => "100000razorpay"]);
 
         $this->createMerchantUserMappingInLiveAndTest($user4['id'], self::DEFAULT_X_MERCHANT_ID, $customRole2['id']);
         $this->createMerchantUserMappingInLiveAndTest($user5['id'], self::DEFAULT_X_MERCHANT_ID, $customRole2['id']);
 
-        $customRole3 = $this->fixtures->create('roles', ['name' => 'CAC 3', 'id' => '100customRole3', 'org_id' => "100000razorpay"]);
+        $customRole3 = $this->fixtures->create('roles', ['name' => 'CAC A', 'id' => '100customRole3', 'org_id' => "100000razorpay"]);
 
         $this->createMerchantUserMappingInLiveAndTest($user6['id'], self::DEFAULT_X_MERCHANT_ID, $customRole3['id']);
 
@@ -133,7 +133,7 @@ class RolesTest extends TestCase
 
         $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 2', 'id' => '100customRole2', 'org_id' => "100000razorpay"]);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/'.$customRole1['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/role_'.$customRole1['id'];
 
         $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
 
@@ -240,7 +240,7 @@ class RolesTest extends TestCase
 
         $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 1', 'id' => '100customRole1', 'org_id' => "100000razorpay"]);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/'.$customRole1['id'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/role_'.$customRole1['id'];
 
         $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
 
