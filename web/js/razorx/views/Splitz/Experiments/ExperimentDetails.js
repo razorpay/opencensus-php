@@ -13,6 +13,7 @@ import Timeline from 'razorx/components/ui/Timeline';
 import { TextAreaField } from 'razorx/components/ui/Field';
 import { isRzpApprover } from '../../../user';
 import Comment from 'razorx/components/ui/Comment';
+import { EXPERIMENT_DELETE } from './constants';
 
 // eslint-disable-next-line react/no-unsafe
 @withRouter
@@ -240,6 +241,25 @@ export default class ExperimentDetails extends React.Component {
     }
 
     return [];
+  };
+
+  deleteExperiment = () => {
+    const { data } = this.state;
+    const { collection, hideDetails } = this.props;
+    splitzFetch({
+      url: EXPERIMENT_DELETE,
+      data: {
+        id: data?.id,
+      },
+    })
+      .then(() => {
+        collection.fetch();
+        hideDetails();
+        notifySuccess('Success: Experiment deleted!');
+      })
+      .catch((err) => {
+        notifyError(err);
+      });
   };
 
   render() {
@@ -589,6 +609,16 @@ export default class ExperimentDetails extends React.Component {
           )}
           <br />
           <br />
+          <div>
+            <AsyncButton
+              type="button"
+              className="btn btn-delete"
+              confirm="Are you sure you want to delete the experiment?"
+              onClick={this.deleteExperiment}
+            >
+              Delete Experiment
+            </AsyncButton>
+          </div>
         </div>
       );
     }
