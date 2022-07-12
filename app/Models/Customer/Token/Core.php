@@ -3137,9 +3137,9 @@ class Core extends Base\Core
      * This method takes in the current token collection, removes the
      * card tokens which are network tokenised but status is not active
      *
-     * @param $tokens
+     * @param Base\PublicCollection|array $tokens
      *
-     * @return mixed
+     * @return Base\PublicCollection|array
      */
     public function removeNonActiveTokenisedCardTokens($tokens)
     {
@@ -3154,7 +3154,7 @@ class Core extends Base\Core
                 }
 
                 return true;
-            });
+            })->values();
         }
 
         // Added this log for checking if this edge case occurs
