@@ -12,7 +12,7 @@
     "@razorpay/commander-shield": "0.0.1477",
     "@razorpay/frontend-care": "0.4.20",
     "@razorpay/frontend-care-new": "npm:@razorpay/frontend-care@0.4.12-beta.3",
-    "@razorpay/universe-utils": "3.1.2",
+    "@razorpay/universe-utils": "6.0.2",
     "@types/react-is": "17.0.0",
     "@types/yup": "0.29.10",
     "@universe/services": "1.0.30",

@@ -21,6 +21,10 @@ export function initSentry(appName) {
 
           return event;
         },
+        browserTracing: {
+          tracingOrigins: ['dashboard.razorpay.com', /^\//],
+        },
+        tracesSampleRate: 0.1,
       });
     } catch (e) {
       console.error('Error while initializing sentry');
