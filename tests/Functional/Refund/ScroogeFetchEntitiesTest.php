@@ -680,7 +680,7 @@ class ScroogeFetchEntitiesTest extends TestCase
     {
         $paymentId = substr($subTestArgs['payment']['id'], 4);
         $paymentId2 = substr($subTestArgs['payment2']['id'], 4);
-
+        $cardId = substr($subTestArgs['payment']['card_id'], 5);
         $this->fixtures->terminal->edit('1n25f6uN5S1Z5a',
             ['gateway_secure_secret' => 'sample_secret_code',
             'gateway_secure_secret2' => 'sample_secret_code2',
@@ -689,7 +689,8 @@ class ScroogeFetchEntitiesTest extends TestCase
 
         $this->fixtures->create('token', [
             'id' => 'IMxXhFhCPcU49R',
-            'status' => 'active'
+            'status' => 'active',
+            'card_id' => $cardId
         ]);
         $this->fixtures->create('token', [
             'id' => 'IMxXhFhCPcU49S',
@@ -709,7 +710,7 @@ class ScroogeFetchEntitiesTest extends TestCase
                 substr($subTestArgs['payment']['id'], 4),
                 substr($subTestArgs['payment2']['id'], 4),
             ],
-            'entities' => ['payment', 'card', 'terminal', 'upi_metadata', "token"],
+            'entities' => ['payment', 'card', 'terminal', 'upi_metadata', "token", "token_card"],
         ];
 
         $expectedOutput = [
@@ -753,6 +754,12 @@ class ScroogeFetchEntitiesTest extends TestCase
                     'token' => [
                         'data' => [
                             'status' => 'active'
+                        ],
+                        'error' => NULL,
+                    ],
+                    'token_card' => [
+                        'data' => [
+                            'vault' => 'rzpvault'
                         ],
                         'error' => NULL,
                     ]

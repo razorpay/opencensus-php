@@ -1160,6 +1160,14 @@ class Service extends Base\Service
                             {
                                 $data = $payment->getGlobalOrLocalTokenEntity();
                             }
+                            else if ($key === Constants\Entity::TOKEN_CARD)
+                            {
+                                $token = $payment->getGlobalOrLocalTokenEntity();
+                                if (empty($token) === false)
+                                {
+                                    $data = $token->card;
+                                }
+                            }
                             else if ($key !== Constants\Entity::PAYMENT)
                             {
                                 if ($key === Constants\Entity::IIN)

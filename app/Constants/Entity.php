@@ -169,6 +169,7 @@ class Entity
     const BANKING_ACCOUNT_COMMENT    = 'banking_account_comment';
     const ORDER_META                 = 'order_meta';
     const TOKENISED_IIN              = 'tokenised_iin';
+    const TOKEN_CARD                 = 'token_card';
 
     const RAW_ADDRESS                = 'raw_address';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
