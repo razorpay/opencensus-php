@@ -5,14 +5,11 @@ import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import * as EventActions from 'merchant/reducers/trackEvents';
 
 const M2MBanner = (props) => {
-  const {
-    referralAmount,
-    referralAmountCurrency,
-    userId,
-    userEmail,
-    userName,
-    trackEvents,
-  } = props;
+  const { referralAmount, referralAmountCurrency, user, trackEvents } = props;
+
+  const merchantID = user.current || user.merchant.id;
+  const userEmail = user.email;
+  const userName = user.contact_name;
 
   useEffect(() => {
     trackEvents({
@@ -32,7 +29,7 @@ const M2MBanner = (props) => {
       'track',
       'customer',
       {
-        id: userId,
+        id: merchantID,
         email: userEmail,
         name: userName,
       },
@@ -96,7 +93,7 @@ const M2MBanner = (props) => {
         <div className="desktop-view">
           <div className="heading">Help a fellow entrepreneur grow using Razorpay</div>
           <div className="desc">
-            Know someone who needs to set up online payments? Recieve{' '}
+            Know someone who needs to set up online payments? Receive{' '}
             {getFormattedAmountNew(referralAmount, true, referralAmountCurrency)} in collections -
             100% FREE* per successful referral
           </div>
@@ -128,9 +125,7 @@ const mapStateToProps = (state) => {
     referralAmount: state.merchantReferral.data.referral_amount,
     referralAmountCurrency: state.merchantReferral.data.referral_amount_currency,
     maxAllowedReferrals: state.merchantReferral.data.max_allowed_referrals,
-    userId: state.session.user.current,
-    userEmail: state.session.user.email,
-    userName: state.session.user.contact_name,
+    user: state.session.user,
   };
 };
 

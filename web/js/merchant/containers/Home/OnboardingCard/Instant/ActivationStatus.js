@@ -317,7 +317,7 @@ class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
-            You can start accepting payments and recieve{' '}
+            You can start accepting payments and receive{' '}
             <a
               className="btn-link"
               target="_blank"
@@ -337,7 +337,7 @@ class ActivationCard extends Component {
         status = limitBreachHappened ? possibleStatuses.blocked : possibleStatuses.active;
         content = (
           <div>
-            You can start accepting payments and recieve{' '}
+            You can start accepting payments and receive{' '}
             <a
               className="btn-link"
               target="_blank"
@@ -433,7 +433,7 @@ class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
-            You can start accepting payments and recieve{' '}
+            You can start accepting payments and receive{' '}
             <a
               className="btn-link"
               target="_blank"
