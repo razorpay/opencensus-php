@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use RZP\Constants\Table;
 
-use RZP\Models\Merchant\InternationalIntegration\Entity as Entity;
+use RZP\Models\Merchant\OwnerDetail\Entity;
 
-class MerchantInternationalIntegrations extends Migration
+class MerchantOwnerDetails extends Migration
 {
     /**
      * Run the migrations.
@@ -16,19 +16,15 @@ class MerchantInternationalIntegrations extends Migration
      */
     public function up()
     {
-        Schema::create(Table::MERCHANT_INTERNATIONAL_INTEGRATIONS, function (Blueprint $table)
+        Schema::create(Table::MERCHANT_OWNER_DETAILS, function (Blueprint $table)
         {
             $table->char(Entity::ID, Entity::ID_LENGTH)->primary();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH)->nullable(false);
 
-            $table->string(Entity::INTEGRATION_ENTITY, 20)->nullable();
+            $table->string(Entity::GATEWAY, 45)->nullable();
 
-            $table->string(Entity::INTEGRATION_KEY, 20)->nullable();
-
-            $table->json(Entity::NOTES)->nullable();
-
-            $table->json(Entity::PAYMENT_METHODS)->nullable();
+            $table->json(Entity::OWNER_DETAILS)->nullable();
 
             $table->integer(Entity::CREATED_AT)->nullable(false);
 
@@ -36,8 +32,7 @@ class MerchantInternationalIntegrations extends Migration
 
             $table->integer(Entity::DELETED_AT)->nullable();
 
-            $table->index([Entity::MERCHANT_ID, Entity::INTEGRATION_ENTITY], 'mii_index');
-
+            $table->index([Entity::MERCHANT_ID]);
         });
     }
 
@@ -48,6 +43,6 @@ class MerchantInternationalIntegrations extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::MERCHANT_INTERNATIONAL_INTEGRATIONS);
+        Schema::dropIfExists(Table::MERCHANT_OWNER_DETAILS);
     }
 }

@@ -266,6 +266,7 @@ class Type
     const DATA_LAKE_SEGMENT_FILE            = 'data_lake_segment_file';
     const NIUM_SETTLEMENT_FILE              = 'nium_settlement_file';
     const HDFC_COLLECT_NOW_SETTLEMENT_FILE  = 'custom_org_settlement_file';
+    const APM_ONBOARD_REQUEST_FILE          = 'apm_onboard_request_file';
 
     const AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG = 'ap_south_default_settlement_bucket_config';
 
@@ -291,6 +292,7 @@ class Type
     const DATA_LAKE_SEGMENTS_BUCKET_CONFIG      = 'data_lake_segments_bucket_config';
     const PAYOUTS_BUCKET_CONFIG                 = 'payouts_bucket_config';
     const NON_MIGRATED_BATCH_BUCKET_CONFIG      = 'non_migrated_batch_bucket_config';
+    const CROSS_BORDER_BUCKET_CONFIG            = 'cross_border_bucket_config';
 
     const COMMISSION_INVOICE_AP_SOUTH_BUCKET_CONFIG    = 'commission_invoice_ap_south_bucket_config';
 
@@ -454,7 +456,8 @@ class Type
             self::UJJIVAN_NETBANKING_REFUND,
             self::UJJIVAN_NETBANKING_CLAIMS,
             self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
-            self::NIUM_SETTLEMENT_FILE
+            self::NIUM_SETTLEMENT_FILE,
+            self::APM_ONBOARD_REQUEST_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -647,7 +650,8 @@ class Type
         self::HDFC_CORP_NETBANKING_REFUNDS,
         self::HDFC_CORP_NETBANKING_CLAIMS,
         self::HDFC_COLLECT_NOW_SETTLEMENT_FILE,
-        self::NIUM_SETTLEMENT_FILE
+        self::NIUM_SETTLEMENT_FILE,
+        self::APM_ONBOARD_REQUEST_FILE,
     ];
 
     /**
@@ -863,6 +867,10 @@ class Type
 
         self::PAYOUTS_BUCKET_CONFIG => [
             self::PAYOUT_SAMPLE,
+        ],
+
+        self::CROSS_BORDER_BUCKET_CONFIG => [
+            self::APM_ONBOARD_REQUEST_FILE,
         ]
     ];
 

@@ -34,7 +34,7 @@ class Core extends Base\Core
 
                 $this->trace->info(
                     TraceCode::MERCHANT_INTERNATIONAL_INTEGRATION_SAVE_FAILED,
-                    ['input' => $input]
+                    ['input' => $input[Entity::MERCHANT_ID]]
                 );
 
                 throw new BadRequestException(

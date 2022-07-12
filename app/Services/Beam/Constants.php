@@ -66,4 +66,7 @@ class Constants
 
     const NIUM_PROD_JOB_NAME = 'nium_prod';
 
+    const EMERCHANTPAY_ONBOARDING_STAGE_JOB_NAME = 'emerchantpay_onboarding_stage';
+
+    const EMERCHANTPAY_ONBOARDING_PROD_JOB_NAME = 'emerchantpay_onboarding_prod';
 }

@@ -252,7 +252,7 @@ class Core extends Base\Core
      * @param string $fileStoreId
      */
     public function deleteDocument(string $fileStoreId)
-    {   
+    {
         $document = $this->repo->merchant_document->findDocumentByFileStoreId($fileStoreId);
 
         if (isset($document) === true)
@@ -552,4 +552,23 @@ class Core extends Base\Core
 
     }
 
+    public function saveFileInMerchantDocument($fileId, $documentType, $mid, $entity, $entityId)
+    {
+        $input = [
+            Entity::FILE_STORE_ID => $fileId,
+            Entity::SOURCE        => 'UFH',
+            Entity::DOCUMENT_TYPE => $documentType,
+        ];
+
+        FileStoreEntity::verifyIdAndSilentlyStripSign($input[Entity::FILE_STORE_ID]);
+        $document = $inputDocument ?? (new Entity)->generateId();
+        $document->edit($input);
+        $document->setMerchantId($mid);
+        $document->setEntityType($entity);
+        $document->setAttribute(Entity::ENTITY_ID, $entityId);
+
+        $this->repo->saveOrFail($document);
+
+        return $document;
+    }
 }

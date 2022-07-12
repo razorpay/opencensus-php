@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const INTEGRATION_ENTITY                = "integration_entity";
     const INTEGRATION_KEY                   = "integration_key";
     const NOTES                             = "notes";
+    const PAYMENT_METHODS                   = "payment_methods";
     const CREATED_AT                        = "created_at";
     const UPDATED_AT                        = "updated_at";
     const DELETED_AT                        = "deleted_at";
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_ENTITY,
         self::INTEGRATION_KEY,
         self::NOTES,
+        self::PAYMENT_METHODS,
         self::UPDATED_AT,
         self::DELETED_AT,
     ];
@@ -38,6 +40,7 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_ENTITY,
         self::INTEGRATION_KEY,
         self::NOTES,
+        self::PAYMENT_METHODS,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -51,8 +54,13 @@ class Entity extends Base\PublicEntity
 
     protected $defaults     = [
         self::NOTES           => [],
+        self::PAYMENT_METHODS => [],
         self::UPDATED_AT      => null,
         self::DELETED_AT      => null,
+    ];
+
+    protected $casts        = [
+        self::PAYMENT_METHODS => 'array',
     ];
 
     public function getMerchantId()
@@ -68,5 +76,15 @@ class Entity extends Base\PublicEntity
     public function getIntegrationKey()
     {
         return $this->getAttribute(self::INTEGRATION_KEY);
+    }
+
+    public function getPaymentMethods()
+    {
+        return $this->getAttribute(self::PAYMENT_METHODS);
+    }
+
+    public function setPaymentMethods(array $paymentMethods)
+    {
+        return $this->setAttribute(self::PAYMENT_METHODS, $paymentMethods);
     }
 }

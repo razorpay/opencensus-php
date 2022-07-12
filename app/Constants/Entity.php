@@ -624,6 +624,9 @@ class Entity
     // merchant international integrations
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
 
+    // merchant owner details entity
+    const MERCHANT_OWNER_DETAILS = 'merchant_owner_details';
+
     //api request log entity
     const REQUEST_LOG = 'request_log';
 
@@ -1318,6 +1321,7 @@ class Entity
         self::MERCHANT_REWARD   => \RZP\Models\Reward\MerchantReward::class,
         self::REWARD_COUPON     => \RZP\Models\Reward\RewardCoupon::class,
         self::MERCHANT_INTERNATIONAL_INTEGRATIONS  => \RZP\Models\Merchant\InternationalIntegration::class,
+        self::MERCHANT_OWNER_DETAILS => \RZP\Models\Merchant\OwnerDetail::class,
 
         self::TRUSTED_BADGE          => \RZP\Models\TrustedBadge::class,
         self::TRUSTED_BADGE_HISTORY  => \RZP\Models\TrustedBadge\TrustedBadgeHistory::class,

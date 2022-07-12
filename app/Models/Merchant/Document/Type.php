@@ -84,6 +84,14 @@ class Type
     const FIRS_ICICI_FILE                             = 'firs_icici_file';
     const FIRS_ICICI_ZIP                              = 'firs_icici_zip';
 
+    // EmerchantPay Onboarding Documents
+
+    const EMERCHANTPAY_GST_CERTIFICATE      = 'emerchantpay_gst_certificate';
+    const EMERCHANTPAY_PROOF_OF_OWNERSHIP   = 'emerchantpay_proof_of_ownership';
+    const EMERCHANTPAY_AADHAAR              = 'emerchantpay_aadhaar';
+    const EMERCHANTPAY_PAN                  = 'emerchantpay_pan';
+    const EMERCHANTPAY_PASSPORT             = 'emerchantpay_passport';
+
     const PROOF_TYPES = [
         self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
@@ -163,6 +171,12 @@ class Type
         self::FIRS_ICICI_FILE,
         self::FIRS_ICICI_ZIP,
 
+        self::EMERCHANTPAY_GST_CERTIFICATE,
+        self::EMERCHANTPAY_PROOF_OF_OWNERSHIP,
+        self::EMERCHANTPAY_AADHAAR,
+        self::EMERCHANTPAY_PAN,
+        self::EMERCHANTPAY_PASSPORT,
+
         self::OTHER,
     ];
 
@@ -225,6 +239,12 @@ class Type
 
         self::FIRS_ICICI_FILE                 => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ICICI_ZIP                  => self::ADDITIONAL_DOCUMENTS,
+
+        self::EMERCHANTPAY_GST_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
+        self::EMERCHANTPAY_PROOF_OF_OWNERSHIP => self::ADDITIONAL_DOCUMENTS,
+        self::EMERCHANTPAY_AADHAAR            => self::ADDITIONAL_DOCUMENTS,
+        self::EMERCHANTPAY_PAN                => self::ADDITIONAL_DOCUMENTS,
+        self::EMERCHANTPAY_PASSPORT           => self::ADDITIONAL_DOCUMENTS,
     ];
 
     /**

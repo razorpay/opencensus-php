@@ -34,6 +34,8 @@ abstract class BaseGifuFile extends Base\Core
      */
     protected $storageFileName;
 
+    protected $parentFolder = 'settlements';
+
     public function __construct()
     {
         parent::__construct();
@@ -97,7 +99,7 @@ abstract class BaseGifuFile extends Base\Core
         $namespace = explode("\\", strtolower(get_class($this)));
         $subFolder = $namespace[count($namespace) - 2]; // Second last element represents the actual processor
 
-        $this->storageFileName = 'settlements/' . $subFolder . '/' . $fileName;
+        $this->storageFileName = $this->parentFolder . '/' . $subFolder . '/' . $fileName;
 
         $response = $this->ufh->uploadFileAndGetResponse($file, $this->storageFileName, $type, null);
 

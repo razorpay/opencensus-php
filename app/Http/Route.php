@@ -757,6 +757,9 @@ class Route
         'merchant_integration_create'              => ['post',      'merchant/international_integration',             'MerchantController@createInternationalIntegration'                ],
         'merchant_integrations_get'                => ['get',      'merchant/{id}/international_integration',        'MerchantController@getInternationalIntegration'                    ],
         'merchant_integrations_delete'             => ['delete',   'merchant/international_integration',             'MerchantController@deleteInternationalIntegration'                 ],
+        'emerchantpay_get_request_data'            => ['get',      'merchant/international/apm_request',             'MerchantApmEnablementController@getEmerchantpayRequestData'        ],
+        'emerchantpay_create_request_data'         => ['post',     'merchant/international/apm_request',             'MerchantApmEnablementController@postEmerchantpayRequestData'       ],
+        'emerchantpay_owner_delete'                => ['delete',   'merchant/international/apm_request/owner',       'MerchantApmEnablementController@deleteEmerchantpayRequestOwner'    ],
         'pricing_create_plan'                      => ['post',     'pricing',                                        'PricingController@postCreatePlan'                                  ],
         'buy_pricing_create_plan'                  => ['post',     'buy_pricing',                                    'PricingController@postCreateBuyPlan'                               ],
         'buy_pricing_terminal_cost'                => ['post',     'buy_pricing/terminal_cost',                      'PricingController@postCalculateBuyPricingCost'                     ],
@@ -3375,6 +3378,11 @@ class Route
             'international_enablement/reminders/{mode}/{id}',
             'MerchantInternationalEnablementController@reminderCallBack'
         ],
+        'emerchantpay_apm_onboard_maf' => [
+            'post',
+            'merchant/international/apm_request/reminder/{mid}',
+            'MerchantApmEnablementController@generateEmerchantpayMaf'
+        ],
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
@@ -4420,6 +4428,7 @@ class Route
         'reminder_send',
         'p2p_reminder_send',
         'merchant_international_enablement_reminder',
+        'emerchantpay_apm_onboard_maf',
         'scrooge_entities',
         'scrooge_entities_fetch',
         'scrooge_public_entities_fetch',
@@ -5246,6 +5255,9 @@ class Route
         'user_fetch_purpose_code',
         'firs_document_fetch',
         'firs_document_download',
+        'emerchantpay_get_request_data',
+        'emerchantpay_create_request_data',
+        'emerchantpay_owner_delete',
         'merchant_features_fetch',
         'merchant_features_update',
         'merchant_create_key',
@@ -8225,6 +8237,10 @@ class Route
         'merchant_integrations_get'             => Permission::VIEW_MERCHANT,
         'merchant_integrations_delete'          => Permission::VIEW_MERCHANT,
 
+        //Emerchantpay APM onboarding request
+        'emerchantpay_get_request_data'         => Permission::VIEW_MERCHANT,
+        'emerchantpay_create_request_data'      => Permission::VIEW_MERCHANT,
+
         'admin_collect_info_merchant_details_patch'        =>Permission::EDIT_MERCHANT,
 
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
@@ -9410,6 +9426,9 @@ class Route
             'user_fetch_purpose_code',
             'firs_document_fetch',
             'firs_document_download',
+            'emerchantpay_get_request_data',
+            'emerchantpay_create_request_data',
+            'emerchantpay_owner_delete',
             'merchant_checkout_preferences',
             'merchant_create_key',
             'merchant_create_key_with_otp',
@@ -12876,6 +12895,7 @@ class Route
             'test_payout_links_expire_callback',
             'merchant_international_enablement_reminder',
             'developer_console_maintenance',
+            'emerchantpay_apm_onboard_maf',
         ],
 
         'batch' => [

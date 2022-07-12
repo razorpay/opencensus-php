@@ -1656,4 +1656,7 @@ class PublicErrorDescription
     const BAD_REQUEST_OTP_NOT_REQUIRED                                              = 'otp is/are not required and should not be sent';
 
     const BAD_REQUEST_SUBMERCHANT_UNLINKING_FAILED                                  = 'Aggregate Settlement submerchant unlinking failed';
+
+    const EMERCHANTPAY_INTERNATIONAL_DISABLED_DESC                                  = "Payment method request not allowed as international is disabled on the merchant";
+    const EMERCHANTPAY_INSTRUMENT_INVALID_DESC                                      = "Invalid payment method requested";
 }

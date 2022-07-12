@@ -112,6 +112,10 @@ return [
             'name'   => env('AWS_S3_AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET'),
             'region' => env('AWS_S3_AP_SOUTH_DEFAULT_SETTLEMENT_REGION', 'ap-south-1')
         ],
+        'cross_border_bucket_config' => [
+            'name'   => env('AWS_S3_CROSS_BORDER_BUCKET'),
+            'region' => env('AWS_S3_CROSS_BORDER_REGION', 'ap-south-1')
+        ],
     ],
 
     'local' => [
@@ -162,6 +166,10 @@ return [
         'h2h_default_bucket_config' => [
             'name'   => env('AWS_H2H_DEFAULT_BUCKET','rzp-np-api-settlements'),
             'region' => env('AWS_H2H_DEFAULT_BUCKET_REGION', 'ap-south-1')
+        ],
+        'cross_border_bucket_config' => [
+            'name'   => env('LOCAL_CROSS_BORDER_BUCKET', 'cross_border_bucket'),
+            'region' => null,
         ],
     ]
 ];

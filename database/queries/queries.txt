@@ -6911,3 +6911,19 @@ ALTER TABLE merchant_business_details
 ALTER TABLE orgs
     ADD COLUMN `external_redirect_url` varchar(255) DEFAULT NULL,
     ADD COLUMN `external_redirect_url_text` text;
+
+CREATE TABLE IF NOT EXISTS merchant_owner_details (
+    id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+    merchant_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+    gateway VARCHAR(45) DEFAULT NULL,
+    owner_details JSON DEFAULT NULL,
+    created_at INT NOT NULL,
+    updated_at INT DEFAULT NULL,
+    deleted_at INT DEFAULT NULL,
+    PRIMARY KEY (id),
+    INDEX `merchant_owner_details_merchant_id_index`
+    (`merchant_id`)
+) DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE `merchant_international_integrations`
+    ADD COLUMN `payment_methods` JSON NULL;

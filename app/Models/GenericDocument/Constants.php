@@ -36,12 +36,14 @@ class Constants
     const DISPUTE_EVIDENCE                  = 'dispute_evidence';
     const INTERNATIONAL_ENABLEMENT          = 'international_enablement';
     const MERCHANT_WORKFLOW_CLARIFICATION   = 'merchant_workflow_clarification';
+    const APM_ONBOARDING                    = 'apm_onboarding';
 
     const PURPOSE_TYPE = [
         self::KYC_PROOF,
         self::TRADEMARK_LOGO,
         self::DISPUTE_EVIDENCE,
         self::INTERNATIONAL_ENABLEMENT,
-        self::MERCHANT_WORKFLOW_CLARIFICATION
+        self::MERCHANT_WORKFLOW_CLARIFICATION,
+        self::APM_ONBOARDING
     ];
 }
