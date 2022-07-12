@@ -422,6 +422,7 @@ class ProviderCode
         self::YBL           => ProviderPsp::PHONEPE,
         self::AXL           => ProviderPsp::PHONEPE,
         self::OKHDFCBANK    => ProviderPsp::GOOGLE_PAY,
+        self::OKICICI       => ProviderPsp::GOOGLE_PAY,
         self::APL           => ProviderPsp::AMAZON_PAY,
         self::YAPL          => ProviderPsp::AMAZON_PAY,
         self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,

@@ -1510,6 +1510,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['phonepe_ybl_allow']             = ['razorpay@ybl', $throwables['whitelisted']];
         $cases['phonepe_axl_allow']             = ['razorpay@axl', $throwables['whitelisted']];
         $cases['gpay_okhdfcbank_allow']         = ['razorpay@okhdfcbank', $throwables['whitelisted']];
+        $cases['gpay_okicici_allow']            = ['razorpay@okicici', $throwables['whitelisted']];
         $cases['amazonpay_apl_allow']           = ['razorpay@apl', $throwables['whitelisted']];
         $cases['amazonpay_yapl_allow']          = ['razorpay@yapl', $throwables['whitelisted']];
         $cases['barodapay_barodampay_allow']    = ['razorpay@barodampay', $throwables['whitelisted']];
@@ -1528,7 +1529,6 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['bhim_induspay_allow']                 =['razorpay@indus', $throwables['whitelisted']];
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
-        $cases['gpay_okicici_reject']           = ['razorpay@okicici', $throwables['not_whitelisted']];
         $cases['gpay_oksbi_reject']             = ['razorpay@oksbi', $throwables['not_whitelisted']];
 
         return $cases;
