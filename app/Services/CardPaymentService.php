@@ -20,6 +20,7 @@ use RZP\Models\Terminal;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Reminders;
 use RZP\Error\ErrorClass;
 use RZP\Gateway\Base\Action;
 use Illuminate\Support\Arr;
@@ -219,7 +220,7 @@ class CardPaymentService
         }
 
         if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) and
-             ($action === Action::CALLBACK)))
+            ($action === Action::CALLBACK)))
         {
             $dynamicContent = $input['gateway'];
 
@@ -245,53 +246,50 @@ class CardPaymentService
             unset($input['payment']['billing_address']);
         }
 
-        //ToDo: Fix this issue of checking for tokenised card and initial payment fetch
+        if (($input['payment']['recurring'] === true) and ($input['payment']['recurring_type'] === 'auto') and ($input['token']['card']['network'] === 'Visa'))
+        {
+            $token = (new Repository())->find($input[Entity::TOKEN]['id']);
+            $card = (new Card\Repository())->fetchForToken($token);
 
-        if (false) {
-            if (!empty($input['token']) and ($input['payment']['recurring'] === true) and ($input['payment']['recurring_type'] === 'auto'))
+            if (($card->isRzpSavedCard() === false) and
+                ((new Reminders\CardAutoRecurringReminderProcessor)->isExperimentEnabledForTokenisedCard($token->getMerchantId()) === true) and
+                ((new Reminders\CardAutoRecurringReminderProcessor)->shouldRecurringAutoPaymentGoThroughTokenisedCard($card) === true))
             {
-
-                if (!empty($input['token']['card']) and ($input['token']['card']['network'] === 'Visa'))
-                {
+                try {
                     $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($input['token']['id'], $input['merchant']['id']);
 
                     $paymentId = $initialPayment->getId();
 
                     $request = [
-                        'fields'        => ['network_transaction_id'],
-                        'payment_ids'   => [$paymentId],
+                        'fields'      => ['network_transaction_id'],
+                        'payment_ids' => [$paymentId],
                     ];
 
                     $input['payment']['network_transaction_id'] = '039217544591994';
 
-                    try
+                    $response = $this->app['card.payments']->fetchAuthorizationData($request);
+
+                    $this->trace->info(
+                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                        [
+                            'info_code' => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                            'response' => $response,
+                        ]);
+
+                    if ($response[$paymentId]['network_transaction_id'] !== "")
                     {
-                        $response = $this->app['card.payments']->fetchAuthorizationData($request);
-
-                        $this->trace->info(
-                            TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
-                            [
-                                'info_code'     => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
-                                'response'      => $response,
-                            ]);
-
-                        if ($response[$paymentId]['network_transaction_id'] !== "")
-                        {
-                            $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
-                        }
+                        $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
                     }
-                    catch (\Exception $ex)
-                    {
-                        $this->trace->info(
-                            TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
-                            [
-                                'info_code'            => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
-                                'initial_payment_id'   => $paymentId,
-                            ]);
-                    }
-
                 }
-
+                catch (\Exception $ex)
+                {
+                    $this->trace->info(
+                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                        [
+                            'info_code' => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                            'payment_id' => $input['payment']['id'],
+                        ]);
+                }
             }
         }
 
@@ -704,28 +702,28 @@ class CardPaymentService
 
     protected function traceResponse($response, $data)
     {
-       $traceResponse = $response;
+        $traceResponse = $response;
 
-       // For axis_migs we don't send gateway request in redirect case,
-       // We redirect customer with actual request content which has card and terminal details,
-       // Unsetting these fields before logging is mandatory
-       unset($traceResponse['data']['content']['vpc_CardNum']);
-       unset($traceResponse['data']['content']['vpc_AccessCode']);
-       unset($traceResponse['data']['content']['vpc_CardExp']);
-       unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
-       unset($traceResponse['data']['content']['vpc_SubMerchant_Phone']);
-       unset($traceResponse['data']['content']['vpc_SubMerchant_Email']);
-       unset($traceResponse['data']['content']['vpc_SubMerchant_Street']);
+        // For axis_migs we don't send gateway request in redirect case,
+        // We redirect customer with actual request content which has card and terminal details,
+        // Unsetting these fields before logging is mandatory
+        unset($traceResponse['data']['content']['vpc_CardNum']);
+        unset($traceResponse['data']['content']['vpc_AccessCode']);
+        unset($traceResponse['data']['content']['vpc_CardExp']);
+        unset($traceResponse['data']['content']['vpc_CardSecurityCode']);
+        unset($traceResponse['data']['content']['vpc_SubMerchant_Phone']);
+        unset($traceResponse['data']['content']['vpc_SubMerchant_Email']);
+        unset($traceResponse['data']['content']['vpc_SubMerchant_Street']);
 
-       //Redacting fields for First_data
-       unset($traceResponse['data']['content']['cvm']);
-       unset($traceResponse['data']['content']['cardnumber']);
-       unset($traceResponse['data']['content']['dynamicMerchantName']);
-       unset($traceResponse['data']['content']['bname']);
-       unset($traceResponse['data']['content']['expmonth']);
-       unset($traceResponse['data']['content']['expyear']);
+        //Redacting fields for First_data
+        unset($traceResponse['data']['content']['cvm']);
+        unset($traceResponse['data']['content']['cardnumber']);
+        unset($traceResponse['data']['content']['dynamicMerchantName']);
+        unset($traceResponse['data']['content']['bname']);
+        unset($traceResponse['data']['content']['expmonth']);
+        unset($traceResponse['data']['content']['expyear']);
 
-       // Redacting fields for Cashfree card payments
+        // Redacting fields for Cashfree card payments
         unset($traceResponse['data']['content']['appId']);
         unset($traceResponse['data']['content']['card_number']);
         unset($traceResponse['data']['content']['card_holder']);
@@ -746,38 +744,38 @@ class CardPaymentService
         unset($traceResponse['data']['content']['firstname']);
         unset($traceResponse['data']['content']['phone']);
 
-       if (isset($traceResponse[Migration::EMI_PLANS]) === true)
-       {
-           $emiTrace = [];
+        if (isset($traceResponse[Migration::EMI_PLANS]) === true)
+        {
+            $emiTrace = [];
 
-           foreach ($traceResponse[Migration::EMI_PLANS] as $plan)
-           {
-               $planTrace = [
-                   'id'             => Arr::get($plan, 'id'),
-                   'merchant_id'    => Arr::get($plan, 'merchant_id'),
-               ];
+            foreach ($traceResponse[Migration::EMI_PLANS] as $plan)
+            {
+                $planTrace = [
+                    'id'             => Arr::get($plan, 'id'),
+                    'merchant_id'    => Arr::get($plan, 'merchant_id'),
+                ];
 
-               array_push($emiTrace, $planTrace);
-           }
+                array_push($emiTrace, $planTrace);
+            }
 
-           $traceResponse[Migration::EMI_PLANS] = $emiTrace;
-       }
+            $traceResponse[Migration::EMI_PLANS] = $emiTrace;
+        }
 
-       $traceData = [];
+        $traceData = [];
 
-       $traceData['response']   = $traceResponse;
+        $traceData['response']   = $traceResponse;
 
-       if (isset($data['input']['payment']['id']) === true)
-       {
-           $traceData['payment_id'] = $data['input']['payment']['id'];
-       }
+        if (isset($data['input']['payment']['id']) === true)
+        {
+            $traceData['payment_id'] = $data['input']['payment']['id'];
+        }
 
-       if (isset($data['input']['payment']['gateway']) === true)
-       {
-           $traceData['gateway'] = $data['input']['payment']['gateway'];
-       }
+        if (isset($data['input']['payment']['gateway']) === true)
+        {
+            $traceData['gateway'] = $data['input']['payment']['gateway'];
+        }
 
-       $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceData ?? []);
+        $this->trace->info(TraceCode::CARD_PAYMENT_SERVICE_RESPONSE, $traceData ?? []);
     }
 
     protected function jsonToArray($json)
@@ -816,7 +814,7 @@ class CardPaymentService
         return false;
     }
 
-     // ----------------------- Verify ---------------------------------------------
+    // ----------------------- Verify ---------------------------------------------
 
     protected function processVerifyResponse($response)
     {

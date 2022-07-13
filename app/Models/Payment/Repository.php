@@ -3097,6 +3097,7 @@ EOT;
             ->where(Entity::TOKEN_ID, '=', $tokenId)
             ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
             ->where(Payment\Entity::MERCHANT_ID, $merchantId)
+            ->whereIn(Payment\Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
             ->first();
     }
 }

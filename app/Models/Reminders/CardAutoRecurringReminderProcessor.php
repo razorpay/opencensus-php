@@ -81,7 +81,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         ];
     }
 
-    protected function isExperimentEnabledForTokenisedCard($merchantId): bool
+    public function isExperimentEnabledForTokenisedCard($merchantId): bool
     {
         try
         {
@@ -108,7 +108,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         return false;
     }
 
-    protected function shouldRecurringAutoPaymentGoThroughTokenisedCard(Card\Entity $card): bool
+    public function shouldRecurringAutoPaymentGoThroughTokenisedCard(Card\Entity $card): bool
     {
         try
         {
