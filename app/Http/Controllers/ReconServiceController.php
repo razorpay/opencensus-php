@@ -44,6 +44,7 @@ class ReconServiceController extends Controller
             '^file_type_columns$',
             '^extraction_item$',
             '^extraction_config$',
+            '^custom_method$',
             '^extraction_item\/extraction_methods$',
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
@@ -58,6 +59,7 @@ class ReconServiceController extends Controller
             '^extraction_item$',
             '^extraction_config$',
             '^extraction_item\/conflict$',
+            '^custom_method$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
