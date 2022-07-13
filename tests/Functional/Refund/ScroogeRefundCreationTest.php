@@ -526,4 +526,77 @@ class ScroogeRefundCreationTest extends TestCase
 
         $this->disableScroogeRelationalLoadConfig();
     }
+
+    public function testRefundBackWriteOnApi()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $paymentId = substr($payment['id'], 4);
+
+        $refundId = 'JiAaQf2FX6tBYE';
+
+        $this->ba->scroogeAuth();
+
+        // create transaction
+        $this->testData['callScroogeRefundTransactionCreate']['request']['content'] = [
+            'id'               => $refundId,
+            'payment_id'       => $paymentId,
+            'amount'           => '100',
+            'base_amount'      => '100',
+            'gateway'          => $payment['gateway'],
+            'speed_decisioned' => 'normal',
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callScroogeRefundTransactionCreate']);
+
+        $this->assertNull($response['error']);
+
+        $this->assertNotNull($response['data']['transaction_id']);
+        $this->assertFalse($response['data']['compensate_payment']);
+
+        $transactionId = $response['data']['transaction_id'];
+
+        $input = [
+            "amount"=> 100,
+            "attempts"=> 1,
+            "base_amount"=> 100,
+            "created_at"=> 1651856887,
+            "currency"=> "INR",
+            "fee"=> 0,
+            "gateway"=> "hdfc",
+            "gateway_amount"=> NULL,
+            "gateway_currency"=> NULL,
+            "id"=> $refundId,
+            "last_attempted_at"=> 1655703199,
+            "merchant_id"=> "10000000000000",
+            "is_scrooge"=> 1,
+            "notes"=> [
+                "a"=> 1,
+            ],
+            "payment_id"=> $paymentId,
+            "processed_at"=> 1655703199,
+            "receipt"=> NULL,
+            "reference1"=> "74332742172217179755346",
+            "reversal_id"=> NULL,
+            "settled_by"=> "Razorpay",
+            "speed_processed"=> "normal",
+            "speed_decisioned"=> "normal",
+            "speed_requested"=> "normal",
+            "status"=> "processed",
+            "tax"=> 0,
+            "transaction_id"=> $transactionId,
+            "updated_at"=> 1655878224,
+        ];
+
+        $this->testData[__FUNCTION__]['request']['content'] = $input;
+
+        $response = $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $this->assertEquals($refundId, $response['id']);
+        $this->assertEquals($paymentId, $response['payment_id']);
+    }
 }

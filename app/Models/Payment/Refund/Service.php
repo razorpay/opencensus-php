@@ -3997,6 +3997,15 @@ class Service extends Base\Service
         }
     }
 
+    public function scroogeBackWriteRefund($input): array
+    {
+        $refund = (new RefundEntity())->forceFill($input);
+
+        $this->repo->saveOrFail($refund);
+
+        return $refund->toArray();
+    }
+
     /***
      * Sample Request Body :
      * {

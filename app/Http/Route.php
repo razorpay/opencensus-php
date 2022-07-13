@@ -288,9 +288,10 @@ class Route
         'scrooge_entities'                         => ['post',     'scrooge/entities',                               'RefundController@scroogeFetchEntities'                             ],
         'scrooge_entities_fetch'                   => ['post',     'scrooge/entities_fetch',                         'RefundController@scroogeFetchEntitiesV2'                           ],
         'scrooge_public_entities_fetch'            => ['post',     'scrooge/fetch/public_entities',                  'RefundController@scroogeFetchPublicEntities'                       ],
+        'scrooge_refund_back_write'                => ['post',     'scrooge/back_write_refund',                      'RefundController@scroogeBackWriteRefund'                           ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
-        'raw_address_create_batch_service'        => ['post',     'raw_address/batch_service',                     'RawAddressController@postCreateBatch'                             ],
+        'raw_address_create_batch_service'         => ['post',     'raw_address/batch_service',                      'RawAddressController@postCreateBatch'                              ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
 
         'fulfillment_order_update'                 => ['post',     'fulfillment_order/batch_service',             'FulfillmentOrderController@updateOrder'                             ],
@@ -4432,6 +4433,7 @@ class Route
         'scrooge_entities',
         'scrooge_entities_fetch',
         'scrooge_public_entities_fetch',
+        'scrooge_refund_back_write',
         'fund_transfer_attempt_modes',
         'schedule_migration',
         'schedule_process_tasks',
@@ -12789,6 +12791,7 @@ class Route
             'refund_scrooge_transaction_create',
             'payout_create_internal',
             'refund_edit_internal',
+            'scrooge_refund_back_write',
         ],
 
         'thirdwatch_reports' => [

@@ -40,4 +40,15 @@ return [
             'content' => []
         ],
     ],
+
+    'testRefundBackWriteOnApi' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/scrooge/back_write_refund',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
 ];
