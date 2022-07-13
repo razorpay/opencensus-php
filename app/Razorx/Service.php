@@ -260,6 +260,7 @@ class Service extends Base\Service
             'rx_zoho_bank_account_sync',
             'rx_tally_bank_account_sync',
             'rx_quickbooks_bank_account_sync',
+            'capital_cli_banner',
             'rx_receivables',
             'capital_cards_unbilled_transactions',
             'capital_cards_statement',
