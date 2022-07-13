@@ -75,7 +75,7 @@ function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
               {
                 key: ACTION_QUERY_PARAM_KEY,
                 value: UPDATE_WEBSITE_DETAILS,
-                trigger: handleEditWebsite(FLOWS.BUSINESS_WEBSITE),
+                trigger: () => handleEditWebsite(FLOWS.BUSINESS_WEBSITE),
               },
             ]}
           >
