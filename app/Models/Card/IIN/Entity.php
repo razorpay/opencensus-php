@@ -55,6 +55,9 @@ class Entity extends Base\PublicEntity
     const ID_LENGTH      = 6;
     const COUNTRY_LENGTH = 2;
 
+    const TOKENISED     = 'tokenised';
+    const CARD_IIN = 'card_iin';
+
     protected $entity = 'iin';
 
     protected $primaryKey = self::IIN;
@@ -204,6 +207,16 @@ class Entity extends Base\PublicEntity
     public function isInternational()
     {
         return $this->getInternationalAttribute();
+    }
+
+    public function isTokenised()
+    {
+        return $this->getAttribute(self::TOKENISED);
+    }
+
+    public function getCardIin()
+    {
+        return $this->getAttribute(self::CARD_IIN);
     }
 
     public function isAVSSupportedIIN()

@@ -2406,7 +2406,8 @@ class ErrorCode
     const BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT                = 'BAD_REQUEST_AMAZONPAY_PAYOUT_NOT_ALLOWED_ON_DIRECT_ACCOUNT';
 
     const BAD_REQUEST_IIN_NOT_EXISTS                                                = 'BAD_REQUEST_IIN_NOT_EXISTS';
-
+    const BAD_REQUEST_INVALID_TOKEN_IIN                                             = 'BAD_REQUEST_INVALID_TOKEN_IIN';
+    const BAD_REQUEST_INVALID_IIN                                                   = 'BAD_REQUEST_INVALID_IIN';
     const BAD_REQUEST_TNC_STATUS_INVALID                                            = 'BAD_REQUEST_TNC_STATUS_INVALID';
 
     // Aadhar E-sign error codes
@@ -2664,7 +2665,6 @@ class ErrorCode
     const SERVER_ERROR_FAILED_TO_FETCH_CVV                                         = 'SERVER_ERROR_FAILED_TO_FETCH_CVV';
     const SERVER_ERROR_FAILED_TO_PERSIST_IN_STORE                                  = 'SERVER_ERROR_FAILED_TO_PERSIST_IN_STORE';
     const SERVER_ERROR_FAILED_TO_FETCH_FROM_STORE                                  = 'SERVER_ERROR_FAILED_TO_FETCH_FROM_STORE';
-    const BAD_REQUEST_INVALID_IIN                                                  = 'BAD_REQUEST_INVALID_IIN';
     const BDA_REQUEST_PAYMENT_AMOUNT_EXCEEDS_MAX_AMOUNT                            = 'BDA_REQUEST_PAYMENT_AMOUNT_EXCEEDS_MAX_AMOUNT';
     const BAD_REQUEST_INVALID_CUSTOMER_ID                                          = 'BAD_REQUEST_INVALID_CUSTOMER_ID';
     const MOZART_SERVICE_BAD_GATEWAY                                               = 'MOZART_SERVICE_BAD_GATEWAY';

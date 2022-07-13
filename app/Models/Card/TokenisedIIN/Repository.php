@@ -39,4 +39,12 @@ class Repository extends Base\Repository
             ->where(Entity::HIGH_RANGE, '>=', $tokenIin)
             ->first();
     }
+
+    public function findbyrange($tokenIin)
+    {
+        return $this->newQuery()
+                    ->where(Entity::LOW_RANGE, 'like' , $tokenIin."%")
+                    ->where(Entity::HIGH_RANGE, 'like' , $tokenIin."%")
+                    ->first();
+    }
 }

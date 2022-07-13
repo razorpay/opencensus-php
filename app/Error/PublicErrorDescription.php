@@ -395,9 +395,9 @@ class PublicErrorDescription
     const BAD_REQUEST_BANK_TRANSFER_FEE_CALCULATED_GREATER_THAN_PAYMENT_AMOUNT  = 'Fee calculated is greater than the payment amount.';
 
     const BAD_REQUEST_IIN_NOT_EXISTS                                            = 'IIN does not exist';
-
+    const BAD_REQUEST_INVALID_TOKEN_IIN                                         = 'The requested IIN is not a valid token IIN';
     const BAD_REQUEST_CORPORATE_CARD_INVALID_EXPIRY_DATE                        = 'Expiry date is not valid';
-
+    const BAD_REQUEST_INVALID_IIN                                               = 'The requested IIN is a token IIN & should be 9 digits long.';
     const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_REQUEST_MADE_IN_LAST_30_DAYS       = 'Bad Request Edit Transaction Limit Request Made In Last 30 Days';
     const BAD_REQUEST_EDIT_TRANSACTION_LIMIT_CTS_OR_FTS_MORE_THAN_5             = 'The transaction limit cannot be updated for your account. Please reach out to our support team for further clarification';
 

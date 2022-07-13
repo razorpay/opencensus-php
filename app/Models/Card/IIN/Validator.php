@@ -96,7 +96,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchIinRules = [
-        Entity::IIN            => 'required|numeric|digits:6',
+        Entity::IIN            => 'required|numeric|digits_between:6,9',
     ];
 
     protected function validateCreateNetwork($input)

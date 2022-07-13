@@ -16,6 +16,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\Payment\AuthType as AuthType;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Card\TokenisedIIN\Entity as TokenEntity;
 
 class Service extends Base\Service
 {
@@ -127,6 +128,37 @@ class Service extends Base\Service
 
             (new Validator)->validateInput('fetch_iin', $input);
 
+            $token_iin = $this->repo->tokenised_iin->findbyTokenIin($id);
+
+            $token_bin = null;
+
+            if(strlen($id) === 9 && !isset($token_iin)){
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_TOKEN_IIN,
+                    null,[],'The requested IIN is not a valid token IIN');
+            }
+
+            if ($token_iin != null)
+            {
+                $token_bin = $id ;
+
+                $id = $token_iin[ENTITY::IIN];
+
+            }
+
+            if(!isset($token_iin)){
+
+                $bin = $this->repo->tokenised_iin->findbyrange($id);
+
+                if((isset($bin))){
+
+                    throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_IIN,
+                        null,[],'The requested IIN is a token IIN & should be 9 digits long.');
+
+                }
+            }
+
             $iin = $this->repo->iin->find($id);
 
             if (isset($iin) === false or $iin->isEnabled() !== true)
@@ -140,6 +172,8 @@ class Service extends Base\Service
             }
 
             $data = $this->getBasicDetails($iin);
+
+            $data = $this->getTokenDetails($data, $token_iin , $token_bin);
 
             $data = $this->getPaymentFlows($data, $iin);
 
@@ -591,9 +625,32 @@ class Service extends Base\Service
             Entity::ISSUER_CODE     => $iin->isInternational()=== false ? $iin->getIssuer() : Entity::UNKNOWN,
             Entity::ISSUER_NAME     => $iin->isInternational()=== false ? $iin->getIssuerName() : Entity::UNKNOWN,
             Entity::INTERNATIONAL   => $iin->isInternational(),
+            Entity::CARD_IIN        => "null"
         ];
 
         $this->formatResponses($data);
+
+        return $data;
+    }
+
+    protected function getTokenDetails(array $data, $token_iin , $token_bin)
+    {
+        $iin = $data[ENTITY::IIN];
+
+        if($token_iin != null){
+
+            $data[ENTITY::TOKENISED] = true;
+
+            $data[ENTITY::CARD_IIN] =  $iin;
+
+            $data[ENTITY::IIN] = $token_bin;
+
+        }
+        else{
+
+            $data[ENTITY::TOKENISED] = false;
+
+        }
 
         return $data;
     }
