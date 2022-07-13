@@ -114,6 +114,8 @@ class CreateAccount extends Base
      */
     public function createFundAccount(): array
     {
+        // If card entity's FTS fund account is being created then bu_namespace and tokenised field will
+        // be passed in FTS request if the card is a network tokenised card
         $input = $this->prepareRequestUsingType();
 
         $response = $this->createAndSendRequest(parent::FUND_ACCOUNT_CREATE_URI, 'POST', $input);
@@ -280,7 +282,9 @@ class CreateAccount extends Base
             Constants::NETWORK_CODE => $card->getNetworkCode(),
         ];
 
-        if ($card->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true)
+        //
+        if (($card->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true) or
+            ($card->isNetworkTokenisedCard() === true))
         {
             $tokenised = ($card->isTokenPan() === true) ? true : $card->isNetworkTokenisedCard();
 
