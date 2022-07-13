@@ -829,6 +829,15 @@ class Repository extends Base\Repository
         return $query->first();
     }
 
+    public function fetchBankingAccountsByMerchantIdAccountTypeChannel(string $merchantId, string $channel, string $accountType)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::CHANNEL, $channel)
+            ->where(Entity::ACCOUNT_TYPE, $accountType)
+            ->get();
+    }
+
     public function getMerchantPocAndBeneficiaryEmail(string $merchantId)
     {
         $activationDetailsTableBankingAccountId = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BANKING_ACCOUNT_ID);

@@ -2597,12 +2597,12 @@ class Validator extends Base\Validator
     {
         foreach($entries as $entry)
         {
-            $mid = $entry[Header::BANKING_ACCOUNT_ID];
+            $mid = $entry[Header::MERCHANT_ID];
 
             if (empty($mid) === true)
             {
                 throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANK_ACCOUNT_ID_MISSING);
+                    ErrorCode::BAD_REQUEST_MERCHANT_ID_NOT_PASSED);
             }
         }
     }

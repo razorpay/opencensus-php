@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     const OPS_CALL_COMMENT = 'ops_call_comment';
 
+    const MERCHANT_ID = 'merchant_id';
+
     protected $entity = 'banking_account_comment';
 
     protected $table = Table::BANKING_ACCOUNT_COMMENT;

@@ -13,7 +13,7 @@ use RZP\Models\BankingAccount\Activation\Comment;
 
 class RblBulkUploadComments extends Base
 {
-    protected static $mailTag     = MailTags::BATCH_ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS_FILE;
+    protected static $mailTag     = MailTags::BATCH_RBL_BULK_UPLOAD_COMMENTS_FILE;
 
     protected static $sender      = Constants::BANKING_ACCOUNT;
 

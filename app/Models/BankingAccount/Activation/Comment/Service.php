@@ -72,11 +72,17 @@ class Service extends Base\Service
             ]
         ];
 
-        $bankingAccount = $this->repo->banking_account->findByPublicId('bacc_'.$input[Entity::BANKING_ACCOUNT_ID]);
+        $bankingAccounts = $this->repo->banking_account->fetchBankingAccountsByMerchantIdAccountTypeChannel($input[Entity::MERCHANT_ID], BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT);
+
+        // Fail batch call if number count($bankingAccounts) != 1. Feature requested by Ops
+        if (count($bankingAccounts) != 1)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED, null, $input);
+        }
 
         $admin = $this->repo->admin->findOrFailPublic($input[Entity::ADMIN_ID]);
 
-        $newComment = (new Core)->create($bankingAccount, $admin, $commentPayload);
+        $newComment = (new Core)->create($bankingAccounts[0], $admin, $commentPayload);
 
         return $newComment->toArrayPublic();
     }

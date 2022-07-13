@@ -7,6 +7,7 @@ use RZP\Models\Batch;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccount\Activation\Comment\Service;
 
 class BankingAccountActivationCommentsTest extends TestCase
 {
@@ -289,13 +290,9 @@ class BankingAccountActivationCommentsTest extends TestCase
     {
         if (empty($entries) === true)
         {
-            $ba = $this->createBankingAccount();
-
-            $ba_id = $ba->getId();
-
             $entries = [
                 [
-                    Batch\Header::BANKING_ACCOUNT_ID        =>  $ba_id,
+                    Batch\Header::MERCHANT_ID               =>  'merchant_id',
                     Batch\Header::DATE_TIME                 =>  '12/05/2022 12:00:00',
                     Batch\Header::FIRST_DISPOSITION         =>  'first_disposition',
                     Batch\Header::SECOND_DISPOSITION        =>  'second_disposition',
@@ -303,7 +300,7 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::OPS_CALL_COMMENT          =>  'comment'
                 ],
                 [
-                    Batch\Header::BANKING_ACCOUNT_ID        =>  $ba_id,
+                    Batch\Header::MERCHANT_ID               =>  'merchant_id',
                     Batch\Header::DATE_TIME                 =>  '12/05/2022 12:05:00',
                     Batch\Header::FIRST_DISPOSITION         =>  'first_disposition1',
                     Batch\Header::SECOND_DISPOSITION        =>  'second_disposition1',
@@ -320,13 +317,9 @@ class BankingAccountActivationCommentsTest extends TestCase
 
     public function testBatchUploadForRblBulkUploadCommentsIncorrectHeaders()
     {
-        $ba = $this->createBankingAccount();
-
-        $ba_id = $ba->getId();
-
         $entries = [
             [
-                Batch\Header::BANKING_ACCOUNT_ID        =>  $ba_id,
+                Batch\Header::MERCHANT_ID               =>  'merchant_id',
                 'date_time'                             =>  '12/05/2022 12:05:00',
             ],
         ];
@@ -336,6 +329,38 @@ class BankingAccountActivationCommentsTest extends TestCase
         $this->testBatchUploadForRblBulkUploadComments($entries);
     }
 
+    public function testBatchUploadForRblBulkUploadCommentsFailureCase()
+    {
+        $this->fixtures->create('banking_account', ['id' => '01234567890123', 'account_type' => 'current', 'status' => 'archived']);
+
+        $this->fixtures->create('banking_account', ['id' => '12345678901234','account_type' => 'current', 'status' => 'activated']);
+
+        $admin = $this->fixtures->create('admin', [
+            'org_id'  => '100000razorpay',
+            'email'  => 'xyz@rzp.com',
+            'name' => 'test_admin',
+        ]);
+
+        $mid = '10000000000000';
+
+        $requestPayload = [
+            'merchant_id'           => $mid,
+            'date_time'             => '27/02/2022 12:00:00',
+            'ops_call_comment'      => 'test',
+            'first_disposition'     => 'test',
+            'second_disposition'    => 'test',
+            'third_disposition'     => 'test',
+            'admin_id'              => $admin->getPublicId(),
+            'admin_email'           => $admin->getEmail(),
+            'admin_name'            => $admin->getName(),
+        ];
+
+        $bankingAccountService = new Service();
+
+        $this->expectException(BadRequestException::class);
+
+        $bankingAccountService->createCommentFromBatch($requestPayload);
+    }
 }
 
 

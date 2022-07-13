@@ -1127,7 +1127,6 @@ class Header
     const MID_OFFICE_POC_NAME       = 'Called By';
 
     // RBL Bulk Upload Comments
-    const BANKING_ACCOUNT_ID        = 'Banking Account ID';
     const DATE_TIME                 = 'Date-time';
     const FIRST_DISPOSITION         = 'First Disposition';
     const SECOND_DISPOSITION        = 'Second Disposition';
@@ -4120,7 +4119,7 @@ class Header
 
         Type::RBL_BULK_UPLOAD_COMMENTS => [
             self::INPUT => [
-                self::BANKING_ACCOUNT_ID,
+                self::MERCHANT_ID,
                 self::DATE_TIME,
                 self::FIRST_DISPOSITION,
                 self::SECOND_DISPOSITION,
