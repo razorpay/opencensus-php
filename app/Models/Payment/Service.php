@@ -1223,6 +1223,11 @@ class Service extends Base\Service
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
+        $this->trace->info(TraceCode::API_REFUNDS_FETCH_REQUEST, [
+            'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            'extra_trace' => $this->app['basicauth']->getAuthType(),
+        ]);
+
         $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
             RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE,
             $this->mode
@@ -1230,7 +1235,7 @@ class Service extends Base\Service
 
         if ($variant === RefundConstants::RAZORX_VARIANT_ON)
         {
-            return $this->app['scrooge']->refundsFetchByIdAndPayment($paymentId, $rfndId);
+            return $this->retrieveRefundByIdAndPaymentIdShadowMode($paymentId, $rfndId);
         }
 
         Payment\Entity::verifyIdAndStripSign($paymentId);
@@ -1242,6 +1247,56 @@ class Service extends Base\Service
                                     $this->merchant->getKey());
 
         return $refund->toArrayPublic();
+    }
+
+    private function retrieveRefundByIdAndPaymentIdShadowMode($paymentId, $rfndId)
+    {
+        $scroogeResponse = [];
+        $scroogeException = null;
+
+        try
+        {
+            $scroogeResponse = $this->app['scrooge']->refundsFetchByIdAndPayment($paymentId, $rfndId);
+        }
+        catch (\Throwable $ex)
+        {
+            $scroogeException = $ex;
+
+            $this->trace->info(TraceCode::SCROOGE_REFUNDS_FETCH_EXCEPTION, [
+                'error_code'    => $ex->getCode(),
+                'error_message' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace'   => $this->app['basicauth']->getAuthType(),
+            ]);
+        }
+
+        try
+        {
+            Payment\Entity::verifyIdAndStripSign($paymentId);
+            Refund\Entity::verifyIdAndStripSign($rfndId);
+
+            $refund = $this->repo->refund->fetchByIdPaymentIdMerchantId(
+                $rfndId,
+                $paymentId,
+                $this->merchant->getKey());
+
+            $apiResponse = $refund->toArrayPublic();
+
+            (new Payment\Refund\Service())->compareRefundsAndLogDifference([$apiResponse], [$scroogeResponse]);
+
+            return $apiResponse;
+        }
+        catch (\Throwable $apiException)
+        {
+            $extraTraceData = [
+                'refund_id'  => $rfndId,
+                'payment_id' => $paymentId,
+            ];
+
+            (new Payment\Refund\Service())->compareThrowableAndLogDifference($apiException, $scroogeException, $extraTraceData);
+
+            throw $apiException;
+        }
     }
 
     public function getCardForPayment($id)
@@ -1262,48 +1317,20 @@ class Service extends Base\Service
 
     public function retrieveRefundsForPayment($id, array $input = [])
     {
-        $experiment = false;
-        $scroogeRefundsArray = [];
+        $this->trace->info(TraceCode::API_REFUNDS_FETCH_REQUEST, [
+            'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            'extra_trace' => $this->app['basicauth']->getAuthType(),
+            'input'       => $input,
+        ]);
 
-        if ($this->app['basicauth']->isStrictPrivateAuth() === true)
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
         {
-                $variant = $this->app->razorx->getTreatment($id,
-                    RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE,
-                    $this->mode
-                );
-
-                if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-                {
-                    return $this->app['scrooge']->refundsFetchByPayment($id, $input);
-                }
-        }
-
-        else
-        {
-            $variant = $this->app->razorx->getTreatment($id,
-                RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE_PROXY,
-                $this->mode
-            );
-
-            if ($variant === RefundConstants::RAZORX_VARIANT_ON) {
-
-                $experiment = true;
-
-                // keeping in shadow mode for non-private auth requests
-                try
-                {
-                    $scroogeRefundsArray = $this->app['scrooge']->refundsFetchByPayment($id, $input);
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->info(
-                        TraceCode::REFUNDS_FETCH_BY_PAYMENT_SCROOGE_EXCEPTION,
-                        [
-                            'error_code' => $e->getCode(),
-                            'error_message' => $e->getMessage(),
-                        ]);
-                }
-            }
+            return $this->retrieveRefundsForPaymentShadowMode($id, $input);
         }
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
@@ -1317,12 +1344,58 @@ class Service extends Base\Service
             (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
         }
 
-        if ($experiment === true)
+        return $refundsArray;
+    }
+
+    private function retrieveRefundsForPaymentShadowMode($id, array $input = [])
+    {
+        $scroogeRefundsArray = [];
+        $scroogeException = null;
+
+        try
         {
-            (new Payment\Refund\Service())->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
+            $scroogeRefundsArray = $this->app['scrooge']->refundsFetchByPayment($id, $input);
+        }
+        catch (\Throwable $ex)
+        {
+            $scroogeException = $ex;
+
+            $this->trace->info(TraceCode::SCROOGE_REFUNDS_FETCH_EXCEPTION, [
+                'error_code'    => $ex->getCode(),
+                'error_message' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace'   => $this->app['basicauth']->getAuthType(),
+            ]);
         }
 
-        return $refundsArray;
+        try
+        {
+            $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+            $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
+
+            $refundsArray = $refunds->toArrayPublic();
+
+            if ($this->app['basicauth']->isProxyAuth() === true)
+            {
+                (new Payment\Refund\Service())->addModeAndPublicStatus($refundsArray);
+            }
+
+            (new Payment\Refund\Service())->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
+
+            return $refundsArray;
+        }
+        catch (\Throwable $apiException)
+        {
+            $extraTraceData = [
+                'input'      => $input,
+                'payment_id' => $id,
+            ];
+
+            (new Payment\Refund\Service())->compareThrowableAndLogDifference($apiException, $scroogeException, $extraTraceData);
+
+            throw $apiException;
+        }
     }
 
     public function fetchTransactionByPaymentId($id)
@@ -5272,7 +5345,7 @@ class Service extends Base\Service
         {
             $paymentIds = $input['payment_ids'];
         }
-        else 
+        else
         {
             if (empty($input['backfill']) == false)
             {
@@ -5280,8 +5353,8 @@ class Service extends Base\Service
             }
 
             $response = $this->app['card.payments']->fetchEntityForEsSync($backfill);
-            
-            $paymentIds = $response['data'];    
+
+            $paymentIds = $response['data'];
         }
 
 

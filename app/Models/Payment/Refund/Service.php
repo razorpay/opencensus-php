@@ -423,8 +423,11 @@ class Service extends Base\Service
 
     public function fetch($id, array $input = [])
     {
-        $scroogeRefundArray = [];
-        $experiment = false;
+        $this->trace->info(TraceCode::API_REFUNDS_FETCH_REQUEST, [
+            'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            'extra_trace' => $this->app['basicauth']->getAuthType(),
+            'input'       => $input,
+        ]);
 
         $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
             RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
@@ -433,27 +436,7 @@ class Service extends Base\Service
 
         if ($variant === RefundConstants::RAZORX_VARIANT_ON)
         {
-            $experiment = true;
-
-            if ($this->app['basicauth']->isStrictPrivateAuth() === true)
-            {
-                return $this->app['scrooge']->refundsFetchById($id, $input);
-            }
-
-            // keeping in shadow mode for non-private auth requests
-            try
-            {
-                $scroogeRefundArray = $this->app['scrooge']->refundsFetchById($id, $input);
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->info(
-                    TraceCode::REFUNDS_FETCH_BY_ID_SCROOGE_EXCEPTION,
-                    [
-                        'error_code'    => $e->getCode(),
-                        'error_message' => $e->getMessage(),
-                    ]);
-            }
+            return $this->fetchShadowMode($id, $input);
         }
 
         $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
@@ -464,18 +447,67 @@ class Service extends Base\Service
             $this->addParamsForDashboard($refundArray);
         }
 
-        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true &&
-            $refundArray[Entity::SETTLED_BY] != 'Razorpay')
+        if (($this->app['basicauth']->isOptimiserDashboardRequest() === true) &&
+            ($refundArray[Entity::SETTLED_BY] != 'Razorpay'))
         {
             $refundArray = $this->setSettlementDetailsForOptimizer($refundArray);
         }
 
-        if ($experiment === true)
+        return $refundArray;
+    }
+
+    public function fetchShadowMode($id, array $input = [])
+    {
+        $scroogeResponse = [];
+        $scroogeException = null;
+
+        try
         {
-            $this->compareRefundsAndLogDifference([$refundArray], [$scroogeRefundArray]);
+            $scroogeResponse = $this->app['scrooge']->refundsFetchById($id, $input);
+        }
+        catch (\Throwable $ex)
+        {
+            $scroogeException = $ex;
+
+            $this->trace->info(TraceCode::SCROOGE_REFUNDS_FETCH_EXCEPTION, [
+                'error_code'    => $ex->getCode(),
+                'error_message' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace'   => $this->app['basicauth']->getAuthType(),
+            ]);
         }
 
-        return $refundArray;
+        try
+        {
+            $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
+
+            // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
+            if ($this->app['basicauth']->isProxyAuth() === true)
+            {
+                $this->addParamsForDashboard($refundArray);
+            }
+
+            if (($this->app['basicauth']->isOptimiserDashboardRequest() === true) &&
+                ($refundArray[Entity::SETTLED_BY] != 'Razorpay'))
+            {
+                $refundArray = $this->setSettlementDetailsForOptimizer($refundArray);
+            }
+
+            $this->compareRefundsAndLogDifference([$refundArray], [$scroogeResponse]);
+
+            return $refundArray;
+        }
+        catch (\Throwable $apiException)
+        {
+            $extraTraceData = [
+                'refund_id' => $id,
+                'input'     => $input,
+            ];
+
+            $this->compareThrowableAndLogDifference($apiException, $scroogeException, $extraTraceData);
+
+            throw $apiException;
+        }
     }
 
     public function setSettlementDetailsForOptimizer($refundArray)
@@ -627,6 +659,43 @@ class Service extends Base\Service
         }
 
         return array_keys($responseDiff);
+    }
+
+    public function compareThrowableAndLogDifference(\Throwable $apiException, $scroogeException, array $extraTrace = [])
+    {
+        try
+        {
+            if ($scroogeException === null)
+            {
+                $this->trace->info(TraceCode::SCROOGE_AND_API_REFUNDS_EXCEPTION_INCONSISTENCY, [
+                    'api_error_code'        => $apiException->getCode(),
+                    'scrooge_error_code'    => null,
+                    'api_error_message'     => $apiException->getMessage(),
+                    'scrooge_error_message' => null,
+                    'route_name'            => $this->app['api.route']->getCurrentRouteName(),
+                    'extra_trace'           => $extraTrace,
+                ]);
+
+                return;
+            }
+
+            if (($apiException->getCode() !== $scroogeException->getCode()) or
+                ($apiException->getMessage() !== $scroogeException->getMessage()))
+            {
+                $this->trace->info(TraceCode::SCROOGE_AND_API_REFUNDS_EXCEPTION_INCONSISTENCY, [
+                    'api_error_code'        => $apiException->getCode(),
+                    'scrooge_error_code'    => $scroogeException->getCode(),
+                    'api_error_message'     => $apiException->getMessage(),
+                    'scrooge_error_message' => $scroogeException->getMessage(),
+                    'route_name'            => $this->app['api.route']->getCurrentRouteName(),
+                    'extra_trace'           => $extraTrace,
+                ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::COMPARE_REFUNDS_ERROR, ['message' => 'error in throwable comparison']);
+        }
     }
 
     public function fetchEntity($id)
@@ -1414,9 +1483,21 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
-        $this->trace->info(TraceCode::REFUNDS_FETCH_MULTIPLE_REQUEST_BODY, $input);
-        $experiment = false;
-        $scroogeRefundsArray = [];
+        $this->trace->info(TraceCode::API_REFUNDS_FETCH_REQUEST, [
+            'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+            'extra_trace' => $this->app['basicauth']->getAuthType(),
+            'input'       => $input,
+        ]);
+
+        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            return $this->fetchMultipleShadowMode($input);
+        }
 
         // We are masking status for merchants
         if ((($this->app['basicauth']->isProxyAuth() === true) or
@@ -1426,46 +1507,6 @@ class Service extends Base\Service
             $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
 
             unset($input[Entity::STATUS]);
-        }
-
-        if ($this->app['basicauth']->isStrictPrivateAuth() === true)
-        {
-            $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-                RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
-                $this->mode
-            );
-
-            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-            {
-                return $this->app['scrooge']->refundsFetchMultiple($input);
-            }
-        }
-        else
-        {
-            $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
-                RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE_PROXY,
-                $this->mode
-            );
-
-            if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-            {
-                $experiment = true;
-
-                // keeping in shadow mode for non-private auth requests
-                try
-                {
-                    $scroogeRefundsArray =  $this->app['scrooge']->refundsFetchMultiple($input);
-                }
-                catch (\Throwable $e)
-                {
-                    $this->trace->info(
-                        TraceCode::REFUNDS_FETCH_MULTIPLE_SCROOGE_EXCEPTION,
-                        [
-                            'error_code'    => $e->getCode(),
-                            'error_message' => $e->getMessage(),
-                        ]);
-                }
-            }
         }
 
         $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
@@ -1478,12 +1519,66 @@ class Service extends Base\Service
             $this->addPublicStatus($refundsArray, $input);
         }
 
-        if ($experiment === true)
+        return $refundsArray;
+    }
+
+    public function fetchMultipleShadowMode($input)
+    {
+        $scroogeRefundsArray = [];
+        $scroogeException = null;
+
+        try
         {
-            $this->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
+            $scroogeRefundsArray = $this->app['scrooge']->refundsFetchMultiple($input);
+        }
+        catch (\Throwable $ex)
+        {
+            $scroogeException = $ex;
+
+            $this->trace->info(TraceCode::SCROOGE_REFUNDS_FETCH_EXCEPTION, [
+                'error_code'    => $ex->getCode(),
+                'error_message' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                'extra_trace'   => $this->app['basicauth']->getAuthType(),
+            ]);
         }
 
-        return $refundsArray;
+        try
+        {
+            // We are masking status for merchants
+            if ((($this->app['basicauth']->isProxyAuth() === true) or
+                 ($this->app['basicauth']->isPrivateAuth() === true)) and
+                (isset($input[Entity::STATUS]) === true))
+            {
+                $input[Entity::PUBLIC_STATUS] = $input[Entity::STATUS];
+
+                unset($input[Entity::STATUS]);
+            }
+
+            $refunds = $this->repo->refund->fetch($input, $this->merchant->getId());
+
+            $refundsArray = $refunds->toArrayPublic();
+
+            // Showing public_status for all dashboard merchants
+            if ($this->app['basicauth']->isProxyAuth() === true)
+            {
+                $this->addPublicStatus($refundsArray, $input);
+            }
+
+            $this->compareRefundsAndLogDifference($refundsArray['items'], $scroogeRefundsArray['items'] ?? []);
+
+            return $refundsArray;
+        }
+        catch (\Throwable $apiException)
+        {
+            $extraTraceData = [
+                'input'      => $input,
+            ];
+
+            $this->compareThrowableAndLogDifference($apiException, $scroogeException, $extraTraceData);
+
+            throw $apiException;
+        }
     }
 
     public function fetchRefundFee(array $input)
