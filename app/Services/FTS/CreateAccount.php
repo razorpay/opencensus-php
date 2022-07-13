@@ -282,7 +282,8 @@ class CreateAccount extends Base
             Constants::NETWORK_CODE => $card->getNetworkCode(),
         ];
 
-        //
+        // The isNetworkTokenisedCard condition is added since for that case the merchant in the card entity and
+        // the merchant making the payout request might be different
         if (($card->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::PAYOUT_NAMESPACE_CHANGES) === true) or
             ($card->isNetworkTokenisedCard() === true))
         {

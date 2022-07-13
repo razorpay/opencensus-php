@@ -680,6 +680,71 @@ class CompositePayoutTest extends TestCase
         $this->assertEquals('razorpay_token', $response['fund_account']['card']['input_type']);
     }
 
+    public function testCreateCompositePayoutForTokenisedRzpSavedCardFlowWithTokenOfDifferentMerchant()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Chirag']);
+
+        $this->fixtures->create('merchant', ['id' => '100000merchant']);
+
+        $this->fixtures->create('card', [
+            'id'                 => '1000000010card',
+            'expiry_month'       => 12,
+            'expiry_year'        => 2028,
+            'iin'                => '416021',
+            'merchant_id'        => '100000merchant',
+            'last4'              => '3002',
+            'length'             => '16',
+            'network'            => 'Visa',
+            'type'               => 'debit',
+            'issuer'             => 'ICIC',
+            'vault'              => 'visa',
+            'vault_token'        => 'JDzXk6S3CAjUn8',
+            'global_fingerprint' => 'V0010014618091560597265901338',
+            'country'            => 'IN',
+            'token_expiry_month' => 12,
+            'token_expiry_year'  => 2028,
+            'token_iin'          => '461015172',
+            'sub_type'           => 'consumer',
+            'category'           => 'Platinum'
+        ]);
+
+        $this->fixtures->create('token', [
+            'id'          => '100000000token',
+            'method'      => 'card',
+            'recurring'   => false,
+            'card_id'     => '1000000010card',
+            'merchant_id' => '100000merchant'
+        ]);
+
+        $app = App::getFacadeRoot();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateCompositePayoutForTokenisedRzpSavedCardFlow'];
+
+        $response = $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('1000000010card', $payout->fundAccount->account['id']);
+
+        $this->assertEquals('razorpay_token', $response['fund_account']['card']['input_type']);
+    }
+
     public function testCreateCompositePayoutForCred()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);

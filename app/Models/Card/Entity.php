@@ -1150,7 +1150,10 @@ class Entity extends Base\PublicEntity
             unset($attributes[self::NAME]);
         }
 
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true)
+        // The isNetworkTokenisedCard condition is added since for that case the merchant in the card entity and
+        // the merchant making the payout request might be different
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true) or
+            ($this->isNetworkTokenisedCard() === true))
         {
             if ($this->isTokenPan() === true)
             {
