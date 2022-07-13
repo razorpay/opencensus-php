@@ -14,6 +14,7 @@ use RZP\Services\ShieldClient;
 use RZP\Constants\Shield as ShieldConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Payment\Config\Type as PaymentConfigType;
 
 class Shield
 {
@@ -173,6 +174,8 @@ class Shield
 
         $this->populateWhiteListedDomains($merchant, $payloadDetails);
 
+        $this->populateSecure3dInternationalFlag($merchant, $payloadDetails);
+
         if (isset($merchant->merchantBusinessDetail) === true)
         {
             $payloadDetails[ShieldConstants::MERCHANT_WHITELISTED_APP_URLS] = $merchant->merchantBusinessDetail->getAppUrls();
@@ -281,6 +284,21 @@ class Shield
 
                 break;
 
+        }
+    }
+
+    protected function populateSecure3dInternationalFlag(Merchant\Entity $merchant, array & $payloadDetails)
+    {
+        $configEntity = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchant->getId(), PaymentConfigType::RISK);
+
+        if ($configEntity != null)
+        {
+            $config = json_decode($configEntity->config, true);
+
+            if (empty($config[ShieldConstants::SECURE_3D_INTERNATIONAL]) === false)
+            {
+                $payloadDetails[ShieldConstants::SECURE_3D_INTERNATIONAL] = $config[ShieldConstants::SECURE_3D_INTERNATIONAL];
+            }
         }
     }
 

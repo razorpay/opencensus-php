@@ -118,6 +118,7 @@ final class Shield
     const BILLING_ADDRESS_STATE       = "billing_address_state";
     const BILLING_ADDRESS_COUNTRY     = "billing_address_country";
     const BILLING_ADDRESS_POSTAL_CODE = "billing_address_postal_code";
+    const SECURE_3D_INTERNATIONAL     = 'secure_3d_international';
 
     // Response constants
     const ACTION_KEY              = 'action';

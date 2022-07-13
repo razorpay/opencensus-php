@@ -364,6 +364,50 @@ class FraudDetectionTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function test3dsFlagSendToShield()
+    {
+        $this->mockRazorx();
+
+        $this->createMerchantDetails();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'signup_via_email' => 0,
+        ]);
+
+        $this->fixtures->create('config', [
+                'type' => 'risk',
+                'is_default' => true,
+                'is_deleted' => false,
+                'merchant_id' => '10000000000000',
+                'config'     => '{
+                    "secure_3d_international": "v1"
+                }']);
+
+        $payment['card']['number'] = '5105105105105100';
+
+        $expectedShieldPayload  = [
+            "secure_3d_international"   => "v1",
+        ];
+        $expectedShieldResponse = [
+            "action"                => "allow",
+            "max_rule_weight"       => 0,
+            "maxmind_score"         => null,
+            "triggered_rule_weight" => 0,
+            "triggered_rules"       => [
+                "block"     => [],
+                "review"    => [],
+                "whitelist" => []
+            ]];
+
+        $this->mockShieldClientRequest($expectedShieldPayload, $expectedShieldResponse);
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+    }
+
     private function createMerchantDetails($unregisteredBusiness = false)
     {
         $merchantDetailData = [
