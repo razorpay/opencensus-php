@@ -118,7 +118,7 @@ class Core extends Base\Core
             // finally raise escalations
             (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::SOFT_LIMIT, 1);
             // trigger CMMA escalations; this will be uncommented based on product requirements.
-            // (new CmmaEscalation)->triggerCMMAEscalation($merchants, Constants::SOFT_LIMIT, 1);
+             (new CmmaEscalation)->triggerCMMAEscalation($merchants, Constants::SOFT_LIMIT, 1);
         }
     }
 

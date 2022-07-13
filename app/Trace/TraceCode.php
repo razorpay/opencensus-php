@@ -5635,6 +5635,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const CMMA_ESCALATION_ATTEMPT                           = 'CMMA_ESCALATION_ATTEMPT';
     const CMMA_ESCALATION_ATTEMPT_FAILURE                   = 'CMMA_ESCALATION_ATTEMPT_FAILURE';
+    const CMMA_ESCALATION_EXCLUDE                           = 'CMMA_ESCALATION_EXCLUDE';
 
     const TRANSACTION_DETAILS_CRON_TRACE                    = 'TRANSACTION_DETAILS_CRON_TRACE';
     const WEB_ATTRIBUTION_DETAILS_CRON_TRACE                = 'WEB_ATTRIBUTION_DETAILS_CRON_TRACE';

@@ -47,11 +47,21 @@ class CmmaEscalation
         {
             try
             {
+                $isExcludedMerchant = self::isMerchantExcludedForCaseCreation($merchant);
+
                 $merchantId = $merchant->getId();
+
+                if ($isExcludedMerchant === true) {
+
+                    $this->trace->info(TraceCode::CMMA_ESCALATION_EXCLUDE, [
+                        'merchant_id'   => $merchantId
+                    ]);
+                    return;
+                }
 
                 $merchantName = $merchant->getName() ?? "undefined";
 
-                $cmmaExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId);
+                $cmmaExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId, Constants::CMMA_EXPERIMENT_ID_KEY);
 
                 $processId =  $this->app['config']->get(Constants::CMMA_PROCESS_ID_KEY);
 
@@ -77,7 +87,13 @@ class CmmaEscalation
 
                     if ($type === AutoKycConstants::SOFT_LIMIT)
                     {
-                        $cmmaProxyController->handleInternalCronProxyRequests(Constants::CMMA_ROUTE, $escalationPayload);
+                        // hide soft limit breach behind experiment for now
+                         $softLimitExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId,
+                             Constants::CMMA_SOFT_LIMIT_EXPERIMENT_ID);
+
+                         if ($softLimitExperimentEnabled === true) {
+                             $cmmaProxyController->handleInternalCronProxyRequests(Constants::CMMA_ROUTE, $escalationPayload);
+                         }
                     } elseif ($type === AutoKycConstants::HARD_LIMIT)
                     {
                         // call CMMA with a hard-limit payload
@@ -96,14 +112,35 @@ class CmmaEscalation
 
     }
 
-    protected function isCMMAEscalationExperimentEnabled($merchantId): bool
+    protected function isCMMAEscalationExperimentEnabled($merchantId, $experimentId): bool
     {
         $properties = [
             'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get(Constants::CMMA_EXPERIMENT_ID_KEY),
+            'experiment_id' => $this->app['config']->get($experimentId),
         ];
         $response = $this->app['splitzService']->evaluateRequest($properties);
         $variant = $response['response']['variant']['name'] ?? '';
         return $variant === Constants::ENABLE;
+    }
+
+    protected function isMerchantExcludedForCaseCreation($merchant): bool
+    {
+        $merchantId = $merchant->getId();
+
+        $isPartner = $merchant->getPartnerType();
+
+        // exclude the merchant if it is not a partner or a sub-merchant of a partner
+        if (empty($isPartner) === true) { // merchant is not a partner
+
+            // is not a sub-merchant of a partner
+            $isSubMerchantOfPartner  = $this->repo->merchant_access_map->getByMerchantId($merchantId);
+
+            if (empty($isSubMerchantOfPartner) == true) {
+                return false;
+            }
+
+        }
+
+        return true;
     }
 }

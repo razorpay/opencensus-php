@@ -403,6 +403,8 @@ return array(
 
     'cmma_limit_breach_trigger_experiment_id' => env('CMMA_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
 
+    'cmma_soft_limit_breach_trigger_experiment_id' => env('CMMA_SOFT_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
+
     'cmma_escalation_process_id' => env('CMMA_ESCALATION_PROCESS_ID'),
 
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),
