@@ -3054,6 +3054,12 @@ class Core extends Base\Core
 
         $properties = $this->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $currentActivationStatus);
 
+        if($currentActivationStatus === Status::INSTANTLY_ACTIVATED){
+
+            $this->app['segment-analytics']->pushTrackEvent(
+                $merchant, $properties, $currentActivationStatus);
+        }
+
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
 
