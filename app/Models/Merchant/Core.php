@@ -7790,6 +7790,22 @@ class Core extends Base\Core
                            [ 'partner_id' => $partnerId ]);
     }
 
+    /**
+     *  This function is used for fetching partner/parent Id for given submerchants
+     *  in case of partners enabled with aggregate settlement.
+     *
+     *  We return an empty string in case:
+     *       If zero or more than one partner is found.
+     *       If the owner Id in merchant_access_map is the same as submerchantId.
+     *       If the partner is not onboarded on NSS.
+     *       If the partner is onboarded on NSS but not an aggregate settlement parent.
+     *
+     *  In other cases we return a single string of parent/partner Id.
+     *
+     * @param string $submerchantId
+     *
+     * @return string
+     */
     public function fetchAggregateSettlementForNSSParent(string $submerchantId): string
     {
         $merchantAccessMapList = $this->repo
@@ -7810,6 +7826,11 @@ class Core extends Base\Core
         {
             $parentMerchantID = $merchantAccessMapList->first()->getEntityOwnerId();
 
+            if ($parentMerchantID === $submerchantId)
+            {
+                return '';
+            }
+
             $nssFeature = $this->repo
                 ->feature
                 ->findByEntityTypeEntityIdAndName(Constants::MERCHANT, $parentMerchantID, FeatureConstants::NEW_SETTLEMENT_SERVICE);
@@ -7828,14 +7849,29 @@ class Core extends Base\Core
                 return '';
             }
 
-            if ($parentMerchantID === $submerchantId)
+            $req = [
+                'merchant_id' => $parentMerchantID
+            ];
+
+            $response =  app('settlements_api')->merchantConfigGet($req, $this->mode);
+
+            $isAggregateSettlement = $response['config']['preferences']['aggregate_settlement_parent'];
+
+            if($isAggregateSettlement === false)
             {
+                $this->trace->info(TraceCode::PARTNER_NOT_ENABLED_FOR_AGGREGATE_SETTLEMENT,[
+                    'partner_id'       => $parentMerchantID,
+                    'sub_merchant_id'  => $submerchantId
+                ]);
+
                 return '';
             }
 
             $this->trace->info(TraceCode::PARENT_ID_FOR_SUBMERCHANT_NSS_MIGRATION,[
-                'sub_merchant_id'      => $submerchantId,
-                'parent_merchant_id'   => $parentMerchantID,
+                'sub_merchant_id'               => $submerchantId,
+                'parent_merchant_id'            => $parentMerchantID,
+                'aggregate_settlement_parent'   => $isAggregateSettlement,
+                'nss_feature_parent'            => $featureResult
             ]);
 
             return $parentMerchantID;

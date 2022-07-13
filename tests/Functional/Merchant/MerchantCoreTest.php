@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\MerchantApplications;
 
 use RZP\Models\User\Role;
+use RZP\Services\Mock\Settlements\Api;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
@@ -138,11 +139,34 @@ class MerchantCoreTest extends OAuthTestCase
     {
         $this->setUpNonPurePlatformPartnerAndSubmerchant('10000000000000','100submerchant');
 
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'aggregate_settlement_parent');
+        });
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_SETTLEMENT_SERVICE]);
 
         $result = (new Core())->fetchAggregateSettlementForNSSParent('100submerchant');
 
         $this->assertEquals($result,'10000000000000');
+    }
+
+    public function testFetchPartnerIdForSubmerchantNSSMigrationWithAggSettlementDisabled()
+    {
+        $this->setUpNonPurePlatformPartnerAndSubmerchant('10000000000000','100submerchant');
+
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'aggregate_settlement_parent_false');
+        });
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_SETTLEMENT_SERVICE]);
+
+        $result = (new Core())->fetchAggregateSettlementForNSSParent('100submerchant');
+
+        $this->assertEquals($result,'');
     }
 
     public function testFetchPartnerIdForSubmerchantNSSMigrationWithFeatureDisabled()
