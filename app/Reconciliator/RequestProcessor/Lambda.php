@@ -33,6 +33,7 @@ class Lambda extends Base
         Base::CRED,
         Base::NETBANKING_UBI,
         Base::NETBANKING_AUSF,
+        Base::NETBANKING_AUSF_CORP,
         Base::NETBANKING_NSDL,
         Base::NETBANKING_AXIS,
         Base::CHECKOUT_DOT_COM,
