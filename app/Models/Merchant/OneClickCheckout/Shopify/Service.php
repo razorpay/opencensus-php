@@ -89,10 +89,6 @@ class Service extends Base\Service
     public function shopifyCreateCheckout(array $input): array
     {
         $start = millitime();
-        // print_r($input);
-        // Disabled in case of simple requests/ cors
-        // NOTE: Do not enable signature verification
-        // (new Core)->verifyHmacSignature($input);
 
         $checkout = (new Core)->placeShopifyCheckout($input);
 
@@ -177,8 +173,6 @@ class Service extends Base\Service
     {
         try
         {
-            (new Core)->verifyHmacSignature($input, false);
-
             return (new Checkout)->updateCheckoutFromAdmin($input);
         }
         catch (\Throwable $e)
@@ -230,7 +224,6 @@ class Service extends Base\Service
         // if it from public API, verify the signature
         if ($fromShopifyApi === true)
         {
-            (new Core)->verifyHmacSignature($input);
         }
         else
         {
@@ -431,8 +424,6 @@ class Service extends Base\Service
      */
     public function updateCheckoutUrl(array $input): array
     {
-        (new Core)->verifyHmacSignature($input, false);
-
         (new Checkout)->updateCheckoutUrl($input);
 
         return [];

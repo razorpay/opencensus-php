@@ -440,42 +440,6 @@ class Core extends Base\Core
         }
     }
 
-    public function verifyHmacSignature(array $input, bool $useKeyId = true)
-    {
-        // Hardcoding true to support simple requests/ cors
-        // NOTE: Do not remove this statement. We are removing app proxy and hmac
-        // validation dependency
-        return true;
-
-        $config = (new Core)->getShopifyAuthByMerchant();
-
-        $secret = $config[OneClickCheckout\Constants::API_SECRET];
-
-        $query = ''
-            . ($useKeyId === true ? 'key_id=' . $input['key'] : '')
-            .'path_prefix=' . $input['path_prefix']
-            .'shop=' . $input['shop']
-            .'timestamp=' . $input['timestamp']
-            ;
-
-        $hmac = hash_hmac(self::SHA_256, $query, $secret);
-
-        if ($hmac !== $input['signature'])
-        {
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_HMAC_VALIDATION_FAILED,
-                [
-                    'type'      => 'hmac_validation_failed',
-                    'query'     => $query,
-                    'shop_id'   => $config[OneClickCheckout\Constants::SHOP_ID],
-                    'hmac'      => $hmac,
-                    'signature' => $input['signature']
-                ]
-            );
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
-        }
-    }
-
     public function canShopifyOrderBePlaced($order, $fromShopifyApi)
     {
         $receipt = $order->getReceipt();
