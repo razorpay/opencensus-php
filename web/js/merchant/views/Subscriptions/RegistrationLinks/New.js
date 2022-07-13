@@ -37,6 +37,7 @@ import {
 import analytics from '../analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { isAmountLiesInRange } from '../utils';
+import { topEmandateBankCodes } from '../constants';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -311,7 +312,8 @@ export default class NewRegistrationLink extends React.Component {
   fetchDataForRegistrationLinks = () => {
     fetchPaymentMethods().then((methods) => {
       if (methods && methods.recurring) {
-        let emandateBanks = [];
+        const topEmandateBanks = [];
+        const otherEmandateBanks = [];
 
         const avlblMethods = Object.keys(methods.recurring).filter((methodName) => {
           if (methodName === 'upi') {
@@ -324,16 +326,24 @@ export default class NewRegistrationLink extends React.Component {
         if (methods.recurring.emandate) {
           const emandates = methods.recurring.emandate || {};
 
-          emandateBanks = Object.entries(emandates).map(([code, bank]) => ({
-            label: bank.name,
-            authTypes: bank.auth_types,
-            name: code,
-          }));
+          Object.entries(emandates).forEach(([code, bank]) => {
+            const bankObj = {
+              label: bank.name,
+              authTypes: bank.auth_types,
+              name: code,
+            };
+
+            if (topEmandateBankCodes.indexOf(code) > -1) {
+              topEmandateBanks.push(bankObj);
+            } else {
+              otherEmandateBanks.push(bankObj);
+            }
+          });
         }
 
         this.setState({
           loading: false,
-          emandateBanks,
+          emandateBanks: [...topEmandateBanks, ...otherEmandateBanks],
           avlblMethods,
         });
       }
