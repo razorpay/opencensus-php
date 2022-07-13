@@ -168,6 +168,7 @@ class Entity extends Transaction\Entity
                 CreditTransfer\Entity::STATUS,
                 CreditTransfer\Entity::DESCRIPTION,
                 CreditTransfer\Entity::UTR,
+                CreditTransfer\Entity::MODE,
                 CreditTransfer\Entity::PROCESSED_AT,
                 CreditTransfer\Entity::PAYER_NAME,
                 CreditTransfer\Entity::PAYER_ACCOUNT,

@@ -162,6 +162,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);

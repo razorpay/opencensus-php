@@ -14950,6 +14950,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($creditTransfer->getPayerName(), $statementResponse['source']['payer_name']);
         $this->assertEquals($creditTransfer->getPayerAccount(), $statementResponse['source']['payer_account']);
         $this->assertEquals($creditTransfer->getDescription(), $statementResponse['source']['description']);
+        $this->assertEquals($creditTransfer->getMode(), $statementResponse['source']['mode']);
     }
 
     // tests for va to va transfers using creditTransfer
