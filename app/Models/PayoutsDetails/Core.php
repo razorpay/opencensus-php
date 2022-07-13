@@ -2,6 +2,8 @@
 
 namespace RZP\Models\PayoutsDetails;
 
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -10,6 +12,7 @@ use RZP\Models\FileStore\Type;
 use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
@@ -48,7 +51,7 @@ class Core extends Base\Core
         }
     }
 
-    public function uploadAttachment($file, $filename, $entity)
+    public function uploadAttachment(UploadedFile $file, string $filename, MerchantEntity $merchant)
     {
         $ufhService = $this->getUfhService();
 
@@ -62,7 +65,7 @@ class Core extends Base\Core
             ->uploadFileAndGetUrl($file,
                                   $modifiedFileName,
                                   Type::PAYOUT_ATTACHMENTS,
-                                  $entity);
+                                  $merchant);
 
         $this->trace->info(
             TraceCode::PAYOUT_ATTACHMENT_UPLOADED_SUCCESSFULLY,
@@ -71,19 +74,26 @@ class Core extends Base\Core
 
         $fileId = '';
 
-        if (isset($ufhResponse[Entity::ATTACHMENTS_FILE_ID]) === true)
+        $fileIdHash = '';
+
+        if(isset($ufhResponse[Entity::ATTACHMENTS_FILE_ID]) === true)
         {
             $fileId = $ufhResponse[Entity::ATTACHMENTS_FILE_ID];
+
+            $fileIdHash = Utils::generateAttachmentFileIdHash($fileId);
         }
 
         return [
-            Entity::ATTACHMENTS_FILE_ID   => $fileId,
-            Entity::ATTACHMENTS_FILE_NAME => $filename
+            Entity::ATTACHMENTS_FILE_ID     => $fileId,
+            Entity::ATTACHMENTS_FILE_NAME   => $filename,
+            Entity::ATTACHMENTS_FILE_HASH   => $fileIdHash
         ];
     }
 
     public function updateAttachments(string $payoutId, array $input): array
     {
+        $attachmentsInfo = Utils::prepareAttachmentInfoFromInput($input);
+
         try
         {
             /** @var Base\PublicCollection $payoutDetails */
@@ -95,14 +105,14 @@ class Core extends Base\Core
             {
                 $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
 
-                $updates = array($updateKey => $attachments);
+                $updates = array($updateKey => $attachmentsInfo);
 
                 $this->repo->payouts_details->updatePayoutDetails([$payoutId], $updates);
             }
             else
             {
                 $additionalInfo = [
-                    Entity::ATTACHMENTS => $attachments
+                    Entity::ATTACHMENTS => $attachmentsInfo
                 ];
 
                 $input[Entity::ADDITIONAL_INFO] = json_encode($additionalInfo, true);

@@ -1415,9 +1415,19 @@ class Validator extends Base\Validator
 
     protected function validateAttachmentsInput(array $attachments)
     {
+        $payoutDetailsValidator = new PayoutDetailsValidator;
+
+        $app = App::getFacadeRoot();
+
         foreach ($attachments as $attachment)
         {
-            (new PayoutDetailsValidator)->validateInput(PayoutDetailsValidator::ATTACHMENT, $attachment);
+            $payoutDetailsValidator->validateInput(PayoutDetailsValidator::ATTACHMENT, $attachment);
+
+            // validating file-hash for non-internal app auths
+            if($app['basicauth']->isPayoutLinkApp() === false)
+            {
+                $payoutDetailsValidator->validateAttachmentFileIdHash($attachment);
+            }
         }
     }
 

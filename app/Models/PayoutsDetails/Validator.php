@@ -26,7 +26,37 @@ class Validator extends Base\Validator
 
     protected static $attachmentRules = [
         Entity::ATTACHMENTS_FILE_ID    => 'required|string',
-        Entity::ATTACHMENTS_FILE_NAME  => 'required|string'
+        Entity::ATTACHMENTS_FILE_NAME  => 'required|string',
+        Entity::ATTACHMENTS_FILE_HASH  => 'sometimes|string'
     ];
+
+    public function validateAttachmentFileIdHash(array $attachmentInput)
+    {
+        $inputFileId = $attachmentInput[Entity::ATTACHMENTS_FILE_ID];
+
+        if (array_key_exists(Entity::ATTACHMENTS_FILE_HASH, $attachmentInput) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FILE_HASH_MISSING_FOR_ATTACHMENT,
+                null,
+                [
+                    'file_id' => $inputFileId,
+                ]);
+        }
+
+        $inputFileIdHash = $attachmentInput[Entity::ATTACHMENTS_FILE_HASH];
+
+        $computedFileIdHash = Utils::generateAttachmentFileIdHash($inputFileId);
+
+        if ($inputFileIdHash !== $computedFileIdHash)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_FILE_HASH_FOR_ATTACHMENT,
+                null,
+                [
+                    'file_id' => $inputFileId,
+                ]);
+        }
+    }
 }
 

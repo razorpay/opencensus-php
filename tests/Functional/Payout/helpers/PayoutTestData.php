@@ -19544,14 +19544,7 @@ return [
         'request'  => [
             'method'  => 'PATCH',
             'url'     => 'payouts/pout_JLYXwEbdcktqV1/attachments',
-            'content' => [
-                "attachments" => [
-                    [
-                        "file_id"   => "file_JLYYnaOtQ0Xgzt",
-                        "file_name" => "new file.pdf",
-                    ]
-                ]
-            ],
+            'content' => [],
         ],
         'response' => [
             'content' => [
@@ -19563,14 +19556,7 @@ return [
         'request'  => [
             'method'  => 'PATCH',
             'url'     => 'payouts/pout_JLYXwEbdcktqV1/attachments',
-            'content' => [
-                "attachments" => [
-                    [
-                        "file_id"   => "file_JLYYnaOtQ0Xgzt",
-                        "file_name" => "new file.pdf",
-                    ]
-                ]
-            ],
+            'content' => [],
         ],
         'response' => [
             'content' => [
@@ -19617,6 +19603,38 @@ return [
         ],
     ],
 
+    'testCohesiveUploadAndCreatePayoutWithDifferentAttachmentFailureFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 50000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'otp' =>'0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Invalid file_hash for attachment',
+                    ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_FILE_HASH_FOR_ATTACHMENT,
+        ],
+    ],
+
     'testDownloadAttachmentsInPayoutReportWithInvalidTimeRangeType' => [
         'request'  => [
             'method'  => 'POST',
@@ -19646,6 +19664,26 @@ return [
         ],
     ],
 
+    'testCohesiveUploadAndUpdatePayoutWithDifferentAttachmentFailFlow' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/attachments',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Invalid file_hash for attachment',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_FILE_HASH_FOR_ATTACHMENT,
+        ],
+    ],
+
     'testDownloadAttachmentsInPayoutReportWithInvalidTimeRange' => [
         'request'  => [
             'method'  => 'POST',
@@ -19670,8 +19708,73 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCohesiveUploadAndCreatePayoutWithFileHashMissingFailFlow' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 50000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'otp' =>'0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_JLYYnaOtQ0Xgzt',
+                        'file_name' => 'new file.pdf',
+                    ]
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'file_hash missing for attachment',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_HASH_MISSING_FOR_ATTACHMENT,
+        ],
+    ],
+
+    'testCohesiveUploadAndUpdatePayoutWithFileHashMissingFailFlow' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/{id}/attachments',
+            'content' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_JLYYnaOtQ0Xgzt',
+                        'file_name' => 'new file.pdf',
+                    ]
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'file_hash missing for attachment',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FILE_HASH_MISSING_FOR_ATTACHMENT,
         ],
     ],
 

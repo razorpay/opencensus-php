@@ -36,6 +36,7 @@ class Entity extends PublicEntity
     const ATTACHMENTS           = 'attachments';
     const ATTACHMENTS_FILE_ID   = 'file_id';
     const ATTACHMENTS_FILE_NAME = 'file_name';
+    const ATTACHMENTS_FILE_HASH = 'file_hash';
     const UPDATE_REQUEST        = 'update_request';
     const PAYOUT_IDS            = 'payout_ids';
 

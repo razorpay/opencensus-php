@@ -60,13 +60,14 @@ use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
-use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
-use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
+use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
+use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
+use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
-use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
+use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 
 
 /**
@@ -2155,7 +2156,9 @@ class Base extends BaseCore
 
         if (isset($input[PayoutsDetailsEntity::ATTACHMENTS]) === true)
         {
-            $additionalInfo[PayoutsDetailsEntity::ATTACHMENTS] = $input[PayoutsDetailsEntity::ATTACHMENTS_KEY];
+            $attachmentsInfo = PayoutsDetailsUtils::prepareAttachmentInfoFromInput($input);
+
+            $additionalInfo[PayoutsDetailsEntity::ATTACHMENTS_KEY] = $attachmentsInfo;
         }
 
         if (empty($additionalInfo) === false)

@@ -1650,6 +1650,10 @@ class PublicErrorDescription
     const BAD_REQUEST_OAUTH_ROLE_NOT_FOUND                                          = 'OAuth Role not found';
 
     const BAD_REQUEST_SET_DEFAULT_METHODS_ALREADY_IN_PROGRESS                       = 'Set Default Methods is in progress for the merchant';
+
+    const BAD_REQUEST_FILE_HASH_MISSING_FOR_ATTACHMENT                              = 'file_hash missing for attachment';
+    const BAD_REQUEST_INVALID_FILE_HASH_FOR_ATTACHMENT                              = 'Invalid file_hash for attachment';
+
     const BAD_REQUEST_ENABLE_NON_3DS_REQUEST_MADE_IN_LAST_30_DAYS                   = 'Bad request enable non-3ds card processing request made in last 30 days';
 
     const BAD_REQUEST_OTP_VERIFICATION_LOG                                          = 'Contact mobile must be same as merchant business mobile number';
