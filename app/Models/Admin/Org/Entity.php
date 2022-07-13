@@ -70,6 +70,8 @@ class Entity extends Base\Entity
     const SIB_ORG_ID            = 'HrgeWjbnzZefSN';
     const AXIS_EASYPAY_ORG_ID   = 'ISCkwbk39MdTk5';
     const KOTAK_ORG_ID          = 'IUXvshap3HbzOs';
+    const BAJAJ_ORG_ID          = 'CerI5wCZlnyN1Q';
+    const BAJAJ_ORG_SIGNED_ID   = 'org_CerI5wCZlnyN1Q';
 
     /**
      * Org Id list on which Merchant on boarding escalation has to be triggered.
