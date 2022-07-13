@@ -10,8 +10,8 @@ export const validateModalInfo = (maxRows, sampleUrl) => (
         for the template.
       </li>
       <li>
-        The &ldquo;updated_at&ldquo; column values should be in the dd/mm/yyyy format. (e.g.
-        01/01/2022)
+        Enter Shipping Charges, AWB number and Shipping Provider (e.g. Bluedart) to claim RTO
+        Insurance.
       </li>
       <li>The number of rows in the file should not exceed {maxRows}.</li>
     </ol>

@@ -33,7 +33,7 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
         createBatch={createBatch}
         validateBatch={validateBatch}
         gaEvents={gaEvents}
-        validateModalInfo={validateModalInfo('1M', SAMPLE_BATCH_UPLOAD_FILE)}
+        validateModalInfo={validateModalInfo('1 million', SAMPLE_BATCH_UPLOAD_FILE)}
         maxFileSize={52428800} // 50MB
       />
     ),
