@@ -438,17 +438,15 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestValidationFailureException('order_id is a compulsory field');
         }
-
-        $config = (new Core)->getShopifyAuthByMerchant();
-
-        if ((new Utils)->stripAndReturnShopId($input['shop']) !== $config[OneClickCheckout\Constants::SHOP_ID])
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
-        }
     }
 
     public function verifyHmacSignature(array $input, bool $useKeyId = true)
     {
+        // Hardcoding true to support simple requests/ cors
+        // NOTE: Do not remove this statement. We are removing app proxy and hmac
+        // validation dependency
+        return true;
+
         $config = (new Core)->getShopifyAuthByMerchant();
 
         $secret = $config[OneClickCheckout\Constants::API_SECRET];
@@ -510,10 +508,10 @@ class Core extends Base\Core
         $this->cache->put($key, 1, self::CACHE_VALIDITY_TTL);
     }
 
-    public function exceptionPlaceShopifyOrderAPI($e, array $rzpOrder, array $rzpPayment, array $body): array 
+    public function exceptionPlaceShopifyOrderAPI($e, array $rzpOrder, array $rzpPayment, array $body): array
     {
         $start = millitime();
-        
+
         $orderId = $rzpOrder['id'];
 
         $client = $this->getShopifyClientByMerchant();
@@ -537,15 +535,15 @@ class Core extends Base\Core
             $body['customer']['phone'] = null;
 
             $retry = true;
-        } 
-        else if (strpos($message, $errorBadGateway) !== false || strpos($message, $errorService) !== false) 
+        }
+        else if (strpos($message, $errorBadGateway) !== false || strpos($message, $errorService) !== false)
         {
             $retry = true;
-        } 
+        }
 
         // Inventory case we are delegating it to SQS job.
         if(strpos($message, $errorInventory) !== false)
-        {           
+        {
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_DELEGATED_SQS,
                 [
@@ -561,12 +559,12 @@ class Core extends Base\Core
               null,
               null,
               'INSUFFICIENT_INVENTORY'
-            );  
-        } 
+            );
+        }
 
         // Retry work: retry only once only for User click journey not for SQS job order creation
         // We are retrying once and if it fails again then we bank on SQS worker flow to try and place the order again
-        if ($retry === true) 
+        if ($retry === true)
         {
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY,
@@ -602,7 +600,7 @@ class Core extends Base\Core
                   null,
                   null,
                   'RETRY_FAILED'
-                );  
+                );
             }
 
             $order = json_decode($order, true);
@@ -621,14 +619,14 @@ class Core extends Base\Core
 
             return $order;
         }
-        
+
         return [];
     }
 
-    public function exceptionPlaceShopifyOrderSQS($e, array $rzpOrder, array $rzpPayment): array 
+    public function exceptionPlaceShopifyOrderSQS($e, array $rzpOrder, array $rzpPayment): array
     {
         $orderId = $rzpOrder['id'];
-        
+
         $notes = $rzpOrder['notes'];
 
         $message = strtolower($e->getMessage());
@@ -642,11 +640,11 @@ class Core extends Base\Core
             [
                 'type'           => 'sqs_order_place_refund_initiated',
                 'order_id'       => $orderId,
-                'strategy'       => 'refund', 
+                'strategy'       => 'refund',
                 'error_message'  => $message,
                 'payment_method' => $rzpPayment['method']
             ]
-        );  
+        );
 
         // Refund if applicable, please double check
         if (strtolower($rzpPayment['method']) !== 'cod')
@@ -657,7 +655,7 @@ class Core extends Base\Core
                 'amount' => $rzpPayment['amount'],
             ];
 
-            try 
+            try
             {
                 (new Payment\Service)->refund($paymentId, $refundData);
             }
@@ -700,7 +698,7 @@ class Core extends Base\Core
               null,
               null,
               'SQS_ORDER_PLACE_ERROR'
-            );  
+            );
         }
 
         return [];
@@ -711,7 +709,7 @@ class Core extends Base\Core
         $start = millitime();
 
         $finalErrorCode = "";
-                    
+
         $orderId = $rzpOrder['id'];
 
         $notes = $rzpOrder['notes'];
@@ -732,20 +730,20 @@ class Core extends Base\Core
         {
             $exceptionHandlerResponse = null;
 
-            if ($fromShopifyApi === true) 
+            if ($fromShopifyApi === true)
             {
                 $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($e, $rzpOrder, $rzpPayment, $body);
 
                 $finalErrorCode = "DELEGATED_TO_SQS";
-            } 
-            else 
+            }
+            else
             {
                 $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($e, $rzpOrder, $rzpPayment);
 
                 $finalErrorCode = "SQS_TOO_FAILED";
             }
 
-            if (!empty($exceptionHandlerResponse)) 
+            if (!empty($exceptionHandlerResponse))
             {
                 return $exceptionHandlerResponse;
             }
@@ -767,10 +765,10 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
                 null,
-                $finalErrorCode 
-              );  
+                $finalErrorCode
+              );
         }
- 
+
         $order = json_decode($order, true);
 
         $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
@@ -796,6 +794,15 @@ class Core extends Base\Core
 
         if (empty($checkout['data']['node']) === true)
         {
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
+                 [
+                     'type'        => 'error_fetching_checkout',
+                     'response'    => $checkout,
+                     'checkout_id' => $checkoutId,
+                     'error'       => 'checkout not found',
+                 ]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
         $body = $this->getOrderFromCheckout($checkout['data']['node']);
@@ -941,12 +948,12 @@ class Core extends Base\Core
 
 
             if(strpos($message, $errorBadGateway) !== false)
-            {   
+            {
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_API_ERROR,
                     [
                         'type' => 'update_transaction_retry_initiated',
-                        'strategy' => 'retry', 
+                        'strategy' => 'retry',
                         'error_message' => $message
                     ]
                 );

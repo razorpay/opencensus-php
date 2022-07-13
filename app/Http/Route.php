@@ -3600,14 +3600,18 @@ class Route
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
-        '1cc_shopify_checkout_update'               => ['post',       '1cc/shopify/abandon_checkout',                                  'OneClickCheckoutController@shopifyUpdateCheckout'                ],
+        '1cc_shopify_checkout_preflight'            => ['options',    '1cc/shopify/checkout',                                  'OneClickCheckoutController@allowCors'                  ],
+        '1cc_shopify_checkout_update'               => ['post',       '1cc/shopify/abandon_checkout',                          'OneClickCheckoutController@shopifyUpdateCheckout'                ],
+        '1cc_shopify_checkout_update_preflight'     => ['options',    '1cc/shopify/abandon_checkout',                          'OneClickCheckoutController@allowCors'                  ],
         '1cc_shopify_complete'                      => ['post',       '1cc/shopify/complete',                                  'OneClickCheckoutController@shopifyCompleteCheckout'                ],
-        '1cc_shopify_add_checkout_url'              => ['post',       '1cc/shopify/checkout/url',                                  'OneClickCheckoutController@shopifyUpdateCheckoutUrl'                ],
-
+        '1cc_shopify_complete_preflight'            => ['options',    '1cc/shopify/complete',                                  'OneClickCheckoutController@allowCors'                  ],
+        '1cc_shopify_add_checkout_url'              => ['post',       '1cc/shopify/checkout/url',                              'OneClickCheckoutController@shopifyUpdateCheckoutUrl'                ],
+        '1cc_shopify_add_checkout_url_preflight'    => ['options',    '1cc/shopify/checkout/url',                              'OneClickCheckoutController@allowCors'                  ],
         '1cc_shopify_checkout_options'              => ['get',        '1cc/shopify/checkout_options',                          'OneClickCheckoutController@shopifyGetCheckoutOptions'                ],
-        '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
-        '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                              'OneClickCheckoutController@shopifyOAuthRedirect'                ],
-        'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                                 'MerchantController@updateShopify1ccConfig'                   ],
+        '1cc_shopify_checkout_options_preflight'    => ['options',    '1cc/shopify/checkout_options',                          'OneClickCheckoutController@allowCors'                  ],
+        '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
+        '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
+        'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -3659,8 +3663,11 @@ class Route
 
     public static $public = [
         '1cc_shopify_checkout',
+        '1cc_shopify_checkout_preflight',
         '1cc_shopify_checkout_options',
+        '1cc_shopify_checkout_options_preflight',
         '1cc_shopify_complete',
+        '1cc_shopify_complete_preflight',
         '1cc_shopify_oauth_redirect',
         '1cc_shopify_oauth_callback',
         'checkout',
@@ -3785,9 +3792,11 @@ class Route
         'country_fetch',
         'state_fetch',
         '1cc_shopify_checkout_update',
+        '1cc_shopify_checkout_update_preflight',
         'app_fetch_tokens_v2',
         'app_delete_tokens_v2',
         '1cc_shopify_add_checkout_url',
+        '1cc_shopify_add_checkout_url_preflight',
     ];
 
     public static $device = [

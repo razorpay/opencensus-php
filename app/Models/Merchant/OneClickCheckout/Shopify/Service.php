@@ -57,18 +57,18 @@ class Service extends Base\Service
     }
 
     public function shopifyCartLineItems(array $checkout) : array
-    { 
+    {
         //Cart line items for the modal
         $lineItems = $checkout['lineItems']['edges'];
 
-        foreach ($lineItems as $item) 
+        foreach ($lineItems as $item)
         {
             $item=$item['node'];
             $cartLineItems[] = [
                 'variant_id'        => substr(strval($item['variant']['id']),0,128),
                 'tax_amount'        => 0,
                 'sku'               => substr(strval($item['variant']['sku']),0,128),
-                'price'             => (int)(floatval($item['variant']['price']) * 100), 
+                'price'             => (int)(floatval($item['variant']['price']) * 100),
                 'quantity'          => (int)floatval($item['quantity']),
                 'name'              => substr(strval($item['title']),0,128),
                 'description'       => substr($item['variant']['product']['description'],0,256),
@@ -76,7 +76,7 @@ class Service extends Base\Service
                 'image_url'         => $item['variant']['image']['src'] ?? ""
             ];
         }
-        
+
         return $cartLineItems;
     }
 
@@ -89,8 +89,10 @@ class Service extends Base\Service
     public function shopifyCreateCheckout(array $input): array
     {
         $start = millitime();
-
-        (new Core)->verifyHmacSignature($input);
+        // print_r($input);
+        // Disabled in case of simple requests/ cors
+        // NOTE: Do not enable signature verification
+        // (new Core)->verifyHmacSignature($input);
 
         $checkout = (new Core)->placeShopifyCheckout($input);
 
@@ -116,18 +118,9 @@ class Service extends Base\Service
             'order_id'           => $order->getPublicId(),
             'currency'           => 'INR',
             'name'               => $this->merchant->getBillingLabel(),
-            'checkout_id'        => $checkout['id'],
-            'shop_id'            => $input['shop'],
             'one_click_checkout' => true,
             'customer_cart'      => (new Pixels)->getDataForFbPixels($checkout),
         ];
-
-        // NOTE: leaving this commented in case we need to quickly revert
-        // (new Checkout)->addMagicCheckoutUrlToShopifyCheckout($checkoutParams);
-
-        unset($checkoutParams['checkout_id']);
-
-        unset($checkoutParams['shop_id']);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
@@ -212,7 +205,7 @@ class Service extends Base\Service
                 'fromShopifyApi' => $fromShopifyApi,
             ]
         );
-            
+
         $key = (new Core)->getMutexKeyForOrder($input['razorpay_order_id']);
 
         $res = $this->mutex->acquireAndRelease(

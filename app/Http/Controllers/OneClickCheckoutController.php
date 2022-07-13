@@ -4,36 +4,54 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 
-class OneClickCheckoutController
+class OneClickCheckoutController extends Controller
 {
 
     public function shopifyCreateCheckout()
     {
-        $input = Request::all();
+        $rawContents = Request::getContent();
+        $headers = Request::header();
+        $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $response = (new Shopify\Service)->shopifyCreateCheckout($input);
+        $result = (new Shopify\Service)->shopifyCreateCheckout($bodyJSON);
 
-        return ApiResponse::json($response, 200);
+        $response = ApiResponse::json($result, 200);
+
+        $this->addCorsHeaders($response, 'POST, OPTIONS');
+
+        return $response;
     }
 
     public function shopifyGetCheckoutOptions()
     {
         $input = Request::all();
 
-        $response = (new Shopify\Service)->shopifyGetCheckoutOptions($input);
+        $result = (new Shopify\Service)->shopifyGetCheckoutOptions($input);
 
-        return ApiResponse::json($response, 200);
+        $response = ApiResponse::json($result, 200);
+
+        $this->addCorsHeaders($response, 'GET, OPTIONS');
+
+        return $response;
     }
 
     public function shopifyCompleteCheckout()
     {
-        $input = Request::all();
+        $rawContents = Request::getContent();
+        $headers = Request::header();
+        $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $response = (new Shopify\Service())->completeCheckoutWithLock($input);
+        $result = (new Shopify\Service())->completeCheckoutWithLock($bodyJSON);
 
-        return ApiResponse::json($response, 200);
+        $response = ApiResponse::json($result, 200);
+
+        $this->addCorsHeaders($response, 'POST, OPTIONS');
+
+        return $response;
     }
 
     public function shopifyOAuthRedirect()
@@ -47,19 +65,75 @@ class OneClickCheckoutController
 
     public function shopifyUpdateCheckout()
     {
-        $input = Request::all();
+        $rawContents = Request::getContent();
+        $headers = Request::header();
+        $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $response = (new Shopify\Service)->updateCheckout($input);
+        $result = (new Shopify\Service)->updateCheckout($bodyJSON);
+        $response = ApiResponse::json($result, 200);
 
-        return ApiResponse::json($response, 200);
+        $this->addCorsHeaders($response, 'POST, OPTIONS');
+
+        return $response;
     }
 
     public function shopifyUpdateCheckoutUrl()
     {
-        $input = Request::all();
+        $rawContents = Request::getContent();
+        $headers = Request::header();
+        $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
-        $response = (new Shopify\Service)->updateCheckoutUrl($input);
+        $result = (new Shopify\Service)->updateCheckoutUrl($bodyJSON);
 
-        return ApiResponse::json($response, 200);
+        $response = ApiResponse::json($result, 200);
+
+        $this->addCorsHeaders($response, 'POST, OPTIONS');
+
+        return $response;
+    }
+
+    public function allowCors(string $methods = '')
+    {
+        $methods = $methods === '' ? 'OPTIONS' : $methods;
+
+        $response = ApiResponse::json([], 200);
+
+        $this->addCorsHeaders($response, $methods);
+
+        return $response;
+    }
+
+    protected function addCorsHeaders($response, string $methods): void
+    {
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        $response->headers->set('Access-Control-Allow-Methods', $methods);
+    }
+
+    // simple requests will send payload as a string
+    // body can be a string to array
+    protected function parseToJSONIfApplicable($body, string $contentType): array
+    {
+        $result = 'skip';
+        if (gettype($body) === 'string')
+        {
+            $result = 'success';
+            $body = json_decode($body, true);
+            if (json_last_error() !== JSON_ERROR_NONE)
+            {
+                $result = 'fail';
+            }
+        }
+        $this->trace->info(
+          TraceCode::SHOPIFY_1CC_PARSE_REQUEST_BODY_RESULT,
+          [
+            'type'         => 'parse_request_body',
+            'input'        => $body,
+            'result'       => $result,
+            'content_type' => $contentType,
+          ]);
+        return $body;
     }
 }

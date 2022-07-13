@@ -313,7 +313,8 @@ class Checkout extends Base\Core
     {
         try
         {
-            $input['shop_id'] = (new Utils)->stripAndReturnShopId($input['shop']);
+            $creds = (new AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
+            $input['shop_id'] = (new Utils)->stripAndReturnShopId($creds['shop_id']);
 
             $checkoutUrl = $this->getMagicCheckoutUrl($input);
 
