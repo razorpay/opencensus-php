@@ -5228,11 +5228,9 @@ class Core extends Base\Core
                 'activation_progress' => 100,
             ];
 
-            if($merchant->isNoDocOnboardingEnabled() === true)
+            if($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
             {
-                $response['verification'] = [
-                    'optional_fields'     => $validationOptionalFields,
-                ];
+                $response['verification']['optional_fields'] = $validationOptionalFields;
             }
 
             $response['can_submit'] = true;
