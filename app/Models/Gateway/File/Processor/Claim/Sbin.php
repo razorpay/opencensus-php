@@ -36,7 +36,7 @@ class Sbin extends NetbankingBase
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('2048M');
+        RuntimeManager::setMemoryLimit('4096M');
     }
 
     protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
