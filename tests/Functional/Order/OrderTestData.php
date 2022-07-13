@@ -795,7 +795,7 @@ return [
     'testCreateCardWithNoMaxAmount' => [
         'request' => [
             'content' => [
-                'amount'          => 50000,
+                'amount'          => 150000,
                 'currency'        => 'INR',
                 'receipt'         => 'rcptid42',
                 'method'          => 'card',
@@ -810,12 +810,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'         => 50000,
+                'amount'         => 150000,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'card',
                 'token'          =>   [
-                    'max_amount'   => 500000,
+                    'max_amount'   => 1500000,
                     'expire_at'    => 1880118306,
                 ]
             ],
@@ -919,7 +919,7 @@ return [
     'testCreateCardTPVOrderNoMaxAmount' => [
         'request' => [
             'content' => [
-                'amount'          => 50000,
+                'amount'          => 150000,
                 'currency'        => 'INR',
                 'receipt'         => 'rcptid42',
                 'method'          => 'card',
@@ -934,12 +934,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'amount'         => 50000,
+                'amount'         => 150000,
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'card',
                 'token'          =>   [
-                    'max_amount'   => 500000,
+                    'max_amount'   => 1500000,
                     'expire_at'    => 1880118306,
                 ]
             ],

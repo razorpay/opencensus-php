@@ -252,7 +252,7 @@ class RecurringPaymentTest extends TestCase
         $updatedSubr = $this->getDbEntity('subscription_registration', ['id' => $subr->id]);
         $token = $this->getDbEntity('token', ['id' => $updatedSubr->token_id]);
 
-        $this->assertEquals(500000, $token->max_amount);
+        $this->assertEquals(1500000, $token->max_amount);
         $this->assertEquals($subr->expire_at, $token->expired_at);
     }
 
@@ -311,7 +311,7 @@ class RecurringPaymentTest extends TestCase
         $payment['amount'] = 100000;
 
         $subr = $this->fixtures->create('subscription_registration',
-            ['method' => 'card', 'max_amount' => 600000, 'expire_at' => 4091958776, 'notes' => []]);
+            ['method' => 'card', 'max_amount' => 1600000, 'expire_at' => 4091958776, 'notes' => []]);
 
         $order = $this->fixtures->create('order',
             ['amount' => 100000]);
@@ -327,7 +327,7 @@ class RecurringPaymentTest extends TestCase
                 $this->doAuthPayment($payment);
             },
             Exception\BadRequestValidationFailureException::class,
-            'Token max amount can not be greater than 500000');
+            'Token max amount can not be greater than 1500000');
     }
 
     public function testDebitCardRecurringFirstPaymentCreatePublicAuth()

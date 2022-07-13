@@ -80,7 +80,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_EMAIL   = 'customer_email';
 
     const DEFAULT_MAX_AMOUNT              = 9999900;
-    const CARD_MANDATE_DEFAULT_MAX_AMOUNT = 500000;
+    const CARD_MANDATE_DEFAULT_MAX_AMOUNT = 1500000;
 
     protected static $sign = 'subr';
 
