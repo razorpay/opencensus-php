@@ -576,7 +576,7 @@ class GatewayController extends Controller
 
         $input = Request::all();
 
-        $mode = $input['mode'];
+        $mode = Mode::LIVE;
 
         return $this->staticCallbackGateway($method, $gateway, $mode, $input);
     }
