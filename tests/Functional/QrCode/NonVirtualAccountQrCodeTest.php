@@ -135,7 +135,12 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $bankAccount = $this->getDbLastEntity('bank_account');
 
+        $data = $this->testData['processOrNotifyBankTransfer'];
+        $payerBankAccountNumber =  $data['content']['payer_account'];
+
         $this->assertEquals($qrPayment['payer_bank_account_id'], $bankAccount['id']);
+        $this->assertEquals($payerBankAccountNumber, $bankAccount['account_number']);
+
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
         $this->assertEquals(5000000, $payment['amount']);

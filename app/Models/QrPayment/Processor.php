@@ -492,16 +492,14 @@ class Processor extends Base\Core
 
         return [
             BankAccount\Entity::IFSC_CODE        => $ifsc,
-            BankAccount\Entity::ACCOUNT_NUMBER   => self::computeBankAccountNumber($callbackArray, $ifsc),
+            BankAccount\Entity::ACCOUNT_NUMBER   => self::computeBankAccountNumber($callbackArray),
             BankAccount\Entity::BENEFICIARY_NAME => self::getLabel($qrPayment, $callbackArray)
         ];
     }
 
-    private function computeBankAccountNumber($callbackArray, $ifsc)
+    private function computeBankAccountNumber($callbackArray)
     {
         $account = preg_replace('/[^a-zA-Z0-9]+/', '', $callbackArray['payer_account']);
-
-        $account = BankCodes::modifyPayerAccountIfNeeded($account, $ifsc);
 
         return $account;
     }

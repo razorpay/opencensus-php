@@ -536,32 +536,6 @@ class BankCodes
     }
 
     /**
-     * Some banks send account number is an altered form, eg. there may be leading
-     * zeroes. These need to be removed before creating the bank account entity.
-     *
-     * Identify the bank requires us to check Payer IFSC. If it's IMPS, it's not
-     * actually an IFSC, it's one of the bank codes given above. Check both.
-     *
-     * @param string $account
-     * @param        $ifsc
-     *
-     * @return string $account
-     */
-    public static function modifyPayerAccountIfNeeded(string $account, $ifsc)
-    {
-        $haystack = self::STRIP_LEADING_ZEROES_BANKS_NEFT;
-
-        $needle = substr($ifsc, 0, 4);
-
-        if (in_array($needle, $haystack, true) === true)
-        {
-            $account = self::modifyPayerAccount($account);
-        }
-
-        return $account;
-    }
-
-    /**
      * Canara bank account numbers are received like this:
      * - 00000683101027109
      * - 00002724129002387

@@ -2427,6 +2427,9 @@ class BankTransferTest extends TestCase
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals(343946, $payment['amount']);
         $this->assertEquals('bt_rbl', $payment['gateway']);
+
+        $payerBankAccount = $this->getEntityById('bank_account', $bankTransfer['payer_bank_account']['id'], true);
+        $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
     }
 
     public function testBankTransferRblJSW()
