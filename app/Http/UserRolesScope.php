@@ -913,6 +913,7 @@ class UserRolesScope
             'subscription_delete_offer'                            => [Role::OWNER, Role::ADMIN],
             'subscription_fetch_by_id'                             => [Role::OWNER, Role::ADMIN],
             'subscription_fetch_emandate_detail'                   => [Role::OWNER, Role::ADMIN],
+            'subscription_fetch_card_mandate_detail'               => [Role::OWNER, Role::ADMIN],
             'subscription_get_revenue_by_source'                   => [Role::OWNER, Role::ADMIN],
             'subscription_item_create'                             => [Role::OWNER, Role::ADMIN],
             'subscription_item_delete'                             => [Role::OWNER, Role::ADMIN],

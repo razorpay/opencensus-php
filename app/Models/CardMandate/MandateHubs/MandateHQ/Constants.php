@@ -94,7 +94,7 @@ class Constants
     const METHOD_CARD                = 'card';
     const DEBIT_TYPE_VARIABLE_AMOUNT = 'variable_amount';
     const FREQUENCY_AS_PRESENTED     = 'as_presented';
-    const MAX_AMOUNT_DEFAULT         = 500000;
+    const MAX_AMOUNT_DEFAULT         = 1500000;
 
     const RECURRING_DEBIT_TYPE_INITIAL    = 'initial';
     const RECURRING_DEBIT_TYPE_SUBSEQUENT = 'subsequent';

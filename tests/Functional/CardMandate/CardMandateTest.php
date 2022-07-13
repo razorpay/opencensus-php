@@ -2067,6 +2067,26 @@ class CardMandateTest extends TestCase
         }
     }
 
+    public function testCardMandateMaxAmountFetchForSubscriptions()
+    {
+        $this->testCreateCardMandatePayment();
+
+        $token = $this->getDbLastEntity(E::TOKEN);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/tokens/' . $token->getPublicId() . '/card_mandate_detail',
+            'content' => []
+        ];
+
+        $this->ba->subscriptionsAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response);
+        $this->assertEquals(1500000, $response['maxAmount']);
+    }
+
 
     public function runBDSIHubCreateCardMandatePayment()
     {

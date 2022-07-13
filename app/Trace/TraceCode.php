@@ -987,6 +987,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_CREATE_REQUEST                           = 'SUBSCRIPTION_CREATE_REQUEST';
     const SUBSCRIPTION_CREATED                                  = 'SUBSCRIPTION_CREATED';
     const SUBSCRIPTION_NOTIFY_FAILED                            = 'SUBSCRIPTION_NOTIFY_FAILED';
+    const SUBSCRIPTION_CARD_MANDATE_DATA_FETCH_FAILED           = 'SUBSCRIPTION_CARD_MANDATE_DATA_FETCH_FAILED';
     const PLAN_CREATE_REQUEST                                   = 'PLAN_CREATE_REQUEST';
     const ADDON_CREATE_REQUEST                                  = 'ADDON_CREATE_REQUEST';
     const ADDON_DELETE_REQUEST                                  = 'ADDON_DELETE_REQUEST';

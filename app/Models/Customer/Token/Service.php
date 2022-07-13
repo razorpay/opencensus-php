@@ -206,6 +206,35 @@ class Service extends Base\Service
         ];
     }
 
+    public function fetchSubscriptionCardMandateDetails($id)
+    {
+        try
+        {
+            $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);
+
+            if ($token === null)
+            {
+                $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+                $token = $this->repo->token->findByPublicIdAndMerchant($id, $sharedMerchant);
+            }
+
+            return [
+                'maxAmount' => $token->cardMandate->getMaxAmount()
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SUBSCRIPTION_CARD_MANDATE_DATA_FETCH_FAILED
+            );
+
+            throw $e;
+        }
+    }
+
     /**
      * fetch tokens for local customer
      *
