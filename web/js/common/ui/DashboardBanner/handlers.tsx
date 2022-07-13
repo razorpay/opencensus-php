@@ -16,8 +16,9 @@ import ExclusiveOffer from '../ExclusiveOffer';
 import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
 import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
-const getClickHandler = (id = '', type = '', variant = '') => {
+const getClickHandler = (id = '', type = '', variant = '', handler, history) => {
   const user = getUser();
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const closeModal = (payload) => store.dispatch(closeModalProp(payload));
@@ -57,14 +58,14 @@ const getClickHandler = (id = '', type = '', variant = '') => {
   const showGSModal = () => {
     openModal({
       component: <GrowthServiceModal template_id={id} />,
-      className: 'GS--Modal',
+      className: 'gs-modal',
     });
   };
 
   const showGSCenterCTAModal = () => {
     openModal({
       component: <GrowthServiceCenterCTAModal template_id={id} />,
-      className: 'GS--Modal',
+      className: 'gs-modal',
     });
   };
 
@@ -120,6 +121,10 @@ const getClickHandler = (id = '', type = '', variant = '') => {
         default:
       }
     }
+  }
+
+  if (handler) {
+    return () => growthServiceCTAHandler(handler, history);
   }
 
   switch (id) {

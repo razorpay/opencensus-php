@@ -2,31 +2,31 @@ import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
-import SubmissionSuccessfull from 'common/ui/NotificationsDropdown/SubmissionSuccessfull';
-import { sendDataToSalesForce } from '../../utils/common-api';
 import './GSModalStyle.styl';
 import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 const GrowthServiceModal = ({
   tracking,
   loading,
   gs_modals,
-  user,
   closeModal,
   fetchGSModal,
-  history,
   template_id,
+  history,
 }) => {
   useEffect(() => {
     fetchGSModal({ template_id });
   }, []);
-  const [activeView, setActiveView] = useState('detail-view');
   const isEmptyOrNotMobile =
     Object.keys(gs_modals).length === 0 || (!gs_modals?.image?.mobile_url && isMobileAndTablet());
+  const backgroundImgUrl = isMobileAndTablet()
+    ? gs_modals?.image?.mobile_url
+    : gs_modals?.image?.url;
   const Description = ({ description, type }) => {
     switch (type) {
       case 'bold':
@@ -39,120 +39,89 @@ const GrowthServiceModal = ({
     }
   };
 
-  const trackCTAClickAndOpenUrl = (id, label, url) => {
-    const isExternal = /^http(s)?:\/\//.test(url);
-    if (isExternal) {
-      window.open(url, '_blank');
-    } else {
-      history.push(url);
-    }
-    tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
-        cta_text: label,
-        pageUrl: window.location.href,
-        id,
-      }),
-    );
-  };
-
-  const trackCTAClickAndSave = (id, label) => {
-    sendDataToSalesForce(
-      {
-        Campaign_ID: id,
-        product_name: gs_modals?.product_name,
-      },
-      user,
-    ).then((resp) => {
-      const { success } = resp;
-      if (success) {
-        setActiveView('submission-success-view');
-      }
-    });
-    tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
-        cta_text: label,
-        pageUrl: window.location.href,
-        id,
-      }),
-    );
+  const defaultColors = {
+    defaultBackgroundColor: '#040B38',
+    defaultFooterTextColor: '#FFFFFF',
+    defaultCTABackroundColor: '#FC6D0B',
+    defaultCTATextColor: '#FFFFFF',
   };
 
   const buttonHandler = () => {
-    if (gs_modals?.offer_cta?.url !== undefined) {
-      trackCTAClickAndOpenUrl(
-        gs_modals?.id,
-        gs_modals?.offer_cta?.label,
-        gs_modals?.offer_cta?.url,
-      );
-    } else {
-      trackCTAClickAndSave(gs_modals?.id, gs_modals?.offer_cta?.label);
-    }
+    growthServiceCTAHandler(gs_modals?.offer_cta?.handler, history);
+    tracking.trackEvent(
+      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+        cta_text: gs_modals?.footer_data?.label,
+        pageUrl: window.location.href,
+      }),
+    );
   };
 
   if (!loading) {
     if (isEmptyOrNotMobile) {
       closeModal();
-    } else {
-      if (activeView === 'detail-view') {
-        return (
-          <div className={isMobileAndTablet() ? 'gs-container' : ''}>
-            <button type="button" id="gs-btn-close" onClick={closeModal}>
-              <i className="i i-close" />
-            </button>
-            <div id="gs-modal-body">
-              <img
-                className="background-img"
-                src={isMobileAndTablet() ? gs_modals?.image?.mobile_url : gs_modals?.image?.url}
-                alt={gs_modals?.image?.alt_text}
-              />
-            </div>
-            <div
-              className={isMobileAndTablet() ? 'gs-modal-footer-mobile' : 'gs-modal-footer'}
-              style={{ background: gs_modals?.offer?.background_color }}
-            >
-              <div className="para-container">
-                <p
-                  className="para"
-                  style={{
-                    color: gs_modals?.offer?.footer_text_color,
-                  }}
-                >
-                  <Description
-                    description={gs_modals?.footer_data?.label}
-                    type={gs_modals?.footer_data?.style}
-                  />
-                </p>
-              </div>
-              <div className="btn-container">
-                <button
-                  className="btn"
-                  type="submit"
-                  onClick={buttonHandler}
-                  style={{
-                    background: gs_modals?.offer?.cta_background_color,
-                    color: gs_modals?.offer?.cta_font_color,
-                  }}
-                >
-                  <Description
-                    description={gs_modals?.offer_cta?.label}
-                    type={gs_modals?.offer_cta?.style}
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      return <SubmissionSuccessfull handleClose={closeModal} />;
     }
+    return (
+      <div className={isMobileAndTablet() ? 'gs-container' : ''}>
+        <button type="button" id="gsBtnClose" onClick={closeModal}>
+          <i className="i i-close" />
+        </button>
+        <div id="gsModalBody">
+          <img className="background-img" src={backgroundImgUrl} alt={gs_modals?.image?.alt_text} />
+        </div>
+        <div
+          className={isMobileAndTablet() ? 'gs-modal-footer-mobile' : 'gs-modal-footer'}
+          style={{
+            background: gs_modals?.footer_data?.background_color
+              ? gs_modals?.footer_data?.background_color
+              : defaultColors.defaultBackgroundColor,
+          }}
+        >
+          <div className="para-container">
+            <p
+              className="para"
+              style={{
+                color: gs_modals?.footer_data?.footer_text_color
+                  ? gs_modals?.footer_data?.footer_text_color
+                  : defaultColors.defaultFooterTextColor,
+              }}
+            >
+              <Description
+                description={gs_modals?.footer_data?.label}
+                type={gs_modals?.footer_data?.style}
+              />
+            </p>
+          </div>
+          <div className="btn-container">
+            <button
+              className="btn"
+              type="submit"
+              onClick={buttonHandler}
+              style={{
+                background: gs_modals?.offer_cta?.cta_background_color
+                  ? gs_modals?.offer_cta?.cta_background_color
+                  : defaultColors.defaultCTABackroundColor,
+                color: gs_modals?.offer_cta?.cta_font_color
+                  ? gs_modals?.offer_cta?.cta_font_color
+                  : defaultColors.defaultCTATextColor,
+              }}
+            >
+              <Description
+                description={gs_modals?.offer_cta?.label}
+                type={gs_modals?.offer_cta?.style}
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
-      <button type="button" id="gs-btn-close" onClick={closeModal}>
+      <button type="button" id="gsBtnClose" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gs-modal-loader">
+      <div id="gsModalLoader">
         <Loader />;
       </div>
     </>
@@ -165,8 +134,7 @@ export default compose(
   connect(
     (state) => {
       return {
-        ...state.session.user,
-        ...state.growthService.gs_modals,
+        ...state?.growthService?.gs_modals,
       };
     },
     {

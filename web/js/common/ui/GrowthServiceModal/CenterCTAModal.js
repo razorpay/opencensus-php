@@ -78,10 +78,10 @@ const GrowthServiceCenterCTAModal = ({
     if (Object.keys(gs_modals).length > 0 && activeView === 'detail-view') {
       return (
         <>
-          <button type="button" id="gs-btn-close" onClick={closeModal}>
+          <button type="button" id="gsBtnClose" onClick={closeModal}>
             <i className="i i-close" />
           </button>
-          <div id="gs-modal-body">
+          <div id="gsModalBody">
             <img
               className="background-img"
               src={gs_modals?.image?.url}
@@ -102,8 +102,8 @@ const GrowthServiceCenterCTAModal = ({
                   : trackCTAClickAndSave(gs_modals?.id, gs_modals?.offer_cta?.label)
               }
               style={{
-                background: gs_modals?.offer?.cta_background_color,
-                color: gs_modals?.offer?.cta_font_color,
+                background: gs_modals?.offer_cta?.cta_background_color,
+                color: gs_modals?.offer_cta?.cta_font_color,
               }}
             >
               <Description
@@ -119,10 +119,10 @@ const GrowthServiceCenterCTAModal = ({
   }
   return (
     <>
-      <button type="button" id="gs-btn-close" onClick={closeModal}>
+      <button type="button" id="gsBtnClose" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gs-modal-loader">
+      <div id="gsModalLoader">
         <Loader />;
       </div>
     </>
@@ -135,8 +135,8 @@ export default compose(
   connect(
     (state) => {
       return {
-        ...state.session.user,
-        ...state.growthService.gs_modals,
+        ...state?.session?.user,
+        ...state?.growthService?.gs_modals,
       };
     },
     {

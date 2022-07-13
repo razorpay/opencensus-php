@@ -2,13 +2,13 @@ import { BannerButton, CTA } from './TypesDeclare/DashboardBannerTypes';
 import { getClickHandler } from './handlers';
 import { externalURLTest } from './data';
 
-const getCTAArray = (buttons: Array<BannerButton>): Array<CTA> | undefined => {
-  return buttons?.map(({ id, type, label, style, url, sub_asset }) => {
+const getCTAArray = (buttons: Array<BannerButton>, history: History): Array<CTA> | undefined => {
+  return buttons?.map(({ id, type, label, style, url, sub_asset, handler }) => {
     let isExternal = true;
     if (typeof url === 'string') isExternal = externalURLTest.test(url);
 
     return {
-      clickHandler: getClickHandler(id, sub_asset?.type, sub_asset?.variant),
+      clickHandler: getClickHandler(id, sub_asset?.type, sub_asset?.variant, handler, history),
       url,
       isExternal,
       type,

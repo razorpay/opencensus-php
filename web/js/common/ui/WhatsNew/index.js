@@ -51,6 +51,7 @@ import moment from 'moment';
 import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 const WhatsNewDetailsPage = lazy(() =>
   import(/* webpackChunkName: "WhatsNewDetailsPage" */ 'merchant/views/WhatsNew/Details'),
@@ -163,7 +164,7 @@ class WhatsNew extends Component {
     const { openModal } = this.props;
     openModal({
       component: <GrowthServiceModal template_id={id} />,
-      className: 'GS--Modal',
+      className: 'gs-modal',
     });
   };
 
@@ -171,7 +172,7 @@ class WhatsNew extends Component {
     const { openModal } = this.props;
     openModal({
       component: <GrowthServiceCenterCTAModal template_id={id} />,
-      className: 'GS--Modal',
+      className: 'gs-modal',
     });
   };
 
@@ -241,7 +242,7 @@ class WhatsNew extends Component {
     this.props.setActivePageName('Connected Banking');
   };
 
-  handleCTA = ({ id, url, type, variant }) => {
+  handleCTA = ({ id, url, type, variant, handler, history }) => {
     const isMWeb = isMobileAndTablet();
     if (!isMWeb && type.length && variant.length) {
       switch (type) {
@@ -263,6 +264,9 @@ class WhatsNew extends Component {
         default:
       }
       return;
+    }
+    if (handler) {
+      growthServiceCTAHandler(handler, history);
     }
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -634,6 +638,8 @@ const NotificationCard = ({
         url: btn?.url,
         type: btn?.sub_asset?.type,
         variant: btn?.sub_asset?.variant,
+        handler: btn?.handler,
+        history,
       });
     }
   };

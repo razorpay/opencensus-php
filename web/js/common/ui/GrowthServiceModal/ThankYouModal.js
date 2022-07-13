@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { ModalBody, ModalHeader, CloseIconContainer } from 'common/components/Modal/Styled';
 import Button from '@razorpay/blade-old/src/atoms/Button';
-import { sendDataToSalesForce } from '../../utils/common-api';
 import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
@@ -11,7 +10,7 @@ import { withRouter } from 'react-router-dom';
 import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
 import './GSModalStyle.styl';
 
-const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, template_id }) => {
+const ThankYouModal = ({ loading, gs_modals, closeModal, fetchGSModal, template_id }) => {
   useEffect(() => {
     fetchGSModal({ template_id });
   }, []);
@@ -20,14 +19,6 @@ const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, tem
     if (Object.keys(gs_modals).length === 0) {
       closeModal();
     } else {
-      sendDataToSalesForce(
-        {
-          Campaign_ID: gs_modals?.id,
-          product_name: gs_modals?.product_name,
-          event_type: gs_modals?.event_type,
-        },
-        user,
-      );
       return (
         <div className="thank-you-gs-modal">
           <CloseIconContainer data-testid="modal-close-button" onClick={closeModal}>
@@ -51,10 +42,10 @@ const ThankYouModal = ({ loading, gs_modals, user, closeModal, fetchGSModal, tem
 
   return (
     <>
-      <button type="button" id="gs-btn-close" onClick={closeModal}>
+      <button type="button" id="gsBtnClose" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gs-modal-loader">
+      <div id="gsModalLoader">
         <Loader />
       </div>
     </>
@@ -67,8 +58,7 @@ export default compose(
   connect(
     (state) => {
       return {
-        ...state.session.user,
-        ...state.growthService.gs_modals,
+        ...state?.growthService?.gs_modals,
       };
     },
     {

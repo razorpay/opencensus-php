@@ -41,11 +41,11 @@ import ExclusiveOffer from '../ExclusiveOffer';
 import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
+import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
 }
-
 @withRouter
 @connect(
   (state) => {
@@ -204,7 +204,7 @@ class WhatsNewOld extends Component {
     const { openModal } = this.props;
     openModal({
       component: <GrowthServiceModal template_id={id} />,
-      className: 'GS--Modal',
+      className: 'gs-modal',
     });
   };
 
@@ -219,7 +219,7 @@ class WhatsNewOld extends Component {
     const { openModal } = this.props;
     openModal({
       component: <GrowthServiceCenterCTAModal template_id={id} />,
-      className: 'GS--Modal',
+      className: 'gs-modal',
     });
   };
 
@@ -289,7 +289,7 @@ class WhatsNewOld extends Component {
     this.props.setActivePageName('Connected Banking');
   };
 
-  handleCTA = ({ id, url, type, variant }) => {
+  handleCTA = ({ id, url, type, variant, handler, history }) => {
     const isMWeb = isMobileAndTablet();
     if (type?.length && variant?.length) {
       if (isMWeb) {
@@ -329,6 +329,9 @@ class WhatsNewOld extends Component {
         }
       }
       return;
+    }
+    if (handler) {
+      growthServiceCTAHandler(handler, history);
     }
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -761,6 +764,8 @@ const NotificationCard = ({
         url: btn?.url,
         type: btn?.sub_asset?.type,
         variant: btn?.sub_asset?.variant,
+        handler: btn?.handler,
+        history,
       });
     }
   };

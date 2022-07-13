@@ -11,6 +11,7 @@ interface BannerButton {
   style?: string;
   url?: string;
   sub_asset?: SubAsset;
+  handler?: Handler;
 }
 
 interface BannerContent {
@@ -48,15 +49,24 @@ interface Banner {
   text_link?: BannerTextLink;
   tracking_data: TrackingDataType;
 }
+interface Handler {
+  type: string;
+  variant: string;
+  properties: Map<string, string>;
+  sub_asset: SubAsset;
+}
+
 interface SubAsset {
   type: string;
   variant: string;
+  id: string;
 }
 
 interface DashboardBannerProps {
   banners: Array<Banner> | [];
   loading: boolean;
   fetchBanners: ({ fromWhere }: FetchBannersProps) => void;
+  history: any;
 }
 
 interface CTA extends BannerButton {
