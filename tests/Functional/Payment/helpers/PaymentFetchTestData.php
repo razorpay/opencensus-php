@@ -458,6 +458,9 @@ return [
                 'items'  => [
                     [
                         'entity' => 'payment',
+                        'card' => [
+                            'name' => 'Test Name'
+                        ],
                     ],
                 ],
             ],
@@ -477,6 +480,9 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'payment',
+                'card'   => [
+                    'name' => 'Test Name'
+                ],
             ],
         ],
     ],
@@ -891,6 +897,9 @@ return [
         'response' => [
             'content' => [
                 'entity'  => 'payment',
+                'card' => [
+                    'name' => 'Test Name'
+                ],
             ],
         ],
     ],
@@ -907,6 +916,9 @@ return [
         'response' => [
             'content' => [
                 'entity'  => 'payment',
+                'card'    => [
+                    'name' => 'test'
+                ],
             ],
         ],
     ],

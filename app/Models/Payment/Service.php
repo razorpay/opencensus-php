@@ -1310,8 +1310,6 @@ class Service extends Base\Service
 
         $card = $this->repo->card->fetchForPayment($payment);
 
-        unset($card[Card\Entity::NAME]);
-
         return $card->toArrayPublic();
     }
 
@@ -1453,11 +1451,6 @@ class Service extends Base\Service
         else
         {
             $payment = $this->getNewProcessor()->capture($payment, $input);
-        }
-
-        if ($payment->getMethod() === Entity::CARD)
-        {
-            unset ($payment['card'][Card\Entity::NAME]);
         }
 
         return $payment->toArrayPublic();
@@ -1932,17 +1925,7 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetchPaymentWithForceIndex($input, $merchantId);
 
-        $paymentsArrayPublic = $payments->toArrayPublic();
-
-        foreach ($paymentsArrayPublic['items'] as &$payment)
-        {
-            if (isset($payment['card']))
-            {
-                unset($payment['card'][Card\Entity::NAME]);
-            }
-        }
-
-        return $paymentsArrayPublic;
+        return $payments->toArrayPublic();
     }
 
     private function modifyInputForVATransaction(&$input)
@@ -2063,11 +2046,6 @@ class Service extends Base\Service
                 $network_token_data = (new Token\Service())->fetchNetworkToken($data);
                 $entity['token'] = $network_token_data;
             }
-        }
-
-        if ($payment->getMethod() === Entity::CARD)
-        {
-            unset($entity['card'][Card\Entity::NAME]);
         }
 
         return $entity;
