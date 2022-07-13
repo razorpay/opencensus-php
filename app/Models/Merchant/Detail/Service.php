@@ -64,6 +64,7 @@ use RZP\Models\Workflow\Observer as WorkflowObserver;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Workflow\Action\Differ\Core as DifferCore;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
@@ -493,61 +494,69 @@ class Service extends Base\Service
 
     public function postApplyCoupon(array $input)
     {
-        $merchant = $this->app['basicauth']->getMerchant();
+        $merchant   = $this->app['basicauth']->getMerchant();
         $merchantId = $merchant->getMerchantId();
 
         (new Coupon\Validator())->validateInput('apply_coupon_code', $input);
 
-        $couponCode =  $input[Coupon\Entity::CODE];
+        $couponCode = $input[Coupon\Entity::CODE];
 
         $couponInput = [
             Coupon\Entity::CODE => $couponCode,
         ];
 
         // validates coupon code and merchant promotion
-        $coupon = (new Coupon\Core())->validateAndGetDetails($merchant, $couponInput,false);
+        $coupon = (new Coupon\Core())->validateAndGetDetails($merchant, $couponInput, false);
 
         $promotion = $coupon->source;
 
-        if($promotion->getCreditType() != CreditType::AMOUNT)
+        if ($promotion->getCreditType() != CreditType::AMOUNT)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ONLY_AMOUNT_CREDITS_COUPON_APPLICABLE
             );
         }
 
+        if (empty($promotion->partner) === false and (new AccessMapCore)->isSubMerchant($merchant->getMerchantId()))
+        {
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_COUPON_NOT_APPLICABLE
+            );
+        }
+
         $merchantBalance = $this->repo->balance->getMerchantBalanceByType($merchant->getId(),
-            Merchant\Balance\Type::PRIMARY);
+                                                                          Merchant\Balance\Type::PRIMARY);
 
         $existingCredits = $merchantBalance->reload()->getAmountCredits();
 
-        $this->trace->info(TraceCode::AMOUNT_CREDITS_COUPON_APPLY_REQUEST,[
-            "merchantId"            => $merchantId,
-            "input"                 => $input,
-            "existingCredits"       => $existingCredits,
+        $this->trace->info(TraceCode::AMOUNT_CREDITS_COUPON_APPLY_REQUEST, [
+            "merchantId"      => $merchantId,
+            "input"           => $input,
+            "existingCredits" => $existingCredits,
         ]);
 
-        if(isset($input[DetailConstants::TOKEN]) === true)
+        if (isset($input[DetailConstants::TOKEN]) === true)
         {
             //fetch the data from cache and if token matches then apply the coupon and expire any existing credits.
             $token = $input[DetailConstants::TOKEN];
 
-            $cacheKey = DetailConstants::COUPON_CODE_CACHE_KEY_PREFIX. $merchantId . '_' . $couponCode;
+            $cacheKey = DetailConstants::COUPON_CODE_CACHE_KEY_PREFIX . $merchantId . '_' . $couponCode;
 
             $cacheValue = $this->app['cache']->get($cacheKey);
 
-            if($token == $cacheValue)
+            if ($token == $cacheValue)
             {
                 //expire existing credits and apply coupon
-                $this->trace->info(TraceCode::CREDITS_EXPIRE_REQUEST,[
-                    "merchantId"   => $merchantId,
-                    "couponCode"   => $couponCode,
+                $this->trace->info(TraceCode::CREDITS_EXPIRE_REQUEST, [
+                    "merchantId" => $merchantId,
+                    "couponCode" => $couponCode,
                 ]);
 
                 //expire existing credits
                 $this->expireRemainingCredits($merchant);
 
-                (new Coupon\Core())->applyCouponCode($merchant, $coupon,false);
+                (new Coupon\Core())->applyCouponCode($merchant, $coupon, false);
 
                 return [
                     'applied' => true,
@@ -566,19 +575,19 @@ class Service extends Base\Service
              when api is called for the first time, system will check if there is already an unexpired coupon applied.
              If yes, we will store the data [mid_token] in cache (with an expiry of 60 mins) and return token to the user
             */
-            if($existingCredits != 0)
+            if ($existingCredits != 0)
             {
                 //User have unexpired coupon code in their profile
                 $token = UniqueIdEntity::generateUniqueId();
 
-                $cacheKey = DetailConstants::COUPON_CODE_CACHE_KEY_PREFIX. $merchantId . '_' . $couponCode;
+                $cacheKey = DetailConstants::COUPON_CODE_CACHE_KEY_PREFIX . $merchantId . '_' . $couponCode;
 
                 $this->app['cache']->put($cacheKey, $token, DetailConstants::TOKEN_TTL * 60);
 
                 return [
-                    DetailConstants::TOKEN            => $token,
-                    'applied'                         => false,
-                    'data'  => [
+                    DetailConstants::TOKEN => $token,
+                    'applied'              => false,
+                    'data'                 => [
                         'available_credits' => $existingCredits
                     ],
                 ];

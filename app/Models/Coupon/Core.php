@@ -220,6 +220,8 @@ class Core extends Base\Core
             }
             $this->repo->transaction(function() use ($merchant, $promotion, $coupon)
             {
+                $this->mapPromotionPartnerIfApplicable($merchant, $promotion);
+
                 $this->createAndActivateMerchantPromotion($merchant, $promotion);
 
                 $coupon->incrementUsedCount();
