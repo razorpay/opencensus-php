@@ -3603,8 +3603,6 @@ class Base extends BaseCore
             {
                 if ($this->isInternal === true)
                     $response = $this->payoutCreateServiceClient->createInternalContactPayoutViaMicroservice($input, $this->merchant->getId());
-                else if($this->app['basicauth']->isStrictPrivateAuth() === false)
-                    $response = $this->payoutCreateServiceClient->createPayoutInternalViaMicroservice($input, $this->merchant->getId());
                 else
                     $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input, $this->merchant->getId());
 
