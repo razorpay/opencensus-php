@@ -21,10 +21,7 @@ class ShopEstablishmentAreaCodeMapping
             "GURGON",
             "GURUGRAM",
             "GURUGARAM",
-        ],
-        "RAN" => [
-            "RANCHI",
-        ],
+        ]
     ];
 
     /**
