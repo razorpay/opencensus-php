@@ -690,6 +690,7 @@ class TerminalsService
             $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE,
                 [
                     self::STATUS_CODE => $response->status_code,
+                    self::RESPONSE    => $response
                 ]);
 
             $parsedResponse = $this->parseAndReturnResponse($response);

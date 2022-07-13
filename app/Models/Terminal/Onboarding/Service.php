@@ -229,7 +229,7 @@ class Service extends Base\Service
         {
             $result[Constants::BATCH_ERROR] = [
                 Constants::BATCH_ERROR_DESCRIPTION => $exception->getMessage(),
-                Constants::BATCH_ERROR_CODE => $exception->getPublicError(),
+                Constants::BATCH_ERROR_CODE => $exception->getData()['response']['error']['internal_error_code'],
             ];
 
             $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();
