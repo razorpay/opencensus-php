@@ -95,6 +95,7 @@ class Base extends Core
 
     const LEDGER_DEBIT_EVENTS = [Payout::PAYOUT_INITIATED,
                                  Payout::VA_TO_VA_PAYOUT_INITIATED,
+                                 Payout::INTER_ACCOUNT_PAYOUT_INITIATED,
                                  FundAccountValidation::FAV_INITIATED,
                                  Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED];
 

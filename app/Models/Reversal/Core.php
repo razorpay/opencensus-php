@@ -1057,7 +1057,7 @@ class Core extends Base\Core
                         // so no dispatch necessary again.
                         if ($reversal->getEntityType() === E::PAYOUT)
                         {
-                            (new Transaction\Core)->dispatchEventForTransactionCreated($reversal->transaction);
+                            $this->app->events->dispatch('api.transaction.created', $reversal->transaction);
                         }
                     }
 
@@ -1179,7 +1179,7 @@ class Core extends Base\Core
                 else
                 {
                     $fav = $this->repo->fund_account_validation->find($sourceId);
-                    $ledgerRequest = (new FavLedger())->createLedgerPayloadFromEntity($fav);
+                    $ledgerRequest = (new FavLedger())->createLedgerPayloadFromEntity($fav, [], FundAccountValidation\Status::CREATED);
                 }
 
                 (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();

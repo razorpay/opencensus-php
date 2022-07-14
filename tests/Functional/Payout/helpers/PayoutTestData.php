@@ -17732,6 +17732,22 @@ return [
         ],
     ],
 
+    'testPayoutProcessedWithJournalLedgerCronInLedgerReverseShadowWithWhitelistIds' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/ledger_service/create_journal_cron',
+            'content'   => [
+                'whitelist_ids' => ['IwHCToefEWVgpi'],
+                'entity'        => 'payout',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success',
+            ],
+        ],
+    ],
+
     'testPayoutReversalWithJournalLedgerCronInLedgerReverseShadow' => [
         'request' => [
             'method'    => 'POST',

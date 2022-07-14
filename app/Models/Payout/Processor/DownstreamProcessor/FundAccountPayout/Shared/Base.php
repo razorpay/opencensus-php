@@ -351,9 +351,7 @@ class Base extends FundAccountPayout\Base
 
             (new TxnCore)->saveFeeDetails($txn, $feeSplit);
 
-            // A dispatch may have already happened
-            // which means a dispatch is not needed if fee split is null
-            (new TxnCore())->dispatchEventForTransactionCreated($txn);
+            $this->app->events->dispatch('api.transaction.created', $txn);
         }
 
         $this->trace->info(

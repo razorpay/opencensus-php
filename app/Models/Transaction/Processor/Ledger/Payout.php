@@ -415,7 +415,7 @@ class Payout extends Base
         {
             $status = $payout->getStatus();
         }
-        $transactorEvent = Status::getLedgerEventForPayout($payout);
+        $transactorEvent = Status::getLedgerEventForPayout($payout, $status);
 
         $notes = [
             self::BALANCE_ID => BalanceEntity::getSignedIdOrNull($payout->getBalanceId()),

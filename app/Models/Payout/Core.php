@@ -5553,7 +5553,7 @@ class Core extends Base\Core
                     ]
                 );
 
-                $ledgerRequest = (new PayoutsLedgerProcessor())->createLedgerPayloadFromEntity($payout);
+                $ledgerRequest = (new PayoutsLedgerProcessor())->createLedgerPayloadFromEntity($payout, Status::CREATED);
 
                 (new LedgerStatus($this->mode, $ledgerRequest, null, false))->handle();
             }

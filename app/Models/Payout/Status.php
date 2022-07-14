@@ -311,12 +311,15 @@ class Status
 
     /**
      * @param Entity $payout
+     * @param string|null $payoutStatus
      * @return mixed|string
      * Return ledger event mapped to a payout.
      */
-    public static function getLedgerEventForPayout(Entity $payout)
+    public static function getLedgerEventForPayout(Entity $payout, string $payoutStatus = null)
     {
-        $payoutStatus = $payout->getStatus();
+        if ($payoutStatus === null){
+            $payoutStatus = $payout->getStatus();
+        }
 
         if ($payout->isVaToVaPayout() === true)
         {
