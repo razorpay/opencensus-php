@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
@@ -1047,7 +1048,7 @@ class Validator extends Base\Validator
         Entity::TYPE                    => 'sometimes|array',
         Entity::CORPORATE               => 'sometimes|int|in:0,1,2',
         Entity::PROCURER                => 'sometimes|string|in:razorpay,merchant',
-        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIndusindEditTerminalRules = [
@@ -2994,6 +2995,12 @@ class Validator extends Base\Validator
 
     public function editTerminalValidator($terminal, $input)
     {
+
+        if ($this->shouldSkipGatewayValidations() === true)
+        {
+            return;
+        }
+
         if (in_array($terminal->getGateway(), self::$editTerminalGateways) || in_array($terminal->getGateway(), Gateway::TOKENISATION_GATEWAYS))
         {
             unset($input[Entity::PLAN_ID]);
@@ -3012,6 +3019,20 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Editing not defined for terminal of gateway: ' . $terminal->getGateway());
         }
+    }
+
+    public function shouldSkipGatewayValidations()
+    {
+        $app = App::getFacadeRoot();
+
+        $ba = $app['basicauth'];
+
+        if ($app['request.ctx']->getRoute() === 'terminal_edit_god_mode')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateUpdateTerminalsBankAndBanksShouldNotBePresentTogether($input)

@@ -22,6 +22,15 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getEditableFields()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getEditableFields();
+
+        return ApiResponse::json($data);
+    }
+
     public function postBulkAssignBuyPricingPlans()
     {
         $input = Request::all();

@@ -3907,4 +3907,53 @@ class TerminalTest extends TestCase
         $this->assertEquals($editedTerminal['type'], ['non_recurring', 'recurring_3ds', 'recurring_non_3ds']);
     }
 
+    // God mode editing skips terminal gateway specific validations written in Terminal/Validator.php
+    public function testEditTerminalWithoutGodMode()
+    {
+        $originalTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'hitachi',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+        ]);
+
+        $url = '/terminals/'.$originalTerminal['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    // All fields are editable in God mode (gateway validations are skipped)
+    public function testEditTerminalWithGodModeEdit()
+    {
+        $originalTerminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'hitachi',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+        ]);
+
+        $url = '/terminals/god_mode_edit/'.$originalTerminal['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $editedTerminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals($editedTerminal['gateway_merchant_id'], 'editedMid'); // asserts that gateway_merchant_id got edited
+    }
+
+    public function testGetTerminalEditableFields()
+    {
+        $this->startTest();
+    }
+
 }

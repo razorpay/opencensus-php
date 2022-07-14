@@ -6,6 +6,7 @@ use App;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
+use ReflectionClass;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Batch;
@@ -27,6 +28,8 @@ use RZP\Jobs\TerminalsServiceMigrateJob;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Mpan\Constants as MpanConstants;
 use RZP\Models\Batch\Processor\TerminalCreation;
+use RZP\Models\Batch\Processor\TerminalEdit;
+
 
 
 class Service extends Base\Service
@@ -243,6 +246,29 @@ class Service extends Base\Service
         $terminal = (new Terminal\Core)->edit($terminal, $input);
 
         return $terminal->toArrayAdmin();
+    }
+
+    public function getEditableFields()
+    {
+        $response = [];
+
+        $validatorClass = new ReflectionClass(Validator::class);
+
+        $props = $validatorClass->getStaticProperties();
+
+        foreach ($props as $key => $value)
+        {
+            if ( str_ends_with($key, 'EditTerminalRules') === true )
+            {
+                $gatewayCamelCase = str_ireplace('EditTerminalRules', '', $key); // replaces EditTerminalRules from property key to empty string
+                    
+                $gateway = strtolower(preg_replace("/[A-Z]/", '_' . "$0", $gatewayCamelCase));
+
+                $response[$gateway] = array_keys($value);
+            }
+        }
+
+        return $response;
     }
 
     public function bulkAssignPricingPlans($input)

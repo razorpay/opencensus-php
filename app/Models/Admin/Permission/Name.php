@@ -103,6 +103,7 @@ class Name
     const VIEW_TERMINAL_EXTERNAL_ORG          = 'view_terminal_external_org';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
+    const EDIT_TERMINAL_GOD_MODE              = 'edit_terminal_god_mode';
     const PAYMENTS_BATCH_CREATE_TERMINALS_BULK = "payments_batch_create_terminals_bulk";
     const TERMINAL_MANAGE_MERCHANT            = 'terminal_manage_merchant';
     const TOGGLE_TERMINAL                     = 'toggle_terminal';

@@ -4691,4 +4691,79 @@ return [
         ],
         'status_code' => 200,
     ],
+
+    'testEditTerminalWithoutGodMode' => [
+        "request" => [
+            'content' => [
+                'gateway_merchant_id' => 'editedMid'
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "gateway_merchant_id is/are not required and should not be sent",
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\ExtraFieldsException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+
+    ],
+
+    'testEditTerminalWithGodModeEdit' => [
+        "request" => [
+            'content' => [
+                'gateway_merchant_id' => 'editedMid'
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'         => '10000000000000',
+                'gateway_merchant_id' => 'editedMid',
+                'gateway_terminal_id' => 'tid12345',
+
+            ],
+            'status_code'   => 200,
+        ],
+    ],
+
+    'testGetTerminalEditableFields' => [
+        "request" => [
+            'url' => '/terminals/editable_fields',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'hitachi' =>  [
+                    "gateway_terminal_id",
+                    "international",
+                    "type",
+                    "expected",
+                    "gateway_acquirer",
+                    "network_category",
+                    "mc_mpan",
+                    "visa_mpan",
+                    "rupay_mpan",
+                    "account_number",
+                    "ifsc_code",
+                    "status",
+                    "procurer",
+                    "mode",
+                    "currency",
+                ],
+                'emi_sbi' => [
+                    "enabled",
+                    "procurer",
+                    "status",
+                ],
+            ],
+            'status_code'   => 200,
+        ],
+    ],
 ];

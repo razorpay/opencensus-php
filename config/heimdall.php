@@ -459,6 +459,7 @@ return [
             Permission::GET_IRCTC_SETTLEMENT_FILE           => '',
             Permission::DELETE_TERMINAL                     => '',
             Permission::EDIT_TERMINAL                       => '',
+            Permission::EDIT_TERMINAL_GOD_MODE              => '',
             Permission::PAYMENTS_BATCH_CREATE_TERMINALS_BULK => [
                 'description' => 'create terminals in bulk',
                 'assignable'  => true,
