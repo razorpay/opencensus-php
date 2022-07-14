@@ -468,6 +468,12 @@ class Core extends Base\Core
             // HDFC_DC & UTIB_DC are hacks to differentiate between credit & debit card EMI plans
             $input[Entity::PAYMENT_METHOD_TYPE] = Emi\Type::DEBIT;
         }
+        elseif ((isset($input[Entity::PAYMENT_METHOD]) === true) and
+                ($input[Entity:: PAYMENT_METHOD] === Payment\Method::EMI) and
+                (isset($input[Entity::PAYMENT_METHOD_TYPE]) === false))
+        {
+            $input[Entity::PAYMENT_METHOD_TYPE] = Emi\Type::CREDIT;
+        }
     }
 
     protected function traceNonExistingIins(Entity $offer, Merchant\Entity $merchant)

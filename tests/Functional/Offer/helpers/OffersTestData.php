@@ -971,6 +971,40 @@ return [
 
     ],
 
+    'testPaymentMethodTypeForCreditCardOfferCreation' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC',
+                'emi_subvention'      => true,
+                'max_payment_count'   => 2,
+                'processing_time'     => '1',
+                'ends_at'             => Carbon::tomorrow()->getTimestamp(),
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details',
+                'block'               =>  1,
+                'type'                => 'instant'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_method'      => 'emi',
+                'issuer'              => 'HDFC',
+                'payment_method_type' => 'credit',
+                'max_payment_count'   => 2,
+                'display_text'        => 'Emi Subvention offers',
+                'terms'               => 'Some more details'
+            ]
+        ]
+
+
+    ],
+
     'testConflictingEmiSubOffers' => [
         'request' => [
             'content' => [

@@ -83,6 +83,15 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentMethodTypeForCreditCardOfferCreation(): void
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
+
+        $this->startTest();
+    }
+
 
     public function testCreateCardOfferWithMaxPaymentCount()
     {
@@ -278,7 +287,9 @@ class OffersTest extends TestCase
 
         $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $this->fixtures->create('offer:emi_subvention');
+        $this->fixtures->create('offer:emi_subvention', [
+            'payment_method_type'=>'credit'
+        ]);
 
         $this->startTest();
     }
