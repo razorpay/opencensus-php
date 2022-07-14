@@ -2256,9 +2256,9 @@ class Service extends Base\Service
 
         $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'SMS Notifications Enabled';
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'SMS Notifications Enabled';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName

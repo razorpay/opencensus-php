@@ -2271,7 +2271,7 @@ class Service extends Base\Service
         {
             [$segmentEventName, $segmentProperties] = $this->core()->pushSelfServeSuccessEventsToSegment();
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'International Payments Applied';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'International Payments Applied';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $this->merchant, $segmentProperties, $segmentEventName
@@ -10122,7 +10122,7 @@ class Service extends Base\Service
     {
         [$segmentEventName, $segmentProperties] = (new Merchant\Core())->pushSelfServeSuccessEventsToSegment();
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Flash Checkout Enabled';
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Flash Checkout Enabled';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName
@@ -10133,7 +10133,7 @@ class Service extends Base\Service
     {
         [$segmentEventName, $segmentProperties] = (new Merchant\Core())->pushSelfServeSuccessEventsToSegment();
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Mandate Page Skipped';
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Mandate Page Skipped';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName

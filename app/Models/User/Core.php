@@ -534,7 +534,7 @@ class Core extends Base\Core
         {
             [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Password Updated';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Password Updated';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName
@@ -2419,7 +2419,7 @@ class Core extends Base\Core
 
         [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Mobile Updated';
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Mobile Updated';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $segmentProperties, $segmentEventName
@@ -2935,7 +2935,7 @@ class Core extends Base\Core
 
             [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Enable 2FA';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Enable 2FA';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName
@@ -5229,7 +5229,7 @@ class Core extends Base\Core
 
         $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
         return [$segmentEventName, $segmentProperties];
     }

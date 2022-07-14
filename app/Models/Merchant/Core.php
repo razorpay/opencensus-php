@@ -1888,7 +1888,7 @@ class Core extends Base\Core
 
             [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Brand Name Updated';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Brand Name Updated';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName
@@ -2989,7 +2989,7 @@ class Core extends Base\Core
 
             [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Login Details Updated';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Login Details Updated';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName
@@ -4382,7 +4382,7 @@ class Core extends Base\Core
         {
             [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = '2FA Verification Created';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = '2FA Verification Created';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName
@@ -8182,7 +8182,7 @@ class Core extends Base\Core
 
         $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
         return [$segmentEventName, $segmentProperties];
     }
@@ -8191,10 +8191,10 @@ class Core extends Base\Core
     {
         [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] =
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] =
             $this->getSelfServeActionForMerchantConfigUpdate($input);
 
-        if (isset($segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION]) === true)
+        if (isset($segmentProperties[SegmentConstants::SELF_SERVE_ACTION]) === true)
         {
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName

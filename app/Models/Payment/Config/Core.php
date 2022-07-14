@@ -360,7 +360,7 @@ class Core extends Base\Core
                 {
                     [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-                    $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Payment Capture Period Updated';
+                    $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Payment Capture Period Updated';
 
                     $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                         $this->merchant, $segmentProperties, $segmentEventName
@@ -587,7 +587,7 @@ class Core extends Base\Core
 
         $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
         return [$segmentEventName, $segmentProperties];
     }
@@ -596,7 +596,7 @@ class Core extends Base\Core
     {
         [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Language Changed';
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Language Changed';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName

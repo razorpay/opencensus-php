@@ -1075,7 +1075,7 @@ class Service extends Base\Service
     {
         [$segmentEventName, $segmentProperties] = (new Merchant\Core())->pushSelfServeSuccessEventsToSegment();
 
-        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Webhook Added';
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Webhook Added';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName

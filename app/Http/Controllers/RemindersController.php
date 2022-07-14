@@ -278,9 +278,9 @@ class RemindersController extends Controller
 
             $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+            $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
-            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'PL Reminder Created';
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'PL Reminder Created';
 
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $this->ba->getMerchant(), $segmentProperties, $segmentEventName
