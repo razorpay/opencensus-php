@@ -2919,6 +2919,15 @@ class Route
 
         'banking_account_activation_mis_download' => ['get',      'banking_accounts/activation/mis/download',                  'BankingAccountController@downloadActivationMis'            ],
 
+        // Bank LMS Routes
+        'banking_account_bank_lms_assign_to_partner_bulk' => ['post', 'banking_accounts/rbl/lms/banking_account/assign_partner', 'BankingAccountController@attachCaApplicationMerchantToBankPartnerBulk'],
+        'banking_account_bank_lms_fetch_multiple'         => ['get', 'banking_accounts/rbl/lms/banking_account', 'BankingAccountController@fetchMultipleBankingAccountEntity'],
+        'banking_account_bank_lms_fetch_by_id'            => ['get', 'banking_accounts/rbl/lms/banking_account/{id}', 'BankingAccountController@fetchBankingAccountEntityById'],
+        'banking_account_bank_lms_comments_list'          => ['get', 'banking_accounts/rbl/lms/activation/{id}/comments', 'BankingAccountController@fetchBankingAccountActivationCommentsById'],
+        'banking_account_bank_lms_assign_bank_poc'        => ['patch', 'banking_accounts/rbl/lms/activation/{id}/bank_poc', 'BankingAccountController@assignBankPocUserToApplication'],
+        'update_to_ca_onboarding_partner_type'            => ['patch', 'banking_accounts/rbl/lms/merchant/admin/partner_type', 'BankingAccountController@updatePartnerTypeToMerchantBankCaOnboarding'],
+        'create_invitation_for_ca_onboarding_partner'     => ['post', 'banking_accounts/rbl/lms/merchant/admin/invitation', 'InvitationController@sendBankLmsInvitations'],
+
         'banking_account_statement_source_update'            => ['post',   'banking_account_statement/source/update',                  'BankingAccountStatementController@updateSourceLinking'            ],
         'banking_account_statement_source_update_validate'   => ['post',   'banking_account_statement/source/update/validate',         'BankingAccountStatementController@validateSourceLinkingUpdate'            ],
 
@@ -5500,6 +5509,10 @@ class Route
         'fund_account_bulk_create',
         'bulk_contact_create',
         'banking_account_create',
+        'banking_account_bank_lms_fetch_multiple',
+        'banking_account_bank_lms_fetch_by_id',
+        'banking_account_bank_lms_comments_list',
+        'banking_account_bank_lms_assign_bank_poc',
         'banking_account_create_dashboard',
         'get_banking_account_slot_booking_details',
         'banking_account_update_dashboard',
@@ -6486,6 +6499,9 @@ class Route
         'banking_account_bulk_assign_reviewer',
         'banking_account_activation_detail_create',
         'banking_account_statement_details_create',
+        'update_to_ca_onboarding_partner_type',
+        'banking_account_bank_lms_assign_to_partner_bulk',
+        'create_invitation_for_ca_onboarding_partner',
         'banking_account_activation_detail_update',
         'banking_account_service_lms_routes_all',
         'banking_account_service_lms_routes_ops',
@@ -7001,6 +7017,10 @@ class Route
     ];
 
     public static $routePermission = [
+        'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
+        'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
+        'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
+        'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE,
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
@@ -7858,6 +7878,10 @@ class Route
         'banking_account_create_dashboard_admin'   => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_statement_details_create' => Permission::VIEW_ACTIVATION_FORM,
 
+        'update_to_ca_onboarding_partner_type'     => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_bank_lms_assign_to_partner_bulk' => Permission::VIEW_ACTIVATION_FORM,
+        'create_invitation_for_ca_onboarding_partner' => Permission::VIEW_ACTIVATION_FORM,
+
         'commissions_get_multiple'                 => Permission::VIEW_COMMISSIONS,
         'commissions_get'                          => Permission::VIEW_COMMISSIONS,
         'commissions_invoice_fetch_all'            => Permission::VIEW_COMMISSIONS,
@@ -8517,6 +8541,10 @@ class Route
         'user_opt_in_whatsapp'                         => '*',
         'banking_account_create'                       => '*',
         'banking_account_create_dashboard'             => '*',
+        'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
+        'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
+        'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
+        'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE,
         'get_banking_account_slot_booking_details'     => '*',
         'rbl_current_account_serviceability_get'       => '*',
         'merchant_activation_upload_file'              => '*',
@@ -9125,6 +9153,10 @@ class Route
             'bank_transfer_process_test',
             'banking_account_create',
             'banking_account_create_dashboard',
+            'banking_account_bank_lms_fetch_multiple',
+            'banking_account_bank_lms_fetch_by_id',
+            'banking_account_bank_lms_comments_list',
+            'banking_account_bank_lms_assign_bank_poc',
             'banking_account_service_pincode_serviceability_check_bulk',
             'get_banking_account_slot_booking_details',
             'banking_accounts_get',
@@ -10384,6 +10416,9 @@ class Route
             'banking_account_activate',
             'banking_account_activation_detail_create',
             'banking_account_statement_details_create',
+            'update_to_ca_onboarding_partner_type',
+            'banking_account_bank_lms_assign_to_partner_bulk',
+            'create_invitation_for_ca_onboarding_partner',
             'banking_account_activation_detail_update',
             'banking_account_activation_mis_download',
             'banking_account_activation_spocs',
@@ -13332,6 +13367,12 @@ class Route
      * A route can belong to multiple features, mapped here
      */
     public static $routeNameToFeaturesMap = [
+        // Bank LMS APIs
+        'banking_account_bank_lms_fetch_multiple'       => [Feature::RBL_BANK_LMS_DASHBOARD],
+        'banking_account_bank_lms_fetch_by_id'          => [Feature::RBL_BANK_LMS_DASHBOARD],
+        'banking_account_bank_lms_comments_list'        => [Feature::RBL_BANK_LMS_DASHBOARD],
+        'banking_account_bank_lms_assign_bank_poc'      => [Feature::RBL_BANK_LMS_DASHBOARD],
+        //
         'capital_cards_service'                => [Feature::CAPITAL_CARDS],
         'capital_virtual_cards_generate_token' => [Feature::CAPITAL_CARDS],
         'loc_service'                          => [Feature::WITHDRAW_LOC, Feature::WITHDRAWAL_ES_AMAZON, Feature::CASH_ON_CARD],
@@ -14000,6 +14041,10 @@ class Route
         //'bank_transfer_process_rbl_internal',
         //'bank_transfer_process_test',
         'banking_account_create_dashboard',
+        'banking_account_bank_lms_fetch_multiple',
+        'banking_account_bank_lms_fetch_by_id',
+        'banking_account_bank_lms_comments_list',
+        'banking_account_bank_lms_assign_bank_poc',
         'get_banking_account_slot_booking_details',
         'banking_account_create',
         'banking_account_create_admin',

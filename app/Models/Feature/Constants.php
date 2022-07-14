@@ -794,9 +794,15 @@ class Constants
     const ORG_HIDE_ACTIVATION_FORM  = 'hide_activation_form';
 
     /**
+     * To Enable merchant to access Partner LMS Dashboard
+     */
+    const RBL_BANK_LMS_DASHBOARD = 'rbl_bank_lms_dashboard';
+
+    /**
      * Org level flag to show custom Logo on checkout page
      */
     const ORG_CUSTOM_CHECKOUT_LOGO = 'custom_checkout_logo';
+
 
     /**
      * Control enablement of Admin Dashboard Reports for Orgs
@@ -1982,6 +1988,7 @@ class Constants
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
         self::ONE_CC_INPUT_ENGLISH            => true,
+        self::RBL_BANK_LMS_DASHBOARD          => true,
     ];
 
     // Entity type constants

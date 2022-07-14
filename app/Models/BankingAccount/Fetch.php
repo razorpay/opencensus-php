@@ -83,7 +83,7 @@ class Fetch extends BaseFetch
             Entity::SORT_FOLLOW_UP_DATE,
             Entity::APPLICATION_TYPE,
             self::EXPAND_EACH,
-        ],
+        ]
     ];
 
     public function validateSubstatus(string $attribute, string $subStatus)

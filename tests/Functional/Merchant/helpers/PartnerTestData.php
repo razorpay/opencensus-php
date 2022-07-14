@@ -1416,6 +1416,66 @@ return [
         ],
     ],
 
+    'testFetchBankingAccountEntitiesForPartnerSubmerchants' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountEntitiesForPartnerSubmerchantsWithRole' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchBankingAccountEntitiesForPartnerSubmerchantsWithInvalidRole' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsDeleted' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -1763,6 +1823,22 @@ return [
             'content'       => [
                 'partner_type'              => 'reseller',
                 'has_commission_configs'    => true,
+            ],
+        ],
+    ],
+
+    'testUpdatePartnerTypeAsBankOnboardingPartner' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/merchant/admin/partner_type',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id'  => '10000000000000',
+                'partner_type' => 'bank_ca_onboarding_partner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_type' => 'bank_ca_onboarding_partner',
             ],
         ],
     ],

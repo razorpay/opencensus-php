@@ -6,6 +6,7 @@ use App;
 use Illuminate\Support\Str;
 use Mail;
 use Config;
+use Throwable;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
@@ -1764,7 +1765,7 @@ class Core extends Base\Core
      *
      * @param array $merchantIds
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function resetSettlementSchedule(array $merchantIds): array
     {
@@ -1793,7 +1794,7 @@ class Core extends Base\Core
 
                 $processed[] = $merchant->getId();
             }
-            catch (\Throwable $e)
+            catch (Throwable $e)
             {
                 $this->trace->traceException(
                     $e,
@@ -1869,7 +1870,7 @@ class Core extends Base\Core
      * updates billing label and dba to same value
      * @param $merchant
      * @param $input
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function editMerchantBillingLabelAndDba($merchant, $input)
     {
@@ -2073,7 +2074,7 @@ class Core extends Base\Core
      * @param $input
      *
      * @return mixed
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function edit($merchant, $input)
     {
@@ -2468,7 +2469,7 @@ class Core extends Base\Core
                 }
             }
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             $this->trace->traceException(
                 $e,
@@ -3434,6 +3435,44 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS);
     }
 
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws Throwable
+     * @throws BadRequestException
+     */
+    protected function processMarkAsCaOnboardingPartner(Entity $merchant, string $partnerType): Entity
+    {
+        $mutex = App::getFacadeRoot()['api.mutex'];
+
+        $mutexKey = Constants::MARK_AS_PARTNER_IN_PROGRESS . $merchant->getId();
+
+        return $mutex->acquireAndRelease(
+            $mutexKey,
+            function() use ($merchant, $partnerType) {
+                $validator = new Validator;
+
+                $validator->validateIfAlreadyPartner($merchant);
+
+                $validator->validateIsNotLinkedAccount($merchant);
+
+                $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType) {
+                    $merchant->setPartnerType($partnerType);
+
+                    $this->repo->saveOrFail($merchant);
+
+                    $app = $this->createPartnerApp($merchant);
+
+                    $applicationType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($merchant);
+
+                    $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], $applicationType);
+                });
+
+                return $merchant;
+            },
+            Constants::MARK_AS_PARTNER_LOCK_TIME_OUT,
+            ErrorCode::BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS);
+    }
+
     protected function processMarkAsPartner(Entity $merchant, string $partnerType): Entity {
 
         $validator = new Validator;
@@ -3621,7 +3660,7 @@ class Core extends Base\Core
      * @param String $partnerType
      *
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function updatePartnerType(Entity $merchant, string $partnerType): array
     {
@@ -3663,6 +3702,23 @@ class Core extends Base\Core
             'partner_type'              => $partnerType,
             'has_commission_configs'    => $hasCommissionConfigs,
         ];
+    }
+
+    public function updatePartnerTypeToBankCaOnboarding(Entity $merchant, string $partnerType): array
+    {
+        $partner = Tracer::inspan(['name'       => HyperTrace::MARK_AS_PARTNER,
+                                   'attributes' => array('partnerType' => $partnerType, 'merchantId' => $merchant->getId())],
+            function() use ($merchant, $partnerType) {
+                $partner = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $partnerType) {
+                    return $this->processMarkAsCaOnboardingPartner($merchant, $partnerType);
+                });
+
+                return $partner;
+            });
+
+        $this->trace->info(TraceCode::PARTNER_CREATION_SUCCESSFUL, [Entity::PARTNER_ID   => $partner->getId(), Entity::PARTNER_TYPE => $partnerType,]);
+
+        return ['partner_type' => $partner->getPartnerType()];
     }
 
     public function createPartnerConfig(OAuthApp\Entity $application, Entity $partner, array $config = [])
@@ -3760,7 +3816,7 @@ class Core extends Base\Core
      * @param null $appType
      * @return array
      * @throws BadRequestException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant, $appType = null): array
     {
@@ -3843,10 +3899,28 @@ class Core extends Base\Core
     }
 
     /**
+     * @throws Exception\LogicException
+     * @throws BadRequestException|BadRequestValidationFailureException
+     * @throws BadRequestValidationFailureException
+     */
+    public function attachSubMerchantToBankCaPartner(Entity $partner, Entity $submerchant): array
+    {
+        (new Validator())->validateBankCaPartnerType($partner->getPartnerType());
+
+        $appType = (new MerchantApplications\Core())->getDefaultAppTypeForPartner($partner);
+
+        $partnerApp = $this->fetchPartnerApplication($partner, $appType);
+
+        $accessMap = (new AccessMap\Core)->addMappingForOAuthApp( $partner, $submerchant, [AccessMap\Entity::APPLICATION_ID => $partnerApp->getId()]);
+
+        return $accessMap->toArrayPublic();
+    }
+
+    /**
      * @param Entity $partner
      * @param Entity $submerchant
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deletePartnerAccessMap(Entity $partner, Entity $submerchant)
     {
@@ -3939,7 +4013,7 @@ class Core extends Base\Core
      * @param Entity $partner
      * @param Entity $submerchant
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function deletePartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant)
     {
@@ -3970,10 +4044,15 @@ class Core extends Base\Core
      * @param Entity $partner
      * @param Entity $submerchant
      *
-     * @throws \Throwable
+     * @throws Throwable
      */
     protected function detachSubMerchantOwnerIfApplicable(Entity $partner, Entity $submerchant)
     {
+        if ($partner->getPartnerType() === Constants::BANK_CA_ONBOARDING_PARTNER)
+        {
+            return;
+        }
+
         $this->repo->assertTransactionActive();
 
         $partnerUserId = $partner->primaryOwner()->getId();
@@ -4004,7 +4083,7 @@ class Core extends Base\Core
      * @param Entity $submerchant
      *
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function updatePartnerAccessMap(array $input, Entity $partner, Entity $submerchant)
     {
@@ -5242,7 +5321,7 @@ class Core extends Base\Core
      * @param array  $input
      *
      * @return Entity
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function syncMerchantEntityFields(Entity $merchant, array $input): Entity
     {
@@ -5710,7 +5789,7 @@ class Core extends Base\Core
         {
             return $this->app['mozart']->translateWebhook($translationGateway, $payload, $mode);
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             $this->trace->traceException($e);
 
@@ -6911,7 +6990,7 @@ class Core extends Base\Core
 
             return $transformedCaStatus;
         }
-        catch (\Throwable $ex)
+        catch (Throwable $ex)
         {
             $this->trace->traceException(
                 $ex,
@@ -7464,7 +7543,7 @@ class Core extends Base\Core
         {
             $this->app->salesforce->sendPartnerLeadInfo($merchantId, $partnerId, $product, $extraData);
         }
-        catch (\Throwable $e)
+        catch (Throwable $e)
         {
             $this->trace->traceException(
                 $e,

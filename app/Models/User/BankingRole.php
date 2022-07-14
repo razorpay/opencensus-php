@@ -43,6 +43,9 @@ class BankingRole
     const CHECKER_L2 = 'checker_l2';
     const CHECKER_L3 = 'checker_l3';
 
+    const BANK_MID_OFFICE_POC = 'bank_mid_office_poc';
+    const BANK_MID_OFFICE_MANAGER = 'bank_mid_office_manager';
+
     protected static $defaultRoles = [
         self::OWNER,
         self::ADMIN,
@@ -72,6 +75,14 @@ class BankingRole
         self::OWNER,
         self::ADMIN,
     ];
+
+
+    public static $rblBankCaManagementRoles = [
+        self::OWNER,
+        self::BANK_MID_OFFICE_POC,
+        self::BANK_MID_OFFICE_MANAGER,
+    ];
+
 
     protected static $workflowRoleToNameMap = [
         self::FINANCE_L1 => 'Finance L1',
@@ -127,6 +138,9 @@ class BankingRole
 
     public static function getAllRoles(): array
     {
+        //Todo: BANK_LMS
+        //$bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles, self::$rblBankCaManagementRoles);
+
         $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles);
 
         return $bankingRoles;

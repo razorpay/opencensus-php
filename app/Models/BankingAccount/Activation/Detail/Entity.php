@@ -115,6 +115,9 @@ class Entity extends Base\PublicEntity
     const API_ONBOARDED_DATE        = 'api_onboarded_date';
     const API_ONBOARDING_LOGIN_DATE = 'api_onboarding_login_date';
 
+    // For Assigning Leads to Bank POC
+    const BANK_POC_USER_ID = 'bank_poc_user_id';
+
     // relations
     // admin_audit_map is used here
     const SALES_POC_ID = 'sales_poc_id';
@@ -167,6 +170,7 @@ class Entity extends Base\PublicEntity
         self::SALES_POC_PHONE_NUMBER,
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
+        self::BANK_POC_USER_ID,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::BUSINESS_NAME,
@@ -205,6 +209,7 @@ class Entity extends Base\PublicEntity
         self::BOOKING_DATE_AND_TIME,
         self::COMMENT,
         self::RM_NAME,
+        self::BANK_POC_USER_ID,
         self::DECLARATION_STEP,
         self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
@@ -247,6 +252,7 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
+        self::BANK_POC_USER_ID,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
@@ -337,6 +343,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CONTACT_VERIFIED, $verified);
     }
 
+    public function setBankPOCUserId(string $userId)
+    {
+        $this->setAttribute(self::BANK_POC_USER_ID, $userId);
+    }
+
     public function setSalesTeam(string $salesTeam)
     {
         $this->setAttribute(self::SALES_TEAM, $salesTeam);
@@ -345,6 +356,11 @@ class Entity extends Base\PublicEntity
     public function getSalesTeam()
     {
         return $this->getAttribute(self::SALES_TEAM);
+    }
+
+    public function getBankPOCUserId()
+    {
+        return $this->getAttribute(self::BANK_POC_USER_ID);
     }
 
     public function getAssigneeName()
@@ -360,6 +376,15 @@ class Entity extends Base\PublicEntity
         }
 
         return '';
+    }
+
+    public function getBankPOCUser()
+    {
+        $bankPOCUserId = $this->getBankPOCUserId();
+
+        if (is_null($bankPOCUserId))
+            return null;
+        return (new \RZP\Models\User\Repository())->find($bankPOCUserId);
     }
 
     public function isAssigneeTeamChanged()

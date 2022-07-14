@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use Mail;
 
 use RZP\Exception;
-use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -40,12 +39,12 @@ class Service extends Base\Service
 
     protected $config;
 
-    /** @var \RZP\Models\BankingAccount\Core $core*/
+    /** @var Core $core*/
     protected $core;
 
     protected $notifier;
 
-    public function __construct($pincodeSearch = null, $core = null)
+    public function __construct($pincodeSearch = null, $core = null, $bankLmsService = null)
     {
         parent::__construct();
 
@@ -288,6 +287,23 @@ class Service extends Base\Service
             $this->archiveBankingAccount($bankingAccount->getId(), array(Entity::CHANNEL => Channel::RBL, Base\PublicEntity::MERCHANT_ID => $account->getMerchantId()));
         }
 
+        // Attach Ca Application to Partner Merchant
+        if ($this->checkIfSentToBank($previousStatus, $currentStatus))
+        {
+            try
+            {
+                (new BankLms\Service())->attachCaApplicationMerchantToBankPartner([Entity::BANKING_ACCOUNT_ID => $id]);
+            }
+            catch (BadRequestException|BadRequestValidationFailureException|Exception\LogicException $e)
+            {
+                $this->trace->error(TraceCode::BANKING_ACCOUNT_BANK_LMS_FAILED_TO_ATTACH_APPLICATION,
+                    [
+                        'id'    => $bankingAccount->getId(),
+                        'error' => $e,
+                    ]);
+            }
+        }
+
         return $account->toArrayPublic();
     }
 
@@ -461,6 +477,20 @@ class Service extends Base\Service
         {
             $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
             $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
+        }
+
+        // Detach Ca Application from Partner Merchant
+        try
+        {
+            (new BankLms\Service())->detachCaApplicationMerchantFromBankPartner([Entity::BANKING_ACCOUNT_ID => $id]);
+        }
+        catch (BadRequestException $e)
+        {
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_BANK_LMS_FAILED_TO_DETACH_APPLICATION,
+                                [
+                                    'id'    => $bankingAccount->getId(),
+                                    'error' => $e,
+                                ]);
         }
 
         return $bankingAccount->toArrayPublic();
@@ -1528,5 +1558,10 @@ class Service extends Base\Service
         ];
 
         $this->app->salesforce->sendXOnboardingToSalesforce($payload);
+    }
+
+    private function checkIfSentToBank($previousStatus, $currentStatus): bool
+    {
+        return ($previousStatus != $currentStatus and $currentStatus == Status::INITIATED);
     }
 }

@@ -386,6 +386,11 @@ class Authorization
         $this->appHeaders['X-Request-Origin'] = \Config::get('applications.banking_service_url');
     }
 
+    public function addXBankLMSOriginHeader()
+    {
+        $this->appHeaders['X-Request-Origin'] = \Config::get('applications.bank_lms_banking_service_url');
+    }
+
     public function hostedProxyAuth($user = 'rzp_test_10000000000000', $merchantUser = null)
     {
         $this->appAuth($user, \Config::get('applications.hosted')['secret']);

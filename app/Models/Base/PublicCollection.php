@@ -179,6 +179,24 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    public function toArrayCaPartnerBankPoc(): array
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT]  = count($this->items);
+        $array[static::ITEMS]  = $this->itemsToArrayCaPartnerBankPoc();
+
+        return $array;
+    }
+
+    public function toArrayCaPartnerBankManager(): array
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT]  = count($this->items);
+        $array[static::ITEMS]  = $this->itemsToArrayCaPartnerBankManager();
+
+        return $array;
+    }
+
     public function getIds()
     {
         $ids = array_map(function($item)
@@ -369,6 +387,25 @@ class PublicCollection extends Collection
         return array_map(function($item)
         {
             return $item->toArrayPartner();
+
+        }, $this->items);
+    }
+
+    protected function itemsToArrayCaPartnerBankPoc(): array
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayCaPartnerBankPoc();
+
+        }, $this->items);
+    }
+
+
+    protected function itemsToArrayCaPartnerBankManager(): array
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayCaPartnerBankPoc();
 
         }, $this->items);
     }

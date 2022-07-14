@@ -161,6 +161,14 @@ return [
         ],
     ],
 
+    E::BANKING_ACCOUNT_BANK_LMS => [
+        Type::PRIVILEGE_AUTH => [
+            [
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+    ],
+
     E::EXTERNAL => [
         Type::PRIVILEGE_AUTH => [
             [

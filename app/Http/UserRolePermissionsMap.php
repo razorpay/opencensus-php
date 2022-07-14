@@ -152,6 +152,7 @@ class UserRolePermissionsMap
                  Permission::ADD_MERCHANT_EMAIL,
                  Permission::MERCHANT_GET_OAUTH_TOKEN,
                  Permission::UPDATE_USER_ROLE,
+
                  // Download payout attachments
                  Permission::DOWNLOAD_PAYOUT_ATTACHMENTS,
 
@@ -171,6 +172,7 @@ class UserRolePermissionsMap
                  Permission::CREATE_LOW_BALANCE_ALERTS,
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
+                 Permission::RBL_BANK_MID_OFFICE
              ],
 
              BankingRole::ADMIN => [
@@ -566,6 +568,14 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::DOWNLOAD_REPORTING,
              ],
+
+            // BankingRole::BANK_MID_OFFICE_POC => [
+            //     Permission::RBL_BANK_MID_OFFICE
+            // ],
+            //
+            // BankingRole::BANK_MID_OFFICE_MANAGER => [
+            //    Permission::RBL_BANK_MID_OFFICE
+            //]
         ];
 
         $rolePermissions[BankingRole::FINANCE_L2] = $rolePermissions[BankingRole::FINANCE_L1];

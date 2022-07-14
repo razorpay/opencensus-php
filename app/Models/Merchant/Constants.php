@@ -68,6 +68,7 @@ final class Constants
     const PARENT_NAME                             = 'parent_name';
 
     // Partner constants
+    const BANK_CA_ONBOARDING_PARTNER              = 'bank_ca_onboarding_partner';
     const BANK                                    = 'bank';
     const PARTNER                                 = 'partner';
     const RESELLER                                = 'reseller';
@@ -242,6 +243,7 @@ final class Constants
         self::AGGREGATOR,
         self::FULLY_MANAGED,
         self::PURE_PLATFORM,
+        self::BANK_CA_ONBOARDING_PARTNER
     ];
 
     //Capital Tags assigned to merchants
@@ -678,6 +680,9 @@ final class Constants
     const DASHBOARD_TEMPLATE_TAG = 'dashboard_template_tag';
 
     const TAGS = 'tags';
+
+    // Bank LMS tag names
+    const ENABLE_RBL_LMS_DASHBOARD = 'ENABLE_RBL_LMS_DASHBOARD';
 
     //cron tag names
     const MERCHANT_RISK_FOH_CRON_TAG            = 'Bulk_cron_tag_foh';

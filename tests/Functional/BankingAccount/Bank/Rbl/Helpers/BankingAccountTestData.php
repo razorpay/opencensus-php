@@ -3974,6 +3974,133 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testBankLmsEndToEnd' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndForAssigningPOC' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndForFilterByBankPoc' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndForFetchById' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'status' => 'initiated',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndForFetchCommentsById' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/activation/{id}/comments',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testAssignPartnerBulk' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/assign_partner',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'success' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndAfterDetachingSubMerchant' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testArchiveAccount' => [
         'request' => [
             'url'      => '/banking_account/{id}/archive',

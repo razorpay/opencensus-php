@@ -2262,6 +2262,11 @@ class Entity extends Base\PublicEntity
         return ($this->getPartnerType() === Constants::RESELLER);
     }
 
+    public function isBankCaOnboardingPartner(): bool
+    {
+        return ($this->getPartnerType() === Constants::BANK_CA_ONBOARDING_PARTNER);
+    }
+
     public function isAggregatorPartner(): bool
     {
         return ($this->getPartnerType() === Constants::AGGREGATOR);

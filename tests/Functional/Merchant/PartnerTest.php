@@ -8,10 +8,13 @@ use Mail;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use App\User\Constants;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Error\PublicErrorCode;
+use RZP\Models\User\BankingRole;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -1448,6 +1451,202 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchBankingAccountEntitiesForPartnerSubmerchantsWithInvalidRole()
+    {
+        $mode = Mode::TEST;
+
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
+
+        $partnerUser2 = $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_MERCHANT_ID, [], 'admin');
+
+        $this->createSubmerchantAndUser();
+
+        $submerchantId = '10000000000011';
+
+        $this->allowAdminToAccessMerchant($submerchantId);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
+
+        $appId = $app->getId();
+
+        // Link new submerchants to the partner account
+        $accessMap = $this->getAccessMapArray('application', $appId, self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
+
+        $accessMap = $this->getAccessMapArray('application', $appId, $submerchantId, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
+
+        $this->app['config']->set('applications.banking_account.mock', true);
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $data = [
+            \RZP\Models\BankingAccount\Entity::PINCODE => '560030',
+            \RZP\Models\BankingAccount\Entity::CHANNEL => 'rbl',
+            'activation_detail' => [
+                \RZP\Models\BankingAccount\Activation\Detail\Entity::BUSINESS_CATEGORY => 'partnership',
+                \RZP\Models\BankingAccount\Activation\Detail\Entity::SALES_TEAM        => 'self_serve'
+            ]
+        ];
+
+        $feature = $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => self::DEFAULT_MERCHANT_ID,
+            'name'        => Feature\Constants::RBL_BANK_LMS_DASHBOARD,
+            'entity_type' => 'merchant',
+        ]);
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
+            'content' => $data
+        ];
+
+        Mail::fake();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID, $partnerUser2->getId());
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountEntitiesForPartnerSubmerchantsWithRole()
+    {
+        $mode = Mode::TEST;
+
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
+
+        //$partnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_MERCHANT_ID, [], BankingRole::BANK_MID_OFFICE_POC);
+
+        $this->createSubmerchantAndUser();
+
+        $submerchantId = '10000000000011';
+
+        $this->allowAdminToAccessMerchant($submerchantId);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
+
+        $appId = $app->getId();
+
+        // Link new submerchants to the partner account
+        $accessMap = $this->getAccessMapArray('application', $appId, self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
+
+        $accessMap = $this->getAccessMapArray('application', $appId, $submerchantId, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
+
+        $this->app['config']->set('applications.banking_account.mock', true);
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $data = [
+            \RZP\Models\BankingAccount\Entity::PINCODE => '560030',
+            \RZP\Models\BankingAccount\Entity::CHANNEL => 'rbl',
+            'activation_detail' => [
+                \RZP\Models\BankingAccount\Activation\Detail\Entity::BUSINESS_CATEGORY => 'partnership',
+                \RZP\Models\BankingAccount\Activation\Detail\Entity::SALES_TEAM        => 'self_serve'
+            ]
+        ];
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
+            'content' => $data
+        ];
+
+        Mail::fake();
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth('rzp_test_' . $submerchantId);
+
+        $this->ba->addXOriginHeader();
+
+        $this->makeRequestAndGetContent($request);
+
+        $feature = $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => self::DEFAULT_MERCHANT_ID,
+            'name'        => Feature\Constants::RBL_BANK_LMS_DASHBOARD,
+            'entity_type' => 'merchant',
+        ]);
+
+        //$this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID, $partnerUser->getId());
+
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testFetchBankingAccountEntitiesForPartnerSubmerchants()
+    {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->fixtures->on('live')->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
+
+        $this->app['config']->set('applications.banking_account.mock', true);
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $data = [
+            \RZP\Models\BankingAccount\Entity::PINCODE => '560030',
+            \RZP\Models\BankingAccount\Entity::CHANNEL => 'rbl',
+            'activation_detail' => [
+                \RZP\Models\BankingAccount\Activation\Detail\Entity::BUSINESS_CATEGORY => 'partnership',
+                \RZP\Models\BankingAccount\Activation\Detail\Entity::SALES_TEAM        => 'self_serve'
+            ]
+        ];
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
+            'content' => $data
+        ];
+
+        Mail::fake();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->ba->proxyAuth();
+
+        $feature = $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => self::DEFAULT_MERCHANT_ID,
+            'name'        => Feature\Constants::RBL_BANK_LMS_DASHBOARD,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantsTypeFilter()
     {
         $partnerUser = $this->createPartnerAndUser();
@@ -2159,6 +2358,31 @@ class PartnerTest extends OAuthTestCase
         $this->assertTrue($expectedPartner->isResellerPartner());
 
         Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+    public function testUpdatePartnerTypeAsBankOnboardingPartner()
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals($applicationType, MerchantApplications\Entity::MANAGED);
+
+        $this->assertTrue($expectedPartner->isBankCaOnboardingPartner());
     }
 
     public function testUpdatePartnerTypeAsAggregatorUsingProxyAuth()

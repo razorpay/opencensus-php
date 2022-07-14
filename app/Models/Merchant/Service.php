@@ -6422,6 +6422,27 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function makeMerchantAsBankCaOnboardingPartnerType(array $input): array
+    {
+        $merchantId = array_pull($input, Base\PublicEntity::MERCHANT_ID);
+
+        $this->merchant = $this->repo->merchant->findorFailPublic($merchantId);
+
+        // This tag is to make sure this merchant can invite bank role users to join.
+        $this->core()->appendTag($this->merchant, Constants::ENABLE_RBL_LMS_DASHBOARD);
+
+        return Tracer::inspan(['name'       => HyperTrace::UPDATE_PARTNER_TYPE_CORE,
+                               'attributes' => array(Entity::PARTNER_TYPE => $input[Entity::PARTNER_TYPE], 'merchantId' => $this->merchant->getId())],
+            function() use ($input) {
+                return $this->core()->updatePartnerTypeToBankCaOnboarding($this->merchant, $input[Entity::PARTNER_TYPE]);
+            });
+    }
+
     public function backFillMerchantApplications(array $input)
     {
         $limit = $input['limit'];
@@ -6674,6 +6695,20 @@ class Service extends Base\Service
         {
             $this->removeFeatures($feature, true);
         }
+    }
+
+    public function fetchSubMerchantIds(Entity $merchant): array
+    {
+        $associatedAccounts = [];
+
+        if ($merchant->isPartner() === true)
+        {
+            // submerchant accounts
+            $submerchants = ($this->core()->listSubmerchants($merchant, []))[0];
+
+            $associatedAccounts = $submerchants->getIds();
+        }
+        return $associatedAccounts;
     }
 
     /**

@@ -112,6 +112,40 @@ class Entity extends Base\PublicEntity
         self::ADMIN
     ];
 
+    /**
+     * @var array
+     *  This will be used for toArrayCaPartnerBankPoc filter
+     */
+    protected $bankBranchPoc = [
+        self::ID,
+        self::ADMIN_ID,
+        self::BANKING_ACCOUNT_ID,
+        self::COMMENT,
+        self::SOURCE_TEAM_TYPE,
+        self::SOURCE_TEAM,
+        self::TYPE,
+        self::ADDED_AT,
+        self::CREATED_AT,
+        self::ADMIN
+    ];
+
+    /**
+     * @var array
+     *  This will be used for toArrayCaPartnerBankManager filter
+     */
+    protected $bankBranchManager = [
+        self::ID,
+        self::ADMIN_ID,
+        self::BANKING_ACCOUNT_ID,
+        self::COMMENT,
+        self::SOURCE_TEAM_TYPE,
+        self::SOURCE_TEAM,
+        self::TYPE,
+        self::ADDED_AT,
+        self::CREATED_AT,
+        self::ADMIN
+    ];
+
     protected $defaults = [
       self::NOTES    => [],
     ];
@@ -135,5 +169,19 @@ class Entity extends Base\PublicEntity
     public function getComment()
     {
         return $this->getAttribute(self::COMMENT);
+    }
+
+    public function toArrayCaPartnerBankPoc(): array
+    {
+        $result = parent::toArrayAdmin();
+
+        return array_only($result, $this->bankBranchPoc);
+    }
+
+    public function toArrayCaPartnerBankManager(): array
+    {
+        $result = parent::toArrayAdmin();
+
+        return array_only($result, $this->bankBranchManager);
     }
 }

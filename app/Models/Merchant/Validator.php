@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Hash;
 
+use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base;
@@ -2064,6 +2065,19 @@ class Validator extends Base\Validator
     public function validatePartnerType(string $partnerType)
     {
         if (in_array($partnerType, Constants::$partnerTypes, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_TYPE => $partnerType,
+                ]);
+        }
+    }
+
+    public function validateBankCaPartnerType(string $partnerType)
+    {
+        if ($partnerType !== Constants::BANK_CA_ONBOARDING_PARTNER)
         {
             throw new Exception\BadRequestValidationFailureException(
                 PublicErrorDescription::BAD_REQUEST_PARTNER_TYPE_INVALID,

@@ -151,6 +151,20 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $partner           = [];
 
+    /**
+     * Fields exposed through the toArrayCaPartnerBankPoc() function.
+     *
+     * @var array
+     */
+    protected $bankBranchPoc     = [];
+
+    /**
+     * Fields exposed through the toArrayCaPartnerBankManager() function.
+     *
+     * @var array
+     */
+    protected $bankBranchManager = [];
+
     protected $reconAppInternal  = [];
 
     public function toArrayPublic()
@@ -308,6 +322,32 @@ class PublicEntity extends UniqueIdEntity
      * @return array
      */
     public function toArrayPartner(): array
+    {
+        $arrayAttributes = $this->attributesToArray();
+
+        $partnerAttributes = array_only($arrayAttributes, $this->partner);
+
+        $publicAttributes = $this->toArrayPublic();
+
+        $array = array_merge($publicAttributes, $partnerAttributes);
+
+        return $array;
+    }
+
+    public function toArrayCaPartnerBankPoc(): array
+    {
+        $arrayAttributes = $this->attributesToArray();
+
+        $partnerAttributes = array_only($arrayAttributes, $this->partner);
+
+        $publicAttributes = $this->toArrayPublic();
+
+        $array = array_merge($publicAttributes, $partnerAttributes);
+
+        return $array;
+    }
+
+    public function toArrayCaPartnerBankManager(): array
     {
         $arrayAttributes = $this->attributesToArray();
 

@@ -27,6 +27,19 @@ class Service extends Base\Service
         return $comments->toArrayPublicWithExpand();
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     */
+    public function fetchMultipleEntity(BankingAccount\Entity $bankingAccount, array $input): Base\PublicCollection
+    {
+        $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
+
+        $this->repo->banking_account_comment->setMerchantIdRequiredForMultipleFetch(false);
+
+        return $this->repo->banking_account_comment->fetch($input);
+    }
+
     public function createForBankingAccount(string $bankingAccountId, array $input)
     {
         /** @var BankingAccount\Entity $bankingAccount */

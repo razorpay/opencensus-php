@@ -35,6 +35,7 @@ class Category
     const GATEWAY                      = 'gateway';
     const SUBSCRIPTIONS                = 'subscriptions';
     const RAZORPAYX_BANKING            = 'razorpayx_banking';
+    const RBL_MID_OFFICE               = 'rbl_mid_office';
     const RAZORPAY_CAPITAL             = 'razorpay_capital';
     const RAZORPAYX_APPS               = 'razorpayx_apps';
     const PAYOUTS                      = 'payouts';

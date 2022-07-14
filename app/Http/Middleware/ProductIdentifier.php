@@ -94,11 +94,13 @@ class ProductIdentifier
 
         $bankingOriginHost = parse_url(config('applications.banking_service_url'), PHP_URL_HOST);
 
+        $bankLmsBankingOriginHost = parse_url(config('applications.bank_lms_banking_service_url'), PHP_URL_HOST);
+
         $requestOriginHost = parse_url($originDomain, PHP_URL_HOST);
 
         $product = ProductType::PRIMARY;
 
-        if (empty($requestOriginHost)===false and $bankingOriginHost === $requestOriginHost)
+        if (empty($requestOriginHost)===false and (($bankingOriginHost === $requestOriginHost) or ($bankLmsBankingOriginHost === $requestOriginHost)))
         {
             $product = ProductType::BANKING;
         }

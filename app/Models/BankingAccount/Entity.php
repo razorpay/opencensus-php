@@ -670,7 +670,6 @@ class Entity extends Base\PublicEntity
 
     /**
      * This function is used for getting the activation status change log of a banking account
-     * @param Entity $bankingAccount
      *
      * @return PublicCollection
      */

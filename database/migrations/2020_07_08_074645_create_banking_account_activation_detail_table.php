@@ -115,6 +115,9 @@ class CreateBankingAccountActivationDetailTable extends Migration
             $table->string(Entity::RM_PHONE_NUMBER)
                   ->nullable();
 
+            $table->char(Entity::BANK_POC_USER_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Entity::ACCOUNT_OPEN_DATE)
                   ->nullable();
 

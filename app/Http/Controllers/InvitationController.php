@@ -66,6 +66,15 @@ class InvitationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendBankLmsInvitations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createBankLmsUserInvitation($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function sendAxisInvitations()
     {
         $input = Request::all();

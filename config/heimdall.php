@@ -1439,6 +1439,13 @@ return [
             ],
         ],
 
+        PermissionCategory::RBL_MID_OFFICE => [
+            Permission::RBL_BANK_MID_OFFICE => [
+                'description' => 'RBL Bank MID Office to view CA applications',
+                'assignable'  => true,
+            ],
+        ],
+
         // RazorpayX
         PermissionCategory::RAZORPAYX_BANKING => [
             Permission::BANKING_UPDATE_ACCOUNT => [

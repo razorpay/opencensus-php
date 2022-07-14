@@ -76,4 +76,11 @@ class Core extends Base\Core
 
         return $activationDetail;
     }
+
+    public function assignBankPartnerPocToApplication(Entity $bankingAccountActivationDetails, string $bankPocUserId)
+    {
+        $bankingAccountActivationDetails->setBankPOCUserId($bankPocUserId);
+
+        $this->repo->saveOrFail($bankingAccountActivationDetails);
+    }
 }

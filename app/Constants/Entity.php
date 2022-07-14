@@ -223,6 +223,7 @@ class Entity
     const BANKING_ACCOUNT_DETAIL            = 'banking_account_detail';
     const BANKING_ACCOUNT_ACTIVATION_DETAIL = 'banking_account_activation_detail';
     const BANKING_ACCOUNT_CALL_LOG          = 'banking_account_call_log';
+    const BANKING_ACCOUNT_BANK_LMS          = 'banking_account_bank_lms';
 
     // Banking Account Statement Entities
     const BANKING_ACCOUNT_STATEMENT            = 'banking_account_statement';
@@ -1019,6 +1020,7 @@ class Entity
         self::SCHEDULE_TASK             => \RZP\Models\Schedule\Task::class,
         self::DISPUTE_REASON            => \RZP\Models\Dispute\Reason::class,
         self::TERMINAL_ACTION           => \RZP\Models\Terminal\Action::class,
+        self::BANKING_ACCOUNT_BANK_LMS  => \RZP\Models\BankingAccount\BankLms::class,
         self::BANKING_ACCOUNT           => \RZP\Models\BankingAccount::class,
         self::BANKING_ACCOUNT_STATE     => \RZP\Models\BankingAccount\State::class,
         self::BANKING_ACCOUNT_ACTIVATION_DETAIL

@@ -114,6 +114,16 @@ class Core extends Base\Core
         return $invitation;
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function createBankLmsUserInvitation(array $input, Merchant\Entity $partnerMerchant): Entity
+    {
+        $this->merchant = $partnerMerchant;
+
+        return $this->create($input);
+    }
+
     public function createInvitationDraft(array $input): Entity
     {
         $input[Entity::TOKEN] = str_random(40);

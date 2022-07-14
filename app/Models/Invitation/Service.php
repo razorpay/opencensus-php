@@ -124,6 +124,22 @@ class Service extends Base\Service
     }
 
     /**
+     * @throws BadRequestException
+     */
+    public function createBankLmsUserInvitation(array $input)
+    {
+        (new Validator())->validateInput(Validator::CREATE_BANK_LMS_USER, $input);
+
+        $this->merchant = $this->repo->banking_account_bank_lms->fetchPartnerMerchant();
+
+        $input[Entity::PRODUCT] = Product::BANKING;
+
+        $invitation = $this->core()->createBankLmsUserInvitation($input, $this->merchant);
+
+        return $invitation->toArrayPublic();
+    }
+
+    /**
      * Create Axis draft invitation for a merchant.
      *
      * @param  array  $input

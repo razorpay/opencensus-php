@@ -5988,6 +5988,9 @@ ALTER table banking_account_activation_details
 ALTER table banking_account_activation_details
 	ADD COLUMN business_pan_validation varchar(255) DEFAULT NULL;
 
+ALTER table banking_account_activation_details
+	ADD COLUMN bank_poc_user_id CHAR(14) DEFAULT NULL;
+
 ALTER TABLE orders
     MODIFY COLUMN payment_capture TINYINT(1) DEFAULT NULL;
 

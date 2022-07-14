@@ -13,6 +13,8 @@ use RZP\Models\BankingAccount;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\RazorXClient;
+use RZP\Models\User\BankingRole;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Mail;
@@ -46,6 +48,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
+use Illuminate\Contracts\Container\BindingResolutionException;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
@@ -59,6 +62,10 @@ class BankingAccountTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use EventsTrait;
+
+    const DefaultMerchantId = '10000000000000';
+
+    const DefaultPartnerMerchantId = 'randomBankPaId';
 
     protected $storkMock;
 
@@ -75,12 +82,41 @@ class BankingAccountTest extends TestCase
 
         $this->app['config']->set('applications.banking_account.mock', true);
 
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->fixtures->create('merchant', ['id' => self::DefaultPartnerMerchantId]);
+
+        $this->fixtures->create('merchant_detail:sane', [
+            'merchant_id'       => self::DefaultPartnerMerchantId,
+            'business_type'     => 1,
+            'contact_name'      => 'contact name',
+            'contact_mobile'    => '8888888888',
+            'activation_status' => null
+        ]);
+
         $this->ba->proxyAuth();
 
         $this->ba->addXOriginHeader();
 
         $this->fixtures->on('live')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
         $this->fixtures->on('test')->create('merchant_detail:sane', ['merchant_id'=>'10000000000000']);
+    }
+
+    protected function setupBankPartnerMerchant()
+    {
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $this->fixtures->merchant->edit(self::DefaultPartnerMerchantId, ['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' =>  Merchant\Constants::BANK_CA_ONBOARDING_PARTNER, 'merchant_id' => self::DefaultPartnerMerchantId]);
+
+        $feature = $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => self::DefaultPartnerMerchantId,
+            'name'        => Feature\Constants::RBL_BANK_LMS_DASHBOARD,
+            'entity_type' => 'merchant',
+        ]);
     }
 
     public function detachAdminPermission(string $permissionName)
@@ -465,7 +501,6 @@ class BankingAccountTest extends TestCase
             return $mail->hasTo('x.support@razorpay.com');
         });
     }
-
 
     public function testFreshDeskTicketforSalesAssistedFlow()
     {
@@ -1629,6 +1664,8 @@ class BankingAccountTest extends TestCase
 
     public function testActivate()
     {
+        $this->setupBankPartnerMerchant();
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
             ->setMethods(['getTreatment'])
@@ -1800,6 +1837,8 @@ class BankingAccountTest extends TestCase
         $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
         Mail::fake();
+
+        $this->setupBankPartnerMerchant();
 
         $this->mockRaven();
 
@@ -1975,6 +2014,8 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
+        $this->setupBankPartnerMerchant();
+
         $this->testData[__FUNCTION__] = $this->testData['testActivateWithoutKYC'];
 
         $this->mockRaven();
@@ -2045,6 +2086,8 @@ class BankingAccountTest extends TestCase
         Mail::fake();
 
         $this->mockRaven();
+
+        $this->setupBankPartnerMerchant();
 
         $attribute = ['activation_status' => 'deactivated'];
 
@@ -2495,6 +2538,8 @@ class BankingAccountTest extends TestCase
     {
         Mail::fake();
 
+        $this->setupBankPartnerMerchant();
+
         if ($bankingAccount === null)
         {
             $attribute = ['activation_status' => 'activated'];
@@ -2612,7 +2657,9 @@ class BankingAccountTest extends TestCase
                                                               string $finalSubStatus = null,
                                                               string $initialBankStatus = null,
                                                               string $finalBankStatus = null,
-                                                              array $bankingAccount = null)
+                                                              array $bankingAccount = null,
+                                                              string $merchantId = '10000000000000'
+    )
     {
         Mail::fake();
 
@@ -2620,7 +2667,7 @@ class BankingAccountTest extends TestCase
         {
             $attribute = ['activation_status' => 'activated'];
 
-            $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+            $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantId, $attribute);
 
             $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
@@ -2681,7 +2728,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($finalStatus, $bankingAccountStateUpdate['status']);
 
-        $this->assertEquals('10000000000000', $bankingAccountStateUpdate['merchant_id']);
+        $this->assertEquals($merchantId, $bankingAccountStateUpdate['merchant_id']);
 
         $this->assertEquals($finalSubStatus, $bankingAccountStateUpdate['sub_status']);
 
@@ -2912,6 +2959,8 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountStatusWithSubStatus()
     {
+        $this->setupBankPartnerMerchant();
+
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PICKED,
             Status::INITIATED,
@@ -2942,6 +2991,8 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountStatusWithNoneSubStatus()
     {
+        $this->setupBankPartnerMerchant();
+
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PICKED,
             Status::INITIATED,
@@ -3189,7 +3240,10 @@ class BankingAccountTest extends TestCase
     public function testUpdateBankingAccountToInitiated()
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
         $bankingAccount = $this->createBankingAccount();
+
+        $this->setupBankPartnerMerchant();
 
         $this->fixtures->edit('banking_account',
             $bankingAccount['id'],
@@ -3799,14 +3853,14 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->setupBankPartnerMerchant();
+
         $this->startTest($dataToReplace);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::INITIATED, $bankingAccount->getStatus());
     }
-
-
 
     protected function createBankingAccount(array $attributes = [])
     {
@@ -4158,12 +4212,12 @@ class BankingAccountTest extends TestCase
     public function testBankingAccountFetchForMerchantPocCity(string $dbName = 'Bangalore', string $searchName = "Bangalore")
     {
         $ba = $this->testCreateActivationDetail([
-            ActivationDetail\Entity::MERCHANT_CITY => $dbName
+                                                    ActivationDetail\Entity::MERCHANT_CITY => $dbName
         ]);
 
         $this->testData[__FUNCTION__]['request']['content']['merchant_poc_city'] = $searchName;
 
-        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id']                                                                         = $ba['id'];
         $this->testData[__FUNCTION__]['response']['content']['items'][0]['banking_account_activation_details'][ActivationDetail\Entity::MERCHANT_CITY] = $dbName;
 
         $this->ba->adminAuth();
@@ -4174,12 +4228,12 @@ class BankingAccountTest extends TestCase
     public function testBankingAccountFetchForDocsWalkthrough(bool $dbValue = true, bool $searchValue = true)
     {
         $ba = $this->testCreateActivationDetail([
-            ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => $dbValue
+                                                    ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => $dbValue
         ]);
 
         $this->testData[__FUNCTION__]['request']['content'][ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE] = $searchValue;
 
-        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id']                                                                                             = $ba['id'];
         $this->testData[__FUNCTION__]['response']['content']['items'][0]['banking_account_activation_details'][ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE] = intval($dbValue);
 
         $this->ba->adminAuth();
@@ -4190,12 +4244,12 @@ class BankingAccountTest extends TestCase
     public function testBankingAccountFetchForBankAccountType(string $dbName = 'insignia', string $searchName = "insignia")
     {
         $ba = $this->testCreateActivationDetail([
-            ActivationDetail\Entity::ACCOUNT_TYPE => $dbName
+                                                    ActivationDetail\Entity::ACCOUNT_TYPE => $dbName
         ]);
 
         $this->testData[__FUNCTION__]['request']['content']['bank_account_type'] = $searchName;
 
-        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $ba['id'];
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id']                                                                        = $ba['id'];
         $this->testData[__FUNCTION__]['response']['content']['items'][0]['banking_account_activation_details'][ActivationDetail\Entity::ACCOUNT_TYPE] = $dbName;
 
         $this->ba->adminAuth();
@@ -4343,6 +4397,8 @@ class BankingAccountTest extends TestCase
     public function testUpdateOnDiffBankInternalStatus()
     {
         $bankingAccount = $this->createBankingAccount();
+
+        $this->setupBankPartnerMerchant();
 
         $this->fixtures->edit('banking_account',
             $bankingAccount['id'] ,
@@ -5531,11 +5587,11 @@ class BankingAccountTest extends TestCase
 
             $payload = [
                 'activation_detail' => [
-                    ActivationDetail\Entity::BUSINESS_CATEGORY     => 'partnership',
-                    ActivationDetail\Entity::SALES_TEAM            => 'self_serve',
-                    ActivationDetail\Entity::BUSINESS_PAN          => 'RZPD38493L',
-                    ActivationDetail\Entity::BUSINESS_NAME         => 'ABC pvt',
-                    ActivationDetail\Entity::DECLARATION_STEP      => 1,
+                    ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                    ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
+                    ActivationDetail\Entity::BUSINESS_PAN      => 'RZPD38493L',
+                    ActivationDetail\Entity::BUSINESS_NAME     => 'ABC pvt',
+                    ActivationDetail\Entity::DECLARATION_STEP  => 1,
                 ]
             ];
 
@@ -5867,7 +5923,6 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-
     public function testUpdateAdditionalDetailUpdated()
     {
         $this->fixtures->edit('merchant_detail', '10000000000000',
@@ -5899,7 +5954,7 @@ class BankingAccountTest extends TestCase
     public function testUpdateAdditionalDetailswithDifferentValues()
     {
         $bankingAccount = $this->testCreateActivationDetail([
-            ActivationDetail\Entity::ADDITIONAL_DETAILS => json_encode(["green_channel" => false])
+                                                                ActivationDetail\Entity::ADDITIONAL_DETAILS => json_encode(["green_channel" => false])
         ]);
 
         $bankingAccountId = $bankingAccount['id'];
@@ -6663,7 +6718,7 @@ class BankingAccountTest extends TestCase
                 'Comments' => 'Sample comment',
                 'GMV' => 40000,
                 'Razorpay POC Name' =>  $bankingAccountEntity->spocs()->first()->name,
-                'Razorpay POC Number' =>  $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
+                'Razorpay POC Number' => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
             ]
         ];
 
@@ -7490,4 +7545,574 @@ class BankingAccountTest extends TestCase
                     return 'off';
                 }));
     }
+
+    protected function mockAuthServiceCreateApplication(Merchant\Entity $merchant, array $response = [], $times = 1)
+    {
+        // Mock create application call to auth service
+        $requestParams = $this->getDefaultParamsForAuthServiceRequest();
+
+        $createParams = [
+            'merchant_id' => $merchant->getId(),
+            'name'        => $merchant->getName(),
+            'website'     => $merchant->getWebsite() ?: 'https://www.razorpay.com',
+            'type'        => 'partner',
+        ];
+
+        $requestParams = array_merge($requestParams, $createParams);
+
+        $this->setAuthServiceMockDetail('applications', 'POST', $requestParams, $times, $response);
+    }
+
+    public function testBankLmsEndToEnd()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        //$this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        //$response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->startTest();
+    }
+
+    public function activateBankingAccount(BankingAccount\Entity $bankingAccount)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        // ledger shadow experiment is NOT enabled
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn('control');
+
+        $this->mockLedgerSns(0);
+
+        Mail::fake();
+
+        //$this->mockRaven();
+
+        $this->fixtures->edit('banking_account', $bankingAccount->getId(), [
+            'account_number'        => '1234567890',
+            'beneficiary_state'     => 'karnataka',
+            'beneficiary_country'   => 'india',
+            'status'                => 'processed',
+            'sub_status'            => 'api_onboarding_in_progress'
+        ]);
+
+        $this->setupDataForActivation($bankingAccount);
+
+        $schedule = $this->setupDefaultScheduleForFeeRecovery();
+
+        $request = [
+            'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate',
+            'method'  => 'POST',
+            'content' => [],
+        ];
+
+        $this->mockFundAccountService();
+
+        $expectedHubspotCall = false;
+
+        $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                'success' => true,
+                'token'   => 'random'
+            ];
+        });
+
+        $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' . Rbl\Status::SUCCESS));
+
+        $this->setMozartMockResponse($mozartResponse);
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('activated', $response['status']);
+    }
+
+    public function testBankLmsEndToEndForAssigningPOC()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        //$this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        //$response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        $merchant = $this->getDbEntityById('merchant', self::DefaultPartnerMerchantId);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount('10000000000000');
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response, '10000000000000'
+        );
+
+        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+
+        // Assign Bank Poc User to Application
+        $this->assignBankPocUserToApplication($merchant, $partnerOwnerUser, $response['id']);
+
+        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account?bank_poc_user_id='. $partnerOwnerUser->getId(),
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsEndToEndForFilterByBankPoc()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        //$this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        //$response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+
+        // Assign Bank Poc User to Application
+        (new BankingAccount\BankLms\Service())->assignBankPartnerPocToApplication($response['id'], ['bank_poc_user_id' => $partnerOwnerUser->getId()]);
+
+        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account?bank_poc_user_id='. $partnerOwnerUser->getId(),
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsEndToEndForFetchById()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        //$this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        //$response = $this->acceptInvitation();
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account/'. $response['id'],
+            ]
+        ];
+
+        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsEndToEndForFetchCommentsById()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        //$this->inviteNewUserToJoinRBLMerchantAdmin();
+
+        // Accept invitation
+        //$response = $this->acceptInvitation();
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount('10000000000000');
+
+        $this->testCreateBankingAccountActivationComment($response);
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response, '10000000000000'
+        );
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/activation/'. $response['id'].'/comments',
+            ]
+        ];
+
+        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testAssignPartnerBulk()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // New Merchant Apply for Current Account
+        $bankingAccount = $this->MerchantApplyForCurrentAccount('10000000000000');
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account/assign_partner',
+                'content' => [
+                    'banking_account_ids' => [
+                        $bankingAccount['id']
+                    ]
+                ],
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testBankLmsEndToEndAfterDetachingSubMerchant()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        //$this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        //$response = $this->acceptInvitation();
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Detach Submerchant to RBl Merchant
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->activateBankingAccount($bankingAccount);
+
+        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->startTest();
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     * @throws BindingResolutionException
+     */
+    private function makeMerchantAsBankCAOnboardingPartner(string $merchantId = self::DefaultPartnerMerchantId): array
+    {
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $factoryPath = base_path() . '/vendor/razorpay/oauth/database/factories';
+
+        $this->app->make(Factory::class)->load($factoryPath);
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => Merchant\Constants::BANK_CA_ONBOARDING_PARTNER , 'merchant_id' => $merchantId]);
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $request = [
+            'url'     => '/banking_accounts/rbl/lms/merchant/admin/partner_type',
+            'method'  => 'PATCH',
+            'content' => [
+                'merchant_id'  => $merchantId,
+                'partner_type' => 'bank_ca_onboarding_partner',
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('bank_ca_onboarding_partner', $response['partner_type']);
+
+        return $response;
+    }
+
+    /**
+     * @param string $merchantId
+     *
+     * @return array
+     */
+    private function addBankLmsFeatureToTheMerchant(string $merchantId = self::DefaultPartnerMerchantId): array
+    {
+        $request = [
+            'method'  => 'post',
+            'url'     => '/features',
+            'content' => [
+                'names'       => [RZP\Models\Feature\Constants::RBL_BANK_LMS_DASHBOARD],
+                'entity_type' => 'merchant',
+                'entity_id'   => $merchantId
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(RZP\Models\Feature\Constants::RBL_BANK_LMS_DASHBOARD, $response[0]['name']);
+
+        return $response;
+    }
+
+    /**
+     * @param string $merchantId
+     * @param string $userEmail
+     *
+     * @return void
+     */
+    private function inviteNewUserToJoinRBLMerchant(string $merchantId = self::DefaultPartnerMerchantId, string $userEmail = 'random@rbl.com'): void
+    {
+        $this->fixtures->create('invitation', [
+            'email'       => $userEmail,
+            'merchant_id' => $merchantId,
+            'role'        => BankingRole::BANK_MID_OFFICE_POC,
+            'product'     => 'banking',
+        ]);
+    }
+
+    /**
+     * @param string $userEmail
+     *
+     * @return mixed
+     */
+    private function inviteNewUserToJoinRBLMerchantAdmin(string $userEmail = 'random@rbl.com')
+    {
+        $request = [
+            'url'     => '/banking_accounts/rbl/lms/merchant/admin/invitation',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => $userEmail,
+                'role'           => BankingRole::BANK_MID_OFFICE_POC,
+            ],
+        ];
+
+        $this->ba->adminAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * @param string $userEmail
+     *
+     * @return array
+     */
+    private function acceptInvitation(string $userEmail = 'random@rbl.com'): array
+    {
+        $invite = $this->getDbLastEntity('invitation');
+
+        $request = [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => $userEmail,
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'invitation'            => $invite->getToken()
+            ],
+        ];
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response['login']);
+
+        return  $response;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function MerchantApplyForCurrentAccount(string $submerchantId = '10000000000000')
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $submerchantId, $attribute);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+
+        $this->ba->addXOriginHeader();
+
+        $data = [
+            Entity::PINCODE     => '560030',
+            Entity::CHANNEL     => 'rbl',
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'self_serve'
+            ]
+        ];
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_dashboard',
+            'content' => $data
+        ];
+
+        Mail::fake();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($response['id']);
+
+        return $response;
+    }
+
+    /**
+     * @param $merchant
+     * @param $user
+     * @param $bankingAccountId
+     *
+     * @return void
+     */
+    private function assignBankPocUserToApplication($merchant, $user, $bankingAccountId): void
+    {
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $data = [
+            ActivationDetail\Entity::BANK_POC_USER_ID => $user->getId()
+        ];
+
+        $request = [
+            'method'  => 'patch',
+            'url'     => '/banking_accounts/rbl/lms/activation/' . $bankingAccountId . '/bank_poc',
+            'content' => $data
+        ];
+
+        Mail::fake();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($user->getId(), $response["banking_account_activation_details"]["bank_poc_user_id"]);
+    }
+
 }

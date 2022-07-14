@@ -14,6 +14,8 @@ use RZP\Models\Admin\Role;
 
 class Validator extends Base\Validator
 {
+    const CREATE_BANK_LMS_USER = 'createBankLmsUser';
+
     protected static $createRules = [
         Entity::ROLE        => 'required|string|custom',
         Entity::EMAIL       => 'required|max:255|email|custom',
@@ -35,6 +37,12 @@ class Validator extends Base\Validator
     protected static $actionRules = [
         Entity::USER_ID => 'required|string|max:14',
         Entity::ACTION  => 'required|string|in:accept,reject',
+    ];
+
+    protected static $createBankLmsUserRules = [
+        Entity::ROLE        => 'required|string|in:bank_mid_office_poc,bank_mid_office_manager',
+        Entity::EMAIL       => 'required|max:255|email',
+        Entity::SENDER_NAME => 'sometimes|string',
     ];
 
     public function validateEmail(string $attribute, string $email)
@@ -96,6 +104,9 @@ class Validator extends Base\Validator
             $roleEntity = (new Roles\Repository())->fetchRole($role);
 
             $dashboardRoles = ( empty($roleEntity) === false) ? [ $role ] : [];
+
+            //Todo: BANK_LMS
+            //$dashboardRoles = ( empty($roleEntity) === false and !in_array($role, User\BankingRole::$rblBankCaManagementRoles)) ? [ $role ] : [];
         }
         else
         {
@@ -106,6 +117,12 @@ class Validator extends Base\Validator
         {
             $dashboardRoles = array_merge($dashboardRoles, User\Role::RBL_ROLES);
         }
+
+        // Todo: BANK_LMS
+        //if ($merchant->isTagAdded(Merchant\Constants::ENABLE_RBL_LMS_DASHBOARD) === true)
+        //{
+        //    $dashboardRoles = User\BankingRole::$rblBankCaManagementRoles;
+        //}
 
         $vendorPortalMerchantId = app('config')->get('applications.vendor_payments.vendor_portal_merchant_id');
 

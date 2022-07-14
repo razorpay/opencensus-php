@@ -301,6 +301,8 @@ class Table
     // Banking Accounts Tables
     const EXTERNAL                             = 'external';
     const BANKING_ACCOUNT                      = 'banking_accounts';
+    // Banking Account Bank LMS is public exposed version of Banking Account , ref /Models/BankingAccount/BankLms.
+    const BANKING_ACCOUNT_BANK_LMS             = 'banking_accounts';
     const BANKING_ACCOUNT_STATE                = 'banking_account_state';
     const BANKING_ACCOUNT_DETAIL               = 'banking_account_details';
     const BANKING_ACCOUNT_STATEMENT            = 'banking_account_statement';

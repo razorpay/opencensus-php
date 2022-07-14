@@ -468,6 +468,10 @@ class UserAccess
     {
         //add routes to this array to allow merchant control access policies
         $routesWithMerchantRules = [
+            'banking_account_bank_lms_fetch_multiple',
+            'banking_account_bank_lms_fetch_by_id',
+            'banking_account_bank_lms_comments_list',
+            'banking_account_bank_lms_assign_bank_poc',
             'transaction_statement_fetch',
             'transaction_statement_fetch_multiple',
             'transaction_statement_fetch_multiple_for_banking',

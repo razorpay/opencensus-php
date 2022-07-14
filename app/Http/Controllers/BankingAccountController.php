@@ -5,8 +5,11 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Trace\Tracer;
 use RZP\Constants\Entity as E;
+use RZP\Constants\HyperTrace;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Models\BankingAccount\BankLms;
 
 
 class BankingAccountController extends Controller
@@ -14,13 +17,17 @@ class BankingAccountController extends Controller
     /** @var ActivationDetail\Service $activationDetailService  */
     protected $activationDetailService;
 
+    /** @var BankLms\Service $bankLmsService */
+    protected $bankLmsService;
+
     public function __construct()
     {
         $this->activationDetailService = resolve(ActivationDetail\Service::class);
 
+        $this->bankLmsService = resolve(BankLms\Service::class);
+
         parent::__construct();
     }
-
 
     use Traits\HasCrudMethods;
 
@@ -32,6 +39,66 @@ class BankingAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    // Start Bank LMS
+    public function updatePartnerTypeToMerchantBankCaOnboarding()
+    {
+        $input = Request::all();
+
+        $response = Tracer::inspan(['name' => HyperTrace::UPDATE_PARTNER_TYPE_SERVICE], function () use ($input) {
+
+            return $this->bankLmsService->transformNormalMerchantToBankPartner($input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
+    public function attachCaApplicationMerchantToBankPartnerBulk()
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->attachCaApplicationMerchantToBankPartnerBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchMultipleBankingAccountEntity()
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->fetchMultipleBankingAccountEntity($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchBankingAccountEntityById(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->fetchBankingAccountById($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function assignBankPocUserToApplication(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->assignBankPartnerPocToApplication($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function fetchBankingAccountActivationCommentsById(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->fetchBankingAccountsActivationCommentById($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    // End Of Bank LMS
 
     public function updateDashboard(string $id)
     {

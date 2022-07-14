@@ -5056,6 +5056,24 @@ return [
         ],
     ],
 
+    'testUserRegisterFoBankPocRole'  => [
+        'request'  => [
+            'url'     => '/users/register',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'random@rbl.com',
+                'password'              => 'hello123',
+                'password_confirmation' => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'login' => true,
+            ],
+        ],
+    ],
+
     'testUpdateContactMobileAlreadyVerifiedFailure' => [
         'request'   => [
             'url'     => '/users/contact/sendotp',

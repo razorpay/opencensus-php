@@ -919,6 +919,8 @@ return [
     ],
 
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
+    'bank_lms_banking_service_url' => env('BANK_LMS_BANKING_SERVICE_URL', 'https://partner-lms.razorpay.com'),
+
     'payout_links' => [
         'url'                    => env('APP_PAYOUT_LINKS_URL', 'http://localhost:8000'),
         'secret'                 => env('APP_PAYOUT_LINKS_INTERNAL_SECRET'),
