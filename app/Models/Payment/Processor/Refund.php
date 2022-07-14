@@ -52,6 +52,7 @@ use RZP\Models\Payment\Refund\Helpers as RefundHelpers;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
+use RZP\Models\Transaction\Processor\Refund as RefundTransactionProcessor;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 /**
@@ -2027,6 +2028,7 @@ trait Refund
         $balanceErrorCodes = [
             ErrorCode::BAD_REQUEST_NEGATIVE_BALANCE_BREACHED,
             ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE,
+            ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE_FALLBACK,
             ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS,
         ];
 
@@ -2542,10 +2544,27 @@ trait Refund
 
         if ($merchant->getRefundSource() === RefundSource::BALANCE)
         {
-            return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
-        }
+            if ((new RefundTransactionProcessor($refund))->isMerchantRefundFallbackEnabled($merchant->getId()) === true)
+            {
+                //We will check if refund credits are enough and in case they are not we will check for balance
+                try
+                {
+                    $creditsCheck = (new Merchant\Balance\Core)->checkMerchantRefundCredits($merchant, -1 * $refund->getNetAmount(),
+                        Transaction\Type::REFUND, false);
+                }
+                catch (\Throwable $exception)
+                {
+                    return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
+                }
 
-        return false;
+                return $creditsCheck;
+
+            }
+            else
+            {
+                return $this->checkMerchantBalance($merchant, $refund, $type, $traceData, $negativeBalanceEnabled);
+            }
+        }
     }
 
     protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
@@ -4111,7 +4130,14 @@ trait Refund
                 }
                 else
                 {
-                    $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+                    if((new RefundTransactionProcessor($refund))->isMerchantRefundFallbackEnabled($merchant->getId()) === true)
+                    {
+                        $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE_FALLBACK;
+                    }
+                    else
+                    {
+                        $error = ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE;
+                    }
                 }
 
                 $this->app['segment']->trackPayment(

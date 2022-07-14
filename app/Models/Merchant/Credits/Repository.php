@@ -323,7 +323,49 @@ class Repository extends Base\Repository
         return $data;
     }
 
+    /** @param Merchant\Entity $merchant
+     *
+     * @return array
+     */
+    public function getMerchantCreditsForRefund(Merchant\Entity $merchant): int
+    {
+        assertTrue($this->isTransactionActive());
 
+        $merchantsCredits = $this->newQuery()
+            ->merchantId($merchant->getId())
+            ->get();
+
+        //filtering only refund credits
+        $creditsFiltered = $merchantsCredits->filter(function ($item) {
+            return ($item->getUnusedCredits() > 0) and (($item->getExpiredAt() == null) or
+                    ($item->getExpiredAt() > time())) and ($item->getType() == Type::REFUND);
+        });
+
+        $creditIds = $creditsFiltered->getStringAttributesByKey('id');
+
+        $creditIds = array_keys($creditIds);
+
+        $data = [];
+
+        if (count($creditIds) > 0)
+        {
+            $credits = Entity::lockForUpdate()->newQuery()
+                ->whereIn(Entity::ID, $creditIds)
+                ->get();
+
+            foreach ($credits as $credit)
+            {
+                if (isset($data[$credit->getType()]) === false)
+                {
+                    $data[$credit->getType()] = 0;
+                }
+
+                $data[$credit->getType()] += $credit->getUnusedCredits();
+            }
+        }
+
+        return $data[Type::REFUND] ?? 0;
+    }
 
     public function getTypeAggregatedMerchantCreditsForProduct(string $merchantId, string $product): array
     {

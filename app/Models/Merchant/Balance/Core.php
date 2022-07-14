@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Balance;
 use App;
 use Mail;
 use RZP\Models\Base;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -14,6 +15,8 @@ use RZP\Models\Transaction;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\Merchant\Credits;
+use RZP\Models\Transaction\Processor\Refund as RefundTransactionProcessor;
 
 class Core extends Base\Core
 {
@@ -372,9 +375,30 @@ class Core extends Base\Core
         bool $negativeBalanceEnabled = false,
         string $balanceType = Type::PRIMARY) : bool
     {
-        $balance = $merchant->getBalanceByTypeOrFail($balanceType);
 
-        $refundCredits = $balance->getRefundCredits();
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app->razorx->getTreatment(
+            $merchant->getId(), RazorxTreatment::REFUND_CREDITS_WITH_LOCK, $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_FETCH_REFUND_CREDITS_WITH_LOCK,
+            [
+                'result' => $result,
+                'mode' => $mode,
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        if(strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            $refundCredits = $this->repo->credits->getMerchantCreditsOfType($merchant->getId(), Credits\Type::REFUND);
+        }
+        else
+        {
+            $balance = $merchant->getBalanceByTypeOrFail($balanceType);
+
+            $refundCredits = $balance->getRefundCredits();
+        }
 
         $this->trace->info(TraceCode::CHECK_MERCHANT_BALANCE,
             [

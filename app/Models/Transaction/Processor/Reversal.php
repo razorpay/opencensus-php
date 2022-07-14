@@ -153,7 +153,7 @@ class Reversal extends Base
 
         $this->credit = $creditAmount;
 
-        // These checks are specifically used for Instant refunds
+        // These checks are specifically used for refunds
         if ($this->source->getEntityType() === Entity::REFUND)
         {
             // Checking if refund source is credits

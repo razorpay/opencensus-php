@@ -518,6 +518,9 @@ final class RazorxTreatment
     /** @var string Experiment to control the provisioning of network tokens for global saved cards. */
     public const PROVISION_GLOBAL_NETWORK_TOKEN = 'provision_global_network_token';
 
+    // Refund source fallback is enabled on merchant or not
+    const REFUND_FALLBACK_ENABLED_ON_MERCHANT = 'refund_source_fallback_enabled';
+
     //Experiment to validate Urls, emails, html tags inclusions in Linked Account name, business_name
     public const URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME = 'url_validation_for_linked_account_name';
 
@@ -540,12 +543,17 @@ final class RazorxTreatment
     const ASYNC_TOKEN_MIGRATION = 'async_token_migration';
 
     const REFUNDS_IIN_REMOVAL = "refunds_iin_removal";
+
     const NON_RZP_TOKENISED_IR = "non_rzp_tokenised_ir";
 
     /** Experiment to enable custom access control */
     public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";
 
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
+
+
+    // Experiment to ramp up the refund credits fetch mechanism with locking
+    public const REFUND_CREDITS_WITH_LOCK = 'refund_credits_with_lock';
 
     /** This is a mock experiment and used to control the test suite behaviour **/
     public const DISABLE_CAC_FOR_GITHUB_TEST_SUITES = "disable_cac_for_github_test_suites";

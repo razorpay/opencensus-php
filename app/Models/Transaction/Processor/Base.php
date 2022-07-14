@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -194,6 +195,8 @@ abstract class Base extends BaseCore
                             'lock_start_time' => (microtime(true) - $lockStartTime) * 1000
                         ]
                     );
+
+                    $this->decideBalanceSource();
 
                     $this->updateCredits($negativeLimit);
 
@@ -668,6 +671,16 @@ abstract class Base extends BaseCore
                 Trace::CRITICAL,
                 TraceCode::CREDITS_TRANSACTION_FAILED,
                 $data);
+
+            /**
+             * Throwing this exception only in case of refunds so if credit transaction creation fails, we can rollback the credits that got deducted and stop refund creation.
+             * Also, We are having a message check check so that in case of fee only reversal events of postpaid merchants, we would not want to throw that exception
+             */
+
+            if(($this->txn->isTypeRefund() === true) && ($creditType === Credits\Type::REFUND)){
+
+                throw $e;
+            }
         }
     }
 
@@ -772,7 +785,27 @@ abstract class Base extends BaseCore
 
         $refundCreditsThreshold = $this->merchantBalance->merchant->getRefundCreditsThreshold();
 
-        $refundCredits = $this->merchantBalance->getRefundCredits();
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app->razorx->getTreatment(
+            $merchantId, RazorxTreatment::REFUND_CREDITS_WITH_LOCK, $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_FETCH_REFUND_CREDITS_WITH_LOCK,
+            [
+                'result' => $result,
+                'mode' => $mode,
+                'merchant_id' => $merchantId,
+            ]);
+
+        if(strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON) {
+
+            $refundCredits = $this->getMerchantCreditsOfType(Credits\Type::REFUND);
+        }
+        else
+        {
+            $refundCredits = $this->merchantBalance->getRefundCredits();
+        }
 
         $data = [
             'transaction_id'    => $this->txn->getId(),
@@ -969,5 +1002,9 @@ abstract class Base extends BaseCore
         $discountRatio = $payment->getDiscountRatioIfApplicable();
 
         return (int) round($discountRatio * $this->txn->getAmount());
+    }
+
+    public function decideBalanceSource(){
+
     }
 }

@@ -32,6 +32,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Tests\Functional\Helpers\RazorxTrait;
 
 /**
  * Tests for refund payments
@@ -51,6 +52,7 @@ class RefundTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use CustomBrandingTrait;
+    use RazorxTrait;
 
     protected $payment = null;
 
@@ -3174,20 +3176,29 @@ class RefundTest extends TestCase
         // Need multiple credit logs to completely test credit reversals flow
         $this->fixtures->create('credits',
             [
+                'merchant_id' =>'10000000000000',
                 'type'  => 'refund',
-                'value' => 3470
+                'value' => 3470,
+                'used'  => 0,
+                'campaign' => 'random1234'
             ]);
 
         $this->fixtures->create('credits',
             [
+                'merchant_id' =>'10000000000000',
                 'type'  => 'refund',
-                'value' => 100
+                'value' => 100,
+                'used'  => 0,
+                'campaign' => 'random1234'
             ]);
 
         $this->fixtures->create('credits',
             [
+                'merchant_id' =>'10000000000000',
                 'type'  => 'refund',
-                'value' => 100
+                'value' => 100,
+                'used'  => 0,
+                'campaign' => 'random1234'
             ]);
 
         $this->fixtures->merchant->editRefundCredits('3670', '10000000000000');
@@ -7688,4 +7699,328 @@ class RefundTest extends TestCase
 
         $this->startTest($payment['id'], (string) $payment['amount']);
     }
+
+    //Refund Source balance, refund goes through Refund Credits
+    public function testRefundSuccessFallbackEnoughRefundCredits()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockRazorxForFallback();
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'balance']);
+
+        $this->fixtures->merchant->editRefundCredits('50099', '10000000000000');
+
+        $this->fixtures->create('credits',
+            [
+                'merchant_id' =>'10000000000000',
+                'type'  => 'refund',
+                'value' => 50099,
+                'used'  => 0,
+                'campaign' => 'random1234'
+            ]);
+
+        $this->fixtures->merchant->editBalance('99999', '10000000000000');
+
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3471, $transaction['amount']);
+        $this->assertEquals(708, $transaction['fee']);
+        $this->assertEquals(108, $transaction['tax']);
+        $this->assertEquals(0, $transaction['debit']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['fee_credits']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals( 50099 - $transaction['fee_credits'], $balance['refund_credits']);
+        $this->assertEquals(99999,$balance['balance']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(600, $feesBreakup[0]['amount']);
+        $this->assertEquals(108, $feesBreakup[1]['amount']);
+
+        $payment = $this->getDbLastPayment();
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3471, $payment['amount_refunded']);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertNull($fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('instant', $refund['speed_processed']);
+        $this->assertEquals(708, $refund['fee']);
+        $this->assertEquals(108, $refund['tax']);
+
+    }
+
+    //Refund Fallbacks to balance
+    public function testRefundSuccessFallbackNotEnoughRefundCredits()
+    {
+        $payment = $this->defaultAuthPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockRazorxForFallback();
+
+        $this->gateway = 'hdfc';
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'balance']);
+
+        $this->fixtures->merchant->editBalance('99999', '10000000000000');
+
+        $this->fixtures->merchant->editRefundCredits('199', '10000000000000');
+
+
+        $this->mockServerContentFunction(function (& $content, $action = null) {
+            if ($action === 'verify') {
+                $content['result'] = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2'] = '';
+                $content['udf5'] = 'TrackID';
+            }
+
+            if ($action === 'refund') {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $this->fixtures->pricing->createInstantRefundsDefaultPricingplan();
+
+        $this->fixtures->pricing->createInstantRefundsPricingPlan();
+
+        $this->fixtures->pricing->createInstantRefundsModeLevelPricingPlan();
+
+        $refund = $this->refundPayment(
+            $payment['id'],
+            3471,
+            [
+                'speed'    => 'optimum',
+                'is_fta'   => true,
+                'fta_data' => [
+                    'card_transfer' => [
+                        'card_id' => $payment['card_id']
+                    ]
+                ]
+            ]
+        );
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('optimum', $refund['speed_requested']);
+        $this->assertEquals(RefundStatus::PROCESSED, $refund['status']);
+        $this->assertEquals(RefundSpeed::INSTANT, $refund['speed_processed']);
+
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertEquals($refund['vpa_id'], $fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+        $this->assertEquals('processed', $fta['status']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+        $transaction = $this->getDbEntities('transaction', ['entity_id' => substr($refund['id'], 5)])->last();
+
+        $this->assertEquals(3471, $transaction['amount']);
+        $this->assertEquals(708, $transaction['fee']);
+        $this->assertEquals(108, $transaction['tax']);
+        $this->assertEquals($transaction['amount'] + $transaction['fee'], $transaction['debit']);
+        $this->assertEquals(0, $transaction['fee_credits']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals( 199, $balance['refund_credits']);
+        $this->assertEquals(99999-$transaction['debit'],$balance['balance']);
+
+        $feesBreakup = $this->getDbEntities('fee_breakup', ['transaction_id' => $transaction['id']]);
+
+        $this->assertEquals('refund', $feesBreakup[0]['name']);
+        $this->assertEquals('tax', $feesBreakup[1]['name']);
+        $this->assertEquals(600, $feesBreakup[0]['amount']);
+        $this->assertEquals(108, $feesBreakup[1]['amount']);
+
+        $payment = $this->getDbLastPayment();
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('partial', $payment['refund_status']);
+        $this->assertEquals(3471, $payment['amount_refunded']);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+        $this->assertNull($fta['vpa_id']);
+        $this->assertEquals('refund', $fta['purpose']);
+
+
+        $this->assertEquals('processed', $refund['status']);
+        $this->assertEquals('instant', $refund['speed_processed']);
+        $this->assertEquals(708, $refund['fee']);
+        $this->assertEquals(108, $refund['tax']);
+
+    }
+
+    //Refund source is set to balance and the balance and refund credits are both zero
+    public function testRefundFallbackWithZeroBalance()
+    {
+        $this->mockRazorxForFallback();
+
+        $payment = $this->defaultAuthPayment();
+
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'balance']);
+
+        $this->fixtures->merchant->editBalance('0', '10000000000000');
+
+        $this->fixtures->merchant->editRefundCredits('0', '10000000000000');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+    }
+
+    //Refund source is set to balance and the balance is zero and refund credits are non zero, fallback to refund credits is disabled
+    public function testRefundFallbackWithZeroBalanceAndNonZeroCredits()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'balance']);
+
+        $this->fixtures->merchant->editBalance('0', '10000000000000');
+
+        $this->fixtures->merchant->editRefundCredits('100000', '10000000000000');
+
+        $this->fixtures->create('credits',
+            [
+                'merchant_id' =>'10000000000000',
+                'type'  => 'refund',
+                'value' => 100000,
+                'used'  => 0,
+                'campaign' => 'random1234'
+            ]);
+
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+    }
+
+    //Refund source is set to refundCredits and the refund credits are zero
+    public function testRefundFallbackWithZeroRefundCredits()
+    {
+        $this->mockRazorxForFallback();
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->fixtures->merchant->edit('10000000000000', ['refund_source' => 'credits']);
+
+        $this->fixtures->merchant->editRefundCredits('0', '10000000000000');
+
+        $this->startTest($payment['id'], (string) $payment['amount']);
+
+    }
+
+    public function testZeroDebitCreditRefund()
+    {
+        $this->mockRazorxForFallback();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $this->gateway = 'billdesk';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $input['force'] = '1';
+
+        $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
+
+        $refund = $this->getLastEntity('billdesk', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($refund['refund_id'],substr($txn['entity_id'],5));
+
+        $this->assertEquals(0, $txn['credit']);
+
+        $this->assertEquals(0, $txn['debit']);
+
+        $this->assertEquals(0, $txn['credit']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+    }
+
 }
