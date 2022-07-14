@@ -2827,13 +2827,7 @@ class Constants
         self::COVID_19_RELIEF,
         self::CRED_MERCHANT_CONSENT,
         self::MISSED_ORDERS_PLINK,
-        self::ONE_CLICK_CHECKOUT,
-        self::ONE_CC_COUPONS,
-        self::ONE_CC_MANDATORY_LOGIN,
-        self::ONE_CC_MERCHANT_DASHBOARD,
         self::DISABLE_COLLECT_CONSENT,
-        self::ONE_CC_GA_ANALYTICS,
-        self::ONE_CC_FB_ANALYTICS,
         self::CARD_MANDATE_SKIP_PAGE
     ];
 
