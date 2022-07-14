@@ -55,6 +55,8 @@ func (s *LinkedAccountPennyTestingApiTestSuite) TestVerificationPendingStatus() 
 }
 
 func (s *LinkedAccountPennyTestingApiTestSuite) TestFetchMerchantActivationDetails() {
+	s.T().Skip("Test is intermittently failing because of 502,404 errors")
+
 	laReq := CreateLinkedAccountPositiveTestCases[0].Req
 	uniqueId := strconv.FormatInt(time.Now().Unix(), 10)
 	laReq.Email = "la-" + uniqueId + "@email.com"
@@ -105,7 +107,6 @@ func (s *LinkedAccountPennyTestingApiTestSuite) TestLinkedAccountBankDetailsUpda
 }
 
 func (s *LinkedAccountPennyTestingApiTestSuite) TestLinkedAccountHoldFundsAfterBankUpdate() {
-
 	s.T().Skip("Test is intermittently failing because of 503,404 errors")
 
 	//Updates Bank Details of Linked Account and activation status to verification pending
