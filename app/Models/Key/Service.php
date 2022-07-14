@@ -11,6 +11,8 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Modules\Migrate\Migrate;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
@@ -91,7 +93,11 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        return (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);
+        $response = (new Core)->rollKey($merchantId, $keyId, $input, $this->mode);
+
+        $this->sendSelfServeSuccessAnalyticsEventToSegmentForApiKeyRegeneration();
+
+        return $response;
     }
 
     public function updateKeyWithOtp($keyId, array $input)
@@ -208,5 +214,24 @@ class Service extends Base\Service
                 Constants::SUCCESS_MIDS => $successMids,
                 Constants::FAILED_MIDS  => $failedMids
             ];
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForApiKeyRegeneration()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'API Key Regenerated';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

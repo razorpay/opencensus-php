@@ -23,6 +23,8 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Mail\Invitation\Invite as InvitationMail;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
 use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
 use RZP\Trace\Tracer;
@@ -106,6 +108,8 @@ class Core extends Base\Core
         $invitedUserExists = (empty($invitedUser) === false);
 
         $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
+
+        $this->pushSelfServeSuccessEventsToSegmentForMemberInvitation();
 
         return $invitation;
     }
@@ -682,4 +686,22 @@ class Core extends Base\Core
         return false;
     }
 
+    private function pushSelfServeSuccessEventsToSegmentForMemberInvitation()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'New Member Invited';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
 }

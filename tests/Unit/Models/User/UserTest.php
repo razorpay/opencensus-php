@@ -994,6 +994,8 @@ class UserTest extends TestCase
 
         $this->userEntityMock->shouldReceive('getId')->andReturn('20000000000002');
 
+        $this->userEntityMock->shouldReceive('getMerchantEntity')->andReturn(null);
+
         $this->repoMock->shouldReceive('saveOrFail')->andReturn([]);
 
         $this->userValidator->shouldReceive('validatePasswordIsNotSameAsLastThree')->andReturn([]);
@@ -1156,6 +1158,12 @@ class UserTest extends TestCase
         $this->userEntityMock->shouldReceive('isSecondFactorAuthSetup')->andReturn(true);
 
         $this->userEntityMock->shouldReceive('isOrgEnforcedSecondFactorAuth')->andReturn(false);
+
+        $segmentMock = Mockery::mock('RZP\Services\Segment');
+
+        $segmentMock->shouldReceive('pushIdentifyAndTrackEvent')->andReturn([]);
+
+        $this->app->instance('segment-analytics', $segmentMock);
 
         $input = [
             'second_factor_auth' => true,
@@ -1583,6 +1591,8 @@ class UserTest extends TestCase
         $this->userEntityMock->shouldReceive('getValidator')->andReturn($this->userValidator);
 
         $this->userEntityMock->shouldReceive('getId')->andReturn('20000000000002');
+
+        $this->userEntityMock->shouldReceive('getMerchantEntity')->andReturn(null);
 
         $this->userValidator->shouldReceive('validatePasswordIsNotSameAsLastThree')->andReturn([]);
 

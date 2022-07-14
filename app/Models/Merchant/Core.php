@@ -92,6 +92,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
@@ -1884,6 +1885,14 @@ class Core extends Base\Core
 
             $this->repo->merchant_detail->saveOrFail($this->merchant->merchantDetail);
 
+            [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Brand Name Updated';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+
             $this->trace->info(
                 TraceCode::MERCHANT_BILLING_LABEL_UPDATE, [
                 Entity::ID => $merchant->getId(),
@@ -2220,6 +2229,8 @@ class Core extends Base\Core
         $merchant->edit($input, 'editConfig');
 
         $this->saveAndNotify($merchant);
+
+        $this->pushSelfServeActionForAnalyticsForMerchantConfigUpdate($input, $merchant);
 
         return $merchant;
     }
@@ -2974,6 +2985,14 @@ class Core extends Base\Core
 
                 $this->repo->saveOrFail($merchantDetail);
             }
+
+            [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Login Details Updated';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
 
             $this->trace->info(TraceCode::OWNERSHIP_TRANSFER_FOR_EMAIL_UPDATE, [
                 'new_owner_id'          => $user->getId(),
@@ -4279,6 +4298,17 @@ class Core extends Base\Core
 
         $merchant->setSecondFactorAuth($action);
         $this->repo->saveOrFail($merchant);
+
+        if ($action === true)
+        {
+            [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = '2FA Verification Created';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+        }
 
         $mailData = [
             'merchant' => [
@@ -8061,5 +8091,88 @@ class Core extends Base\Core
 
             (new User\Service)->updateUserMerchantMapping($newOwnerId, $userMerchantMappingInputData);
         }
+    }
+
+    public function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function pushSelfServeActionForAnalyticsForMerchantConfigUpdate($input, $merchant)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] =
+            $this->getSelfServeActionForMerchantConfigUpdate($input);
+
+        if (isset($segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION]) === true)
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+        }
+    }
+
+    private function getSelfServeActionForMerchantConfigUpdate($input)
+    {
+        if (isset($input[Entity::DISPLAY_NAME]) === true)
+        {
+            return 'Display Name Updated';
+        }
+
+        if ($this->isCreditAlertCreated($input) === true)
+        {
+            return 'Credit Alert Created';
+        }
+
+        if (isset($input[Entity::BALANCE_THRESHOLD]) === true)
+        {
+            return 'Funds Alert Created';
+        }
+
+        if (isset($input[Entity::BRAND_COLOR]) === true)
+        {
+            return 'Theme Color Changed';
+        }
+
+        if (isset($input[Entity::LOGO_URL]) === true)
+        {
+            return 'Brand Logo Uploaded';
+        }
+
+        if (isset($input[Entity::DEFAULT_REFUND_SPEED]) === true)
+        {
+            return 'Refund Speed Updated';
+        }
+
+        if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
+            return 'Email Notification Enabled';
+        }
+    }
+
+    private function isCreditAlertCreated($input)
+    {
+        if (((isset($input[Entity::AMOUNT_CREDITS_THRESHOLD]) === true) and
+            (isset($input[Entity::FEE_CREDITS_THRESHOLD]) === true) and
+            (isset($input[Entity::REFUND_CREDITS_THRESHOLD]) === true)) and
+            (($input[Entity::AMOUNT_CREDITS_THRESHOLD] > 0) or
+            ($input[Entity::FEE_CREDITS_THRESHOLD] > 0) or
+            ($input[Entity::REFUND_CREDITS_THRESHOLD] > 0)))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

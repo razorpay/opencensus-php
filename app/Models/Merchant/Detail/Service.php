@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use Throwable;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
@@ -495,6 +496,7 @@ class Service extends Base\Service
     public function postApplyCoupon(array $input)
     {
         $merchant   = $this->app['basicauth']->getMerchant();
+
         $merchantId = $merchant->getMerchantId();
 
         (new Coupon\Validator())->validateInput('apply_coupon_code', $input);
@@ -558,6 +560,14 @@ class Service extends Base\Service
 
                 (new Coupon\Core())->applyCouponCode($merchant, $coupon, false);
 
+                [$segmentEventName, $segmentProperties] = $this->core->pushSelfServeSuccessEventsToSegment();
+
+                $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Coupon Code Applied';
+
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $this->merchant, $segmentProperties, $segmentEventName
+                );
+
                 return [
                     'applied' => true,
                 ];
@@ -595,6 +605,14 @@ class Service extends Base\Service
             else
             {
                 (new Coupon\Core())->applyCouponCode($merchant, $coupon);
+
+                [$segmentEventName, $segmentProperties] = $this->core->pushSelfServeSuccessEventsToSegment();
+
+                $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Coupon Code Applied';
+
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $this->merchant, $segmentProperties, $segmentEventName
+                );
 
                 return [
                     'applied' => true,
@@ -1802,6 +1820,14 @@ class Service extends Base\Service
 
         if ($isSelfServe === true)
         {
+            [$segmentEventName, $segmentProperties] = $core->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Additional Website - App Url Updated';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+
             $args = [
                 Constants::MERCHANT         => $merchant,
                 DashboardEvents::EVENT      => DashboardEvents::ADD_ADDITIONAL_WEBSITE_SUCCESS,
@@ -2297,6 +2323,16 @@ class Service extends Base\Service
 
         $this->repo->merchant_detail->saveOrFail($detail);
 
+        [$segmentEventName, $segmentProperties] = $this->core->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'GST Updated';
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::IS_WORKFLOW] = 'false';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
         $this->stopShowingRejectionReasonForGstInSelfServe($detail->getId(), $detail->getEntity(), $input[DEConstants::IS_ADD_GSTIN_OPERATION]);
 
@@ -2502,6 +2538,16 @@ class Service extends Base\Service
         );
 
         $this->repo->merchant_detail->saveOrFail($merchantDetails);
+
+        [$segmentEventName, $segmentProperties] = $this->core->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'GST Updated';
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::IS_WORKFLOW] = 'true';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
 
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_APPROVED : TraceCode::GSTIN_UPDATE_WORKFLOW_APPROVED;
 

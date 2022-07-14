@@ -22,6 +22,8 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\BulkWorkflowAction;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Workflow\Observer\MerchantSelfServeObserver;
@@ -1150,5 +1152,50 @@ class Core extends Base\Core
     protected function getNeedWorkFlowClarificationComment(array $input)
     {
         return Constants::NEEDS_WORKFLOW_CLARIFICATION_COMMENT_KEY . $input[Constants::MESSAGE_BODY];
+    }
+
+    public function getSelfServeActionForAnalyticsForNeedClarification(Entity $action)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $this->getSelfServeActionForNeedClarificationAnalytics($action, $segmentEventName, $segmentProperties);
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function getSelfServeActionForNeedClarificationAnalytics(Entity $action, string $segmentEventName, array &$segmentProperties)
+    {
+        $workflowPermission = $action->permission->getName();
+
+        $diff = (new Differ\Service)->fetchRequest($action->getId());
+
+        $payload = $diff[Differ\Entity::PAYLOAD];
+
+        $merchantId = $this->getMerchantIdForWorkflowAction($action, $payload);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if (key_exists($workflowPermission, MerchantSelfServeObserver::PERMISSION_FOR_NEED_CLARIFICATION_SEGMENT_ACTION_NAME))
+        {
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] =
+                MerchantSelfServeObserver::PERMISSION_FOR_NEED_CLARIFICATION_SEGMENT_ACTION_NAME[$workflowPermission];
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+        }
     }
 }

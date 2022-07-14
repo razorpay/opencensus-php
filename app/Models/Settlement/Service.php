@@ -31,6 +31,8 @@ use RZP\Models\FundTransfer\Kotak;
 use RZP\Jobs\Settlement\LedgerRecon;
 use RZP\Models\Report\Types\BasicEntityReport;
 use RZP\Models\Report\Types\SettlementReconReport;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Schedule\Task as scheduleTask;
@@ -1780,6 +1782,8 @@ class Service extends Base\Service
                     ],
                     Feature\Entity::SHOULD_SYNC => true,
                 ]);
+
+                $this->sendSelfServeSuccessAnalyticsEventToSegmentForEnablingSms();
             }
             catch (\Exception $exception)
             {
@@ -2240,5 +2244,24 @@ class Service extends Base\Service
             array_push($data, $accessMap->getMerchantId());
         }
         return $data;
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForEnablingSms()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'SMS Notifications Enabled';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

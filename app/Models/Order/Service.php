@@ -284,7 +284,6 @@ class Service extends Base\Service
             $result[Entity::CUSTOMER_ADDITIONAL_INFO] = $input[Entity::CUSTOMER_ADDITIONAL_INFO];
         }
 
-
         return $result;
     }
 

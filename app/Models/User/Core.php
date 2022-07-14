@@ -8,7 +8,6 @@ use Cache;
 use Config;
 use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Services\Segment\EventCode as SegmentEvent;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -46,8 +45,10 @@ use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Mail\User\OtpSignup as OtpSignup;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Escalations as MerchantEscalation;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
@@ -526,6 +527,19 @@ class Core extends Base\Core
         $user->setPasswordResetToken();
 
         $this->repo->saveOrFail($user);
+
+        $merchant = $user->getMerchantEntity();
+
+        if (empty($merchant) === false)
+        {
+            [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Password Updated';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+        }
 
         $orgId = $this->app['basicauth']->getOrgId();
 
@@ -2403,6 +2417,14 @@ class Core extends Base\Core
             $this->repo->saveOrFail($user);
         });
 
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Mobile Updated';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $segmentProperties, $segmentEventName
+        );
+
         $this->increaseCacheValueForThrottleContactMobile($user);
 
         $this->notifyUserAboutContactMobileUpdate($user, $merchant);
@@ -2881,7 +2903,6 @@ class Core extends Base\Core
      */
     public function change2faSetting(Entity $user, array $input): array
     {
-
         if ($this->isBankingDemoAccount($user))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_2FA_DISABLED_FOR_DEMO_ACC);
@@ -2907,6 +2928,19 @@ class Core extends Base\Core
         $user->setSecondFactorAuth($action);
 
         $this->repo->saveOrFail($user);
+
+        if ($action === true)
+        {
+            $merchant = $this->merchant;
+
+            [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Enable 2FA';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+        }
 
         return [
             Entity::SECOND_FACTOR_AUTH => $user->isSecondFactorAuth(),
@@ -5183,5 +5217,20 @@ class Core extends Base\Core
         });
 
         return $user;
+    }
+
+    public function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
     }
 }

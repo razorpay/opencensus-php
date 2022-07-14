@@ -12,6 +12,8 @@ use App\Http\AppResponse;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Reminders\ReminderProcessor;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 
 class RemindersController extends Controller
 {
@@ -148,6 +150,7 @@ class RemindersController extends Controller
         }
 
         $method = Request::method();
+
         $data = Request::all();
 
         $response = $this->reminders->sendAnyRequest($path, $method, $data);
@@ -155,6 +158,8 @@ class RemindersController extends Controller
         $statusCode = $response['status_code'];
 
         unset($response['status_code']);
+
+        $this->sendSelfServeSuccessAnalyticsEventToSegmentForEnablingReminders($path, $pathMatches, $data, $statusCode);
 
         return ApiResponse::json($response, $statusCode);
     }
@@ -256,5 +261,30 @@ class RemindersController extends Controller
         }
 
         return false;
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForEnablingReminders($path, $pathMatches, $data, $statusCode)
+    {
+        if ((preg_match('/^merchant_settings\/[[:alnum:]]{14}$/', $path, $pathMatches) == true) and
+            (isset($data['active']) === true) and
+            ($data['active'] === true) and
+            ($statusCode === 200))
+        {
+            $segmentProperties = [];
+
+            $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+            $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+            $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'PL Reminder Created';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $this->ba->getMerchant(), $segmentProperties, $segmentEventName
+            );
+        }
     }
 }

@@ -10,6 +10,8 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 
 class Core extends Base\Core
 {
@@ -105,6 +107,11 @@ class Core extends Base\Core
                     }
 
                     $this->repo->saveOrFail($config);
+
+                    if ($input['type'] === Type::LOCALE)
+                    {
+                        $this->sendSelfServeSuccessAnalyticsEventToSegmentForLanguageChange();
+                    }
 
                     return $config;
                 });
@@ -287,6 +294,8 @@ class Core extends Base\Core
                         if ($type === Type::LOCALE)
                         {
                             $this->updateLocaleConfig($config, $input);
+
+                            $this->sendSelfServeSuccessAnalyticsEventToSegmentForLanguageChange();
                         }
 
                         if ($type === Type::DCC)
@@ -343,6 +352,19 @@ class Core extends Base\Core
                         ErrorCode::BAD_REQUEST_CONFIG_NOT_FOUND, null, null,
                         'Config is not present for the provided merchant');
 
+                }
+
+                if ((isset($input['config']) === true) and
+                    (isset($input['type']) === true)  and
+                    ($input['type'] === Type::LATE_AUTH))
+                {
+                    [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+                    $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Payment Capture Period Updated';
+
+                    $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                        $this->merchant, $segmentProperties, $segmentEventName
+                    );
                 }
 
                 return  $configEntity;
@@ -553,5 +575,31 @@ class Core extends Base\Core
 
         return $convenienceFeeConfig;
 
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForLanguageChange()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Language Changed';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

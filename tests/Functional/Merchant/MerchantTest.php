@@ -15396,7 +15396,7 @@ The same has been enabled for the account.
 
             $this->app->instance('segment-analytics', $segmentMock);
 
-            $segmentMock->expects($this->exactly(1))
+            $segmentMock->expects($this->exactly(2))
                         ->method('pushIdentifyAndTrackEvent')
                         ->willReturn(true);
         }

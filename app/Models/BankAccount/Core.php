@@ -28,6 +28,7 @@ use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
@@ -826,6 +827,8 @@ class Core extends Base\Core
 
         $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
 
+        $this->sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaBvs($merchant);
+
         $this->stopShowingRejectionReasonForBankAccountUpdateSelfServe($merchant->bankAccount->getId(), $merchant->bankAccount->getEntityName());
 
         $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, ["merchant_id"=>$merchant->getId(),"status"=>$status]);
@@ -1179,7 +1182,11 @@ class Core extends Base\Core
 
     public function bankAccountUpdatePostPennyTestingWorkflow(MerchantEntity $merchant, array $input)
     {
-        return $this->createOrChangeBankAccount($input[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
+        $data = $this->createOrChangeBankAccount($input[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
+
+        $this->sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaWorkflow($merchant);
+
+        return $data;
     }
 
     public function isBankAccountUpdatePennyTestingInProgress(MerchantEntity $merchant)
@@ -1342,5 +1349,44 @@ class Core extends Base\Core
     private function validationFailureDueToInputError(Merchant\BvsValidation\Entity $validation): bool
     {
         return $validation->getValidationStatus() == BvsValidationConstants::FAILED and $validation->getErrorCode() == BvsValidationConstants::INPUT_DATA_ISSUE;
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaWorkflow($merchant)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegmentForBankAccountUpdate();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::IS_WORKFLOW] = 'true';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaBvs($merchant)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegmentForBankAccountUpdate();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::IS_WORKFLOW] = 'false';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function pushSelfServeSuccessEventsToSegmentForBankAccountUpdate()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Bank Account Updated';
+
+        return [$segmentEventName, $segmentProperties];
     }
 }

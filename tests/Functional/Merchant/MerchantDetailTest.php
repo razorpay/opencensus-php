@@ -3975,11 +3975,11 @@ Team Razorpay', '1234567890');
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(3))
+        $segmentMock->expects($this->exactly(4))
                     ->method('pushIdentifyAndTrackEvent')
                     ->will($this->returnCallback(function($merchant, $properties, $eventName) {
                         $this->assertNotNull($properties);
-                        $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Add gstin workflow created", "Add gstin workflow status"], true));
+                        $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Add gstin workflow created", "Add gstin workflow status", "Self Serve Success"], true));
                     }));
 
         $this->mockStorkForAddGstinValidationFailWorkflowApprove();
@@ -4080,11 +4080,11 @@ Team Razorpay',
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(3))
+        $segmentMock->expects($this->exactly(4))
                     ->method('pushIdentifyAndTrackEvent')
                     ->will($this->returnCallback(function($merchant, $properties, $eventName) {
                         $this->assertNotNull($properties);
-                        $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Edit gstin workflow created", "Edit gstin workflow status"], true));
+                        $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Edit gstin workflow created", "Edit gstin workflow status", "Self Serve Success"], true));
                     }));
 
         $this->mockStorkForUpdateGstWorkflowApprove();
@@ -4560,12 +4560,12 @@ Team Razorpay',
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(1))
-                    ->method('pushIdentifyAndTrackEvent')
-                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
-                        $this->assertEquals('success', $properties['result']);
-                        $this->assertEquals("Add gstin bvs result", $eventName);
-                    }));
+        $segmentMock->expects($this->exactly(2))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["Add gstin bvs result", "Self Serve Success"], true));
+            }));
 
         $this->mockStorkForAddGstinSelfServeBvsValidationSuccess();
 
@@ -4663,12 +4663,12 @@ Team Razorpay',
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(1))
-                    ->method('pushIdentifyAndTrackEvent')
-                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
-                        $this->assertEquals('success', $properties['result']);
-                        $this->assertEquals("Edit gstin bvs result", $eventName);
-                    }));
+        $segmentMock->expects($this->exactly(2))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Self Serve Success"], true));
+            }));
 
         $this->processBvsResponseForGstinSelfServe();
 
@@ -4724,11 +4724,11 @@ Team Razorpay',
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(1))
+        $segmentMock->expects($this->exactly(2))
             ->method('pushIdentifyAndTrackEvent')
             ->will($this->returnCallback(function($merchant, $properties, $eventName) {
-                $this->assertEquals('success', $properties['result']);
-                $this->assertEquals("Edit gstin bvs result", $eventName);
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["Edit gstin bvs result", "Self Serve Success"], true));
             }));
 
         $response = $this->initiateGstinSelfServe();

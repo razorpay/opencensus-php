@@ -21,6 +21,8 @@ use RZP\Modules\Migrate\Migrate;
 use RZP\Models\Event\Entity as EventEntity;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Mail\Merchant\Webhook as WebhookMail;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Account\Entity as AccountEntity;
 
 /**
@@ -136,7 +138,11 @@ class Service extends Base\Service
 
         $this->traceOperationExit('create_for_merchant', [AccountEntity::MERCHANT_ID => $merchantId]);
 
-        return $this->create($input);
+        $response = $this->create($input);
+
+        $this->sendSelfServeSuccessAnalyticsEventToSegmentForMerchantCreatedWebhook();
+
+        return $response;
     }
 
     /**
@@ -1063,5 +1069,16 @@ class Service extends Base\Service
     public function listWebhookEvents(array $input): array
     {
         return (new Stork($this->mode, $this->product))->listWebhookEvents($input);
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForMerchantCreatedWebhook()
+    {
+        [$segmentEventName, $segmentProperties] = (new Merchant\Core())->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Webhook Added';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

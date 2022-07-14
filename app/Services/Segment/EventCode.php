@@ -82,6 +82,8 @@ class EventCode
 
     const BANK_ACCOUNT_UPDATE_WORKFLOW_CREATED = 'bank account workflow created';
 
+    const SELF_SERVE_SUCCESS = 'Self Serve Success';
+
     const CA_ACTIVATED = 'Current Account Activated';
 
     const CONTACT_CREATED = 'Contact Created';

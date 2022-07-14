@@ -112,6 +112,7 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Services\Pagination\Entity as PaginationEntity;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Status as MerchantStatus;
 use RZP\Constants\{HyperTrace, Mode, Product, Entity as CE, Environment};
@@ -2266,6 +2267,17 @@ class Service extends Base\Service
 
         $merchant = $this->core()->toggleInternational($this->merchant, $toggleValue);
 
+        if ($toggleValue === true)
+        {
+            [$segmentEventName, $segmentProperties] = $this->core()->pushSelfServeSuccessEventsToSegment();
+
+            $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'International Payments Applied';
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $this->merchant, $segmentProperties, $segmentEventName
+            );
+        }
+
         return $merchant->toArrayPublic();
     }
 
@@ -4355,9 +4367,19 @@ class Service extends Base\Service
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
+        if ($featuresToAdd === [Feature\Constants::CARD_MANDATE_SKIP_PAGE])
+        {
+            $this->sendSelfServeSuccessAnalyticsEventToSegmentForEnablingMandatePageSkip();
+        }
+
         $this->addFeatures($featuresToAdd, $shouldSync);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
+
+        if ($featuresToRemove === [Feature\Constants::NOFLASHCHECKOUT])
+        {
+            $this->sendSelfServeSuccessAnalyticsEventToSegmentForEnablingFlashCheckout();
+        }
 
         $this->removeFeatures($featuresToRemove, $shouldSync);
 
@@ -10059,5 +10081,27 @@ class Service extends Base\Service
             'allow_only_3ds'      => $this->merchant->isFeatureEnabled(FeatureConstants::ACCEPT_ONLY_3DS_PAYMENTS),
             'updated_at'          => $updatedDate
         ]);
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForEnablingFlashCheckout()
+    {
+        [$segmentEventName, $segmentProperties] = (new Merchant\Core())->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Flash Checkout Enabled';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function sendSelfServeSuccessAnalyticsEventToSegmentForEnablingMandatePageSkip()
+    {
+        [$segmentEventName, $segmentProperties] = (new Merchant\Core())->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Mandate Page Skipped';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

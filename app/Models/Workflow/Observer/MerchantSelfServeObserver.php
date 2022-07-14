@@ -63,6 +63,23 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         PermissionName::ADD_ADDITIONAL_WEBSITE         => DashboardEvents::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON,
     ];
 
+    const PERMISSION_FOR_NEED_CLARIFICATION_SEGMENT_ACTION_NAME = [
+
+        PermissionName::ADD_ADDITIONAL_WEBSITE         => Constants::ADDITIONAL_WEBSITE . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+
+        PermissionName::UPDATE_MERCHANT_WEBSITE        => Constants::WEBSITE . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+
+        PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL   => Constants::WEBSITE . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+
+        PermissionName::INCREASE_TRANSACTION_LIMIT     => Constants::TRANSACTION_LIMIT . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+
+        PermissionName::EDIT_MERCHANT_BANK_DETAIL      => Constants::BANK_ACCOUNT . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+
+        PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => Constants::GSTIN . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+
+        PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => Constants::GSTIN . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+    ];
+
     public function __construct($input)
     {
         $app                    = App::getFacadeRoot();

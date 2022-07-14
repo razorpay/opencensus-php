@@ -11,6 +11,8 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 
 class Service extends Base\Service
 {
@@ -135,6 +137,8 @@ class Service extends Base\Service
 
         $supportDetails = $this->core()->upsert($merchant, $input);
 
+        $this->pushSelfServeSuccessEventsToSegmentForMerchantSupportDetailsUpdate($merchant);
+
         return $supportDetails->toArrayPublic();
     }
 
@@ -143,6 +147,8 @@ class Service extends Base\Service
         $input[Entity::TYPE] = Type::SUPPORT;
 
         $supportDetails = $this->core()->upsert($merchant, $input);
+
+        $this->pushSelfServeSuccessEventsToSegmentForMerchantSupportDetailsUpdate($merchant);
 
         return $supportDetails->toArrayPublic();
     }
@@ -179,5 +185,24 @@ class Service extends Base\Service
         $input['error_message'] = $errorMsg;
 
         return $input;
+    }
+
+    private function pushSelfServeSuccessEventsToSegmentForMerchantSupportDetailsUpdate(Merchant\Entity $merchant)
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SELF_SERVE_ACTION] = 'Merchant Support Details Updated';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $merchant, $segmentProperties, $segmentEventName
+        );
     }
 }

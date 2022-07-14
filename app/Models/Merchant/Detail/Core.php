@@ -94,6 +94,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Mail\Merchant\RazorpayX\L2SubmissionWhitelist;
 use RZP\Models\Merchant\Detail\Metric as DetailMetric;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
@@ -7340,7 +7341,21 @@ class Core extends Base\Core
         $response['referral'] = $referral != null ? $referral->toArrayPublic() : [];
 
         return $response;
+    }
 
+    public function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::EVENT_PROPERTIES][SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
     }
 
     public function updateNoDocOnboardingConfig(array $data, StoreCore $store)

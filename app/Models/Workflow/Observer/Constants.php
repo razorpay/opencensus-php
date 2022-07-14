@@ -28,6 +28,18 @@ class Constants
 
     const APPROVE                               = 'approve';
 
+    const BANK_ACCOUNT                          = 'Bank Account';
+
+    const GSTIN                                 = 'GSTIN';
+
+    const TRANSACTION_LIMIT                     = 'Transaction Limit';
+
+    const WEBSITE                               = 'Website';
+
+    const ADDITIONAL_WEBSITE                    = 'Additional Website';
+
+    const NEEDS_CLARIFICATION_TRIGERRED         = 'Needs Clarification Trigerred';
+
     const WORKFLOW_VS_OBSERVER= [
 
         self::SCHEDULED_SETTLEMENT                  => ScheduleSettlementObserver::class,

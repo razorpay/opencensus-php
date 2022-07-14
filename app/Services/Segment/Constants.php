@@ -43,4 +43,19 @@ class Constants
     const GOOGLE_UNIVERSAL_ANALYTICS    = 'Google Universal Analytics';
     const CLIENTID                      = 'clientId';
 
+    const EVENT_PROPERTIES  = 'event_properties';
+
+    const SELF_SERVE_ACTION = 'selfServeAction';
+
+    const IS_WORKFLOW       = 'isWorkflow';
+
+    const ACTION            = 'action';
+
+    const OBJECT            = 'object';
+
+    const SELF_SERVE        = 'Self Serve';
+
+    const SUCCESS           = 'Success';
+
+    const BE                = 'BE';
 }

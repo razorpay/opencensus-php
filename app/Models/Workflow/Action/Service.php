@@ -328,6 +328,8 @@ class Service extends Base\Service
 
         $this->core()->trackSelfServeEventForNeedClarification($workFlowAction);
 
+        $this->core()->getSelfServeActionForAnalyticsForNeedClarification($workFlowAction);
+
         $this->core()->notifyMerchantForNeedClarification($workFlowAction, $input);
 
         return [
