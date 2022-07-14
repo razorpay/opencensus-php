@@ -60,10 +60,21 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
             ($this->isExperimentEnabledForTokenisedCard($token->getMerchantId()) === true) and
             ($this->shouldRecurringAutoPaymentGoThroughTokenisedCard($card) === true))
         {
+            $this->logPaymentRoutingInfo($payment, $card, false);
+
             $cardInput = $processor->createCardForNetworkTokenCardMandate($card, []);
         }
         else
         {
+            $this->logPaymentRoutingInfo($payment, $card, true);
+
+            // This is for those case in which tokenised card subsequent payment using actual card
+            if ($card->isRzpSavedCard() === false)
+            {
+                $payment->card()->associate($card);
+                $this->repo->saveOrFail($payment);
+            }
+
             $cardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray(),$payment->getGateway());
 
             $cardInput = array_merge(
@@ -138,5 +149,26 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         }
 
         return false;
+    }
+
+    protected function logPaymentRoutingInfo(Payment\Entity $payment,
+                                             Card\Entity $card,
+                                             bool $isActualCard)
+    {
+        $this->trace->info(
+            TraceCode::RECURRING_CARD_PAYMENT_ROUTING_INFO,
+            [
+                'paymentId'             => $payment->getId(),
+                'tokenId'               => $payment->localToken->getId(),
+                'merchantId'            => $payment->getMerchantId(),
+                'isTokenised'           => ($card->isRzpSavedCard() === false) ? 'true' : 'false',
+                'routedThrough'         => $isActualCard ? 'actualCard' : 'tokenisedCard',
+                'cardInfo'      => [
+                    'issuer'    => $card->getIssuer(),
+                    'network'   => $card->getNetworkCode(),
+                    'type'      => $card->getType(),
+                ],
+            ]
+        );
     }
 }
