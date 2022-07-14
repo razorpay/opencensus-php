@@ -367,15 +367,19 @@ class Service extends Base\Service
         {
             $merchantIds = $this->repo->merchant->fetchMerchantIdsByOrgId($orgId);
         }
-        return $this->generateGifuFileForBank($bankName , $merchantIds , $from , $to);
 
-    }
-
-    protected function generateGifuFileForBank($bankName , $input,$from,$to)
-    {
         $class = $this->getGifuFileClass($bankName);
 
-        return (new $class)->generate($input,$from,$to);
+        $fileProcessor = new $class;
+
+        $ufhResponse = $fileProcessor->generate($merchantIds, $from, $to);
+
+        if(count($ufhResponse) !== 0){
+            $fileProcessor->sendGifuFile($ufhResponse);
+        }
+
+        return $ufhResponse;
+
     }
 
     protected function getGifuFileClass($bank): string

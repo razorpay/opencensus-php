@@ -62,6 +62,7 @@ class Constants
     const BANKING                       = 'banking';
     const OWNER                         = 'owner';
     const SECURITY_ALERTS               = 'security_alerts';
+    const BANKING_POD_TECH              = 'banking_pod_tech';
     const CROSS_BORDER_TECH             = 'cross_border_tech';
     const PARTNER_COMMISSIONS           = 'partner_commissions';
 
@@ -123,6 +124,7 @@ class Constants
         self::PARTNER_SUBMERCHANT_INVITE_INTERNAL => ['tarun.rajaputhran@razorpay.com', 'arun.rajendran@razorpay.com', 'satyajit.paul@razorpay.com'],
         self::NBPLUS_TECH               => 'tech.onlinepayments.nbplus@razorpay.com',
         self::SECURITY_ALERTS           => 'security-alerts@razorpay.com',
+        self::BANKING_POD_TECH          => 'payments-banking-tech@razorpay.com',
         self::CROSS_BORDER_TECH         => 'payments-cross-border-engineering@razorpay.com',
         self::PARTNER_COMMISSIONS       => 'partners-commissions@razorpay.com',
     ];

@@ -280,7 +280,8 @@ class UfhService
     {
         $ext = strtolower($file->getClientOriginalExtension());
 
-        if($type !== FileStore\Type::NIUM_SETTLEMENT_FILE)
+        if($type !== FileStore\Type::NIUM_SETTLEMENT_FILE and
+            $type !== FileStore\Type::HDFC_COLLECT_NOW_SETTLEMENT_FILE)
         {
             $storageFileName = strtolower($storageFileName);
         }

@@ -34,6 +34,8 @@ abstract class BaseGifuFile extends Base\Core
      */
     protected $storageFileName;
 
+    protected $chotaBeam = false;
+
     protected $parentFolder = 'settlements';
 
     public function __construct()
@@ -144,19 +146,19 @@ abstract class BaseGifuFile extends Base\Core
 
     }
 
-    public function sendGifufile()
+    public function sendGifufile($ufhResponse = null)
     {
         if($this->app->environment() === Environment::PRODUCTION)
         {
-            $this->pushFileToBeam($this->jobNameProd);
+            $this->pushFileToBeam($this->jobNameProd,$ufhResponse);
         }
         else
         {
-            $this->pushFileToBeam($this->jobNameStage);
+            $this->pushFileToBeam($this->jobNameStage,$ufhResponse);
         }
     }
 
-    public function pushFileToBeam(string $jobName)
+    public function pushFileToBeam(string $jobName,$ufhResponse = null)
     {
         try
         {
@@ -164,11 +166,18 @@ abstract class BaseGifuFile extends Base\Core
 
             $bucketConfig = $this->getBucketConfig();
 
+            if(isset($ufhResponse) === true)
+            {
+                $bucketConfig['name']   = $ufhResponse['bucket'];
+                $bucketConfig['region'] = $ufhResponse['region'];
+            }
+
             $data =  [
                 Service::BEAM_PUSH_FILES         => $fileInfo,
                 Service::BEAM_PUSH_JOBNAME       => $jobName,
                 Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
                 Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+                Service::CHOTABEAM_FLAG          => $this->chotaBeam,
             ];
 
             // In seconds

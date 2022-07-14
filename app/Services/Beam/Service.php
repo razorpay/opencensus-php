@@ -10,6 +10,7 @@ use RZP\Constants\Beam;
 use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
+use Illuminate\Support\Facades\Config;
 
 class Service
 {
@@ -22,6 +23,8 @@ class Service
     const BEAM_PUSH_FILES   = 'files';
 
     const BEAM_PUSH_JOBNAME = 'job_name';
+
+    const CHOTABEAM_FLAG    = 'chotabeam';
 
     const BEAM_TEST_JOBNAME = 'test_pass';
 
@@ -144,6 +147,13 @@ class Service
 
         $traceData = json_encode($traceData);
 
+        $url = $this->getUrl($route);
+
+        if(isset($pushData[self::CHOTABEAM_FLAG]) === true and $pushData[self::CHOTABEAM_FLAG] === true)
+        {
+            $url = Config::get('applications.chota_beam.url') . '/push';
+        }
+
         $request = $traceRequest = [
             'options' => [
                 'timeout' => 300
@@ -153,7 +163,7 @@ class Service
             'headers' => [
                 'Content-Type'=> 'application/json'
             ],
-            'url'     => $this->getUrl($route)
+            'url'     => $url
         ];
 
         // Don't set encryption key when tracing

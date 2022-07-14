@@ -25,7 +25,9 @@ class GifuFile extends Base\BaseGifuFile
 
     protected $totalAmount;
 
-    protected $mailAddress = Constants::MAIL_ADDRESSES[Constants::DEVELOPERS];
+    protected $mailAddress = Constants::MAIL_ADDRESSES[Constants::BANKING_POD_TECH];
+
+    protected $chotaBeam;
 
     protected $jobNameStage = BeamConstants::HDFC_COLLECT_NOW_JOB_NAME;
 
@@ -44,6 +46,8 @@ class GifuFile extends Base\BaseGifuFile
         $this->fileToWriteName = 'GEFU' . '_' . $fileDate ;
 
         $this->transferMode = Base\TransferMode::SFTP;
+
+        $this->chotaBeam = true;
     }
 
     protected function customFormattingForFile($path,FileStore\Creator $creator = null)
@@ -281,7 +285,8 @@ class GifuFile extends Base\BaseGifuFile
 
     protected function getBucketConfig()
     {
-        $config = $this->app['config']->get('filestore.aws'); //TODO : Update
+
+        $config = $this->app['config']->get('filestore.aws');
 
         $bucketType = Bucket::getBucketConfigName($this->type, $this->env);
 
