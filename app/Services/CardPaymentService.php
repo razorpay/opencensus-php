@@ -246,49 +246,52 @@ class CardPaymentService
             unset($input['payment']['billing_address']);
         }
 
-        if (($input['payment']['recurring'] === true) and ($input['payment']['recurring_type'] === 'auto') and ($input['token']['card']['network'] === 'Visa'))
+        if (!empty($input['token']) and ($input['payment']['recurring'] === true) and ($input['payment']['recurring_type'] === 'auto'))
         {
-            $token = (new Repository())->find($input[Entity::TOKEN]['id']);
-            $card = (new Card\Repository())->fetchForToken($token);
-
-            if (($card->isRzpSavedCard() === false) and
-                ((new Reminders\CardAutoRecurringReminderProcessor)->isExperimentEnabledForTokenisedCard($token->getMerchantId()) === true) and
-                ((new Reminders\CardAutoRecurringReminderProcessor)->shouldRecurringAutoPaymentGoThroughTokenisedCard($card) === true))
+            if (!empty($input['token']['card']) and ($input['token']['card']['network'] === 'Visa'))
             {
-                try {
-                    $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($input['token']['id'], $input['merchant']['id']);
+                $token = (new Repository())->find($input[Entity::TOKEN]['id']);
+                $card = (new Card\Repository())->fetchForToken($token);
 
-                    $paymentId = $initialPayment->getId();
-
-                    $request = [
-                        'fields'      => ['network_transaction_id'],
-                        'payment_ids' => [$paymentId],
-                    ];
-
-                    $input['payment']['network_transaction_id'] = '039217544591994';
-
-                    $response = $this->app['card.payments']->fetchAuthorizationData($request);
-
-                    $this->trace->info(
-                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
-                        [
-                            'info_code' => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
-                            'response' => $response,
-                        ]);
-
-                    if ($response[$paymentId]['network_transaction_id'] !== "")
-                    {
-                        $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
-                    }
-                }
-                catch (\Exception $ex)
+                if (($card->isRzpSavedCard() === false) and
+                    ((new Reminders\CardAutoRecurringReminderProcessor)->isExperimentEnabledForTokenisedCard($token->getMerchantId()) === true) and
+                    ((new Reminders\CardAutoRecurringReminderProcessor)->shouldRecurringAutoPaymentGoThroughTokenisedCard($card) === true))
                 {
-                    $this->trace->info(
-                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
-                        [
-                            'info_code' => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
-                            'payment_id' => $input['payment']['id'],
-                        ]);
+                    try {
+                        $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($input['token']['id'], $input['merchant']['id']);
+
+                        $paymentId = $initialPayment->getId();
+
+                        $request = [
+                            'fields'      => ['network_transaction_id'],
+                            'payment_ids' => [$paymentId],
+                        ];
+
+                        $input['payment']['network_transaction_id'] = '039217544591994';
+
+                        $response = $this->app['card.payments']->fetchAuthorizationData($request);
+
+                        $this->trace->info(
+                            TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                            [
+                                'info_code' => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                                'response' => $response,
+                            ]);
+
+                        if ($response[$paymentId]['network_transaction_id'] !== "")
+                        {
+                            $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
+                        }
+                    }
+                    catch (\Exception $ex)
+                    {
+                        $this->trace->info(
+                            TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                            [
+                                'info_code' => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                                'payment_id' => $input['payment']['id'],
+                            ]);
+                    }
                 }
             }
         }
