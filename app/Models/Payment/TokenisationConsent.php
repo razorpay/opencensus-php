@@ -37,7 +37,9 @@ class TokenisationConsent
         app('diag')->trackTokenisationEvent(
             EVENTCODE::TOKENISATION_CONSENT_SCREEN_REQUEST,
             [
-                'library'     => $input['_']['library'] ?? '',
+                'library'      => $input['_']['library'] ?? '',
+                'checkout_id'  => $input['_']['checkout_id'] ?? '',
+                'is_recurring' => false,
             ]
         );
     }
@@ -48,6 +50,15 @@ class TokenisationConsent
             'library'     => $input['_']['library'] ?? '',
             'checkout_id' => $input['_']['checkout_id'] ?? '',
         ]);
+
+        app('diag')->trackTokenisationEvent(
+            EVENTCODE::TOKENISATION_CONSENT_SCREEN_REQUEST,
+            [
+                'library'      => $input['_']['library'] ?? '',
+                'checkout_id'  => $input['_']['checkout_id'] ?? '',
+                'is_recurring' => true,
+            ]
+        );
     }
 
     /**
@@ -266,6 +277,9 @@ class TokenisationConsent
     {
         try
         {
+            $isRecurring = ((isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+                or (isset($input[Payment\Entity::RECURRING]) === true));
+
             $this->trace->info(TraceCode::CONSENT_VIEW_DECRYPT_LOG, [
                 'library'     => $input['_']['library'] ?? '',
                 'checkout_id' => $input['_']['checkout_id'] ?? '',
@@ -276,6 +290,8 @@ class TokenisationConsent
                 EVENTCODE::TOKENISATION_CONSENT_SCREEN_USER_RESPONSE,
                 [
                     'library' => $input['_']['library'] ?? '',
+                    'checkout_id' => $input['_']['checkout_id'] ?? '',
+                    'is_recurring' => $isRecurring,
                     'consent_to_save_card' => $input['consent_to_save_card'] ?? '',
                 ]
             );
