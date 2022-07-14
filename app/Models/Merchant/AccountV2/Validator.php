@@ -270,7 +270,7 @@ class Validator extends Merchant\Validator
 
     protected function validateApps(array $input, string $action = '')
     {
-        if (isset($appsInput[Constants::APPS]) === false)
+        if (isset($input[Constants::APPS]) === false)
         {
             return;
         }
