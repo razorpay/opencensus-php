@@ -126,6 +126,11 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function setAllowForceAuthorization(Payment\Entity $payment)
     {
+        // force auth is not supported for re-arch payments
+        if ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS)
+        {
+            return false;
+        }
         //
         // Enabling force Auth for all payments because verify API of NB-icici
         // gives wrong status in case of payment retries (i.e. multiple payments are created at
