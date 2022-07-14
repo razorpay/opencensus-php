@@ -7236,6 +7236,14 @@ class Service extends Base\Service
                 ],
                 $merchant
             );
+
+            /** @var  $salesforceClient SalesForceClient*/
+            $salesforceClient = $this->app->salesforce;
+
+            $salesforceClient->sendCaOnboardingToSalesforce([
+                'merchant_id' => $merchant->getId(),
+                'ca_onboarding_flow' => $caOnboardingFlow
+            ]);
         }
     }
 
@@ -8766,7 +8774,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->app->salesforce->sendXOnboardingToSalesforce($input);
+            $this->app->salesforce->sendCaOnboardingToSalesforce($input);
         }
         catch(\Throwable $e)
         {

@@ -102,4 +102,8 @@ class Constants
     const ACCOUNT_MANAGER_EMAIL         = 'account_manager_email';
 
     const ACCOUNT_MANAGER_PHONE         = 'account_manager_phone';
+
+    const CA_ONBOARDING_FLOW            = 'ca_onboarding_flow';
+
+    const SELF_SERVE                    = 'self_serve';
 }

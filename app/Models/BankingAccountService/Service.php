@@ -11,6 +11,12 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
+use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
+use RZP\Models\Merchant\Attribute\Group as Group;
+use RZP\Models\Merchant\Attribute\Repository as MerchantAttributeRepository;
+use RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
+use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Trace\TraceCode;
 use RZP\Services\BankingAccountService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -705,7 +711,13 @@ class Service extends Base\Service
 
     public function sendCaLeadToSalesForce($input)
     {
-        return $this->core()->sendCaLeadToSalesForce($input);
+        $repo = new MerchantAttributeRepository();
+
+        $merchantAttribute = $repo->getKeyValues($input[MerchantConstants::MERCHANT_ID], ProductType::BANKING, Group::X_MERCHANT_CURRENT_ACCOUNTS, [MerchantAttributeType::CA_ONBOARDING_FLOW])->first();
+
+        $caOnboardingFlow = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? null;
+
+        return $this->core()->sendCaLeadToSalesForce($input, $caOnboardingFlow);
     }
 
     public function sendCaLeadToFreshDesk($input)

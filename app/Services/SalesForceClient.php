@@ -167,6 +167,15 @@ class SalesForceClient
         );
     }
 
+    public function sendCaOnboardingToSalesforce($data)
+    {
+        $url = $this->generateUrlForMerchantUpsert();
+
+        $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_REQUEST,
+            TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_RESPONSE,
+            TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_ERROR);
+    }
+
     public function sendLeadUpsertEventsToSalesforce(array $data)
     {
         $url = $this->generateUrlForWebsiteLeadUpsert();
@@ -258,7 +267,6 @@ class SalesForceClient
             'final_utm_term'        => 'Last_Click_Term',
             'final_utm_campaign'    => 'Last_Click_Campaign',
             'final_page'            => 'Last_Click_Page',
-            'x_onboarding_category' => 'x_onboarding_category'
         ];
 
         foreach ($keyMap as $key => $value)

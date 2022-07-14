@@ -408,7 +408,7 @@ class Core extends Base\Core
         return $status;
     }
 
-    public function sendCaLeadToSalesForce($input)
+    public function sendCaLeadToSalesForce($input, $caOnboardingFlow)
     {
         $this->trace->info(TraceCode::BAS_SALESFORCE_REQUEST);
 
@@ -428,6 +428,11 @@ class Core extends Base\Core
         $merchantAttribute = $this->repo->merchant_attribute->getKeyValues($input[MerchantConstants::MERCHANT_ID], ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, [Merchant\Attribute\Type::X_SIGNUP_PLATFORM])->first();
 
         $input[Constants::SOURCE_DETAIL] = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? Constants::X_DASHBOARD;
+
+        if ($caOnboardingFlow != null)
+        {
+            $input[Constants::CA_ONBOARDING_FLOW] = $caOnboardingFlow;
+        }
 
         $this->app->salesforce->sendCaLeadDetails($input);
 
@@ -567,7 +572,7 @@ class Core extends Base\Core
                         'banking_account_activation_detail_id' => $detail->getId(),
                     ]);
 
-                    $this->sendCaLeadToSalesForce($input);
+                    $this->sendCaLeadToSalesForce($input, $merchantChannel);
 
                     //front end converts SME to X-SME at the admin dashboard.
                     $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);
@@ -584,14 +589,13 @@ class Core extends Base\Core
                         Constants::CA_PARTNER_BANK       => Constants::RBL,
                         Constants::CA_PREFERRED_EMAIL    => $detail->getMerchantPocEmail(),
                         Constants::CA_PREFERRED_PHONE    => $detail->getMerchantPocPhoneNumber(),
-                        Constants::X_ONBOARDING_CATEGORY => 'normal'
                     ];
 
                     $this->trace->info(TraceCode::RBL_NITRO_SALESFORCE_PUSH, [
                         'banking_account_id' => $bankingAccountId,
                     ]);
 
-                    $this->sendCaLeadToSalesForce($input);
+                    $this->sendCaLeadToSalesForce($input, $merchantChannel);
 
                     //front end converts SME to X-SME at the admin dashboard.
                     $detail->setSalesTeam(BankingAccount\Activation\Detail\Validator::SME);

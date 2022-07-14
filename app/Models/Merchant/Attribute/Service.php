@@ -161,6 +161,14 @@ class Service extends Base\Service
             } else {
                 $this->core->create($item, $merchant);
             }
+
+            if ($item['type'] === 'ca_onboarding_flow')
+            {
+                $this->salesforce->sendCaOnboardingToSalesforce([
+                    'merchant_id' => $merchant->getId(),
+                    'ca_onboarding_flow' => $item['value']
+                ]);
+            }
         }
 
         $updatedMerchantAttributes = $this->core->fetchKeyValues(
@@ -186,7 +194,6 @@ class Service extends Base\Service
             'type' => Type::CA_CAMPAIGN_ID,
             'value' => $input['campaign_id']
         ]);
-
 
         $this->trace->info(TraceCode::MERCHANT_ATTRIBUTES, [
             'inside_upsert_nitro_hack' => 'true',
