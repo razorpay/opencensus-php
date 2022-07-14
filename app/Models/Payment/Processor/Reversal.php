@@ -55,7 +55,7 @@ trait Reversal
 
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);    
             
-            if ($sourcePayment->isExternal() === false)
+            if ($sourcePayment->isExternal() === true)
             {
                 $this->repo->saveOrFail($sourcePayment);
             }
