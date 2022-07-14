@@ -2270,9 +2270,7 @@ export default class InvoicesNewContainer extends Component {
                             <AsyncButton
                               type="button"
                               class="btn btn-primary btn-block btn-lg"
-                              disabled={
-                                this.state.isSaving || this.props.invalid || !hasCustomerSelected
-                              }
+                              disabled={this.state.isSaving || this.props.invalid}
                               onClick={handleSubmit((props) => {
                                 return this.saveAndIssue({
                                   ...props,
