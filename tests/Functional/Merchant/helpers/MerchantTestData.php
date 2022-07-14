@@ -10851,7 +10851,9 @@ return [
                 'CAP_ES_0_OTHER',
                 'CAP_ES_STD_SC',
                 'CAP_ES_STD_OD',
-                'CAP_ES_STD_BOTH'
+                'CAP_ES_STD_BOTH',
+                'CAP_CA_FUNGIBLE_ON_HOLD',
+                'CAP_CA_FUNGIBLE_TO_PITCH'
             ],
         ],
     ],

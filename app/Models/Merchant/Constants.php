@@ -214,15 +214,17 @@ final class Constants
     const TOTAL_TRANSACTIONS_IN_LAST_MONTH_TTL       = 60 * 60 * 24 * 2; //two days
 
     //Merchant tags
-    const CAP_ES_0_DMT30  = 'CAP_ES_0_DMT30';
-    const CAP_ES_0_XCA    = 'CAP_ES_0_XCA';
-    const CAP_ES_0_PP     = 'CAP_ES_0_PP';
-    const CAP_ES_0_ENTPG  = 'CAP_ES_0_ENTPG';
-    const CAP_ES_0_SMEPG  = 'CAP_ES_0_SMEPG';
-    const CAP_ES_0_OTHER  = 'CAP_ES_0_OTHER';
-    const CAP_ES_STD_SC   = 'CAP_ES_STD_SC';
-    const CAP_ES_STD_OD   = 'CAP_ES_STD_OD';
-    const CAP_ES_STD_BOTH = 'CAP_ES_STD_BOTH';
+    const CAP_ES_0_DMT30           = 'CAP_ES_0_DMT30';
+    const CAP_ES_0_XCA             = 'CAP_ES_0_XCA';
+    const CAP_ES_0_PP              = 'CAP_ES_0_PP';
+    const CAP_ES_0_ENTPG           = 'CAP_ES_0_ENTPG';
+    const CAP_ES_0_SMEPG           = 'CAP_ES_0_SMEPG';
+    const CAP_ES_0_OTHER           = 'CAP_ES_0_OTHER';
+    const CAP_ES_STD_SC            = 'CAP_ES_STD_SC';
+    const CAP_ES_STD_OD            = 'CAP_ES_STD_OD';
+    const CAP_ES_STD_BOTH          = 'CAP_ES_STD_BOTH';
+    const CAP_CA_FUNGIBLE_TO_PITCH = 'CAP_CA_FUNGIBLE_TO_PITCH';
+    const CAP_CA_FUNGIBLE_ON_HOLD  = 'CAP_CA_FUNGIBLE_ON_HOLD';
 
 
     public static $EntityBatchActionSettingParams = [
@@ -256,7 +258,9 @@ final class Constants
         self::CAP_ES_0_OTHER,
         self::CAP_ES_STD_SC,
         self::CAP_ES_STD_OD,
-        self::CAP_ES_STD_BOTH
+        self::CAP_ES_STD_BOTH,
+        self::CAP_CA_FUNGIBLE_ON_HOLD,
+        self::CAP_CA_FUNGIBLE_TO_PITCH
     ];
 
     // Used in merchant activation elastic search flows
