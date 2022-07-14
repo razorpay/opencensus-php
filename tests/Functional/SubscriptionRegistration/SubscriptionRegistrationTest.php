@@ -958,6 +958,21 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
     }
 
+    public function testListTokensRecurringStatusFilter()
+    {
+        $paymentRequest = $this->setupPaymentRequest();
+
+        $this->doAuthPayment($paymentRequest);
+        $token = $this->getDbLastEntity('token');
+
+        $this->ba->proxyAuth();
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals(1, sizeof($response['items']));
+        $this->assertEquals($token->getPublicId(), $response['items'][0]['id']);
+    }
+
     public function testListTokensWithFilters()
     {
         $paymentRequest = $this->setupPaymentRequest();

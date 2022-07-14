@@ -10,6 +10,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
 use Egulias\EmailValidator\EmailValidator;
+use RZP\Models\Customer\Token\RecurringStatus;
 use RZP\Models\Base\Traits\CustomReplacesAttributes;
 use RZP\Exception\BadRequestValidationFailureException;
 use Illuminate\Validation\Concerns\FilterEmailValidation;
@@ -624,4 +625,17 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         return (new EmailValidator)->isValid($value, new EmailValidation\MultipleValidationWithAnd($validations));
     }
+
+    /**
+     * Validate that an attribute is a valid token recurring status.
+     *
+     * @param string $attribute
+     * @param mixed $value
+     * @return bool
+     */
+    public function validateRecurringStatus(string $attribute, $value)
+    {
+        return RecurringStatus::isRecurringStatusValid($value);
+    }
+
 }

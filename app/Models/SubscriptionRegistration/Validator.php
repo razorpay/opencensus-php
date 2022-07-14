@@ -113,6 +113,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_ID        => 'sometimes|public_id',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
+        Entity::RECURRING_STATUS  => 'sometimes|recurring_status',
     ];
 
     public function validateMaxAmount(array $input)

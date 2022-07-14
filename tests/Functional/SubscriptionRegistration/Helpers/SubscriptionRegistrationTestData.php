@@ -918,6 +918,21 @@ return [
         ],
     ],
 
+    'testListTokensRecurringStatusFilter' => [
+        'request'  => [
+            'url'     => '/subscription_registration/tokens',
+            'method'  => 'get',
+            'content' => [
+                'skip'  => 0,
+                'count' => 25,
+                'recurring_status' => 'confirmed',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testCreateAuthLinkBlankContact' => [
         'request'   => [
             'url'     => '/subscription_registration/auth_links',
