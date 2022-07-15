@@ -4285,7 +4285,62 @@ class CardPaymentServiceTest extends TestCase
             default:
                 return null;
         }
+    }
 
+    public function testFlipkartSendPaymentIdForError()
+    {
+        $this->razorxValue = "cardps";
+        $terminal = $this->fixtures->create('terminal:zaakpay_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+                'direct_settlement_with_refund' => '1',
+            ]
+        ]);
+
+        $this->fixtures->edit('terminal', $terminal['id'], ['procurer' => 'merchant']);
+
+        $this->fixtures->merchant->addFeatures(['fk_new_error_response']);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => null,
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'axis_migs',
+                    ],
+                    'error' => [
+                        'internal_error_code'       =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                        'gateway_error_code'        =>"U123",
+                        'gateway_error_description' =>"invalid_cvv",
+                        'description'               =>"GATEWAY_ERROR_UNKNOWN_ERROR",
+                    ],
+                ];
+            });
+
+        try
+        {
+            $this->doAuthPayment($paymentArray);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $err = $e->getError()->toPublicArray();
+            $this->assertArrayHasKey('payment_id', $err);
+            $this->assertEquals($err['error']['metadata']['payment_id'], $err['payment_id']);
+        }
+
+        $this->razorxValue = "on";
     }
 
 }

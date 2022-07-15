@@ -92,6 +92,7 @@ class Error extends Support\Fluent
     const ENGLISH_DESCRIPTION   = 'english_description';
     const BASE_URL              = 'base_url';
     const ERROR_FILE_PATH       = 'error_file_path';
+    const PAYMENT_ID            = 'payment_id';
 
     const BANKING_ERROR_CODE_FILE_PATH  = 'files/errorcodes/error_reason_%s.json';
 
@@ -855,11 +856,44 @@ class Error extends Support\Fluent
     {
         $attributes = $this->getAttribute(self::DATA);
 
+        $extraAttributes = [];
+
         // in headless otpsubmit failure we need to send next attribute.
         if (($attributes !== null) and
             (isset($attributes['next']) === true))
         {
-            return ['next' => $attributes['next']];
+            $extraAttributes = array_merge($extraAttributes, ['next' => $attributes['next']]);
+        }
+
+        $metadata = $this->getAttribute(self::METADATA);
+
+        /*
+         * Adding payment_id at root level for Flipkart.
+         * This is being controlled by feature flag.
+         * This should be removed once Flipkart make changes in their system
+         * Example error response if feature is enable
+         * {
+         *      "error": {
+         *          "code": "BAD_REQUEST_ERROR",
+         *          ...
+         *          "metadata": {
+         *              "payment_id": "pay_gettingmoregmv"
+         *          }
+         *      },
+         *      "payment_id": "pay_gettingmoregmv" // new
+         * }
+         */
+        if ((empty($metadata) === false) and
+            (isset($metadata[self::PAYMENT_ID]) === true) and
+            ($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Features::FK_NEW_ERROR_RESPONSE) === true))
+        {
+            $extraAttributes = array_merge($extraAttributes, [self::PAYMENT_ID => $metadata[self::PAYMENT_ID]]);
+        }
+
+        if(empty($extraAttributes) === false)
+        {
+            return $extraAttributes;
         }
 
         return null;

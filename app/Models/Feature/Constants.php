@@ -1445,6 +1445,8 @@ class Constants
 
     const CART_API_AMOUNT_CHECK  =  "cart_api_amount_check";
 
+    const FK_NEW_ERROR_RESPONSE  = "fk_new_error_response";
+
     /**
      * Feature flag to allow creation of inter account test payouts
      */
@@ -1989,6 +1991,7 @@ class Constants
         self::PP_CUSTOM_DOMAIN                => true,
         self::ONE_CC_INPUT_ENGLISH            => true,
         self::RBL_BANK_LMS_DASHBOARD          => true,
+        self::FK_NEW_ERROR_RESPONSE           => true,
     ];
 
     // Entity type constants
