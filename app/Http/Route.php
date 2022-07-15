@@ -13118,6 +13118,7 @@ class Route
 
         'nbplus_payment_service' => [
             'internal_payment_pricing',
+            'internal_merchant_risk_notification',
         ],
 
         'workflows' => [
