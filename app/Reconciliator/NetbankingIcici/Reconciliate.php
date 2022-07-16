@@ -21,6 +21,8 @@ class Reconciliate extends Base\Reconciliate
         'zest_money_sip'                                 => self::PAYMENT,
         'razorpaywalletreports'                          => self::PAYMENT,
         'consumer_durable_loan_booking_razorpay_reports' => self::PAYMENT,
+        'razorpaygovttaxpaymentreports'                  => self::PAYMENT,
+        'furlencorazorpaysi'                             => self::PAYMENT,
         'ofpr_daily_report'                              => self::REFUND,
     ];
 

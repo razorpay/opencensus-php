@@ -499,6 +499,8 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
+        $input = array_merge($input, $gatewayInput);
+
         $this->app['trace']->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
@@ -508,8 +510,6 @@ class GatewayController extends Controller
                 'mode'             => $mode,
             ]
         );
-
-        $input = array_merge($input, $gatewayInput);
 
         $paymentId = $this->preProcessStaticCallback($method, $gateway, $input, $mode);
 
@@ -568,15 +568,13 @@ class GatewayController extends Controller
     {
         $method = Payment\Method::NETBANKING;
 
+        $gateway = Payment\Gateway::NETBANKING_KOTAK;
+
+        $mode = Mode::LIVE;
+
         $input['method_type'] = 'corporate';
 
         $input['bank'] = Payment\Processor\Netbanking::KKBK_C;
-
-        $gateway = Payment\Gateway::NETBANKING_KOTAK;
-
-        $input = Request::all();
-
-        $mode = Mode::LIVE;
 
         return $this->staticCallbackGateway($method, $gateway, $mode, $input);
     }
