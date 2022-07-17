@@ -1,10 +1,10 @@
 {
     "_readme": [
-        "This file locks the dependencies of your project to a known state.",
+        "This file locks the dependencies of your project to a known state",
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dafae1cb73e9260cdc8a250155066990",
+    "content-hash": "60c244a61932aa169f37bc169a573161",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -418,6 +418,7 @@
                 "write",
                 "xlsx"
             ],
+            "abandoned": true,
             "time": "2017-09-25T19:44:35+00:00"
         },
         {
@@ -5965,6 +5966,7 @@
                 }
             ],
             "description": "Disposable email domains",
+            "abandoned": true,
             "time": "2017-07-12T10:55:04+00:00"
         },
         {
@@ -6016,6 +6018,7 @@
                 "validater",
                 "validation"
             ],
+            "abandoned": true,
             "time": "2016-08-09T11:04:18+00:00"
         },
         {
@@ -8259,16 +8262,16 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "2.1.0.20",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "a7f0bcc207b9d13cc4eb1212bbda2c3129e143c0"
+                "reference": "09124627739e02db4506f13f46aa84b2c71e3c9c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/a7f0bcc207b9d13cc4eb1212bbda2c3129e143c0",
-                "reference": "a7f0bcc207b9d13cc4eb1212bbda2c3129e143c0",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/09124627739e02db4506f13f46aa84b2c71e3c9c",
+                "reference": "09124627739e02db4506f13f46aa84b2c71e3c9c",
                 "shasum": ""
             },
             "require": {
@@ -8277,7 +8280,7 @@
                 "league/oauth2-server": "^6.0",
                 "monolog/monolog": "^1.12",
                 "php": ">=7.2",
-                "razorpay/outbox-php": "v0.2.3",
+                "razorpay/outbox-php": "0.2.3",
                 "razorpay/spine": "1.0.1",
                 "zendframework/zend-diactoros": "^1.4"
             },
@@ -8307,10 +8310,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/2.1.0.20",
+                "source": "https://github.com/razorpay/oauth/tree/2.3.1",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2022-03-22T10:30:12+00:00"
+            "time": "2022-07-13T12:55:31+00:00"
         },
         {
             "name": "razorpay/outbox-php",
