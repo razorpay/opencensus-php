@@ -4226,11 +4226,11 @@ class Core extends Base\Core
      * @param Entity $subMerchant
      * @param string|null $product
      */
-    public function attachSubMerchantOwner(string $ownerId, Entity $subMerchant, string $product = null)
+    public function attachSubMerchantUser(string $ownerId, Entity $subMerchant, string $product = null, string $role = null)
     {
         $userMerchantMappingInputData = [
             'action'      => 'attach',
-            'role'        => $subMerchant->getUserOwnerRole(),
+            'role'        => $role ?? $subMerchant->getUserOwnerRole(),
             'merchant_id' => $subMerchant->getId(),
             'product'     => $product,
         ];
@@ -4812,7 +4812,7 @@ class Core extends Base\Core
         if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
         {
             // Attaches partners's user to the submerchant account as an owner
-            $this->attachSubMerchantOwner($partner->primaryOwner()->getId(), $submerchant);
+            $this->attachSubMerchantUser($partner->primaryOwner()->getId(), $submerchant);
         }
         else
         {

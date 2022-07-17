@@ -624,7 +624,7 @@ class Service extends Base\Service
      * @param Entity $aggregatorMerchant
      * @param string|null $product
      */
-    protected function attachSubMerchantOwnerIfApplicable(
+    protected function attachSubMerchantUserIfApplicable(
         string $ownerId,
         Entity $subMerchant,
         Entity $aggregatorMerchant,
@@ -645,10 +645,29 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_OWNER], function () use ($ownerId, $subMerchant, $product) {
+            $properties = [
+                'id'            => $aggregatorMerchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
+            ];
 
-                $this->core()->attachSubMerchantOwner($ownerId, $subMerchant, $product);
+            $role = $subMerchant->getUserOwnerRole();
 
+            $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+
+            if ($isExpEnabled === true)
+            {
+                $role = $product === Product::BANKING ? User\Role::VIEW_ONLY : $role;
+            }
+
+            $this->trace->info(TraceCode::ATTACH_SUBMERCHANT_USER, [
+                'ownerId'     => $ownerId,
+                'merchant_id' => $subMerchant->getId(),
+                'role'        => $role,
+                'product'     => $product,
+            ]);
+
+            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER], function () use ($ownerId, $subMerchant, $product, $role) {
+                $this->core()->attachSubMerchantUser($ownerId, $subMerchant, $product, $role);
             });
         }
     }
@@ -5874,7 +5893,7 @@ class Service extends Base\Service
         }
         else
         {
-            $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $product);
+            $this->core()->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
         }
 
         return [$subMerchantUser, $created];
@@ -5895,7 +5914,7 @@ class Service extends Base\Service
             $subMerchantUser = (new User\Core)->create($userData);
         }
 
-        $this->core()->attachSubMerchantOwner($subMerchantUser->getId(), $subMerchant, $product);
+        $this->core()->attachSubMerchantUser($subMerchantUser->getId(), $subMerchant, $product);
 
         return $subMerchantUser;
     }
@@ -6020,9 +6039,9 @@ class Service extends Base\Service
         {
             SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId());
 
-            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product) {
+            Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product) {
 
-                $this->attachSubMerchantOwnerIfApplicable($ownerId, $subMerchant, $merchant, $product);
+                $this->attachSubMerchantUserIfApplicable($ownerId, $subMerchant, $merchant, $product);
             });
 
             Tracer::inspan(['name' => HyperTrace::MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE], function () use ($merchant, $subMerchant) {

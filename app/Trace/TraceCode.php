@@ -6,6 +6,7 @@ use RZP\Exception\InvalidArgumentException;
 
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
+    const ATTACH_SUBMERCHANT_USER                               = 'ATTACH_SUBMERCHANT_USER';
     const MERCHANT_UPDATE_VALIDATION_STATUS                     = 'MERCHANT_UPDATE_VALIDATION_STATUS';
     const MERCHANT_UPDATE_VALIDATION_STATUS_DONE                = 'MERCHANT_UPDATE_VALIDATION_STATUS_DONE';
 

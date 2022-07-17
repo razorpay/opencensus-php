@@ -1640,7 +1640,7 @@ class Service extends Base\Service
 
             if ($partner->isAggregatorPartner() && $referralProduct === Product::PRIMARY)
             {
-                $merchantCore->attachSubMerchantOwner($partner->primaryOwner()->getId(), $subMerchant, $referralProduct);
+                $merchantCore->attachSubMerchantUser($partner->primaryOwner()->getId(), $subMerchant, $referralProduct);
             }
 
             $linkedAccount = false;

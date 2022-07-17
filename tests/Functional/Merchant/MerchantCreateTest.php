@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+use Mockery;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -758,6 +759,8 @@ class MerchantCreateTest extends TestCase
     {
         Mail::fake();
 
+        $this->mockSplitzEvaluation();
+
         $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
 
         $configAttributes = [
@@ -791,6 +794,7 @@ class MerchantCreateTest extends TestCase
         // This should be empty once aggregator type's dashboard access is removed
         // in withEmail cases.
         $this->assertEquals(1, count($mapping));
+        $this->assertEquals($mapping->first()->role, Role::VIEW_ONLY);
 
         $this->verifyAccessMapEntries($app, $submerchant);
     }
@@ -2382,5 +2386,71 @@ class MerchantCreateTest extends TestCase
             ->with(\Mockery::type('string'), \Mockery::type('string'));
 
         $this->app->instance('sns', $sns);
+    }
+
+    private function mockSplitzEvaluation() {
+        $input = [
+            "experiment_id" => "JNwT6Atz4PLiVh",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'exposed',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "JRWRysOmXFWZ9C",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "id"            => "10000000000000",
+            "experiment_id" => "JqPQNIjSTvE6v0",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "JIRYzx7YtMuB18",
+            "id"            => "10000000000000",
+            'request_data'  => json_encode(
+                [
+                    'id' => "10000000000000",
+                ]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => "enabled"
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }

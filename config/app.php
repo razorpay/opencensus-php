@@ -375,6 +375,8 @@ return array(
 
     'admin_submerchant_bulk_increase_resources_exp_id' => env('ADMIN_SUBMERCHANT_BULK_INCREASE_RESOURCES_EXP_ID'),
 
+    'attach_view_only_role_banking_account_exp_id' => env('ATTACH_VIEW_ONLY_ROLE_BANKING_ACCOUNT'),
+
     'submerchant_bulk_validation_status_update_exp_id' => env('SUBMERCHANT_BULK_VALIDATION_STATUS_UPDATE_EXP_ID'),
 
     'partner_add_submerchant_account_exp_id'    => env('PARTNER_ADD_SUBMERCHANT_ACCOUNT_EXP_ID'),

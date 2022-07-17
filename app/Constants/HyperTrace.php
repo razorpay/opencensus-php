@@ -133,8 +133,8 @@ class HyperTrace
     const ADD_MERCHANT_SUPPORTING_ENTITIES                     = 'add_merchant_supporting_entities';
     const MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE            = 'map_submerchant_partner_app_if_applicable';
     const ADD_FEATURE_REQUEST                                  = 'add_feature_request.core';
-    const ATTACH_SUBMERCHANT_OWNER_IF_APPLICABLE               = 'attach_submerchant_owner_if_applicable';
-    const ATTACH_SUBMERCHANT_OWNER                             = 'attach_submerchant_owner';
+    const ATTACH_SUBMERCHANT_USER_IF_APPLICABLE                = 'attach_submerchant_user_if_applicable';
+    const ATTACH_SUBMERCHANT_USER                              = 'attach_submerchant_user';
     const CREATE_ADDITIONAL_USER_OR_FETCH_IF_APPLICABLE        = 'create_additional_user_or_fetch_if_applicable';
     const GET_FUX_DETAILS_FOR_PARTNER_SERVICE                  = 'fetch_partner_first_user_experience.service';
 
