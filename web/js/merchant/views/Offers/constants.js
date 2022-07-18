@@ -42,6 +42,8 @@ export const ISSUERS = {
   CITI: 'Citi Bank',
   SBIN: 'State Bank of India',
   BARB: 'Bank of Baroda Bank',
+  IBKL: 'IDBI Bank',
+  AUBL: 'AU small finance bank',
   paytm: 'Paytm',
   payzapp: 'PAYZAPP',
   mobikwik: 'MOBIKWIK',
@@ -72,6 +74,8 @@ export const BANK_MAP = {
   SBIN: 'State Bank of India',
   BARB: 'Bank of Baroda Bank',
   AMEX: 'American Express',
+  IBKL: 'IDBI Bank',
+  AUBL: 'AU small finance bank',
 };
 
 export const WALLET_MAP = {
@@ -154,6 +158,8 @@ export const PaymentIssuersOptions = [
   { label: 'Citi Bank', name: 'CITI' },
   { label: 'State Bank of India', name: 'SBIN' },
   { label: 'Bank of Baroda Bank', name: 'BARB' },
+  { label: 'IDBI Bank', name: 'IBKL' },
+  { label: 'AU small finance bank', name: 'AUBL' },
 ];
 
 export const PaymentNetworksOptions = [
