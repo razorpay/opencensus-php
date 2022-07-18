@@ -4128,6 +4128,17 @@ class Header
             ],
         ],
 
+        Type::ICICI_BULK_UPLOAD_COMMENTS => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::DATE_TIME,
+                self::COMMENT,
+                self::FIRST_DISPOSITION,
+                self::SECOND_DISPOSITION,
+                self::THIRD_DISPOSISTION,
+            ]
+        ],
+
         Type::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => [
             self::INPUT => [
                 self::APPLICATION_NO,

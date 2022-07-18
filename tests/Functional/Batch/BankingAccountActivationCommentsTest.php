@@ -329,6 +329,52 @@ class BankingAccountActivationCommentsTest extends TestCase
         $this->testBatchUploadForRblBulkUploadComments($entries);
     }
 
+    public function testBatchUploadForIciciBulkUploadComments(array $entries = [])
+    {
+        if (empty($entries) === true)
+        {
+            $entries = [
+                [
+                    Batch\Header::MERCHANT_ID               =>  'merchant_id1',
+                    Batch\Header::DATE_TIME                 =>  '12/05/2022 12:00:00',
+                    Batch\Header::COMMENT                   =>  'comment',
+                    Batch\Header::FIRST_DISPOSITION         =>  'first_disposition',
+                    Batch\Header::SECOND_DISPOSITION        =>  'second_disposition',
+                    Batch\Header::THIRD_DISPOSISTION        =>  'third_disposition',
+
+                ],
+                [
+                    Batch\Header::MERCHANT_ID               =>  'merchant_id2',
+                    Batch\Header::DATE_TIME                 =>  '19/07/2022 19:00:00',
+                    Batch\Header::COMMENT                   =>  'comment1',
+                    Batch\Header::FIRST_DISPOSITION         =>  'first_disposition1',
+                    Batch\Header::SECOND_DISPOSITION        =>  'second_disposition1',
+                    Batch\Header::THIRD_DISPOSISTION        =>  'third_disposition1',
+                ]
+            ];
+        }
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testBatchUploadForIciciBulkUploadCommentsIncorrectHeaders()
+    {
+        $entries = [
+            [
+                Batch\Header::MERCHANT_ID               =>  'merchant_id',
+                Batch\Header::DATE_TIME                 =>  '12/05/2022 12:00:00',
+                "not-correct"                           =>  'definitely not correct'
+            ]
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->testBatchUploadForIciciBulkUploadComments($entries);
+        
+    }
+    
     public function testBatchUploadForRblBulkUploadCommentsFailureCase()
     {
         $this->fixtures->create('banking_account', ['id' => '01234567890123', 'account_type' => 'current', 'status' => 'archived']);

@@ -331,6 +331,13 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
+    protected static $iciciBulkUploadCommentsCreateRules = [
+        Entity::FILE          => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE          => 'required|in:icici_bulk_upload_comments',
+        Entity::CONFIG        => 'filled|array',
+    ];
+
+
     protected static $iciciStpMisCreateRules = [
         Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,
         Entity::TYPE        => 'required|in:icici_stp_mis',

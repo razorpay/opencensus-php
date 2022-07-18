@@ -75,4 +75,19 @@ return [
               ],
           ],
     ],
+
+    'testBatchUploadForIciciBulkUploadComments'   => [
+        'request' => [
+            'url'  => '/admin/batches',
+            'method'  => 'post',
+            'content' =>  [
+                'type'    => 'icici_bulk_upload_comments',
+            ]
+        ],
+        'response'  =>    [
+            'content' =>  [
+                'status'      =>     'CREATED'
+            ],
+        ],
+    ],
 ];

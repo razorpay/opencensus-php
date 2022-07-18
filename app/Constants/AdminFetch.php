@@ -637,6 +637,7 @@ class AdminFetch
                         'partner_submerchant_invite',
                         'nach_debit_nach_citi',
                         'rbl_bulk_upload_comments',
+                        'icici_bulk_upload_comments',
                         'website_checker',
                         'emandate_debit_hdfc',
                         'create_exec_risk_action',

@@ -172,6 +172,8 @@ class Type
 
     const RBL_BULK_UPLOAD_COMMENTS                = 'rbl_bulk_upload_comments';
 
+    const ICICI_BULK_UPLOAD_COMMENTS              = 'icici_bulk_upload_comments';
+
     const ICICI_STP_MIS                            = 'icici_stp_mis';
 
     //cbk => chargeback
@@ -280,6 +282,7 @@ class Type
         self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS,
         self::ICICI_STP_MIS,
         self::RBL_BULK_UPLOAD_COMMENTS,
+        self::ICICI_BULK_UPLOAD_COMMENTS,
         self::NACH_MIGRATION,
         self::MERCHANT_ACTIVATION,
         self::INTERNAL_INSTRUMENT_REQUEST,
@@ -668,6 +671,7 @@ class Type
         self::CREATE_PAYMENT_FRAUD               => Name::ADMIN_BATCH_CREATE,
         self::ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
         self::RBL_BULK_UPLOAD_COMMENTS           => Name::ADMIN_BATCH_CREATE,
+        self::ICICI_BULK_UPLOAD_COMMENTS          => Name::ADMIN_BATCH_CREATE,
         self::BANKING_ACCOUNT_ACTIVATION_COMMENTS => Name::ADMIN_BATCH_CREATE,
         self::IRCTC_REFUND                        => Name::MERCHANT_BATCH_UPLOAD,
         self::IRCTC_DELTA_REFUND                  => Name::MERCHANT_BATCH_UPLOAD,
