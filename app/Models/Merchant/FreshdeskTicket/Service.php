@@ -532,8 +532,9 @@ class Service extends Base\Service
         $admin =  (new \RZP\Models\Admin\Admin\Repository)->findByEmail($agentDetail[Constants::CONTACT][Constants::EMAIL]);
 
         return [
-            Constants::AGENT_ID   => $admin->getPublicId(),
-            Constants::AGENT_NAME => $admin->getName(),
+            Constants::AGENT_ID             => $admin->getPublicId(),
+            Constants::FRESHDESK_AGENT_ID   => $responderID,
+            Constants::AGENT_NAME           => $admin->getName(),
         ];
     }
 
@@ -1676,15 +1677,32 @@ class Service extends Base\Service
 
         public function patchTicketInternal($id, $content)
     {
-        $ticket = $this->repo->merchant_freshdesk_tickets->findByIdAndMerchant(
-            $id,
-            $this->merchant);
+        if(empty($this->merchant) === true)
+        {
+            unset($content["account_id"]);
 
-        $fdInstance = $ticket->getFdInstance();
+            $fdInstance = Constants::RZPIND;
+
+            $ticketId = $id;
+        }
+        else
+        {
+            $ticket = $this->repo->merchant_freshdesk_tickets->findByIdAndMerchant(
+                $id,
+                $this->merchant);
+
+            $fdInstance = $ticket->getFdInstance();
+
+            $ticketId = $ticket->getTicketId();
+        }
+
+        $this->trace->info(TraceCode::FRESHDESK_OLD_INSTANCE, [
+            'content to fd'    =>  $content,
+        ]);
 
         $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);;
 
-        $response = $this->app['freshdesk_client']->updateTicketV2($ticket->getTicketId(), $content, $url);
+        $response = $this->app['freshdesk_client']->updateTicketV2($ticketId, $content, $url);
 
         $this->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_UPDATE_FAILED);
 

@@ -42,6 +42,7 @@ class Constants
 
     const AGENT      = 'agent';
     const AGENT_ID   = 'agent_id';
+    const FRESHDESK_AGENT_ID   = 'freshdesk_agent_id';
     const AGENT_NAME = 'agent_name';
     const CONTACT    = 'contact';
 

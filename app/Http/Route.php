@@ -13217,6 +13217,7 @@ class Route
 
         'cmma' => [
             'internal_merchant_fetch',
+            'freshdesk_update_ticket_internal',
             'internal_fd_create_ticket',
             'internal_fd_fetch_agent_detail_for_ticket',
         ],
