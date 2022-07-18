@@ -35,8 +35,9 @@ class CareProxyController extends Controller
 
 
     //chat
-    const CHAT_GET_MERCHANT  = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
-    const CHAT_FETCH_TICKETS = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
+    const CHAT_GET_MERCHANT   = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
+    const CHAT_FETCH_TICKETS  = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
+    const CHAT_FETCH_MERCHANT = 'twirp/rzp.care.chat.v1.ChatService/FetchMerchant';
 
     //chat timing config
     const CHAT_GET_TIMINGS_CONFIG         = 'twirp/rzp.care.chat.v1.ChatService/GetChatTimingsConfig';
@@ -196,6 +197,7 @@ class CareProxyController extends Controller
     const CHAT_ROUTES = [
         self::CHAT_GET_MERCHANT,
         self::CHAT_FETCH_TICKETS,
+        self::CHAT_FETCH_MERCHANT,
     ];
 
     public function postDashboardProxyRequest($path)

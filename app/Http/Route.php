@@ -13200,6 +13200,7 @@ class Route
         ],
 
         'care' => [
+            'payment_fetch_multiple',
             'internal_merchant_fetch',
             'internal_merchant_submission_date',
             'internal_merchant_get_rejection_reasons',

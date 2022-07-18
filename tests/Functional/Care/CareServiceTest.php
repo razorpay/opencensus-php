@@ -150,6 +150,17 @@ class CareServiceTest extends TestCase
                 self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
             ],
             [
+                self::AUTH                                => 'yellowmessenger',
+                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/FetchMerchant',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/FetchMerchant',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
                 self::AUTH                                => 'proxy',
                 self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.chat.v1.ChatService/Init',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/Init',
