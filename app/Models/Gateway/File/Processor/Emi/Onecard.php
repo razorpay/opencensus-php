@@ -181,8 +181,10 @@ class Onecard extends Base
             $merchantDbaName =  $merchant->getDbaName() ?: 'Razorpay Payments';
 
             $formattedData[] = [
-                'Card BIN'                     => $emiPayment->card->getIin(),
-                'Card Hash'                    => hash("sha256", $this->getCardNumber($emiPayment->card,$emiPayment->getGateway())),
+                'Card BIN'                     => '',
+                'Card Hash'                    => '',
+                'Last_Four'                    => $emiPayment->card->getLast4(),
+                'Bin_Ident'                    => $emiPayment->card->getIssuer(),
                 'Issuer'                       => 'One Card',
                 'RRN'                          => $rrns[$emiPayment['id']]['rrn'] ?? '',
                 'Auth Code'                    => $this->getAuthCode($emiPayment),
