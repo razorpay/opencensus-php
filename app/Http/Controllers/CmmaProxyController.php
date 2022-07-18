@@ -17,6 +17,7 @@ class CmmaProxyController extends BaseProxyController
     const GET_PROCESS_INSTANCE_DETAILS    = 'GetProcessInstanceDetails';
     const GET_PROCESS_INSTANCE_RESOURCES  = 'GetProcessInstanceResources';
     const UPDATE_TASK                     = 'UpdateTask';
+    const UPDATE_USER_TASK_LIST           = 'UpdateUserTaskList';
 
     const ROUTES_URL_MAP    = [
         self::GET_PROCESS_INSTANCE            => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceById/",
@@ -29,6 +30,7 @@ class CmmaProxyController extends BaseProxyController
         self::FETCH_PROCESS_INSTANCES         => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/FetchProcessInstances/",
         self::GET_PROCESS_INSTANCE_DETAILS    => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceDetails/",
         self::GET_PROCESS_INSTANCE_RESOURCES  => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetResources/",
+        self::UPDATE_USER_TASK_LIST           => "/twirp\/rzp.cmma.userTask.v1.UserTaskService\/UpdateUserTaskList/"
     ];
 
     const ADMIN_ROUTES   = [
@@ -40,6 +42,7 @@ class CmmaProxyController extends BaseProxyController
         self::GET_PROCESS_INSTANCE_DETAILS,
         self::GET_PROCESS_INSTANCE_RESOURCES,
         self::UPDATE_TASK,
+        self::UPDATE_USER_TASK_LIST,
     ];
 
     const CRON_ROUTES   = [
@@ -56,8 +59,9 @@ class CmmaProxyController extends BaseProxyController
         self::GET_USER_TASK_BY_ID            => Name::CMMA_PROCESS_VIEW,
         self::GET_PROCESS_INSTANCE_DETAILS   => Name::CMMA_PROCESS_VIEW,
         self::GET_PROCESS_INSTANCE_RESOURCES => Name::CMMA_PROCESS_VIEW,
+        self::UPDATE_USER_TASK_LIST          => Name::CMMA_PROCESS_EDIT,
     ];
-    
+
 
     public function __construct()
     {
