@@ -163,4 +163,16 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function findLatestDocumentForMerchantIdAndDocumentTypeInRange(string $merchantId, string $documentType, string $from, string $to)
+    {
+        return $this->newQueryOnSlave()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::DOCUMENT_TYPE, $documentType)
+            ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])
+            ->whereNull(Entity::DELETED_AT)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->get()
+            ->first();
+    }
+
 }

@@ -349,5 +349,41 @@ return [
 
             ]
         ],
+    ],
+
+    'testICICIZipFIRSDocumentsIfNoZipExists' => [
+        'request'  => [
+            'url'       => '/merchant/firs/collect/cron',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testICICIZipFIRSDocumentsIfZipAlreadyExists' => [
+        'request'  => [
+            'url'       => '/merchant/firs/collect/cron',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testICICIZipFIRSDocumentsIfZipAlreadyExistsForPreviousToPreviousMonth' => [
+        'request'  => [
+            'url'       => '/merchant/firs/collect/cron',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
     ]
 ];

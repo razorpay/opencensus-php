@@ -502,6 +502,34 @@ class Service extends Base\Service
                     continue;
                 }
 
+                // check if Zip file already exists and a new zip file creation is required.
+                // Skip if no new document for a month after zip creation
+
+                $from = strtotime($month.'/01/'.$year);
+                $to = strtotime("+1 Month",$from)-1;
+
+                $latestZippedFIRSDocument =  $this->repo->merchant_document->findLatestDocumentForMerchantIdAndDocumentTypeInRange($merchantId,"firs_icici_zip",$from,$to);
+
+                if(isset($latestZippedFIRSDocument) === true)
+                {
+                    $latestIndividualFIRSDocument = $this->repo->merchant_document->findLatestDocumentForMerchantIdAndDocumentTypeInRange($merchantId,"firs_icici_file",$from,$to);       
+                                
+                    if($latestZippedFIRSDocument->getCreatedAt() >= $latestIndividualFIRSDocument->getCreatedAt())
+                    {
+                        
+                        $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_SKIPPED,
+                        [
+                            "message" => "Latest Zipped File Already Contains All Individual Files",
+                            "latestZippedFIRSDocument" => $latestZippedFIRSDocument->getId(),
+                            "latestIndividualFIRSDocument" => $latestIndividualFIRSDocument->getId(),
+                            "latestZippedFileCreatedAt" => $latestZippedFIRSDocument->getCreatedAt(),
+                            "latestIndividualFileCreatedAt" => $latestIndividualFIRSDocument->getCreatedAt()
+                        ]);
+
+                        continue;
+                    }
+                }
+
                 $payload = [
                     'merchant_id'   => $merchantId,
                     'month'         => $month,

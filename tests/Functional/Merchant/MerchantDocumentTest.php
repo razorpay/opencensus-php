@@ -2,8 +2,12 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Carbon\Carbon;
 use Config;
+use Queue;
 use Illuminate\Http\UploadedFile;
+use RZP\Constants\Timezone;
+use RZP\Jobs\MerchantFirsDocumentsZip;
 use RZP\Services\UfhService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Document\Type;
@@ -713,6 +717,163 @@ class MerchantDocumentTest Extends TestCase
 
         $this->assertCount(1,$content);
         $this->assertEquals('firs_file',$content[0]['document_type']);
+
+    }
+
+    public function testICICIZipFIRSDocumentsIfNoZipExists()
+    {
+        Queue::fake();
+
+        Carbon::setTestNow(Carbon::now(Timezone::IST));
+
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+
+        $year  = $previousMonth->year;
+        $month = $previousMonth->month;
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAJ',
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals(true,$content['success']);
+
+        Queue::assertPushed(MerchantFirsDocumentsZip::class, 1);
+
+    }
+
+    public function testICICIZipFIRSDocumentsIfZipAlreadyExists()
+    {
+        Queue::fake();
+
+        Carbon::setTestNow(Carbon::now(Timezone::IST));
+
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+
+        $year  = $previousMonth->year;
+        $month = $previousMonth->month;
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAJ',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_zip',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/10/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals(true,$content['success']);
+
+        Queue::assertPushed(MerchantFirsDocumentsZip::class, 0);
+
+    }
+
+    public function testICICIZipFIRSDocumentsIfZipAlreadyExistsForPreviousToPreviousMonth()
+    {
+        Queue::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        Carbon::setTestNow(Carbon::now(Timezone::IST));
+
+        $previousMonth = Carbon::now(Timezone::IST)->subMonth();
+
+        $year  = $previousMonth->year;
+        $month = $previousMonth->month;
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAJ',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAJ',
+        ]);
+
+
+        $previousToPreviousMonth = Carbon::now(Timezone::IST)->subMonth()->subMonth();
+
+        $year  = $previousToPreviousMonth->year;
+        $month = $previousToPreviousMonth->month;
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' => strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' => strtotime($month.'/01/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAJ',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_icici_zip',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' => strtotime($month.'/10/'.$year),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals(true,$content['success']);
+
+        Queue::assertPushed(MerchantFirsDocumentsZip::class, 1);
 
     }
 
