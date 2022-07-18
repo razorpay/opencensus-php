@@ -1084,6 +1084,8 @@ class Route
         'customer_edit_global_address'             => ['put',      'customers/addresses',                            'CustomerController@editGlobalAddress'                            ],
         'customer_record_1cc_address_consent_view'     => ['put',      '1cc/consent/address/view',                   'CustomerController@recordAddressConsent1ccAudits'                  ],
         'customer_record_1cc_address_consent'          => ['put',      '1cc/address/consent',                        'CustomerController@recordAddressConsent1cc'                        ],
+        'customer_one_cc_get_or_create_global'     => ['post',     'customers/1cc/global',                           'CustomerController@getOrCreateGlobalCustomer1cc'                   ],
+        'customer_fetch_by_id_global'              => ['get',      'customers/1cc/global/{id}',                      'CustomerController@fetchGlobalCustomerByID' ],
         'customer_create_address'                  => ['post',     'customers/{id}/addresses',                       'CustomerController@postCreateAddress'                              ],
         'customer_delete_address'                  => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
         'customer_fetch_addresses'                 => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
@@ -4980,6 +4982,10 @@ class Route
         'contact_fetch_address',
 
         'transaction_statement_fetch_multiple_for_banking_internal',
+
+        // Magic Club
+        'customer_one_cc_get_or_create_global',
+        'customer_fetch_by_id_global',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -13319,7 +13325,12 @@ class Route
             'internal_fail',
             'internal_reconcile',
             'internal_receive',
-        ]
+        ],
+
+        'consumer_app' => [
+            'customer_one_cc_get_or_create_global',
+            'customer_fetch_by_id_global',
+        ],
     ];
 
     //

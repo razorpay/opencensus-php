@@ -837,4 +837,36 @@ class Service extends Base\Service
 
         return $this->repo->customer->fetchByAppToken($app);
     }
+
+    /**
+     * Gets global customer from db or create one.
+     * Internal route for 1cc micro service.
+     *
+     * @param $input
+     *
+     * @return Entity $customer
+     */
+    public function getOrCreateGlobalCustomer1cc(array $input): array
+    {
+        (new Validator)->setStrictFalse()->validateInput('createGlobalCustomer1cc', $input);
+
+        $response = $this->core->getOrCreateGlobalCustomer1cc($input);
+
+        return $response;
+    }
+
+    /**
+     * Fetch global customer by public ID
+     * Internal route for 1cc micro service.
+     *
+     * @param $input
+     *
+     * @return Entity $customer
+     */
+    public function fetchGlobalCustomerByID(string $id): array
+    {
+        $customerArr = $this->core->fetchGlobalCustomerByID($id);
+
+        return $customerArr;
+    }
 }

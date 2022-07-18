@@ -1020,4 +1020,45 @@ class Core extends Base\Core
 
         return $addressCore->edit($address, $input);
     }
+
+    /**
+     * Creates a global customer from consumer app service.
+     *
+     * @param $input
+     *
+     * @return Array $customerId
+     */
+    public function getOrCreateGlobalCustomer1cc(array $input): array
+    {
+        $customer = $this->getOrCreateGlobalCustomer($input);
+
+        return $this->formatCustomerFor1cc($customer);
+    }
+
+    public function fetchGlobalCustomerByID(string $id): array
+    {
+        $merchant = $this->getSharedAccount();
+
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $merchant);
+
+        return $this->formatCustomerFor1cc($customer);
+    }
+
+    /**
+     * Formats global customer for consumer app.
+     *
+     * @param Customer\Entity $customer
+     *
+     * @return Array $array
+     */
+    protected function formatCustomerFor1cc(Customer\Entity $customer): array
+    {
+        return [
+            'id'      => $customer->getPublicId(),
+            'entity'  => 'customer',
+            'name'    => $customer->getName(),
+            'email'   => $customer->getEmail(),
+            'contact' => $customer->getContact(),
+        ];
+    }
 }

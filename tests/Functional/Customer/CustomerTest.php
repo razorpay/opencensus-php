@@ -893,4 +893,48 @@ class customerTest extends TestCase
             ]
         );
     }
+
+    public function testCreateGlobalCustomerMagicClub()
+    {
+        $this->ba->privateAuth('rzp_test', getenv("CONSUMER_APP_SERVICE_SECRET"));
+
+        $this->startTest();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertNotNull($customer);
+    }
+
+    public function testGetGlobalCustomerMagicClub()
+    {
+        $this->testCreateGlobalCustomerMagicClub();
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->testData['testGetGlobalCustomerMagicClub']['request']['content']['id'] = $customer['id'] ;
+
+        $this->ba->privateAuth('rzp_test', getenv('CONSUMER_APP_SERVICE_SECRET'));
+
+        $this->startTest();
+
+        $this->assertNotNull($customer);
+    }
+
+    public function testGetOrCreateGlobalCustomerMagicClubInvalidInput()
+    {
+        $this->ba->privateAuth('rzp_test', getenv('CONSUMER_APP_SERVICE_SECRET'));
+
+        $this->startTest();
+    }
+
+    public function testGetGlobalCustomerByID()
+    {
+        $this->fixtures->create('customer', [
+            'id'          => 'magic1customer',
+            'merchant_id' => '100000Razorpay',
+            'contact'     => '9988771111']);
+        $customer = $this->getLastEntity('customer', true);
+        $this->ba->privateAuth('rzp_test', getenv('CONSUMER_APP_SERVICE_SECRET'));
+        $res = $this->startTest();
+    }
 }

@@ -1354,4 +1354,8 @@ return [
         'base_url'      => env('WHATCMS_BASE_URL'),
         'secret'        => env('WHATCMS_API_KEY'),
     ],
+
+    'consumer_app' => [
+      'secret'  => env('CONSUMER_APP_SERVICE_SECRET')
+    ],
 ];

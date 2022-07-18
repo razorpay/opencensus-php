@@ -108,6 +108,11 @@ class Validator extends Base\Validator
        'provider',
    ];
 
+   protected static $createGlobalCustomer1ccRules = [
+       Entity::CONTACT => 'required|contact_syntax',
+       Entity::EMAIL   => 'sometimes|email',
+   ];
+
     public function __construct($entity = null)
     {
         parent::__construct($entity);

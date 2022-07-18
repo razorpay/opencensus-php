@@ -1283,4 +1283,74 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_TOKEN_COUNT_NOT_EQUAL,
         ],
     ],
+
+    'testCreateGlobalCustomerMagicClub' => [
+        'request' => [
+            'url' => '/customers/1cc/global',
+            'method' => 'post',
+            'content' => [
+                'contact' => '1234567899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact' => '1234567899',
+            ],
+        ],
+    ],
+
+    'testGetGlobalCustomerMagicClub' => [
+        'request' => [
+            'url' => '/customers/1cc/global',
+            'method' => 'post',
+            'content' => [
+                'contact' => '1234567899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact' => '1234567899',
+            ],
+        ]
+    ],
+
+    'testGetGlobalCustomerByID' => [
+        'request' => [
+            'url'    => '/customers/1cc/global/cust_magic1customer',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'id'      => 'cust_magic1customer',
+                'contact' => '9988771111',
+                'entity'  => 'customer',
+                'name'    => 'name',
+                'email'   => null,
+            ],
+        ],
+    ],
+
+    'testGetOrCreateGlobalCustomerMagicClubInvalidInput' => [
+        'request' => [
+            'url' => '/customers/1cc/global',
+            'method' => 'post',
+            'content' => [
+                'contact' => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The contact field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 ];

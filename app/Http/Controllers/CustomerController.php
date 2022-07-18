@@ -266,7 +266,7 @@ class CustomerController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     /**
      * Used by the Open Wallet demo app
      *
@@ -429,5 +429,21 @@ class CustomerController extends Controller
         $tokens = $this->service()->deleteTokenForGlobalCustomerV2($input);
 
         return ApiResponse::json($tokens);
+    }
+
+    public function getOrCreateGlobalCustomer1cc()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getOrCreateGlobalCustomer1cc($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchGlobalCustomerByID($id)
+    {
+        $response = $this->service()->fetchGlobalCustomerByID($id);
+
+        return ApiResponse::json($response);
     }
 }
