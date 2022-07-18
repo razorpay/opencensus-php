@@ -29,16 +29,16 @@ class Service
             self::PATH   => 'twirp/rzp.rto_prediction.cod_eligibility.v1.CODEligibilityAPI/Evaluate',
         ],
         self::BULK_UPSERT_COD_ELIGIBILITY_ATTRIBUTE => [
-            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/BulkUpsertCODEligibilityAttribute',
+            self::PATH => 'twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/BulkUpsertCODEligibilityAttribute',
         ],
         self::LIST_COD_ELIGIBILITY_ATTRIBUTE => [
-            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/ListCODEligibilityAttribute',
+            self::PATH => 'twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/ListCODEligibilityAttribute',
         ],
         self::DELETE_COD_ELIGIBILITY_ATTRIBUTE => [
-            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteCODEligibilityAttribute',
+            self::PATH => 'twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteCODEligibilityAttribute',
         ],
         self::DELETE_BY_COD_ELIGIBILITY_ATTRIBUTE => [
-            self::PATH => '/twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteByCODEligibilityAttribute',
+            self::PATH => 'twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteByCODEligibilityAttribute',
         ]
     ];
 
