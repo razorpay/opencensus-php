@@ -66,8 +66,9 @@ final class Throttle
         $responseSize = strlen($response);
 
         $this->trace->info(TraceCode::HTTP_REQUEST_RESPONSE_SIZE, [
-            'req'   => $reqSize,
-            'res'   => $responseSize,
+            'req'      => $reqSize,
+            'res'      => $responseSize,
+            'duration' => $duration,
         ]);
 
         $dimensions = $this->getMetricDimensions($request, $response);
