@@ -215,7 +215,7 @@ export default class PaymentPageSettings extends React.Component {
                   slug={slug}
                   openModal={this.props.openModal}
                   closeModal={this.props.closeModal}
-                  paymentPageCustomUrl={paymentPageEntity.settings.custom_domain}
+                  paymentPageCustomUrl={paymentPageEntity.settings?.custom_domain}
                 />
                 <div class="settings-section">
                   <Input.Radio
