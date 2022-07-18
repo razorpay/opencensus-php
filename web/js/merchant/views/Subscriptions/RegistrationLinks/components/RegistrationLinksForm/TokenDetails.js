@@ -6,10 +6,11 @@ import Input from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
 
 import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
-
-export const MAX_TOKEN_AMOUNT = 100000000; // in Paisa
-export const CARD_MAX_ALLOWED_AMOUNT = 5000; //Rs
-export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
+import {
+  CARD_AFA_MAX_LIMIT,
+  MAX_TOKEN_AMOUNT,
+  MAX_TOKEN_AMOUNT_NACH,
+} from 'merchant/views/Subscriptions/constants';
 
 const OptionLabel = ({ title, desc }) => (
   <div className="label-container">
@@ -89,9 +90,9 @@ export default function TokenDetailsForm({
     )})`;
   }
   if (isCardPayment) {
-    maxAmountProps.validator = cardMaxAmountValidator(CARD_MAX_ALLOWED_AMOUNT);
-    let maxAmount = 5000;
-    if (mandateMaxAmount <= 5000) {
+    maxAmountProps.validator = cardMaxAmountValidator(CARD_AFA_MAX_LIMIT);
+    let maxAmount = CARD_AFA_MAX_LIMIT;
+    if (mandateMaxAmount <= CARD_AFA_MAX_LIMIT) {
       maxAmount = mandateMaxAmount;
     }
     maxAmountProps.description = () => (
@@ -225,7 +226,7 @@ export default function TokenDetailsForm({
               <div className="Input-desc sub-text">(For domestic cards only)</div>
             </>
           )}
-          placeholder="Max 5000"
+          placeholder={`Max ${CARD_AFA_MAX_LIMIT}`}
           onBlur={onBlurElement}
           required={isUPIPayment}
           value={mandateMaxAmount}

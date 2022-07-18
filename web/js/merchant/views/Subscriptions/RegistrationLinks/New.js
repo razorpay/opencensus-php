@@ -22,11 +22,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import CustomerDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/CustomerDetails';
 import { isEmail, isPhone, validateBeneficiaryName } from 'common/utils/validators';
 import PaymentDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/PaymentDetails';
-import TokenDetailsForm, {
-  MAX_TOKEN_AMOUNT,
-  MAX_TOKEN_AMOUNT_NACH,
-  CARD_MAX_ALLOWED_AMOUNT,
-} from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
+import TokenDetailsForm from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
 import {
   trackClickPaymentMethod,
   trackClickNext,
@@ -37,7 +33,12 @@ import {
 import analytics from '../analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { isAmountLiesInRange } from '../utils';
-import { topEmandateBankCodes } from '../constants';
+import {
+  CARD_AFA_MAX_LIMIT,
+  MAX_TOKEN_AMOUNT,
+  MAX_TOKEN_AMOUNT_NACH,
+  topEmandateBankCodes,
+} from 'merchant/views/Subscriptions/constants';
 
 const CustomerDetailsMandatoryFields = [
   'description',
@@ -451,7 +452,7 @@ export default class NewRegistrationLink extends React.Component {
 
     if (this.isCardPayment) {
       payload.subscription_registration.frequency = 'as_presented';
-      const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || CARD_MAX_ALLOWED_AMOUNT);
+      const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || CARD_AFA_MAX_LIMIT);
       payload.subscription_registration.max_amount = cardMaxAmount;
     }
 
@@ -575,7 +576,7 @@ export default class NewRegistrationLink extends React.Component {
           }
         }
         if (this.isCardPayment) {
-          if (maxAmount > CARD_MAX_ALLOWED_AMOUNT) {
+          if (maxAmount > CARD_AFA_MAX_LIMIT) {
             return false;
           }
         }
