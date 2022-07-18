@@ -17,10 +17,10 @@ class RefundJournalEvents
 {
     //Based on the type of refund (direct settlement refund, auto refund, normal refund),
     //create ledger configs for ledger entries.
+    //TODO::Add required money params for direct settlement cases
     public static function createLedgerEntriesForRefunds(string $mode, RefundEntity $refund, Transaction\Entity $txn)
     {
         $app = App::getFacadeRoot();
-
         $trace = $app['trace'];
 
         try {
@@ -28,19 +28,24 @@ class RefundJournalEvents
             if (($refund->isDirectSettlementWithoutRefund() === true) or
                 ($refund->isDirectSettlementRefund() === true))
             {
-                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn);
+                list($rule) = self::fetchLedgerRulesForRefundsDirectSettlement($refund, $txn);
+                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, []);
 
                 unset($transactionMessage[Constants::TRANSACTOR_EVENT]);
 
                 $transactionMessage[Constants::TRANSACTOR_EVENT] = Constants::REFUND_PROCESSED_DIRECT_SETTLEMENT;
-
-                $transactionMessage[Constants::ADDITIONAL_PARAMS] = self::fetchLedgerRulesForRefundsDirectSettlement($refund, $txn);
+                $transactionMessage[Constants::ADDITIONAL_PARAMS] = $rule;
 
                 LedgerEntryJob::dispatchNow($mode, $transactionMessage);
             } //Normal autorefund scenarios
             else if ($refund->payment->hasBeenCaptured() === false)
             {
-                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn);
+                $amount = abs($txn->getAmount());
+                $moneyParams = [
+                    Constants::AMOUNT   => $amount
+                ];
+
+                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, $moneyParams);
 
                 $transactionMessage[Constants::ADDITIONAL_PARAMS] = [
                     Constants::REFUND_ACCOUNTING => Constants::AUTOREFUND
@@ -50,9 +55,10 @@ class RefundJournalEvents
             } // Normal refund scenario
             else
             {
-                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn);
+                list($rule, $moneyParams) = self::fetchLedgerRulesAndMoneyParamsForRefunds($refund, $txn);
+                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, $moneyParams);
 
-                $transactionMessage[Constants::ADDITIONAL_PARAMS] = self::fetchLedgerRulesForRefunds($refund, $txn);
+                $transactionMessage[Constants::ADDITIONAL_PARAMS] = $rule;
 
                 LedgerEntryJob::dispatchNow($mode, $transactionMessage);
             }
@@ -157,21 +163,36 @@ class RefundJournalEvents
     }
 
     //reversal entity has association with refund entity
-    public static function fetchLedgerRulesForReversal(Transaction\Entity $transaction, RefundEntity $refund, bool $feeOnlyReversal)
+    public static function fetchLedgerRulesAndMoneyParamsForReversal(Transaction\Entity $transaction, RefundEntity $refund, bool $feeOnlyReversal)
     {
         $rule = null;
+        $moneyParams = [];
+
+        $amount = abs($transaction->getAmount());
+        $strAmount = strval($amount);
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
 
         //This is a case where optimum refund was initially triggered and then only fee was reversed
         //converting instant refund to normal refund
         if($feeOnlyReversal === true)
         {
+            $moneyParams[Constants::COMMISSION]                 = strval($fee);
+            $moneyParams[Constants::TAX]                        = strval($tax);
+
+            // No amount is reversed from customer is feeOnlyReversal hence the reversedAmount is 0
+            $moneyParams[Constants::REVERSED_AMOUNT]            = "0";
             if ($transaction->isRefundCredits() === true)
             {
-                $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED_CREDITS;
+                $rule[Constants::REVERSE_REFUND_ACCOUNTING]     = Constants::INSTANT_REFUND_REVERSED_CREDITS;
+                $moneyParams[Constants::REFUND_CREDITS]         = strval($fee + $tax);
             }
             else
             {
-                $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED;
+                $rule[Constants::REVERSE_REFUND_ACCOUNTING]         = Constants::INSTANT_REFUND_REVERSED;
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($fee + $tax);
             }
         }
         else
@@ -181,71 +202,114 @@ class RefundJournalEvents
                 if ($transaction->isRefundCredits() === true)
                 {
                     $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::REFUND_REVERSED_CREDITS;
+
+                    $moneyParams[Constants::REVERSED_AMOUNT]     = $strAmount;
+                    $moneyParams[Constants::REFUND_CREDITS]      = $strAmount;
+                }
+                else {
+                    $moneyParams[Constants::REVERSED_AMOUNT]            = $strAmount;
+                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]     = $strAmount;
                 }
             }
             else if ($refund->isRefundSpeedInstant() === true)
             {
+                $moneyParams[Constants::REVERSED_AMOUNT]    = $strAmount;
+                $moneyParams[Constants::COMMISSION]         = strval($fee);
+                $moneyParams[Constants::TAX]                = strval($tax);
+
                 if ($transaction->isRefundCredits() === true)
                 {
-                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED_CREDITS;
-                } else
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING]     = Constants::INSTANT_REFUND_REVERSED_CREDITS;
+                    $moneyParams[Constants::REFUND_CREDITS]         = strval($amount + $fee + $tax);
+                }
+                else
                 {
-                    $rule[Constants::REVERSE_REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_REVERSED;
+                    $rule[Constants::REVERSE_REFUND_ACCOUNTING]         = Constants::INSTANT_REFUND_REVERSED;
+                    $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]  = strval($amount + $fee + $tax);
                 }
             }
         }
-        return $rule;
+        return [$rule, $moneyParams];
     }
 
     //Creates a rule object for ledger entry based on refund usecases.
-    public static function fetchLedgerRulesForRefunds(RefundEntity $refund, Transaction\Entity $transaction)
+    public static function fetchLedgerRulesAndMoneyParamsForRefunds(RefundEntity $refund, Transaction\Entity $transaction)
     {
         $rule = null;
+        $moneyParams = [];
 
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+
+        // case when a normal speed refund occurs
         if(($refund->getSpeedDecisioned() === speed::NORMAL) and
             ($transaction->isRefundCredits()) === true)
         {
             $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_PROCESSED_WITH_CREDITS;
-        }
 
+            $moneyParams[Constants::REFUND_CREDITS] = strval($amount);
+            $moneyParams[Constants::REFUND_AMOUNT]  = strval($amount);
+        }
+        // case when a instant speed refund occurs
         else if($refund->isRefundSpeedInstant() === true)
         {
             if($transaction->isRefundCredits() === true)
             {
                 $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_PROCESSED_WITH_CREDITS_INSTANT;
+
+                $moneyParams[Constants::REFUND_CREDITS]     = strval($amount + $fee + $tax);
+                $moneyParams[Constants::REFUND_AMOUNT]      = strval($amount);
+                $moneyParams[Constants::COMMISSION]         = strval($fee);
+                $moneyParams[Constants::TAX]                = strval($tax);
             }
             else
             {
                 $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_INSTANT_PROCESSED;
+
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $fee + $tax);
+                $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
+                $moneyParams[Constants::COMMISSION]                 = strval($fee);
+                $moneyParams[Constants::TAX]                        = strval($tax);
             }
         }
-        return $rule;
+        else
+        {
+            // When normal refund occurs (speed = normal, refund_source = merchant_balance)
+            $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+        }
+        return [$rule, $moneyParams];
     }
 
-    public static function createTransactionMessageForRefundReversal(Reversal $reversal, Transaction\Entity $transaction): array
+    public static function createTransactionMessageForRefundReversal(Reversal $reversal, Transaction\Entity $transaction, array $moneyParams): array
     {
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $reversalData = array(
-            Constants::TRANSACTOR_ID                 => $reversal->getPublicId(),
-            Constants::TRANSACTOR_EVENT              => Constants::REFUND_REVERSAL,
-            Constants::IDENTIFIERS                   => [
-                Constants::GATEWAY         => $reversal->entity->getGateway(),
+            Constants::TRANSACTOR_ID                => $reversal->getPublicId(),
+            Constants::TRANSACTOR_EVENT             => Constants::REFUND_REVERSAL,
+            Constants::MONEY_PARAMS                 => $moneyParams,
+            Constants::IDENTIFIERS                  => [
+                Constants::GATEWAY      => $reversal->entity->getGateway(),
             ],
         );
         return array_merge($transactionMessage, $reversalData);
     }
 
-    public static function createTransactionMessageForRefund(RefundEntity $refund, Transaction\Entity $transaction): array
+    public static function createTransactionMessageForRefund(RefundEntity $refund, Transaction\Entity $transaction, array $moneyParams): array
     {
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $refundData = array(
-            Constants::TRANSACTOR_ID                => $refund->getPublicId(),
+            Constants::TRANSACTOR_ID                 => $refund->getPublicId(),
             Constants::TRANSACTOR_EVENT              => Constants::REFUND_PROCESSED,
+            Constants::MONEY_PARAMS                  => $moneyParams,
             Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY           => $refund->getGateway(),
-            ],
+            ]
         );
 
         return array_merge($transactionMessage, $refundData);

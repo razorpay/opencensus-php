@@ -13,9 +13,14 @@ class SettlementJournalEvents
 
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
+        $moneyParams = [
+            Constants::AMOUNT       => strval($transaction->getAmount()),
+        ];
+
         $refundData = array(
-            Constants::TRANSACTOR_ID                 => $settlement->getPublicId(),
-            Constants::TRANSACTOR_EVENT              => Constants::SETTLEMENT_PROCESSED,
+            Constants::TRANSACTOR_ID        => $settlement->getPublicId(),
+            Constants::TRANSACTOR_EVENT     => Constants::SETTLEMENT_PROCESSED,
+            Constants::MONEY_PARAMS         => $moneyParams
         );
         return array_merge($transactionMessage, $refundData);
     }

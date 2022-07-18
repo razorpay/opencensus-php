@@ -546,9 +546,9 @@ class Core extends Base\Core
         {
             if ($reversal->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
             {
-
-                $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn);
-                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = RefundJournalEvents::fetchLedgerRulesForReversal($txn, $reversal->entity, $feeOnlyReversal);
+                list($rule, $moneyParams) = RefundJournalEvents::fetchLedgerRulesAndMoneyParamsForReversal($txn, $reversal->entity, $feeOnlyReversal);
+                $transactionMessage = RefundJournalEvents::createTransactionMessageForRefundReversal($reversal, $txn, $moneyParams);
+                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = $rule;
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
                 {

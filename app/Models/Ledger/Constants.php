@@ -28,6 +28,19 @@ class Constants
     const INSTANT_REFUND_REVERSED_CREDITS                   = "instant_refund_reversed_credits";
     const INSTANT_REFUND_REVERSED                           = "instant_refund_reversed";
     const REFUND_ACCOUNTING                                 = "refund_accounting";
+    const REFUND_CREDITS                                    = "refund_credits";
+
+    //Money Params Fields
+    const FEE_CREDITS_DEDUCTIBLE                            = "fee_credits_deductible";
+    const REFUND_AMOUNT                                     = "refund_amount";
+    const MERCHANT_DEDUCTIBLE_AMOUNT                        = "merchant_deductible_amount";
+    const MERCHANT_DEDUCTIBLE_REFUND_CREDITS                = "merchant_deductible_refund_credits";
+    const GATEWAY_AMOUNT                                    = "gateway_amount";
+    const GMV_AMOUNT                                        = "gmv_amount";
+    const MERCHANT_BALANCE_AMOUNT                           = "merchant_balance_amount";
+    const GATEWAY_REVERSED_AMOUNT                           = "gateway_reversed_amount";
+    const MERCHANT_REFUND_CREDITS_ADDITION                  = "merchant_refund_credits_addition";
+    const MERCHANT_SETTLEMENT_AMOUNT                        = "merchant_settlement_amount";
 
     //Refund events Direct Settlement
     const REFUND_PROCESSED_DIRECT_SETTLEMENT                = "refund_processed_ds";
@@ -42,6 +55,7 @@ class Constants
     const AUTOREFUND_DS_WITHOUT_REFUND_WITH_CREDITS         = "autorefund_ds_without_refund_with_credits";
     const AUTOREFUND                                        = "autorefund";
     const REVERSE_REFUND_ACCOUNTING                         = 'reverse_refund_accounting';
+    const REVERSED_AMOUNT                                   = "reversed_amount";
 
     //Payload Keys
     const API_TRANSACTION_ID                                = "api_transaction_id";
@@ -52,6 +66,8 @@ class Constants
     const TRANSACTOR_EVENT                                  = 'transactor_event';
     const ADDITIONAL_PARAMS                                 = 'additional_params';
     const BASE_AMOUNT                                       = 'base_amount';
+
+    const MONEY_PARAMS                                      = 'money_params';
     const MERCHANT_ID                                       = 'merchant_id';
     const TAX                                               = 'tax';
     const CURRENCY                                          = 'currency';
