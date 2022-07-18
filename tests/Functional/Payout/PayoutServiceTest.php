@@ -734,6 +734,57 @@ class PayoutServiceTest extends TestCase
         return $payout;
     }
 
+    public function testCreateInternalPayoutViaMicroService(): array
+    {
+        $this->mockPayoutServiceCreate();
+
+        $this->testCreatePayoutServiceFtaCreation();
+
+        $this->mockRazorxDefault();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], 'icici');
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true, 'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7cl6t6I3XA5",
+            'percentage'      => null,
+            'amount'          => 500,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+
+        return $payout;
+    }
+
     public function testCreatePayoutWithFeeRewards(): array
     {
         $this->mockPayoutServiceCreate();

@@ -185,6 +185,9 @@ final class RazorxTreatment
     // Experiment to skip payroll payouts in the payouts list/detail view
     const RX_SKIP_PAYROLL_PAYOUTS = 'rx_skip_payroll_payouts';
 
+    // internal payout via payout service
+    const INTERNAL_PAYOUT_VIA_PS = 'internal_payout_via_ps';
+
     // Experiment to skip payroll payouts in the payouts list/detail view
     const RX_UNDO_PAYOUTS_FEATURE = 'rx_undo_payout_feature';
 

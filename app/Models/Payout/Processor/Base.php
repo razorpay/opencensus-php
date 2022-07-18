@@ -3601,10 +3601,23 @@ class Base extends BaseCore
 
             if ($this->balance->getAccountType() === AccountType::SHARED)
             {
+                $variant = $this->app->razorx->getTreatment(
+                    $this->merchant->getId(),
+                    RazorxTreatment::INTERNAL_PAYOUT_VIA_PS,
+                    $this->mode);
+
                 if ($this->isInternal === true)
+                {
                     $response = $this->payoutCreateServiceClient->createInternalContactPayoutViaMicroservice($input, $this->merchant->getId());
+                }
+                else if($this->app['basicauth']->isAppAuth() === true and strtolower($variant) === 'on')
+                {
+                    $response = $this->payoutCreateServiceClient->createPayoutInternalViaMicroservice($input, $this->merchant->getId());
+                }
                 else
+                {
                     $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input, $this->merchant->getId());
+                }
 
                 $this->trace->info(
                     TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
