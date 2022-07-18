@@ -9,6 +9,7 @@ const FETCH_DESTINATION_DETAILS = 'FETCH_DESTINATION_DETAILS';
 const FETCH_INSTALLMENTS = 'FETCH_INSTALLMENTS';
 const UPDATE_AUTOMATED_LOC_CONFIG = 'UPDATE_AUTOMATED_LOC_CONFIG';
 const FETCH_CURRENT_OUTSTANDING = 'FETCH_CURRENT_OUTSTANDING';
+const FETCH_CREDIT_SUMMARY = 'FETCH_CREDIT_SUMMARY';
 
 export const fetchSeedData = () => {
   const withdrawal = new Withdrawal();
@@ -88,6 +89,14 @@ export const updateAutomatedLOCConfig = (data) => {
   };
 };
 
+export const fetchCreditSummary = (data) => {
+  const withdrawal = new Withdrawal();
+  return {
+    type: FETCH_CREDIT_SUMMARY,
+    payload: withdrawal.fetchCreditSummary(data),
+  };
+};
+
 const getInitialState = () => {
   return {
     list: {
@@ -121,6 +130,11 @@ const getInitialState = () => {
       error: null,
     },
     current_outstanding: {
+      loading: false,
+      data: [],
+      error: null,
+    },
+    cash_on_card: {
       loading: false,
       data: [],
       error: null,
@@ -306,6 +320,30 @@ export default function withdrawalFunction(state = initialState, action) {
         'withdrawalConfiguration.data.automated_loc',
         action.payload.data.curr_automated_loc || false,
       );
+
+    case `${FETCH_CREDIT_SUMMARY}::PENDING`:
+      return merge(state, {
+        cash_on_card: {
+          loading: true,
+        },
+      });
+
+    case `${FETCH_CREDIT_SUMMARY}::SUCCESS`:
+      return merge(state, {
+        cash_on_card: {
+          loading: false,
+          data: action.payload.data,
+        },
+      });
+
+    case `${FETCH_CREDIT_SUMMARY}::ERROR`:
+      return merge(state, {
+        cash_on_card: {
+          loading: false,
+          error: action.payload.errors,
+        },
+      });
+
     default:
       return state;
   }

@@ -1,13 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { NavLink, withRouter, Redirect } from 'react-router-dom';
-import {
-  CASH_ADVANCE_BASE_URL,
-  CASH_ADVANCE_SECTIONS,
-  COLLECTIONS_PRODUCT_TYPES,
-  HOTJAR_TRIGGER,
-  NOOP,
-} from './constants';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, HOTJAR_TRIGGER, NOOP } from './constants';
 import Withdrawals from './withdrawals';
 import Overview from './Overview';
 import Repayments from './Repayments/Repayments';
@@ -25,7 +19,7 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import LegalSignIcon from '../../../../../icons/merchant/legal.svg';
 import RoundTick from '../../../../../icons/merchant/tick-round.svg';
 import { getItem, removeItem } from 'common/utils/localStorage';
-import { checkifDateExpired } from 'merchant/views/Capital/utils';
+import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 
 const Loader = () => {
@@ -82,11 +76,13 @@ class CashAdvance extends React.Component {
     const {
       user: { current },
     } = this.props;
+    const productType = getProductType(this.props.user);
 
     this.props
       .fetchFunctionalWithdrawalConfigByMerchantID({
         owner_id: current,
         owner_type: 'RZP_MERCHANT',
+        product_type: productType,
       })
       .then(
         ({
@@ -125,12 +121,13 @@ class CashAdvance extends React.Component {
         count: 25,
         order_by: 'CREATED_AT',
         order_direction: 'desc',
+        product_type: productType,
       })
       .finally(() => this.setState({ isLoading: false }));
 
     this.props
       .fetchRepayments({
-        product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+        product_type: productType,
         credit_id: current,
         order_by_type: 'ORDER_BY_TYPE_DESC',
         order_by_field: 'ORDER_BY_FIELD_CREATED_AT',

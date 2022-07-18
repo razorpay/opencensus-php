@@ -16,6 +16,7 @@ import RepaymentTicketSuccessModal from './RepaymentTicketSuccessModal';
 import Pager from 'common/ui/Pager';
 import WithdrawalsRoot from './index';
 import { Redirect } from 'react-router-dom';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 @connect(
   (state) => ({
@@ -100,6 +101,7 @@ class Withdrawals extends Component {
       count,
       order_by: 'CREATED_AT',
       order_direction: 'desc',
+      product_type: getProductType(this.props.user),
     });
   };
 

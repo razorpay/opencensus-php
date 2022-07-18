@@ -14,6 +14,7 @@ import carouselRuleValidators from './CarouselRules';
 import { getSlideByRule, getSlideContent } from './utils';
 import Withdrawal from 'merchant/models/Capital/Withdrawals';
 import Repayments from 'merchant/models/Capital/Repayments';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 const Information = ({ message, backgroundColor }) => {
   return (
@@ -69,12 +70,15 @@ function SummaryCarousel(props) {
     data: [],
   });
 
+  const productType = getProductType(props.user);
+
   const fetchInstallments = (withdrawal) => {
     withdrawal
       .fetchInstallments({
         owner_id: props.user.current,
         from: moment().startOf('day').unix(),
         to: moment().add(30, 'days').unix(),
+        product_type: productType,
       })
       .then(({ data: { repayment_schedule = [] } = {} } = {}) => {
         setInstallments((state) => ({
@@ -105,6 +109,7 @@ function SummaryCarousel(props) {
         order_direction: 'desc',
         skip: 0,
         count: 25,
+        product_type: productType,
       })
       .then(({ data: { withdrawal = [] } = {} } = {}) => {
         setWithdrawals((state) => ({

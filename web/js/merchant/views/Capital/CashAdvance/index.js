@@ -10,6 +10,7 @@ import {
   fetchFunctionalWithdrawalConfigByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
 import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 @connect(
   (state) => ({
@@ -30,6 +31,8 @@ class WithdrawalsRoot extends Component {
     leadGenerated: false,
   };
 
+  productType = getProductType(this.props.user);
+
   gaEventDispatcher = (eventObject) => {
     const { state: { eventCategory = null } = {} } = this.props.location;
     // eslint-disable-next-line dot-notation
@@ -46,6 +49,7 @@ class WithdrawalsRoot extends Component {
     if (hasWithdrawFeature) {
       this.fetchWithdrawalConfiguration();
       this.props.fetchWithdrawals({
+        product_type: this.productType,
         order_by: 'CREATED_AT',
         order_direction: 'desc',
         reference: [
@@ -70,6 +74,7 @@ class WithdrawalsRoot extends Component {
     fetchFunctionalWithdrawalConfigByMerchantID({
       owner_id: user.current,
       owner_type: 'RZP_MERCHANT',
+      product_type: this.productType,
     });
   };
 

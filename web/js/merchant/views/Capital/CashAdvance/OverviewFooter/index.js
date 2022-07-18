@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import SummaryCarousel from '../SummaryCarousel';
-import { REPAYMENT_VIEWS, COLLECTIONS_PRODUCT_TYPES } from '../constants';
+import { REPAYMENT_VIEWS } from '../constants';
 import Summary from './Summary';
 import Repay from './Repay';
 import Result from './Result';
@@ -10,6 +10,7 @@ import { fetchBalances } from 'merchant/reducers/capital/repayments';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import moment from 'moment';
 import { getTotalAmountBreakup, getCurrentOutstandingBreakup } from './utils/index';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 // SUMMARY --> REPAY - AMOUNT --> RESULT - SUCCESS
 //                   - METHOD            - FAILURE
@@ -25,6 +26,7 @@ function OverviewFooter({
   merchantId,
   account_balance,
   current_outstanding,
+  user,
 }) {
   const [view, setView] = useState(REPAYMENT_VIEWS.SUMMARY);
   const [resultAmounts, setResultAmounts] = useState({
@@ -37,18 +39,21 @@ function OverviewFooter({
     userRepayMethod: '',
   });
   useEffect(() => {
+    const productType = getProductType(user);
     if (view === REPAYMENT_VIEWS.SUMMARY) {
       fetchInstallments({
+        product_type: productType,
         owner_id: merchantId,
         from: moment().startOf('day').unix(),
         to: moment().add(30, 'days').unix(),
       });
       fetchBalances({
-        product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
+        product_type: productType,
         credit_id: merchantId,
       });
       fetchCurrentBalance();
       fetchCurrentOutstanding({
+        product_type: productType,
         owner_id: merchantId,
         from: moment().startOf('day').unix(),
         to: moment().add(30, 'days').unix(),
@@ -113,6 +118,7 @@ export default connect(
       merchantId: state.session.user.current,
       account_balance: state.home.current_balance,
       current_outstanding: state.withdrawals.current_outstanding,
+      user: state.session.user,
     };
   },
   { fetchInstallments, fetchBalances, fetchCurrentBalance, fetchCurrentOutstanding },

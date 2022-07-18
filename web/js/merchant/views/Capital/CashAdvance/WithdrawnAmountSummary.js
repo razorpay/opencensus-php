@@ -10,6 +10,7 @@ function WithdrawnAmountSummary({
   roi,
   diffDays,
   isInterestTypeReducing = false,
+  autoCollection = true,
 }) {
   const totalRepayableAmount = (principle + interest) * 100;
   const interestPopoverContent = `(${getFormattedAmountNew(
@@ -72,9 +73,11 @@ function WithdrawnAmountSummary({
           repayment.
         </div>
       ) : null}
-      <div className="withdrawals__footer left-border">
-        This amount will be deducted in {diffDays} installments from your settlement balance
-      </div>
+      {autoCollection && (
+        <div className="withdrawals__footer left-border">
+          This amount will be deducted in {diffDays} installments from your settlement balance
+        </div>
+      )}
     </div>
   );
 }

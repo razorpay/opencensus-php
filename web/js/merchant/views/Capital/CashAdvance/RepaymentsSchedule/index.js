@@ -3,21 +3,16 @@ import RepaymentCard from './RepaymentCard';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
-import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { getURLQueryParams } from 'common/utils/rzp-utils';
 import {
   fetchFunctionalWithdrawalConfigByMerchantID,
   fetchInstallments,
 } from 'merchant/reducers/capital/withdrawals';
-import {
-  CASH_ADVANCE_SECTIONS,
-  DEFAULT_COUNT,
-  SCHEDULED_REPAYMENT_LINKS,
-  COLLECTIONS_PRODUCT_TYPES,
-} from '../constants';
+import { CASH_ADVANCE_SECTIONS, SCHEDULED_REPAYMENT_LINKS } from '../constants';
 import ScheduledRepaymentsList from './ScheduledRepaymentList';
 import ListFilter from 'merchant/components/ListFilter';
 import moment from 'moment';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 @connect(
   (state) => ({
@@ -43,6 +38,7 @@ class RepaymentsSchedule extends Component {
   fetchInstallments = () => {
     this.props.fetchInstallments({
       owner_id: this.props.user.current,
+      product_type: getProductType(this.props.user),
       ...this.getInstallmentsRange(),
     });
   };
@@ -92,8 +88,17 @@ class RepaymentsSchedule extends Component {
   };
 
   render() {
+    const periods = [
+      { label: 'All', value: '' },
+      { label: 'Today', value: 'today' },
+      { label: 'Last 3 days', value: 'last-3-days' },
+      { label: 'Upcoming 7 days', value: 'upcoming-7-days' },
+      { label: 'Upcoming Repayments', value: 'upcoming-repayments' },
+    ];
+
     const installments = this.props.installments;
-    let { data: repayments = [], loading: isFetchingRepayments } = installments;
+    const { loading: isFetchingRepayments } = installments;
+    let { data: repayments = [] } = installments;
 
     if (!isFetchingRepayments) {
       const period = this.getInstallmentsRange(getURLQueryParams(location.search).period);
@@ -137,8 +142,10 @@ class RepaymentsSchedule extends Component {
                     <div className="form-group list-filter-item">
                       <label>Select Period</label>
                       <Field name="period" component="select" class="form-control input-sm">
-                        {periods.map(({ value, label }) => (
-                          <option value={value}>{label}</option>
+                        {periods.map(({ value, label }, idx) => (
+                          <option value={value} key={idx}>
+                            {label}
+                          </option>
                         ))}
                       </Field>
                     </div>
@@ -162,13 +169,5 @@ class RepaymentsSchedule extends Component {
     );
   }
 }
-
-const periods = [
-  { label: 'All', value: '' },
-  { label: 'Today', value: 'today' },
-  { label: 'Last 3 days', value: 'last-3-days' },
-  { label: 'Upcoming 7 days', value: 'upcoming-7-days' },
-  { label: 'Upcoming Repayments', value: 'upcoming-repayments' },
-];
 
 export default RepaymentsSchedule;

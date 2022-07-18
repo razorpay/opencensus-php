@@ -7,8 +7,13 @@ import {
   ERROR_STATES,
 } from '../Loans/constants';
 import * as LocalStorageService from 'common/utils/localStorage';
-import { COLLECTIONS_PRODUCT_TYPES } from '../CashAdvance/constants';
+import {
+  COLLECTIONS_PRODUCT_TYPES,
+  CASH_ADVANCE_PRODUCT_TYPES,
+  CASH_ON_CARD_RENDER_DATE_KEY,
+} from '../CashAdvance/constants';
 import api from '../Loans/LoansCollections/api';
+import store from 'merchant/store';
 
 export const calculatePercentageAmount = (rateInBPS, credit_amount) => {
   return ((parseInt(rateInBPS, 10) / 100) * parseInt(credit_amount, 10)) / 100;
@@ -245,4 +250,52 @@ export const disableFutureMonths = (date) => {
   const currentMonth = moment().month();
   const currentYear = moment().year();
   return date?.month() > currentMonth && date?.year() >= currentYear;
+};
+
+export const getProductType = (user) => {
+  return user.isFeatureEnabled('cash_on_card') ? CASH_ADVANCE_PRODUCT_TYPES.CASH_ON_CARD : '';
+};
+
+export function getCashOnCardRenderDateKey() {
+  const user = store.getState().session.user.id;
+  return `${CASH_ON_CARD_RENDER_DATE_KEY}--${user}`;
+}
+
+export function getCashOnCardRenderDate() {
+  return LocalStorageService.getItem(getCashOnCardRenderDateKey());
+}
+
+export const setCashOnCardRenderDate = (value) => {
+  if (!getCashOnCardRenderDate()) {
+    LocalStorageService.setItem(getCashOnCardRenderDateKey(), value);
+  }
+};
+
+export const getXCardsBaseURL = () => {
+  switch (window.APP_ENV) {
+    case 'stage':
+    case 'beta':
+    case 'dev':
+      return 'https://x.np.razorpay.in/cards';
+    case 'echo':
+      return 'https://x-echo.np.razorpay.in/cards';
+    case 'func':
+      return 'https://x-func.np.razorpay.in/cards';
+    case 'prod':
+    case 'production':
+      return 'https://x.razorpay.com/cards';
+    default:
+      return 'https://x.razorpay.com/cards';
+  }
+};
+
+export const isMerchantNewToCashOnCard = () => {
+  const renderDate = getCashOnCardRenderDate();
+  if (renderDate) {
+    const diff = moment().diff(moment(renderDate), 'days');
+    return diff <= 3;
+  } else {
+    setCashOnCardRenderDate(moment().format('YYYY-MM-DD'));
+    return true;
+  }
 };

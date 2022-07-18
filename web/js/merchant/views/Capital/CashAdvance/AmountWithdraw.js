@@ -15,6 +15,7 @@ import {
   fetchFunctionalWithdrawalConfigByMerchantID,
   fetchWithdrawals,
   fetchInstallments,
+  fetchCreditSummary,
 } from 'merchant/reducers/capital/withdrawals';
 import { fetchMerchantDetails } from 'merchant/reducers/capital/migrations';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -30,8 +31,10 @@ import {
   REPAYMENT_FREQUENCY_TYPES,
   ONHOLD_REASONS,
   REPAYMENT_TYPES,
+  CASH_ADVANCE_PRODUCT_TYPES,
 } from './constants';
 import CreditSummary from './CreditSummary';
+import FungibleCreditSummary from './FungibleCreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import MinWithdrawAmountModal from './MinWithdrawAmountModal';
@@ -47,6 +50,8 @@ import {
   checkifDateExpired,
   getDisabledReasons,
   getProductNames,
+  getProductType,
+  isMerchantNewToCashOnCard,
 } from 'merchant/views/Capital/utils';
 import { fetchRepayments } from 'merchant/reducers/capital/repayments';
 import Spinner from 'common/ui/Spinner';
@@ -65,6 +70,7 @@ import {
 } from './TrackEvents/trackEvents';
 import { getItem, setItem } from 'common/utils/localStorage';
 import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
+import DashboardRedirectModal from './DashboardRedirectModal';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -153,6 +159,7 @@ const checkIfFirstCashAdvanceLogin = () => {
     seedData: state.withdrawals.seedData,
     haveWithdrawals: state.withdrawals.list.data,
     merchantGromorEsignDetails: state.migrations.merchantGromorEsignDetails,
+    fungibleData: state.withdrawals.cash_on_card.data,
   }),
   {
     fetchWithdrawalConfiguration,
@@ -165,6 +172,7 @@ const checkIfFirstCashAdvanceLogin = () => {
     fetchInstallments,
     fetchRepayments,
     fetchMerchantDetails,
+    fetchCreditSummary,
   },
 )
 export default class AmountWithdraw extends React.Component {
@@ -222,20 +230,20 @@ export default class AmountWithdraw extends React.Component {
     } = this.props;
     const withdrawalInstance = new Withdrawal();
     const repaymentInstance = new Repayments();
+    const isFirstCashAdvanceLogin =
+      repayment_frequency &&
+      (this.isRepaymentFrequencyBimonthly() || this.isRepaymentFrequencyMonthly()) &&
+      checkIfFirstCashAdvanceLogin();
 
     // Setting localStorage key for repayment tooltip
-    if (
-      repayment_frequency &&
-      repayment_frequency === REPAYMENT_FREQUENCY_TYPES.BIMONTHLY &&
-      checkIfFirstCashAdvanceLogin()
-    ) {
+    if (isFirstCashAdvanceLogin) {
       setItem(CASH_ADVANCE_FIRST_LOGIN_KEY, false);
 
       document.querySelector('body').addEventListener('click', this.hideRepaymentTooltip);
     }
 
-    // fetchSeedData();
     this.prefillData();
+    this.fetchCreditSummaryCall();
     const isApplicationAtHold =
       status === 'ONHOLD' &&
       reason !== ONHOLD_REASONS.CLD_RISK_POLICY &&
@@ -330,11 +338,14 @@ export default class AmountWithdraw extends React.Component {
 
   hideRepaymentTooltip = () => this.handleRepaymentInfoTooltipHover(false);
 
+  productType = getProductType(this.props.user);
+
   fetchInstallment = (withdrawalInstance) => {
     return withdrawalInstance.fetchInstallments({
       owner_id: this.props.user.current,
       from: moment().startOf('day').unix(),
       to: moment().add(2, 'days').unix(),
+      product_type: this.productType,
     });
   };
 
@@ -386,7 +397,22 @@ export default class AmountWithdraw extends React.Component {
       order_by: 'CREATED_AT',
       order_direction: 'desc',
       limit: 20,
+      product_type: this.productType,
     });
+  };
+
+  fetchCreditSummaryCall = () => {
+    if (this.isFungibleLimitProductType()) {
+      const {
+        fetchCreditSummary,
+        user: { current: merchant_id },
+      } = this.props;
+
+      fetchCreditSummary({
+        product_type: CASH_ADVANCE_PRODUCT_TYPES.CASH_ON_CARD,
+        merchant_id,
+      });
+    }
   };
 
   isOnlyNumbers = (value) => {
@@ -463,7 +489,7 @@ export default class AmountWithdraw extends React.Component {
 
   getRepayableAmount = () => {
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const { interest } = withdrawalConfigurationDetails.configuration;
+    const { interest, auto_collection } = withdrawalConfigurationDetails.configuration;
     const startDay = moment();
 
     const selectedDate = this.getDueDate().endOf('day');
@@ -480,6 +506,7 @@ export default class AmountWithdraw extends React.Component {
       diffDays,
       roi,
       isInterestTypeReducing,
+      autoCollection: auto_collection,
     };
 
     return amount;
@@ -669,6 +696,7 @@ export default class AmountWithdraw extends React.Component {
         response.data.withdrawal.status !== STATUSES.REJECTED &&
         response.data.withdrawal.status !== STATUSES.FAILED
       ) {
+        this.fetchCreditSummaryCall();
         trackWithdrawStatus({
           amount: withdrawalAmount,
           date: moment(selectedDueDate).format('DD-MM-YYYY'),
@@ -678,10 +706,6 @@ export default class AmountWithdraw extends React.Component {
           currentView: VIEWS.WITHDRAW_SUCCESS,
           showRepaymentDetailsBreakup: false,
         });
-        this.props.fetchWithdrawalConfiguration({
-          id: withdrawalConfigurationDetails.id,
-        });
-        this.fetchWithdrawals();
         this.props.showNotification({
           type: 'success',
           message: `Withdrawal of ₹${withdrawalAmount} requested.`,
@@ -844,8 +868,16 @@ export default class AmountWithdraw extends React.Component {
     return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.BIMONTHLY;
   };
 
+  isRepaymentFrequencyMonthly = () => {
+    return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.MONTHLY;
+  };
+
   isRepaymentFrequencyCustom = () => {
     return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.CUSTOM;
+  };
+
+  isFungibleLimitProductType = () => {
+    return this.props.user.isFeatureEnabled('cash_on_card');
   };
 
   getDueDate = () => {
@@ -866,6 +898,11 @@ export default class AmountWithdraw extends React.Component {
         } else {
           return moment().add(1, 'month').set('date', repayment_date1).endOf('day');
         }
+      }
+      case REPAYMENT_FREQUENCY_TYPES.MONTHLY: {
+        const dueDate = this.props?.withdrawalConfigurationDetails?.data?.configuration
+          ?.repayment_date;
+        return moment.unix(dueDate);
       }
       default:
         return null;
@@ -907,6 +944,9 @@ export default class AmountWithdraw extends React.Component {
     const { withdrawalErrorConfig = {} } = this.state;
     const showReasonCTA =
       !canWithdraw && withdrawalErrorConfig.showReasonCTA && !isWithdrawalDisabled;
+    const withdrawNowClass = `btn btn-primary withdraw-now${
+      this.state.showRepaymentInfoTooltip ? ' animation-wrapper' : ''
+    }`;
 
     return (
       /*eslint-disable */
@@ -914,7 +954,7 @@ export default class AmountWithdraw extends React.Component {
         {!this.state.isConfirmingWithdraw ? (
           <React.Fragment>
             <AsyncBtn.Primary
-              class="btn btn-primary withdraw-now"
+              className={withdrawNowClass}
               disabled={!canWithdraw}
               onClick={this.confirmWithdraw}
             >
@@ -1200,6 +1240,82 @@ export default class AmountWithdraw extends React.Component {
     return ' will be the repayable amount';
   };
 
+  getRepaymentTooltipBody = () => {
+    if (this.isFungibleLimitProductType()) {
+      return (
+        <div className="flex repayment-info active">
+          <div className="flex repayment-info--detail first-part">
+            <div className="date-label">
+              1st
+              <span className="icon i-arrow-forward" />
+              31st
+            </div>
+            <div className="text-label">of every month</div>
+          </div>
+          <div className="flex repayment-info--detail">
+            <div className="date-label">21st</div>
+            <div className="text-label">of the next month</div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <>
+        <div className={`flex repayment-info ${this.isDueDate20() ? 'active' : ''}`}>
+          <div className="side-border" />
+          <div className="flex repayment-info--detail first-part">
+            <div className="date-label">
+              1st
+              <span className="icon i-arrow-forward" />
+              15th
+            </div>
+            <div className="text-label">of every month</div>
+          </div>
+          <div className="flex repayment-info--detail">
+            <div className="date-label">20th</div>
+            <div className="text-label">of the same month</div>
+          </div>
+        </div>
+        <div className={`flex repayment-info ${!this.isDueDate20() ? 'active' : ''}`}>
+          <div className="side-border" />
+          <div className="flex repayment-info--detail first-part">
+            <div className="date-label">
+              16th
+              <span className="icon i-arrow-forward" />
+              last day
+            </div>
+            <div className="text-label">of every month</div>
+          </div>
+          <div className="flex repayment-info--detail">
+            <div className="date-label">5th</div>
+            <div className="text-label">of the next month</div>
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  getRepaymentTooltipSection = () => {
+    return (
+      <Popover
+        align="right"
+        theme="dark"
+        parentQuerySelector=".withdrawals__top-summary"
+        persistent={this.state.showRepaymentInfoTooltip}
+      >
+        <PopoverBody>
+          <div className="repayment-info-tooltip-container flex">
+            <div className="flex top-label-container">
+              <div className="top-label">Withdrawal Period</div>
+              <div className="top-label">Repayment Dates</div>
+            </div>
+            {this.getRepaymentTooltipBody()}
+          </div>
+        </PopoverBody>
+      </Popover>
+    );
+  };
+
   withdrawableSection = () => {
     const {
       withdrawalAmount,
@@ -1328,13 +1444,19 @@ export default class AmountWithdraw extends React.Component {
                   </div>
                 )}
               </div>
-              <div class="full-width no-margin" style={{ position: 'absolute' }}>
-                {this.getWithdrawalForm(withdrawalAmount)}
+              <div className="full-width no-margin" style={{ position: 'absolute' }}>
+                {this.getWithdrawalForm(withdrawalAmount, repayableAmount)}
               </div>
               {hasDueDateAndWithdrawnAmount && !withdrawalInputHasError && (
-                <div class="repayable-amount-hint">
-                  <strong>{repayableAmount}</strong>
-                  <span class="repayable-helper-text">{this.getRepaymentHelperText()}</span>
+                <div className="repayable-amount-hint">
+                  {!this.isFungibleLimitProductType() ? (
+                    <>
+                      <strong>{repayableAmount}</strong>
+                      <span className="repayable-helper-text">{this.getRepaymentHelperText()}</span>
+                    </>
+                  ) : (
+                    ''
+                  )}
                   {user.isAutomatedLOCEligible &&
                     !automated_loc &&
                     this.isRepaymentFrequencyCustom() && (
@@ -1478,41 +1600,63 @@ export default class AmountWithdraw extends React.Component {
     return this.getDueDate().format('D') === '20';
   };
 
-  getWithdrawalForm(withdrawalAmount) {
+  getWithdrawalForm(withdrawalAmount, repayableAmount) {
     const {
       withdrawalConfigurationDetails: {
         data: { configuration: { end_day_limit = null } = {} } = {},
       } = {},
+      fungibleData,
     } = this.props;
     const { selectedDueDate } = this.state;
     const dateToShow = selectedDueDate ? moment(selectedDueDate) : computeMaxDueDate(end_day_limit);
+    const updatedCardLimit =
+      (fungibleData?.cards?.available_balance || 0) - Number(withdrawalAmount) * 100;
 
     return (
       <div className="flex withdrawal-form-container">
-        <Input.Group
-          label="How much do you need?"
-          className={`InputGroup--inline Input--vTop no-margin ${
-            this.isRepaymentFrequencyBimonthly() ? 'less-right-space' : ''
-          }`}
-        >
-          <div className="Input-content">
-            <Input
-              addonBefore="₹"
-              type="number"
-              addonAfter={<small>.00</small>}
-              name="amount"
-              onBlur={this.handleBlur}
-              value={withdrawalAmount}
-              onChange={this.handleWithdrawalAmountChange}
-            />
-          </div>
-          {this.state.withdraw_errors.length > 0 && this.state.isTouched && (
-            <div class="text-danger error-message">
-              {this.state.withdrawalAmount && this.state.withdraw_errors[0]}
+        <div className="flex-col">
+          <Input.Group
+            label="How much do you need?"
+            className={`InputGroup--inline Input--vTop no-margin${
+              this.isRepaymentFrequencyBimonthly() ? ' less-right-space' : ''
+            }`}
+          >
+            <div className="Input-content">
+              <Input
+                addonBefore="₹"
+                type="number"
+                addonAfter={<small>.00</small>}
+                name="amount"
+                onBlur={this.handleBlur}
+                value={withdrawalAmount}
+                onChange={this.handleWithdrawalAmountChange}
+              />
+            </div>
+            {this.state?.withdraw_errors?.length > 0 && this.state.isTouched && (
+              <div className="text-danger error-message">
+                {this.state.withdrawalAmount && this.state.withdraw_errors?.[0]}
+              </div>
+            )}
+          </Input.Group>
+          {this.state.isConfirmingWithdraw && this.isFungibleLimitProductType() && (
+            <div className="flex">
+              <img
+                className="overview-card-icon"
+                src={`${window.cdnBaseUrl}/static/assets/capital/cash_on_card/card_icon.svg`}
+                alt="card icon"
+              />
+              <div className="card-limit-text">
+                Updated card balance will be
+                <Amount
+                  className="updated-card-balance-text"
+                  value={updatedCardLimit}
+                  parentQuerySelector=".withdrawals__top-summary"
+                />
+              </div>
             </div>
           )}
-        </Input.Group>
-        {this.isRepaymentFrequencyCustom() && (
+        </div>
+        {this.isRepaymentFrequencyCustom() && !this.isFungibleLimitProductType() && (
           <Input.ToCalendar
             required={false}
             className="Input--vTop no-margin"
@@ -1553,70 +1697,46 @@ export default class AmountWithdraw extends React.Component {
           />
         )}
         <div className="withdrawal-cta-container">{this.getWithdrawCTA()}</div>
-        {this.isRepaymentFrequencyBimonthly() && (
+        {(this.isRepaymentFrequencyBimonthly() || this.isFungibleLimitProductType()) && (
           <div className="repayment-info-container flex">
             <div className="side-border" />
-            <img
-              src="/dist/css/assets/capital/calendar2.svg"
-              className="calendar-icon"
-              alt="calendar"
-            />
-            <div
-              className="info-container flex"
-              onMouseOver={() => this.handleRepaymentInfoTooltipHover(true)}
-              onMouseLeave={() => this.handleRepaymentInfoTooltipHover(false)}
-            >
-              <div className="top-part flex">
-                <div className="repayment-label">Repay by</div>
-                <span className="icon i-info-outline info-icon" />
-              </div>
-              <div className="bottom-part">{this.getDueDate()?.format('DD MMMM, YYYY')}</div>
-              <Popover
-                align="right"
-                theme="dark"
-                parentQuerySelector=".withdrawals__top-summary"
-                persistent={this.state.showRepaymentInfoTooltip}
-              >
-                <PopoverBody>
-                  <div className="repayment-info-tooltip-container flex">
-                    <div className="flex top-label-container">
-                      <div className="top-label">Withdrawal Period</div>
-                      <div className="top-label">Repayment Dates</div>
+            <div className="flex-col">
+              {this.isFungibleLimitProductType() ? (
+                <div className="flex repay-amount-wrapper">
+                  <img
+                    src={`${window.cdnBaseUrl}/static/assets/capital/cash_on_card/rupee_icon.svg`}
+                    className="amount-icon"
+                    alt="amount"
+                  />
+                  <div className="repay-info-container flex">
+                    <div className="top-part flex">
+                      <div className="repayment-label">Repayable amount</div>
                     </div>
-                    <div className={`flex repayment-info ${this.isDueDate20() ? 'active' : ''}`}>
-                      <div className="side-border" />
-                      <div className="flex repayment-info--detail first-part">
-                        <div className="date-label">
-                          1st
-                          <span className="icon i-arrow-forward" />
-                          15th
-                        </div>
-                        <div className="text-label">of every month</div>
-                      </div>
-                      <div className="flex repayment-info--detail">
-                        <div className="date-label">20th</div>
-                        <div className="text-label">of the same month</div>
-                      </div>
-                    </div>
-
-                    <div className={`flex repayment-info ${!this.isDueDate20() ? 'active' : ''}`}>
-                      <div className="side-border" />
-                      <div className="flex repayment-info--detail first-part">
-                        <div className="date-label">
-                          16th
-                          <span className="icon i-arrow-forward" />
-                          last day
-                        </div>
-                        <div className="text-label">of every month</div>
-                      </div>
-                      <div className="flex repayment-info--detail">
-                        <div className="date-label">5th</div>
-                        <div className="text-label">of the next month</div>
-                      </div>
-                    </div>
+                    <div className="bottom-part">{repayableAmount}</div>
                   </div>
-                </PopoverBody>
-              </Popover>
+                </div>
+              ) : null}
+              <div className="flex">
+                <img
+                  src="/dist/css/assets/capital/calendar2.svg"
+                  className="calendar-icon"
+                  alt="calendar"
+                />
+                <div
+                  className="info-container flex"
+                  onMouseOver={() => this.handleRepaymentInfoTooltipHover(true)}
+                  onMouseLeave={() => this.handleRepaymentInfoTooltipHover(false)}
+                >
+                  <div className="top-part flex">
+                    <div className="repayment-label">
+                      {this.isFungibleLimitProductType() ? 'Repay all dues by' : 'Repay by'}
+                    </div>
+                    <span className="icon i-info-outline info-icon" />
+                  </div>
+                  <div className="bottom-part">{this.getDueDate()?.format('DD MMMM, YYYY')}</div>
+                  {this.getRepaymentTooltipSection()}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1624,21 +1744,47 @@ export default class AmountWithdraw extends React.Component {
     );
   }
 
+  refreshWithdrawView = (fromWhere = '') => {
+    this.gaEventDispatcher({
+      eventAction: `Withdraw | ${fromWhere}`,
+    });
+    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
+    this.props.fetchWithdrawalConfiguration({
+      id: withdrawalConfigurationDetails.id,
+    });
+    this.fetchWithdrawals();
+  };
+
+  openRedirectModal = () => {
+    this.props.openModal({
+      component: <DashboardRedirectModal closeModal={this.props.closeModal} />,
+      size: 'large',
+    });
+  };
+
+  handleRedirectionClick = () => {
+    this.openRedirectModal();
+    this.refreshWithdrawView();
+  };
+
   withdrawalSuccessView = () => {
-    const { selectedDueDate, withdrawalAmount } = this.state;
+    const { withdrawalAmount } = this.state;
     const {
       user,
       withdrawalConfigurationDetails: { data: { automated_loc } } = {
         data: { automated_loc: false },
       },
+      fungibleData,
     } = this.props;
     const { interest, principle } = this.getRepayableAmount();
     const repayableAmount = parseFloat((interest + principle) * 100).toFixed(2);
+    const updatedCardLimit = fungibleData?.cards?.available_balance || 0;
+    const selectedDueDate = this.getDueDate();
 
     return (
       <div className="withdrawals__action-container card">
-        <div class="close-cta">
-          <Button.Transparent onClick={() => this.toggleWithdrawView('close')}>
+        <div className="close-cta">
+          <Button.Transparent onClick={() => this.refreshWithdrawView('close')}>
             <i class="i i-close" />
           </Button.Transparent>
         </div>
@@ -1648,23 +1794,45 @@ export default class AmountWithdraw extends React.Component {
             <strong>Withdrawal Request Successful!</strong>
           </h3>
         </div>
-        <p className="disbursal-details text--secondary">
-          The money will be transferred to your bank account in a few hours. <br />
-          The withdrawal request has been successfully sent to bank.
-        </p>
-        <div className="flex withdrawal-info">
-          <div class="withdrawal__amount">
-            <p className="text--secondary no-margin">Withdrawn Amount</p>
-            <span className="text--secondary">
-              <strong>
-                <Amount
-                  value={`${withdrawalAmount}00`}
-                  parentQuerySelector=".withdrawals__top-summary"
-                />
-              </strong>
-            </span>
-          </div>
-          <div class="withdrawal__date">
+        {this.isFungibleLimitProductType() ? (
+          <p className="disbursal-details text--secondary">
+            <strong>
+              <Amount
+                value={`${withdrawalAmount}00`}
+                parentQuerySelector=".withdrawals__top-summary"
+              />
+            </strong>{' '}
+            will be credited to your bank account within a minute
+          </p>
+        ) : (
+          <p className="disbursal-details text--secondary">
+            The money will be transferred to your bank account in a few hours. <br />
+            The withdrawal request has been successfully sent to bank.
+          </p>
+        )}
+        <div
+          className={`flex withdrawal-info${
+            !this.isFungibleLimitProductType() ? ' top-border' : ''
+          }`}
+        >
+          {!this.isFungibleLimitProductType() && (
+            <div className="withdrawal__amount">
+              <p className="text--secondary no-margin">Withdrawn Amount</p>
+              <span className="text--secondary">
+                <strong>
+                  <Amount
+                    value={`${withdrawalAmount}00`}
+                    parentQuerySelector=".withdrawals__top-summary"
+                  />
+                </strong>
+              </span>
+            </div>
+          )}
+          <div
+            className={`withdrawal__date ${
+              this.isFungibleLimitProductType() ? ' fungible_date' : ''
+            }`}
+          >
             <p className="text--secondary no-margin">Due Date</p>
             <span className="text--secondary">
               <strong>{moment(selectedDueDate).format('LL')}</strong>
@@ -1678,11 +1846,58 @@ export default class AmountWithdraw extends React.Component {
               </strong>
             </span>
           </div>
+          {this.isFungibleLimitProductType() && (
+            <div className="flex">
+              <div className="vertical-splitter" />
+              <div className="withdrawal__limit">
+                <div className="tooltip-wrapper">
+                  <p className="text--secondary no-margin">
+                    Updated Card Balance <span className="icon i-info-outline info-icon" />
+                  </p>
+                  <Popover
+                    className="card-balance-popover"
+                    align="top"
+                    theme="dark"
+                    parentQuerySelector=".withdrawals__top-summary"
+                  >
+                    <PopoverBody>
+                      <div className="card-balance-text">
+                        Your card balance decreases on withdrawing funds from Cash Advance
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </div>
+                <span className="text--secondary">
+                  <strong>
+                    <Amount
+                      value={updatedCardLimit}
+                      parentQuerySelector=".withdrawals__top-summary"
+                    />
+                    <div
+                      className="view-details-link"
+                      onClick={() => {
+                        this.handleRedirectionClick();
+                      }}
+                    >
+                      <Button.Transparent>Card Limit Details</Button.Transparent>
+                      <img
+                        className="redirect-icon"
+                        src={`${window.cdnBaseUrl}/static/assets/capital/cash_on_card/redirect.svg`}
+                        alt="redirect icon"
+                      />
+                    </div>
+                  </strong>
+                </span>
+              </div>
+            </div>
+          )}
           <div class="withdrawal__ctas">
-            <Button.Primary onClick={() => this.toggleWithdrawView('Done')}>Done</Button.Primary>
-            <Button.Transparent onClick={() => this.toggleWithdrawView('Another Withdrawal')}>
-              Another Withdrawal
-            </Button.Transparent>
+            <Button.Primary onClick={() => this.refreshWithdrawView('Done')}>Done</Button.Primary>
+            {!this.isFungibleLimitProductType() && (
+              <Button.Transparent onClick={() => this.refreshWithdrawView('Another Withdrawal')}>
+                Another Withdrawal
+              </Button.Transparent>
+            )}
           </div>
         </div>
         {user.isAutomatedLOCEligible && (
@@ -1880,7 +2095,16 @@ export default class AmountWithdraw extends React.Component {
         </div>
         <div className="withdrawals__top-summary-wrapper">
           {this.getTopSection(currentView)}
-          <div className="credit_details_wrapper card">{this.getRightSection(currentView)}</div>
+          {this.isFungibleLimitProductType() ? (
+            <FungibleCreditSummary
+              openModal={this.props.openModal}
+              closeModal={this.props.closeModal}
+              data={this.props.fungibleData}
+              isMerchantNew={isMerchantNewToCashOnCard()}
+            />
+          ) : (
+            <div className="credit_details_wrapper card">{this.getRightSection(currentView)}</div>
+          )}
         </div>
       </div>
     );

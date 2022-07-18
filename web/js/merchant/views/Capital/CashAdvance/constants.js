@@ -322,3 +322,9 @@ export const HOTJAR_TRIGGER = {
   CASH_ADVANCE_FIRST_WITHDRAWAL: 'Cash_Advance_Withdrawal',
   CASH_ADVANCE_FIRST_REPAYMENT: 'Cash_Advance_Repayment',
 };
+
+export const CASH_ADVANCE_PRODUCT_TYPES = {
+  CASH_ON_CARD: 'CASH_ON_CARD',
+};
+
+export const CASH_ON_CARD_RENDER_DATE_KEY = 'CASH_ON_CARD_DATE_KEY';

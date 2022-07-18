@@ -11,6 +11,7 @@ import Amount from 'common/ui/Amount';
 import { getCurrentBalance } from '../utils';
 import { handleRepayment, updateRepaymentData } from '../api';
 import { EVENT_TYPES, trackRepayNowCtaClickOnHoldTootip } from '../analytics';
+import { getProductType } from 'merchant/views/Capital/utils';
 
 const LocRepaymentTooltip = (props) => {
   const [isLoading, setLoading] = useState(false);
@@ -33,6 +34,7 @@ const LocRepaymentTooltip = (props) => {
     cash_advance_limit: Number(withdrawalConfiguration?.data?.configuration?.internal_credit_limit),
     current_balance: getCurrentBalance(withdrawalConfiguration),
   };
+  const productType = getProductType(user);
 
   useEffect(() => {
     if (withdrawalConfiguration?.data) {
@@ -51,6 +53,7 @@ const LocRepaymentTooltip = (props) => {
         owner_id: user.current,
         from: moment().startOf('day').unix(),
         to: moment().add(30, 'days').unix(),
+        product_type: productType,
       });
       setLoading(false);
     };
@@ -68,6 +71,7 @@ const LocRepaymentTooltip = (props) => {
         owner_id: user.current,
         from: moment().startOf('day').unix(),
         to: moment().add(30, 'days').unix(),
+        product_type: productType,
       });
       setRepaymentInProgress(false);
     });
