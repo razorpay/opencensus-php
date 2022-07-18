@@ -14,7 +14,7 @@ class EntityRoleScope
     // Unused, shows the structure of entityRoles array stored
     // in ConfigKey::TENANT_ROLES_ENTITY in Cache.
     protected static $entityRolesMap = [
-        Entity::PAYMENT => [TenantRoles::ENTITY_PAYMENTS],
+        Entity::PAYMENT => [TenantRoles::ENTITY_PAYMENTS, TenantRoles::ENTITY_PAYMENTS_EXTERNAL],
         Entity::REFUND  => [TenantRoles::ENTITY_PAYMENTS],
     ];
 

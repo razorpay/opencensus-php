@@ -13,9 +13,10 @@ class RouteRoleScope
     // Unused, shows the structure of routeRoles array stored
     // in ConfigKey::TENANT_ROLES_ROUTES in Cache.
     protected static $routeRolesMap = [
-        'payment_refund'  => [TenantRoles::ENTITY_PAYMENTS],
-        'payment_capture' => [TenantRoles::ENTITY_PAYMENTS],
-        'payment_verify'  => [TenantRoles::ENTITY_PAYMENTS],
+        'payment_refund'     => [TenantRoles::ENTITY_PAYMENTS],
+        'payment_capture'    => [TenantRoles::ENTITY_PAYMENTS],
+        'payment_verify'     => [TenantRoles::ENTITY_PAYMENTS],
+        'payment_get_status' => [TenantRoles::ENTITY_PAYMENTS, TenantRoles::ENTITY_PAYMENTS_EXTERNAL],
     ];
 
     public static function getRoles(string $routeName)

@@ -1208,6 +1208,18 @@ return [
         ]
     ],
 
+    'testAdminAllEntitiesApiWithPaymentsExternalTenantRole' => [
+        'request' => [
+            'url'       => '/admin/entities/all',
+            'method'    => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entities' => []
+            ]
+        ]
+    ],
+
     //
     // Additional request content and assertions are done in test method
     // for different cases.

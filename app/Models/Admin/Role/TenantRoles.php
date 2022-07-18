@@ -10,6 +10,7 @@ namespace RZP\Models\Admin\Role;
  */
 class TenantRoles
 {
-    const ENTITY_PAYMENTS = 'tenant:payments';
-    const ENTITY_BANKING = 'tenant:banking';
+    const ENTITY_PAYMENTS          = 'tenant:payments';
+    const ENTITY_BANKING           = 'tenant:banking';
+    const ENTITY_PAYMENTS_EXTERNAL = 'tenant:payments_external';
 }
