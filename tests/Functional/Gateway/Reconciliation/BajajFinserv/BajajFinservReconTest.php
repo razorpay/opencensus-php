@@ -57,13 +57,13 @@ class BajajFinservReconTest extends TestCase
         $card = $this->createCardEntity();
 
         // Payment marked as success in db and in recon
-        $payment_success = $this->createPaymentEntities(1250001, $card);
+        $payment_success = $this->createPaymentEntities(1250021, $card);
 
         // Payment marked as failure in db, but moved to auth from recon
-        $payment_late_auth = $this->createPaymentEntities(500000, $card, 'failed');
+        $payment_late_auth = $this->createPaymentEntities(500030, $card, 'failed');
 
          // Payment marked as failure in db and missing in recon file
-        $payment_failure = $this->createPaymentEntities(500000, $card, 'failed');
+        $payment_failure = $this->createPaymentEntities(500040, $card, 'failed');
 
         $this->mockReconContentFunction(function (& $content) use ($payment_failure)
         {
@@ -99,6 +99,20 @@ class BajajFinservReconTest extends TestCase
             ],
             $batch
         );
+
+        //asserting gateway fee and the gst
+         $payment = $this->getEntityById('payment', $payment_success['id'], true);
+
+        $transactionId = $payment['transaction_id'];
+
+        $transaction = $this->getEntityById('transaction', $transactionId, true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertEquals('132100',$transaction['gateway_fee']);
+
+        $this->assertEquals('20151',$transaction['gateway_service_tax']);
+
     }
 
     public function testRefundRecon()

@@ -359,7 +359,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'disbursement_date'                 => '23-Mar-20',
                 'amount_financed_rs'                => (string)ceil($row['payment']['amount'] / 100),
                 'scheme_desc'                       => 141137,
-                'interest_subsidy_including_gst_rs' => 1321,
+                'interest_subsidy_rs_including_gst' => 1321,
                 'interest_subsidy_gst'              => '0.0826',
                 'net_disb_amount_rs'                => 14669,
                 'utr_no'                            => 'N083201101515575',

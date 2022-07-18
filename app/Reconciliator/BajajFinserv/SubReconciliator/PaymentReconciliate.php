@@ -18,6 +18,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     const COLUMN_PAYMENT_AMOUNT = 'amount_financed_rs';
 
+    const BANK_FEE_AND_GST      = 'interest_subsidy_rs_including_gst';
+
     protected function getPaymentId(array $row)
     {
         return $row[self::COLUMN_PAYMENT_ID] ?? null;
@@ -43,20 +45,36 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         return $row[self::TRANSACTION_DATE] ?? null;
     }
 
+    protected function getGatewayFee($row)
+    {
+        // Convert fee into basic unit of currency. (ex: paise)
+        return floatval($row[self::BANK_FEE_AND_GST]) * 100 ?? null;
+
+    }
+
+    protected function getGatewayServiceTax($row)
+    {
+        $gatewayFeePlusGst = floatval($row[self::BANK_FEE_AND_GST]) * 100;
+
+        $feeWithoutGst =   ($gatewayFeePlusGst*100)/118;
+
+        $gst = $gatewayFeePlusGst - $feeWithoutGst;
+        // Convert fee into basic unit of currency. (ex: paise)
+        return round($gst);
+    }
+
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
         $convertCurrency = $this->payment->getConvertCurrency();
 
         $paymentAmount = ($convertCurrency === true) ? $this->payment->getBaseAmount() : $this->payment->getGatewayAmount();
 
-        // Ceil the amount
-        // BFL sends us the amount in Rs always.
-        // Ex: If amount is Rs 12002.04, BFL sends us Rs 12003
-        $paymentAmount = (int)(ceil($paymentAmount / 100) * 100);
-
+        // we have to ignore the amount difference of less than one rupees in the transaction amount
         $reconAmount = $this->getReconPaymentAmount($row);
 
-        if ($paymentAmount !== $reconAmount)
+        $amountDifference = abs($reconAmount - $paymentAmount);
+
+        if ($amountDifference > 99)
         {
             $this->messenger->raiseReconAlert(
                 [
