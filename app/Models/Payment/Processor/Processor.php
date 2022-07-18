@@ -637,18 +637,6 @@ class Processor
                 }
             }
 
-            if (($iin->isAmex() === true) or
-                ($iin->isDiners() === true))
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::DINERS_OR_AMEX_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                if ($result !== 'on')
-                {
-                    return false;
-                }
-            }
-
-
             $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
             $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
             $isIVR = (in_array(Card\IIN\Flow::IVR, $enabledFlows, true) === true);
@@ -660,21 +648,7 @@ class Processor
             }
             else
             {
-                if ((($isIVR && $merchant->isIvrEnabled() === true) || ($isOTP && $merchant->isAxisExpressPayEnabled() === true)) &&
-                    ($merchant->isFeatureEnabled('otp_auth_default') === true))
-                {
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                }
-                elseif (($isRupay === true) || (($isHeadless === true) &&
-                        ($merchant->isFeatureEnabled('otp_auth_default') === true) &&
-                        ($merchant->isHeadlessEnabled() === true)))
-                {
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::HEADLESS_S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                }
-                else
-                {
-                    $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-                }
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::S2S_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
             }
 
             return ($result === 'on');
