@@ -174,7 +174,7 @@ class Service extends Base\Service
 
         $afterId = $input['afterId'] ?? null;
 
-        $mock = json_decode($input['mock'] ?? false);
+        $mock = $input['mock'] ?? false;
 
         return $this->core->dispatchPartnerWeeklyActivationSummaryMails($limit, $afterId, $mock);
     }
