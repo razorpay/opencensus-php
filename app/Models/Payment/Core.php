@@ -450,16 +450,13 @@ class Core extends Base\Core
 
         $title = sprintf("Complete your order on %s", $merchant->getBillingLabel() ?? $merchant->getName());
 
-        $createUpiLink = $this->app->razorx->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::PL_MISSED_ORDER_UPI_LINK, $this->mode);
-
         $data = [
             'order_id' => $payment->order->getId(),
-            'upi_link' => $createUpiLink == "on",
             'amount' => $payment->order->getAmount(),
             'currency' => $payment->order->getCurrency(),
             'expire_by' => $expiryAt,
             'description' => "Retry your failed payment now",
-            'reference_id' => $payment->order->getReceipt(),
+            'reference_id' => $payment->order->getId(),
             'customer' => [
                 "contact" => $payment->getContact(),
                 "email" => $payment->getEmail(),
@@ -523,7 +520,7 @@ class Core extends Base\Core
                 isset($paymentFailedConfig['retry_payment_links']['send_after']) === true)) {
             $createPlSeconds = $paymentFailedConfig['retry_payment_links']['send_after'];
         } else
-            return false;
+            $createPlSeconds = 30;
 
         $data = [
             Constants::NAMESPACE    => $namespace,

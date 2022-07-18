@@ -235,9 +235,6 @@ final class RazorxTreatment
 
     const QR_ON_EMAIL = 'qr_on_email';
 
-    // experiment for sending UPI links to customers while created missed order payment links
-    const PL_MISSED_ORDER_UPI_LINK = 'pl_missed_order_upi_link';
-
     // experiment for controlling delay seconds for missed order payment link creation
     const PL_MO_SEND_AFTER_SECONDS = 'pl_mo_send_after_seconds';
 
