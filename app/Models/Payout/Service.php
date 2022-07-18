@@ -83,6 +83,11 @@ class Service extends Base\Service
      */
     protected $appframeworkCore;
 
+    /**
+     * @var PayoutService\StatusReasonMap
+     */
+    protected $payoutStatusReasonMapApiServiceClient;
+
     protected $slackAppService;
 
     protected $workflowMigration;
@@ -139,6 +144,8 @@ class Service extends Base\Service
         $this->payoutServiceOnHoldCronClient = $this->app[PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON];
 
         $this->payoutServiceOnHoldSLAUpdateClient = $this->app[PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE];
+
+        $this->payoutStatusReasonMapApiServiceClient = $this->app[PayoutService\StatusReasonMap::PAYOUT_SERVICE_STATUS_REASON_MAP];
 
         $this->payoutDetailsCore = new PayoutDetails\Core();
     }
@@ -2748,6 +2755,16 @@ class Service extends Base\Service
 
     public function getPayoutStatusReasonMap(): array
     {
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::STATUS_REASON_MAP_VIA_PS,
+            $this->mode);
+
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) and strtolower($variant) === 'on')
+        {
+            return $this->payoutStatusReasonMapApiServiceClient->GetPayoutStatusReasonMapViaMicroService();
+        }
+
         return StatusReasonMap::$payoutStatusToReasonMap;
     }
 

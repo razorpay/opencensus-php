@@ -695,6 +695,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceGet();
 
+        $this->registerPayoutServiceStatusReasonMap();
+
         $this->registerFTSChannelNotification();
 
         $this->registerSettlementsPayout();
@@ -1600,6 +1602,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Get::PAYOUT_SERVICE_GET, function($app)
         {
             return new PayoutService\Get($app);
+        });
+    }
+
+    protected function registerPayoutServiceStatusReasonMap()
+    {
+        $this->app->singleton(PayoutService\StatusReasonMap::PAYOUT_SERVICE_STATUS_REASON_MAP, function($app)
+        {
+            return new PayoutService\StatusReasonMap($app);
         });
     }
 

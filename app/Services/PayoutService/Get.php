@@ -46,7 +46,7 @@ class Get extends Base
         return $response;
     }
 
-    
+
     /**
      * @param array $input
      * @param string $merchantId
@@ -69,5 +69,4 @@ class Get extends Base
 
         return $response;
     }
-
 }
