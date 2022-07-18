@@ -538,6 +538,7 @@ class Gateway
         self::HITACHI,
         self::NETBANKING_SBI,
         self::HDFC_DEBIT_EMI,
+        self::FULCRUM,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
         //If you are seeing this after Sep'18, Please report to gateway payments team
@@ -1826,6 +1827,7 @@ class Gateway
             Network::VISA,
         ],
         self::FULCRUM => [
+            Network::MC,
             Network::VISA,
         ],
         self::HITACHI => [

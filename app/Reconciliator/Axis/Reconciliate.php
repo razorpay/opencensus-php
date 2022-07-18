@@ -12,8 +12,8 @@ class Reconciliate extends Base\Reconciliate
     const ACCEPTED_SHEET_NAMES = [
         'Refund', 'REFUND', 'refund', 'Refunds', 'refunds', 'REFUNDS',
         'Sale', 'SALE', 'sale', 'Sales', 'sales', 'SALES',
-        'Visa Sale', 'Master Sale',
-        'Visa Refund', 'Master Refund'
+        'Visa Sale', 'Master Sale', 'DI Sale',
+        'Visa Refund', 'Master Refund', 'DI Refund',
     ];
 
     //

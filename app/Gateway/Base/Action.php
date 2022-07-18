@@ -30,6 +30,7 @@ class Action
     const PRE_DEBIT        = 'pre_debit';
     const MANDATE_CANCEL   = 'mandate_cancel';
     const AUTHORIZE_FAILED = 'authorize_failed';
+    const FORCE_AUTHORIZE_FAILED        = 'force_authorize_failed';
 
     public static $nonVerifiableActions = [
         self::AUTHENTICATE,
@@ -55,6 +56,6 @@ class Action
     ];
 
     public static $upiPaymentServiceSupportedActions = [
-        self::AUTHORIZE  
+        self::AUTHORIZE
     ];
 }

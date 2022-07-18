@@ -301,6 +301,12 @@ class CardPaymentService
             self::GATEWAY => $gateway,
             self::INPUT   => $input
         ];
+        // change action for force_authorize_failed to verify after content creation
+        // to be take decisions further on action for fulcrum gateway
+        if ($action === Action::FORCE_AUTHORIZE_FAILED)
+        {
+            $action = Action::VERIFY;
+        }
 
         $this->addOrderDetailsIfNotPresent($content);
 

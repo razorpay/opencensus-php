@@ -351,7 +351,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     protected function getInputForForceAuthorize($row)
     {
         return [
-            'vpc_TransactionNo' => $row[self::COLUMN_ORDER_ID]
+            'vpc_TransactionNo' => $row[self::COLUMN_ORDER_ID],
+            'authRespCode' => $row[self::COLUMN_AUTH_CODE]
         ];
     }
 

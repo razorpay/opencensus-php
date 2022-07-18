@@ -1652,10 +1652,12 @@ class Validator extends Base\Validator
         $payment = $this->entity;
 
         $gateway = $payment->getGateway();
+        $gateway_acquirer = $payment->terminal->getGatewayAcquirer();
 
         $allowedGateways = Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS;
 
-        if (in_array($gateway, $allowedGateways, true) === false)
+        if ((in_array($gateway, $allowedGateways, true) === false) ||
+            ($gateway == payment\Gateway::FULCRUM && $gateway_acquirer != payment\Gateway::ACQUIRER_AXIS))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot force authorize on this gateway',
