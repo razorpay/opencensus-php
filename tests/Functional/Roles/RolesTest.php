@@ -3,11 +3,13 @@
 namespace RZP\Tests\Functional\Roles;
 
 use DB;
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Mail\Merchant\RazorpayX\RolePermissionChange;
 
 class RolesTest extends TestCase
 {
@@ -258,6 +260,51 @@ class RolesTest extends TestCase
         $accessPolicyIds = $lastRoleMapEntity['access_policy_ids'];
 
         $this->assertEquals($this->testData[__FUNCTION__]['request']['content']['access_policy_ids'], $accessPolicyIds);
+    }
+
+
+    public function testEditRoleSendEmail()
+    {
+        Mail::fake();
+        $this->createPrivileges();
+
+        $merchant = $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
+
+        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 1', 'id' => '100customRole1', 'org_id' => "100000razorpay"]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/role_'.$customRole1['id'];
+
+        $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, '100customRole1');
+
+        $this->fixtures->create('role_access_policy_map',
+            [
+                'role_id' => '100customRole1',
+                'authz_roles'   => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'access_policy_ids' => ['XaccessPolicy1', 'XaccessPolicy2', 'XaccessPolicy3'],
+            ]);
+
+        $this->startTest();
+
+        $lastRoleMapEntity = $this->getDbLastEntity('role_access_policy_map')->toArrayPublic();
+
+        $accessPolicyIds = $lastRoleMapEntity['access_policy_ids'];
+
+        $this->assertEquals($this->testData[__FUNCTION__]['request']['content']['access_policy_ids'], $accessPolicyIds);
+
+        Mail::assertQueued(RolePermissionChange::class, function($mail) {
+            $this->assertEquals($mail->view,"emails.merchant.role_permission_change");
+            return true;
+        });
     }
 
     public function createStandardRole(string $role = 'owner_test', string $mid = self::DEFAULT_X_MERCHANT_ID)

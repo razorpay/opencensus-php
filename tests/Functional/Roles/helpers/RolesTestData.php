@@ -285,7 +285,30 @@ return [
                 'access_policy_ids' => ["XaccessPolicy2"]
             ],
             'server' => [
-                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => array (
+                'name' => 'test role edit',
+                'description' => 'test description edit',
+                'type' => 'custom',
+                'merchant_id' => '100000merchant',
+            )
+        ],
+    ],
+
+    'testEditRoleSendEmail' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'   => '/cac/role/100customRole1',
+            'content'   => [
+                'name' => 'test role edit',
+                'description' => 'test description edit',
+                'access_policy_ids' => ["XaccessPolicy2"]
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
             ],
         ],
         'response' => [

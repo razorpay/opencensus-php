@@ -3,12 +3,16 @@
 namespace RZP\Models\Roles;
 
 
+use App;
+use Mail;
 use RZP\Exception;
+use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\BankingRole;
 use RZP\Models\RoleAccessPolicyMap;
 use RZP\Models\AccessControlHistoryLogs;
+use RZP\Mail\Merchant\RazorpayX\RolePermissionChange;
 
 class Core extends Base\Core
 {
@@ -134,6 +138,12 @@ class Core extends Base\Core
 
             $roleAccessPolicyMap = (new RoleAccessPolicyMap\Service())->edit($roleToAccessPolicyMapInput);
 
+            $this->trace->info(TraceCode::ACCESS_CONTROL_ROLES_CHANGED_POLICY,
+                ['roleAccessPolicyMap' => $roleAccessPolicyMap,
+                    'role_id'=> $roleId
+                ]);
+
+            $this->sendEmail($roleId);
             $this->addEntryInHistoryLogs(
                 $previousRoleEntity,
                 array_merge($role->toArrayPublic(), $roleAccessPolicyMap),
@@ -142,6 +152,39 @@ class Core extends Base\Core
         });
 
         return $role;
+    }
+
+    protected function sendEmail(string $roleId)
+    {
+        $merchantId = $this->merchant->getId();
+
+        /* loggedIn merchant business name */
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
+        $senderName = $merchantDetail->getBusinessName();
+
+        /* get loggedIn merchant user role */
+        $user = $this->app['basicauth']->getUser();
+        $merchantUserRole = $this->repo->merchant_user->getMerchantUserRoles($user->getId(),$merchantId);
+        $merchantRole = array_pluck($merchantUserRole->toArray(), User\Entity::ROLE)[0];
+
+        /* get userEmail & userName for merchant have roleId that has been edited */
+        $merchantUsers = $this->repo->merchant_user
+            ->findByRolesAndMerchantId([$roleId], $merchantId);
+        $userIds = array_pluck($merchantUsers->toArray(), 'user_id');
+        $users = $this->repo->user->findManyByPublicIds($userIds);
+
+        foreach ($users as $userEntity)
+        {
+            $rolePermissionMailer = new RolePermissionChange($senderName, $userEntity, $merchantRole);
+
+            $this->trace->info(TraceCode::ACCESS_CONTROL_ROLES_EDIT_MAIL,
+                ['user_id' => $userEntity->getId(),
+                    'senderName' => $senderName,
+                    'role' => $merchantRole
+                ]);
+
+            Mail::queue($rolePermissionMailer);
+        }
     }
 
     public function listRolesForMerchant($input)

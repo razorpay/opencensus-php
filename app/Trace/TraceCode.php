@@ -7381,7 +7381,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCESS_CONTROL_ROLES_UPDATE_RESPONSE                  = 'ACCESS_CONTROL_ROLES_UPDATE_RESPONSE';
     const ROLE_DELETE_REQUEST                                   = 'ROLE_DELETE_REQUEST';
     const ROLE_DELETED                                          = 'ROLE_DELETED';
-
+    const ACCESS_CONTROL_ROLES_CHANGED_POLICY                   = 'ACCESS_CONTROL_ROLES_CHANGED_POLICY';
+    const ACCESS_CONTROL_ROLES_EDIT_MAIL                        = 'ACCESS_CONTROL_ROLES_EDIT_MAIL';
 
     const ROLE_ACCESS_POLICY_MAP_CREATE_REQUEST                 = 'ROLE_ACCESS_POLICY_MAP_CREATE_REQUEST';
     const ROLE_ACCESS_POLICY_MAP_CREATE_RESPONSE                = 'ROLE_ACCESS_POLICY_MAP_CREATE_RESPONSE';
