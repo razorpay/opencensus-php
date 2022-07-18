@@ -715,7 +715,6 @@ class Processor
             ($merchant->isFeeBearerPlatform() === true) and
             (empty($input[Payment\Entity::METHOD]) === false) and
             ($input[Payment\Entity::METHOD] === Payment\METHOD::NETBANKING) and
-            ($merchant->isTPVRequired() === false) and
             (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === true) and
             (empty($input[Payment\Entity::INVOICE_ID]) === true) and
             (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === true) and
@@ -726,8 +725,7 @@ class Processor
             (empty($input['signature']) === true) and
             (empty($input[Payment\Entity::BILLING_ADDRESS]) === true) and
             ($merchant->isMarketplace() === false) and
-            (empty($input[Payment\Entity::BANK]) === false) and
-            (Netbanking::isNbRearchBank($input[Payment\Entity::BANK]) === true))
+            (empty($input[Payment\Entity::BANK]) === false))
         {
             if (empty($input[Payment\Entity::ORDER_ID]) === true)
             {
