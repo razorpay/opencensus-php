@@ -160,6 +160,25 @@ class AccountV2Test extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testCreateAccountV2WithEmptyCustomerFacingBusinessName()
+    {
+        Mail::fake();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $testData['request']['content']['customer_facing_business_name'] = '';
+
+        $testData['response'] = $this->testData[__FUNCTION__]['response'];
+
+        $testData['exception'] = $this->testData[__FUNCTION__]['exception'];
+
+        Mail::assertNotQueued(CreateSubMerchantMail::class);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest()
     {
         $this->setUpPartnerWithKycHandled();
@@ -309,6 +328,21 @@ class AccountV2Test extends TestCase
     }
 
     public function testEditAccountV2OtherDetails()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+    }
+
+    public function testEditAccountWithEmptyCustomerFacingBusinessName()
     {
         $this->setUpPartnerWithKycHandled();
 
@@ -703,7 +737,7 @@ class AccountV2Test extends TestCase
 
         $this->startTest($testData);
     }
-    
+
     public function testCreateAccountWithExtraKeysInAndroid()
     {
         Mail::fake();

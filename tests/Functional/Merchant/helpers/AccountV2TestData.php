@@ -292,6 +292,22 @@ return [
         ],
     ],
 
+    'testCreateAccountV2WithEmptyCustomerFacingBusinessName' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The customer facing business name field is required.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateAccountV2ForCompletelyFilledRegisteredBusinessRequest' => [
         'request'  => [
             'url'     => '/v2/accounts',
@@ -974,6 +990,29 @@ return [
                     'key2'             => 'updateValue2',
                 ],
             ],
+        ],
+    ],
+
+    'testEditAccountWithEmptyCustomerFacingBusinessName' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'customer_facing_business_name'  => '',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The customer facing business name field is required.',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
