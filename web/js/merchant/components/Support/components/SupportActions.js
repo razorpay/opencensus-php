@@ -55,10 +55,7 @@ function SupportActions({
           {!isOldFlow && <i className="i i-chevron-right" />}
         </li>
       </ShowWhen>
-      <ShowWhen
-        myRole="owner admin"
-        additionalCondition={() => isFrontendCareActive && isClickToCallActive && openClickToCall}
-      >
+      {isFrontendCareActive && isClickToCallActive && openClickToCall && (
         <li
           className={`support-item p-all callback ${isClickToCallSubmitted ? 'disabled' : ''}`}
           onClick={isClickToCallSubmitted ? noop : handleClick.bind(null, 'click-to-call')}
@@ -73,7 +70,7 @@ function SupportActions({
 
           {!isOldFlow && <i className="i i-chevron-right" />}
         </li>
-      </ShowWhen>
+      )}
       {window.rzp_user ? (
         ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
           activationStatus,
