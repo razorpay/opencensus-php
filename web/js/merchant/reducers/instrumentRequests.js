@@ -650,13 +650,6 @@ const initialState = {
               slug: 'debit.hdfc',
               icon: 'https://cdn.razorpay.com/paylater-sq/hdfc.svg',
             },
-            {
-              name: 'KOTAK Bank',
-              description: '',
-              status: 'Request',
-              slug: 'debit.kotak',
-              icon: 'https://cdn.razorpay.com/paylater-sq/kkbk.svg',
-            },
           ],
         },
         {
