@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { fetchActivationDetails } from 'merchant/reducers/activation';
 import Loader from 'common/ui/Loader';
+import * as ModalActions from 'merchant_common/reducers/modals';
 
 function WebsiteAppDetails({ fetchActivationDetails, activationData }) {
   useEffect(() => {
@@ -20,11 +21,13 @@ function WebsiteAppDetails({ fetchActivationDetails, activationData }) {
   const appStoreUrl = activationData.appstore_url || '--';
   const playStoreUrl = activationData.playstore_url || '--';
 
+  const onButtonClick = () => {};
+
   return (
     <div className="website-app-details-container">
       <div className="section-content">
         <div className="section-header">
-          <span className="status details-required">
+          <span className="website-app-info-status details-required">
             <p>UNDER VERIFICATION</p>
           </span>
           <p className="text">
@@ -51,7 +54,7 @@ function WebsiteAppDetails({ fetchActivationDetails, activationData }) {
           </div>
         </div>
         <div className="section-footer">
-          <button>Update details</button>
+          <button onClick={onButtonClick}>Update details</button>
         </div>
       </div>
     </div>
@@ -62,6 +65,7 @@ const mapStateToProps = (state) => ({
   activationData: state.activation.data,
 });
 
-const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchActivationDetails }, dispatch);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchActivationDetails, ...ModalActions }, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(WebsiteAppDetails);

@@ -6,7 +6,6 @@ import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
-
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ApiKeys from 'merchant/views/Settings/Keys/List';
 import Reminders from 'merchant/views/Settings/Reminders';
@@ -16,7 +15,6 @@ import Application from 'merchant/models/Application';
 import Configuration from 'merchant/views/Settings/Configuration';
 import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';

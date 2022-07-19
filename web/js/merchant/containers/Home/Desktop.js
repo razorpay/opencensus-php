@@ -442,6 +442,23 @@ class AnalyticsDesktop extends Component {
               shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             />
           )}
+          {/* TODO: DO NOT UN-COMMENT */}
+          {/* <AnnouncementBanner title="Update website/App info" theme="warning" canBeClosed={false}>
+            <div className="website-compliance-announcement-container">
+              <div className="announcement-content">
+                <p>
+                  Terms & Conditions, Privacy Policy, Contact Us, Cancellation & Refund Policy, and
+                  Shipping and Delivery Policy pages & required as per RBI guidelines.
+                </p>
+              </div>
+              <div className="big-circle-seprator" />
+              <div className="cta">
+                <Link className="" to="">
+                  Update Now
+                </Link>
+              </div>
+            </div>
+          </AnnouncementBanner> */}
           {checkHTML5APIvalidity() && (
             <AnnouncementBanner title="Outdated Browser" theme="warning">
               Please update your web browser. We recommend you to download the latest version of
