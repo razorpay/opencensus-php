@@ -219,13 +219,14 @@ class UfhService
                                         string $storageFileName,
                                         string $type,
                                         $entity,
-                                        array $metadata = []): array
+                                        array $metadata = [],
+                                        bool $convertToLowerCase = true): array
     {
 
         $ext = strtolower($file->getClientOriginalExtension());
-
-        $storageFileName = strtolower($storageFileName);
-
+        if ($convertToLowerCase === true) {
+            $storageFileName = strtolower($storageFileName);
+        }
         $movedFile = $file;
 
         if($type !== \RZP\Models\FileStore\Type::INVOICE_PDF)

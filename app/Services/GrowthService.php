@@ -155,7 +155,7 @@ class GrowthService extends Base\Service
         }
 
         try {
-            $response = $this->ufh->uploadFileAndGetUrl($parameters['file'], $fileName, 'growth_asset', null);
+            $response = $this->ufh->uploadFileAndGetUrl($parameters['file'], $fileName, 'growth_asset', null, false);
         } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the uploadAsset request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
         }

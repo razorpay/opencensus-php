@@ -30,7 +30,8 @@ class UfhService extends BaseUfhClient
     public function uploadFileAndGetUrl(UploadedFile $file,
                                         string $storageFileName,
                                         string $type, $entity,
-                                        array $metadata = []): array
+                                        array $metadata = [],
+                                        bool $convertToLowerCase = true): array
     {
 
         $ext = $file->getClientOriginalExtension();
