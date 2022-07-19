@@ -60,14 +60,18 @@ class ReconServiceController extends Controller
             '^extraction_config$',
             '^extraction_item\/conflict$',
             '^custom_method$',
+            '^recon_state$',
+            '^workspaces$',
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
             '^recon_rules$',
             '^recon_rules\/\d+$',
             '^rule_state_map\/\d+$',
+            '^recon_state\/\d+$',
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
+            '^workspaces\/[[:alnum:]]{14}$',
         ]
     ];
 
