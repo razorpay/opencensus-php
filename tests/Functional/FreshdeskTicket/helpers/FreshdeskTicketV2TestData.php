@@ -495,14 +495,14 @@ return [
                 'custom_fields' => [
                     'cf_requester_category'       => 'Merchant',
                     'cf_requestor_subcategory'    => 'Activation',
-                    'cf_creation_source'          => 'Dashboard X',
+                    'cf_creation_source'          => 'Dashboard Y',
                 ],
             ],
         ],
         'response' => [
             'content'       => [
                 'error' => [
-                    'description' => 'Invalid Ticket Creation Source: Dashboard X',
+                    'description' => 'Invalid Ticket Creation Source: Dashboard Y',
                     'code'        => 'BAD_REQUEST_ERROR',
                 ],
             ],
@@ -625,6 +625,29 @@ return [
                     'cf_requester_category'          => 'Merchant',
                     'cf_requestor_subcategory'       => 'Capital',
                     'cf_requester_item'              => 'Cash Advance',
+                    'cf_creation_source'             => 'Dashboard X',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'description'  => 'ticket description',
+            ],
+        ],
+    ],
+    'testCreateTicketRzpCapBehindExp' => [
+        'request' => [
+            'url'     => '/fd/support_dashboard/ticket/',
+            'method'  => 'POST',
+            'content' => [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com'],
+                'custom_fields' => [
+                    'cf_requester_category'          => 'Merchant',
+                    'cf_requestor_subcategory'       => 'Capital',
+                    'cf_requester_item'              => 'Cash Advance',
+                    'cf_creation_source'             => 'Dashboard X',
                 ],
             ],
         ],

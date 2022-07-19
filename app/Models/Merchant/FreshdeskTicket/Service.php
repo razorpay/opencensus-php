@@ -39,7 +39,7 @@ class Service extends Base\Service
 
     const FD_INSTANCE_VS_SUBCATEGORIES = [
         Constants::RZPSOL => ['Technical support', 'Integrations'],
-        Constants::RZPCAP => ['Corporate card related','Instant Settlements', 'Cash Advance', 'Working Capital Loan'],
+        Constants::RZPCAP => ['Corporate card related','Instant Settlements', 'Cash Advance', 'Working Capital Loan','Corporate Cards'],
     ];
 
     public function getTicketStatusForCustomer(array $response)
@@ -219,7 +219,7 @@ class Service extends Base\Service
 
         unset($input[Constants::PAN]);
 
-        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
+        $input = $this->addRemoveValuesBeforeTicketCreation($input, $fdInstance);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -256,7 +256,7 @@ class Service extends Base\Service
 
         unset($input[Constants::OTP]);
 
-        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
+        $input = $this->addRemoveValuesBeforeTicketCreation($input, $fdInstance);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -265,7 +265,6 @@ class Service extends Base\Service
         return $ticketCreateResponse;
     }
 
-    
     protected function getFdInstanceWhileCreatingTickets($input)
     {
         return Constants::RZPIND;
@@ -501,7 +500,7 @@ class Service extends Base\Service
 
         unset($input[Constants::FD_INSTANCE]);
 
-        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
+        $input = $this->addRemoveValuesBeforeTicketCreation($input, $fdInstance);
 
         $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -575,7 +574,7 @@ class Service extends Base\Service
         }
     }
 
-    public function addDefaultValuesBeforeTicketCreation($input, $fdInstance)
+    public function addRemoveValuesBeforeTicketCreation($input, $fdInstance)
     {
         if ($fdInstance === Constants::RZPIND)
         {
@@ -667,7 +666,7 @@ class Service extends Base\Service
 
         unset($input[Constants::FD_INSTANCE]);
 
-        $input = $this->addDefaultValuesBeforeTicketCreation($input, $fdInstance);
+        $input = $this->addRemoveValuesBeforeTicketCreation($input, $fdInstance);
 
         $ticketCreateResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicket($input, $url);
 
@@ -1397,9 +1396,18 @@ class Service extends Base\Service
 
             if( $type === Type::SUPPORT_DASHBOARD && $ticket->getFdInstance() === Constants::RZPCAP)
             {
-                $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM] = $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
-
-                $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] = Constants::SUBCATEGORY_CAPITAL;
+                if ( $this->isCapitalExperimentEnabled($this->auth->getMerchantId()) ===  false )
+                {
+                    $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM] = $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY];
+                    $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY] = Constants::SUBCATEGORY_CAPITAL;
+                }
+                else
+                {
+                    if (empty($response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM]) === true)
+                    {
+                        $response[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_ITEM] = Constants::SUBCATEGORY_CAPITAL;
+                    }
+                }
             }
         }
 
@@ -2038,5 +2046,19 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    protected function isCapitalExperimentEnabled($merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get(Constants::CAPITAL_MIGRATION_EXPERIMENT_ID),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === Constants::ENABLE;
     }
 }

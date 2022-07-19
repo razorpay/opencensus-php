@@ -38,6 +38,7 @@ class Constants
     const CF_PRODUCT                    = 'cf_product';
     const CF_QUERY                      = 'cf_query';
     const CF_CREATED_BY                 = 'cf_created_by';
+    const CF_CREATION_SOURCE        = 'cf_creation_source';
     const CF_MERCHANT_ACTIVATION_STATUS = 'cf_merchant_activation_status';
 
     const AGENT      = 'agent';
@@ -159,15 +160,18 @@ class Constants
     const MAX_OPEN_TICKETS_FOR_MERCHANT = 10;
 
     // Webhook response
-    const SUCCESS    = 'success';
+    const SUCCESS = 'success';
 
     // razorx flags
-    const RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG                      = 'freshdesk_add_plugin_merchant_tag';
-    const RAZORX_FLAG_TO_LIMIT_NO_OF_OPEN_FRESHDESK_TICKETS           = 'limit_no_of_open_freshdesk_tickets';
+    const RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG            = 'freshdesk_add_plugin_merchant_tag';
+    const RAZORX_FLAG_TO_LIMIT_NO_OF_OPEN_FRESHDESK_TICKETS = 'limit_no_of_open_freshdesk_tickets';
+
+    const CAPITAL_MIGRATION_EXPERIMENT_ID = 'app.capital_migration_experiment_id';
+    const ENABLE                          = 'enable';
 
     // values for account recovery flow
-    const MERCHANT          = 'Merchant';
-    const ACCOUNT_LOCKED    = 'Account Locked';
+    const MERCHANT       = 'Merchant';
+    const ACCOUNT_LOCKED = 'Account Locked';
 
     // Default values for Activation Workflow Ticket Creation
     const SERVICE_REQUEST_TICKET_TYPE   = 'Service request';
@@ -212,11 +216,13 @@ class Constants
     const FD_TICKET_CREATION_SOURCE_MOBILE_DASHBOARD = 'Mobile Dashboard';
     const FD_TICKET_CREATION_SOURCE_WEBVIEW_IOS = 'Webview - iOS';
     const FD_TICKET_CREATION_SOURCE_WEBVIEW_ANDROID = 'Webview - Android';
+    const FD_TICKET_CREATION_SOURCE_DASHBOARD_X = 'Dashboard X';
 
     const VALID_FD_TICKET_CREATION_SOURCE_LIST = [
         self::FD_TICKET_CREATION_SOURCE_DASHBOARD,
         self::FD_TICKET_CREATION_SOURCE_MOBILE_DASHBOARD,
         self::FD_TICKET_CREATION_SOURCE_WEBVIEW_ANDROID,
-        self::FD_TICKET_CREATION_SOURCE_WEBVIEW_IOS
+        self::FD_TICKET_CREATION_SOURCE_WEBVIEW_IOS,
+        self::FD_TICKET_CREATION_SOURCE_DASHBOARD_X,
     ];
 }

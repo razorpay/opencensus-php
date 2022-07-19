@@ -966,6 +966,7 @@ class FreshdeskTicketV2Test extends TestCase
                                                                    'custom_fields' => [
                                                                        'cf_requester_category'    => 'Merchant',
                                                                        'cf_requestor_subcategory' => 'Cash Advance',
+                                                                       'cf_creation_source'       => 'Dashboard X',
                                                                        'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
                                                                        'cf_merchant_id'           => '10000000000000',
                                                                    ],
@@ -986,6 +987,16 @@ class FreshdeskTicketV2Test extends TestCase
                 'priority' =>  1,
             ]);
 
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $response = $this->startTest();
 
         $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
@@ -1003,6 +1014,82 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertEquals('Cash Advance', $response['custom_fields']['cf_requester_item']);
 
         $this->assertEquals('Capital', $response['custom_fields']['cf_requestor_subcategory']);
+    }
+
+    public function testCreateTicketRzpCapBehindExp()
+    {
+        $frDueBy = time() + self::DAY * 2;
+
+        $frDueByFreshdeskFormat = $this->getTimeInFreshdeskFormat($frDueBy);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('tickets', 'POST', 'rzpcap',
+            [
+                'description'   => 'ticket description',
+                'subject'       => 'ticket subject',
+                'cc_emails'     => ['a@b.com', 'merchantuser01@razorpay.com'],
+                'status'        => 2,
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Cash Advance',
+                    'cf_creation_source'       => 'Dashboard X',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                    'cf_merchant_id'           => '10000000000000',
+                ],
+                'email'         => 'test@razorpay.com',
+                'phone'         => '9876543210',
+                'priority'      => 1,
+                'group_id'      => 14000000007642,
+            ],
+            [
+                'id'            => '99',
+                'description'   => 'ticket description',
+                'fr_due_by'     => $frDueByFreshdeskFormat,
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Merchant',
+                    'cf_requestor_subcategory' => 'Cash Advance',
+                    'cf_merchant_id_dashboard' => 'merchant_dashboard_10000000000000',
+                ],
+                'priority' =>  1,
+            ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $response = $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $fdInstance = $ticket['ticket_details']['fd_instance'];
+
+        $this->assertNotEquals('razorpayid0012', $ticket['id']);
+
+        $this->assertNotEquals('99', $response['id']);
+
+        $this->assertEquals($ticket['id'], $response['id']);
+
+        $this->assertEquals('rzpcap', $fdInstance);
+
+        $this->assertEquals('Capital', $response['custom_fields']['cf_requester_item']);
+
+        $this->assertEquals('Cash Advance', $response['custom_fields']['cf_requestor_subcategory']);
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function testCreateTicketRzpCapViaX()
