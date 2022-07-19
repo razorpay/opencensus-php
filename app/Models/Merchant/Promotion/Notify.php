@@ -35,6 +35,11 @@ class Notify
         {
             return;
         }
+        // For Capital mobile sign up flow email wont be collected hence skipping this flow
+        if ($merchant->getEmail() === null)
+        {
+            return;
+        }
 
         $data = [
             Promotion\Entity::CREDITS       => (new Credits\Core)->getCreditInAmount(
