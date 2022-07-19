@@ -1551,6 +1551,13 @@ class Service extends Base\Service
         $preSignupDetails = $requestResponseFormatting->getPreSignupPayload($input);
 
         (new \RZP\Models\Merchant\Detail\Service)->editPreSignupDetails($preSignupDetails);
+
+        $payload = [
+            'merchant_id' => $merchant['id'],
+            'x_onboarding_category'   => 'co-created'
+        ];
+
+        $this->app->salesforce->sendXOnboardingToSalesforce($payload);
     }
 
     private function checkIfSentToBank($previousStatus, $currentStatus): bool

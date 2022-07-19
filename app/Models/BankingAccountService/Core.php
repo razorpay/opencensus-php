@@ -589,6 +589,7 @@ class Core extends Base\Core
                         Constants::CA_PARTNER_BANK       => Constants::RBL,
                         Constants::CA_PREFERRED_EMAIL    => $detail->getMerchantPocEmail(),
                         Constants::CA_PREFERRED_PHONE    => $detail->getMerchantPocPhoneNumber(),
+                        Constants::X_ONBOARDING_CATEGORY => 'normal'
                     ];
 
                     $this->trace->info(TraceCode::RBL_NITRO_SALESFORCE_PUSH, [

@@ -228,6 +228,21 @@ class Service extends Base\Service
 
         unset($input[Constants::PARTNER_INTENT]);
 
+        $attributeCore = new Merchant\Attribute\Core;
+
+        try
+        {
+            $campaignTypeAttr = $attributeCore->fetch($this->merchant, Product::BANKING, Merchant\Attribute\Group::X_SIGNUP, Merchant\Attribute\Type::CAMPAIGN_TYPE);
+        }
+        catch (\Throwable $e)
+        {
+            $campaignTypeAttr = null;
+        }
+
+        if ($campaignTypeAttr !== null) {
+            $input['x_onboarding_category'] = 'self_serve';
+        }
+
         // Putting in a try catch block so that any error here does not disrupt
         // the main signup flow. This will be removed once X flow simplifies the payload for salesforce
         try
