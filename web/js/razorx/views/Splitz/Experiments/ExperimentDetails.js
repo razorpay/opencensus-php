@@ -14,6 +14,7 @@ import { TextAreaField } from 'razorx/components/ui/Field';
 import { isRzpApprover } from '../../../user';
 import Comment from 'razorx/components/ui/Comment';
 import { EXPERIMENT_DELETE } from './constants';
+import { formatDate } from 'razorx/helpers/utils';
 
 // eslint-disable-next-line react/no-unsafe
 @withRouter
@@ -31,6 +32,7 @@ export default class ExperimentDetails extends React.Component {
     stateLogs: null,
     submittedComment: null,
     commentHistory: [],
+    lastEvaluatedAt: null,
   };
 
   componentDidMount() {
@@ -75,6 +77,7 @@ export default class ExperimentDetails extends React.Component {
           commentHistory: res.workflows.map((item) => {
             return item?.workflow?.states?.L1_Approval?.actions[0];
           }),
+          lastEvaluatedAt: res?.experiment?.metadata?.last_evaluated_at,
         });
 
         return Promise.all(
@@ -274,6 +277,7 @@ export default class ExperimentDetails extends React.Component {
       stateLogs,
       submittedComment,
       commentHistory,
+      lastEvaluatedAt,
     } = this.state;
     const { experimentId } = this.props;
 
@@ -333,6 +337,7 @@ export default class ExperimentDetails extends React.Component {
               />
             </span>
           </div>
+          {lastEvaluatedAt && <div>Last evaluated at {formatDate(lastEvaluatedAt)}</div>}
           <div className="pad-highlight">
             <div className="title">{data.name}</div>
             <div className="description">
