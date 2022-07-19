@@ -222,19 +222,22 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $token = $payment->localToken;
 
-        try {
-            $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
-            $networkToken = $tokenInput['token'];
-            $inputResponse[Constants::TOKEN] = $networkToken;
+        if ($token->card->isRzpSavedCard() == false)
+        {
+            try {
+                $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
+                $networkToken = $tokenInput['token'];
+                $inputResponse[Constants::TOKEN] = $networkToken;
 
-            return $inputResponse;
+                return $inputResponse;
 
-        } catch (Exception $e){
+            } catch (Exception $e) {
 
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKEN_CRYPTOGRAM_EXCEPTION);
+            }
         }
 
         return $inputResponse;

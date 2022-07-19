@@ -5,9 +5,9 @@ namespace RZP\Tests\Functional\CardMandate;
 use Mockery;
 
 use Queue;
+use RZP\Constants\Entity;
 use RZP\Exception;
 use Carbon\Carbon;
-use RZP\Constants\Entity;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Constants\Entity as E;
@@ -2639,6 +2639,93 @@ class CardMandateTest extends TestCase
 
                             return strtolower($defaultBehaviour);
                         }));
+    }
+
+    public function testUseRecurringTokenisedSavedCardForSIHubPayment()
+    {
+        $this->mockCardVaultWithMigrateToken();
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on',
+            'payment_process_through_tokenised_card' => 'on']);
+
+        $this->fixtures->create('terminal:shared_billdesk_sihub_terminal');
+
+        $this->fixtures->terminal->disableTerminal($this->mandateHqTerminal['id']);
+
+        $this->fixtures->edit('iin', '411111',[
+            'mandate_hubs' => ['mandate_hq'=>'1', 'billdesk_sihub'=>'1'],
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['allow_billdesk_sihub']);
+
+        $this->paymentInput['card']['number'] = '4111111111111111';
+
+        $paymentInput = $this->paymentInput;
+        $paymentInput['_']['library'] = 'razorpayjs';
+        $paymentInput['save'] = 1;
+        $paymentInput['user_consent_for_tokenisation'] = 1;
+        $paymentInput['recurring'] = 1;
+        $paymentInput['customer_id'] = 'cust_100000customer';
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $this->mockCps(null, 'entity_fetch');
+
+        $this->mockCheckBin();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentInput,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $freshCardPayment = $this->getDbLastEntity(E::PAYMENT);
+
+        $actualCard = $freshCardPayment->card;
+
+        $freshCardtoken = $freshCardPayment->localToken;
+
+        $tokenisedCard = $freshCardPayment->localToken->card;
+
+        $this->assertTrue($tokenisedCard->isRzpSavedCard() === false);
+        $this->assertTrue($actualCard->isRzpSavedCard() === true);
+        $this->assertTrue($freshCardtoken->isRecurring() === true);
+
+        $paymentInput[Payment::CARD] = [];
+        $paymentInput[Payment::TOKEN] = $freshCardtoken->getPublicId();
+        $paymentInput[Payment::CARD] = array('cvv'  => 111);
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+
+        unset($paymentInput['order_id']);
+        unset($paymentInput['save']);
+        $paymentInput['order_id'] = $order->getPublicId();
+
+        $this->mockCardVaultWithCryptogram();
+
+        $this->doAuthPayment($paymentInput);
+
+        $savedCardPayment = $this->getDbLastEntity(E::PAYMENT);
+
+        $tokenisedSavedCardForPayment = $savedCardPayment->card;
+        $tokenisedSavedCard = $savedCardPayment->localToken->card;
+        $savedCardToken = $savedCardPayment->localToken;
+
+        $this->assertTrue($tokenisedSavedCardForPayment->isRzpSavedCard() === true);
+        $this->assertTrue($tokenisedSavedCard->isRzpSavedCard() === false);
+        $this->assertTrue($savedCardToken->isRecurring() === true);
+
+        $this->assertEquals($tokenisedCard->getId(), $tokenisedSavedCard->getId());
+        $this->assertNotEquals($freshCardtoken->getId(), $savedCardToken->getId());
     }
 }
 
