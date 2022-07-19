@@ -54,7 +54,9 @@ class Constants
 
     const NSDL_NB_COMBINED_FILE_JOB_NAME    = 'nsdl_netbanking_refund_prod';
 
-    const AXIS_NB_COMBINED_FILE_JOB_NAME    = 'axis_netbanking_refund_prod';
+    const AXIS_NB_REFUND_FILE_JOB_NAME    = 'axis_netbanking_refund_prod';
+
+    const AXIS_NB_CLAIM_FILE_JOB_NAME    = 'axis_netbanking_claim_prod';
 
     const AXIS_CARD_SETTLEMENT_FILE_JOB_NAME  = 'axis_card_settlement';
 

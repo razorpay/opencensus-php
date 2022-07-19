@@ -100,36 +100,53 @@ class Axis extends Base
     {
         try
         {
-            $fileInfo = [];
+            $refundfileInfo = [];
+            $claimfileInfo = [];
+            $bucketConfig = $this->getBucketConfig();
 
             if (isset($data['refunds']) === true)
             {
-                $fileInfo[] = $this->getFileLocation(FileStore\Type::AXIS_NETBANKING_REFUND);
+                $refundfileInfo[] = $this->getFileLocation(FileStore\Type::AXIS_NETBANKING_REFUND);
+
+                $beamrefundData =  [
+                    Service::BEAM_PUSH_FILES         => $refundfileInfo,
+                    Service::BEAM_PUSH_JOBNAME       => BeamConstants::AXIS_NB_REFUND_FILE_JOB_NAME,
+                    Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                    Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+                ];
+                $mailInfo = [
+                    'fileInfo'  => $refundfileInfo,
+                    'channel'   => 'tech_alerts',
+                    'filetype'  => self::BEAM_FILE_TYPE,
+                    'subject'   => 'Axis Refund File send failure',
+                    'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
+                ];
+
+                $this->sendBeamRequest($beamrefundData, [], $mailInfo, true);
+
             }
 
             if (isset($data['claims']) === true)
             {
-                $fileInfo[] = $this->getFileLocation(FileStore\Type::AXIS_NETBANKING_CLAIMS);
+                $claimfileInfo[] = $this->getFileLocation(FileStore\Type::AXIS_NETBANKING_CLAIMS);
+
+                $beamclaimData =  [
+                    Service::BEAM_PUSH_FILES         => $claimfileInfo,
+                    Service::BEAM_PUSH_JOBNAME       => BeamConstants::AXIS_NB_CLAIM_FILE_JOB_NAME,
+                    Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
+                    Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
+                ];
+                $mailInfo = [
+                    'fileInfo'  => $claimfileInfo,
+                    'channel'   => 'tech_alerts',
+                    'filetype'  => self::BEAM_FILE_TYPE,
+                    'subject'   => 'Axis Claim File send failure',
+                    'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
+                ];
+
+                $this->sendBeamRequest($beamclaimData, [], $mailInfo, true);
             }
 
-            $bucketConfig = $this->getBucketConfig();
-
-            $beamData =  [
-                Service::BEAM_PUSH_FILES         => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME       => BeamConstants::AXIS_NB_COMBINED_FILE_JOB_NAME,
-                Service::BEAM_PUSH_BUCKET_NAME   => $bucketConfig['name'],
-                Service::BEAM_PUSH_BUCKET_REGION => $bucketConfig['region'],
-            ];
-
-            $mailInfo = [
-                'fileInfo'  => $fileInfo,
-                'channel'   => 'tech_alerts',
-                'filetype'  => self::BEAM_FILE_TYPE,
-                'subject'   => 'Axis Combined File send failure',
-                'recipient' => MailConstants::MAIL_ADDRESSES[MailConstants::NBPLUS_TECH]
-            ];
-
-            $this->sendBeamRequest($beamData, [], $mailInfo, true);
 
             $mailData = $this->formatDataForMail($data);
 
