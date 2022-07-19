@@ -1,6 +1,75 @@
 <?php
 
 return [
+    'testFetchRolesWithStandardRolesOnly' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/cac/roles',
+            'content' => [
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => array (
+                'standard' =>
+                    array (
+                        0 =>
+                            array (
+                                'id' => 'admin',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Admin',
+                                'description' => 'Perform all tasks except for team management',
+                                'type' => 'standard',
+                                'copy_disable' => true,
+                                'members' => 0,
+                            ),
+                        1 =>
+                            array (
+                                'id' => 'finance',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Finance',
+                                'description' => 'Create and issue payouts and contacts',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        2 =>
+                            array (
+                                'id' => 'operations',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Operations',
+                                'description' => 'Create and manage Payout Links',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        3 =>
+                            array (
+                                'id' => 'chartered_accountant',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'Chartered Accountant',
+                                'description' => 'Export reports only. No dashboard access',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                        4 =>
+                            array (
+                                'id' => 'view_only',
+                                'merchant_id' => '100000Razorpay',
+                                'name' => 'View Only',
+                                'description' => 'View data only and download reports',
+                                'type' => 'standard',
+                                'copy_disable' => false,
+                                'members' => 0,
+                            ),
+                    ),
+            ),
+        ],
+    ],
+
     'testFetchRolesWithNoExistingFinanceUser' => [
         'request'  => [
             'method'  => 'GET',

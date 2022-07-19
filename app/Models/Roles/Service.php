@@ -28,7 +28,10 @@ class Service extends Base\Service
 
         $rolesGrouppedByType[Entity::STANDARD] = $this->core->filterFinanceRoleForMerchant($this->merchant->getId(), $rolesGrouppedByType[Entity::STANDARD]);
 
-        array_multisort(array_column($rolesGrouppedByType[Entity::CUSTOM], Entity::NAME), $rolesGrouppedByType[Entity::CUSTOM]);
+        if (empty($rolesGrouppedByType[Entity::CUSTOM]) === false)
+        {
+            array_multisort(array_column($rolesGrouppedByType[Entity::CUSTOM], Entity::NAME), $rolesGrouppedByType[Entity::CUSTOM]);
+        }
 
         $order = Entity::$displayOrder;
 

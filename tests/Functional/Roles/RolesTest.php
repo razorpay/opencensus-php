@@ -117,6 +117,23 @@ class RolesTest extends TestCase
         $response = $this->startTest();
     }
 
+    public function testFetchRolesWithStandardRolesOnly()
+    {
+        $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
+
+        $response = $this->startTest();
+    }
+
     public function testFetchRoleByIdCustomRole()
     {
         $this->createPrivileges();
