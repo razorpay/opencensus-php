@@ -2868,6 +2868,10 @@ class Core extends Base\Core
             $maker, $merchant,
             $shouldSave
         ) {
+
+            $dbUpdateStartTime = microtime(true);
+            $merchantId = $merchant->getMerchantId();
+
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
             {
@@ -2966,12 +2970,25 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
             {
+
+                $this->trace->info(TraceCode::NC_INITIATED, [
+                    'merchant_id'                   => $merchantId,
+                    'db-update-start_time'          => $dbUpdateStartTime
+                ]);
+
                 //
                 // For Older merchant who are still in old flow ,
                 // kyc clarification will be empty in this case form should not get unlocked
                 //
                 if (empty($merchantDetails->getKycClarificationReasons()) === false)
                 {
+
+                    $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
+                        'merchant_id'                   => $merchantId,
+                        'kyc_clarification_reasonse'    => $merchantDetails->getKycClarificationReasons(),
+                        'activation_status'             => $merchantDetails->getActivationStatus()
+                    ]);
+
                     $merchantDetails->setLocked(false);
 
                     $accessMaps = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
@@ -2993,6 +3010,14 @@ class Core extends Base\Core
                         if($isExpEnabled === true)
                             $this->sendSubMerchantNCStatusChangedEmail($merchant, $partnerMerchant->entityOwner);
                     }
+
+                    $this->trace->info(TraceCode::NC_EMAIL_SENT, [
+                        'merchant_id'                   => $merchantId,
+                        'activation_status'             => $merchantDetails->getActivationStatus(),
+                        'db-update-start_time'          => $dbUpdateStartTime,
+                        'duration'                      => (microtime(true) - $dbUpdateStartTime) * 1000
+                    ]);
+
                 }
             }
 
@@ -3005,7 +3030,7 @@ class Core extends Base\Core
                 TraceCode::MERCHANT_ACTIVATION_LOGS,
                 [
                     'text'     => 'before saving merchant',
-                    'merchant' => $merchant
+                    'merchant' => $merchant,
                 ]
             );
 
@@ -3017,7 +3042,8 @@ class Core extends Base\Core
                 TraceCode::MERCHANT_ACTIVATION_LOGS,
                 [
                     'text'     => 'after saving merchant',
-                    'merchant' => $merchant
+                    'merchant' => $merchant,
+                    'duration' => (microtime(true) - $dbUpdateStartTime) * 1000
                 ]
             );
 

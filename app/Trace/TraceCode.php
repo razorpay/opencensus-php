@@ -7433,6 +7433,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DEDUPE_ES_UPDATE_FAILURE                                    = 'DEDUPE_ES_UPDATE_FAILURE';
 
+    const NC_INITIATED                                                = 'NC_INITIATED';
+
+    const NC_EMAIL_INITIATED                                          = 'NC_EMAIL_INITIATED';
+
+    const NC_EMAIL_SENT                                               = 'NC_EMAIL_SENT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
