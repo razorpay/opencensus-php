@@ -227,4 +227,5 @@ export const EMI_CARDS_OPTIONS = [
 export const EMI_DEBIT_CARD_BANK_OPTIONS = [
   { label: '--Select Issuers--', name: '' },
   { label: 'HDFC Bank', name: 'HDFC' },
+  { label: 'KOTAK Bank', name: 'KKBK' },
 ];
