@@ -825,7 +825,11 @@ class Constants
     const DASHBOARD_INTERNAL               = 'DASHBOARD_INTERNAL';
 
     const ROUTE_LA_PENNY_TESTING           = 'route_la_penny_testing';
-
+    
+    /**
+     * Enable Razorpay secure for shopify merchant
+     */
+    const RAZORPAY_SECURE_MERCHANT = 'razorpay_secure_merchant';
     /**
      * Enables Offers on Subscription
      */
@@ -1990,6 +1994,7 @@ class Constants
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
         self::ONE_CC_INPUT_ENGLISH            => true,
+        self::RAZORPAY_SECURE_MERCHANT        => true,
         self::RBL_BANK_LMS_DASHBOARD          => true,
         self::FK_NEW_ERROR_RESPONSE           => true,
     ];
