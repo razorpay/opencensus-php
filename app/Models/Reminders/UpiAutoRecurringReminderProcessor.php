@@ -4,6 +4,7 @@ namespace RZP\Models\Reminders;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\UpiMetadata;
 
 class UpiAutoRecurringReminderProcessor extends ReminderProcessor
@@ -14,6 +15,24 @@ class UpiAutoRecurringReminderProcessor extends ReminderProcessor
         $metadata = $payment->getUpiMetadata();
         $waitForAuthReminder = false;
         $processed = false;
+
+        $currentTime = Carbon::now()->addMinutes(1)->getTimestamp();
+        // Validation if we receive any extra callback from reminder service and our remind at is in future
+        if(($this->mode === 'live') and
+            ($metadata->getRemindAt() !== null) and
+            ($metadata->getRemindAt() > $currentTime))
+        {
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_REMINDER_SERVICE_TIMEOUT_CALLBACK,
+                [
+                    'payment'           => $payment->toArrayTraceRelevant(),
+                    'metadata'          => $metadata,
+                    'current_time'      => $currentTime,
+                ]
+            );
+
+            return ['success' => true];
+        }
 
         if ($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_PRE_DEBIT))
         {

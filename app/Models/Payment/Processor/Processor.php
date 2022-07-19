@@ -5461,6 +5461,41 @@ class Processor
             $manualTimeoutDuration = $lateAuthConfig['capture_options']['manual_expiry_period'];
         }
 
+        $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
+
+        if(($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry) or
+            ($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry))
+        {
+            $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
+                Merchant\RazorxTreatment::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
+                $this->app['rzp.mode']);
+
+            if (strtolower($variant) === 'on')
+            {
+                if(($payment->isRecurring()) and
+                    ($payment->getMethod() === Constants::UPI) and
+                    ($payment->getRecurringType() === 'auto'))
+                {
+                    if($autoTimeoutDuration < $defaultUpiAutoCaptureExpiry)
+                    {
+                        $autoTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    }
+                    if($manualTimeoutDuration < $defaultUpiAutoCaptureExpiry)
+                    {
+                        $manualTimeoutDuration = $defaultUpiAutoCaptureExpiry;
+                    }
+                    $this->trace->info(
+                        TraceCode::DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY,
+                        [
+                            'capture_settings'          => $lateAuthConfig,
+                            'payment'                   => $payment->toArrayTraceRelevant(),
+                            'auto_timeout_duration'     => $autoTimeoutDuration,
+                            'manual_timeout_duration'   => $manualTimeoutDuration,
+                        ]);
+                }
+            }
+        }
+
         $captureValue = $lateAuthConfig['capture'];
 
         $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
