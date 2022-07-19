@@ -9,14 +9,17 @@ class DebitProvider
     const DEFAULT_DEBIT_EMI_PROVIDERS = 0;
 
     const HDFC = 'HDFC';
+    const KKBK = 'KKBK';
 
     protected static $providers = [
         self::HDFC,
+        self::KKBK,
     ];
 
 
     protected static $providerBitPositionMap = [
         self::HDFC => 1,
+        self::KKBK => 2,
     ];
 
     public static function checkProviderValidity($provider)
@@ -38,7 +41,9 @@ class DebitProvider
 
         foreach (self::$providerBitPositionMap as $provider => $value)
         {
-            if (($providers & $value) > 0)
+            $index = $providers >> ($value-1);
+
+            if (($index & 1) > 0)
             {
                 $debitEmiProviders[$provider] = $debitEmi;
             }
@@ -64,12 +69,12 @@ class DebitProvider
             // Set the bit
             if ($value === 1)
             {
-                $debitEmiProvider = $debitEmiProvider | $bitPosition;
+                $debitEmiProvider = $debitEmiProvider | (1<<($bitPosition-1));
             }
             // Reset the bit
             else
             {
-                $debitEmiProvider = $debitEmiProvider & (~$bitPosition);
+                $debitEmiProvider = $debitEmiProvider & (~(1<<($bitPosition-1)));
             }
         }
 

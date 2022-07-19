@@ -620,7 +620,7 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
-        $this->assertEquals(['HDFC' => 1], $merchantMethods->getDebitEmiProviders());
+        $this->assertEquals(['HDFC' => 1], array_slice($merchantMethods->getDebitEmiProviders(), 0, 1));
     }
 
     public function testBulkEnableHdfcDebitEmiProvider()
@@ -648,12 +648,12 @@ class MethodsTest extends TestCase
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
         // 5399 category, blacklist
-        $this->assertEquals(['HDFC' => 0], $merchantMethods->getDebitEmiProviders());
+        $this->assertEquals(['HDFC' => 0], array_slice($merchantMethods->getDebitEmiProviders(), 0, 1));
 
         $merchantMethods = $this->getDbEntityById('merchant', $merchantId)->getMethods();
 
         // 5193
-        $this->assertEquals(['HDFC' => 1], $merchantMethods->getDebitEmiProviders());
+        $this->assertEquals(['HDFC' => 1], array_slice($merchantMethods->getDebitEmiProviders(), 0, 1));
     }
 
     public function testQueryCacheHitForMethods()

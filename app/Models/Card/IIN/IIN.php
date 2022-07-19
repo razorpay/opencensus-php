@@ -23,6 +23,9 @@ class IIN
         Issuer::HDFC => [
             Type::DEBIT,
         ],
+        Issuer::KKBK => [
+            Type::DEBIT,
+        ]
     ];
 
     protected static $emiIins = array(

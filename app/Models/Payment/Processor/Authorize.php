@@ -7796,6 +7796,11 @@ trait Authorize
                     return true;
                 }
 
+                if($this->canRunKotakDebitEMIOTP($payment) === true)
+                {
+                    return true;
+                }
+
                 if ((in_array($payment->getGateway(), Payment\Gateway::$otpPostFormSubmitGateways, true) === true) and
                     ($payment->isEmi() === true))
                 {
@@ -7884,6 +7889,17 @@ trait Authorize
     protected function canRunPaysecureOTP(Payment\Entity $payment)
     {
         if (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
+            ($payment->getAuthType() === Payment\AuthType::OTP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunKotakDebitEMIOTP(Payment\Entity $payment)
+    {
+        if (($payment->getGateway() === Payment\Gateway::KOTAK_DEBIT_EMI) and
             ($payment->getAuthType() === Payment\AuthType::OTP))
         {
             return true;

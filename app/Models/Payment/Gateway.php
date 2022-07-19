@@ -198,7 +198,7 @@ class Gateway
 
     // Debit emi gateways
     const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
-
+    const KOTAK_DEBIT_EMI    = 'kotak_debit_emi';
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -1511,6 +1511,7 @@ class Gateway
             self::HDFC,
             self::FIRST_DATA,
             self::HDFC_DEBIT_EMI,
+            self::KOTAK_DEBIT_EMI,
         ],
 
         Method::UPI => [
@@ -1713,6 +1714,7 @@ class Gateway
     public static $otpPostFormSubmitGateways = [
         self::HDFC_DEBIT_EMI,
         self::BAJAJ,
+        self::KOTAK_DEBIT_EMI,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3964,6 +3966,7 @@ class Gateway
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::KOTAK_DEBIT_EMI,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4004,6 +4007,7 @@ class Gateway
             self::CHECKOUT_DOT_COM,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::KOTAK_DEBIT_EMI,
         ];
 
         return (in_array($gateway, $gateways, true));

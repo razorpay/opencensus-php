@@ -333,6 +333,7 @@ class BuyPricing
     public static $defaultEmiNetWorksNames = [
         'Hdfc'         => self::HDFC,
         'BajajFinserv' => Card\Network::BAJAJ,
+        'Kotak'        => self::KOTAK,
     ];
 
     public static $emiNetworksNames = [
