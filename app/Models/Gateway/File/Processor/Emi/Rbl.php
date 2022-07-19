@@ -3,6 +3,8 @@
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use App;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
@@ -19,6 +21,7 @@ class Rbl extends Base
     const FILE_NAME   = 'Rbl_Emi_File';
     const DATE_FORMAT = 'd-m-Y';
 
+    protected $totalTransactions;
 
     protected function sendEmiFile($data)
     {
@@ -71,6 +74,8 @@ class Rbl extends Base
         $formattedData = [];
 
         $rrn = $this->getRrnNumber($data['items']);
+
+        $totalTransactions = 0;
 
         foreach ($data['items'] as $emiPayment)
         {
@@ -129,7 +134,11 @@ class Rbl extends Base
                 'Bonus Reward Points'              => '',
                 'EMI Model'                        => 'Y',
             ];
+
+            $totalTransactions++;
         }
+
+        $this->totalTransactions = $totalTransactions;
 
         return $formattedData;
     }
@@ -173,5 +182,13 @@ class Rbl extends Base
         $response = App::getFacadeRoot()['card.payments']->fetchAuthorizationData($request);
 
         return $response;
+    }
+
+    protected function getFileToWriteName()
+    {
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $count = $this->totalTransactions;
+
+        return static::FILE_NAME . $date . $count;
     }
 }

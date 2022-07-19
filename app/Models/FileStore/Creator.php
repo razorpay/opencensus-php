@@ -2,7 +2,6 @@
 
 namespace RZP\Models\FileStore;
 
-use Config;
 use RZP\Exception;
 use RZP\Encryption;
 use RZP\Models\Base;
@@ -12,6 +11,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Illuminate\Support\Facades\Config;
 
 class Creator extends Base\Core
 {
@@ -724,6 +724,12 @@ class Creator extends Base\Core
             'metadata'  => $this->file->getMetadata(),
         ];
 
+        if(substr($fileName,0,12) === 'Rbl_Emi_File')
+        {
+            $fileDetails['key'] = 'rbl-emi/' . $fileName;
+            $bucketConfig['name'] = Config::get('applications.chota_beam.bucket_name');
+        }
+
         if (empty($this->additionalParameters) === false)
         {
             $fileDetails['additional_parameters'] = $this->additionalParameters;
@@ -732,6 +738,13 @@ class Creator extends Base\Core
         $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 
         $this->file->setLocation($fileDetails['key']);
+
+        $this->trace->info(
+            TraceCode::DEBUG_LOGGING,
+            [
+                'bucketname for s3' => $bucketConfig,
+            ]
+        );
 
         $this->file->setBucket($bucketConfig['name']);
 

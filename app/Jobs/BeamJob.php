@@ -129,13 +129,11 @@ class BeamJob extends Job
 
     public function handleRequest()
     {
-        if(isset($this->request["content"]) && isset(json_decode($this->request["content"])->files) &&
-            isset(json_decode($this->request["content"])->files[0]) &&
-            json_decode($this->request["content"])->files[0] === "rbl-emi/Rbl_Emi_File.zip")
+        if(isset($this->request["content"]) && isset(json_decode($this->request["content"])->job_name) &&
+            json_decode($this->request["content"])->job_name === "rbl_push")
         {
             $this->request["url"] = Config::get('applications.chota_beam.url') . "/push";
         }
-
 
         $this->trace->info(
             TraceCode::BEAM_REQUEST,

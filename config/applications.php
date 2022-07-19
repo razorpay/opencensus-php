@@ -780,6 +780,7 @@ return [
     'chota_beam' => [
         'url'  => env('CHOTABEAM_URL'),
         'mock' => env('CHOTABEAM_MOCK', false),
+        'bucket_name' => env('CHOTABEAM_BUCKET_NAME'),
     ],
 
     'subscriptions' => [
