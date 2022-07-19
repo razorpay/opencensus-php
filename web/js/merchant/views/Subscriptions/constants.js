@@ -7,3 +7,5 @@ export const topEmandateBankCodes = ['SBIN', 'HDFC', 'ICIC', 'UTIB', 'KKBK'];
 export const CARD_AFA_MAX_LIMIT = 15000; // Rs
 export const MAX_TOKEN_AMOUNT = 100000000; // in Paisa
 export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
+
+export const tokenStatuses = ['initiated', 'confirmed', 'rejected', 'cancelled', 'paused'];
