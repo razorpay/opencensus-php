@@ -5,6 +5,7 @@ namespace RZP\Models\Order\OrderMeta;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Order\OrderMeta\Order1cc;
+use RZP\Models\Merchant\ShippingInfo;
 
 class Service extends \RZP\Models\Base\Service
 {
@@ -24,13 +25,21 @@ class Service extends \RZP\Models\Base\Service
         $customerInfo = $input[Order1cc\Fields::CUSTOMER_DETAILS];
         if (isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true)
         {
-            $shippingInfo = $this->app['cache']->get(
-                $this->getShippingInfoCacheKey(
-                    $orderId,
-                    $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]
-                )
-            );
+            $address[0] = [
+                "zipcode" => $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['zipcode'],
+                "country" => $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['country']];
+            $shippingInfoReq = [
+                'order_id' => $orderId,
+                'addresses' => $address,
+            ];
+            try {
 
+                $addresses = (new ShippingInfo\Service())->getShippingInfo($shippingInfoReq);
+                $shippingInfo = $addresses['addresses'][0];
+
+            } catch (\Throwable $e) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND);
+            }
             if ($shippingInfo === null or
                 $shippingInfo['serviceable'] === false)
             {
