@@ -36,6 +36,28 @@ class Service extends Base\Service
         return $role->toArrayPublic();
     }
 
+    public function listAdminsByRole($roleName)
+    {
+        $role = $this->core()->findRoleByOrgIdAndName(Org\Entity::RAZORPAY_ORG_ID, $roleName);
+
+        $admins = $role->admins()->get();
+
+        $data = $role->toArrayPublic();
+
+        $data['admins'] = array_map(function($admin) {
+            return [
+                'id'         => $admin['id'],
+                'name'       => $admin['name'],
+                'email'      => $admin['email'],
+                'disabled'   => $admin['disabled'],
+                'deleted_at' => $admin['deleted_at']
+            ];
+        }, $admins->all());
+
+        return $data;
+    }
+
+
     public function getMultipleRoles()
     {
         $orgId = $this->app['basicauth']->getAdminOrgId();

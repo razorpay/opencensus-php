@@ -1446,6 +1446,7 @@ class Route
         'role_edit'                                => ['put',      'roles/{id}',                                     'OrganizationController@putRole'                                    ],
         'role_add_permissions'                     => ['put',      'roles/add/permissions',                          'OrganizationController@putPermissionsToRoles'                      ],
         'role_delete'                              => ['delete',   'roles/{id}',                                     'OrganizationController@deleteRole'                                 ],
+        'role_list_admins_internal'                => ['get',      'roles/{name}/admins',                            'OrganizationController@listAdminsByRole'                           ],
         'admin_create'                             => ['post',     'admins',                                         'OrganizationController@createAdmin'                                ],
         'admin_get_multiple'                       => ['get',      'admins',                                         'OrganizationController@fetchAdminMultiple'                         ],
         'admin_get_app_auth'                       => ['post',     'current_admin',                                  'OrganizationController@getAdminByAppAuth'                          ],
@@ -4986,6 +4987,8 @@ class Route
         // Magic Club
         'customer_one_cc_get_or_create_global',
         'customer_fetch_by_id_global',
+
+        'role_list_admins_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -12765,6 +12768,7 @@ class Route
             'internal_feature_get_all',
             'user_fetch_by_verified_contact_internal',
             'internal_pincode_get',
+            'role_list_admins_internal',
         ],
 
         'capital_scorecard_client' => [

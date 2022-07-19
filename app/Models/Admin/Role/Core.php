@@ -110,4 +110,9 @@ class Core extends Base\Core
     {
         return $this->repo->role->findByOrgAndName($org, $name);
     }
+
+    public function findRoleByOrgIdAndName(string $orgId, string $name)
+    {
+        return $this->repo->role->findByOrgIdAndName($orgId, $name);
+    }
 }

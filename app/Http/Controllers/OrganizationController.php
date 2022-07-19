@@ -214,6 +214,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function listAdminsByRole(string $roleName)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ROLE)->listAdminsByRole($roleName);
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for roles  --------------------------------------
 
 // --------------------- CRUD for Groups  -----------------------------------------
