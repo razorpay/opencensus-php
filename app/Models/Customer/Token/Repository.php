@@ -217,7 +217,12 @@ class Repository extends Base\Repository
             ->where(Entity::METHOD, '=', $method)
             ->where(Entity::CUSTOMER_ID, '=', $customerId)
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
-            ->orderBy(Token\Entity::ID, 'desc')
+            ->whereNotNull(Entity::USED_AT)
+            ->where(static function (Builder $query) {
+                $query->whereNull(Entity::EXPIRED_AT)
+                    ->orWhere(Entity::EXPIRED_AT, '>', time());
+            })
+            ->orderBy(Entity::ID, 'desc')
             ->with('card')
             ->get();
     }
