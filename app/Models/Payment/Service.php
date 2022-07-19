@@ -1228,7 +1228,20 @@ class Service extends Base\Service
             'extra_trace' => $this->app['basicauth']->getAuthType(),
         ]);
 
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $nonShadowModeVariant = $this->app->razorx->getTreatment($experimentVariable,
+            RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            return $this->app['scrooge']->refundsFetchByIdAndPayment($paymentId, $rfndId);
+        }
+
+        // shadow mode experiment
+        $variant = $this->app->razorx->getTreatment($experimentVariable,
             RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE,
             $this->mode
         );
@@ -1321,7 +1334,20 @@ class Service extends Base\Service
             'input'       => $input,
         ]);
 
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $nonShadowModeVariant = $this->app->razorx->getTreatment($experimentVariable,
+            RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            return $this->app['scrooge']->refundsFetchByPayment($id, $input);
+        }
+
+        // shadow mode experiment
+        $variant = $this->app->razorx->getTreatment($experimentVariable,
             RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE,
             $this->mode
         );

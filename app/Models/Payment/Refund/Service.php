@@ -429,7 +429,26 @@ class Service extends Base\Service
             'input'       => $input,
         ]);
 
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $nonShadowModeVariant = $this->app->razorx->getTreatment($experimentVariable,
+            RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE,
+            $this->mode
+        );
+
+        // ToDO : remove this condition once optimiser settlement data fetch is supported on scrooge
+        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
+        {
+            $nonShadowModeVariant = RefundConstants::RAZORX_VARIANT_OFF;
+        }
+
+        if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            return $this->app['scrooge']->refundsFetchById($id, $input);
+        }
+
+        // shadow mode experiment
+        $variant = $this->app->razorx->getTreatment($experimentVariable,
             RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
             $this->mode
         );
@@ -1489,7 +1508,20 @@ class Service extends Base\Service
             'input'       => $input,
         ]);
 
-        $variant = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
+
+        $nonShadowModeVariant = $this->app->razorx->getTreatment($experimentVariable,
+            RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
+            $this->mode
+        );
+
+        if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            return $this->app['scrooge']->refundsFetchMultiple($input);
+        }
+
+        // shadow mode experiment
+        $variant = $this->app->razorx->getTreatment($experimentVariable,
             RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
             $this->mode
         );
