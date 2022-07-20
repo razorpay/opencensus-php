@@ -200,6 +200,7 @@ class Gateway
     const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
     const KOTAK_DEBIT_EMI    = 'kotak_debit_emi';
 
+
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
     // success and status_code defined the status of refund and also category of refund if it is retriable or not.
@@ -538,6 +539,7 @@ class Gateway
         self::HITACHI,
         self::NETBANKING_SBI,
         self::HDFC_DEBIT_EMI,
+        self::KOTAK_DEBIT_EMI,
         self::FULCRUM,
 
         // UPI HULK is TEMPORARY, As payment are still failed on hulk and we can't do much there,
@@ -1705,14 +1707,17 @@ class Gateway
 
     public static $s2sGateways = [
         self::HDFC_DEBIT_EMI,
+        self::KOTAK_DEBIT_EMI,
     ];
 
     public static $verifyMissingGateways = [
         self::HDFC_DEBIT_EMI,
+        self::KOTAK_DEBIT_EMI,
     ];
 
     public static $otpPostFormSubmitGateways = [
         self::HDFC_DEBIT_EMI,
+        self::KOTAK_DEBIT_EMI,
         self::BAJAJ,
         self::KOTAK_DEBIT_EMI,
     ];
@@ -1767,6 +1772,9 @@ class Gateway
         Issuer::HDFC => [
             self::HDFC_DEBIT_EMI,
         ],
+        Issuer::KKBK =>[
+            self::KOTAK_DEBIT_EMI
+        ]
     ];
 
     /**
@@ -2047,6 +2055,7 @@ class Gateway
         self::NETBANKING_VIJAYA,
         self::NETBANKING_CBI,
         self::HDFC_DEBIT_EMI,
+        self::KOTAK_DEBIT_EMI,
         self::NETBANKING_SVC,
         self::NETBANKING_JSB,
         self::NETBANKING_IDBI,
@@ -2200,6 +2209,7 @@ class Gateway
 
     public static $partialRefundDisabledGateways = [
         self::HDFC_DEBIT_EMI,
+        self::KOTAK_DEBIT_EMI,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -2994,6 +3004,9 @@ class Gateway
         IFSC::HSBC => [
             Emi\Type::CREDIT => Gateway::FIRST_DATA
         ],
+        IFSC::KKBK => [
+            Emi\Type::DEBIT => Gateway::KOTAK_DEBIT_EMI,
+        ]
     ];
 
     /**
@@ -3125,6 +3138,7 @@ class Gateway
 
     public static $contactMandatoryGateways = [
         Gateway::HDFC_DEBIT_EMI,
+        Gateway::KOTAK_DEBIT_EMI,
     ];
 
     public static $upiOtmGateways = [
