@@ -7450,6 +7450,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const NC_EMAIL_SENT                                               = 'NC_EMAIL_SENT';
 
+    const METRO_PUBLISH_FOR_CAPTURE_VERIFY                            = 'METRO_PUBLISH_FOR_CAPTURE_VERIFY';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

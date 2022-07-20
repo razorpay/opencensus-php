@@ -303,6 +303,8 @@ class Processor
      */
     const S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_s2s_card_payments_via_pg_router_v2';
 
+    const CAPTURE_VERIFY_METRO_TOPIC        = 'rearch-capture-verify';
+
     /**
      * @var Merchant\Entity
      */
@@ -3364,6 +3366,102 @@ class Processor
 
                 $this->repo->saveOrFail($this->payment);
             }, 20);
+
+        $this->publishMessageToMetro($payment);
+    }
+
+    protected function publishMessageToMetro($payment)
+    {
+        if ($payment->isCard() === false)
+        {
+            return;
+        }
+
+        if ($payment->isGatewayCaptured() === false)
+        {
+            return;
+        }
+
+        if ($this->mode !== Mode::LIVE)
+        {
+            return;
+        }
+
+        try
+        {
+            $data = $this->getCaptureVerifyData($payment);
+
+            $publishData['data'] = json_encode($data);
+
+            $response = $this->app['metro']->publish(self::CAPTURE_VERIFY_METRO_TOPIC, $publishData);
+
+            $this->trace->info(TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
+                [
+                    'topic'    => self::CAPTURE_VERIFY_METRO_TOPIC,
+                    'response' => $response,
+                ]);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
+                $data);
+        }
+
+    }
+
+    protected function getCaptureVerifyData($payment) 
+    {
+        $data = [];
+
+        $data['payment'] = [
+            'id'            => $payment->getId(),
+            'amount'        => $payment->getAmount(),
+            'currency'      => $payment->getCurrency(),
+            'method'        => $payment->getMethod(),
+            'status'        => $payment->getStatus(),
+            'captured_at'   => $payment->getCapturedAt(),
+            'created_at'    => $payment->getCreatedAt(),
+            'merchant_id'   => $payment->getMerchantId(),
+
+        ];
+
+        $terminal = $payment->terminal;
+
+        $data['terminal'] = [
+            'id'                  => $terminal->getId(),
+            'gateway'             => $terminal->getGateway(),
+            'acquirer'            => $terminal->getGatewayAcquirer(),
+            'gateway_merchant_id' => $terminal->getGatewayMerchantId(),
+            'gateway_terminal_id' => $terminal->getGatewayTerminalId(),
+        ];
+
+        $card = $payment->card;
+
+        $data['card'] = [
+            'type'      => $card->GetType(),
+            'issuer'    => $card->getIssuer(),
+            'network'   => $card->getNetwork(),
+        ];
+
+        $authorisation = $this->app['card.payments']->fetchEntity('authorization', $payment->getId());
+
+        if ((empty($authorisation['success']) === false) and 
+            ($authorisation['success'] === true))
+        {
+            $data['gateway'] = [
+                'gateway_reference_id1'  => $authorisation['gateway_reference_id1'],
+                'gateway_reference_id2'  => $authorisation['gateway_reference_id2'],
+                'verify_id'              => $authorisation['verify_id'],
+                'gateway_transaction_id' => $authorisation['gateway_transaction_id'],
+
+            ];
+        }
+
+        return $data;
     }
 
     protected function tracePaymentInfo($traceCode, $level = Trace::INFO)

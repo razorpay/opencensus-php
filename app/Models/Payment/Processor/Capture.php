@@ -428,6 +428,8 @@ trait Capture
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
+            $this->publishMessageToMetro($payment);
+            
             return $payment;
         }
         catch (\Throwable $e)
