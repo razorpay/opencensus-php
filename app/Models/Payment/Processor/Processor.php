@@ -4676,17 +4676,6 @@ class Processor
 
             // copying order notes in payment notes for all payments
             $payment->setNotes($notes);
-
-            $this->trace->info(
-                TraceCode::SMART_ROUTING_NOTES_PROCESSING,
-                [
-                    'payment'               => $payment,
-                    'merchant'              => $merchant,
-                    'final_notes_array'     => $notes,
-                    'order_notes_array'     => $orderNotes,
-                    'payments_notes_array'  => $paymentNotes,
-                ]);
-
         }
 
         $payment->setIntegrationMetadataUsingNotes($orderNotes);
