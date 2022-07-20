@@ -14,9 +14,11 @@ use App\User\Helper;
 use App\User\Constants;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
+use App\Base\UniqueIdEntity;
 use App\User\RecoverableException;
 use Illuminate\Support\Facades\Crypt;
 use Razorpay\Api\Errors\BadRequestError;
+use App\Splitz\Service as SplitzService;
 use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
@@ -117,8 +119,22 @@ class UserController extends Controller
 
         if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin"))
         {
+            if ($currentRouteName === 'signup')
+            {
+                if ($this->redirectionApplicableForGuest() === true)
+                {
+                    $redirectPath = env('EASY_DASHBOARD_URL') . \Request::getRequestUri();
+
+                    $redirectPath = preg_replace('/signup/', 'onboarding', $redirectPath);
+
+                    return redirect($redirectPath);
+                }
+            }
+
             $data['newAuthFlow'] = true; // new signup/signin flow
-            if ($currentRouteName === 'signin') {
+
+            if ($currentRouteName === 'signin')
+            {
                 $data['newAuthRoute'] = 'signin'; // new signin flow
             }
         }
@@ -172,6 +188,36 @@ class UserController extends Controller
         }
     }
 
+    private function redirectionApplicableForGuest(): bool
+    {
+        if ($this->matchExclusionsToRedirect() === true)
+        {
+            return false;
+        }
+
+        $uuid = Cookie::get('rzp_ab_uuid') ?? UniqueIdEntity::generateUniqueId();
+
+        Cookie::queue('rzp_ab_uuid', $uuid);
+
+        $experimentId = config('splitz.experiments')['EASY_ONBOARDING_REDIRECT'];
+
+        $data = (new SplitzService())->getVariantBulk($uuid, [$experimentId], [], "splitz/bulkEvaluate");
+
+        return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+    }
+
+    private function matchExclusionsToRedirect(): bool
+    {
+        $uri = trim(\Request::getRequestUri(), '/');
+
+        if (preg_match('/(\br=partner\b)|(\bauth_source\b)|(\breferral_code\b)|(\bcoupon_code\b)/', $uri))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private function isEasyOnboardingExperimentEnable(): bool
     {
         try
@@ -220,7 +266,7 @@ class UserController extends Controller
 
         $activationFormMilestone = $details['activation_form_milestone'] ?? null;
 
-        if (($signupCampaign === 'easy_onboarding') and 
+        if (($signupCampaign === 'easy_onboarding') and
             ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2'))
         {
             return true;

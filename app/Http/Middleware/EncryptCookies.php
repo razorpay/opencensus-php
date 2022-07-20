@@ -12,6 +12,7 @@ class EncryptCookies extends BaseEncrypter
     protected $except = [
         'rzp_merchant_id',
         'rzp_user_id',
+        'rzp_ab_uuid',
     ];
 
     protected function decrypt(Request $request)

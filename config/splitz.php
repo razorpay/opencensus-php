@@ -164,7 +164,7 @@ return [
 
         //Digilocker EKYC
         'ENABLE_DIGILOCKER_EKYC_EXP_SPLITZ' => env('ENABLE_DIGILOCKER_EKYC_EXP_SPLITZ', ''),
-        
+
         // New Nitro ICICI Experiment
         'NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ', ''),
         'NITRO_NEW_ICICI_BASE_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BASE_EXP_SPLITZ', ''),
@@ -196,5 +196,6 @@ return [
 
         // Onboarding all as resellers
         'PARTNERSHIP_ONBOARD_RESELLERS' => env('PARTNERSHIP_ONBOARD_RESELLERS', ''),
+        'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', '')
     ]
 ];

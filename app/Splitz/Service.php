@@ -31,7 +31,7 @@ class Service extends Base\Service
         return $this->getVariantBulk($merchantId, config('splitz.experiments'));
     }
 
-    public function getVariantBulk($merchantId, $experimentIds)
+    public function getVariantBulk($merchantId, $experimentIds, $clientType = ['client_type' => 'merchant'], $url = 'splitz/bulkEvaluateProxy')
     {
         $startTime = microtime(true) * 1000;
 
@@ -47,7 +47,7 @@ class Service extends Base\Service
             return [];
         }
 
-        $request = new ApiRequestAny(['client_type' => 'merchant']);
+        $request = new ApiRequestAny($clientType);
 
         $requestData = ['mid' => $merchantId];
 
@@ -64,7 +64,7 @@ class Service extends Base\Service
             array_push($input, $experimentInput);
         }
 
-        list($error, $data) = $request->processInput($input)->send("splitz/bulkEvaluateProxy", 'POST');
+        list($error, $data) = $request->processInput($input)->send($url, 'POST');
 
         if (empty($error) === false)
         {
