@@ -36,5 +36,5 @@
   <body>
     <div id="root"></div>
   </body>
-  <script src="{{env('AWS_CF_CDN_URL')}}/capital/virtual-card/main.js" async></script>
+  <script src="{{env('AWS_CF_CDN_URL')}}/capital/virtual-card/main.js" async></script> 
 </html>

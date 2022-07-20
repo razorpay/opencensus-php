@@ -24,24 +24,24 @@ class Mozart
     const DEFAULT_MOZART_VERSION = 'v1';
 
     // Mozart constants
-    const HEADERS                        = 'headers';
-    const CONTENT                        = 'content';
-    const OPTIONS                        = 'options';
-    const STATUS_CODE                    = 'status_code';
-    const URL                            = 'url';
-    const WEBHOOK                        = 'webhook';
-    const TRANSLATE                      = 'translate';
+    const HEADERS = 'headers';
+    const CONTENT = 'content';
+    const OPTIONS = 'options';
+    const STATUS_CODE = 'status_code';
+    const URL = 'url';
+    const WEBHOOK = 'webhook';
+    const TRANSLATE = 'translate';
 
     // Mozart error constants
-    const DESCRIPTION                    = 'description';
-    const GATEWAY_ERROR_CODE             = 'gateway_error_code';
-    const GATEWAY_STATUS_CODE            = 'gateway_status_code';
-    const INTERNAL_ERROR_CODE            = 'internal_error_code';
-    const GATEWAY_ERROR_DESCRIPTION      = 'gateway_error_description';
-    const ERROR                          = 'error';
-    const DATA                           = 'data';
-    const MORE_INFORMATION               = 'moreInformation';
-    const NO_ERROR_MAPPING_DESCRIPTION   = '(No error description was mapped for this error code)';
+    const DESCRIPTION = 'description';
+    const GATEWAY_ERROR_CODE = 'gateway_error_code';
+    const GATEWAY_STATUS_CODE = 'gateway_status_code';
+    const INTERNAL_ERROR_CODE = 'internal_error_code';
+    const GATEWAY_ERROR_DESCRIPTION = 'gateway_error_description';
+    const ERROR = 'error';
+    const DATA = 'data';
+    const MORE_INFORMATION = 'moreInformation';
+    const NO_ERROR_MAPPING_DESCRIPTION = '(No error description was mapped for this error code)';
 
     protected $app;
 
@@ -65,8 +65,7 @@ class Mozart
 
         $this->config = $app['config'];
 
-        if (isset($this->app['rzp.mode']))
-        {
+        if (isset($this->app['rzp.mode'])) {
             $this->mode = $this->app['rzp.mode'];
         }
     }
@@ -83,15 +82,15 @@ class Mozart
         bool $logResponse = true, bool $addEntities = true)
     {
         $this->namespace = $namespace;
-        $this->gateway   = $gateway;
-        $this->action    = $action;
-        $this->version   = $version;
+        $this->gateway = $gateway;
+        $this->action = $action;
+        $this->version = $version;
 
         $url = $this->getUrl();
 
         $authentication = $this->getAuthenticationDetails();
 
-        $request = $this->getRequest($url, $authentication, $input, $timeout, $connectTimeout,$addEntities);
+        $request = $this->getRequest($url, $authentication, $input, $timeout, $connectTimeout, $addEntities);
 
         $this->traceMozartServiceRequest($request);
 
@@ -99,7 +98,7 @@ class Mozart
 
         $responseArray = $this->jsonToArray($responseBody);
 
-        $this->traceMozartServiceResponse($responseArray ?? $responseBody ?? null,$logResponse);
+        $this->traceMozartServiceResponse($responseArray ?? $responseBody ?? null, $logResponse);
 
         // Un-setting the raw field here, this field is the json encoded response from the gateway
         // since we have already logged the response here, there's no need to application logic
@@ -111,7 +110,7 @@ class Mozart
         return $responseArray;
     }
 
-    public function translateWebhook(string $gateway, string $payload, string $mode) : array
+    public function translateWebhook(string $gateway, string $payload, string $mode): array
     {
         $this->mode = $mode;
 
@@ -123,20 +122,17 @@ class Mozart
             self::TRANSLATE);
 
         $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, [
-            self::URL           => $translateWebhookRequest[self::URL],
-            self::CONTENT       => $translateWebhookRequest[self::CONTENT],
+            self::URL => $translateWebhookRequest[self::URL],
+            self::CONTENT => $translateWebhookRequest[self::CONTENT],
         ]);
 
-        try
-        {
+        try {
             $translateWebhookResponse = $this->sendRequest($translateWebhookRequest);
-        }
-        catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             $data = [
-                'exception'          => $exception->getMessage(),
-                self::URL            => $translateWebhookRequest[self::URL],
-                self::CONTENT        => $translateWebhookRequest[self::CONTENT],
+                'exception' => $exception->getMessage(),
+                self::URL => $translateWebhookRequest[self::URL],
+                self::CONTENT => $translateWebhookRequest[self::CONTENT],
             ];
 
             $this->trace->error(TraceCode::MOZART_SERVICE_REQUEST_FAILED, $data);
@@ -148,8 +144,8 @@ class Mozart
         }
 
         $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, [
-            self::STATUS_CODE   => $translateWebhookResponse[self::STATUS_CODE],
-            self::CONTENT       => $translateWebhookResponse[self::CONTENT],
+            self::STATUS_CODE => $translateWebhookResponse[self::STATUS_CODE],
+            self::CONTENT => $translateWebhookResponse[self::CONTENT],
         ]);
 
         return $translateWebhookResponse;
@@ -187,24 +183,24 @@ class Mozart
     }
 
     protected function getRequest(string $url, array $authentication, array $input,
-                                  int $timeout = self::TIMEOUT, int $connectTimeout = self::CONNECT_TIMEOUT,$addEntities): array
+                                  int $timeout = self::TIMEOUT, int $connectTimeout = self::CONNECT_TIMEOUT, $addEntities): array
     {
-        if($addEntities) {
+        if ($addEntities) {
             $requestBody['entities'] = $input;
-        }else {
+        } else {
             $requestBody = $input;
         }
         $request = [
             'url' => $url,
             'method' => Requests::POST,
             'headers' => [
-                RequestHeader::CONTENT_TYPE  => 'application/json',
-                RequestHeader::X_TASK_ID     => $this->app['request']->getTaskId(),
+                RequestHeader::CONTENT_TYPE => 'application/json',
+                RequestHeader::X_TASK_ID => $this->app['request']->getTaskId(),
             ],
             'content' => json_encode($requestBody),
             'options' => [
-                'auth'            => $authentication,
-                'timeout'         => $timeout,
+                'auth' => $authentication,
+                'timeout' => $timeout,
                 'connect_timeout' => $connectTimeout
             ]
         ];
@@ -215,14 +211,14 @@ class Mozart
     protected function getRequestV2(string $content, string $namespace, string $gateway, string $version, string $action)
     {
         $request = [
-            self::URL       => $this->getUrlV2($namespace, $gateway, $version, $action),
-            'method'        => Requests::POST,
-            self::HEADERS   => [
-                RequestHeader::CONTENT_TYPE  => 'application/json',
-                RequestHeader::X_TASK_ID     => $this->app['request']->getTaskId(),
+            self::URL => $this->getUrlV2($namespace, $gateway, $version, $action),
+            'method' => Requests::POST,
+            self::HEADERS => [
+                RequestHeader::CONTENT_TYPE => 'application/json',
+                RequestHeader::X_TASK_ID => $this->app['request']->getTaskId(),
             ],
-            self::CONTENT   => $content,
-            self::OPTIONS   => ['auth' => $this->getAuthenticationDetails()],
+            self::CONTENT => $content,
+            self::OPTIONS => ['auth' => $this->getAuthenticationDetails()],
         ];
 
         return $request;
@@ -236,27 +232,21 @@ class Mozart
      */
     protected function sendRawRequest(array $request)
     {
-        try
-        {
+        try {
             $responseBody = $this->sendRequest($request)[self::CONTENT];
 
             return $responseBody;
-        }
-        catch (Requests_Exception $e)
-        {
+        } catch (Requests_Exception $e) {
             $errorCode = TraceCode::MOZART_SERVICE_REQUEST_FAILED;
 
-            if (checkRequestTimeout($e) === true)
-            {
+            if (checkRequestTimeout($e) === true) {
                 $errorCode = TraceCode::MOZART_SERVICE_REQUEST_TIMEOUT;
             }
 
             $this->trace->traceException($e, Trace::ERROR, $errorCode);
 
             throw $e;
-        }
-        catch (\Throwable $ex)
-        {
+        } catch (\Throwable $ex) {
             $this->trace->traceException(
                 $ex,
                 Trace::ERROR,
@@ -269,8 +259,7 @@ class Mozart
 
     protected function sendRequest(array $request)
     {
-        if (isset($request['options']) === false)
-        {
+        if (isset($request['options']) === false) {
             $request['options'] = [];
         }
 
@@ -293,9 +282,9 @@ class Mozart
 
         return
             [
-                self::HEADERS       =>  $response->headers->getAll(),
-                self::CONTENT       =>  $response->body,
-                self::STATUS_CODE   =>  $response->status_code,
+                self::HEADERS => $response->headers->getAll(),
+                self::CONTENT => $response->body,
+                self::STATUS_CODE => $response->status_code,
             ];
     }
 
@@ -303,34 +292,29 @@ class Mozart
     {
         $statusCode = $response->status_code;
 
-        if (in_array($statusCode, [503, 504], true) === true)
-        {
+        if (in_array($statusCode, [503, 504], true) === true) {
             throw new Exception\IntegrationException(
-                'Response status: '. $statusCode,
+                'Response status: ' . $statusCode,
                 ErrorCode::SERVER_ERROR_MOZART_SERVICE_TIMEOUT,
                 [
-                    'status_code'   => $statusCode,
-                    'body'          => $response->body,
+                    'status_code' => $statusCode,
+                    'body' => $response->body,
                 ]);
-        }
-        else if ($statusCode >= 500)
-        {
+        } else if ($statusCode >= 500) {
             throw new Exception\IntegrationException(
-                'Response status: '. $statusCode,
+                'Response status: ' . $statusCode,
                 ErrorCode::SERVER_ERROR_MOZART_SERVICE_ERROR,
                 [
-                    'status_code'   => $statusCode,
-                    'body'          => $response->body,
+                    'status_code' => $statusCode,
+                    'body' => $response->body,
                 ]);
-        }
-        else if ($statusCode >= 400)
-        {
+        } else if ($statusCode >= 400) {
             throw new Exception\IntegrationException(
-                'Response status: '. $statusCode,
+                'Response status: ' . $statusCode,
                 ErrorCode::SERVER_ERROR_MOZART_INTEGRATION_ERROR,
                 [
-                    'status_code'   => $statusCode,
-                    'body'          => $response->body,
+                    'status_code' => $statusCode,
+                    'body' => $response->body,
                 ]);
         }
     }
@@ -338,10 +322,10 @@ class Mozart
     protected function getMozartRequestParams()
     {
         return [
-            'namespace'   => $this->namespace,
-            'gateway'     => $this->gateway,
-            'action'      => $this->action,
-            'version'     => $this->version,
+            'namespace' => $this->namespace,
+            'gateway' => $this->gateway,
+            'action' => $this->action,
+            'version' => $this->version,
         ];
     }
 
@@ -349,18 +333,16 @@ class Mozart
      * Check for gateway errors
      *
      * @param array $response
-     * @param bool  $useMozartMappedInternalErrorCode whether to use internal error codes mapped by mozart.
+     * @param bool $useMozartMappedInternalErrorCode whether to use internal error codes mapped by mozart.
      *
      * @throws Exception\GatewayErrorException
      */
     protected function checkGatewayErrorsAndThrowException(array $response, bool $useMozartMappedInternalErrorCode)
     {
-        if ($response['success'] !== true)
-        {
+        if ($response['success'] !== true) {
             $errorCode = ErrorCode::SERVER_ERROR_MOZART_SERVICE_GATEWAY_ERROR;
 
-            if ($useMozartMappedInternalErrorCode === true)
-            {
+            if ($useMozartMappedInternalErrorCode === true) {
                 $errorCode = $response['error']['internal_error_code'];
             }
 
@@ -370,7 +352,7 @@ class Mozart
                 $response['error']['gateway_error_description'] ?? 'gateway_error_desc',
                 [
                     'error' => $response['error'],
-                    'data'  => $response['data']
+                    'data' => $response['data']
                 ],
                 null,
                 $this->getUrl());
@@ -386,9 +368,9 @@ class Mozart
         $this->trace->info(TraceCode::MOZART_SERVICE_REQUEST, $traceRequest);
     }
 
-    protected function traceMozartServiceResponse($response,$logResponse)
+    protected function traceMozartServiceResponse($response, $logResponse)
     {
-        if($logResponse){
+        if ($logResponse) {
             $this->trace->info(TraceCode::MOZART_SERVICE_RESPONSE, $response);
         }
     }
@@ -397,8 +379,7 @@ class Mozart
     {
         $decodedJson = json_decode($json, true);
 
-        if ($decodedJson === null)
-        {
+        if ($decodedJson === null) {
             throw new Exception\RuntimeException(
                 ErrorCode::SERVER_ERROR_FAILED_TO_CONVERT_JSON_TO_ARRAY,
                 [
