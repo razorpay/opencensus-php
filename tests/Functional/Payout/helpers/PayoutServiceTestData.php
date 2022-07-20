@@ -1395,5 +1395,21 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testGetScheduleTimeSlotsForDashboard' =>  [
+    'request'  => [
+        'method'  => 'GET',
+        'url'     => '/payouts/schedule/timeslots'
+    ],
+    'response'  => [
+        'content' => [
+            '9',
+            '13',
+            '17',
+            '21',
+        ],
+    ],
+]
+
 ];

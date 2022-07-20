@@ -54,6 +54,7 @@ use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Models\PayoutsStatusDetails\StatusReasonMap;
 use RZP\Models\PayoutSource\Core as PayoutSourceCore;
 use RZP\Models\Payout\Constants as PayoutConstants;
+use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Payout\BatchHelper as PayoutBatchHelper;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
@@ -1689,7 +1690,14 @@ class Service extends Base\Service
 
     public function getScheduleSlotsForPayouts()
     {
-        return Schedule::getTimeSlotsForScheduledPayouts();
+        if ($this->merchant->isFeatureEnabled(FeatureConstant::SCHEDULE_PAYOUT_VIA_PS))
+        {
+            return $this->core->getScheduleTimeSlotsViaPayoutService();
+        }
+        else
+        {
+            return Schedule::getTimeSlotsForScheduledPayouts();
+        }
     }
 
     protected function getQueuedPayoutsSummary()

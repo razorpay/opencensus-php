@@ -33,6 +33,7 @@ use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
+use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
 class PayoutServiceTest extends TestCase
 {
@@ -2756,4 +2757,42 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
     }
+
+    public function mockPayoutServiceDashboardScheduleTimeSlots()
+    {
+        $payoutServiceDashboardTimeSlotsMock = $this->getMockBuilder(PayoutServiceDashboardScheduleTimeSlots::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRequest'])
+            ->getMock();
+
+        $this->app->instance(PayoutServiceDashboardScheduleTimeSlots::PAYOUT_SERVICE_DASHBOARD_TIME_SLOTS, $payoutServiceDashboardTimeSlotsMock );
+
+        $response = new Requests_Response();
+
+        $response->body = json_encode(
+            [
+                '9',
+                '13',
+                '17',
+                '21',
+            ]);
+
+        $this->app->payout_service_dashboard_time_slots->method('sendRequest')
+            ->willReturn($response);
+    }
+
+    public function testGetScheduleTimeSlotsForDashboard()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::SCHEDULE_PAYOUT_VIA_PS]);
+
+        $this->mockPayoutServiceDashboardScheduleTimeSlots();
+
+        $testData = $this->testData['testGetScheduleTimeSlotsForDashboard'];
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
 }

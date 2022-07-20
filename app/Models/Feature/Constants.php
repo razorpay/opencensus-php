@@ -841,6 +841,11 @@ class Constants
     const PAYOUT_SERVICE_ENABLED           = 'payout_service_enabled';
 
     /**
+     *  Schedule Payout Service enables for merchant
+     */
+    const SCHEDULE_PAYOUT_VIA_PS  =  'schedule_payout_via_ps';
+
+    /**
      * Internal Contact Payout Service enables for merchant
      */
     const INTERNAL_CONTACT_VIA_PS         = 'internal_contact_via_ps';
@@ -1831,6 +1836,7 @@ class Constants
         self::FTS_REQUEST_NOTES               => true,
         self::RBL_CA_UPI                      => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
+        self::SCHEDULE_PAYOUT_VIA_PS          => true,
         self::INTERNAL_CONTACT_VIA_PS         => true,
         self::WHITE_LABELLED_INVOICES         => true,
         self::WHITE_LABELLED_ROUTE            => true,

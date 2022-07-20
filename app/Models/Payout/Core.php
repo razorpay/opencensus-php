@@ -155,6 +155,11 @@ class Core extends Base\Core
     protected $payoutScheduledServiceClient;
 
     /**
+     * @var PayoutService\DashboardScheduleTimeSlots
+     */
+    protected $payoutGetTimeSlotsForDashboardServiceClient;
+
+    /**
      * @var PayoutService\OnHoldBeneEvent
      */
     protected $payoutServiceBeneEventUpdateClient;
@@ -201,6 +206,8 @@ class Core extends Base\Core
         $this->payoutCancelServiceClient = $this->app[PayoutService\Cancel::PAYOUT_SERVICE_CANCEL];
 
         $this->payoutScheduledServiceClient = $this->app[PayoutService\Schedule::PAYOUT_SERVICE_SCHEDULE];
+
+        $this->payoutGetTimeSlotsForDashboardServiceClient = $this->app[PayoutService\DashboardScheduleTimeSlots::PAYOUT_SERVICE_DASHBOARD_TIME_SLOTS];
 
         $this->payoutServiceDataConsistencyCheckerClient = $this->app[PayoutService\DataConsistencyChecker::PAYOUT_SERVICE_DATA_CONSISTENCY_CHECKER];
 
@@ -4982,6 +4989,18 @@ class Core extends Base\Core
     public function initiateScheduledPayoutsViaPayoutService($input)
     {
         return $this->payoutScheduledServiceClient->processSchedulePayoutViaMicroservice($input);
+    }
+
+    public function getScheduleTimeSlotsViaPayoutService()
+    {
+        try
+        {
+          return  $this->payoutGetTimeSlotsForDashboardServiceClient->getScheduleTimeSlotsViaMicroservice();
+        }
+        catch (\Exception $exception)
+        {
+            throw new Exception\BadRequestValidationFailureException('Schedule Timeslot via Microservices Failed.');
+        }
     }
 
     public function retryPayoutsOnPayoutService($input)
