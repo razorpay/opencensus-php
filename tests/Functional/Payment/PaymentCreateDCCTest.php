@@ -297,6 +297,85 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
     }
 
+    public function testPaymentCreateWithAmexCardsDCC()
+    {
+        $iin = $this->fixtures->iin->create(['iin' => '374245', 'country' => 'US', 'network' => 'American Express',
+            'flows'   => ['3ds' => '1']]);
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+        $showMarkup = $responseContent['show_markup'];
+
+        $this->assertEquals("USD", $cardCurrency);
+        $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertNotNull($currencyRequestId);
+        $this->assertEquals(false, $showMarkup);
+
+        $usdAmount = $responseContent['all_currencies'][$cardCurrency]['amount'];
+        $payment = $this->payment;
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getLastEntity('payment', true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals($payment['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($usdAmount, $paymentMeta['gateway_amount']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($usdAmount, $responseContent['gateway_amount']);
+        $this->assertEquals($cardCurrency, $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount, $responseContent['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateWithAmexCardsWithoutDCC()
+    {
+        $iin = $this->fixtures->iin->create(['iin' => '371111', 'country' => 'IN', 'network' => 'American Express',
+            'flows'   => ['3ds' => '1']]);
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
+        $responseContent = json_decode($response->getContent(), true);
+
+        $payment = $this->payment;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals("captured", $payment['status']);
+        $this->assertEquals('INR', $payment['gateway_currency']);
+        $this->assertEquals('50000', $payment['gateway_amount']);
+    }
+
     public function testPaymentCreateWithDynamicMarkupDCC()
     {
         $dccMarkupPercent = 3.23;

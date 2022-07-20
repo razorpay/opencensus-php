@@ -129,6 +129,7 @@ class Network
     public static $dccSupportedNetworks = [
         self::MC,
         self::VISA,
+        self::AMEX,
     ];
 
     public static $avsSupportedNetworks = [
