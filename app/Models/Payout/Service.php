@@ -43,6 +43,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Merchant\Account as Account;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
@@ -3437,7 +3438,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::TEST_PAYOUTS_YESB_CRON_REQUEST);
 
         $testPayoutInput = $input;
-        $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1;
+        $merchantId      = Account::FUND_LOADING_DOWNTIME_DETECTION_SOURCE_ACCOUNT_MID;
         $this->merchant  = $this->core->addMerchantForTestPayouts($merchantId);
 
         $this->trace->info(TraceCode::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST,
@@ -3479,7 +3480,7 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::TEST_PAYOUTS_ICICI_CRON_REQUEST);
 
         $testPayoutInput  = $input;
-        $merchantId       = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1;
+        $merchantId       = Account::FUND_LOADING_DOWNTIME_DETECTION_SOURCE_ACCOUNT_MID;
         $this->merchant   = $this->core->addMerchantForTestPayouts($merchantId);
 
         $this->trace->info(TraceCode::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST,
@@ -3536,8 +3537,13 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::ADD_BALANCE_TO_SOURCE_FOR_TEST_PAYOUTS_CRON_REQUEST,
             ['input' => $input]);
 
-        $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT2;
-        $this->merchant = $this->core->addMerchantForTestPayouts($merchantId);
+        $merchantId      = Account::FUND_LOADING_DOWNTIME_DETECTION_DESTINATION_ACCOUNT_MID;
+        $this->merchant  = $this->core->addMerchantForTestPayouts($merchantId);
+
+        $sourceMid = Account::FUND_LOADING_DOWNTIME_DETECTION_SOURCE_ACCOUNT_MID;
+        $count     = $this->repo->payout->fetchCountOfProcessedPayoutsInLast24Hours($sourceMid);
+
+        $input[Payout\Entity::AMOUNT] = $count * 100;
 
         $balance = $this->processAccountNumber($input);
 

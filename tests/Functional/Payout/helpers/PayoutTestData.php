@@ -19353,14 +19353,14 @@ return [
     'testCreationOfTestPayoutsForDetectingFundLoadingDowntimeICICI' => [
         'request' => [
             'method' => 'post',
-            'url' => '/payouts/test/downtime_detection_ICICI',
+            'url' => '/payouts/test/downtime_detection_icici',
             'content' => [
                 'account_number' => '2244240041626905',
                 'amount' => 100,
                 'currency' => 'INR',
                 'purpose' => 'payout',
                 'narration' => 'ICICI Test Payout',
-                'modes' => ['IMPS'],
+                'modes' => ['NEFT'],
                 'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
                 'notes' => [
                     'abc' => 'xyz',
@@ -19370,7 +19370,7 @@ return [
         'response' => [
             'content' => [
                 [
-                  'mode' => 'IMPS',
+                  'mode' => 'NEFT',
                   'status' => 'created',
                     'fund_account_id' => 'D6Z9Jfir2egAUT',
                     'narration' => 'ICICI Test Payout',
@@ -19382,7 +19382,7 @@ return [
     'testCreationOfTestPayoutsForDetectingFundLoadingDowntimeYESB' => [
         'request' => [
             'method' => 'post',
-            'url' => '/payouts/test/downtime_detection_YESB',
+            'url' => '/payouts/test/downtime_detection_yesb',
             'content' => [
                 'account_number' => '2223330041626905',
                 'amount' => 100,
@@ -19413,7 +19413,7 @@ return [
             'method' => 'post',
             'url' => '/payouts/test/check_status',
             'content' => [
-                'modes' => ['IMPS'],
+                'modes' => ['NEFT'],
             ],
         ],
         'response' => [

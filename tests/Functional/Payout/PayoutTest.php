@@ -23582,10 +23582,13 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreationOfTestPayoutsForDetectingFundLoadingDowntimeICICI()
     {
-        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
-            ['JX04vtuLFZyc8P','2244240041626905','7878780111000','ICIC0000104','icici'];
+        list($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId) =
+            ['JX04vtuLFZyc8P', '2244240041626905', '7878780111000',
+                'ICIC0000104', 'icici', '1000002contact', 'D6Z9Jfir2egAUT', '1000001lcustba'];
 
-        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel);
+        $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId);
         $this->mockRazorxToAllowVAToVAPayouts();
         $this->ba->cronAuth('live');
 
@@ -23598,10 +23601,13 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreationOfTestPayoutsForDetectingFundLoadingDowntimeYESB()
     {
-        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
-            ['JX04vtuLFZyc8P','2223330041626905','3434680111000','YESB0CMSNOC','yesb'];
+        list($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId) =
+            ['JX04vtuLFZyc8P', '2223330041626905', '3434680111000',
+                'YESB0CMSNOC', 'yesb', '1000002contact', 'D6Z9Jfir2egAUT', '1000001lcustba'];
 
-        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber1,$ifsc,$channel);
+        $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId);
         $this->mockRazorxToAllowVAToVAPayouts();
         $this->ba->cronAuth('live');
 
@@ -23614,10 +23620,13 @@ class PayoutTest extends OAuthTestCase
 
     public function testFundLoadingDowntimeDetectionICICI()
     {
-        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
-            ['JX04vtuLFZyc8P','2244240041626905','7878780111000','ICIC0000104','icici'];
+        list($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId) =
+            ['JX04vtuLFZyc8P', '2244240041626905', '7878780111000',
+                'ICIC0000104', 'icici', '1000002contact', 'D6Z9Jfir2egAUT', '1000001lcustba'];
 
-        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel);
+        $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId);
         $this->mockRazorxToAllowVAToVAPayouts();
         $interval = 0;
 
@@ -23626,14 +23635,14 @@ class PayoutTest extends OAuthTestCase
             $this->ba->cronAuth('live');
             $request = [
                 'method' => 'post',
-                'url' => '/payouts/test/downtime_detection_ICICI',
+                'url' => '/payouts/test/downtime_detection_icici',
                 'content' => [
                     'account_number' => '2244240041626905',
                     'amount' => 100,
                     'currency' => 'INR',
                     'purpose' => 'payout',
                     'narration' => 'ICICI Test Payout',
-                    'modes' => ['IMPS'],
+                    'modes' => ['NEFT'],
                     'fund_account_id' => 'fa_D6Z9Jfir2egAUT',
                     'notes' => [
                         'abc' => 'xyz',
@@ -23673,10 +23682,13 @@ class PayoutTest extends OAuthTestCase
 
     public function testFundLoadingDowntimeDetectionYESB()
     {
-        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
-            ['JX04vtuLFZyc8P','2223330041626905','3434680111000','YESB0CMSNOC','yesb'];
+        list($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId) =
+            ['JX04vtuLFZyc8P', '2223330041626905', '3434680111000',
+                'YESB0CMSNOC', 'yesb', '1000002contact', 'D6Z9Jfir2egAUT', '1000001lcustba'];
 
-        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber1,$ifsc,$channel);
+        $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId);
         $this->mockRazorxToAllowVAToVAPayouts();
         $interval = 0;
 
@@ -23685,7 +23697,7 @@ class PayoutTest extends OAuthTestCase
             $this->ba->cronAuth('live');
             $request = [
                 'method' => 'post',
-                'url' => '/payouts/test/downtime_detection_YESB',
+                'url' => '/payouts/test/downtime_detection_yesb',
                 'content' => [
                     'account_number' => '2223330041626905',
                     'amount' => 100,
@@ -23736,44 +23748,28 @@ class PayoutTest extends OAuthTestCase
 
     public function testAddingBalanceToSourceForTestMerchant()
     {
-        list($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel) =
-            ['JXR5VxmNDmWy1z','7878780111000','2244240041626905','ICIC0000104','icici'];
+        $this->testCreationOfTestPayoutsForDetectingFundLoadingDowntimeICICI();
+        $payout = $this->getDbLastEntity('payout','live');
+        $payout->setStatus('processed');
+        $payout->setCreatedAt(Carbon::now(Timezone::IST)->subHours(2)->getTimestamp());
+        $payout->save();
 
-        $this->setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel);
+        list($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId) =
+            ['JXR5VxmNDmWy1z', '7878780111000', '2244240041626905',
+                'ICIC0000104', 'icici', '1000001contact', 'D6Z9Jfir2egAUQ', '1000000lcustba'];
+
+        $this->setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc,
+            $channel, $contactId, $fundAccountId, $baId);
+
         $this->mockRazorxToAllowVAToVAPayouts();
-
-
-        $xBalance2 = $this->fixtures->on('live')->create('balance',
-            [
-                'merchant_id'    => $merchantId,
-                'type'           => 'banking',
-                'account_type'   => 'shared',
-                'account_number' => $accountNumber1,
-                'balance'        => 3000000,
-                'channel'        => $channel
-            ]);
-
-        $this->fixtures->on('live')->create('contact',
-            ['id' => '1000003contact', 'name' => 'Contact X', 'merchant_id' => $merchantId]);
-
-        $this->fixtures->on('live')->fund_account->createBankAccount(
-            [
-                'id'          => 'D6Z9Jfir2egAUQ',
-                'source_type' => 'contact',
-                'source_id'   => '1000003contact',
-                'merchant_id' => $merchantId,
-            ],
-            [
-                'name'           => 'Shivam',
-                'ifsc'           => $ifsc,
-                'account_number' => $accountNumber2,
-            ]);
 
         $this->ba->cronAuth('live');
         $this->startTest();
     }
 
-    public function setUpMerchantForTestPayouts($merchantId,$accountNumber1,$accountNumber2,$ifsc,$channel)
+    public function setUpMerchantForTestPayouts($merchantId, $accountNumber1, $accountNumber2, $ifsc, $channel,
+                                                $contactId, $fundAccountId, $baId)
     {
         $merchant = $this->fixtures->on('live')->create('merchant',
             [
@@ -23800,13 +23796,13 @@ class PayoutTest extends OAuthTestCase
             ]);
 
         $this->fixtures->on('live')->create('contact',
-            ['id' => '1000002contact', 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);
+            ['id' => $contactId, 'name' => 'Contact X', 'merchant_id' => $merchant['id']]);
 
         $this->fixtures->on('live')->fund_account->createBankAccount(
             [
-                'id'          => 'D6Z9Jfir2egAUT',
+                'id'          => $fundAccountId,
                 'source_type' => 'contact',
-                'source_id'   => '1000002contact',
+                'source_id'   => $contactId,
                 'merchant_id' => $merchant['id'],
             ],
             [
@@ -23819,7 +23815,7 @@ class PayoutTest extends OAuthTestCase
         $bankAccount    = $this->fixtures->on('live')->create(
             'bank_account',
             [
-                'id'             => '1000000lcustba',
+                'id'             => $baId,
                 'type'           => 'virtual_account',
                 'entity_id'      => $virtualAccount->getId(),
                 'account_number' => $accountNumber1,

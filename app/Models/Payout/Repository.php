@@ -2461,4 +2461,23 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchCountOfProcessedPayoutsInLast24Hours(string $merchantId)
+    {
+        $narration        = Payout\Core::NARRATION_ICICI;
+        $statusColumn     = $this->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn  = $this->dbColumn(Entity::CREATED_AT);
+        $narrationColumn  = $this->dbColumn(Entity::NARRATION);
+
+        $previousDayTimeStamp = Carbon::now(Timezone::IST)->subHours(24)->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->where($createdAtColumn,'>=', $previousDayTimeStamp)
+                      ->where($statusColumn, Status::PROCESSED)
+                      ->where($merchantIdColumn, $merchantId)
+                      ->where($narrationColumn, $narration);
+
+        return $query->count();
+    }
+
 }

@@ -5663,7 +5663,7 @@ class Core extends Base\Core
 
     public function checkStatusOfTestPayouts($input)
     {
-        $merchantId      = \RZP\Models\Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_TEST_ACCOUNT1;
+        $merchantId      = Merchant\Account::FUND_LOADING_DOWNTIME_DETECTION_SOURCE_ACCOUNT_MID;
 
         $this->merchant  = $this->addMerchantForTestPayouts($merchantId);
 
