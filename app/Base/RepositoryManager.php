@@ -171,6 +171,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Product\TncMap\Repository                $tnc_map;
  * @property Models\Merchant\Product\TncMap\Acceptance\Repository     $merchant_tnc_acceptance;
  * @property Models\Settlement\Repository                             $settlement
+ * @property Models\Settlement\InternationalRepatriation\Repository   $settlement_international_repatriation
  * @property Gateway\Enach\Base\Repository                            $enach
  * @property Gateway\Netbanking\Base\Repository                       $netbanking
  * @property Models\SubVirtualAccount\Repository                      $sub_virtual_account

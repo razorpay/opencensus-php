@@ -5,6 +5,7 @@ namespace RZP\Models\Lambda;
 use File;
 use Request;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Base;
@@ -22,6 +23,11 @@ use RZP\Reconciliator\FileProcessor;
 use Symfony\Component\HttpFoundation;
 use RZP\Models\Merchant\Document\Entity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Models\Settlement\InternationalRepatriation\Entity as RepatEntity;
+use RZP\Models\Settlement\InternationalRepatriation\Service as RepatService;
+use RZP\Models\Transaction\Entity as TEntity;
+use RZP\Models\Settlement\Entity as SEntity;
+use Carbon\Carbon;
 
 class Service extends Base\Service
 {
@@ -51,7 +57,11 @@ class Service extends Base\Service
 
     const RBL = "rbl";
     const ICICI = "icici";
-    
+    const NIUM = "NIUM";
+    const LEDGER_TYPE_BOOK_FX = 'Book Fx';
+    const LEDGER_TYPE_PAYOUTS = 'Payouts';
+    const LEDGER_TYPE_RECEIVE = 'Receive';
+
     protected static $headers = [
         'MID',
         'Merchant name',
@@ -316,10 +326,10 @@ class Service extends Base\Service
                     'success'           => isset($response[GatewayConstants::ID]),
                 ]);
 
-            /*    
+            /*
              * Commenting it out, because for now we are removing zip file generation logic
              * for RBL Files.
-             * 
+             *
              * $this->deleteExistingZipFile($merchantId,$part);
             */
 
@@ -329,7 +339,7 @@ class Service extends Base\Service
        if($input['gateway'] === self::ICICI)
        {
             list($tag, $referenceNumber, $utrNumberAndFileExtension) = explode('_',$filename);
-                
+
             $utrNumberAndFileExtension = ltrim($utrNumberAndFileExtension);
             $utrNumberAndFileExtension = rtrim($utrNumberAndFileExtension);
             list($utrNumber, $fileExtension) = explode('.',$utrNumberAndFileExtension);
@@ -341,7 +351,7 @@ class Service extends Base\Service
             $firs_date = date('m/d/Y', $settlement->getUpdatedAt());
 
             list($month,$date,$year) = explode('/',$firs_date);
-            
+
             $storageFileName = 'FIRS/'.$merchantId.'/'.$year.'/'.$month.'/'.$filename;
             $type = 'firs_icici_file';
             $documentDate = strtotime($month.'/'.'01'.'/'.$year);
@@ -508,5 +518,200 @@ class Service extends Base\Service
         ];
 
         $this->app['beam']->beamPush($data, $timelines, $mailInfo);
+    }
+
+    public function processLambdaSettlementRepatriation(array $input)
+    {
+        $this->trace->info(TraceCode::REPATRIATION_LAMBDA_REQUEST,
+            [
+                'input'   => $input
+            ]);
+
+        $configKey = true;
+
+        list($file, $locationType) = $this->getFileDetails($input,'settlement_repatriation',$configKey);
+
+        $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
+
+        $fileName = $file->getFilename();
+
+        $this->trace->info(TraceCode::REPATRIATION_LAMBDA_REQUEST,
+            [
+                'fileNameDetails'   => $fileDetails,
+                '$fileName'   => $fileName,
+            ]);
+
+        $fileNameDetails = explode('_',$fileName);
+
+        $response =[];
+
+        if($input['partner'] === self::NIUM &&
+            empty($fileNameDetails) === false &&
+            sizeof($fileNameDetails) >=2 &&
+            $fileNameDetails[1] === 'vra'){
+
+            $handler = fopen($fileDetails['file_path'],"r");
+
+            fseek($handler,0);
+            $headers = fgetcsv($handler);
+
+            $repatriationEntity = [];
+            $settlementIdList = [];
+            $transactions =[];
+            $merchantIds = [];
+            while (!feof($handler))
+            {
+                $row = fgetcsv($handler);
+                if($row[1]=='')
+                    continue;
+                $ledgerType = $row[6];
+
+                if(strcasecmp($ledgerType, self::LEDGER_TYPE_PAYOUTS) === 0){
+
+                    $settledDate = strval($row[0]);
+
+                    $settledAt = Carbon::createFromFormat('d/m/Y H:i:s', $settledDate, 'UTC')
+                        ->setTimezone(Timezone::IST)->getTimestamp();;
+                    $repatriationEntity[RepatEntity::SETTLED_AT] = $settledAt;
+                    $repatriationEntity[RepatEntity::PARTNER_MERCHANT_ID] = $row[2];
+                    $repatriationEntity[RepatEntity::PARTNER_SETTLEMENT_ID] = $row[4];
+                    $repatriationEntity[RepatEntity::CURRENCY] ='INR';
+                    $repatriationEntity[RepatEntity::CREDIT_CURRENCY] =$row[7];
+                    $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID]=$row[12];
+
+                }
+                elseif (strcasecmp($ledgerType, self::LEDGER_TYPE_BOOK_FX) === 0){
+
+                    if($row[7] === 'INR')
+                    {
+                        $amount = $row[8];
+                        $formattedAmount = number_format((float)$amount, 2, '.', '');
+                        $repatriationEntity[RepatEntity::AMOUNT] = $formattedAmount * 100;
+                    }else
+                    {
+                        $creditAmount = $row[9];
+                        $formattedCreditAmount = number_format((float)$creditAmount, 2, '.', '');
+                        $repatriationEntity[RepatEntity::CREDIT_AMOUNT] = $formattedCreditAmount * 100;
+                    }
+                }
+                elseif (strcasecmp($ledgerType, self::LEDGER_TYPE_RECEIVE) === 0){
+
+                    $transactionId = $row[4];
+
+                    $transaction = $this->repo->transaction->findOrFail($transactionId);
+                    $settlementId = $transaction->getSettlementId();
+
+                    array_push($settlementIdList, $settlementId);
+                    array_push($transactions, $transaction->getId());
+                    array_push($merchantIds, $transaction->getMerchantId());
+
+                }
+            }
+
+            $distinctSettlementIds = array_unique($settlementIdList);
+            $isValidAmount = $this->reconcileRepatriationAmount($repatriationEntity[RepatEntity::AMOUNT],$distinctSettlementIds);
+
+            if(!$isValidAmount){
+
+                $this->trace->info(TraceCode::INVALID_REPATRIATION_AMOUNT, [
+                    'fileDetails'           => $fileDetails,
+                    'amount'                => $repatriationEntity[RepatEntity::AMOUNT],
+                    'settlements'           => array_values($distinctSettlementIds),
+                    'transactions'          => array_values($transactions)
+                ]);
+
+                $response['success'] = false;
+                return $response;
+            }
+
+            $distinctMerchantId = array_unique($merchantIds);
+            if(sizeof($distinctMerchantId) > 1) {
+
+                $this->trace->info(TraceCode::REPATRIATION_FILE_NON_UNIQUE_MERCHANT, [
+                    'fileDetails'           => $fileDetails,
+                    '$distinctMerchantId'   => $distinctMerchantId
+                ]);
+
+                $response['success'] = false;
+                return $response;
+
+            }
+            $repatriationEntity[RepatEntity::MERCHANT_ID] = $distinctMerchantId[0];
+
+            if($repatriationEntity[RepatEntity::CREDIT_AMOUNT] >0 &&
+                $repatriationEntity[RepatEntity::AMOUNT]>0){
+
+                $forexRate = $repatriationEntity[RepatEntity::CREDIT_AMOUNT]/$repatriationEntity[RepatEntity::AMOUNT];
+                $forexRateFormatted = number_format((float)$forexRate, 6, '.', '');
+
+                $repatriationEntity[RepatEntity::FOREX_RATE] = $forexRateFormatted;
+            }else
+            {
+                $this->trace->info(TraceCode::INVALID_REPATRIATION_AMOUNT, [
+                    'fileDetails'           => $fileDetails,
+                    'amount'                => $repatriationEntity[RepatEntity::AMOUNT],
+                    'creditAmount'          => $repatriationEntity[RepatEntity::CREDIT_AMOUNT],
+                    'settlements'           => array_values($distinctSettlementIds),
+                    'transactions'          => array_values($transactions)
+                ]);
+
+                $response['success'] = false;
+                return $response;
+            }
+
+            $repatriationEntity[RepatEntity::SETTLEMENT_IDS] = array_values($distinctSettlementIds);
+            $repatriationEntity[RepatEntity::INTEGRATION_ENTITY] = $input['partner'];
+            $repatriationEntity[RepatEntity::UPDATED_AT] = time();
+
+
+            $this->saveRepatriationDetails($repatriationEntity);
+
+            fclose($handler);
+        }
+        else{
+            $this->trace->info(TraceCode::INVALID_REPATRIATION_FILE, $fileDetails);
+
+            $response['success'] = false;
+            return $response;
+        }
+
+        $this->trace->info(TraceCode::REPATRIATION_SUCESS, $fileDetails);
+        $response['success'] = true;
+        return $response;
+    }
+
+    // To save repatriation details into DB
+    protected function saveRepatriationDetails($repatriationEntity){
+
+        try{
+            (new RepatService())->createInternationalRepatriation($repatriationEntity);
+        }catch (\Throwable $e){
+            $this->trace->error(
+                TraceCode::REPATRIATION_DETAIL_SAVE_FAILED,
+                ['repatriationEntity' => $repatriationEntity]
+            );
+            $this->trace->traceException($e);
+            throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+        }
+    }
+
+    protected  function reconcileRepatriationAmount($amount, $distinctSettlementIds): bool
+    {
+
+        $settlementAmount = 0;
+        foreach ($distinctSettlementIds as $settlementId){
+
+            $settlement =  $this->repo->settlement->findOrFail($settlementId);
+
+            $settlementAmount = $settlementAmount + $settlement[SEntity::AMOUNT];
+
+        }
+
+        $response = false;
+        if ($amount == $settlementAmount){
+            $response = true;
+        }
+
+        return $response;
     }
 }

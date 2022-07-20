@@ -3424,6 +3424,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LAMBDA_REQUEST                                        = 'LAMBDA_REQUEST';
     const LAMBDA_FILE_DETAILS                                   = 'LAMBDA_FILE_DETAILS';
     const LAMBDA_BATCH_FAILURE                                  = 'LAMBDA_BATCH_FAILURE';
+    const INVALID_REPATRIATION_FILE                             = 'INVALID_REPATRIATION_FILE';
+    const INVALID_REPATRIATION_AMOUNT                           = 'INVALID_REPATRIATION_AMOUNT';
+    const REPATRIATION_LAMBDA_REQUEST                           = 'REPATRIATION_LAMBDA_REQUEST';
+    const REPATRIATION_SUCESS                                   = 'REPATRIATION_SUCESS';
+    const REPATRIATION_DETAIL_SAVE                              = 'REPATRIATION_DETAIL_SAVE';
+    const REPATRIATION_FILE_NON_UNIQUE_MERCHANT                 = 'REPATRIATION_FILE_NON_UNIQUE_MERCHANT';
+    const REPATRIATION_DETAIL_SAVE_FAILED                       = 'REPATRIATION_DETAIL_SAVE_FAILED';
+
 
     const REDIS_LAG_CHECK_FAILED                                = 'REDIS_LAG_CHECK_FAILED';
     const SLAVE_ROUTES_FETCH_FAILED                             = 'SLAVE_ROUTES_FETCH_FAILED';

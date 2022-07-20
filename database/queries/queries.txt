@@ -6915,6 +6915,28 @@ ALTER TABLE orgs
     ADD COLUMN `external_redirect_url` varchar(255) DEFAULT NULL,
     ADD COLUMN `external_redirect_url_text` text;
 
+CREATE TABLE IF NOT EXISTS settlement_international_repatriation
+(
+    id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+    merchant_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+    integration_entity VARCHAR(20) NOT NULL,
+    partner_merchant_id VARCHAR(45) DEFAULT NULL,
+    partner_settlement_id VARCHAR(45) DEFAULT NULL,
+    partner_transaction_id VARCHAR(45) DEFAULT NULL,
+    amount BIGINT unsigned NOT NULL,
+    currency CHAR(3) NOT NULL,
+    credit_amount BIGINT unsigned NOT NULL,
+    credit_currency CHAR(3) NOT NULL,
+    settlement_ids JSON,
+    forex_rate DECIMAL(10,6) NOT NULL,
+    settled_at INT NOT NULL,
+    created_at INT NOT NULL,
+    updated_at INT DEFAULT NULL,
+    PRIMARY KEY (id),
+    INDEX `idx_repartriation_details_merchant_id`
+    (`merchant_id`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
 CREATE TABLE IF NOT EXISTS merchant_owner_details (
     id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
     merchant_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
@@ -6930,3 +6952,4 @@ CREATE TABLE IF NOT EXISTS merchant_owner_details (
 
 ALTER TABLE `merchant_international_integrations`
     ADD COLUMN `payment_methods` JSON NULL;
+

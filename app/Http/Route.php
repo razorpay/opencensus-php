@@ -2073,6 +2073,8 @@ class Route
         'enable_non_3ds_self_serve'                => ['post',     'merchant/enable_non_3ds',                           'MerchantController@postEnableNon3dsSelfServe' ],
         'get_non_3ds_details'                      => ['get',      'merchant/get_non_3ds_details',                           'MerchantController@getEnableNon3dsDetails'],
 
+        // Settlement Repatriation
+        'process_settlement_repatriation'          => ['post',      'settlements/nium/repat',               'LambdaController@processLambdaSettlementRepatriation'                  ],
 
         // Shield routes
         'shield_rules_get_multiple' => [
@@ -4516,6 +4518,7 @@ class Route
         'lambda_post_h2h',
         'firs_document_categorize',
         'automate_merchant_master_firs',
+        'process_settlement_repatriation',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'refund_processed_at_backfill',
@@ -12929,6 +12932,7 @@ class Route
             'segment_create_update',
             'firs_document_categorize',
             'automate_merchant_master_firs',
+            'process_settlement_repatriation',
         ],
 
         'merchants-risk' => [

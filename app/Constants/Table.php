@@ -178,7 +178,9 @@ class Table
     const BANK_TRANSFER_REQUEST      = 'bank_transfer_requests';
     const VIRTUAL_ACCOUNT_PRODUCTS   = 'virtual_account_products';
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
+    const SETTLEMENT_INTERNATIONAL_REPATRIATION = 'settlement_international_repatriation';
     const MERCHANT_OWNER_DETAILS     = 'merchant_owner_details';
+
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';
