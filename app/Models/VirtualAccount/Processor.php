@@ -519,14 +519,14 @@ abstract class Processor extends Base\Core
             $this->trace->info(
                 TraceCode::VIRTUAL_ACCOUNT_CLOSED,
                 $entity->toArray());
-                
+
+            $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
+
             if ($isBusinessBankingVa === true)
             {
                 return true;
             }
-  
-            $this->setUnexpectedReason($entity, TraceCode::VIRTUAL_ACCOUNT_CLOSED);
-               
+
             $this->isPaymentExpected = false;
 
             return false;
@@ -563,6 +563,7 @@ abstract class Processor extends Base\Core
                 $this->setUnexpectedReason($entity, UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED);
 
                 $this->isPaymentExpected = false;
+
                 return false;
             }
         }
