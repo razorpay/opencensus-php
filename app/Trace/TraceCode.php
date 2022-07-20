@@ -5372,6 +5372,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INTERNATIONAL_ENABLEMENT_WHATSAPP_SENT                = 'INTERNATIONAL_ENABLEMENT_WHATSAPP_SENT';
     const INTERNATIONAL_ENABLEMENT_WHATSAPP_FAILED              = 'INTERNATIONAL_ENABLEMENT_WHATSAPP_FAILED';
 
+    // Remove the already selected terminal in case of DCC
+    const INTERNATIONAL_TERMINAL_DESELECT_FOR_DCC                     = 'INTERNATIONAL_TERMINAL_DESELECT_FOR_DCC';
+
     // Proxy route tracecodes
     const PROXY_REQUEST     = 'PROXY_REQUEST';
     const PROXY_RESPONSE    = 'PROXY_RESPONSE';

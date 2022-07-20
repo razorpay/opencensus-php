@@ -3351,7 +3351,6 @@ trait Authorize
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment, $input = [])
     {
-
         // We need to disable fraud checks for redirection payments before redirection hence this check. This will
         // be later handled within payment service
         if (($this->shouldRedirect($payment) === true) or
@@ -3382,6 +3381,7 @@ trait Authorize
      */
     protected function runFraudChecks(Payment\Entity $payment, $input)
     {
+
         try
         {
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_RISKCHECK_INITIATED, $payment);
@@ -10074,7 +10074,7 @@ trait Authorize
         return null;
     }
 
-    public function ValidateAndProcessDccInput(Payment\Entity $payment, $input=[])
+    public function ValidateAndProcessDccInput(Payment\Entity $payment, $input=[], array & $inputDetails)
     {
         //checking for route as dcc is only processed in this redirect route for now
         if (($this->route->getCurrentRouteName() === 'payment_update_and_redirect') and
@@ -10086,6 +10086,18 @@ trait Authorize
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS);
             }
             $this->preProcessDCCInputs($input, $payment);
+            // This will force the terminal selection to happen for the second time
+            // this is required if the DCC is applied in update and redirect
+            // Usecase if merchant requests in INR, the user decides to pay in USD
+            // the terminal should be selected with the USD
+            unset($inputDetails['gateway_input']['selected_terminals_ids']);
+
+            $this->trace->info(
+                TraceCode::INTERNATIONAL_TERMINAL_DESELECT_FOR_DCC,
+                [
+                    'payment_id' => $payment->getId()
+                ]
+            );
         }
     }
 
@@ -10116,8 +10128,7 @@ trait Authorize
                     return $ret;
                 }
 
-                //DCC S2S Flow. Doing this inside mutex to avoid duplicate processing
-                $this->ValidateAndProcessDccInput($payment,$input);
+
 
                 //Address validation if required
                 $this->validateAddressIfPresent($payment,$input);
@@ -10125,6 +10136,9 @@ trait Authorize
                 $key = $payment->getCacheRedirectInputKey();
 
                 $inputDetails = $this->getInputDetails($payment, $key);
+
+                //DCC S2S Flow. Doing this inside mutex to avoid duplicate processing
+                $this->ValidateAndProcessDccInput($payment,$input,$inputDetails);
 
                 if(isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
                 {
