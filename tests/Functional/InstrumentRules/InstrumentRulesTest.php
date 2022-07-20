@@ -120,4 +120,50 @@ class InstrumentRulesTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testMerchantManualTriggerEventThrowsException()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $this->startTest();
+
+        $testCase = [
+            self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE      => 'v2/instrument_rules/event',
+            self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE    => \Requests::POST,
+        ];
+
+        $this->mockTerminalsServiceHandleRequestAndResponse(function ($path) use ($testCase) {
+
+            return ($path ===  $testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE]);
+
+        }, function ($path, $content, $method) use ($testCase) {
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_PATH_TERMINALS_SERVICE], $path);
+
+            $this->assertEquals($testCase[self::EXPECTED_REQUEST_METHOD_TERMINALS_SERVICE], $method);
+
+            $this->assertArrayKeysExist(json_decode($content, true), self::EVENT_KEYS);
+
+            $response = new \Requests_Response;
+
+            $response->body = '
+                       {
+                        "data": {
+                           "testKey": "testValue"
+                        }
+                    }';
+
+            return $response;
+        }, 1);
+
+        $this->startTest();
+    }
+
 }

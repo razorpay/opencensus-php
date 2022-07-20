@@ -33,4 +33,20 @@ return [
             ],
         ],
     ],
+
+    'testMerchantManualTriggerEventThrowsException' => [
+        'request'  => [
+            'content' => [
+                'merchant_ids' => ["10000000000016"],
+            ],
+            'url'     => '/instrument_rules/events/trigger',
+            'method'  => 'POST',
+        ],
+        'response' => [
+              'content' => [
+                  'failed_ids' => ["10000000000016"],
+                  'success_ids' => [],
+              ],
+        ],
+    ],
 ];

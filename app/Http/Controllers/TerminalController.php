@@ -255,6 +255,15 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function triggerInstrumentRulesEvent()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->triggerInstrumentRulesEventBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function proxyV1TerminalService()
     {
         $input = Request::all();

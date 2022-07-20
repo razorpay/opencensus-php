@@ -1503,7 +1503,60 @@ class Service extends Base\Service
         return false;
     }
 
-    public function consumeInstrumentRulesEvent(string $merchantId): array
+    public function triggerInstrumentRulesEventBulk($input)
+    {
+        $merchantIds = $input['merchant_ids'];
+
+        if(count($merchantIds) > 50)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode:: BAD_REQUEST_INPUT_VALIDATION_FAILURE, null, "The number of input merchant_ids should be less than 50");
+        }
+
+        $this->trace->info(
+            TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER , [
+            'merchant_ids' => $merchantIds,
+        ]);
+
+        $failedIds = [];
+        $successIds = [];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $data = $this->consumeInstrumentRulesEvent($merchantId, true);
+
+                if(empty($data))
+                {
+                    throw new Exception\LogicException(null,null, [
+                            'merchant_id'   => $merchantId,
+                    ]);
+                }
+
+                $successIds[] = $merchantId;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, Trace::ERROR,
+                    TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER_EXCEPTION,
+                    [
+                        'merchant_id'   =>  $merchantId
+                    ]);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'failed_ids' => $failedIds,
+            'success_ids' => $successIds,
+        ];
+
+        return $response;
+    }
+
+    public function consumeInstrumentRulesEvent(string $merchantId, bool $forceTrigger = false): array
     {
         $start = millitime();
 
@@ -1545,13 +1598,15 @@ class Service extends Base\Service
 
             $durationDataGenerate = millitime() - $start;
 
-            $response = $this->app['terminals_service']->consumeInstrumentRulesEvaluationEvent($eventData);
+            $input = array("instrument_rules_event_data"=> $eventData,"force_trigger"=> $forceTrigger);
+
+            $response = $this->app['terminals_service']->consumeInstrumentRulesEvaluationEvent($input);
 
             $durationEventPush = millitime() - $durationDataGenerate;
 
             $this->trace->info(TraceCode::INSTRUMENT_EVENT_RULES_METRICS,
                 [
-                    'event_data' => $eventData,
+                    'input' => $input,
                     'data_generate_time' => $durationDataGenerate,
                     'event_push_time'   => $durationEventPush,
                 ]);

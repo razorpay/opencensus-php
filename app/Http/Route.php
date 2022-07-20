@@ -3191,6 +3191,7 @@ class Route
         'update_template_mappings'                => ['patch',     'terminals/proxy/template_mappings/{id}',                    'TerminalController@proxyV2TerminalService'                      ],
         'fetch_template_mappings'                 => ['get',       'terminals/proxy/template_mappings/{id}',                    'TerminalController@proxyV2TerminalService'                      ],
         'terminals_proxy_fetch_multiple'          => ['post',      'terminals/proxy/admin_fetch_multiple/{entity_type}',        'TerminalController@proxyV2TerminalService'                      ],
+        'trigger_instrument_rules_event'          => ['post',      'instrument_rules/events/trigger',                           'TerminalController@triggerInstrumentRulesEvent'                 ],
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
@@ -6772,6 +6773,7 @@ class Route
         'merchant_instrument_request_create_bulk_v2',
         'instrument_request_razorx_admin',
         'fetch_instrument_comment_list',
+        "trigger_instrument_rules_event",
         'fetch_instrument_previous_status',
         'update_template_mappings',
         'fetch_template_mappings',
@@ -8071,6 +8073,7 @@ class Route
         'merchant_instrument_request_update_by_id'    => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'mir_instrument_set'                          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_merchant_instrument_requests'          => Permission::VIEW_MERCHANT_INSTRUMENT_REQUEST,
+        'trigger_instrument_rules_event'              => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
 
         'create_iir_discrepancy_answer_admin'         => Permission::VIEW_IIR_DISCREPANCY,
         'get_discrepancy_list'                        => Permission::VIEW_IIR_DISCREPANCY,
@@ -10716,6 +10719,7 @@ class Route
             'fetch_fund_loading_downtime_by_id',
             'fetch_merchant_balance_configs',
             'fetch_merchant_instrument_requests',
+            'trigger_instrument_rules_event',
             'fetch_merchant_notification_config',
             'fetch_merchant_notification_config_admin',
             'fetch_merchant_products',
