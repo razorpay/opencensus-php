@@ -1475,7 +1475,7 @@ class Service extends Base\Service
 
         $file = $input["{$type}_logo"];
 
-        $s3Client = $this->getS3Client();
+        $s3Client = $this->getS3Client('v2');
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
@@ -1497,8 +1497,17 @@ class Service extends Base\Service
         // org_id/login_logo/file_name
         $keyName = "$orgId/{$type}_logo/$fileName";
 
+        $region = config('aws.migrated_bucket_region');
+
+        $bucket = config('aws.migrated_activation_bucket');
+
+        $this->trace->info(TraceCode::S3_BUCKET_DETAILS, [
+            'bucket'  => $bucket,
+            'region'  => $region,
+        ]);
+
         $s3Obj = [
-            'Bucket'        => config('aws.activation_bucket'),
+            'Bucket'        => $bucket,
             'Key'           => $keyName,
             'SourceFile'    => $filePath,
             'ContentType'   => $mimeType,
@@ -1525,15 +1534,24 @@ class Service extends Base\Service
 
         $file = $input["background_image"];
 
-        $s3Client = $this->getS3Client();
+        $s3Client = $this->getS3Client('v2');
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
 
         $keyName = "$orgId/background_image/$fileName";
 
+        $region = config('aws.migrated_bucket_region');
+
+        $bucket = config('aws.migrated_activation_bucket');
+
+        $this->trace->info(TraceCode::S3_BUCKET_DETAILS, [
+            'bucket'  => $bucket,
+            'region'  => $region,
+        ]);
+
         $s3Obj = [
-            'Bucket'        => config('aws.activation_bucket'),
+            'Bucket'        => $bucket,
             'Key'           => $keyName,
             'SourceFile'    => $filePath,
             'ContentType'   => 'image/jpeg',

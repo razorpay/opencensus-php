@@ -26,5 +26,6 @@ return [
     'mock' => env('S3_MOCK', false),
 
     'activation_bucket' => env('AWS_ACTIVATION_BUCKET'),
-
+    'migrated_bucket_region' => env('MIGRATED_AWS_BUCKET_REGION'),
+    'migrated_activation_bucket' => env('MIGRATED_AWS_ACTIVATION_BUCKET'),
 ];

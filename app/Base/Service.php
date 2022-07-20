@@ -106,11 +106,18 @@ class Service
         }
     }
 
-    protected function getS3Client()
+    protected function getS3Client($version = '')
     {
         $config = config('aws');
 
-        $config['region'] = config('aws.bucket_region');
+        if($version === 'v2')
+        {
+            $config['region'] = config('aws.migrated_bucket_region');
+        }
+        else
+        {
+            $config['region'] = config('aws.bucket_region');
+        }
 
         $client = new \Aws\Sdk($config);
 

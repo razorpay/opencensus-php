@@ -118,6 +118,8 @@ class TraceCode
 
     const ORG_LOGO_UPLOAD                           = 'ORG_LOGO_UPLOAD';
 
+    const S3_BUCKET_DETAILS                         = 'S3_BUCKET_DETAILS';
+
     const MISMATCHED_VERIFY_TOKEN                   = 'MISMATCHED_VERIFY_TOKEN';
 
     const TOKEN_MATCH_TRACE                         = 'TOKEN_MATCH_TRACE';
