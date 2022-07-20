@@ -101,6 +101,71 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForPaylater($mcc);
         }
 
+        if (isset($input[Methods\Entity::CARD_NETWORKS]) === true)
+        {
+            $inputCardNetworks = $input[Methods\Entity::CARD_NETWORKS];
+
+            foreach ($inputCardNetworks as $cardNetwork => $value)
+            {
+                switch ($cardNetwork)
+                {
+                    case Network::AMEX:
+                        $methods->setAmex($value);
+                        break;
+
+                    case Network::VISA:
+                        $methods->setVisaCard($value);
+                        break;
+
+                    case Network::MC:
+                        $methods->setMasterCard($value);
+                        break;
+
+                    case Network::MAES:
+                        $methods->setMaestroCard($value);
+                        break;
+
+                    case Network::RUPAY:
+                        $methods->setRupayCard($value);
+                        break;
+
+                    case Network::BAJAJ:
+                        $methods->setBajajCard($value);
+                        break;
+
+                    case Network::JCB:
+                        $methods->setJcbCard($value);
+                        break;
+
+                    case Network::DICL:
+                        $methods->setDinersCard($value);
+                        break;
+
+                    case Network::DISC:
+                        $methods->setDiscCard($value);
+                        break;
+
+                    case Network::UNP:
+                        $methods->setUnpCard($value);
+                        break;
+                }
+            }
+
+            unset($input[Methods\Entity::CARD_NETWORKS]);
+        }
+
+        if (isset($input[Methods\Entity::DEBIT_EMI_PROVIDERS]) === true)
+        {
+            $inputDebitEmiProviders = $input[Methods\Entity::DEBIT_EMI_PROVIDERS];
+
+            foreach ($inputDebitEmiProviders as $debitEmitProvider => $value)
+            {
+                $methods->setDebitEmiProvider($debitEmitProvider, $value);
+            }
+
+            unset($input[Methods\Entity::DEBIT_EMI_PROVIDERS]);
+        }
+
         $methods->setMethods($input);
 
         $this->checkPricing($merchant, $methods, false, false);

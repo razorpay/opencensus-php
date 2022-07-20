@@ -3011,7 +3011,9 @@ class Service extends Base\Service
 
             $disabledBanks = array_unique(array_merge($disabledBanks, $inputBanks));
         }
-        else if (isset($input[Methods\Entity::ENABLED_BANKS]) === true)
+
+        //setting the enabled banks that are not part of disabled banks.
+        if (isset($input[Methods\Entity::ENABLED_BANKS]) === true)
         {
             $inputBanks = $input[Methods\Entity::ENABLED_BANKS];
 

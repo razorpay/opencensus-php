@@ -593,6 +593,41 @@ class MethodsTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantsMethodUpdateInternal()
+    {
+        $this->fixtures->pricing->createEmiPricingPlan();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertEquals(["ALLA", "ICIC"], $merchantMethods->getDisabledBanks());
+
+        $this->assertEquals([
+            "AMEX" => 1,
+            "DICL" => 0,
+            "MC" => 0,
+            "MAES" => 1,
+            "VISA" => 1,
+            "JCB" => 0,
+            "RUPAY" => 1,
+            "BAJAJ" => 0,
+        ], $merchantMethods->getCardNetworks());
+
+        $this->assertEquals(["credit"], $merchantMethods->getEmiAttribute());
+
+        $this->assertEquals(true, $merchantMethods->isCardlessEmiEnabled());
+
+        $this->assertEquals(false, $merchantMethods->isPayLaterEnabled());
+
+        $debitEmiProviders = $merchantMethods->getDebitEmiProviders();
+        $this->assertTrue($debitEmiProviders['HDFC'] === 0);
+    }
+
     public function testEnableHdfcDebitEmiProvider()
     {
         $request = [
@@ -601,7 +636,7 @@ class MethodsTest extends TestCase
             'content' => [
                 'emi' => ['debit' => '1'],
                 'debit_emi_providers' => [
-                    'hdfc' => '1',
+                    'HDFC' => '1',
                 ]
             ],
         ];

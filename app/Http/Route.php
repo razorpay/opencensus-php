@@ -482,6 +482,7 @@ class Route
         'merchants_update_bank_account'            => ['put',      'merchants/bank_account/bulk',                    'MerchantController@updateBankAccountForMultipleMerchants'          ],
         'merchant_update_fraud_type'               => ['post',     'merchant/update_fraud_type',                     'MerchantController@updateMerchantFraudType'                        ],
         'methods_update_merchants'                 => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
+        'methods_update_merchants_internal'        => ['put',      'internal/methods/bulkupdate',                    'MerchantController@updateMethodsForMultipleMerchants'              ],
         'gratis_postpaid_transactions'             => ['post',     'merchants/gratis/postpaid',                      'MerchantController@markGratisTransactionPostpaid'                  ],
         'internal_fetch_config_by_id'              => ['get',      'internal/config/{id}',                           'ConfigController@internalFetchConfigById'                          ],
         'internal_fetch_configs'                   => ['get',      'internal/config',                                'ConfigController@internalFetchConfigs'                             ],
@@ -3194,6 +3195,7 @@ class Route
         'fetch_template_mappings'                 => ['get',       'terminals/proxy/template_mappings/{id}',                    'TerminalController@proxyV2TerminalService'                      ],
         'terminals_proxy_fetch_multiple'          => ['post',      'terminals/proxy/admin_fetch_multiple/{entity_type}',        'TerminalController@proxyV2TerminalService'                      ],
         'trigger_instrument_rules_event'          => ['post',      'instrument_rules/events/trigger',                           'TerminalController@triggerInstrumentRulesEvent'                 ],
+        'terminals_proxy_update_methods_from_rules' => ['patch',   'terminals/proxy/update_merchant_methods_from_rules',        'TerminalController@proxyV2TerminalService'                      ],
 
         // merchant_instrument_requests
         'merchant_instrument_request_create'                =>  ['post',    'merchant_instrument_request',                      'InstrumentRequestController@createMerchantInstrumentRequest'    ],
@@ -4663,6 +4665,7 @@ class Route
         'retry_penny_testing_cron',
         'merchant_methods_edit_internal',
         'refund_create_batch_service',
+        'methods_update_merchants_internal',
         'fetch_partner_referral_batch',
         'credits_create_bulk_batch',
         'terminal_create_bulk',
@@ -6796,6 +6799,7 @@ class Route
         'fetch_iir_discrepancies_for_merchant',
         'patch_iir_discrepancy_by_id',
         'terminals_proxy_fetch_multiple',
+        'terminals_proxy_update_methods_from_rules',
 
         // gateway credentials
         'terminals_proxy_create_gateway_credential',
@@ -8070,6 +8074,7 @@ class Route
         'update_template_mappings'                    => Permission::EDIT_IIR_TEMPLATE,
         'fetch_template_mappings'                     => Permission::VIEW_IIR_TEMPLATE,
         'terminals_proxy_fetch_multiple'              => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
+        'terminals_proxy_update_methods_from_rules'   => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create'          => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk'     => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
         'merchant_instrument_request_create_bulk_v2'  => Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
@@ -10718,6 +10723,7 @@ class Route
             'update_template_mappings',
             'fetch_template_mappings',
             'terminals_proxy_fetch_multiple',
+            'terminals_proxy_update_methods_from_rules',
             'fetch_internal_instrument_requests',
             'fetch_fund_loading_downtime_by_id',
             'fetch_merchant_balance_configs',
@@ -13114,7 +13120,8 @@ class Route
             'feature_get_all_internal',
             'internal_merchants_fetch_by_params',
             'salesforce_details_internal',
-            'collect_info_merchant_details_internal'
+            'collect_info_merchant_details_internal',
+            'methods_update_merchants_internal',
         ],
         'spinnaker' => [
             'throttle_create_config_spinnaker',

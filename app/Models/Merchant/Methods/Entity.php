@@ -996,6 +996,21 @@ class Entity extends Base\PublicEntity
         $this->setCardNetwork(Network::RUPAY, $value);
     }
 
+    public function setDiscCard(int $value)
+    {
+        $this->setCardNetwork(Network::DISC, $value);
+    }
+
+    public function setBajajCard(int $value)
+    {
+        $this->setCardNetwork(Network::BAJAJ, $value);
+    }
+
+    public function setUnpCard(int $value)
+    {
+        $this->setCardNetwork(Network::UNP, $value);
+    }
+
     public function setCred($value)
     {
         $this->setAttribute(self::CRED, $value);
@@ -1012,7 +1027,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CARD_NETWORKS, $cardNetworks);
     }
 
-    protected function setDebitEmiProvider(string $provider, int $value)
+    public function setDebitEmiProvider(string $provider, int $value)
     {
         $providers = $this->getAttribute(self::DEBIT_EMI_PROVIDERS);
 

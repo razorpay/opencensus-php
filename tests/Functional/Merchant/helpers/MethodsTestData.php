@@ -487,6 +487,51 @@ return [
             ],
     ],
 
+    'testMerchantsMethodUpdateInternal' => [
+        'request' => [
+            'url' => '/internal/methods/bulkupdate',
+            'method' => 'put',
+            'content' => [
+                "methods" => [
+                    "disabled_banks" => [
+                        "ALLA",
+                        "ICIC"
+                    ],
+                    "enabled_banks" => [
+                        "AUBL"
+                    ],
+                    "emi" => [
+                        "credit" => "1",
+                        "debit" => "0"
+                    ],
+                    "debit_emi_providers" => [
+                        "HDFC" => false
+                    ],
+                    "card_networks" => [
+                        "AMEX" => true,
+                        "MC" => false
+                    ],
+                    "phonepe" => true,
+                    "paypal" => false,
+                    "cardless_emi" => true,
+                    "paylater" => false
+                ],
+                "merchants" => [
+                    "10000000000000"
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                "total" => 1,
+                "success" => 1,
+                "failed" => 0,
+                "failedIds" => []
+            ],
+        ],
+    ],
+
     'testEnableDebitEmi' => [
         'request' => [
             'url' => '/merchant/methods',
