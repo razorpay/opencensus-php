@@ -3,31 +3,26 @@ on:
   push:
     branches:
       - master
+env:
+  APP_NAME: merchant-dashboard
+  HOME: /actions-runner/_work
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 jobs:
   sonar:
     name: Sonar Scanner
     runs-on: [self-hosted]
-    continue-on-error: false
+    continue-on-error: true
     steps:
       - name: Checkout Codebase
         uses: actions/checkout@v2
-
-      - name: Use Node v16.13.1
-        uses: actions/setup-node@v1
         with:
-          node-version: 16.13.1
-
+          token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Setup Node v14
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14.19.1
       - name: Setup yarn
         run: npm install -g yarn
-
-      # This action allows caching dependencies and build outputs
-      # to improve workflow execution time
-      - name: Cache multiple paths
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
-
 
       - name: Install Dependencies
         run: |
@@ -37,7 +32,7 @@ jobs:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
-      - name: Test Codebase
+      - name: Run Test Cases
         # Automatically installs npm ci in web too
         run: |
           npm run test
@@ -45,10 +40,14 @@ jobs:
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-
       - name: SonarQube Scan
-        uses: kitabisa/sonarqube-action@v1.1.0
+        uses: sonarsource/sonarqube-scan-action@v1.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONARQUBE_HOST }}
         with:
-          host: https://sonar.razorpay.com
-          login: ${{ secrets.SONARQUBE_TOKEN }}
-
+          projectBaseDir: .
+          args: >
+            -Dsonar.host.url=${{ secrets.SONARQUBE_HOST }}
+            -Dsonar.login=${{ secrets.SONARQUBE_TOKEN }}
+            -Dsonar.projectVersion=${{ github.sha }}
