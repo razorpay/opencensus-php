@@ -732,6 +732,13 @@ class Core extends Detail\Core
         $pageSize       = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_JOB_PAGE_SIZE;
         $batchSize      = PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_JOB_BATCH_SIZE;
         $limit = $limit ?? PartnerConstants::WEEKLY_ACTIVATION_SUMMARY_PARTNER_LIMIT;
+        
+        $this->trace->info(TraceCode::WEEKLY_ACTIVATION_SUMMARY_DISPATCH_START,
+        [
+            'limit' => $limit,
+            'afterId' => $afterId,
+            'mock' => $mock,
+        ]);
 
         while ($partnerCount < $limit)
         {
@@ -766,7 +773,7 @@ class Core extends Detail\Core
             }
         }
 
-        return [
+        $resp = [
             'mode' => $this->mode, 
             'numBatches' => $numBatches, 
             'mock' => $mock, 
@@ -775,6 +782,10 @@ class Core extends Detail\Core
             'partnerCount' => $partnerCount, 
             'dispatchedIds' => $dispatchedIds
         ];
+        
+        $this->trace->info(TraceCode::WEEKLY_ACTIVATION_SUMMARY_DISPATCH_END, $resp);
+
+        return $resp;
     }
 
     public function getPayloadForPartnerWeeklyActivationSummaryEmail(Merchant\Entity $partnerMerchant, array $filteredMerchantIds) : array
@@ -848,6 +859,11 @@ class Core extends Detail\Core
      */
     public function sendPartnerWeeklyActivationSummaryEmails(string $partnerMerchantId): void
     {
+        $this->trace->info(TraceCode::WEEKLY_ACTIVATION_SUMMARY_START,
+        [
+            'partner_merchant_id' => $partnerMerchantId,
+        ]);
+
         $partnerMerchant = $this->repo->merchant->findorFailPublic($partnerMerchantId);
         if ($partnerMerchant->getEmail() === null)
         {
@@ -867,5 +883,11 @@ class Core extends Detail\Core
         $email = new PartnerWeeklyActivationSummary($data, $org->toArray());
 
         Mail::queue($email);
+
+        $this->trace->info(TraceCode::WEEKLY_ACTIVATION_SUMMARY_END,
+        [
+            'partner_merchant_id' => $partnerMerchantId,
+            'filtered_merchant_ids' => $filteredMerchantIds
+        ]);
     }
 }
