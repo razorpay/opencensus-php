@@ -2189,8 +2189,10 @@ class Entity extends Base\PublicEntity
         $awsConfig = Config::get('aws');
 
         $publicLogoRelativeUrl = $this->attributes[self::LOGO_URL];
+
         $bucketName = $awsConfig['logo_bucket'];
-        $regionName = $awsConfig['bucket_region'];
+
+        $regionName = $awsConfig['logo_bucket_region'];
 
         $baseAwsLogoUrl = $bucketName . '.' . 's3-website-' . $regionName . '.amazonaws.com' . $publicLogoRelativeUrl;
 

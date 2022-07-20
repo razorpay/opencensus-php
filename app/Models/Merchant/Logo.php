@@ -212,7 +212,7 @@ class Logo extends Base\Core
             return $mockFileName;
         }
 
-        $s3 = Handler::getClient();
+        $s3 = Handler::getClient($config['logo_bucket_region']);
 
         $logoDimensions = $this->getLogoDimensionsArray();
 
@@ -223,7 +223,11 @@ class Logo extends Base\Core
 
         $this->trace->info(
             TraceCode::AWS_S3_LOGO_UPLOAD,
-            $imageDetails);
+            array_merge($imageDetails,[
+                'logo_bucket_region' => $config['logo_bucket_region'],
+                'logo_bucket'        => $config['logo_bucket']
+            ])
+        );
 
         foreach ($logoDimensions as $size => $_)
         {

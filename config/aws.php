@@ -29,6 +29,7 @@ return [
     'settlement_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
     'analytics_bucket'      => env('AWS_S3_ANALYTICS_BUCKET'),
     'logo_bucket'           => env('AWS_S3_LOGO_BUCKET'),
+    'logo_bucket_region'    => env('AWS_S3_LOGO_BUCKET_REGION'),
     'h2h_bucket'            => env('AWS_H2H_BUCKET'),
     'sftp_bucket'           => env('AWS_SFTP_BUCKET'),
     'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),

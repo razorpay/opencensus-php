@@ -21,7 +21,7 @@ return [
         ],
         'logo_bucket_config' => [
             'name'   => env('AWS_S3_LOGO_BUCKET'),
-            'region' => env('AWS_BUCKET_REGION', 'us-east-1')
+            'region' => env('AWS_S3_LOGO_BUCKET_REGION', 'us-east-1')
         ],
         'h2h_bucket_config' => [
             'name'   => env('AWS_H2H_BUCKET'),
