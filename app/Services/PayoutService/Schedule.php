@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 
 class Schedule extends Base
 {
-    const SCHEDULE_PAYOUT_SERVICE_URI = '/payouts/schedule_payout/';
+    const SCHEDULE_PAYOUT_SERVICE_URI = '/payouts/scheduled/process';
 
     // payout schedule service name for singleton class
     const PAYOUT_SERVICE_SCHEDULE = 'payout_service_schedule';

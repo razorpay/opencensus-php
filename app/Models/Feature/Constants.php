@@ -825,7 +825,7 @@ class Constants
     const DASHBOARD_INTERNAL               = 'DASHBOARD_INTERNAL';
 
     const ROUTE_LA_PENNY_TESTING           = 'route_la_penny_testing';
-    
+
     /**
      * Enable Razorpay secure for shopify merchant
      */

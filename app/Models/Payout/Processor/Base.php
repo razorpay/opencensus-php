@@ -3473,9 +3473,10 @@ class Base extends BaseCore
                     return false;
                 }
 
-                // Skip Scheduled payout
+                //Scheduled payout
+                $schedulePayoutViaPSEnabled = $this->merchant->isFeatureEnabled(Feature::SCHEDULE_PAYOUT_VIA_PS);
                 if ((isset($input[Payout\Entity::SCHEDULED_AT]) === true) and
-                    (empty($input[Payout\Entity::SCHEDULED_AT]) === false))
+                    (empty($input[Payout\Entity::SCHEDULED_AT]) === false) and $schedulePayoutViaPSEnabled === false)
                 {
                     return false;
                 }

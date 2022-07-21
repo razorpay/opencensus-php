@@ -7,6 +7,7 @@ use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Method;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\BankingAccount\Channel;
 
@@ -822,6 +823,72 @@ return [
                 'mode'            => 'NEFT',
                 'tax'             => 90,
                 'fees'            => 590,
+            ],
+        ],
+    ],
+
+    'testCreateScheduledPayoutViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'test Merchant Fund Transfer',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'test Merchant Fund Transfer',
+                'purpose'         => 'refund',
+                'status'          => 'scheduled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+            ],
+        ],
+    ],
+
+    'testCreateScheduledPayoutWhenScheduledPayoutFeatureIsNotEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'scheduled',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
             ],
         ],
     ],

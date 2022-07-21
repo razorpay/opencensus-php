@@ -4,10 +4,12 @@ namespace Functional\Payout;
 
 use DB;
 use Mockery;
+use Carbon\Carbon;
 use Requests_Response;
 
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Validator;
@@ -1379,6 +1381,92 @@ class PayoutServiceTest extends TestCase
 
         $this->assertEquals('on_hold', $payout->getStatus());
     }
+
+    public function testCreateScheduledPayoutViaPayoutService()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::SCHEDULE_PAYOUT_VIA_PS,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $testData = $this->testData['testCreateScheduledPayoutViaPayoutService'];
+
+        $testData['request']['url']              = '/payouts';
+        $testData['request']['content']['scheduled_at'] = $scheduledAtTime;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $this->mockPayoutServiceCreate(false, [], 'scheduled');
+
+        // Doing this because we fetch payout from the db before returning response from api.
+        $this->testCreatePayoutEntry('IMPS');
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->on('live')->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'scheduled',
+            ]
+        );
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // Payout should have gone via payouts service
+        $this->assertEquals(true, $payout->getIsPayoutService());
+
+        $this->assertEquals($currentTime->getTimestamp(), $payout['scheduled_on']);
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        $this->assertEquals('scheduled', $payout->getStatus());
+    }
+
+    public function testCreateScheduledPayoutWhenScheduledPayoutFeatureIsNotEnabled()
+    {
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $testData = $this->testData['testCreateScheduledPayoutWhenScheduledPayoutFeatureIsNotEnabled'];
+
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+
+        $testData['request']['content']['scheduled_at'] = $scheduledAtTime;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(false, $payout->getIsPayoutService());
+
+        $this->assertEquals('scheduled', $payout->getStatus());
+
+    }
+
 
     // Since NEW_BANKING_ERROR feature is enabled for the merchant, the payout won't go via payouts service and would
     // directly go to processing state.
