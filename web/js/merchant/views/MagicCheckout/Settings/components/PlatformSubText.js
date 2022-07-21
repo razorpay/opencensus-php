@@ -3,7 +3,6 @@ import {
   NESTED_VIEW_TYPE,
   PLATFORMS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import MagicCheckoutToggle from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/MagicCheckoutToggle';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -66,9 +65,6 @@ const PlatformSubText = ({
             <i className="i i-edit_board platform-edit-icon" />
             Edit
           </div>
-        </div>
-        <div className="display-flex align-center margin-t-16">
-          <MagicCheckoutToggle />
         </div>
       </div>
     );
