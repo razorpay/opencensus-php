@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import SummaryCarousel from '../SummaryCarousel';
-import { REPAYMENT_VIEWS } from '../constants';
+import { COLLECTIONS_PRODUCT_TYPES, REPAYMENT_VIEWS } from '../constants';
 import Summary from './Summary';
 import Repay from './Repay';
 import Result from './Result';
@@ -9,7 +9,7 @@ import { fetchInstallments, fetchCurrentOutstanding } from 'merchant/reducers/ca
 import { fetchBalances } from 'merchant/reducers/capital/repayments';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import moment from 'moment';
-import { getTotalAmountBreakup, getCurrentOutstandingBreakup } from './utils/index';
+import { getTotalAmountBreakup, getCurrentOutstandingBreakup } from './utils';
 import { getProductType } from 'merchant/views/Capital/utils';
 
 // SUMMARY --> REPAY - AMOUNT --> RESULT - SUCCESS
@@ -48,7 +48,7 @@ function OverviewFooter({
         to: moment().add(30, 'days').unix(),
       });
       fetchBalances({
-        product_type: productType,
+        product_type: COLLECTIONS_PRODUCT_TYPES.CASH_ADVANCE,
         credit_id: merchantId,
       });
       fetchCurrentBalance();

@@ -71,6 +71,7 @@ import {
 import { getItem, setItem } from 'common/utils/localStorage';
 import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
 import DashboardRedirectModal from './DashboardRedirectModal';
+import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -100,25 +101,6 @@ const getRepaidAmountBreakup = (balances) => {
     principalRepaid,
     interestRepaid,
   };
-};
-
-const parseRepaymentSchedule = (todayTimestamp, array) => {
-  let data = {};
-  array.forEach((item) => {
-    if (parseInt(item.repayment_date, 10) === todayTimestamp) {
-      const amount =
-        parseInt(item.payment, 10) -
-        (parseInt(item.interest_collected ? item.interest_collected : 0, 10) +
-          parseInt(item.principal_collected ? item.principal_collected : 0, 10));
-
-      data = {
-        amount,
-      };
-    }
-  });
-
-  data = { ...data, latestRepaymentDone: data.amount ? data.amount <= 0 : true };
-  return data;
 };
 
 const parseRepaymentBreakup = (repayments) => {
@@ -250,26 +232,13 @@ export default class AmountWithdraw extends React.Component {
       reason !== ONHOLD_REASONS.END_OF_CREDIT_LINE_TENURE;
 
     if (isApplicationAtHold) {
-      const currentDate = new Date();
-      const startOfDay = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        currentDate.getDate(),
-      );
-      const unixTimestamp = startOfDay / 1000;
-
       Promise.all([
         this.fetchInstallment(withdrawalInstance)
-          .then(({ data: { repayment_schedule = [] } = {} }) => {
-            const { latestRepaymentDone, amount } = parseRepaymentSchedule(
-              unixTimestamp,
-              repayment_schedule,
-            );
-
+          .then(({ data: { current_outstanding = {} } = {} }) => {
+            const amount = getCurrentOutstandingBreakup({ data: current_outstanding }).total;
             return {
-              latestRepaymentDone,
+              latestRepaymentDone: amount ? amount <= 0 : true,
               outstandingRepayment: {
-                ...this.state.outstandingRepayment,
                 amount,
               },
             };
