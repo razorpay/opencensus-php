@@ -1125,7 +1125,7 @@ return [
 
     'testUpdateBankAccountForNotActivatedLinkedAccount' => [
         'request' => [
-            'method' => 'post',
+            'method' => 'patch',
             'content' => [
                 'beneficiary_name'  => 'Bobby Fischer Junior',
                 'account_number'    => '987698769876',
@@ -1145,7 +1145,7 @@ return [
 
     'testUpdateBankAccountForActivatedLinkedAccount' => [
         'request' => [
-            'method' => 'post',
+            'method' => 'patch',
             'content' => [
                 'beneficiary_name'  => 'Bobby Fischer Junior',
                 'account_number'    => '987698769876',
@@ -1164,7 +1164,7 @@ return [
 
     'testUpdateBankAccountForLinkedAccountWithoutFeature' => [
         'request' => [
-            'method' => 'post',
+            'method' => 'patch',
             'content' => [
                 'beneficiary_name'  => 'Bobby Fischer Junior',
                 'account_number'    => '987698769876',
@@ -1184,7 +1184,7 @@ return [
 
     'testUpdateBankAccountForLinkedAccountWithPennyTesting' => [
         'request' => [
-            'method' => 'post',
+            'method' => 'patch',
             'content' => [
                 'beneficiary_name'  => 'Bobby Fischer Junior',
                 'account_number'    => '987698769876',

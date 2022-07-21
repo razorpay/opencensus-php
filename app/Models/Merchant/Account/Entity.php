@@ -368,6 +368,7 @@ class Entity extends Merchant\Entity
         switch ([$activationStatus , $bankDetailsVerificationStatus])
         {
             case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::VERIFIED]:
+            case [MerchantDetail\Status::ACTIVATED, null]:
                 return Constants::ACTIVATED;
 
             case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::INCORRECT_DETAILS]:

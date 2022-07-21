@@ -318,7 +318,7 @@ return [
 
     'testUpdateBankAccountForLinkedAccount' => [
         'request' => [
-            'method' => 'post',
+            'method' => 'patch',
             'content' => [
                 'beneficiary_name'  => 'Emma Stone',
                 'account_number'    => '123412341234',

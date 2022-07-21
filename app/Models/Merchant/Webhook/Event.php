@@ -91,6 +91,7 @@ class Event
     const ACCOUNT_NEEDS_CLARIFICATION       = 'account.needs_clarification';
     const ACCOUNT_ACTIVATED                 = 'account.activated';
     const ACCOUNT_REJECTED                  = 'account.rejected';
+    const ACCOUNT_UPDATED                   = 'account.updated';
     const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
     const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
     const PAYOUT_LINK_ISSUED                = 'payout_link.issued';
@@ -223,6 +224,7 @@ class Event
         self::ACCOUNT_NEEDS_CLARIFICATION,
         self::ACCOUNT_ACTIVATED,
         self::ACCOUNT_REJECTED,
+        self::ACCOUNT_UPDATED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::PAYMENT_CREATED,
@@ -353,6 +355,7 @@ class Event
         self::ACCOUNT_NEEDS_CLARIFICATION,
         self::ACCOUNT_ACTIVATED,
         self::ACCOUNT_REJECTED,
+        self::ACCOUNT_UPDATED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::PAYOUT_LINK_ISSUED,
@@ -530,6 +533,7 @@ class Event
         self::PAYOUT_LINK_REJECTED                        => 53,
 
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => 54,
+        self::ACCOUNT_UPDATED                             => 55,
     ];
 
     /**
@@ -607,6 +611,7 @@ class Event
         self::ACCOUNT_NEEDS_CLARIFICATION       => [Product::PRIMARY],
         self::ACCOUNT_ACTIVATED                 => [Product::PRIMARY],
         self::ACCOUNT_REJECTED                  => [Product::PRIMARY],
+        self::ACCOUNT_UPDATED                   => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
@@ -735,6 +740,7 @@ class Event
         self::ACCOUNT_NEEDS_CLARIFICATION       => Entity::MERCHANT,
         self::ACCOUNT_ACTIVATED                 => Entity::MERCHANT,
         self::ACCOUNT_REJECTED                  => Entity::MERCHANT,
+        self::ACCOUNT_UPDATED                   => Entity::ACCOUNT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING => Entity::MERCHANT,
@@ -826,6 +832,7 @@ class Event
         self::ACCOUNT_REJECTED                  => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_PAYMENTS_ENABLED          => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_UPDATED                   => [Feature\Constants::MARKETPLACE, Feature\Constants::LA_BANK_ACCOUNT_UPDATE],
         self::PAYOUT_PENDING                    => Feature\Constants::PAYOUT,
         self::PAYMENT_CREATED                   => Feature\Constants::PAYMENT_CREATED_WEBHOOK,
         self::PAYOUT_LINK_ISSUED                => Feature\Constants::PAYOUT,

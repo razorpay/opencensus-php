@@ -1661,9 +1661,11 @@ class MerchantCreateTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+        $testData['request']['url'] = '/beta/accounts/acc_' . $id . '/bank_account';
 
         $request = $testData['request'];
+
+        $this->ba->privateAuth();
 
         $this->makeRequestAndCatchException(
             function() use ($request) {
@@ -1693,7 +1695,9 @@ class MerchantCreateTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+        $testData['request']['url'] = '/beta/accounts/acc_' . $id . '/bank_account';
+
+        $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($testData);
 
@@ -1727,9 +1731,11 @@ class MerchantCreateTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+        $testData['request']['url'] = '/beta/accounts/acc_' . $id . '/bank_account';
 
         $request = $testData['request'];
+
+        $this->ba->privateAuth();
 
         $this->makeRequestAndCatchException(
             function() use ($request) {
@@ -1760,7 +1766,9 @@ class MerchantCreateTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/linked_accounts/acc_' . $id . '/bank_account';
+        $testData['request']['url'] = '/beta/accounts/acc_' . $id . '/bank_account';
+
+        $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($testData);
 

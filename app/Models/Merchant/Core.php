@@ -7440,12 +7440,17 @@ class Core extends Base\Core
             );
         }
 
+        $combinedActivationStatus = (new Detail\Core)->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
+
         //
         // Bank account update without penny testing is synchronous. But the penny testing flow is
         // asynchronous and linked account funds are put on hold during the same. If bank account update
         // is requested while the previous penny testing flow is still not complete, we'll throw this error.
+        // When the previous bank account's verification is in progress the linked account's activation status
+        // will be "verification_pending". Hence we only allow bank account update when activation status is
+        // other than verification_pending.
         //
-        if ($linkedAccount->getHoldFundsReason() === Constants::LINKED_ACCOUNT_PENNY_TESTING)
+        if ($combinedActivationStatus === Merchant\Account\Constants::VERIFICATION_PENDING)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BANK_ACCOUNT_UPDATE_ALREADY_IN_PROGRESS,
@@ -7527,6 +7532,20 @@ class Core extends Base\Core
         $merchantDetailCore->publicTriggerValidationRequests($linkedAccount, $linkedAccount->merchantDetail);
 
         $this->repo->saveOrFail($linkedAccount->merchantDetail);
+    }
+
+    public function eventLinkedAccountUpdated(string $merchantId)
+    {
+        $account = $this->repo->account->findOrFail($merchantId);
+
+        $bankAccount = $account->bankAccount;
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $account,
+            ApiEventSubscriber::WITH => $bankAccount
+        ];
+
+        $this->app['events']->dispatch('api.account.updated', $eventPayload);
     }
 
     public function sendPartnerLeadInfoToSalesforce(string $merchantId, string $partnerId, string $product, array $extraData = [])

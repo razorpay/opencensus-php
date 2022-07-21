@@ -3564,7 +3564,7 @@ class Core extends Base\Core
     }
 
     //todo:: use combined activation function in account entity
-    protected function getCombinedActivationStatusForLinkedAccounts(Entity $merchantDetails)
+    public function getCombinedActivationStatusForLinkedAccounts(Entity $merchantDetails)
     {
         $activationStatus = $merchantDetails->getActivationStatus();
 
@@ -3580,14 +3580,11 @@ class Core extends Base\Core
         switch ([$activationStatus, $bankDetailsVerificationStatus])
         {
             case [Status::ACTIVATED, BvsValidationConstants::VERIFIED]:
-            {
+            case [Status::ACTIVATED, null]:
                 return AccountConstants::ACTIVATED;
-            }
             case [Status::ACTIVATED, BvsValidationConstants::INCORRECT_DETAILS]:
             case [Status::ACTIVATED, BvsValidationConstants::NOT_MATCHED]:
-            {
                 return AccountConstants::VERIFICATION_FAILED;
-            }
             default:
                 return AccountConstants::VERIFICATION_PENDING;
         }
@@ -4168,7 +4165,8 @@ class Core extends Base\Core
 
         if (($merchantDetails->getBankDetailsVerificationStatus() === DetailConstants::VERIFIED or
              $merchantDetails->getBankDetailsVerificationStatus() === BvsValidationConstants::INITIATED) and
-            $isAutoKycAttemptRequired === false)
+            ($isAutoKycAttemptRequired === false) and
+            ($merchant->isLinkedAccount() === false))         // Route linked accounts can have bank account update requests even when previous one is verified
         {
             return;
         }

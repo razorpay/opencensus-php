@@ -119,9 +119,9 @@ class AccountTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/linked_accounts/' . $id . '/bank_account';
+        $testData['request']['url'] = '/beta/accounts/' . $id . '/bank_account';
 
-        $this->ba->proxyAuth();
+        $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($testData);
 

@@ -388,6 +388,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onAccountUpdated(Merchant\Account\Entity $account)
+    {
+        $payload = $this->getAccountPayload($account);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onPaymentAuthorized($payment)
     {
         $payload = $this->getPaymentPayload($payment);
@@ -1440,6 +1447,20 @@ class ApiEventSubscriber extends Base\Core
         $payload = [
             Constants\Entity::ACCOUNT => [
                 'entity' => $merchant->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
+    }
+
+    protected function getAccountPayload($account)
+    {
+        $payload = [
+            Constants\Entity::ACCOUNT => [
+                'entity' => $account->toArrayPublic(),
+            ],
+            Constants\Entity::BANK_ACCOUNT => [
+                'entity' => $this->withPayload->toArrayPublic(),
             ],
         ];
 

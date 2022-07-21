@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Service;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
@@ -195,6 +196,11 @@ class Core extends Base\Core
             $merchant->getHoldFunds() === true and
             $merchant->getHoldFundsReason() === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING)
         {
+
+            $merchant->setHoldFundsReason(null);
+
+            $this->repo->saveOrFail($merchant);
+
             $releaseFundsInput[MerchantEntity::HOLD_FUNDS] = 0;
 
             (new Service)->edit($merchant->getMerchantId(), $releaseFundsInput);
@@ -317,6 +323,7 @@ class Core extends Base\Core
         $this->mutex->acquireAndRelease(
             $merchantId,
             function() use ($validation, $merchantId) {
+                $shouldFireAccountUpdatedWebhook = $this->shouldFireAccountUpdatedWebhook($merchantId);
 
                 $this->repo->transactionOnLiveAndTest(
                     function() use ($validation, $merchantId) {
@@ -328,6 +335,11 @@ class Core extends Base\Core
                             $merchantId,
                             $validation);
                     });
+                
+                if ($shouldFireAccountUpdatedWebhook === true)
+                {
+                    (new Merchant\Core())->eventLinkedAccountUpdated($merchantId);
+                }
             },
             Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
@@ -368,6 +380,20 @@ class Core extends Base\Core
 
             $this->trace->error(TraceCode::MERCHANT_STATUS_UPDATER_FAIL, $errorContext);
         }
+    }
+
+    protected function shouldFireAccountUpdatedWebhook(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if (($merchant->isLinkedAccount() === true) and
+            ($merchant->parent->isFeatureEnabled(FeatureConstant::LA_BANK_ACCOUNT_UPDATE) === true) and
+            ($merchant->getHoldFundsReason() === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING))
+        {
+            return true;
+        }
+        
+        return false;
     }
 
     /**
