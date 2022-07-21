@@ -29,6 +29,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\ServerErrorException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Jobs\OneCCShopifyCreateOrder;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\SubscriptionRegistration;
@@ -419,6 +420,8 @@ class ApiEventSubscriber extends Base\Core
         $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
         $this->dispatchEventToStork($payload);
+
+        $this->dispatchOrderFor1ccShopify($payment);
     }
 
     protected function onPaymentFailed($payment)
@@ -446,6 +449,73 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+
+    /**
+     * Dispatch an SQS job that attempts to create an order in Shopify for those that
+     * failed due to network issues at the customer end
+     * @param Payment\Entity $payment
+     * @return void
+     * @throws none
+     */
+    protected function dispatchOrderFor1ccShopify(Payment\Entity $payment)
+    {
+        $start = millitime();
+
+        try
+        {
+            if ($payment->hasOrder() === false)
+            {
+                return;
+            }
+
+            $order = $payment->order;
+
+            // Certain orders are not being dispatched to the queue
+            // Splitting up the conditions to check the status temporarily
+            if ($order->is1ccShopifyOrder() === true)
+            {
+                $dispatched = false;
+
+                if ($payment->isAuthorized() === true)
+                {
+                    $dispatched = true;
+
+                    OneCCShopifyCreateOrder::dispatch([
+                        'mode'                => $this->mode,
+                        'razorpay_order_id'   => $order->getPublicId(),
+                        'razorpay_payment_id' => $payment->getPublicId(),
+                        'merchant_id'         => $this->merchant->getId(),
+                        'dispatch_time'       => millitime() - $start,
+                    ])->delay(now()->addMinutes(5));
+                }
+
+                // To debug payloads not being handled properly in sqs
+                $this->trace->info(
+                    TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
+                    [
+                        'step'                => 'dispatch',
+                        'dispatched'          => $dispatched,
+                        'mode'                => $this->mode,
+                        'razorpay_order_id'   => $order->getPublicId(),
+                        'razorpay_payment_id' => $payment->getPublicId(),
+                        'payment_method'      => $payment->getMethod(),
+                        'payment_status'      => $payment->getStatus(),
+                        'merchant_id'         => $this->merchant->getId(),
+                    ]);
+            }
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SHOPIFY_1CC_DISPATCH_JOB_FAILED,
+                [
+                    'payment_id' => $payment->getPublicId()
+                ]);
+        }
+    }
 
     private function pushForRevival(Payment\Entity $payment)
     {

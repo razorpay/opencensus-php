@@ -11316,7 +11316,7 @@ trait Authorize
             {
                 $dispatched = false;
 
-                if ($payment->isPaymentCompletedOrCOD() === true)
+                if ($payment->isCod() === true)
                 {
                     $dispatched = true;
 
@@ -11340,6 +11340,7 @@ trait Authorize
                         'razorpay_payment_id' => $payment->getPublicId(),
                         'payment_method'      => $payment->getMethod(),
                         'payment_status'      => $payment->getStatus(),
+                        'payment_define'      => $payment->isCod(),
                         'merchant_id'         => $this->merchant->getId(),
                     ]);
             }
