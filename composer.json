@@ -33,7 +33,8 @@
     "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
     "hisorange/browser-detect": "^4.4",
     "webonyx/graphql-php": "^14.9",
-    "ackintosh/ganesha": "^1.3"
+    "ackintosh/ganesha": "^1.3",
+    "jakeasmith/http_build_url": "^1"
   },
   "require-dev": {
     "kint-php/kint": "1.*",

@@ -101,4 +101,32 @@ class Tracing
 
         return true;
     }
+
+    public static function maskQueryString($queryString): string
+    {
+        $queryParamsToRedact = ['email', 'contact', 'customer_email', 'customer_contact'];
+        parse_str($queryString, $queryParams);
+
+        foreach ($queryParamsToRedact as $param)
+        {
+            if(array_key_exists($param, $queryParams))
+            {
+                $queryParams[$param] = '***';
+            }
+        }
+
+        return urldecode(http_build_query($queryParams));
+    }
+
+    public static function maskUrl($url): string
+    {
+        $parsed = parse_url($url);
+
+        if (isset($parsed['query'])) {
+            $query = $parsed['query'];
+            $parsed['query'] = self::maskQueryString($query);
+        }
+
+        return http_build_url($parsed);
+    }
 }

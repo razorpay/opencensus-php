@@ -49,7 +49,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
         $serverData = [
             'request_id'        => $this->request->getId(),
             'uri'               => $this->request->path(),
-            'url'               => $this->request->fullUrl(),
+            'url'               => App\Constants\Tracing::maskUrl(($this->request->fullUrl())),
             'method'            => $this->request->method(),
             'ajax'              => $this->request->ajax(),
             'origin'            => $this->request->header('origin'),
