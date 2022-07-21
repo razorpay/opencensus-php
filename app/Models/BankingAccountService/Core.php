@@ -439,6 +439,15 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    public function sendCaLeadStatusToSalesForce($input)
+    {
+        $this->trace->info(TraceCode::BAS_SALESFORCE_ICICI_LEAD_STATUS_UPDATE_REQUEST);
+
+        $this->app->salesforce->sendLeadStatusUpdate($input, Constants::ICICI);
+
+        return ['success' => true];
+    }
+
     public function sendCaLeadToFreshDesk($input)
     {
         $this->trace->info(TraceCode::BAS_FRESHDESK_REQUEST);

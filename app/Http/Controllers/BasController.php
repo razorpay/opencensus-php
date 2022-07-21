@@ -11,6 +11,7 @@ use RZP\Models\BankingAccount\Activation\Notification\Notifier;
 
 class BasController extends Controller
 {
+    /** @var BankingAccountService\Service $service */
     protected $service;
 
     public function __construct()
@@ -171,6 +172,15 @@ class BasController extends Controller
         $input = Request::all();
 
         $data =  $this->service->sendCaLeadToSalesForce($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendCaLeadStatusToSalesForce()
+    {
+        $input = Request::all();
+
+        $data =  $this->service->sendCaLeadStatusToSalesForce($input);
 
         return ApiResponse::json($data);
     }

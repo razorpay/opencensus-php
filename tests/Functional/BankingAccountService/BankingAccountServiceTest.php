@@ -1148,6 +1148,18 @@ class BankingAccountServiceTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testSendCaLeadStatusToSalesForce()
+    {
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_preferences', 'x_signup_platform', 'x_mobile');
+
+        $this->mockSalesForce('sendLeadStatusUpdate', 1);
+
+        $this->startTest();
+    }
+
     public function testSendCaLeadToFreshDesk()
     {
         $this->ba->bankingAccountServiceAppAuth();

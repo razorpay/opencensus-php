@@ -683,6 +683,24 @@ return [
         ],
     ],
 
+    'testSendCaLeadStatusToSalesForce' => [
+        'request'  => [
+            'url'     => '/bas/ca_lead_status_updates_to_salesforce',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID  => '10000000000000',
+                'ca_id'                 => 'bacc_10000000000000',
+                'ca_type'               => 'ICICI',
+                'ca_status'             => 'created'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testSendCaLeadToFreshDesk' => [
         'request'  => [
             'url'     => '/bas/ca_lead_to_freshdesk',

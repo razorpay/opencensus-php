@@ -308,16 +308,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Sanitize status by replacing underscore with space and capitalizing first letter of each word
-     *
-     * @param string $status
-     */
-    private function sanitizeStatus(string $status): string
-    {
-        return ucwords(str_replace('_', ' ', $status));
-    }
-
-    /**
      * Changes input array based on sub-status change
      * > Sub-status is changing either from or to `Pending on Sales | <REASON>`
      * > Add assignee_team and comment
@@ -343,13 +333,13 @@ class Service extends Base\Service
                 $currentSubStatusSanitized = $currentSubStatus;
                 if ($currentSubStatus !== null)
                 {
-                    $currentSubStatusSanitized = $this->sanitizeStatus($currentSubStatus);
+                    $currentSubStatusSanitized = Status::sanitizeStatus($currentSubStatus);
                 }
 
                 $newSubStatusSanitized = $newSubStatus;
                 if ($newSubStatus !== null)
                 {
-                    $newSubStatusSanitized = $this->sanitizeStatus($newSubStatus);
+                    $newSubStatusSanitized = Status::sanitizeStatus($currentSubStatus);
                 }
 
                 $comment = [

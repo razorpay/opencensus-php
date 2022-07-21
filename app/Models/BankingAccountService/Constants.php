@@ -88,6 +88,8 @@ class Constants
     const X_DASHBOARD                   = 'x_dashboard';
 
     const RBL                           = 'RBL';
+    
+    const ICICI                           = 'ICICI';
 
     const X_CA_UNIFIED                  = 'X-CA-Unified';
 

@@ -15,4 +15,6 @@ class Constants
     const NEW_ASSIGNEE_TEAM = 'new_assignee_team';
     const NEW_ASSIGNEE_NAME = 'new_assignee_name';
 
+    const RBL = 'RBL';
+
 }

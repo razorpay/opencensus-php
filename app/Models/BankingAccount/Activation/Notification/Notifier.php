@@ -12,6 +12,7 @@ use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\OpsSubscriber;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\SpocSubscriber;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\HubspotSubscriber;
+use RZP\Models\BankingAccount\Activation\Notification\Subscriber\SalesforceSubscriber;
 
 class Notifier extends Base\Core
 {
@@ -32,14 +33,17 @@ class Notifier extends Base\Core
         $spocSubscriber = new SpocSubscriber();
         $opsSubscriber = new OpsSubscriber();
         $hubspotSubscriber = new HubspotSubscriber();
+        $salesforceSubscriber = new SalesforceSubscriber();
 
         return [
             Event::STATUS_CHANGE => [
                 $spocSubscriber,
                 $opsSubscriber,
+                $salesforceSubscriber,
                 $hubspotSubscriber
             ],
             Event::SUBSTATUS_CHANGE => [
+                $salesforceSubscriber,
                 $hubspotSubscriber
             ],
             Event::ASSIGNEE_CHANGE => [
@@ -118,7 +122,24 @@ class Notifier extends Base\Core
 
             foreach ($subscribers as $subscriber)
             {
-                $subscriber->update($bankingAccount, $event);
+                try
+                {
+                    $subscriber->update($bankingAccount, $event);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_EVENT_NOTIFY_FAILED,
+                        [
+                            'banking_account_id' => $bankingAccount->getId(),
+                            'eventName'          => $eventName,
+                            'eventType'          => $eventType,
+                            'eventProperties'    => $eventProperties,
+                            'subscriberType'     => $subscriber->getSubscriberName(),
+                        ]);
+                }
             }
         }
         catch (\Throwable $ex)

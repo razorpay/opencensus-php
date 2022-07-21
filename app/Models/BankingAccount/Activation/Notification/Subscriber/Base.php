@@ -63,4 +63,8 @@ abstract class Base extends Core
 
         Mail::queue($mailable);
     }
+
+    public function getSubscriberName() {
+        return $this->name;
+    }
 }

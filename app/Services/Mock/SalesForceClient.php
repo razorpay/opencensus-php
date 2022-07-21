@@ -49,4 +49,9 @@ class SalesForceClient extends BaseSalesForceClient
     {
         return [];
     }
+
+    public function sendLeadStatusUpdate(array $payload, string $process)
+    {
+        return;
+    }
 }

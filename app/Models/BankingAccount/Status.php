@@ -146,22 +146,6 @@ class Status
         self::ACTIVATED,
     ];
 
-    public static $pendingOnSalesBucket = [
-        self::PENDING_ON_SALES_CONFIRMATION_TO_SEND_LEAD_PENDING,
-        self::PENDING_ON_SALES_BUSINESS_DETAILS_PENDING,
-        self::PENDING_ON_SALES_DOC_WALKTHROUGH_CALL_NOT_SCHEDULED,
-        self::PENDING_ON_SALES_CONFIRMATION_ON_MULTIPLE_ACCOUNT_OPENING,
-        self::PENDING_ON_SALES_MERCHANT_NOT_INTERESTED_SPOC_TO_CONFIRM,
-        self::PENDING_ON_SALES_DOC_DELIVERY_ADDRESS_PENDING,
-        self::PENDING_ON_SALES_PINCODE_UNSERVICEABLE,
-        self::PENDING_ON_SALES_AMB_AMOUNT_CONFIRMATION,
-        self::PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE,
-        self::PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS,
-        self::PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS,
-        self::PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS,
-        self::PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE,
-    ];
-
     protected static $statuses = [
         // When application is started at rzp side
         self::CREATED,
@@ -526,6 +510,7 @@ class Status
         self::API_ONBOARDING_INITIATED_EXTERNAL       => self::API_ONBOARDING_INITIATED,
         self::API_ONBOARDING_IN_PROGRESS_EXTERNAL     => self::API_ONBOARDING_IN_PROGRESS,
         self::NONE_EXTERNAL                           => self::NONE,
+
         'null'                                        => null
     ];
 
@@ -674,6 +659,20 @@ class Status
         $externalToInternalMap = array_diff_assoc(self::$externalToInternalSubStatusMap, ['null' => null]);
 
         return array_flip($externalToInternalMap)[$subStatus];
+    }
+
+    /**
+     * Sanitize status by replacing underscore with space and capitalizing first letter of each word
+     *
+     * @param string $status
+     */
+    public static function sanitizeStatus($status)
+    {
+        if (empty($status))
+        {
+            return $status;
+        }
+        return ucwords(str_replace('_', ' ', $status));
     }
 
     public static function validatePreviousToCurrentMapping(string $previousStatus, string $currentStatus, string $subStatus=null)

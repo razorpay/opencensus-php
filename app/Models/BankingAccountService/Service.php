@@ -739,6 +739,11 @@ class Service extends Base\Service
         return $this->core()->sendCaLeadToSalesForce($input, $caOnboardingFlow);
     }
 
+    public function sendCaLeadStatusToSalesForce($input)
+    {
+        return $this->core()->sendCaLeadStatusToSalesForce($input);
+    }
+
     public function sendCaLeadToFreshDesk($input)
     {
         return $this->core()->sendCaLeadToFreshDesk($input);

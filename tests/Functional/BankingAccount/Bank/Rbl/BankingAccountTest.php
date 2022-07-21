@@ -81,6 +81,7 @@ class BankingAccountTest extends TestCase
         $this->app['redis']->sadd('rbl_pincode_set', $pincodeList);
 
         $this->app['config']->set('applications.banking_account.mock', true);
+        $this->app['config']->set('applications.salesforce.mock', true);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
 

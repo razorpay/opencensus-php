@@ -9,6 +9,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Models\Merchant;
+use RZP\Models\BankingAccount;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\RequestHeader;
@@ -119,6 +120,43 @@ class SalesForceClient
         }
 
         return $accessToken;
+    }
+
+    /**
+     * Send Lead `status` and `sub_status` update from LMS to Salesforce Current Application Dashboard
+     * 
+     * $payload = [
+     *       'merchant_id'      => $bankingAccount->getMerchantId(),
+     *       'ca_id'            => 'bacc_'.$bankingAccount->getId(),
+     *       'ca_type'          => 'RBL',
+     *       'ca_status'        => $status,  // valid status
+     *       'ca_substatus'     => $subStatus,   // valid sub-status
+     * ]
+     * 
+     * @param array $payload
+     * @param string $process `RBL` or `ICICI`
+     */
+    public function sendLeadStatusUpdate(array $payload, string $process)
+    {
+        $url = $this->generateUrlForLeadStatusupdate();
+
+        $payloadJson = json_encode($payload);
+
+        $data = [
+            'CX_Source__c' => 'LMS',
+            'CX_Process__c' => $process,
+            'CX_Payload__c' => $payloadJson,
+        ];
+
+        $this->trace->info(TraceCode::SALESFORCE_STATUS_UPDATE_REQUEST, $data);
+
+        $this->dispatchRequestJob($url,
+                                  $data,
+                                  TraceCode::SALESFORCE_PRE_SIGNUP_REQUEST,
+                                  TraceCode::SALESFORCE_PRE_SIGNUP_RESPONSE,
+                                  TraceCode::SALESFORCE_PRE_SIGNUP_EXCEPTION
+        );
+
     }
 
     public function sendPreSignupDetails(array $input, Merchant\Entity $merchant)
@@ -276,6 +314,20 @@ class SalesForceClient
         }
 
         return $data;
+    }
+
+
+    public function payloadGenerationForStatusUpdate(BankingAccount\Entity $bankingAccount)
+    {
+        $payload = [
+            'merchant_id'      => $bankingAccount->getMerchantId(),
+            'ca_id'            => $bankingAccount->getId(),
+            'ca_type'          => $bankingAccount->getChannel(),
+            'ca_status'        => $bankingAccount->getStatus(),
+            'ca_substatus'     => $bankingAccount->getSubStatus(),
+        ];
+
+        return $payload;
     }
 
     public function checkAndInsert($input,$key, & $output, $outputKey)
@@ -525,6 +577,11 @@ class SalesForceClient
     protected function generateUrlForMerchantUpsert()
     {
         return $this->baseUrl . '/services/apexrest/MerchantUpsert';
+    }
+    
+    protected function generateUrlForLeadStatusupdate()
+    {
+        return $this->baseUrl . '/services/data/v53.0/sobjects/CX_CurrentAccount_Event__e';
     }
 
     protected function generateUrlForOpportunityUpsert(){
