@@ -28,6 +28,7 @@ class Type
     const CA_CAMPAIGN_ID                = 'ca_campaign_id';
     const CA_SALES_LED_ALLOCATED_BANK   = 'ca_sales_led_allocated_bank';
     const CA_SALES_LED_ICICI_LEAD_TIMESTAMP = 'ca_sales_led_icici_lead_timestamp';
+    const CLARITY_CONTEXT               = 'clarity_context'; // Valid values - enabled,completed
 
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';

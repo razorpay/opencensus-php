@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccountService;
 
 use Illuminate\Http\Request;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 
@@ -367,6 +368,24 @@ class Service extends Base\Service
         }
 
         $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'POST', $bookingDetails);
+
+        if ($channel === 'rbl')
+        {
+            $clarityContextCollection = (new Merchant\Attribute\Service())->getPreferencesByGroupAndType(
+                Group::X_MERCHANT_CURRENT_ACCOUNTS, MerchantAttributeType::CLARITY_CONTEXT)->first();
+
+            if (!empty($clarityContextCollection) and $clarityContextCollection->getValue() === 'enabled')
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_CLARITY_CONTEXT_ENABLED,
+                    [
+                        'bank_account_id'               => $bankingAccount->getId(),
+                        'clarity_context_enabled'   => true,
+                    ]);
+
+                (new \RZP\Models\BankingAccount\Core())->notifyOpsAboutProActivation($bankingAccount);
+            }
+        }
 
         return $response['data'];
     }

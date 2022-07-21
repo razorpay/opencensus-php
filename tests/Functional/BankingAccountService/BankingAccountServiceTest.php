@@ -19,6 +19,7 @@ use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccountService\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -808,6 +809,59 @@ class BankingAccountServiceTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals('#TE-00038', $response['bookingId']);
+    }
+
+    public function testSlotBookingForBankingAccountForMerchantWithClarityContext()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $merchantDetailArray = [
+            'contact_name'               => 'rzp',
+            'contact_email'              => 'test@rzp.com',
+            'merchant_id'                => '10000000000000',
+            'business_operation_address' => 'Koramangala',
+            'business_operation_state'   => 'KARNATAKA',
+            'business_operation_pin'     => 560034,
+            'business_dba'               => 'test',
+            'business_name'              => 'INTERNET BANKING CA',
+            'business_operation_city'    => 'Bangalore',
+            'activation_status'          => 'activated',
+            'bas_business_id'            => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $ba1 = $this->fixtures->create('banking_account', [
+            'account_number'        => '567890123',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba1->getId(),
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'sales_team'                => Validator::SELF_SERVE,
+        ]);
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'clarity_context', 'enabled');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['id'] = $ba1->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('#TE-00038', $response['bookingId']);
+
+        Mail::assertQueued(XProActivation::class);
     }
 
     public function testSlotRescheduleForBankingAccount()

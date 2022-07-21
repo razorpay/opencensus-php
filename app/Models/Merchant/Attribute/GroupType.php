@@ -33,6 +33,7 @@ class GroupType
             Type::CA_CAMPAIGN_ID,
             Type::CA_SALES_LED_ALLOCATED_BANK,
             Type::CA_SALES_LED_ICICI_LEAD_TIMESTAMP,
+            Type::CLARITY_CONTEXT
         ],
 
         Group::X_MERCHANT_INTENT => [

@@ -29,6 +29,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Activate;
 use RZP\Models\Settlement\Channel;
+use RZP\Services\SalesForceClient;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
@@ -37,11 +38,14 @@ use RZP\Exception\IntegrationException;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\SalesForce\SalesForceService;
 use RZP\Models\Admin\Service as AdminService;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\BankingAccount\Channel as BAChannel;
+use RZP\Models\SalesForce\SalesForceEventRequestType;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\SalesForce\SalesForceEventRequestDTO;
 use RZP\Models\BankingAccountService\Service as BasService;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
@@ -415,6 +419,10 @@ class Core extends Base\Core
     {
         $channel = $input[Entity::CHANNEL];
 
+        $clarityContextInput = array_pull($input,Entity::CLARITY_CONTEXT);
+
+        $clarityContextEnabled = !empty($clarityContextInput) and $clarityContextInput === '1';
+
         // Currently we are just checking if there exists even one account of the merchant for the selected
         // channel. If we find any such account we will just return the account and wont create a new one.
         // But later when a merchant will start having more than one current account in the same channel
@@ -482,7 +490,19 @@ class Core extends Base\Core
 
         });
 
-        $this->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
+        if ($clarityContextEnabled === true)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_CLARITY_CONTEXT_ENABLED,
+                [
+                    'merchant_id'               => $merchant->getId(),
+                    'clarity_context_enabled'   => true,
+                ]);
+
+            $this->sendClarityContextEnabledEventToSF($merchant);
+        }
+
+        $this->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount,$clarityContextEnabled);
 
         $this->sendSegmentEvent($bankingAccount, $merchant);
 
@@ -2060,11 +2080,14 @@ class Core extends Base\Core
      *
      * @return void
      */
-    protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount): void
+    protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount, bool $clarityContextEnabled = false): void
     {
         if ($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created')
         {
-            $this->notifyOpsAboutProActivation($bankingAccount);
+            if ($clarityContextEnabled === false)
+            {
+                $this->notifyOpsAboutProActivation($bankingAccount);
+            }
 
             $this->notifyMerchantAboutUpdatedStatus($bankingAccount);
 
@@ -2195,5 +2218,17 @@ class Core extends Base\Core
         $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
 
         $this->app['x-segment']->sendEventToSegment(SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE, $merchant, $properties);
+    }
+
+    protected function sendClarityContextEnabledEventToSF(Merchant\Entity $merchant)
+    {
+        $salesForceClient = new SalesForceClient($this->app);
+        $salesForceService = new SalesForceService($salesForceClient);
+
+        $salesForceEventRequestDTO = new SalesForceEventRequestDTO();
+        $salesForceEventRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_CLARITY_CONTEXT'));
+        $salesForceEventRequestDTO->setEventProperties([Entity::CLARITY_CONTEXT => 'enabled']);
+
+        $salesForceService->raiseEvent($merchant, $salesForceEventRequestDTO);
     }
 }

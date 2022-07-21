@@ -60,6 +60,13 @@ class SalesForceService {
                                                              SalesForceEventRequestDTO $salesForceEventRequestDTO,
                                                              Entity $merchant) {
         switch ($salesForceEventRequestType->getValue()) {
+            case 'CURRENT_ACCOUNT_CLARITY_CONTEXT':
+                $eventPayload = [
+                    'merchant_id'           => $merchant->getId(),
+                    'product_name'          => 'Current_Account'
+                ];
+                return array_merge($eventPayload, $salesForceEventRequestDTO->getEventProperties());
+
             case 'LOS_NEW_APPLICATION':
             case 'CURRENT_ACCOUNT_INTEREST':
             case 'SHOPIFY_MIGRATION_REQUEST':

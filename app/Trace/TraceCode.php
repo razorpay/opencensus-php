@@ -7459,6 +7459,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const NC_EMAIL_SENT                                               = 'NC_EMAIL_SENT';
 
+    const BANKING_ACCOUNT_CLARITY_CONTEXT_ENABLED                     = 'BANKING_ACCOUNT_CLARITY_CONTEXT_ENABLED';
+
     const METRO_PUBLISH_FOR_CAPTURE_VERIFY                            = 'METRO_PUBLISH_FOR_CAPTURE_VERIFY';
 
     protected static $messages = [

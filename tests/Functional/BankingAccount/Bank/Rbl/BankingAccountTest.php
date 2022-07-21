@@ -5417,6 +5417,25 @@ class BankingAccountTest extends TestCase
 
     }
 
+    public function testCreateBankingAccountAdminWithClarityContext()
+    {
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->adminAuth();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        Mail::assertNotQueued(XProActivation::class);
+
+    }
+
     public function testCreateBankingAccountWithRestrictionExcludedForLMS()
     {
         $this->ba->adminAuth();
@@ -5676,6 +5695,18 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($request);
+    }
+
+    public function testFilterSlotBookingDateWithClarityContext()
+    {
+        $createBankingAccountResp = $this->createBankingAccount();
+
+        $this->createMerchantAttribute($createBankingAccountResp['merchant_id'], 'banking',
+            'x_merchant_current_accounts', 'clarity_context', 'completed');
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testFilterFromToSlotBookingDate()

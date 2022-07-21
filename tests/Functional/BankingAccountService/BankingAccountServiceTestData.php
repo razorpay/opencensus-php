@@ -530,6 +530,25 @@ return [
         ],
     ],
 
+    'testSlotBookingForBankingAccountForMerchantWithClarityContext' => [
+        'request'  => [
+            'url'     => '/booking/slot/book',
+            'method'  => 'POST',
+            'content' => [
+                'id' => 'randomBaAccId8',
+                'channel' => 'rbl',
+                'merchantName' => 'Test Merchant',
+                'merchantEmail' => 'test@razorpay.com',
+                'phoneNumber' => '9876543210',
+                'slotDateAndTime' => '17-Nov-2021 11:30:00'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testSlotRescheduleForBankingAccount' => [
         'request'  => [
             'url'     => '/booking/slot/reschedule',

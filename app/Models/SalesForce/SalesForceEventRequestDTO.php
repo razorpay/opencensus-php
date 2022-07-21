@@ -47,6 +47,7 @@ class SalesForceEventRequestType {
     private const LOS_NEW_APPLICATION = 'LOS_NEW_APPLICATION';
     private const RX_WEBSITE_SF_EVENTS = 'RX_WEBSITE_SF_EVENTS';
     private const SHOPIFY_MIGRATION_REQUEST = 'SHOPIFY_MIGRATION_REQUEST';
+    private const CURRENT_ACCOUNT_CLARITY_CONTEXT = 'CURRENT_ACCOUNT_CLARITY_CONTEXT';
 
     private $value;
 

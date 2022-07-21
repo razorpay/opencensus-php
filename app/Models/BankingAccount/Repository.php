@@ -696,6 +696,31 @@ class Repository extends Base\Repository
         $query->where($businessCategoryColumn, '=', $businessCategory);
     }
 
+    public function addQueryParamClarityContext(Base\BuilderEx $query, array $params)
+    {
+        $merchantAttributeTable = $this->repo->merchant_attribute->getTableName();
+
+        if ($query->hasJoin($merchantAttributeTable) === true)
+        {
+            return;
+        }
+
+        $merchantIdForeignColumn = $this->repo->merchant_attribute->dbColumn(Merchant\Attribute\Entity::MERCHANT_ID);
+
+        $merchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
+
+        $query->join($merchantAttributeTable, $merchantIdColumn, '=', $merchantIdForeignColumn);
+
+        $query->select($this->dbColumn('*'));
+
+        $merchantAttributeValueColumn = $this->repo->merchant_attribute->dbColumn(Merchant\Attribute\Entity::VALUE);
+
+        // case insensitive
+        $clarityContextState = $params[Entity::CLARITY_CONTEXT];
+
+        $query->where($merchantAttributeValueColumn, '=', $clarityContextState);
+    }
+
     /**
      *
      * select distinct `merchant_id` from `banking_accounts`

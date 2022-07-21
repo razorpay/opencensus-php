@@ -97,6 +97,27 @@ return [
         ],
     ],
 
+    'testCreateBankingAccountAdminWithClarityContext' => [
+        'request'  => [
+            'url'     => '/banking_accounts_admin',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'channel'           => 'rbl',
+                'pincode'           => '560034',
+                'clarity_context'   => '1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'           => 'rbl',
+                'status'            => 'created',
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountForNonRzpOrgMerchantFromDashboard' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',
@@ -2383,6 +2404,21 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testFilterSlotBookingDateWithClarityContext' => [
+        'request'  => [
+            'url'     => '/admin/banking_account?count=20&clarity_context=completed',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
             ],
         ],
     ],
