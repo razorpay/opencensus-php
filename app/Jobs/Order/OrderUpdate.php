@@ -31,7 +31,8 @@ class OrderUpdate extends Job
     {
         parent::handle();
 
-        if ($this->mode === Mode::TEST)
+        if ((app()->isEnvironmentProduction() === true) and
+            ($this->mode === Mode::TEST))
         {
             return;
         }
