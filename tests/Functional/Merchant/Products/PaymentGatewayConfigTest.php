@@ -1422,21 +1422,6 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->mockSplitzTreatment($input, $output);
 
         $input = [
-            "experiment_id" => "JNwT6Atz4PLiVh",
-            "id"            => "10000000000000",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'exposed',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
             "experiment_id" => "JIRYzx7YtMuB18",
             "id"            => "10000000000000",
             'request_data'  => json_encode(

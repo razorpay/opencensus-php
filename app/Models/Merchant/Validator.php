@@ -1300,20 +1300,6 @@ class Validator extends Base\Validator
         else
         {
             $this->validateInput('unique_email', array_only($input, Entity::EMAIL));
-
-            $app =  App::getFacadeRoot();
-
-            $properties = [
-                'id'            => $partner->getId(),
-                'experiment_id' => $app['config']->get('app.partner_add_submerchant_account_exp_id'),
-            ];
-
-            $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'exposed', TraceCode::SUBMERCHANT_ACCOUNT_NAME_VALIDATION_SPLITZ_ERROR);
-
-            if($isExpEnabled === true)
-            {
-                $this->validateInput('account_name', array_only($input,Entity::NAME));
-            }
         }
 
         if ($linkedAccount === false)

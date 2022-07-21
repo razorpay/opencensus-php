@@ -474,21 +474,6 @@ class AccountV2Test extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $input = [
-            "experiment_id" => "JNwT6Atz4PLiVh",
-            "id"            => "10000000000000",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'exposed',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
             "id"            => "10000000000000",
             "experiment_id" => "JqPQNIjSTvE6v0",
         ];

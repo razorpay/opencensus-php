@@ -182,7 +182,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px; line-height: 1.5;">
-                                                            <div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> Hi {{$merchant['name']}} <br> <br> {{$subMerchant['name']}} has been successfully added to your account. <br> We have sent an invite mail to {{$subMerchant['email']}} for setting up their RazorpayX account.</div>
+                                                            <div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> Hi <a>{{$merchant['name']}}</a> <br> <br> <a>{{$subMerchant['name']}}</a> has been successfully added to your account. <br> We have sent an invite mail to {{$subMerchant['email']}} for setting up their RazorpayX account.</div>
                                                             <div class="para margin-bottom-24" style="margin: 0;">
                                                                 Onboarding Process for your referral -:
                                                             </div>

@@ -182,7 +182,7 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px;line-height: 1.5;"><div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> {{$merchant['name']}} has invited you to open a Current Account with RazorpayX.</div>
+                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px;line-height: 1.5;"><div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;"> <a>{{$merchant['name']}}</a> has invited you to open a Current Account with RazorpayX.</div>
                                                             <div class="para margin-bottom-24" style="margin: 0 0 5px; font-weight: bold;">
                                                                 What is RazorpayX?
                                                             </div>

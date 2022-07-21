@@ -426,32 +426,6 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($liveMapping);
     }
 
-    public function testCreateSubMerchantWithInvalidAccountName()
-    {
-        $this->fixtures->merchant->addFeatures(['aggregator']);
-
-        $input = [
-            "experiment_id" => "JNwT6Atz4PLiVh",
-            "id"            => "10000000000000",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'exposed',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
-
-        $this->startTest();
-    }
-
     public function testCreateSubMerchantWithEmailUserExists()
     {
         Mail::fake();
@@ -2397,21 +2371,6 @@ class MerchantCreateTest extends TestCase
     }
 
     private function mockSplitzEvaluation() {
-        $input = [
-            "experiment_id" => "JNwT6Atz4PLiVh",
-            "id"            => "10000000000000",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'exposed',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
         $input = [
             "experiment_id" => "JRWRysOmXFWZ9C",
             "id"            => "10000000000000",

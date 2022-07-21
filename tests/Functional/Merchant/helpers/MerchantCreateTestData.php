@@ -1786,30 +1786,4 @@ return [
             ],
         ],
     ],
-    'testCreateSubMerchantWithInvalidAccountName' => [
-        'request'  => [
-            'url'     => '/submerchants',
-            'method'  => 'POST',
-            'content' => [
-                'id'    => 'NewSubmerchant',
-                'name'  => 'Submerchant_2',
-                'email' => 'submerchant@razorpay.com'
-            ],
-        ],
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The name may only contain alphabets and spaces.',
-                    'reason'        => 'input_validation_failed',
-                    'field'         => 'name',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
 ];

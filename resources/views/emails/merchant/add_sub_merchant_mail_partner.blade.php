@@ -33,7 +33,7 @@
             <td class="center panel" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 19px; background: #f2f2f2; border: 1px solid #d9d9d9; padding: 10px !important; text-align: center; border-left: none; border-right: none;">
               <h6 style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; font-size: 20px;">
                 <center style="width: 100%; min-width: 560px;">
-                  {{{$merchant['name']}}} • ID: {{{$merchant['id']}}}
+                    <a>{{{$merchant['name']}}}</a> • ID: {{{$merchant['id']}}}
                 </center>
               </h6>
             </td>
@@ -68,7 +68,7 @@
                     <td class="center welcome" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; font-size: 16px; color: #2d2d2d; line-height: 24px; background: white; margin: 10px 0px 10px 0px; text-align: center; padding: 0px 0px 10px;">
 
 <p style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin-bottom: 10px; font-size: 16px; color: #2d2d2d; text-align: justify; line-height: 24px; background: white; margin: 10px 0px 10px 0px;">
-  {{{$subMerchant['name']}}} (ID: {{{$subMerchant['id']}}}) has been added as your affiliate account on Razorpay.
+    <a>{{{$subMerchant['name']}}}</a> (ID: {{{$subMerchant['id']}}}) has been added as your affiliate account on Razorpay.
   @if($subMerchant['email'] != $merchant['email'])
   <br>
   We have sent an invite mail to {{{$subMerchant['email']}}} for setting up their Razorpay account password.
