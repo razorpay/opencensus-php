@@ -4,7 +4,7 @@
 require('../scripts/sanitizeParams.php');
 
 $baseurl = $_SERVER['HTTP_HOST'] . '/v1';
-$key_id = $_GET['key'] ?? 'rzp_live_bc6Xjbt7e58dXv';
+$key_id = $_GET['key'] ?? 'rzp_test_oR12yfwSW54HJJ';
 $secret = 'thisissupersecret';
 $public_url = $baseurl;
 $private_url = $key_id.':'.$secret.'@'.$baseurl;
@@ -113,10 +113,10 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <!--        <td colspan='40'>Razorpay Order Id:</td>-->
     <!--        <td><input type="text" name="order_id" size="25" value=""></td>-->
     <!--    </tr>-->
-<!--    <tr>-->
-<!--                <td colspan='40'>terminal id</td>-->
-<!--        <td><input type="hidden" name="force_terminal_id" size="30" value="term_ItPNwTjMZQq5oU"></td>-->
-<!--    </tr>-->
+    <tr>
+        <!--        <td colspan='40'>terminal id</td>-->
+        <td><input type="hidden" name="force_terminal_id" size="30" value="term_JLWsRw2gllcKS5"></td>
+    </tr>
     <tr>
         <td colspan="100" align="center">
             <input type="submit" value="  Submit  " >

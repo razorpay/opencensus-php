@@ -1604,9 +1604,7 @@ class Netbanking
 
     public static function banksRoutedAlwaysThroughNbRearch(string $bank): bool
     {
-        $rearchBanks = [
-            Bank::DBSS,
-        ];
+        $rearchBanks = [];
 
         return in_array($bank, $rearchBanks, true);
     }

@@ -29,6 +29,7 @@ class Dbs extends Base
     const FILE_NAME               = 'HCODI01.Razorpay_';
     const BEAM_FILE_TYPE          = 'combined';
 
+    private $refunds_file_based = [];
 
     protected function formatDataForMail(array $data)
     {
@@ -243,6 +244,11 @@ class Dbs extends Base
                     Constants::PAYMENT_BANK_REF_NO      => $row['gateway'][Netbanking::BANK_TRANSACTION_ID],
                 ];
 
+                if ($this->getRefundStatus($row) !== 'Success')
+                {
+                    $this->refunds_file_based[] = $row;
+                }
+
                 $count += 1;
             }
         }
@@ -320,7 +326,7 @@ class Dbs extends Base
 
             $this->gatewayFile->setStatus(Status::FILE_SENT);
 
-            $this->reconcileNetbankingRefunds($data['refunds'] ?? []);
+            $this->reconcileNetbankingRefunds($this->refunds_file_based ?? []);
         }
         catch (\Throwable $e)
         {

@@ -2908,6 +2908,8 @@ class Gateway
         IFSC::TMBL => Gateway::NETBANKING_TMB,
         IFSC::UJVN => Gateway::NETBANKING_UJJIVAN,
         Netbanking::HDFC_C =>Gateway::NETBANKING_HDFC,
+        IFSC::DBSS         => Gateway::NETBANKING_DBS,
+        Netbanking::LAVB_R => Gateway::NETBANKING_DBS,
     ];
 
     /**
