@@ -16,6 +16,15 @@ import { getOptimizerOnboardingStorageKey } from '../util';
 
 import { FEATURES_DATA, FEATURES_LINKS, MORE_FEATURES_LINK } from './constants';
 
+const handleNextSlide = (sliderProps) => (params) => {
+  trackOptimizerEvents({
+    objectName: `Optimizer Read More`,
+    actionName: 'clicked',
+    screen: 'Optimizer - Onboarding',
+  });
+  sliderProps?.next(params);
+};
+
 class OptimizerOnBoarding extends React.Component {
   constructor() {
     super();
@@ -27,6 +36,11 @@ class OptimizerOnBoarding extends React.Component {
 
   componentDidMount() {
     this.onMount();
+    trackOptimizerEvents({
+      objectName: 'Optimizer Onboarding',
+      actionName: 'landing page visited',
+      screen: 'Optimizer - Onboarding',
+    });
   }
 
   onMount = () => {
@@ -34,12 +48,12 @@ class OptimizerOnBoarding extends React.Component {
     this.setState({ isTrialRequested });
   };
 
-  requestTrial = () =>
+  requestTrial = (additionalMsg) =>
     new Promise((resolve) => {
       setTimeout(() => {
         setItem(getOptimizerOnboardingStorageKey(this.props.user), 1);
         trackOptimizerEvents({
-          objectName: 'Optimizer Request Free Trial',
+          objectName: `Optimizer Request A Demo ${additionalMsg}`,
           actionName: 'clicked',
           screen: 'Optimizer - Onboarding',
         });
@@ -47,9 +61,9 @@ class OptimizerOnBoarding extends React.Component {
       }, 1000);
     });
 
-  handleRequestTrialClick = () => {
+  handleRequestTrialClick = (additionalMsg) => () => {
     this.setState({ isPending: true });
-    this.requestTrial()
+    this.requestTrial(additionalMsg)
       .then((res) => {
         if (res === 'Success') {
           this.setState({ isTrialRequested: true });
@@ -60,10 +74,18 @@ class OptimizerOnBoarding extends React.Component {
       });
   };
 
+  handleMoreFeaturesLink = () => {
+    trackOptimizerEvents({
+      objectName: `Optimizer Know More`,
+      actionName: 'clicked',
+      screen: 'Optimizer - Onboarding',
+    });
+  };
+
   renderRequestedTrialButton = () => (
     <Button className="joined-button">
       <i className="i i-tick" />
-      Free Trial Requested
+      Demo Requested
     </Button>
   );
 
@@ -72,8 +94,8 @@ class OptimizerOnBoarding extends React.Component {
     return isTrialRequested ? (
       this.renderRequestedTrialButton()
     ) : (
-      <AsyncBtn.Primary className="Forward-Button" onClick={this.handleRequestTrialClick}>
-        Request Free Trial
+      <AsyncBtn.Primary className="Forward-Button" onClick={this.handleRequestTrialClick('page 2')}>
+        Request A Demo
         {isPending && <span className="spin-btn white visible" />}
       </AsyncBtn.Primary>
     );
@@ -86,8 +108,8 @@ class OptimizerOnBoarding extends React.Component {
         {isTrialRequested ? (
           this.renderRequestedTrialButton()
         ) : (
-          <AsyncBtn.Secondary onClick={this.handleRequestTrialClick}>
-            Request Free Trial
+          <AsyncBtn.Secondary onClick={this.handleRequestTrialClick('page 1')}>
+            Request A Demo
             {isPending && <span className="spin-btn visible" />}
           </AsyncBtn.Secondary>
         )}
@@ -103,6 +125,7 @@ class OptimizerOnBoarding extends React.Component {
           {(sliderProps) => (
             <Landing
               {...sliderProps}
+              next={handleNextSlide(sliderProps)}
               title="Optimizer"
               feature={RZPFeatures.OPTIMIZER}
               imageUrl="https://razorpay.com/assets/optimizer/banner-illustration.png"
@@ -120,6 +143,7 @@ class OptimizerOnBoarding extends React.Component {
               featureLinks={FEATURES_LINKS}
               features={FEATURES_DATA}
               moreFeaturesLink={MORE_FEATURES_LINK}
+              handleMoreFeaturesLink={this.handleMoreFeaturesLink}
             />
           )}
         </Slider>
@@ -129,7 +153,7 @@ class OptimizerOnBoarding extends React.Component {
 }
 
 function getOnBoardingSliderDots(sliderProps) {
-  return <SliderDots {...sliderProps} />;
+  return <SliderDots next={handleNextSlide(sliderProps)} {...sliderProps} />;
 }
 
 export default compose(

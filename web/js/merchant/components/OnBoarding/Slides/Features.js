@@ -29,6 +29,7 @@ export default class OnBoardingFeatures extends React.PureComponent {
       features,
       featureLinks,
       moreFeaturesLink,
+      handleMoreFeaturesLink,
     } = this.props;
 
     return (
@@ -60,7 +61,12 @@ export default class OnBoardingFeatures extends React.PureComponent {
         </div>
         {moreFeaturesLink && (
           <div className="More-features-link flex">
-            <FeatureLink {...moreFeaturesLink} page={active} feature={feature} />
+            <FeatureLink
+              {...moreFeaturesLink}
+              page={active}
+              feature={feature}
+              onClick={handleMoreFeaturesLink}
+            />
           </div>
         )}
         <div className="Button-Container">
