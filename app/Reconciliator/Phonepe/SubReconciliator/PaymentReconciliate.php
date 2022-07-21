@@ -8,8 +8,9 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\Payment\Action;
 use RZP\Gateway\Mozart\WalletPhonepe\ReconFields;
+use RZP\Reconciliator\Base\SubReconciliator\NbPlus;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends NbPlus\NbPlusServiceRecon
 {
     protected function getPaymentId(array $row)
     {

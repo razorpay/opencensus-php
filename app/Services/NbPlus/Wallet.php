@@ -19,9 +19,7 @@ class Wallet extends Service
 {
 
     // gateway entity attributes
-    const GATEWAY_TRANSACTION_ID = 'gateway_transaction_id';
-    const BANK_TRANSACTION_ID    = 'bank_transaction_id';
-    const BANK_ACCOUNT_NUMBER    = 'bank_account_number';
+    const WALLET_TRANSACTION_ID  = 'wallet_transaction_id';
     const ADDITIONAL_DATA        = 'additional_data';
 
     // attributes which are part of additional data in wallet entity
@@ -32,6 +30,7 @@ class Wallet extends Service
 
     public function action(string $method, string $gateway, string $action, array $input)
     {
+
         $this->action = $action;
 
         $this->gateway = $gateway;
@@ -61,6 +60,11 @@ class Wallet extends Service
             $input[Entity::PAYMENT][self::OTP_ATTEMPTS] = 0;
         }
 
+        if ($this->action === Action::AUTHORIZE_FAILED)
+        {
+            $action = Action::VERIFY;
+        }
+
         $input = $this->convertEmptyArrayToNull($input);
 
         $content = [
@@ -72,6 +76,7 @@ class Wallet extends Service
         $response = $this->sendRequest('POST', 'action/' . $action . '/' . $method, $content);
 
         return $this->processResponse($response);
+
     }
 
     protected function convertEmptyArrayToNull($input)
@@ -116,6 +121,9 @@ class Wallet extends Service
                 break;
             case Action::VERIFY:
                 $returnData = $this->processVerifyResponse($response);
+                break;
+            case Action::AUTHORIZE_FAILED:
+                $returnData = $this->processAuthorizeFailedFlow($response);
                 break;
             default:
                 throw new Exception\InvalidArgumentException(
@@ -184,5 +192,37 @@ class Wallet extends Service
     protected function checkGatewaySuccess(Verify &$verify)
     {
         $verify->gatewaySuccess = $verify->verifyResponseContent[Response::GATEWAY_STATUS] ?? false;
+    }
+
+    // ----------------------- Authorize failed  -----------------------
+
+    protected function processAuthorizeFailedFlow($response) {
+
+        $e = null;
+        try
+        {
+            $this->verifyPayment($response);
+        }
+        catch (Exception\PaymentVerificationException $e)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED_TO_AUTHORIZED,
+                [
+                    'message'    => 'Payment verification failed. Now converting to authorized',
+                    'payment_id' => $this->input[Entity::PAYMENT][Payment\Entity::ID]
+                ]);
+        }
+
+        if ($e === null)
+        {
+            throw new Exception\LogicException(
+                'When converting failed payment to authorized, payment verification ' .
+                'should have failed but instead it did not',
+                null,
+                $this->input[Entity::PAYMENT]);
+        }
+
+        return $this->getAcquirerData($response);
+
     }
 }

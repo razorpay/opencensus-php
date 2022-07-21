@@ -4197,6 +4197,7 @@ class Gateway
             self::NETBANKING_HDFC,
             self::INGENICO,
             self::WALLET_PAYZAPP,
+            self::WALLET_PHONEPE,
         ];
 
         $acquirerGateways = [

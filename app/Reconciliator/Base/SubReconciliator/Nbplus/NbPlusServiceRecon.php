@@ -10,6 +10,7 @@ use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Services\NbPlus\Paylater as PaylaterService;
 use RZP\Services\NbPlus\Emandate as EmandateService;
+use RZP\Services\NbPlus\Wallet as WalletService;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
 
@@ -20,6 +21,7 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
     use EmandateReconTrait;
     use NetbankingReconTrait;
     use CardlessEmiReconTrait;
+    use WalletReconTrait;
     //
     // These are the attributes required from the netbanking entity on nbplus service
     //
@@ -33,6 +35,11 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
     const PAYLATER_ATTRIBUTES = [
         PaylaterService::GATEWAY_REFERENCE_NUMBER,
         PaylaterService::PROVIDER_REFERENCE_NUMBER,
+    ];
+
+    const WALLET_ATTRIBUTES = [
+        WalletService::WALLET_TRANSACTION_ID,
+        WalletService::ADDITIONAL_DATA
     ];
 
     //
@@ -68,6 +75,9 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
             {
                 case Payment\Method::NETBANKING;
                     $this->nbPlusPaymentServiceNetbankingDispatch($rowDetails);
+                    break;
+                case Payment\Method::WALLET:
+                    $this->nbPlusPaymentServiceWalletDispatch($rowDetails);
                     break;
                 case Payment\Method::CARDLESS_EMI;
                     $this->nbPlusPaymentServiceCardlessEmiDispatch($rowDetails);

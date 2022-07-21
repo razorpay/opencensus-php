@@ -211,7 +211,6 @@ class CombinedReconciliate extends Base\Foundation\SubReconciliate
                     }
 
                     $subReconciliatorObject = $this->getSubReconciliatorObject($entityType, $batch);
-
                     // As we are creating subRecon object again here, need to
                     // set the source and messenger batchId for it
                     $subReconciliatorObject->setSource($this->source);

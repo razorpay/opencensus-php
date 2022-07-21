@@ -37,16 +37,29 @@ class Wallet extends WalletBase
     {
         if ($input['input']['token'] === null)
         {
+            $url = $this->app['api.route']->getPublicCallbackUrlWithHash(
+                $input['input']['payment']['public_id'],
+                'rzp_test_TheTestAuthKey'
+            );
+
+            $otpFlowWallets = [
+                'wallet_freecharge'
+            ];
+
+            if(in_array($input['input']['payment']['gateway'], $otpFlowWallets, true) === true){
+                $url = $this->app['api.route']->getPublicCallbackUrlWithHash(
+                    $input['input']['payment']['public_id'],
+                    'rzp_test_TheTestAuthKey',
+                    'payment_otp_submit'
+                );
+            }
+
             return [
                 'response' => [
                     'data' => [
                         'next' => [
                             'redirect' => [
-                                'url'      => $this->app['api.route']->getPublicCallbackUrlWithHash(
-                                    $input['input']['payment']['public_id'],
-                                    'rzp_test_TheTestAuthKey',
-                                    'payment_otp_submit'
-                                ),
+                                'url'      => $url,
                                 'method'  => 'post',
                                 'content' => []
                             ]
@@ -88,6 +101,19 @@ class Wallet extends WalletBase
 
     public function callback($input)
     {
+
+        if(isset($input['input']['payment']['gateway']) && $input['input']['payment']['gateway'] === 'wallet_phonepe'){
+            return [
+                'response' => [
+                    'data' => [
+                        'gateway_reference_number'   => "gateway_ref_no",
+                        'gateway_status'=> false,
+                    ],
+                ],
+                'error' => null
+            ];
+        }
+
         if (isset($input['input']['gateway']) && $input['input']['gateway']['otp'] === "200000")
         {
             return [
@@ -96,8 +122,8 @@ class Wallet extends WalletBase
                     'error_type' => "GATEWAY",
                     "cause"=> [
                         "internal_error_code" => "BAD_REQUEST_PAYMENT_OTP_INCORRECT",
-                    ],
-                ],
+                    ]
+                ]
             ];
         }
         elseif (isset($input['input']['gateway']) && $input['input']['gateway']['type'] === "otp") {

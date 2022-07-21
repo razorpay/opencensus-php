@@ -2377,17 +2377,27 @@ class Processor
         $cpsEnabledMethods = [
             Payment\Method::CARD, Payment\Method::NETBANKING, Payment\Method::EMI,
             Payment\Method::EMANDATE, Payment\Method::CARDLESS_EMI, Payment\Method::UPI,
-            Payment\Method::APP, Payment\Method::PAYLATER,
+            Payment\Method::APP, Payment\Method::PAYLATER
+        ];
+
+        $cpsEnabledWallets = [
+            Payment\Gateway::WALLET_FREECHARGE,
+            Payment\Gateway::WALLET_PAYZAPP,
+            Payment\Gateway::WALLET_PHONEPE,
         ];
 
         if (((in_array($method, $cpsEnabledMethods, true) === false) or
                 ($payment->isGooglePayCard() === true) or
                 (empty($payment->getGooglePayMethods()) === false) or
                 ($payment->isAppCred() === true)) and
-            ($payment->getGateway() !== Payment\Gateway::WALLET_FREECHARGE and $payment->getGateway() !== Payment\Gateway::WALLET_PAYZAPP))
+            (in_array($payment->getGateway(), $cpsEnabledWallets, true) === false))
         {
             $payment->disableCpsRoute();
+            return;
+        }
 
+        if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent')){
+            $payment->disableCpsRoute();
             return;
         }
 

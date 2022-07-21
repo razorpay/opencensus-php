@@ -20,6 +20,9 @@ class Service extends NbPlusService
             case 'netbanking':
                 $class = new Netbanking();
                 break;
+            case Payment\Method::WALLET;
+                $class = new Wallet();
+                break;
             case Payment\Method::PAYLATER:
                 $class = new Paylater();
                 break;

@@ -50,6 +50,8 @@ class PhonepeGatewayTest extends TestCase
         $mozartEntity = $this->getLastEntity('mozart', true);
 
         $this->assertTestResponse($mozartEntity, 'testPaymentMozartEntity');
+
+        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
     }
 
     public function testIntentPayment()
@@ -130,6 +132,8 @@ class PhonepeGatewayTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
     }
 
     public function testCallbackEmptyResponseBody()
@@ -154,6 +158,8 @@ class PhonepeGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNull($wallet);
+
+        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
     }
 
 
@@ -166,6 +172,8 @@ class PhonepeGatewayTest extends TestCase
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
 
         $this->assertSame($this->payment['payment']['verified'], 1);
+
+        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
     }
 
     public function testVerifyFailedPayment()
@@ -203,6 +211,8 @@ class PhonepeGatewayTest extends TestCase
         $mozart = $this->getLastEntity('mozart', true);
 
         $this->assertTestResponse($mozart, 'testPaymentMozartEntity');
+
+        $this->markTestSkipped('phonepe wallet normal payment flow has been migrated to nbplus service');
     }
 
     protected function runPaymentCallbackFlowWalletPhonepe($response, &$callback = null)
