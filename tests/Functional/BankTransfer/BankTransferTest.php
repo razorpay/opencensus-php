@@ -90,6 +90,7 @@ class BankTransferTest extends TestCase
 
         $this->bankAccount = $this->createVirtualAccount();
 
+        $this->enableRazorXTreatmentForBanKTransferDisableGateway();
     }
 
     protected function createTerminals()
@@ -223,6 +224,54 @@ class BankTransferTest extends TestCase
         $this->assertEquals('created', $refund['status']);
         $this->assertEquals(5000000, $refund['amount']);
         $this->assertEquals('Yes Bank Virtual Account is closed', $refund['notes']['refund_reason']);
+    }
+
+    public function testBankTransferYesBank()
+    {
+        $bankAccount = $this->createVirtualAccount('live', 'BankAccountMer');
+
+        $accountNumber = $bankAccount['account_number'];
+        $ifsc = $bankAccount['ifsc'];
+
+        // Process API always returns true
+        $response = $this->processBankTransfer($accountNumber, $ifsc, null , null, 'live');
+
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $bankTransfer =  $this->getDbLastEntity('bank_transfer', 'live');
+
+        $this->assertEquals(5000000, $bankTransfer['amount']);
+        $this->assertEquals(UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED,
+                            $bankTransfer['unexpected_reason']);
+
+        $payment =  $this->getDbLastEntity('payment', 'live');
+        $this->assertEquals(5000000, $payment['amount']);
+        $this->assertEquals('bt_yesbank', $payment['gateway']);
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refund =  $this->getDbLastEntity('refund', 'live');
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(5000000, $refund['amount']);
+        $this->assertEquals('Yes Bank Virtual Account is closed', $refund['notes']['refund_reason']);
+    }
+
+    public function enableRazorXTreatmentForBanKTransferDisableGateway()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
     }
 
     public function testFetchPaymentsPostRblMigration()
@@ -5996,7 +6045,7 @@ class BankTransferTest extends TestCase
         $this->startTest($testData);
 
         $bankTransfer = $this->getDbLastEntity('bank_transfer');
-        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
         $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
 
@@ -6004,7 +6053,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('bank_account', $payment['receiver_type']);
-        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('refunded', $payment['status']);
     }
 
     public function testBankTransferForVaOnCheckoutWithCustomerDetails()

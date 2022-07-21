@@ -21,9 +21,10 @@ use RZP\Exception\LogicException;
 use RZP\Models\FundAccount\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
-use RZP\Models\OfflinePayment\StatusCode as OfflineStatusCode;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
+use RZP\Models\OfflinePayment\StatusCode as OfflineStatusCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;use function Aws\or_chain;
 
 abstract class Processor extends Base\Core
@@ -554,11 +555,16 @@ abstract class Processor extends Base\Core
                                                                                    Provider::getBankCode($entity->getGateway()),
                                                                                    true);
 
+            $bankTransferDisableGateway = $this->app
+                                             ->razorx
+                                             ->getTreatment($merchant->getId(),
+                                                            RazorxTreatment::BANK_TRANSFER_DISABLE_GATEWAY,
+                                                            $this->mode);
 
-            if ($bankAccount->deleted_at !== null)
+            if (($bankAccount->deleted_at !== null) or
+                ($bankTransferDisableGateway === 'on'))
             {
-                $this->trace->info(
-                    TraceCode::BANK_TRANSFER_DISABLED_GATEWAY, $entity->toArrayTrace());
+                $this->trace->info(TraceCode::BANK_TRANSFER_DISABLED_GATEWAY, $entity->toArrayTrace());
 
                 $this->setUnexpectedReason($entity, UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED);
 
