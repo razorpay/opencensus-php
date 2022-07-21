@@ -566,4 +566,7 @@ final class RazorxTreatment
     // This is for upi autopay subsequent payment if capture setting time is less then 36 hours
     public const DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY = "default_capture_setting_config_upi_autopay";
 
+    // Experiment to migrate yes bank debit file batch processing
+    public const BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION = "batch_service_enach_npci_netbanking_migration";
+
 }

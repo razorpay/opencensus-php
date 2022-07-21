@@ -7,6 +7,7 @@ use RZP\Models\Batch;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Enach\Base\Entity;
 use RZP\Gateway\Enach\Npci\Netbanking;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class EnachNpciNetbanking extends Base
 {
@@ -77,5 +78,16 @@ class EnachNpciNetbanking extends Base
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC]);
+    }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION;
+
+        $variant = $this->getVariant($razorxTreatment);
+
+        $result = (strtolower($variant) === 'on');
+
+        return $result;
     }
 }
