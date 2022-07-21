@@ -45,9 +45,22 @@ class OpenCensusProvider extends ServiceProvider
 
             $spanOptions = $this->getSpanOptions($currentRoute);
 
+            $headers = $_SERVER;
+
+            if (isset($headers['QUERY_STRING'])) {
+                $headers['QUERY_STRING'] = Tracing::maskQueryString($headers['QUERY_STRING']);
+            }
+
+            if (isset($headers['REQUEST_URI'])) {
+                $headers['REQUEST_URI'] = Tracing::maskUrl($headers['REQUEST_URI']);
+            }
+
             $propagator = new JaegerPropagator();
-            $tracerOptions = ['propagator'          => $propagator,
-                                'root_span_options' => $spanOptions];
+            $tracerOptions = [
+                'headers'           => $headers,
+                'propagator'        => $propagator,
+                'root_span_options' => $spanOptions
+            ];
 
             $serviceName = Tracing::getServiceName($this->app);
 

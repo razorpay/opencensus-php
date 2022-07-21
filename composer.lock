@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "60c244a61932aa169f37bc169a573161",
+    "content-hash": "11681fba774323ffa66ea3ff38c8f881",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -3326,6 +3326,43 @@
             "time": "2021-07-23T15:14:50+00:00"
         },
         {
+            "name": "jakeasmith/http_build_url",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jakeasmith/http_build_url.git",
+                "reference": "93c273e77cb1edead0cf8bcf8cd2003428e74e37"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jakeasmith/http_build_url/zipball/93c273e77cb1edead0cf8bcf8cd2003428e74e37",
+                "reference": "93c273e77cb1edead0cf8bcf8cd2003428e74e37",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/http_build_url.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jake A. Smith",
+                    "email": "theman@jakeasmith.com"
+                }
+            ],
+            "description": "Provides functionality for http_build_url() to environments without pecl_http.",
+            "support": {
+                "issues": "https://github.com/jakeasmith/http_build_url/issues",
+                "source": "https://github.com/jakeasmith/http_build_url"
+            },
+            "time": "2017-05-01T15:36:40+00:00"
+        },
+        {
             "name": "jaybizzle/crawler-detect",
             "version": "v1.2.108",
             "source": {
@@ -6035,12 +6072,6 @@
                 "reference": "e9d6a5446104b3583c6b6ed02a34bf64b59e9969",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "ext/",
-                    "scripts/"
-                ]
-            },
             "require": {
                 "cache/adapter-common": "^1.0",
                 "php": ">=7.0",
@@ -6073,6 +6104,12 @@
                 "psr-4": {
                     "OpenCensus\\": "src/"
                 }
+            },
+            "archive": {
+                "exclude": [
+                    "ext/",
+                    "scripts/"
+                ]
             },
             "scripts": {
                 "tests": [
@@ -8702,11 +8739,6 @@
                 "reference": "bcefdc6b5c2e970d8a0095448f6b1d8674609bfb",
                 "shasum": ""
             },
-            "archive": {
-                "exclude": [
-                    "/xsd/"
-                ]
-            },
             "require": {
                 "goetas-webservices/xsd2php-runtime": "^0.2.2"
             },
@@ -8719,6 +8751,11 @@
                 "psr-4": {
                     "Razorpay\\UPI\\": "src"
                 }
+            },
+            "archive": {
+                "exclude": [
+                    "/xsd/"
+                ]
             },
             "authors": [
                 {
@@ -15022,5 +15059,5 @@
         "ext-libxml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.3.0"
 }

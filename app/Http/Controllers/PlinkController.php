@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use App;
+use RZP\Constants\Tracing;
 use RZP\Http\Request\Requests;
 use ApiResponse;
 use Request as Req;
@@ -220,7 +221,7 @@ class PlinkController extends Controller
             'follow_redirects' => $followRedirects,
         ];
 
-        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => $url]);
+        $this->trace->info(TraceCode::PAYMENT_LINK_SERVICE_REQUEST, ['url' => Tracing::maskUrl($url)]);
 
         $response = [
             'url'     => $url,
