@@ -2,13 +2,17 @@
 
 namespace RZP\Models\Card\TokenisedIIN;
 
+use RZP\Tests\Functional\Fixtures\Entity\Token;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Models\Card\TokenisedIIN;
 
 class Service extends Base\Service
 {
     public function createIin($input)
     {
+        $input[TokenisedIIN\Entity::TOKEN_IIN_LENGTH] = $this->getIINLength($input[TokenisedIIN\Entity::LOW_RANGE]);
+
         $tokenisedIin = (new Entity)->build($input);
 
         $this->repo->saveOrFail($tokenisedIin);
@@ -19,6 +23,11 @@ class Service extends Base\Service
     public function updateIin($iin, $input)
     {
         $iin = $this->repo->tokenised_iin->findByIin($iin);
+
+        if(isset($input[Entity::LOW_RANGE]) === true)
+        {
+            $input[Entity::TOKEN_IIN_LENGTH] = $this->getIINLength($input[Entity::LOW_RANGE]);
+        }
 
         $iin->edit($input);
 
@@ -52,7 +61,6 @@ class Service extends Base\Service
             $response =  $this->getBasicDetails($iin);
 
             return $response;
-
         }
 
         return null;
@@ -76,9 +84,10 @@ class Service extends Base\Service
     protected function getBasicDetails(Entity $iins)
     {
         $response = [
-            Entity::IIN             => $iins->getIin(),
-            ENTITY::HIGH_RANGE      => $iins->getHighRange(),
-            ENTITY::LOW_RANGE       => $iins->getLowRange(),
+            Entity::IIN                  => $iins->getIin(),
+            ENTITY::HIGH_RANGE           => $iins->getHighRange(),
+            ENTITY::LOW_RANGE            => $iins->getLowRange(),
+            Entity::TOKEN_IIN_LENGTH     => $iins->getIINLength(),
         ];
 
         return $response;
@@ -182,6 +191,13 @@ class Service extends Base\Service
 
         return $response;
 
+    }
+
+    // helper functions
+
+    public function getIINLength($tokenIIN)
+    {
+        return strlen($tokenIIN);
     }
 
 }

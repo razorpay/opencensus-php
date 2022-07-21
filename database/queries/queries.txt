@@ -6953,3 +6953,5 @@ CREATE TABLE IF NOT EXISTS merchant_owner_details (
 ALTER TABLE `merchant_international_integrations`
     ADD COLUMN `payment_methods` JSON NULL;
 
+ALTER TABLE tokenised_iins
+ADD COLUMN token_iin_length INT NOT NULL DEFAULT(9);

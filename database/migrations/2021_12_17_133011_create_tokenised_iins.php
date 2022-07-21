@@ -32,6 +32,8 @@ class CreateTokenisedIins extends Migration
 
             $table->integer(TokenisedIIN\Entity::UPDATED_AT);
 
+            $table->integer(TokenisedIIN\Entity::TOKEN_IIN_LENGTH)->default(9);
+
             $table->index(TokenisedIIN\Entity::IIN);
             $table->index([TokenisedIIN\Entity::HIGH_RANGE, TokenisedIIN\Entity::LOW_RANGE]);
         });
