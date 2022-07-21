@@ -24,7 +24,7 @@ export function initSentry(appName) {
         browserTracing: {
           tracingOrigins: ['dashboard.razorpay.com', /^\//],
         },
-        tracesSampleRate: 0.1,
+        tracesSampleRate: 0.05,
       });
     } catch (e) {
       console.error('Error while initializing sentry');
