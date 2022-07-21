@@ -44,6 +44,7 @@ use RZP\Models\TrustedBadge;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\Config\Service as oneClickCheckoutConfigService;
+use RZP\Models\Merchant\CheckoutExperiment as CheckoutExperiment;
 use RZP\Models\Address;
 class Checkout
 {
@@ -183,6 +184,8 @@ class Checkout
 
         $this->fill1ccAddressOptExperiment($merchant, $data);
 
+        $this->fillCheckoutExperiments($data);
+
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
         return $data;
@@ -303,6 +306,18 @@ class Checkout
         {
             $data['1cc_address_flow_exp'] = null;
         }
+    }
+
+    /**
+     * This method is used to fill checkout experiment's results into $data
+     *
+     * @param array $data
+     *
+     * @return void
+     */
+    protected function fillCheckoutExperiments(array &$data): void
+    {
+        $data['experiments']['checkout_redesign_v1_5'] = (new CheckoutExperiment())->shouldDisplayCheckoutRedesign();
     }
 
     protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)
