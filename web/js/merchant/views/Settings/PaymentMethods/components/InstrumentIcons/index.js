@@ -60,6 +60,14 @@ function getIconFn(iconName) {
       return 'sezzle';
     case 'walnut369':
       return 'walnut369';
+    case 'trustly':
+      return 'trustly';
+    case 'poli':
+      return 'poli';
+    case 'giropay':
+      return 'giropay';
+    case 'sofort':
+      return 'sofort';
     default:
       return '';
   }

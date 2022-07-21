@@ -6,13 +6,14 @@ const statusMap = {
   rejected: 'label-danger-light',
   disabled: 'label-muted',
   access_requested: 'label-primary-light',
-  requested: 'label-warning',
   in_review: 'label-primary-light',
   under_review: 'label-primary-light',
   enabled: 'label-success-light',
   approved: 'label-success-light',
   activated: 'label-success-light',
   no_website_added: 'label-warning',
+  requested: 'label-primary-light',
+  action_required: 'label-action-required',
 };
 
 const InternationalStatusLabel = ({ status }) => {

@@ -1575,6 +1575,10 @@ export default class User {
     return this.getExpStatus('updated_lite_onboarding') && !!this.isOrgRZP;
   }
 
+  get isApmOnboardingEnabled() {
+    return this.getExpStatus('international_apm_onboarding') && !!this.isOrgRZP;
+  }
+
   get isActivationFormFullView() {
     // not required for Razorpay X, partner accounts and sub merchants
     if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {

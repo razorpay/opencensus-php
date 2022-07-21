@@ -859,12 +859,53 @@ const initialState = {
               slug: 'internationalcards',
               icon: '',
             },
+          ],
+        },
+        {
+          header: 'Apps',
+          list: [
             {
               name: 'Paypal',
               description: 'Accept International Payments using PayPal on Razorpay Checkout',
               status: 'greyed',
               slug: 'paypal',
               icon: 'paypal',
+            },
+          ],
+        },
+        {
+          header: 'Bank Transfer Apps (International)',
+          listHeader: 'Instant Bank Transfer',
+          listDescription: 'Enable local payment methods for different geographies',
+          slug: 'instantbanktransfer',
+          list: [
+            {
+              name: 'Trustly',
+              description: 'Instant bank transfer for Europe',
+              status: 'greyed',
+              slug: 'app.trustly',
+              icon: 'trustly',
+            },
+            {
+              name: 'POLI',
+              description: 'Instant Bank Transfer for Australia',
+              status: 'greyed',
+              slug: 'app.poli',
+              icon: 'poli',
+            },
+            {
+              name: 'Giropay',
+              description: 'Instant Bank Transfer for Germany',
+              status: 'greyed',
+              slug: 'app.giropay',
+              icon: 'giropay',
+            },
+            {
+              name: 'Sofort',
+              description: 'Instant Bank Transfer for Europe',
+              status: 'greyed',
+              slug: 'app.sofort',
+              icon: 'sofort',
             },
           ],
         },

@@ -1,3 +1,8 @@
+$background-color = #FAFAFA
+$text-dark-grey = #58666E
+$color-red = #f05050
+$modal-break = 610px
+
 #settings-content
   background: transparent
   max-width: 900px
@@ -382,7 +387,7 @@
 
   .form-control {
     font-size: 12px;
-    background: #FAFAFA;
+    background: $background-color;
     color: #838383;
   }
 
@@ -525,7 +530,7 @@
         opacity: 1
   .supporting-documents
     .PowerSelect__Placeholder
-      color: #58666E
+      color: $text-dark-grey
 
   .Modal-content
     width: 960px
@@ -542,12 +547,12 @@
     bottom: 80px
     padding: 30px
     overflow: auto
-    background: #FAFAFA
+    background: $background-color
     .main-title
       font-weight: bold
       font-size: 18px
       line-height: 22px
-      color: #58666E
+      color: $text-dark-grey
       margin-bottom: 10px
     .sub-title
       padding-bottom: 12px
@@ -583,7 +588,7 @@
         .Input-error
           display: block;
         .PowerSelect
-          border-color: #f05050;
+          border-color: $color-red;
     .Input.Input--checkbox
       .Input-content
         width: 100%
@@ -725,6 +730,11 @@
   color: rgba(209, 45, 45, 1);
   background-color: rgba(209, 45, 45, 0.1);
 
+.label-action-required
+  color: #CD8214
+  background-color: #cd82141a
+
+
 .covid-donations__settings
   border 1px solid #528FF0
   background-color #F8FAFF
@@ -839,4 +849,284 @@
 
     .link
       margin-right: 35px
+
+//apm modal styling --->
+.Modal-container--apm-form-wrapper
+  .Modal-content
+    display: flex
+    width: 960px
+    max-width: 90vw
+    height: 80vh;
+    max-height: 640px
+    min-height: 560px
+    .Modal-body
+      display: flex
+      flex: 1
+      overflow: hidden
+      .Wizard
+        display: flex
+        flex: 1
+        width: 100%
+        aside
+          position: relative
+          min-width: 240px
+        .modal-body  
+          display: flex
+          flex-direction: column
+          padding: 0
+          overflow: hidden
+          height: 100%
+          .form-container
+            display: flex
+            flex: 1
+            flex-direction: column
+            padding 31px 36px 45px 30px  
+            overflow: scroll
+            background: $background-color
+            @media screen and (max-width: $modal-break){
+              padding-top: 15px
+              padding-bottom: 55px
+            }
+            &.Form--tabular
+              margin-bottom: 0
+            .head-wrapper  
+              position: relative
+              .title
+                font-weight: bold
+                font-size: 18px
+                text-transform: uppercase
+                line-height: 22px
+                color: $text-dark-grey
+                margin-bottom: 10px
+                @media screen and (max-width: $modal-break) {
+                  display: flex
+                  align-items: center
+                  justify-content: center
+                  font-size: 14px
+                }
+                .i-check
+                  color: #27c24c
+                  margin-right: 5px
+                  display: none
+                  @media screen and (max-width: $modal-break) {
+                    display: block
+                  }
+              .btn--back
+                top: 12px
+                left: 0
+                padding: 0 !important   
+              &.valid .title
+                @media screen and (max-width: $modal-break) {
+                  color: #27c24c
+                }   
+            .Input-elWrapper
+              width: unset  
+            .Input
+              .Input-content
+                width: 224px  
+                @media screen and (max-width: $modal-break) {
+                  width: 260px
+                }
+              .dropzone-label
+                top: 15px  
+            .Dropzone
+              min-width: 300px
+              max-width: 100%
+              @media screen and (max-width: $screen-sm-min){
+               min-width: 260px
+              }
+              .Dropzone-content
+                font-size 14px   
+          footer
+            position: relative
+            display: flex
+            justify-content: space-between   
+            align-items: center
+            box-shadow: 0 -1px 0 #0000000d
+            .bottom-notice
+              position: absolute
+              display: flex
+              flex-direction: row
+              align-items: center
+              justify-content: center
+              bottom: 100%
+              left: 0
+              width: 100%
+              height: fit-content
+              background: #FEF7E2
+              border: 1px solid #E6E7E8    
+              padding: 10px 0 
+              @media screen and (max-width: $screen-sm-min){
+                align-items: unset
+                padding: 10px 5px
+              }
+              .i-info-outline
+                color: #D12D2D8A
+                margin-right: 5px
+              p
+                font-weight: 400
+                font-size: 12px
+                line-height: 16px
+                text-align: center  
+                color: #0000008A
+                @media screen and (max-width: $screen-sm-min){
+                  text-align: left
+                }
+            .button-list
+              display: flex
+            .Loader
+              opacity: 0
+              transition: 1s opacity
+              &--visible
+                opacity: 1
+              .device--mobile
+                display: none
+              i, .spin-btn
+                margin-right: 4px
+                vertical-align: middle
+              .spin-btn
+                opacity: 1  
+            button
+              margin: 0
+              &.Button--secondary
+                margin-right: 16px
+        //instruments page styling -->
+        .instruments-container
+          padding-top: 34px
+          .instrument-row
+            display: flex
+            align-items: center
+            position: relative
+            cursor: pointer
+            background: #FFFFFF
+            box-shadow: 0 2px 4px #00000014
+            border-radius: 2px
+            padding: 14px 60px 14px 18px
+            margin-bottom: 12px
+            @media screen and (max-width: 768px){
+              padding-right: 18px
+            }
+            .Input
+              margin: 0 18px 0 0
+              @media screen and (max-width: $modal-break) {
+                margin-right: 8px
+              }
+              .Input-content
+                width: fit-content !important
+                margin-left: 0
+                .Input-checkbox
+                  width: 12px
+                  height: 12px
+                  float: unset
+                  margin: 0
+                .Input-checkbox:after
+                  width: 3px
+                  height: 6px
+                  border-width: 0 1px 1px 0
+                  margin: 1px 0 0 4px
+            img
+              width: 36px
+              height: auto
+              margin-right: 16px
+              @media screen and (max-width: $modal-break) {
+                margin-right: 12px
+                width: 30px
+              }
+            .detail-block
+              display: flex
+              flex-direction: column
+              h4
+                font-size: 14px
+                font-weight: 600
+                color: #606060
+                margin-bottom: 3px
+                line-height: 17px
+                @media screen and (max-width: $modal-break) {
+                  font-size: 12px
+                }
+              p
+                font-size: 12px
+                font-weight: 400
+                color: #828282
+                line-height: 16px
+                @media screen and (max-width: $modal-break) {
+                  font-size: 10px
+                }
+            .intrument-name
+              flex: 1
+            .tat-wrapper
+              margin-right: 60px 
+              @media screen and (max-width: $modal-break){
+                margin-right: 8px
+              }
+        .details-container
+          padding-top: 12px      
+        .ownership-container
+          .owner-list
+            display: flex
+            flex-direction: row
+            padding: 26px 0 20px 0
+            border-bottom: 1px solid #E2E2E2
+            overflow-x: scroll
+            .owner-action-wrapper
+              display: flex 
+              flex-direction: row
+              align-items: center
+              padding-left: 25px
+              border-left: 2px solid #162f561a
+              margin-right: 25px
+              &:first-child
+                padding-left: 0
+                border: unset
+              .owner-action
+                display: flex
+                flex-direction: row
+                align-items: center
+                padding: 7px 24px
+                border: 2px solid #E2E2E2
+                border-radius: 26px
+                margin-right: 10px
+                cursor: pointer
+                &.error
+                  border-color: #cd82148a
+                  background-color: #cd82141a
+                &:hover,&.active
+                  border-color: #0B70E74D
+                  background-color: #0b70e70d
+                &.active
+                  .i-info-outline
+                    display: none      
+                .owner-text
+                  font-size: 14px
+                  line-height: 20px
+                  color: $text-dark-grey
+                  font-weight: bold
+                  white-space: nowrap
+                .i-plus
+                  color: #5D90E9
+                  margin-left: 6px
+                  position: relative
+                  bottom: -2px
+                .i-info-outline
+                  margin-left: 9px
+                  margin-top: 2px 
+                  color: #D12D2D8A
+              .i-bin-outline
+                cursor: pointer      
+
+.PowerSelect__Tether
+  .option-parent
+    padding: 5px 5px 10px
+    border-bottom: 0.5px solid #E6E7E8
+    .description-style
+      font-size: 12px
+      opacity: 0.8
+      line-height: 16px          
+
+
+
+
+
+
+
 

@@ -55,6 +55,7 @@ import commissionInvoice from 'merchant/reducers/commissionInvoices/details';
 import rewardsReducer from 'merchant/reducers/checkoutRewards';
 import merchantReferralReducer from 'merchant/reducers/merchantReferral';
 import storefrontReducer from 'merchant/reducers/storefront';
+import apmFormReducer from 'merchant/reducers/apmForm/reducer';
 
 import {
   refundBatchesReducer,
@@ -229,6 +230,7 @@ export default combineReducers({
   trackEvents: trackEventsReducer,
   workflows: workflowReducer,
   virtualAccountBatches: virtualAccountBatchesReducer,
+  apmForm: apmFormReducer,
   non3dsCardsActivation: non3dsCardsActivationReducer,
   apiLogs: apiLogsReducer,
   apiStats: apiStatsReducer,

@@ -71,8 +71,11 @@ export default class FileUpload extends React.Component {
   componentDidUpdate(prevProps) {
     if (prevProps.defaultValue !== this.props.defaultValue) {
       // eslint-disable-next-line react/no-did-update-set-state
-      this.setState({
-        isDocPreUploaded: !!this.props.defaultValue,
+      this.setState((prevState) => {
+        return {
+          isDocPreUploaded: !!this.props.defaultValue,
+          files: this.props.defaultValue && !this.props.multi ? [] : prevState?.files,
+        };
       });
     }
   }

@@ -264,6 +264,7 @@ class Service extends Base\Service
             'rx_receivables',
             'capital_cards_unbilled_transactions',
             'capital_cards_statement',
+            'international_apm_onboarding',
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

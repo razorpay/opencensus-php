@@ -13,6 +13,7 @@ import EnumList from './EnumList';
 import CurrencySelect from './CurrencySelect';
 import TextareaAutoResize from './TextareaAutoResize';
 import CurrencyInput from './CurrencyInput';
+import ReactPowerSelect from './ReactPowerSelect';
 
 export function inputClass({ props, state, className }) {
   let wrapperClass = 'Input';
@@ -709,5 +710,6 @@ Field.CurrencySelect = (props) => (
   </ErrorBoundaryWrapper>
 );
 Field.CurrencyInput = CurrencyInput;
+Field.ReactPowerSelect = ReactPowerSelect;
 
 Field.TextareaAutoResize = TextareaAutoResize;

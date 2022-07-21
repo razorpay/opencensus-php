@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-
 import LeafListItem from './LeafListItem';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Paypal from './Paypal';
 import International from './International';
+import InstantBankTransfer from './InstantBankTransfer';
 
 const fircClickHandler = () => {
   analyticsTrack({
@@ -75,6 +75,9 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
         return <p class="all-inactive">No banks active for you. Add more banks to catch up.</p>;
       }
     }
+    if (leafList?.slug === 'instantbanktransfer') {
+      return <InstantBankTransfer leafList={leafList} />;
+    }
     return list.map((leafItem) => {
       if (leafItem.slug === 'internationalcards') return <International />;
       else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
@@ -91,6 +94,11 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
   return (
     <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
       {instrument.leafList.map((leafList) => {
+        if (
+          leafList?.slug === 'instantbanktransfer' &&
+          (!user.isApmOnboardingEnabled || !user?.international)
+        )
+          return null;
         return (
           <React.Fragment key={leafList.header}>
             <div class="heading">

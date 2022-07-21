@@ -314,6 +314,13 @@
     right: 4px
     margin: 0
 
+.Input--powerselect
+  .PowerSelect
+    .PowerSelect__Placeholder
+      color: #58666E
+    .PowerSelect__TriggerStatus:before
+      border-top: 4px solid #58666E;      
+
 .Input--pair
   .Input-pair
     position: relative
@@ -368,7 +375,7 @@
     cursor: unset !important
     pointer-events: none
 
-  input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, textarea
+  input, select, .Input-checkbox, .Input-checkbox + .Input-inlineLabel, .Input-radio, &.Input--powerselect, textarea
     cursor: unset
     pointer-events: none
 

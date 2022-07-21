@@ -10,6 +10,14 @@ $text-default = #5D666D
 $secondary-color = #C4C4C4
 $background-white = #F6F6F6
 $details-white = #F3F6F8
+$desc-white = #162f568a
+$border-blue = #2B83EA
+$border-grey = #E6E7E8
+$text-blue = #2A86F3
+$text-grey = #828282
+$text-darkgrey = #7B8199
+$color-grey = #515978
+$tat-text-color = #162f5661
 
 .flex-end
   display: flex
@@ -36,7 +44,7 @@ $details-white = #F3F6F8
   .methods-view
     height: 491px
     display: flex
-    border: 1px solid #E6E7E8
+    border: 1px solid $border-grey
     border-bottom: none
     border-left: none
     width: 100%
@@ -46,18 +54,18 @@ $details-white = #F3F6F8
     .level-1, .level-2
       width: 320px
       flex-shrink:0
-      border-right: 1px solid #E6E7E8
+      border-right: 1px solid $border-grey
     .level-1
       background: white
       .icon
         margin-left: 22px
       ul
-        border-left: 1px solid #E6E7E8
+        border-left: 1px solid $border-grey
     .level-2
         ul > li
           height: 69px
     .level-2, .level-3
-      border-bottom: 1px solid #E6E7E8
+      border-bottom: 1px solid $border-grey
     ul  
       list-style-type: none
       padding: 0
@@ -74,7 +82,7 @@ $details-white = #F3F6F8
         align-items: center
         padding-right: 5px
         margin: 0
-        border-bottom: 1px solid #E6E7E8
+        border-bottom: 1px solid $border-grey
         background: $color-white
         .icon
           width: 30px
@@ -88,7 +96,7 @@ $details-white = #F3F6F8
             line-height: 17px
           p
             user-select: none
-            color: #828282
+            color: $text-grey
             font-size: 12px
             line-height: 20px
         .expand
@@ -106,10 +114,11 @@ $details-white = #F3F6F8
         
     .overflowY
       overflow-y: auto
-    .level-3
+    .level-3 
       width: 100%
       padding: 32px
       background: $color-white
+      position: relative
       .heading
         display: flex
         width: 420px
@@ -135,11 +144,11 @@ $details-white = #F3F6F8
       
       .filter-active
         background: #E7F1FD
-        color: #2B83EA
+        color: $border-blue
         border: 1px solid #E7F1FD
       
       li:first-child
-        border-top: 1px solid #E6E7E8
+        border-top: 1px solid $border-grey
 
       .international-leaf-item
         height: auto
@@ -179,11 +188,79 @@ $details-white = #F3F6F8
           .product-title
             display: flex
             justify-content: space-between
+
+      .paypal-leaf-item
+        display: block
+        height: auto
+        padding: 20px
+        .status-bar
+          display: flex
+          justify-content: space-between
+          align-items: center
+          .instrument
+            display: flex
+            align-items: center
+            width: 100%
+          .status
+            text-transform: none
+            background: $color-offwhite
+            font-weight: 400
+            font-size: 14px
+            height: auto
+            margin-top: 15px
+            border-radius: 4px
+          .status-pill-warning
+            width: auto
+          .change-account
+            width: 100%
+          .change-account-action
+            display: flex;
+            justify-content: space-between
+            align-items: center
+            margin-top: 10px
+            .merchant-id
+              margin-left: 5px
+              color: #4F4F4F
+              font-size: 12px
+              .i-user-circle
+                margin-right: 20px
+        .bar-wrap
+          flex-wrap: wrap
+        .bar-nowrap
+          flex-wrap: nowrap
+        .disabled-text
+          text-align: left
+          text-transform: none
+        .detail
+          padding: 0
+        &:hover
+          background: unset
+        .icon
+          margin: 0
+        .detail
+          padding: 0
+        .desc
+          width: 80%
+          font-size: 12px
+          line-height: 16px
+          color: $desc-white
+        .status-pill
+          font-size: 12px
+          pointer-events: none
+        .paypal-info
+          display: block
+          background: #F2F4FE
+          border-left: 8px solid $border-blue
+          padding: 16px 12px
+          font-size: 12px
+          line-height: 17px
+          color: $text-darkgrey
+
       li
         width: auto
         background: transparent
-        border-right: 1px solid #E6E7E8
-        border-left: 1px solid #E6E7E8
+        border-right: 1px solid $border-grey
+        border-left: 1px solid $border-grey
         display: flex
         height: 56px
         flex-direction: column
@@ -206,7 +283,7 @@ $details-white = #F3F6F8
               line-height: 17px
             p
               user-select: none
-              color: #828282
+              color: $text-grey
               font-size: 12px
               line-height: 20px
           .raise-request
@@ -214,71 +291,6 @@ $details-white = #F3F6F8
             align-items: center
             justify-content: space-between
             padding-left: 0
-        + .paypal-leaf-item
-            display: block
-            height: auto
-            padding: 20px
-            .status-bar
-              display: flex
-              justify-content: space-between
-              align-items: center
-              .instrument
-                display: flex
-                align-items: center
-                width: 100%
-              .status
-                text-transform: none
-                background: $color-offwhite
-                font-size: 14px
-                height: auto
-                margin-top: 16px
-                border-radius: 4px
-              .status-pill-warning
-                width: auto
-              .change-account
-                width: 100%
-              .change-account-action
-                display: flex
-                justify-content: space-between
-                align-items: center
-                margin-top: 10px
-                .merchant-id
-                  margin-left: 5px
-                  color: #4F4F4F
-                  font-size: 12px
-                  .i-user-circle
-                    margin-right: 20px
-            .bar-wrap
-              flex-wrap: wrap
-            .bar-nowrap
-              flex-wrap: nowrap
-            .disabled-text
-              text-align: left
-              text-transform: none
-            .detail
-              padding: 0
-          &:hover
-            background: unset
-          .icon
-            margin: 0
-          .detail
-            padding: 0
-          .desc
-            width: 80%
-            font-size: 12px
-            line-height: 16px
-            color: #162f568a
-          .status-pill
-            font-size: 12px
-            pointer-events: none
-          .paypal-info
-            display: block
-            background: #F2F4FE
-            border-left: 8px solid #2B83EA
-            padding: 16px 12px
-            font-size: 12px
-            line-height: 17px
-            color: #7B8199
 
         .instrument-description
           padding: 15px 0
@@ -429,6 +441,104 @@ $details-white = #F3F6F8
       li.list-item-disabled
         background: $color-offwhite
 
+      .instruments-methods-container
+        border: 1px solid $border-grey
+        padding: 14px 0 0
+        .status-label
+          padding: 5px 12px
+          text-transform: uppercase
+          min-width: unset
+        button
+          margin-right: 0
+        .top-container
+          padding: 0 20px
+          display: flex 
+          flex-direction: row
+          align-items: center
+          justify-content: space-between
+          margin-bottom: 14px
+          .left-text-wrapper
+            margin-right: 20px
+            h4
+              font-size: 14px
+              color: $text-default
+              margin: 0 0 5px
+              line-height: 17px
+              font-weight: 500
+            p
+              font-weight: 400
+              font-size: 12px
+              line-height: 16px
+              color: $text-grey
+        .bottom-container
+          margin-bottom: 20px
+          padding: 0 20px
+          .error-message
+            display: flex
+            flex-direction: row
+            align-items: center
+            padding: 6px 8px
+            background: $color-offwhite
+            border-radius: 4px
+            margin-bottom: 7px
+            i
+              margin-top: 1px
+            .message
+              font-size: 12px
+              color: $text-default
+              line-height: 14px
+              margin-left: 5px
+          .action
+            font-weight: 400;
+            font-size: 12px;
+            line-height: 14px;
+            color: $text-default  
+        .method-list-container
+          border-top: 1px solid $border-grey 
+          button
+            margin-left: auto
+          .instrument-row
+            display: flex 
+            flex-direction: row
+            align-items: center
+            padding: 14px 0
+            border-bottom: 1px dashed $border-grey;
+            &:last-child
+              border-bottom: unset
+            img
+              width: 22px
+              height: auto
+              margin-right: 17px
+              font-size: 10px
+            .text-wraper
+              margin-right: auto
+              .name
+                font-size: 14px
+                font-weight: 500
+                color: $text-default
+                line-height: 17px
+              .description
+                font-size: 12px
+                line-height: 16px
+                font-weight: 400
+                margin-top: 5px
+                color: $text-grey
+            .status-wrapper
+              display: flex
+              flex-direction: column
+              align-items: center
+              .tat-text
+                font-size: 10px
+                color: $tat-text-color
+                border-bottom: 0.5px solid $tat-text-color
+                margin-top: 5px
+                font-weight: 600    
+
+      .instant-bank-transfer
+        .instrument-row
+          padding-left: 20px !important
+          padding-right: 20px !important     
+
     .status
       text-transform: uppercase
       font-size: 10px
@@ -480,7 +590,7 @@ $details-white = #F3F6F8
       border: 1px solid #DFE4E6
       display: flex
       background: #FBF8E3
-      color: #828282
+      color: $text-grey
       height: 85px
       i
         font-size: 18px
@@ -507,7 +617,7 @@ $details-white = #F3F6F8
       border-radius: 4px
       font-size: 14px
       line-height: 17px
-      color: #828282
+      color: $text-grey
       padding-left: 10px
       align-items: center
 
@@ -775,10 +885,10 @@ $details-white = #F3F6F8
       font-weight: 700
       margin: 26px 0
     .drawer-list-item
-      color: #7B8199
+      color: $text-darkgrey
       font-size: 14px
     .drawer-list
-      color: #515978
+      color: $color-grey
       font-size: 14px
 
   .wizard
@@ -831,7 +941,7 @@ $details-white = #F3F6F8
         justify-content: flex-start
 
         span 
-          color: #7B8199
+          color: $text-darkgrey
           font-size: 12px  
       input[type="radio"]
         margin-right: 10px    
@@ -933,24 +1043,24 @@ $details-white = #F3F6F8
       display: flex
       gap: 1.5rem
       .btn-link
-        color: #2B83EA
+        color: $border-blue
         font-weight: 700
 
 // Style for FIRC banner in International Payments instrument
 .instrument-firc-banner
-  position: relative
-  bottom: 440px
-  left: 450px
-  width: 310px
+  position: absolute
+  top: 70px
+  left: 480px
+  width: fit-content
   height: 100px
   background: #FAFCFF
   border: 1px solid $secondary-blue
-  padding: 20px
+  padding: 20px 15px
   display: flex
   justify-content: space-between
-
   .instrument-firc-content 
     width: 230px
+    padding-left: 10px
 
 .missing-info-form
   &:not(.disable-past-year)
