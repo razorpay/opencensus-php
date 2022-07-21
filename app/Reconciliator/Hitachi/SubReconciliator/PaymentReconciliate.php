@@ -2,6 +2,7 @@
 
 namespace RZP\Reconciliator\Hitachi\SubReconciliator;
 
+use Razorpay\Trace\Logger;
 use RZP\Models\BharatQr;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Hitachi;
@@ -96,25 +97,44 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         if ($row[self::COLUMN_TERMINAL_NUMBER] === self::BHARAT_QR_TERMINAL)
         {
-            $amount   = (int) ($row[self::COLUMN_PAYMENT_AMOUNT] * 100);
+            $amount = (int) ($row[self::COLUMN_PAYMENT_AMOUNT] * 100);
 
-            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount(
-                                                                                    $row[self::COLUMN_RRN],
-                                                                                    $amount);
+            $bharatQr = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($row[self::COLUMN_RRN], $amount);
 
-            if ($bharatQr === null)
-            {
-                // create payment using recon row details
-                $paymentId = $this->createUnexpectedPayment($row);
-            }
-            else
+            if ($bharatQr !== null)
             {
                 return $bharatQr->payment->getId();
             }
         }
         else
         {
-            $paymentId = $row[self::COLUMN_PAYMENT_ID];
+            return $row[self::COLUMN_PAYMENT_ID];
+        }
+
+        $payment = null;
+
+        try {
+            $payment = $this->repo->payment->findOrFail($row[self::COLUMN_PAYMENT_ID]);
+        }
+        catch (\Throwable $e){
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::PAYMENT_NOT_FOUND_FOR_VERIFY,
+                [
+                    "payment_id" => $row[self::COLUMN_PAYMENT_ID]
+                ]
+            );
+        }
+
+        if($payment === null)
+        {
+            // create payment using recon row details
+            $paymentId = $this->createUnexpectedPayment($row);
+        }
+        else
+        {
+            $paymentId = $payment->getId();
         }
 
         return $paymentId;

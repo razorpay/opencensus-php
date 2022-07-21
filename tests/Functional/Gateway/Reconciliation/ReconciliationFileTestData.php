@@ -520,6 +520,7 @@ return [
             'datetime'              => '2018-03-05 23:50:00',
             'tran_currency_code'    => '356',
             'unexpected_payment_rrn'=> '123456789012',
+            'invoice_number'        => '12345678901234'
         ],
 
         // Freecharge reconciliate has config of skipping 3 lines from bottom
