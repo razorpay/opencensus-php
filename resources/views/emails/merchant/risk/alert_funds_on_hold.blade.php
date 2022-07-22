@@ -23,13 +23,13 @@
                 </p>
                 <div>
                     <a href="https://facebook.com/razorpay" style="margin:5px; text-decoration: none;">
-                        <img src="https://s3.amazonaws.com/checkout-live/facebook.png" height=20/>
+                        <img src="https://cdn.razorpay.com/facebook.png" height=20/>
                     </a>
                     <a href="https://twitter.com/razorpay"style="margin:5px; text-decoration: none;">
-                        <img src="https://s3.amazonaws.com/checkout-live/twitter.png" height=20/>
+                        <img src="https://cdn.razorpay.com/twitter.png" height=20/>
                     </a>
                     <a href="https://github.com/razorpay" style="margin:5px; text-decoration: none;">
-                        <img src="https://s3.amazonaws.com/checkout-live/github.png" height=20/>
+                        <img src="https://cdn.razorpay.com/github.png" height=20/>
                     </a>
                 </div>
             </div>

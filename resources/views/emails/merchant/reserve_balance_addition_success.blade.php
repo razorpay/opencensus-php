@@ -111,13 +111,13 @@
                     <td class="center" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: center; color: #aaa; font-size: 12px; line-height: 18px; padding: 0px 0px 10px;">
                         <center style="width: 100%; min-width: 130px;">
                             <a href="https://facebook.com/razorpay" class="logo" style="height: 22px; width: 22px; float: left !important; padding: 0px 5px 0px 5px; display: inline-block; color: #aaa !important; text-decoration: none;">
-                                <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook" style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100%; clear: both; display: block; border: none; float: none;">
+                                <img height="22" width="22" src="https://cdn.razorpay.com/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook" style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100%; clear: both; display: block; border: none; float: none;">
                             </a>
                             <a href="https://twitter.com/razorpay" class="logo" style="height: 22px; width: 22px; float: left !important; padding: 0px 5px 0px 5px; display: inline-block; color: #aaa !important; text-decoration: none;">
-                                <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter" style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100%; clear: both; display: block; border: none; float: none;">
+                                <img height="22" width="22" src="https://cdn.razorpay.com/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter" style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100%; clear: both; display: block; border: none; float: none;">
                             </a>
                             <a href="https://github.com/razorpay" class="logo" style="height: 22px; width: 22px; float: left !important; padding: 0px 5px 0px 5px; display: inline-block; color: #aaa !important; text-decoration: none;">
-                                <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub" style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100%; clear: both; display: block; border: none; float: none;">
+                                <img height="22" width="22" src="https://cdn.razorpay.com/github.png" alt="GitHub Icon" title="Razorpay on GitHub" style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; width: auto; max-width: 100%; clear: both; display: block; border: none; float: none;">
                             </a>
                         </center>
                     </td>

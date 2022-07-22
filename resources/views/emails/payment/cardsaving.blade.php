@@ -81,7 +81,7 @@
                       <div style="max-height: 25px; margin-left: 20px; margin-top: 20px;">
                         <img
                           style="width: auto; max-height: 25px;"
-                          src="https://s3.amazonaws.com/checkout-live/mailers/cardsaving/{{$card['network']}}.png"
+                          src="https://cdn.razorpay.com/mailers/cardsaving/{{$card['network']}}.png"
                           />
                       </div>
                     </td>
