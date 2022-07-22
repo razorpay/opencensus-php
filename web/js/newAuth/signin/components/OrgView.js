@@ -3,26 +3,27 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
-import { BANK_NAMES } from '../../utils';
+import { headingDescriptionList } from '../../utils';
 
-const OrgView = ({ orgData }) => {
-  // new banking url requirements thread:
-  // razorpay.slack.com/archives/CTM086NSF/p1631183451171900
-  const bankName =
-    orgData.orgName === BANK_NAMES.ICICI ? 'ICICI Bank Eazypay Pro' : orgData.businessName;
+const OrgView = ({ orgData = {} }) => {
+  let heading = `Powered by Razorpay and ${orgData.businessName}`;
+  let description = `This joint initiative between ${orgData.businessName} and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.`;
+
+  if (headingDescriptionList[orgData.orgName]) {
+    heading = headingDescriptionList[orgData.orgName].heading;
+    description = headingDescriptionList[orgData.orgName].description;
+  }
+
   return (
     <View>
       <Space margin={[1, 0, 0, 0]}>
         <Text size="large" color="shade.700" weight="bold">
-          {orgData.orgName === BANK_NAMES.ICICI
-            ? 'ICICI Bank Eazypay Pro powered by Razorpay'
-            : `Powered by Razorpay and ${orgData.businessName}`}
+          {heading}
         </Text>
       </Space>
       <Space margin={[2, 0, 0, 0]}>
         <Text size="medium" color="shade.700" _lineHeight="large">
-          This joint initiative between {bankName} and Razorpay aims to make accepting payments a
-          seamless experience for fast-growing businesses.
+          {description}
         </Text>
       </Space>
       <Space margin={[3, 0, 0, 0]}>

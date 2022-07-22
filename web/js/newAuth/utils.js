@@ -38,6 +38,32 @@ export const BANK_NAMES = {
   SIB: 'SIBL',
 };
 
+export const headingDescriptionList = {
+  [BANK_NAMES.AXIS]: {
+    heading: 'Powered by Razorpay and Axis Bank',
+    description:
+      'This joint initiative between Axis Bank and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.',
+  },
+  [BANK_NAMES.ICICI]: {
+    heading: 'ICICI Bank Eazypay Pro powered by Razorpay',
+    description:
+      'This joint initiative between ICICI Bank Eazypay Pro and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.',
+  },
+  [BANK_NAMES.HDFC]: {
+    heading: 'Powered by Razorpay and HDFC',
+    description:
+      'This joint initiative between HDFC and Razorpay aims to make accepting payments a seamless experience for fast-growing businesses.',
+  },
+  [BANK_NAMES.HDFC_COLLECT_NOW]: {
+    heading: 'Welcome to HDFC Bank Collect Now!',
+    description:
+      'Through this initiative, we aim to provide Single solution, Simpler payments and Seamless Collections for your fast-growing business',
+  },
+};
+
+export const isBankingOrg = (orgData) =>
+  Object.keys(BANK_NAMES).some((bank) => orgData?.orgName === bank);
+
 export const IGNORE_BG_IMAGES_BANKS = [
   BANK_NAMES.HDFC_COLLECT_NOW,
   BANK_NAMES.YES_BANK,
