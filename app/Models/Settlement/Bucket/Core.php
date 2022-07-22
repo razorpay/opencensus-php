@@ -441,7 +441,7 @@ class Core extends Base\Core
         }
         else if ($sourceType === TransferConstant::ORDER)
         {
-            $sourcePayment = $transfer->source->payments()->where(Payment\Entity::STATUS, Payment\Status::CAPTURED)->first();
+            $sourcePayment = $transfer->source->payments()->whereIn(Payment\Entity::STATUS, [Payment\Status::CAPTURED, Payment\Status::REFUNDED])->first();
         }
         else
         {
