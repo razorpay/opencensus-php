@@ -10,7 +10,7 @@ import ErrorIcon from '../Step/Icons/error.svg';
 type AlignType = 'left' | 'right';
 interface InfoPropsT {
   title: string;
-  description: string;
+  description: string | React.ReactNode;
   titleColor?: string;
   descriptionColor?: string;
   hasError?: boolean;

@@ -80,6 +80,63 @@ export default class InstantActivationAnnouncements extends Component {
         ? (limitBreach.amount * 100) / limitBreach.limit >= 100
         : false;
 
+    const handleVideoClick = () => {
+      tracking.trackEvent(
+        window.rzpQ.onbr().initiated('Instant Activation Video CTA clicked', {
+          clickSource: 'Instant_Announcement_Banner',
+        }),
+      );
+
+      analyticsTrack({
+        objectName: 'Instant Activation',
+        actionName: 'Video CTA clicked',
+        screen: 'home page',
+      });
+    };
+
+    const InstantActivationVideoLink = () => {
+      const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
+
+      if (isInstantActivationVideoEnabled) {
+        const { tracking } = this.props;
+        tracking.trackEvent(
+          window.rzpQ.onbr().initiated('Instant Activation Video enabled', {
+            clickSource: 'Instant_Announcement_Banner',
+          }),
+        );
+
+        analyticsTrack({
+          objectName: 'Instant Activation',
+          actionName: 'Video enabled',
+          screen: 'home page',
+        });
+
+        return (
+          <div>
+            Congratulations! You are now all set and can start receiving payments from your
+            customers up to INR 15,000. Complete your KYC Details to enable benefits like
+            settlements and to extend this limit further!{' '}
+            <a
+              href="https://youtu.be/FM2P1D-yjOU"
+              target="_blank"
+              rel="noreferrer noopener"
+              onClick={() => handleVideoClick()}
+            >
+              Click here
+            </a>{' '}
+            to watch a simple video on how to start accepting payments.
+          </div>
+        );
+      } else
+        return (
+          <div>
+            Congratulations! You are now all set and can start receiving payments from your
+            customers up to INR 15,000. Complete your KYC Details to enable benefits like
+            settlements and to extend this limit further!{' '}
+          </div>
+        );
+    };
+
     if (user.isInstantActivationEnabled) {
       const activationState = getActivationState(user, user.isUnregisteredBusiness);
       const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
@@ -148,9 +205,8 @@ export default class InstantActivationAnnouncements extends Component {
             content = (
               <div class="announcement-container">
                 <div class="announcement-info">
-                  Congratulations! You are now all set and can start receiving payments from your
-                  customers up to INR 15,000. Complete your KYC Details to enable benefits like
-                  settlements and to extend this limit further!{' '}
+                  {' '}
+                  <InstantActivationVideoLink />{' '}
                 </div>
                 <div className="big-circle-seprator" />
                 <button

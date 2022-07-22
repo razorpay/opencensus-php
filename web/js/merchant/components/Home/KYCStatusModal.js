@@ -127,6 +127,7 @@ const KYCStatusModal = ({
           isActivationFormFullView={user.isActivationFormFullView}
           openPaymentAcceptModal={openPaymentAcceptModal}
           onClose={onClose}
+          isInstantActivationVideoEnabled={user.isInstantActivationVideoEnabled}
         />
       );
     }

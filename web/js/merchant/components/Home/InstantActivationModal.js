@@ -45,6 +45,7 @@ const InstantActivationModal = ({
   tracking,
   isActivationFormFullView = false,
   trackEvents,
+  isInstantActivationVideoEnabled = false,
 }) => {
   const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
   const isPaymentLinkRecommendedProduct = getLandingProduct === 'payment_link';
@@ -321,6 +322,14 @@ const InstantActivationModal = ({
     }, 2000);
   }
 
+  const handleVideoClick = () => {
+    trackEvents({
+      objectName: 'Instant Activation',
+      actionName: 'Video CTA clicked',
+      screen: 'home page',
+    });
+  };
+
   useEffect(() => {
     trackEvents({
       objectName: 'Pop Up',
@@ -331,6 +340,16 @@ const InstantActivationModal = ({
       },
     });
   }, []);
+
+  useEffect(() => {
+    if (isInstantActivationVideoEnabled) {
+      trackEvents({
+        objectName: 'Instant Activation',
+        actionName: 'Video enabled',
+        screen: 'home page',
+      });
+    }
+  }, [isInstantActivationVideoEnabled]);
 
   return (
     <ModalMask>
@@ -371,6 +390,20 @@ const InstantActivationModal = ({
               this limit further!
             </p>
             <p>We have switched you to live mode, go ahead and accept your first payment!</p>
+            {isInstantActivationVideoEnabled && (
+              <>
+                <a
+                  href="https://youtu.be/FM2P1D-yjOU"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  onClick={() => handleVideoClick()}
+                >
+                  {' '}
+                  Click here{' '}
+                </a>{' '}
+                to watch a simple video on how to start accepting payments.{' '}
+              </>
+            )}
           </div>
           {currentButton()}
           {isPaymentLinkRecommendedProduct && (

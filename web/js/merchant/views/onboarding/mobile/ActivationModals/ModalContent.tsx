@@ -46,6 +46,7 @@ export const getModalContent = (
   const trackEvents = useTrackEvents();
   const isInstantActivationEnabled = experiments.isInstantActivationEnabled;
   const activationFormUrl = experiments.isActivationFormFullView ? '/kyc' : '/activation';
+  const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
 
   let title = '';
   let description: string | ReactNode = '';
@@ -92,6 +93,39 @@ export const getModalContent = (
         'CTA Label': ctaText,
       },
     });
+  };
+
+  const handleVideoClick = () => {
+    trackEvents({
+      objectName: 'Instant Activation',
+      actionName: 'Video CTA clicked',
+      screen: 'home page',
+    });
+  };
+
+  const InstantActivationVideoLink = () => {
+    if (isInstantActivationVideoEnabled) {
+      trackEvents({
+        objectName: 'Instant Activation',
+        actionName: 'Video enabled',
+        screen: 'home page',
+      });
+
+      return (
+        <div>
+          {' '}
+          <a
+            href="https://youtu.be/FM2P1D-yjOU"
+            target="_blank"
+            rel="noreferrer noopener"
+            onClick={() => handleVideoClick()}
+          >
+            Click here
+          </a>{' '}
+          to watch a simple video on how to start accepting payments.
+        </div>
+      );
+    } else return null;
   };
 
   switch (modalType) {
@@ -142,7 +176,10 @@ export const getModalContent = (
       image = <img src={PaymentEnable} />;
       description = Message.PAYMENT_ENABLE.description;
       additionalDesc = (
-        <InlineText color="inherit">{Message.PAYMENT_ENABLE.sub_description}</InlineText>
+        <InlineText color="inherit">
+          {Message.PAYMENT_ENABLE.sub_description}
+          <InstantActivationVideoLink />
+        </InlineText>
       );
       button = (
         <>

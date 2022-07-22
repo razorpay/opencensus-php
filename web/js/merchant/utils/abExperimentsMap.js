@@ -373,6 +373,13 @@ export default {
     // prod
     'JpbtDw1u1tmAH2',
   ],
+  instant_activations_video_enabled: [
+    // beta
+    'JwQ4cpxqljzdAc',
+
+    // prod
+    'JwQ7TdSB3hZbcu',
+  ],
   developer_console: [
     // beta experiment ids
     'IBpLCtGOiepyF3',

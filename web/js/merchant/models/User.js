@@ -968,6 +968,12 @@ export default class User {
     return this.getExpStatus('instant-activations-functionality');
   }
 
+  get isInstantActivationVideoEnabled() {
+    return (
+      getSplitzExperimentVariant('instant_activations_video_enabled')?.variables?.result === 'on'
+    );
+  }
+
   get isInttCurrenciesEnabled() {
     return (
       this.currentMerchant.product_international === '1111000000' ||

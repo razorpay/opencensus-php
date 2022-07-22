@@ -454,15 +454,49 @@ const CurrentActivationProgress: React.FC<
         referee?.referral_amount,
       )} credits`;
     }
+
+    const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
+
+    if (isInstantActivationVideoEnabled) {
+      trackEvents({
+        objectName: 'Instant Activation',
+        actionName: 'Video enabled',
+        screen: 'home page',
+      });
+    }
+
+    const handleVideoClick = () => {
+      trackEvents({
+        objectName: 'Instant Activation',
+        actionName: 'Video CTA clicked',
+        screen: 'home page',
+      });
+    };
+
     if (!!data.activated || isLimitReached) {
       return (
         <>
           <Info
             title={Messages.PAYMENT_ACTIVATED.title}
             description={
-              isLimitReached
-                ? Messages.PAYMENT_ACTIVATED.limit_breach_desc
-                : Messages.PAYMENT_ACTIVATED.description
+              isLimitReached ? (
+                Messages.PAYMENT_ACTIVATED.limit_breach_desc
+              ) : isInstantActivationVideoEnabled ? (
+                <div>
+                  {Messages.PAYMENT_ACTIVATED.description}{' '}
+                  <a
+                    href="https://youtu.be/FM2P1D-yjOU"
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    onClick={() => handleVideoClick()}
+                  >
+                    Click here{' '}
+                  </a>
+                  to watch a simple video on how to start accepting payments.{' '}
+                </div>
+              ) : (
+                Messages.PAYMENT_ACTIVATED.description
+              )
             }
           />
           <Buttons.Primary onClick={onCTAClick} title="Complete KYC" icon="arrowRight" />
