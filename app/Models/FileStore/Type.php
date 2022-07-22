@@ -269,6 +269,7 @@ class Type
     const APM_ONBOARD_REQUEST_FILE          = 'apm_onboard_request_file';
 
     const AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG = 'ap_south_default_settlement_bucket_config';
+    const AP_SOUTH_ACTIVATION_BUCKET_CONFIG         = 'ap_south_activation_bucket_config';
 
     const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
     const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
@@ -682,7 +683,7 @@ class Type
             self::QR_CODE_IMAGE,
         ],
 
-        self::ACTIVATION_BUCKET_CONFIG => MerchantDocumentType::VALID_DOCUMENTS,
+        self::AP_SOUTH_ACTIVATION_BUCKET_CONFIG => MerchantDocumentType::VALID_DOCUMENTS,
 
         self::H2H_BUCKET_CONFIG => [
             self::FIRST_DATA_PARES_FILE,

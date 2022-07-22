@@ -112,6 +112,10 @@ return [
             'name'   => env('AWS_S3_AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET'),
             'region' => env('AWS_S3_AP_SOUTH_DEFAULT_SETTLEMENT_REGION', 'ap-south-1')
         ],
+        'ap_south_activation_bucket_config' => [
+            'name'   => env('AWS_S3_AP_SOUTH_ACTIVATION_BUCKET'),
+            'region' => env('AWS_S3_AP_SOUTH_ACTIVATION_REGION', 'ap-south-1')
+        ],
         'cross_border_bucket_config' => [
             'name'   => env('AWS_S3_CROSS_BORDER_BUCKET'),
             'region' => env('AWS_S3_CROSS_BORDER_REGION', 'ap-south-1')

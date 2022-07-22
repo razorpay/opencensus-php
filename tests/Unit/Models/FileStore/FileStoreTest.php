@@ -152,7 +152,7 @@ class FileStoreTest extends TestCase
                 'name'   => 'invoice_bucket',
                 'region' => 'region2'
             ],
-            'activation_bucket_config' => [
+            'ap_south_activation_bucket_config' => [
                 'name'   => 'activation_bucket',
                 'region' => 'region3'
             ],
@@ -202,7 +202,7 @@ class FileStoreTest extends TestCase
 
         $this->checkBucketAndRegion(
             'business_proof_url',
-            'activation_bucket_config',
+            'ap_south_activation_bucket_config',
             $bucketConfig);
 
         $this->checkBucketAndRegion(
