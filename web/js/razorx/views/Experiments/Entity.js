@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { openModal, notifyError, notifySuccess } from 'razorx/components/Modal';
 import { classList, titleCase } from 'common/utils/rzp-utils';
@@ -29,8 +30,8 @@ export default class extends React.Component {
       feature: null,
     });
 
-    rexFetch({ url: 'experiments/' + id })
-      .then(resp => {
+    rexFetch({ url: `experiments/${id}` })
+      .then((resp) => {
         this.setState({
           isFetching: false,
         });
@@ -43,7 +44,7 @@ export default class extends React.Component {
           this.props.updateEntityData && this.props.updateEntityData(resp);
 
           // Fetch corresponding feature
-          rexFetch({ url: 'feature_flags/' + resp.feature_id }).then(resp => {
+          rexFetch({ url: `feature_flags/${resp.feature_id}` }).then((resp) => {
             if (resp) {
               this.setState({
                 feature: resp,
@@ -52,15 +53,15 @@ export default class extends React.Component {
           });
         }
       })
-      .catch(({ errors }) => {
+      .catch(() => {
         this.setState({
           isFetching: false,
         });
       });
   }
 
-  activate = id => {
-    return rexPatch(`experiments/${id}/activate`).then(resp => {
+  activate = (id) => {
+    return rexPatch(`experiments/${id}/activate`).then((resp) => {
       if (resp) {
         const successMsg = resp.workflow_id
           ? `Workflow ${resp.workflow_id} is created`
@@ -70,8 +71,8 @@ export default class extends React.Component {
     });
   };
 
-  terminate = id => {
-    return rexPatch(`experiments/${id}/terminate`).then(resp => {
+  terminate = (id) => {
+    return rexPatch(`experiments/${id}/terminate`).then((resp) => {
       if (resp) {
         notifySuccess('Experiment is successfully Terminated');
 
@@ -83,17 +84,13 @@ export default class extends React.Component {
     });
   };
 
-  showExperimentModal = _ => {
+  showExperimentModal = (_) => {
     openModal(
-      <ExperimentsModal
-        data={this.state.data}
-        feature={this.state.feature}
-        onEdit={this.onEdit}
-      />
+      <ExperimentsModal data={this.state.data} feature={this.state.feature} onEdit={this.onEdit} />,
     );
   };
 
-  showJSONModal = _ => {
+  showJSONModal = (_) => {
     if (!window.CodeFlask) {
       notifyError('JSON Editor is missing. Reload page / check your Network!');
       return;
@@ -105,11 +102,11 @@ export default class extends React.Component {
         onEdit={this.onEdit}
         isReadOnly={this.props.isReadOnly || this.state.data.activated_at}
         JSONView
-      />
+      />,
     );
   };
 
-  onEdit = data => {
+  onEdit = (data) => {
     this.setState({
       data,
     });
@@ -124,12 +121,12 @@ export default class extends React.Component {
     if (!id) {
       content = null;
     } else if (isFetching) {
-      content = <div class="spinner center" />;
+      content = <div className="spinner center" />;
     } else if (!isFetching && !data) {
       content = (
-        <div class="page-center empty-entity">
-          <i class="i-flask" />
-          <div class="description">
+        <div className="page-center empty-entity">
+          <i className="i-flask" />
+          <div className="description">
             <div>ID: {id}</div>
             No Experiment found!
           </div>
@@ -151,12 +148,7 @@ export default class extends React.Component {
     }
 
     return (
-      <div
-        class={classList(
-          'entity-container',
-          isCustomLayout && 'entity-container--custom'
-        )}
-      >
+      <div className={classList('entity-container', isCustomLayout && 'entity-container--custom')}>
         {content}
       </div>
     );
@@ -176,23 +168,22 @@ const Details = ({
   const segments = getSegmentsGroupedByVariant(data.segments);
 
   return (
-    <div class="entity-details">
-      <div class="sub-description">
+    <div className="entity-details">
+      <div className="sub-description">
         <span>
           <b>ID:</b> {data.id}
         </span>
         {feature && (
-          <span class="to-right">
-            {!data.activated_at &&
-              !isReadOnly && (
-                <>
-                  <a class="link text-bold" onClick={showExperimentModal}>
-                    Edit Experiment
-                  </a>{' '}
-                </>
-              )}
+          <span className="to-right">
+            {!data.activated_at && !isReadOnly && (
+              <>
+                <a className="link text-bold" onClick={showExperimentModal}>
+                  Edit Experiment
+                </a>{' '}
+              </>
+            )}
             ({' '}
-            <a class="link text-bold" onClick={showJSONModal}>
+            <a className="link text-bold" onClick={showJSONModal}>
               RAW
             </a>{' '}
             )
@@ -200,35 +191,31 @@ const Details = ({
         )}
       </div>
 
-      <div class="pad-highlight">
-        <div class="description">
+      {data?.metadata?.last_evaluated_at && (
+        <div>Last evaluated at {formatDate(data?.metadata?.last_evaluated_at)}</div>
+      )}
+
+      <div className="pad-highlight">
+        <div className="description">
           {data.description}
-          <div class="sub-description">
-            <b>Created by</b> {titleCase(data.created_by)} on{' '}
-            {formatDate(data.created_at)}
+          <div className="sub-description">
+            <b>Created by</b> {titleCase(data.created_by)} on {formatDate(data.created_at)}
             {!!data.activated_at && (
               <div>
                 <b>Activated by</b> {titleCase(data.activated_by)}{' '}
-                <span class="inline-block">
-                  on {formatDate(data.activated_at)}
-                </span>
+                <span className="inline-block">on {formatDate(data.activated_at)}</span>
               </div>
             )}
             {data.updated_at !== data.created_at && (
               <div>
                 <b>Last Updated by</b> {titleCase(data.updated_by)}{' '}
-                <span class="inline-block">
-                  on {formatDate(data.updated_at)}
-                </span>
+                <span className="inline-block">on {formatDate(data.updated_at)}</span>
               </div>
             )}
             {!!data.terminated_at && (
-              <div class="text-danger" style={{ opacity: 0.8 }}>
+              <div className="text-danger" style={{ opacity: 0.8 }}>
                 <b>Terminated by</b> {titleCase(data.terminated_by)}
-                <span class="inline-block">
-                  {' '}
-                  on {formatDate(data.terminated_at)}
-                </span>
+                <span className="inline-block"> on {formatDate(data.terminated_at)}</span>
               </div>
             )}
           </div>
@@ -236,31 +223,29 @@ const Details = ({
       </div>
 
       {/* Experiment is in pending state */}
-      {!isCustomLayout &&
-        !data.activated_at &&
-        !data.terminated_at && (
-          <React.Fragment>
-            <br />
-            <div>
-              <AsyncButton
-                class="link danger text-danger text-bold"
-                pendingClass="link danger-faded text-danger text-bold btn-pending"
-                confirm={`Do you want to Activate Experiment id "${data.id}"?`}
-                onClick={_ => activate(data.id)}
-              >
-                Activate Experiment
-                <span class="dot-loader">.</span>
-              </AsyncButton>
-            </div>
-          </React.Fragment>
-        )}
+      {!isCustomLayout && !data.activated_at && !data.terminated_at && (
+        <React.Fragment>
+          <br />
+          <div>
+            <AsyncButton
+              className="link danger text-danger text-bold"
+              pendingClassName="link danger-faded text-danger text-bold btn-pending"
+              confirm={`Do you want to Activate Experiment id "${data.id}"?`}
+              onClick={(_) => activate(data.id)}
+            >
+              Activate Experiment
+              <span className="dot-loader">.</span>
+            </AsyncButton>
+          </div>
+        </React.Fragment>
+      )}
 
       <br />
 
       <div>
-        <div class="label">Feature</div>
+        <div className="label">Feature</div>
         {feature && (
-          <div class="sub-description column">
+          <div className="sub-description column">
             <div>
               <b>ID: </b> {feature.id}
             </div>
@@ -269,14 +254,11 @@ const Details = ({
             </div>
           </div>
         )}
-        <Link class="link" to={`/features_flags/${data.feature_id}`}>
+        <Link className="link" to={`/features_flags/${data.feature_id}`}>
           View Feature
         </Link>
         {!isCustomLayout && (
-          <Link
-            class="link m-l"
-            to={`/experiments?feature_id=${data.feature_id}`}
-          >
+          <Link className="link m-l" to={`/experiments?feature_id=${data.feature_id}`}>
             View All Experiments
           </Link>
         )}
@@ -284,66 +266,63 @@ const Details = ({
 
       <br />
 
-      <div class="flex-row">
-        <div class="flex-row-item">
-          <div class="label">Environment</div>
-          <span class="square-pills label-semi-muted">{data.environment}</span>
+      <div className="flex-row">
+        <div className="flex-row-item">
+          <div className="label">Environment</div>
+          <span className="square-pills label-semi-muted">{data.environment}</span>
         </div>
 
-        <div class="flex-row-item">
-          <div class="label">Mode</div>
-          <span class="square-pills label-semi-muted">{data.mode}</span>
+        <div className="flex-row-item">
+          <div className="label">Mode</div>
+          <span className="square-pills label-semi-muted">{data.mode}</span>
         </div>
       </div>
 
-      {!isCustomLayout &&
-        !!data.activated_at &&
-        !data.terminated_at && (
-          <React.Fragment>
-            <br />
-            <div>
-              <AsyncButton
-                class="link danger text-danger text-bold"
-                pendingClass="link danger-faded text-danger text-bold btn-pending"
-                confirm={`Do you want to terminate Experiment id "${data.id}"?`}
-                onClick={_ => terminate(data.id)}
-              >
-                Terminate Experiment
-                <span class="dot-loader">.</span>
-              </AsyncButton>
-            </div>
-          </React.Fragment>
-        )}
-      <div class="separator" />
+      {!isCustomLayout && !!data.activated_at && !data.terminated_at && (
+        <React.Fragment>
+          <br />
+          <div>
+            <AsyncButton
+              className="link danger text-danger text-bold"
+              pendingClass="link danger-faded text-danger text-bold btn-pending"
+              confirm={`Do you want to terminate Experiment id "${data.id}"?`}
+              onClick={(_) => terminate(data.id)}
+            >
+              Terminate Experiment
+              <span className="dot-loader">.</span>
+            </AsyncButton>
+          </div>
+        </React.Fragment>
+      )}
+      <div className="separator" />
 
       <div>
-        <div class="title">Segments</div>
+        <div className="title">Segments</div>
 
         {Object.keys(segments).map((k, i) => {
           const segment = segments[k];
 
           return (
-            <div key={i} class="segment">
+            <div key={i} className="segment">
               <div>
-                <span class="square-pills label-semi-muted">{k}</span>
+                <span className="square-pills label-semi-muted">{k}</span>
               </div>
               {segment.map((s, j) => (
-                <div class="sub-segment" key={j}>
+                <div className="sub-segment" key={j}>
                   {Object.keys(s).map((g, ix) => {
                     if (s[g] === null) {
-                      return;
+                      return true;
                     }
 
                     const isArray = s[g] instanceof Array;
 
-                    return (
-                      <div key={ix}>
-                        <span class="label">{titleCase(g)}: </span>
-                        <span class={classList(isArray && 'sub-segment-group')}>
-                          {isArray ? s[g].join(', ') : s[g]}
-                        </span>
-                      </div>
-                    );
+                    <div key={ix}>
+                      <span className="label">{titleCase(g)}: </span>
+                      <span className={classList(isArray && 'sub-segment-group')}>
+                        {isArray ? s[g].join(', ') : s[g]}
+                      </span>
+                    </div>;
+                    return true;
                   })}
                 </div>
               ))}
@@ -358,7 +337,7 @@ const Details = ({
 function getSegmentsGroupedByVariant(data) {
   const bucket = {};
 
-  data.forEach(s => {
+  data.forEach((s) => {
     const seg = { ...s };
 
     if (bucket.hasOwnProperty(seg.variant)) {
