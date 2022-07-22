@@ -492,6 +492,25 @@ class BasicAuth
 
         $this->authCreds->setPublicKey($key);
 
+        //
+        // The following change is temporary.
+        //
+        $routeNames = ['payment_fetch_multiple', 'payment_fetch_by_id', 'refund_fetch_multiple', 'refund_fetch_by_id'];
+
+        $XRazorpayAccountHeader = $this->request->headers->get(RequestHeader::X_RAZORPAY_ACCOUNT);
+
+        if ((in_array($this->route->getCurrentRouteName(), $routeNames) === true) and
+            ($XRazorpayAccountHeader !== null))
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_FETCH_REQUEST_FOR_LINKED_ACCOUNT,
+                [
+                    'route_name'                        => $this->route->getCurrentRouteName(),
+                    RequestHeader::X_RAZORPAY_ACCOUNT   => $XRazorpayAccountHeader,
+                ]
+            );
+        }
+
         return $this->checkAndSetAccountId();
     }
 
