@@ -221,9 +221,6 @@ export default class ExperimentDetails extends React.Component {
 
   isEditable = () => {
     const experiment = this.state.data;
-    if (experiment.status === 'terminated') {
-      return false;
-    }
     if (experiment.status === 'activated' && experiment.type === 'split') {
       return false;
     }
