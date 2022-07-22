@@ -979,7 +979,8 @@ class Service extends Base\Service
             'merchant_id'   => $currentMerchant->id,
             'role'          => $currentMerchant->role ?? $currentMerchant->banking_role,
             'merchant_name' => $currentMerchant->name,
-            'logo'          => $currentMerchant->logo_url
+            'logo'          => $currentMerchant->logo_url,
+            'user_id'       => $user->id
         ];
 
         return [$error, $response];
