@@ -137,22 +137,25 @@ jobs:
           build_args: GIT_TOKEN=${{ secrets.CI_BOT_TOKEN }}
           push: true
           tags: e2e_${{ github.sha }}
+
   e2e-test-webhook:
     name: E2E test webhook
     runs-on: [ self-hosted ]
     needs: [ build-e2e ]
     steps:
-      - name: Triggers rundeck's webhook to execute e2e tests
-        uses: fjogeleit/http-request-action@master
+      - name: Triggers argo workflows webhook to execute e2e tests
+        uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
         with:
-          url: 'https://rundeck.dev.razorpay.in/api/40/webhook/PhbYCu9Cb0r9mbEp58ge5y20DHeoOOsv#E2E_Test_Execution'
+          url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard'
           method: 'POST'
+          bearerToken: ${{ secrets.ARGO_TOKEN }}
           data: >
             {
-               "self": {
-                   "name": "dashboard",
-                   "commit_id": "${{ github.sha }}",
-                   "repository_name": "${{ github.repository }}"
-               },
-               "dependencies": []
+              "kube_manifests_ref": "master",
+              "self": {
+                  "name": "dashboard",
+                  "commit_id": "${{ github.sha }}",
+                  "repository_name": "${{ github.repository }}"
+              },
+              "dependencies": []
             }
