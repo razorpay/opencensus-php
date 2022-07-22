@@ -100,25 +100,6 @@ class DisputePresentmentTest extends TestCase
             'method' => 'get',
         ]);
 
-        $featureFound = false;
-
-        $expectedFeature = [
-            'feature'      => 'dispute_presentment',
-            'value'        => true,
-            'display_name' => 'Enable dispute presentment',
-        ];
-
-        foreach ($features['features'] as $feature)
-        {
-            if ($feature === $expectedFeature)
-            {
-                $featureFound = true;
-            }
-        }
-
-        $this->assertTrue($featureFound);
-
-
         $responses[] = $this->makeRequestAndGetContent([
             'url'    => '/disputes/documents/types',
             'method' => 'get',
@@ -383,8 +364,6 @@ class DisputePresentmentTest extends TestCase
 
         $this->setUpFixtures(['merchant_id' => $merchantId]);
 
-        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
-
         $this->ba->privateAuth();
 
         $this->startTest();
@@ -504,7 +483,7 @@ class DisputePresentmentTest extends TestCase
     {
         $this->setUpForInitiateDraftEvidenceTest();
 
-        $this->fixtures->merchant->removeFeatures(['dispute_presentment']);
+        $this->fixtures->merchant->addFeatures(['exclude_disp_presentment']);
 
         $response = $this->startTest();
 
@@ -526,7 +505,7 @@ class DisputePresentmentTest extends TestCase
     {
         $this->setUpForInitiateDraftEvidenceTest();
 
-        $this->fixtures->merchant->removeFeatures(['dispute_presentment']);
+        $this->fixtures->merchant->addFeatures(['exclude_disp_presentment']);
 
         $this->startTest();
     }
@@ -1038,8 +1017,6 @@ class DisputePresentmentTest extends TestCase
         $this->refundPayment('pay_randomPayId123', $refundAmount);
 
         $this->setUpDisputeFixtures(['amount' => $disputeAmount, 'base_amount' => $disputeAmount]);
-
-        $this->fixtures->merchant->addFeatures(['dispute_presentment']);
     }
 
     public function testAcceptDisputeRecoveryViaRefundWithDisputeAmountLesserThanUnrefundedAmount()

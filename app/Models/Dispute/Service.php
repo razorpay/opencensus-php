@@ -7,6 +7,8 @@ use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
@@ -905,17 +907,35 @@ class Service extends Base\Service
 
     public function getDisputeDocumentTypesMetadata()
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         return $this->core()->getDisputeDocumentTypesMetadata();
     }
 
     public function patchDisputeContestById($disputeId, $input)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         return $this->core()->patchDisputeContestById($disputeId, $input)->toArrayPublic();
     }
 
 
     public function postDisputeAcceptById($disputeId, $input)
     {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
         return $this->core()->postDisputeAcceptById($disputeId, $input)->toArrayPublic();
     }
 
