@@ -34,7 +34,7 @@ class GoogleMapsClient
 
         if ($location !== null)
         {
-            $params = $params . '&location=' . $location['lat'] . ',' . $location['lng'] . '&strictbound=false&radius=' . $location['radius'];
+            $params = $params . '&location=' . $location['lat'] . ',' . $location['lng'] . '&strictbounds=true&radius=' . $location['radius'];
         }
         return $params;
     }
