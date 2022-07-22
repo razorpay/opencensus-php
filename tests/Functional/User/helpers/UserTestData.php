@@ -34,6 +34,93 @@ return [
         ],
     ],
 
+    'testChangeBankingUserRole' => [
+        'request' => [
+            'url'       => '/users/role',
+            'method'    => 'PATCH',
+            'content'   => [
+                'users_list' => [
+                    [
+                        "merchant_id" => "10000000000",
+                        "role"        => "view_only",
+                        "user_id"     => "100002Razorpay",
+                    ],
+                    [
+                        "merchant_id" => "10000000000",
+                        "role"        => "view_only",
+                        "user_id"     => "100002Razorpay",
+                    ],
+                    [
+                        "merchant_id" => "RandomMerchantWhichDoesNotExist",
+                        "role"        => "view_only",
+                        "user_id"     => "100002Razorpay",
+                    ],
+                    [
+                        "merchant_id" => "10000000000",
+                        "role"        => "view_only",
+                        "user_id"     => "RandomUserWhichIsNotMappedToMerchant",
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'affected_users' => [[
+                    "user_id" => "100002Razorpay",
+                    "merchant_id" => "10000000000",
+                    "product" => "banking",
+                    "old_role" => "owner",
+                    "new_role" => "view_only"
+                ]],
+                'ignored_users' => [
+                    [
+                        "merchant_id" => "10000000000",
+                        "role"        => "view_only",
+                        "user_id"     => "100002Razorpay",
+                    ],
+                    [
+                        "merchant_id" => "RandomMerchantWhichDoesNotExist",
+                        "role"        => "view_only",
+                        "user_id"     => "100002Razorpay",
+                    ],
+                    [
+                        "merchant_id" => "10000000000",
+                        "role"        => "view_only",
+                        "user_id"     => "RandomUserWhichIsNotMappedToMerchant",
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testChangeBankingUserRoleRevert' => [
+        'request' => [
+            'url'       => '/users/role',
+            'method'    => 'PATCH',
+            'content'   => [
+                'users_list' => [
+                    [
+                        "merchant_id" => "10000000000",
+                        "role"        => "owner",
+                        "user_id"     => "100002Razorpay",
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'affected_users' => [[
+                    "user_id" => "100002Razorpay",
+                    "merchant_id" => "10000000000",
+                    "product" => "banking",
+                    "old_role" => "view_only",
+                    "new_role" => "owner"
+                ]],
+                'ignored_users' => [],
+            ],
+        ],
+    ],
+
     'testSignupSourceShowingUpInMerchantAfterRegistration' => [
         'request' => [
             'url' => '/users/register',

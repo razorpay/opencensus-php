@@ -37,6 +37,7 @@ use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -209,6 +210,124 @@ class Service extends Base\Service
         $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput);
 
         return $data;
+    }
+
+    public function isMerchantAllowedForMigration(string $merchant_id): bool
+    {
+        if (empty($merchant_id) === true)
+        {
+            return false;
+        }
+
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchant_id,
+                'experiment_id' => $this->app['config']->get('app.user_role_migration_for_x_exp_id'),
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+            return false;
+        }
+
+        $variant = $response['response']['variant']['name'] ?? null;
+
+        if ($variant === 'enable')
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public function changeBankingUserRole(array $input): array
+    {
+        // currently any private auth can also be accessed via partner auth creds too.
+        // incase request is made via partner auth creds, then we need to get merchant_id from different function
+        // and if request came via private auth then other function
+        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+
+        if ($this->isMerchantAllowedForMigration($merchantId))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);
+        }
+
+        $this->trace->info(TraceCode::USER_ROLE_FOR_X_MIGRATION_START, ['merchant_id' => $merchantId]);
+
+        $ignoredUsers = [];
+        $affectedUsers = [];
+        $usersList = $input['users_list'] ?? [];
+
+        foreach ($usersList as $user)
+        {
+            $merchant = $this->repo->merchant->find($user['merchant_id']);
+
+            if (empty($merchant) === true)
+            {
+                $ignoredUsers[] = $user;
+                $this->trace->info(TraceCode::USER_ROLE_FOR_X_MIGRATION_UPDATE_INVALID_INPUT, [
+                    'user' => $user,
+                    'reason' => 'MerchantNotFound',
+                ]);
+                continue;
+            }
+
+            $mapping = $this->repo->merchant->getMerchantUserMapping($user['merchant_id'], $user['user_id'], null, 'banking');
+
+            if (empty($mapping) === true)
+            {
+                $ignoredUsers[] = $user;
+
+                $this->trace->info(TraceCode::USER_ROLE_FOR_X_MIGRATION_UPDATE_INVALID_INPUT, [
+                    'user' => $user,
+                    'reason' => 'MappingNotFound',
+                ]);
+
+                continue;
+            }
+
+            $existingRole = $mapping->pivot->role;
+
+            if ($existingRole === $user['role'])
+            {
+                $ignoredUsers[] = $user;
+
+                $this->trace->info(TraceCode::USER_ROLE_FOR_X_MIGRATION_UPDATE_INVALID_INPUT, [
+                    'user' => $user,
+                    'reason' => 'ExistingRoleSameAsInput',
+                ]);
+
+                continue;
+            }
+
+            $update = [
+                'user_id'     => $user['user_id'],
+                'merchant_id' => $user['merchant_id'],
+                'product'     => 'banking',
+                'old_role'    => $existingRole,
+                'new_role'    => $user['role'],
+            ];
+
+            $this->trace->info(TraceCode::USER_ROLE_FOR_X_MIGRATION_UPDATE, $update);
+
+            $this->updateUserMerchantMapping($user['user_id'], [
+                'action'      => 'update',
+                'role'        => $user['role'],
+                'merchant_id' => $user['merchant_id'],
+                'product'     => 'banking',
+            ]);
+
+            $affectedUsers[] = $update;
+        }
+
+        return [
+            'affected_users' => $affectedUsers,
+            'ignored_users'  => $ignoredUsers,
+        ];
     }
 
     protected function handleUserInvitation(array &$input): array

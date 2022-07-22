@@ -56,6 +56,7 @@ use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\User\Constants as UserConstants;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -73,6 +74,7 @@ use function GuzzleHttp\json_decode;
 
 class UserTest extends TestCase
 {
+    use MocksSplitz;
     use PartnerTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -6103,6 +6105,91 @@ class UserTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testChangeBankingUserRole()
+    {
+        $this->ba->privateAuth();
+
+        $input = ["experiment_id" => "JuzQGh5pQfqNU9", "id" => '10000000000000'];
+        $output = ["response" => ["variant" => ["name" => 'enabled']]];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchant = $this->fixtures->create('merchant');
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $mappingData = [
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $user1->getId(),
+            'role'        => Role::OWNER,
+            'product'     => 'banking',
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $mappingData = [
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $user2->getId(),
+            'role'        => Role::VIEWER,
+            'product'     => 'banking',
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['users_list'][0]['merchant_id'] = $merchant->getId();
+        $data['request']['content']['users_list'][0]['user_id'] = $user1->getId();
+        $data['request']['content']['users_list'][1]['merchant_id'] = $merchant->getId();
+        $data['request']['content']['users_list'][1]['user_id'] = $user2->getId();
+        $data['request']['content']['users_list'][2]['user_id'] = $user1->getId();
+        $data['request']['content']['users_list'][3]['merchant_id'] = $merchant->getId();
+
+        $data['response']['content']['affected_users'][0]['merchant_id'] = $merchant->getId();
+        $data['response']['content']['affected_users'][0]['user_id'] = $user1->getId();
+        $data['response']['content']['ignored_users'][0]['merchant_id'] = $merchant->getId();
+        $data['response']['content']['ignored_users'][0]['user_id'] = $user2->getId();
+        $data['response']['content']['ignored_users'][1]['user_id'] = $user1->getId();
+        $data['response']['content']['ignored_users'][2]['merchant_id'] = $merchant->getId();
+
+        $this->startTest($data);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($merchant->getId(), $user1->getId(), 'banking')->first();
+        $this->assertEquals(Role::VIEW_ONLY, $mapping->role);
+    }
+
+    public function testChangeBankingUserRoleRevert()
+    {
+        $this->ba->privateAuth();
+
+        $input = ["experiment_id" => "JuzQGh5pQfqNU9", "id" => '10000000000000'];
+        $output = ["response" => ["variant" => ["name" => 'enabled']]];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchant = $this->fixtures->create('merchant');
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'merchant_id' => $merchant->getId(),
+            'user_id'     => $user->getId(),
+            'role'        => Role::VIEW_ONLY,
+            'product'     => 'banking',
+        ];
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content']['users_list'][0]['merchant_id'] = $merchant->getId();
+        $data['request']['content']['users_list'][0]['user_id'] = $user->getId();
+
+        $data['response']['content']['affected_users'][0]['merchant_id'] = $merchant->getId();
+        $data['response']['content']['affected_users'][0]['user_id'] = $user->getId();
+
+        $this->startTest($data);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($merchant->getId(), $user->getId(), 'banking')->first();
+        $this->assertEquals(Role::OWNER, $mapping->role);
     }
 
     public function testGetUserAndCheckEnabledMethods()

@@ -1974,6 +1974,8 @@ class Route
         'user_roles_mapping_bulk'                  => ['put',      'users/roles-mapping/bulk',                       'UserController@bulkUpdateUserMapping'                              ],
         'user_send_x_mobile_app_link'              => ['post',     'users/mobile_app_link',                          'UserController@sendXMobileAppDownloadLinkSms'                      ],
 
+        'change_banking_user_role'                 => ['patch',    'users/role',                                     'UserController@changeBankingUserRole'                              ],
+
         //user change his/her 2fa setting
         'user_2fa_change_setting'                  => ['patch',    'users/2fa',                                      'UserController@change2faSetting'                                   ],
         'merchant_2fa_change_setting'              => ['patch',    'merchants/2fa',                                  'MerchantController@change2faSetting'                               ],
@@ -4139,6 +4141,7 @@ class Route
 
         'account_create_v2',
         'account_fetch_v2',
+        'change_banking_user_role',
         'account_edit_v2',
         'account_delete_v2',
         'subscription_registration_auto_charge',

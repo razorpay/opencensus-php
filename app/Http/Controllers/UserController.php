@@ -21,6 +21,16 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function changeBankingUserRole() {
+        $input = Request::all();
+
+        /** @var Service $userService */
+        $userService = $this->service();
+        $data = $userService->changeBankingUserRole($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function registerUserWithOtp()
     {
         $input = Request::all();

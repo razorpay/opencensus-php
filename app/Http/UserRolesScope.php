@@ -490,6 +490,7 @@ class UserRolesScope
             'account_fetch'                                        => [Role::OWNER, Role::ADMIN],
             'account_fetch_by_external_id'                         => [Role::OWNER, Role::ADMIN],
             'account_fetch_v2'                                     => [Role::OWNER, Role::ADMIN],
+            'change_banking_user_role'                             => [Role::OWNER, Role::ADMIN],
             'account_list'                                         => [Role::OWNER, Role::ADMIN],
             'accounting_integration_get_domain'                    => [Role::OWNER, Role::ADMIN],
             'accounting_integration_get_organization'              => [Role::OWNER, Role::ADMIN],

@@ -6,6 +6,9 @@ use RZP\Exception\InvalidArgumentException;
 
 class TraceCode extends \Razorpay\Trace\TraceCode
 {
+    const USER_ROLE_FOR_X_MIGRATION_START                       = 'USER_ROLE_FOR_X_MIGRATION_START';
+    const USER_ROLE_FOR_X_MIGRATION_UPDATE                      = 'USER_ROLE_FOR_X_MIGRATION_UPDATE';
+    const USER_ROLE_FOR_X_MIGRATION_UPDATE_INVALID_INPUT        = 'USER_ROLE_FOR_X_MIGRATION_UPDATE_INVALID_INPUT';
     const ATTACH_SUBMERCHANT_USER                               = 'ATTACH_SUBMERCHANT_USER';
     const MERCHANT_UPDATE_VALIDATION_STATUS                     = 'MERCHANT_UPDATE_VALIDATION_STATUS';
     const MERCHANT_UPDATE_VALIDATION_STATUS_DONE                = 'MERCHANT_UPDATE_VALIDATION_STATUS_DONE';
