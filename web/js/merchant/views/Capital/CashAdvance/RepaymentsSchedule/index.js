@@ -18,6 +18,7 @@ import { getProductType } from 'merchant/views/Capital/utils';
   (state) => ({
     user: state.session.user,
     installments: state.withdrawals.installments,
+    currentOutstanding: state.withdrawals.current_outstanding,
     withdrawalConfigurationDetails: state.withdrawals.withdrawalConfiguration,
   }),
   {
@@ -33,6 +34,16 @@ class RepaymentsSchedule extends Component {
   fetch = async () => {
     await this.fetchWC();
     this.fetchInstallments();
+  };
+
+  getCurrentOutstanding = () => {
+    const { fetchCurrentOutstanding, user } = this.props;
+    fetchCurrentOutstanding({
+      product_type: getProductType(user),
+      owner_id: user.current,
+      from: moment().startOf('day').unix(),
+      to: moment().add(30, 'days').unix(),
+    });
   };
 
   fetchInstallments = () => {
@@ -96,7 +107,7 @@ class RepaymentsSchedule extends Component {
       { label: 'Upcoming Repayments', value: 'upcoming-repayments' },
     ];
 
-    const installments = this.props.installments;
+    const { installments, currentOutstanding } = this.props;
     const { loading: isFetchingRepayments } = installments;
     let { data: repayments = [] } = installments;
 
@@ -131,7 +142,7 @@ class RepaymentsSchedule extends Component {
           </div>
         </div>
         <div class="repayments-schedule-repay-card flex">
-          <RepaymentCard installments={installments} />
+          <RepaymentCard installments={installments} currentOutstanding={currentOutstanding} />
         </div>
         <tabbed-container class="no-padding">
           <content>

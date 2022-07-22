@@ -2,7 +2,11 @@ import React, { useEffect, useState, Fragment } from 'react';
 import { REPAYMENT_VIEWS, COLLECTIONS_PRODUCT_TYPES } from '../constants';
 import Repay from '../OverviewFooter/Repay';
 import Result from '../OverviewFooter/Result';
-import { getNextRepayBreakup, getTotalAmountBreakup } from '../OverviewFooter/utils';
+import {
+  getCurrentOutstandingBreakup,
+  getNextRepayBreakup,
+  getTotalAmountBreakup,
+} from '../OverviewFooter/utils';
 import Amount from 'common/ui/Amount';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { connect } from 'react-redux';
@@ -18,6 +22,7 @@ const RepaymentCard = ({
   fetchBalances,
   merchantID,
   installments,
+  currentOutstanding,
 }) => {
   const { totalInterestAmount, totalPrincipalAmount } = getTotalAmountBreakup(balances);
 
@@ -36,6 +41,8 @@ const RepaymentCard = ({
   const nextRepayableAmount = nextRepayInterestAmount + nextRepayPrincipalAmount;
   const totalOwedAmount = totalInterestAmount + totalPrincipalAmount;
   const balance = account_balance.data.balance || 0;
+
+  const currentOutstandingBreakup = getCurrentOutstandingBreakup(currentOutstanding);
 
   useEffect(() => {
     if (view === REPAYMENT_VIEWS.SUMMARY) {
@@ -67,6 +74,9 @@ const RepaymentCard = ({
         totalInterestAmount={totalInterestAmount}
         totalPrincipalAmount={totalPrincipalAmount}
         setResultAmounts={setResultAmounts}
+        currentOutstandingTotalAmount={currentOutstandingBreakup.total}
+        currentOutstandingInterestAmount={currentOutstandingBreakup.interest}
+        currentOutstandingPrincipalAmount={currentOutstandingBreakup.principal}
       />
     ) : view === REPAYMENT_VIEWS.RESULT_SUCCESS || view === REPAYMENT_VIEWS.RESULT_FAILURE ? (
       <Result
@@ -126,7 +136,7 @@ const Summary = ({ totalOwedAmount, loading, setView, installments }) => {
           <div class="right">
             <button
               className="btn btn-primary"
-              onClick={() => setView(REPAYMENT_VIEWS.REPAY_METHOD)}
+              onClick={() => setView(REPAYMENT_VIEWS.REPAY_AMOUNT)}
             >
               Repay Now
             </button>
