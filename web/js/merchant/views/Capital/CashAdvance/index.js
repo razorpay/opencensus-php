@@ -45,8 +45,9 @@ class WithdrawalsRoot extends Component {
 
     // fetchSeedData();
     const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
+    const isCashOnCardEnabled = user.isCashOnCardEnabled;
 
-    if (hasWithdrawFeature) {
+    if (hasWithdrawFeature || isCashOnCardEnabled) {
       this.fetchWithdrawalConfiguration();
       this.props.fetchWithdrawals({
         product_type: this.productType,
@@ -128,6 +129,7 @@ class WithdrawalsRoot extends Component {
     const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
     const isLOSEnabled = user.isLOSEnabled;
     const isLOCEnabled = user.isLOCEnabled;
+    const isCashOnCardEnabled = user.isCashOnCardEnabled;
 
     const hasWC = !!withdrawalConfigurationDetails;
 
@@ -151,7 +153,7 @@ class WithdrawalsRoot extends Component {
       />
     );
 
-    if (hasWithdrawFeature) {
+    if (hasWithdrawFeature || isCashOnCardEnabled) {
       if (wcError) {
         return 'Error while loading WC.';
       }

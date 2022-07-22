@@ -10,7 +10,7 @@ function WithdrawnAmountSummary({
   roi,
   diffDays,
   isInterestTypeReducing = false,
-  autoCollection = true,
+  autoCollection,
 }) {
   const totalRepayableAmount = (principle + interest) * 100;
   const interestPopoverContent = `(${getFormattedAmountNew(

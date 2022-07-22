@@ -34,7 +34,7 @@ import {
   CASH_ADVANCE_PRODUCT_TYPES,
 } from './constants';
 import CreditSummary from './CreditSummary';
-import FungibleCreditSummary from './FungibleCreditSummary';
+import FungibleCreditSummary from './components/FungibleCreditSummary';
 import WithdrawnAmountSummary from './WithdrawnAmountSummary';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import MinWithdrawAmountModal from './MinWithdrawAmountModal';
@@ -70,7 +70,7 @@ import {
 } from './TrackEvents/trackEvents';
 import { getItem, setItem } from 'common/utils/localStorage';
 import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
-import DashboardRedirectModal from './DashboardRedirectModal';
+import CardsDashboardRedirectionModal from './components/CardsDashboardRedirectionModal';
 import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
 
 function updateRepaymentData(data, onResolve, onReject) {
@@ -224,8 +224,11 @@ export default class AmountWithdraw extends React.Component {
       document.querySelector('body').addEventListener('click', this.hideRepaymentTooltip);
     }
 
-    this.prefillData();
-    this.fetchCreditSummaryCall();
+    if (this.isFungibleLimitProductType()) {
+      this.fetchCreditSummaryCall();
+    } else {
+      this.prefillData();
+    }
     const isApplicationAtHold =
       status === 'ONHOLD' &&
       reason !== ONHOLD_REASONS.CLD_RISK_POLICY &&
@@ -371,17 +374,17 @@ export default class AmountWithdraw extends React.Component {
   };
 
   fetchCreditSummaryCall = () => {
-    if (this.isFungibleLimitProductType()) {
-      const {
-        fetchCreditSummary,
-        user: { current: merchant_id },
-      } = this.props;
+    const {
+      fetchCreditSummary,
+      user: { current: merchant_id },
+    } = this.props;
 
-      fetchCreditSummary({
-        product_type: CASH_ADVANCE_PRODUCT_TYPES.CASH_ON_CARD,
-        merchant_id,
-      });
-    }
+    fetchCreditSummary({
+      product_type: CASH_ADVANCE_PRODUCT_TYPES.CASH_ON_CARD,
+      merchant_id,
+    }).then(() => {
+      this.prefillData();
+    });
   };
 
   isOnlyNumbers = (value) => {
@@ -457,8 +460,8 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getRepayableAmount = () => {
-    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const { interest, auto_collection } = withdrawalConfigurationDetails.configuration;
+    const withdrawalConfigurationDetails = this.props?.withdrawalConfigurationDetails?.data;
+    const { interest, auto_collection = false } = withdrawalConfigurationDetails?.configuration;
     const startDay = moment();
 
     const selectedDate = this.getDueDate().endOf('day');
@@ -482,10 +485,18 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getInternalCreditBalance = () => {
-    const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-    const internalBalance =
-      parseInt(withdrawalConfigurationDetails.configuration.internal_credit_limit, 10) -
-      parseInt(withdrawalConfigurationDetails.principal_outstanding_balance || 0, 10);
+    let internalBalance = 0;
+    if (this.isFungibleLimitProductType()) {
+      internalBalance = parseInt(
+        this.props?.fungibleData?.cash_advance?.available_balance || 0,
+        10,
+      );
+    } else {
+      const withdrawalConfigurationDetails = this.props?.withdrawalConfigurationDetails?.data;
+      internalBalance =
+        parseInt(withdrawalConfigurationDetails?.configuration?.internal_credit_limit || 0, 10) -
+        parseInt(withdrawalConfigurationDetails?.principal_outstanding_balance || 0, 10);
+    }
     return internalBalance > 0 ? internalBalance : 0;
   };
 
@@ -665,7 +676,9 @@ export default class AmountWithdraw extends React.Component {
         response.data.withdrawal.status !== STATUSES.REJECTED &&
         response.data.withdrawal.status !== STATUSES.FAILED
       ) {
-        this.fetchCreditSummaryCall();
+        if (this.isFungibleLimitProductType()) {
+          this.fetchCreditSummaryCall();
+        }
         trackWithdrawStatus({
           amount: withdrawalAmount,
           date: moment(selectedDueDate).format('DD-MM-YYYY'),
@@ -846,7 +859,7 @@ export default class AmountWithdraw extends React.Component {
   };
 
   isFungibleLimitProductType = () => {
-    return this.props.user.isFeatureEnabled('cash_on_card');
+    return this.props.user.isCashOnCardEnabled;
   };
 
   getDueDate = () => {
@@ -1726,7 +1739,7 @@ export default class AmountWithdraw extends React.Component {
 
   openRedirectModal = () => {
     this.props.openModal({
-      component: <DashboardRedirectModal closeModal={this.props.closeModal} />,
+      component: <CardsDashboardRedirectionModal closeModal={this.props.closeModal} />,
       size: 'large',
     });
   };

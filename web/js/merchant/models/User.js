@@ -1260,6 +1260,10 @@ export default class User {
     return this.isFeatureEnabled('withdraw_loc');
   }
 
+  get isCashOnCardEnabled() {
+    return this.isFeatureEnabled('cash_on_card');
+  }
+
   get isNetBankingEnabled() {
     return true;
   }

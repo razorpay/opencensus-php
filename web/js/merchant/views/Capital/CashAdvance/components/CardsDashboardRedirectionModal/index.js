@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { getXCardsBaseURL } from '../utils/index';
+import { getXCardsBaseURL } from '../../../utils/index';
+import './style.styl';
 
 export default function DashboardRedirectModal({ closeModal }) {
   useEffect(() => {

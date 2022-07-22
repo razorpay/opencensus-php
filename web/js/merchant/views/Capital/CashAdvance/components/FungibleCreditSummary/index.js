@@ -2,14 +2,15 @@ import React from 'react';
 import Amount from 'common/ui/Amount';
 import Button from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import DashboardRedirectModal from './DashboardRedirectModal';
-import { getXCardsBaseURL } from '../utils/index';
+import CardsDashboardRedirectionModal from '../CardsDashboardRedirectionModal';
+import { getXCardsBaseURL } from '../../../utils/index';
+import './style.styl';
 
 export default function FungibleCreditSummary({ openModal, closeModal, data, isMerchantNew }) {
   const openRedirectModal = () => {
     if (isMerchantNew) {
       openModal({
-        component: <DashboardRedirectModal closeModal={closeModal} />,
+        component: <CardsDashboardRedirectionModal closeModal={closeModal} />,
         size: 'large',
       });
     } else {

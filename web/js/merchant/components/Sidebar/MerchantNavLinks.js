@@ -298,7 +298,8 @@ function MerchantNavLinks(props) {
           currentUser.isAllowedView('cash_advance') &&
           (currentUser.isLOCEnabled ||
             currentUser.isCashAdvanceStage2Enabled ||
-            currentUser.isWithdrawFeatureEnabled)
+            currentUser.isWithdrawFeatureEnabled ||
+            currentUser.isCashOnCardEnabled)
         }
       />
 
