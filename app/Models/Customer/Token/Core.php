@@ -2246,10 +2246,6 @@ class Core extends Base\Core
 
             $updateData[Token\Entity::EXPIRED_AT] = $this->getExpiryTimestamp($expiryMonth, $expiryYear);
         }
-        else
-        {
-            $updateData[Token\Entity::EXPIRED_AT] = null;
-        }
 
         $rowsAffected = $this->repo->token->updateById($tokenData['token_id'], $updateData);
 
