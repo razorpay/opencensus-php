@@ -488,6 +488,8 @@ class PaymentLinkTest extends TestCase
 
         $content = json_decode($response->getContent(), true);
 
+        $response->assertHeader('Access-Control-Allow-Origin', '*');
+
         $this->assertArrayKeysExist($content, ['preferences', 'is_test_mode']);
 
         $this->assertEquals($content['preferences']['payment_button_text'], 'Please pay');
