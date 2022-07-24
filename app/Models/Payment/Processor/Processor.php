@@ -4182,6 +4182,14 @@ class Processor
             return true;
         }
 
+        if ((is_array($input) === true) and
+            (isset($input[E::PAYMENT]) === true) and
+            ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS) and
+            (in_array($action, NbPlusPaymentService\Action::PAYMENTS_SUPPORTED_ACTIONS) === true))
+        {
+            return true;
+        }
+
         return false;
     }
 

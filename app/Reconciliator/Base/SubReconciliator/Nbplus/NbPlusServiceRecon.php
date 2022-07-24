@@ -6,11 +6,11 @@ use App;
 
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Reconciliator\Base\SubReconciliator;
-use RZP\Services\NbPlus\Paylater as PaylaterService;
-use RZP\Services\NbPlus\Emandate as EmandateService;
 use RZP\Services\NbPlus\Wallet as WalletService;
+use RZP\Services\NbPlus\Paylater as PaylaterService;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
 
@@ -216,5 +216,17 @@ class NbPlusServiceRecon extends SubReconciliator\PaymentReconciliate
         }
 
         return $authorizeSuccess;
+    }
+
+    protected function handleForceAuthorization(array $row)
+    {
+        $authResponse = parent::handleForceAuthorization($row);
+
+        if (($authResponse === true) and ($this->payment->isExternal() === true))
+        {
+            (new Transaction\Core)->dispatchUpdatedTransactionToCPS($this->paymentTransaction, $this->payment);
+        }
+
+        return $authResponse;
     }
 }

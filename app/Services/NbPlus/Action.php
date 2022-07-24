@@ -34,4 +34,8 @@ class Action
         self::CALLBACK_OTP_SUBMIT,
         self::TOPUP,
     ];
+
+    const PAYMENTS_SUPPORTED_ACTIONS = [
+        self::FORCE_AUTHORIZE_FAILED,
+    ];
 }
