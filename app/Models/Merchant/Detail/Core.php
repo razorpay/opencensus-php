@@ -3584,6 +3584,7 @@ class Core extends Base\Core
                 return AccountConstants::ACTIVATED;
             case [Status::ACTIVATED, BvsValidationConstants::INCORRECT_DETAILS]:
             case [Status::ACTIVATED, BvsValidationConstants::NOT_MATCHED]:
+            case [Status::ACTIVATED, BvsValidationConstants::FAILED]:
                 return AccountConstants::VERIFICATION_FAILED;
             default:
                 return AccountConstants::VERIFICATION_PENDING;

@@ -373,6 +373,7 @@ class Entity extends Merchant\Entity
 
             case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::INCORRECT_DETAILS]:
             case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::NOT_MATCHED]:
+            case [MerchantDetail\Status::ACTIVATED , Merchant\BvsValidation\Constants::FAILED]:
                 return Constants::VERIFICATION_FAILED;
 
             default:

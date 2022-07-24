@@ -197,7 +197,7 @@ class Core extends Base\Core
             $merchant->getHoldFundsReason() === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING)
         {
 
-            $merchant->setHoldFundsReason(null);
+            $merchant->setHoldFundsReason();
 
             $this->repo->saveOrFail($merchant);
 
@@ -335,7 +335,7 @@ class Core extends Base\Core
                             $merchantId,
                             $validation);
                     });
-                
+
                 if ($shouldFireAccountUpdatedWebhook === true)
                 {
                     (new Merchant\Core())->eventLinkedAccountUpdated($merchantId);
@@ -386,13 +386,30 @@ class Core extends Base\Core
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if (($merchant->isLinkedAccount() === true) and
-            ($merchant->parent->isFeatureEnabled(FeatureConstant::LA_BANK_ACCOUNT_UPDATE) === true) and
-            ($merchant->getHoldFundsReason() === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING))
+        $isLinkedAccount = $merchant->isLinkedAccount();
+
+        if($isLinkedAccount === false)
+        {
+            return false;
+        }
+
+        $bankAccountUpdateFeatureEnabled = $merchant->parent->isFeatureEnabled(FeatureConstant::LA_BANK_ACCOUNT_UPDATE);
+
+        $holdFundsReason = $merchant->getHoldFundsReason();
+
+        $this->trace->info(
+            TraceCode::SHOULD_FIRE_LINKED_ACCOUNT_UPDATED_WEBHOOK_DATA,
+            [
+                'is_linked_account'             => $isLinkedAccount,
+                'bank_updated_feature_enabled'  => $bankAccountUpdateFeatureEnabled,
+                'hold_funds_reason'             => $holdFundsReason,
+            ]
+        );
+        if (($bankAccountUpdateFeatureEnabled === true) and
+            ($holdFundsReason === Merchant\Constants::LINKED_ACCOUNT_PENNY_TESTING))
         {
             return true;
         }
-        
         return false;
     }
 

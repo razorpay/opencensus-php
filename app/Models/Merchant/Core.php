@@ -7544,7 +7544,13 @@ class Core extends Base\Core
             ApiEventSubscriber::MAIN => $account,
             ApiEventSubscriber::WITH => $bankAccount
         ];
-
+        $this->trace->info(
+            TraceCode::LINKED_ACCOUNT_UPDATED_WEBHOOK_EVENT_DISPATCH,
+            [
+                'linked_account_id'                 =>  $merchantId,
+                'bank_details_verification_status'  =>  $account->merchantDetail->getBankDetailsVerificationStatus()
+            ]
+        );
         $this->app['events']->dispatch('api.account.updated', $eventPayload);
     }
 
