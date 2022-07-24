@@ -429,7 +429,7 @@ trait Capture
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
             $this->publishMessageToMetro($payment);
-            
+
             return $payment;
         }
         catch (\Throwable $e)
@@ -1297,10 +1297,7 @@ trait Capture
                 $input[Order\Entity::STATUS] = Order\Status::PAID;
             }
 
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
-            {
-                OrderUpdate::dispatchNow($this->mode, $input, $order);
-            }));
+            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
         }
         else
         {
