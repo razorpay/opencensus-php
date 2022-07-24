@@ -51,7 +51,6 @@ class PGRouter
     const PGRouterBulkOrderSyncUrl = 'v1/bulk/sync/orders';
 
     // Payment related PG Router APIs below
-
     // Deliberately using this URL. When PG Router becomes face of orders & payments, integrated merchants will hit this URL
     // and PG Router will take this as first call to create paymentId and perform validations. So, will be easy to switch in future.
     const PGRouterValidateAndCreatePayment = 'v1/payments/create/ajax';
@@ -899,6 +898,10 @@ class PGRouter
                 break;
 
             case ErrorClass::BAD_REQUEST:
+                if (empty($response['next']) === false)
+                {
+                    $errorData['next'] = $response['next'];
+                }
                 throw new Exception\BadRequestException(
                     $internalErrorCode, null, $errorData, $description);
 

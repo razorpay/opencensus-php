@@ -530,13 +530,17 @@ class Processor
             {
                 $order = $this->fetchOrderFromInput($input);
 
+                $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER,
+                    $order->getId(), $this->merchant);
+
                 // offers are not supported in initial ramp
                 if ((empty($order) === false) and
                     (($order->hasOffers() === true) or
                      ($order->isDiscountApplicable() === true) or
                      ($order->getProductId() !== null) or
                      ($order->getFeeConfigId() !== null) or
-                     ($order->invoice !== null))
+                     ($order->invoice !== null) or
+                     (empty($orderTransfers) === false))
                     )
                 {
                     return false;
@@ -3423,7 +3427,7 @@ class Processor
 
     }
 
-    protected function getCaptureVerifyData($payment) 
+    protected function getCaptureVerifyData($payment)
     {
         $data = [];
 
@@ -3459,7 +3463,7 @@ class Processor
 
         $authorisation = $this->app['card.payments']->fetchEntity('authorization', $payment->getId());
 
-        if ((empty($authorisation['success']) === false) and 
+        if ((empty($authorisation['success']) === false) and
             ($authorisation['success'] === true))
         {
             $data['gateway'] = [

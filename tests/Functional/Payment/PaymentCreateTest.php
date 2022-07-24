@@ -1972,7 +1972,7 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['order_id'] = 'order_'.$order->getId();
+        // $payment['order_id'] = 'order_'.$order->getId();
 
         $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
 
