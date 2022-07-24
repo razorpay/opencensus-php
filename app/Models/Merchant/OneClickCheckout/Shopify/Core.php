@@ -16,6 +16,7 @@ use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Models\Order\OrderMeta\Type as OrderMetaType;
+use RZP\Models\Merchant\Metric;
 
 class Core extends Base\Core
 {
@@ -34,6 +35,15 @@ class Core extends Base\Core
 
     const MUTEX_KEY = 'shopify_1cc_place_order_mutex';
 
+    protected $monitoring;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->monitoring = new Monitoring();
+    }
+
     public function placeShopifyCheckout(array $input): array
     {
         $start = millitime();
@@ -50,10 +60,26 @@ class Core extends Base\Core
 
         $body = ['query' => $mutation, 'variables' => ['input' => $graphqlLineItems]];
 
-        $response = json_decode(
-            $client->sendStorefrontRequest(json_encode($body)),
-            true
-        );
+        $this->monitoring->addTraceCount(Metric::CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT, []);
+
+        $requestStart = millitime();
+
+        $response = null;
+
+        try {
+            $response = json_decode($client->sendStorefrontRequest(json_encode($body)), true);
+        }
+        catch(\Exception $e)
+        {
+            $this->monitoring->addTraceCount(Metric::CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT,['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
+
+            throw new Exception\ServerErrorException(
+                'Error while calling Shopify URL',
+                ErrorCode::SERVER_ERROR
+            );
+        }
+
+        $this->monitoring->traceResponseTime(Metric::CREATE_SHOPIFY_CHECKOUT_CALL_TIME, $requestStart, []);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_CHECKOUT_RES,
@@ -75,6 +101,8 @@ class Core extends Base\Core
                  ]
             );
 
+            $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
+
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
                 ErrorCode::SERVER_ERROR
@@ -92,6 +120,8 @@ class Core extends Base\Core
                      'response' => $response,
                  ]
             );
+
+            $this->monitoring->addTraceCount(Metric::CREATE_API_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
 
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
@@ -119,6 +149,8 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_UPDATE_METAFIELD_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_METAFIELD_API_ERROR]);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
@@ -128,9 +160,13 @@ class Core extends Base\Core
             );
             return [];
         }
+
         $res = json_decode($res,true);
+
         if (json_last_error() !== JSON_ERROR_NONE)
         {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_UPDATE_METAFIELD_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_METAFIELD_API_ERROR]);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_API_ERROR,
                 [
@@ -140,6 +176,18 @@ class Core extends Base\Core
             );
             throw new Exception\RuntimeException('Invalid json response');
         }
+
+        if($key ==  OneClickCheckout\Constants::ONE_CLICK_CHECKOUT_ENABLED)
+        {
+            $action = $value == 'true' ? 'activate' : 'deactivate';
+
+            $dimensions = [
+                'action' => $action
+            ];
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_UPDATE_METAFIELD_SUCCESS_COUNT, $dimensions);
+        }
+
         return $res;
     }
 
@@ -155,7 +203,15 @@ class Core extends Base\Core
                 'id'=> $checkoutId
             ]
         ];
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $this->monitoring->addTraceCount(Metric::GET_AVAILABLE_SHIPPING_RATES_REQUEST_COUNT, []);
+
+        $start = millitime();
+
+        $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+        $this->monitoring->traceResponseTime(Metric::GET_AVAILABLE_SHIPPING_RATES_CALL_TIME, $start, []);
+
+        return $res;
     }
 
     public function applyCoupon($input, $checkoutId)
@@ -172,7 +228,15 @@ class Core extends Base\Core
             ],
         ];
 
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_APPLY_COUPONS_REQUEST_COUNT, []);
+
+        $start = millitime();
+
+        $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_APPLY_COUPONS_CALL_TIME, $start, []);
+
+        return $res;
     }
 
     public function removeCoupon($checkoutId)
@@ -190,7 +254,15 @@ class Core extends Base\Core
             ],
         ];
 
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_REMOVE_COUPONS_REQUEST_COUNT, []);
+
+        $start = millitime();
+
+        $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_REMOVE_COUPONS_CALL_TIME, $start, []);
+
+        return $res;
     }
 
     // TODO: check update condition to handle concurrency issues when checkoutId changes
@@ -218,7 +290,7 @@ class Core extends Base\Core
                 'time' => millitime() - $start
             ]
         );
-
+        //TODO: Metrics creation for this Shopify API
         return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
@@ -274,7 +346,15 @@ class Core extends Base\Core
             ]
         );
 
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $this->monitoring->addTraceCount(Metric::UPDATE_SHIPPING_ADDRESS_REQUEST_COUNT, []);
+
+        $start = millitime();
+
+        $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+        $this->monitoring->traceResponseTime(Metric::UPDATE_SHIPPING_ADDRESS_CALL_TIME, $start, []);
+
+        return $res;
     }
 
     // processing is async so we need to sleep and poll
@@ -518,6 +598,8 @@ class Core extends Base\Core
                 ]
             );
 
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_PLACE_ORDER_DELEGATED_SQS]);
+
             throw new Exception\BadRequestException(
               ErrorCode::BAD_REQUEST_ERROR,
               null,
@@ -542,14 +624,23 @@ class Core extends Base\Core
 
             try
             {
+                $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_REQUEST_COUNT, []);
+
+                $placeOrderStart = millitime();
+
                 $order = $client->sendRestApiRequest(
                     json_encode(['order' => $body]),
                     'POST',
                     '/orders.json'
                 );
+
+                $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
+
             }
             catch (\Exception $e)
             {
+                $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR]);
+
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR,
                     [
@@ -558,6 +649,8 @@ class Core extends Base\Core
                         'error'    => $e->getMessage()
                     ]
                 );
+
+                $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR]);
 
                 throw new Exception\BadRequestException(
                   ErrorCode::BAD_REQUEST_ERROR,
@@ -657,6 +750,8 @@ class Core extends Base\Core
                 ]
             );
 
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_SQS_PLACE_ORDER_ERROR]);
+
             throw new Exception\BadRequestException(
               ErrorCode::BAD_REQUEST_ERROR,
               null,
@@ -684,11 +779,17 @@ class Core extends Base\Core
 
         try
         {
+            $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_REQUEST_COUNT, []);
+
+            $placeOrderStart = millitime();
+
             $order = $client->sendRestApiRequest(
                 json_encode(['order' => $body]),
                 'POST',
                 '/orders.json'
             );
+
+            $this->monitoring->traceResponseTime(Metric::PLACE_SHOPIFY_ORDER_CALL_TIME, $placeOrderStart, []);
         }
         catch (\Exception $e)
         {
@@ -696,12 +797,16 @@ class Core extends Base\Core
 
             if ($fromShopifyApi === true)
             {
+                $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'DELEGATED_TO_SQS']);
+
                 $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderAPI($e, $rzpOrder, $rzpPayment, $body);
 
                 $finalErrorCode = "DELEGATED_TO_SQS";
             }
             else
             {
+                $this->monitoring->addTraceCount(Metric::PLACE_SHOPIFY_ORDER_ERROR_COUNT, ['error_type' => 'SQS_TOO_FAILED']);
+
                 $exceptionHandlerResponse = $this->exceptionPlaceShopifyOrderSQS($e, $rzpOrder, $rzpPayment);
 
                 $finalErrorCode = "SQS_TOO_FAILED";
@@ -724,6 +829,8 @@ class Core extends Base\Core
                     'error'    => $e->getMessage()
                 ]
             );
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, [ 'error_type' => 'SQS_TOO_FAILED'] );
 
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
@@ -766,6 +873,8 @@ class Core extends Base\Core
                      'checkout_id' => $checkoutId,
                      'error'       => 'checkout not found',
                  ]);
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, [ 'error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR ]);
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
@@ -878,11 +987,17 @@ class Core extends Base\Core
         {
           $client = $this->getShopifyClientByMerchant();
 
+          $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT, []);
+
+          $updateRequestStart = millitime();
+
           $order = $client->sendRestApiRequest(
               json_encode($body),
               'POST',
               '/orders/' . strval($merchantOrderId) . '/transactions.json'
           );
+
+          $this->monitoring->traceResponseTime(Metric::UPDATE_SHOPIFY_TRANSACTION_CALL_TIME, $updateRequestStart, []);
 
           $this->trace->info(
               TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
@@ -897,6 +1012,8 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
+            $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_ERROR_COUNT, [ 'error_type' => TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR] );
+
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR,
                 [
@@ -924,14 +1041,23 @@ class Core extends Base\Core
 
                 try
                 {
+                    $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT, []);
+
+                    $updateRequestStart = millitime();
+
                     $order = $client->sendRestApiRequest(
                         json_encode($body),
                         'POST',
                         '/orders/' . strval($merchantOrderId) . '/transactions.json'
                     );
+
+                    $this->monitoring->traceResponseTime(Metric::UPDATE_SHOPIFY_TRANSACTION_CALL_TIME,$updateRequestStart, []);
+
                 }
                 catch (\Exception $e)
                 {
+                    $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_ERROR_COUNT, [ 'error_type' => TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR] );
+
                     $this->trace->info(
                         TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR,
                         [
@@ -1050,6 +1176,8 @@ class Core extends Base\Core
 
         if ($payment->toArrayPublic()['order_id'] !== $order->getPublicId())
         {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, [ 'error_type' => ErrorCode::BAD_REQUEST_ERROR]);
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
@@ -1060,6 +1188,7 @@ class Core extends Base\Core
         {
             return true;
         }
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT, [ 'error_type' => ErrorCode::BAD_REQUEST_ERROR]);
 
         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
     }

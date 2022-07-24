@@ -49,11 +49,15 @@ class Service extends Base\Service
 
     protected $mutex;
 
+    protected $monitoring;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->mutex = App::getFacadeRoot()['api.mutex'];
+
+        $this->monitoring = new Monitoring();
     }
 
     public function shopifyCartLineItems(array $checkout) : array
@@ -173,10 +177,13 @@ class Service extends Base\Service
     {
         try
         {
-            return (new Checkout)->updateCheckoutFromAdmin($input);
+            $response =  (new Checkout)->updateCheckoutFromAdmin($input);
+            return $response;
         }
         catch (\Throwable $e)
         {
+            $this->monitoring->addTraceCount(Metric::ABANDON_CHECKOUT_ERROR_COUNT,['error_type'=>'update_checkout_failed']);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
@@ -221,18 +228,14 @@ class Service extends Base\Service
     // updates shopify order post payment and redirects the user
     protected function shopifyCompleteCheckout(array $input, bool $fromShopifyApi): array
     {
-        // if it from public API, verify the signature
-        if ($fromShopifyApi === true)
+        // set the merchant, mode for SQS job
+        if ($fromShopifyApi === false)
         {
-        }
-        else
-        {
-            // set the merchant as this is called through SQS
-            $this->app['basicauth']->setMode($input['mode']);
+          $this->app['basicauth']->setMode($input['mode']);
 
-            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+          $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
 
-            $this->app['basicauth']->setMerchant($this->merchant);
+          $this->app['basicauth']->setMerchant($this->merchant);
         }
 
         $orderId = $input['razorpay_order_id'];
@@ -421,6 +424,7 @@ class Service extends Base\Service
 
     /**
      * updates the notes of shopify checkout with magic checkout url
+     * TODO: see metrics for this
      */
     public function updateCheckoutUrl(array $input): array
     {

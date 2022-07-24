@@ -7048,6 +7048,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_APPLY_COUPON                            = 'SHOPIFY_1CC_APPLY_COUPON';
     const SHOPIFY_1CC_COMPLETE_ORDER_REQUEST                  = 'SHOPIFY_1CC_COMPLETE_ORDER_REQUEST';
 
+    const SHOPIFY_1CC_MISSING_STOREFRONT_ID                   = 'SHOPIFY_1CC_MISSING_STOREFRONT_ID';
+    const SHOPIFY_1CC_MAGIC_URL_UPDATE_ERROR                  = 'SHOPIFY_1CC_MAGIC_URL_UPDATE_ERROR';
+    const SHOPIFY_1CC_METAFIELD_API_ERROR                     = 'SHOPIFY_1CC_METAFIELD_API_ERROR';
+
     const SHOPIFY_1CC_API_ERROR                               = 'SHOPIFY_1CC_API_ERROR';
     const SHOPIFY_1CC_API_CHECKOUT_ERROR                      = 'SHOPIFY_1CC_API_CHECKOUT_ERROR';
     const SHOPIFY_1CC_API_ORDER_ERROR                         = 'SHOPIFY_1CC_API_ORDER_ERROR';

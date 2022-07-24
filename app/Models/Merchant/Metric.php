@@ -100,6 +100,56 @@ final class Metric
     const MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT = 'merchant_shipping_info_check_call_count';
     const MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT = 'shipping_info_call_invalid_request_count';
 
+    const CREATE_API_CHECKOUT_ERROR_COUNT               = 'create_api_checkout_error_count';
+
+    const CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT         = 'create_shopify_checkout_request_count';
+    const CREATE_SHOPIFY_CHECKOUT_ERROR_COUNT           = 'create_shopify_checkout_error_count';
+    const CREATE_SHOPIFY_CHECKOUT_CALL_TIME             = 'create_shopify_checkout_call_time';
+
+    const GET_SHOPIFY_CHECKOUT_DETAILS_REQUEST_COUNT    = 'get_shopify_checkout_details_request_count';
+    const GET_SHOPIFY_CHECKOUT_DETAILS_ERROR_COUNT      = 'get_shopify_checkout_details_error_count';
+    const GET_SHOPIFY_CHECKOUT_DETAILS_CALL_TIME        = 'get_shopify_checkout_details_call_time';
+
+    const UPDATE_CHECKOUT_DETAILS_REQUEST_COUNT         = 'update_checkout_details_request_count';
+    const UPDATE_CHECKOUT_DETAILS_ERROR_COUNT           = 'update_checkout_details_error_count';
+    const UPDATE_CHECKOUT_DETAILS_CALL_TIME             = 'update_checkout_details_call_time';
+
+    const ADD_MAGIC_URL_IN_CHECKOUT_REQUEST_COUNT       = 'add_magic_url_in_checkout_request_count';
+    const ADD_MAGIC_URL_IN_CHECKOUT_ERROR_COUNT         = 'add_magic_url_in_checkout_error_count';
+    const ADD_MAGIC_URL_IN_CHECKOUT_CALL_TIME           = 'add_magic_url_in_checkout_call_time';
+
+    const PLACE_SHOPIFY_ORDER_REQUEST_COUNT             = 'place_shopify_order_request_count';
+    const PLACE_SHOPIFY_ORDER_ERROR_COUNT               = 'place_shopify_order_error_count';
+    const PLACE_SHOPIFY_ORDER_CALL_TIME                 = 'place_shopify_order_call_time';
+
+    const UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT      = 'update_shopify_transaction_request_count';
+    const UPDATE_SHOPIFY_TRANSACTION_ERROR_COUNT        = 'update_shopify_transaction_error_count';
+    const UPDATE_SHOPIFY_TRANSACTION_CALL_TIME          = 'update_shopify_transaction_call_time';
+
+    const ABANDON_CHECKOUT_ERROR_COUNT                  = 'abandon_checkout_error_count';
+
+    const SHOPIFY_COMPLETE_CHECKOUT_ERROR_COUNT         = 'shopify_complete_checkout_error_count';
+
+    const SHOPIFY_ADD_CHECKOUT_URL_ERROR_COUNT          = 'shopify_add_checkout_url_error_count';
+
+    const SHOPIFY_UPDATE_METAFIELD_SUCCESS_COUNT        = 'shopify_update_metafield_success_count';
+    const SHOPIFY_UPDATE_METAFIELD_ERROR_COUNT          = 'shopify_update_metafield_error_count';
+
+    const GET_CHECKOUT_BY_STOREFRONT_ID_REQUEST_COUNT   = 'get_checkout_by_storefront_id_request_count';
+    const GET_CHECKOUT_BY_STOREFRONT_ID_CALL_TIME       = 'get_checkout_by_storefront_id_call_time';
+
+    const GET_AVAILABLE_SHIPPING_RATES_REQUEST_COUNT    = 'get_available_shipping_rates_request_count';
+    const GET_AVAILABLE_SHIPPING_RATES_CALL_TIME        = 'get_available_shipping_rates_call_time';
+
+    const UPDATE_SHIPPING_ADDRESS_REQUEST_COUNT         = 'update_shipping_address_request_count';
+    const UPDATE_SHIPPING_ADDRESS_CALL_TIME             = 'update_shipping_address_call_time';
+
+    const SHOPIFY_APPLY_COUPONS_REQUEST_COUNT           = 'shopify_apply_coupons_request_count';
+    const SHOPIFY_APPLY_COUPONS_CALL_TIME               = 'shopify_apply_coupons_call_time';
+
+    const SHOPIFY_REMOVE_COUPONS_REQUEST_COUNT           = 'shopify_remove_coupons_request_count';
+    const SHOPIFY_REMOVE_COUPONS_CALL_TIME               = 'shopify_remove_coupons_call_time';
+
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_duration_millis';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_failure_count';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_count';

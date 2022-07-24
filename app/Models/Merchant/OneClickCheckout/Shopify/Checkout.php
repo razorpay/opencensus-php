@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
+use RZP\Models\Merchant\Metric;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -16,6 +17,15 @@ class Checkout extends Base\Core
 {
     const GID_CHECKOUT = 'gid://shopify/Checkout/';
 
+    protected $monitoring;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->monitoring = new Monitoring();
+    }
+
     public function getCheckoutbyStorefrontId(string $checkoutId): array
     {
         $client = $this->getShopifyClientByMerchant();
@@ -28,8 +38,14 @@ class Checkout extends Base\Core
                 'id' => $checkoutId
             ]
         ];
+        //TODO:Adding Error Metrics for this Shopify Request
+        $this->monitoring->addTraceCount(Metric::GET_CHECKOUT_BY_STOREFRONT_ID_REQUEST_COUNT,[]);
+
+        $start = millitime();
 
         $res = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+        $this->monitoring->traceResponseTime(Metric::GET_CHECKOUT_BY_STOREFRONT_ID_CALL_TIME,$start,[]);
 
         return json_decode($res, true);
     }
@@ -94,6 +110,9 @@ class Checkout extends Base\Core
 
         $client = $this->getShopifyClientByMerchant();
 
+        $this->monitoring->addTraceCount(Metric::GET_SHOPIFY_CHECKOUT_DETAILS_REQUEST_COUNT, []);
+
+        $start = millitime();
         try
         {
             $checkoutRes = $client->sendRestApiRequest(
@@ -103,10 +122,13 @@ class Checkout extends Base\Core
 
             $checkout = json_decode($checkoutRes, true);
 
+            $this->monitoring->traceResponseTime(Metric::GET_SHOPIFY_CHECKOUT_DETAILS_CALL_TIME,$start,[]);
+
             return $checkout['checkout'];
         }
         catch (\Exception $e)
         {
+            $this->monitoring->addTraceCount(Metric::GET_SHOPIFY_CHECKOUT_DETAILS_ERROR_COUNT,['error_type'=>TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR] );
             $this->trace->error(
                  TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                  [
@@ -183,6 +205,7 @@ class Checkout extends Base\Core
                      'order_id' => $orderId,
                      'reason'   => 'missing_storefront_id'
                  ]);
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_ADD_CHECKOUT_URL_ERROR_COUNT,['error_type'=>TraceCode::SHOPIFY_1CC_MISSING_STOREFRONT_ID]);
             return;
         }
 
@@ -231,6 +254,9 @@ class Checkout extends Base\Core
 
         $client = $this->getShopifyClientByMerchant();
 
+        $this->monitoring->addTraceCount(Metric::UPDATE_CHECKOUT_DETAILS_REQUEST_COUNT, []);
+        $start = millitime();
+
         try
         {
             $checkoutRes = $client->sendRestApiRequest(
@@ -239,11 +265,16 @@ class Checkout extends Base\Core
                 '/checkouts/' . $token . '.json');
 
             $checkout = json_decode($checkoutRes, true);
+            $response =  $this->getStorefrontIdFromWebUrl($checkout['checkout']['web_url']);
 
-            return $this->getStorefrontIdFromWebUrl($checkout['checkout']['web_url']);
+            $this->monitoring->traceResponseTime(Metric::UPDATE_CHECKOUT_DETAILS_CALL_TIME, $start, []);
+
+            return $response;
         }
         catch (\Exception $e)
         {
+            $this->monitoring->addTraceCount(Metric::UPDATE_CHECKOUT_DETAILS_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR]);
+
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_API_CHECKOUT_ERROR,
                 [
@@ -358,7 +389,22 @@ class Checkout extends Base\Core
             ]
         ];
 
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $response = array();
+        try{
+            $this->monitoring->addTraceCount(Metric::ADD_MAGIC_URL_IN_CHECKOUT_REQUEST_COUNT, []);
+
+            $start = millitime();
+
+            $response = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+            $this->monitoring->traceResponseTime(Metric::ADD_MAGIC_URL_IN_CHECKOUT_CALL_TIME, $start, []);
+
+        }
+        catch(\Exception $e)
+        {
+            $this->monitoring->addTraceCount(Metric::ADD_MAGIC_URL_IN_CHECKOUT_ERROR_COUNT, ['error_type' => TraceCode::SHOPIFY_1CC_MAGIC_URL_UPDATE_ERROR]);
+        }
+        return $response;
     }
 
 }
