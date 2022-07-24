@@ -138,6 +138,31 @@ class VendorPaymentController extends Controller
         return $this->service->execute($this->ba->getMerchant(), $vendorPaymentId, $this->input, $this->ba->getUser());
     }
 
+    public function vendorSettlementSingle()
+    {
+        return $this->service->vendorSettlementSingle($this->ba->getMerchant(),$this->input, $this->ba->getUser());
+    }
+
+    public function vendorSettlementMultiple()
+    {
+        return $this->service->vendorSettlementMultiple($this->ba->getMerchant(),$this->input, $this->ba->getUser());
+    }
+
+    public function vendorSettlementMarkAsPaid()
+    {
+        return $this->service->vendorSettlementMarkAsPaid($this->ba->getMerchant(),$this->input, $this->ba->getUser());
+    }
+
+    public function getFundAccounts(string $contactId)
+    {
+        return $this->service->getFundAccounts($this->ba->getMerchant(),$this->input, $this->ba->getUser(), $contactId);
+    }
+
+    public function getVendorBalance(string $contactId)
+    {
+        return $this->service->getVendorBalance($this->ba->getMerchant(),$this->input, $this->ba->getUser(), $contactId);
+    }
+
     public function getTdsCategories()
     {
             return $this->service->getTdsCategories($this->ba->getMerchant());
@@ -286,5 +311,10 @@ class VendorPaymentController extends Controller
     public function enableVendorPortal(string $contactId)
     {
         return $this->service->enableVendorPortal($this->ba->getMerchant(), $contactId);
+    }
+
+    public function listVendors()
+    {
+        return $this->service->listVendors($this->ba->getMerchant(), $this->input);
     }
 }

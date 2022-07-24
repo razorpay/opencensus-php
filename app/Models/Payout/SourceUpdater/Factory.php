@@ -59,6 +59,13 @@ class Factory
                     array_push($subscriberList, (new CapitalCollectionsUpdater($payout, $mode)));
 
                     break;
+
+                case PayoutSourceEntity::VENDOR_SETTLEMENTS:
+
+                    array_push($subscriberList, (new VendorPaymentUpdater($payout, $mode)));
+
+                    break;
+
             }
         }
 

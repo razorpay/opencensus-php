@@ -130,6 +130,12 @@ class Tracing
             'vendor_payment_enable_vendor_portal',
             'merchant_fetch_internal_users',
             'vendor_payment_get_auto_processed_invoice',
+            'vendor_settlement_execute_single',
+            'vendor_settlement_fund_accounts',
+            'vendor_settlement_execute_multiple',
+            'vendor_settlement_mark_as_paid',
+            'vendor_settlement_vendor_balance',
+            'vendor_payment_list_vendors',
 
             'vendor_invoices_list',
             'vendor_invoice_get_by_id',

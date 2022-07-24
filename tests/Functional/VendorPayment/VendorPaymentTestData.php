@@ -703,4 +703,88 @@ return [
             'content' => []
         ]
     ],
+    'testVendorSettlementSingle' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/settlements/single',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testVendorSettlementMultiple' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/settlements/multiple',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testVendorSettlementMarkAsPaid' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/settlements/mark-as-paid',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testListVendors' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/vendors',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetFundAccounts' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/settlements/contact/cont_123/eligible-fund-accounts',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetVendorBalance' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/contacts/cont_123/vendor-balance',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

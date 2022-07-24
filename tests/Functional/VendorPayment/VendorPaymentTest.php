@@ -598,4 +598,94 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('enableVendorPortal');
     }
+
+    public function testVendorSettlementSingle()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('vendorSettlementSingle')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('vendorSettlementSingle');
+    }
+
+    public function testVendorSettlementMultiple()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('vendorSettlementMultiple')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('vendorSettlementMultiple');
+    }
+
+    public function testVendorSettlementMarkAsPaid()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('vendorSettlementMarkAsPaid')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('vendorSettlementMarkAsPaid');
+    }
+
+    public function testListVendors()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('listVendors')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listVendors');
+    }
+
+    public function testGetFundAccounts()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getFundAccounts')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getFundAccounts');
+    }
+
+    public function testGetVendorBalance()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getVendorBalance')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getVendorBalance');
+    }
 }

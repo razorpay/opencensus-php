@@ -67,6 +67,12 @@ class Service
     const ENABLE_VENDOR_PORTAL          = 'EnableVendorPortal';
     const FETCH_ENTITY                  = 'FetchEntities';
     const FETCH_ENTITY_BY_ID            = 'FetchEntityById';
+    const SETTLE_BALANCE_SINGLE         = 'SettleBalanceSingle';
+    const SETTLE_BALANCE_MULTIPLE       = 'SettleBalanceMultiple';
+    const SETTLE_BALANCE_MARK_AS_PAID   = 'SettleBalanceMarkAsPaid';
+    const GET_FUND_ACCOUNTS             = 'GetFundAccounts';
+    const GET_VENDOR_BALANCE            = 'GetVendorBalance';
+    const LIST_VENDORS                  = 'ListVendors';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -360,6 +366,10 @@ class Service
                     $input['source_type'] = $sourceDetail->getSourceType();
                     $input['source_id'] = $sourceDetail->getSourceId();
                     break;
+                case PayoutSourceEntity::VENDOR_SETTLEMENTS:
+                    $input['source_type'] = $sourceDetail->getSourceType();
+                    $input['source_id'] = $sourceDetail->getSourceId();
+                    break;
             }
         }
 
@@ -390,6 +400,64 @@ class Service
         }
 
         $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function vendorSettlementSingle(MerchantEntity $merchant, array $input, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SETTLE_BALANCE_SINGLE);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function vendorSettlementMultiple(MerchantEntity $merchant, array $input, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SETTLE_BALANCE_MULTIPLE);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function vendorSettlementMarkAsPaid(MerchantEntity $merchant, array $input, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::SETTLE_BALANCE_MARK_AS_PAID);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['manually_paid_user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getFundAccounts(MerchantEntity $merchant, array $input, Entity $user = null, string $contactId)
+    {
+        $input['contact_id'] = $contactId;
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_FUND_ACCOUNTS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getVendorBalance(MerchantEntity $merchant, array $input, Entity $user = null, string $contactId)
+    {
+        $input['contact_id'] = $contactId;
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_BALANCE);
 
         return $this->makeRequest($merchant, $url, $input);
     }
@@ -719,6 +787,13 @@ class Service
         }
 
         return [];
+    }
+
+    public function listVendors(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_VENDORS);
+
+        return $this->makeRequest($merchant, $url, $input);
     }
 
     protected function makeRequest(MerchantEntity $merchant = null,
