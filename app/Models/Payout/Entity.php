@@ -3000,7 +3000,7 @@ class Entity extends Base\PublicEntity
         }
 
         // else return true or false based on whether the bene mid is present in redis config or not
-        list($beneBankName, $beneMerchantId) = (new \RZP\Models\Internal\Service())->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($this);
+        list($beneBankName, $beneMerchantId) = (new \RZP\Models\Internal\Service())->getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelistedForPayout($this);
 
         if ($beneMerchantId === null)
         {

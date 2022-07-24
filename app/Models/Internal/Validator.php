@@ -18,6 +18,6 @@ class Validator extends Base\Validator
         Entity::BANK_NAME        => 'nullable|string',
         Entity::ENTITY_ID        => 'required|filled|string',
         Entity::ENTITY_TYPE      => 'required|filled|string',
-        Entity::REMARKS          => 'sometimes|nullable|string|in:test_payout',
+        Entity::REMARKS          => 'sometimes|nullable|string|in:test_payout,ondemand_settlement_xva_payout',
     ];
 }

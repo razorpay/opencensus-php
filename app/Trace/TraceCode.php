@@ -4699,8 +4699,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Internal
     const INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA                  = 'INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA';
+    const INTERNAL_REVERSE_RECEIVE_RESPONSE                     = 'INTERNAL_REVERSE_RECEIVE_RESPONSE';
+
     const INTERNAL_CREATE_INPUT_DATA                            = 'INTERNAL_CREATE_INPUT_DATA';
     const INTERNAL_ENTITY_CREATED                               = 'INTERNAL_ENTITY_CREATED';
+    const INTERNAL_ENTITY_RECEIVED                              = 'INTERNAL_ENTITY_RECEIVED';
+
     const RZP_INTERNAL_TEST_ACCOUNTS                            = 'RZP_INTERNAL_TEST_ACCOUNTS';
 
     const INTERNAL_FAIL_ON_PAYOUT_REVERSAL_INPUT_DATA           = 'INTERNAL_FAIL_INPUT_DATA';
@@ -4709,6 +4713,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INTERNAL_DELETE_REQUEST                               = 'INTERNAL_DELETE_REQUEST';
     const INTERNAL_ENTITY_CREATION_FAILED                       = 'INTERNAL_ENTITY_CREATION_FAILED';
     const INTERNAL_ENTITY_UPDATE_FAILED                         = 'INTERNAL_ENTITY_UPDATE_FAILED';
+    const INTERNAL_ENTITY_RECEIVABLE_FAILED                     = 'INTERNAL_ENTITY_RECEIVABLE_FAILED';
+
 
     const GOVERNOR_SERVICE_REQUEST                              = 'GOVERNOR_SERVICE_REQUEST';
     const GOVERNOR_SERVICE_RESPONSE                             = 'GOVERNOR_SERVICE_RESPONSE';

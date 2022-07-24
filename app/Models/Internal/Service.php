@@ -8,15 +8,13 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Models\FundAccount;
-use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
-use RZP\Models\Merchant\Balance\Type;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Bank\Name as BankName;
 use RZP\Exception\BadRequestException;
 use RZP\Services\Ledger as LedgerService;
-use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Transaction\Processor\Ledger\Internal as InternalLedgerProcessor;
 
 class Service extends Base\Service
 {
@@ -24,9 +22,14 @@ class Service extends Base\Service
     const MUTEX_LOCK_TIMEOUT           = 30;
     const MERCHANT_ID                  = 'merchant_id';
     const ACCOUNT_NUMBER               = 'account_number';
+    const VPA                          = 'vpa';
     const TRANSACTOR_ID                = 'transactor_id';
     const TRANSACTOR_EVENT             = 'transactor_event';
-    const TRANSACTOR_EVENT_NAME        = 'inter_account_credit_processed';
+    const TRANSACTOR_DATE              = 'transactor_date';
+    const FTS_INFO                     = 'fts_info';
+
+    const INTER_ACCOUNT_CREDIT_PROCESSED        = 'inter_account_credit_processed';
+    const INTER_ACCOUNT_CREDIT_REVERSED         = 'inter_account_credit_reversed';
 
     const STATUS_EXPECTED              = 'expected';
     const STATUS_RECEIVED              = 'received';
@@ -35,7 +38,18 @@ class Service extends Base\Service
     const TYPE_CREDIT                  = 'credit';
     const TENANT                       = 'tenant';
     const X                            = 'X';
+    const PAYOUT_TYPE                  = 'payout_type';
     const TEST_PAYOUT_REMARK           = 'test_payout';
+    const IDENTIFIERS                  = 'identifiers';
+
+    // used for payouts done between nodal accounts.
+    const INTER_ACCOUNT_PAYOUT      = 'inter_account_payout';
+
+    // Same as inter account payouts but are used for payouts for testing purpose.
+    const TEST_INTER_ACCOUNT_PAYOUT = 'test_inter_account_payout';
+
+    // Represents payout done from PG to RX (bulk payout in ES flow)
+    const ONDEMAND_SETTLEMENT_XVA_PAYOUT  = 'ondemand_settlement_xva_payout';
 
     protected $ledgerService;
 
@@ -44,60 +58,6 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->ledgerService = $this->app['ledger'];
-    }
-
-    public function createOnPayout(Payout\Entity $payout, bool $isTestPayout = false): array
-    {
-        $this->trace->info(TraceCode::INTERNAL_CREATE_ON_PAYOUT_INPUT_DATA,
-                           [
-                               Payout\Entity::ID          => $payout->getPublicId(),
-                               Payout\Entity::AMOUNT      => $payout->getAmount(),
-                               Payout\Entity::BASE_AMOUNT => $payout->getBaseAmount(),
-                               Payout\Entity::UTR         => $payout->getUtr(),
-                               Payout\Entity::CURRENCY    => $payout->getCurrency(),
-                               Payout\Entity::TYPE        => self::TYPE_CREDIT,
-                               Payout\Entity::UPDATED_AT  => $payout->getUpdatedAt(),
-                               Payout\Entity::MODE        => $payout->getMode(),
-                               Constants::IS_TEST_PAYOUT  => $isTestPayout,
-                           ]);
-
-        $remarks        = null;
-        $beneBankName   = null;
-        $beneMerchantId = null;
-
-        if ($isTestPayout === true)
-        {
-            [$beneBankName, $beneMerchantId] = $this->getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
-            // This remark will be used by ART team to differentiate between regular inter-nodal transfers and
-            // inter account test payouts and help in reconciliation of the same.
-            $remarks = self::TEST_PAYOUT_REMARK;
-        }
-        else
-        {
-            list($beneBankName, $beneMerchantId) = $this->getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted($payout);
-        }
-
-        if (empty($beneMerchantId) === true)
-        {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_MERCHANT_NOT_FOUND);
-        }
-
-        // create an internal entity
-        return $this->create([
-                                 Entity::AMOUNT           => $payout->getAmount(),
-                                 Entity::BASE_AMOUNT      => $payout->getBaseAmount(),
-                                 Entity::UTR              => $payout->getUtr(),
-                                 Entity::MODE             => $payout->getMode(),
-                                 Entity::ENTITY_ID        => $payout->getId(),
-                                 Entity::ENTITY_TYPE      => $payout->getEntity(),
-                                 Entity::BANK_NAME        => $beneBankName,
-                                 Entity::CURRENCY         => $payout->getCurrency(),
-                                 Entity::TYPE             => self::TYPE_CREDIT,
-                                 Entity::TRANSACTION_DATE => $payout->getUpdatedAt(),
-                                 Entity::MERCHANT_ID      => $beneMerchantId,
-                                 Entity::REMARKS          => $remarks,
-                             ]);
     }
 
     public function create(array $input): array
@@ -132,27 +92,11 @@ class Service extends Base\Service
         return $internal->toArray();
     }
 
-    public function failOnPayoutReversal(Payout\Entity $payout): array
-    {
-        $this->trace->info(TraceCode::INTERNAL_FAIL_ON_PAYOUT_REVERSAL_INPUT_DATA, [
-            Payout\Entity::ID => $payout->getPublicId(),
-        ]);
-
-        // fetch internal entity from the utr
-        $internal = $this->repo->internal->fetchByEntityIDAndType($payout->getId(), $payout->getEntity());
-        if ($internal === null)
-        {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND);
-        }
-
-        return $this->fail($internal->getId());
-    }
-
-    public function fail(string $id): array
+    public function fail(string $id, array $params = []): array
     {
         $this->trace->info(TraceCode::INTERNAL_FAIL_INPUT_DATA, [
             Entity::ID => $id,
+            'params' => $params,
         ]);
 
         // fetch internal entity from the id
@@ -162,10 +106,24 @@ class Service extends Base\Service
             // throw exception
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND);
         }
+        $previousStatus = $internal->getStatus();
 
-        // update the status to received and record the reconciled date
-        $internal[Entity::STATUS] = self::STATUS_FAILED;
-        $this->repo->saveOrFail($internal);
+        $this->repo->transaction(
+            function() use ($internal, $previousStatus, $params) {
+                // update the status to failed
+                $internal[Entity::STATUS] = self::STATUS_FAILED;
+                $this->repo->saveOrFail($internal);
+
+                // check previous state to reverse the receivable entries created.
+                // For eg if internal entity corresponding to the payout was marked received
+                // and then failed, in that case we will have to reverse the receivable
+                // entries in ledger
+
+                if ($previousStatus === self::STATUS_RECEIVED)
+                {
+                    return $this->reverseReceive($internal, $params);
+                }
+            });
 
         return $internal->toArray();
     }
@@ -186,8 +144,14 @@ class Service extends Base\Service
         return $internal->toArray();
     }
 
-    public function receive(string $id): array
+    // The receive function is responsible to create receivable entries at ledger side
+    // for the internal entity
+    public function receive(string $id, array $params = []): array
     {
+        if (isset($params[self::TRANSACTOR_EVENT]) === false)
+        {
+            $params[self::TRANSACTOR_EVENT] = self::INTER_ACCOUNT_CREDIT_PROCESSED;
+        }
         // fetch internal entity from the id
         $internal = $this->repo->internal->find($id);
         if ($internal == null)
@@ -196,150 +160,98 @@ class Service extends Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND);
         }
 
-        // get banking_account_id from merchant_id
-        $balance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType(
-            $internal->getMerchantId(),
-            Type::BANKING,
-            AccountType::SHARED);
-        if (empty($balance) === true)
-        {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_BALANCE_NOT_FOUND);
-        }
-        $bankingAccount = $this->repo->banking_account->getFromBalanceId($balance->getId());
-        if (empty($bankingAccount) === true)
-        {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND);
-        }
+        $ledgerRequest = (new InternalLedgerProcessor())->createLedgerPayloadFromEntity($internal, $params);
 
-        // make ledger create request
-        $journal = $this->createJournal([
-            Entity::MERCHANT_ID      => $internal->getMerchantId(),
-            Entity::CURRENCY         => $internal[Entity::CURRENCY],
-            Entity::AMOUNT           => strval($internal[Entity::AMOUNT]),
-            Entity::BASE_AMOUNT      => strval($internal[Entity::BASE_AMOUNT]),
-            self::TRANSACTOR_ID      => $internal->getPublicId(),
-            self::TRANSACTOR_EVENT   => self::TRANSACTOR_EVENT_NAME,
-            Entity::TRANSACTION_DATE => strval($internal[Entity::TRANSACTION_DATE]),
-            self::TENANT             => self::X,
-        ]);
+        $journal = $this->createJournal($ledgerRequest);
 
         // update the internal entity with journal_id
         $internal[Entity::TRANSACTION_ID] = $journal[Base\UniqueIdEntity::ID];
-        $internal[Entity::STATUS]         = self::STATUS_RECEIVED;
+        $internal[Entity::STATUS] = self::STATUS_RECEIVED;
         $this->repo->saveOrFail($internal);
 
         return $internal->toArray();
     }
 
-    private function createJournal(array $request): array
+    public function reverseReceive($internal, array $params = []): array
     {
-        $response =  $this->ledgerService->createJournal($request, true);
-        return $response[LedgerService::RESPONSE_BODY];
-    }
-
-    public function getBeneMerchantIdIfBeneficiaryAccountIsWhitelisted(Payout\Entity $payout)
-    {
-        $beneMerchantId           = null;
-        $beneBankName             = null;
-        $beneAccount              = $payout->fundAccount->account;
-        $beneAccountType          = $beneAccount->getEntity();
-        $internalTestAccounts     = (new AdminService())->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS]);
-
-        if (empty($internalTestAccounts) === true)
+        if (isset($params[self::TRANSACTOR_EVENT]) === false)
         {
-            $this->trace->error(TraceCode::REDIS_CONFIG_VALUE_EMPTY,
-                                [
-                                    'config_key'   => ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS,
-                                    'config_value' => $internalTestAccounts
-                                ]);
+            $params[self::TRANSACTOR_EVENT] = self::INTER_ACCOUNT_CREDIT_REVERSED;
+        }
+        try
+        {
+            $ledgerRequest = (new InternalLedgerProcessor())->createLedgerPayloadFromEntity($internal, $params);
 
-            return [$beneBankName, $beneMerchantId];
+            $response = $this->ledgerService->createJournal($ledgerRequest, true);
+            $this->trace->info(TraceCode::INTERNAL_REVERSE_RECEIVE_RESPONSE,
+                [
+                    'response' => $response,
+                    'request'  => $ledgerRequest,
+                ]);
+        }
+        catch(\Throwable $ex)
+        {
+            $this->app['trace']->traceException(
+                $ex,
+                Trace::ALERT,
+                TraceCode::INTERNAL_ENTITY_UPDATE_FAILED);
         }
 
-        foreach ($internalTestAccounts as $testAccount)
-        {
-            if ($testAccount[Constants::ACCOUNT_TYPE] === $beneAccountType)
-            {
-                if ($testAccount[Constants::RZP_ENTITY] !== Constants::RZP_ENTITY_RZPX)
-                {
-                    continue;
-                }
-
-                if ($beneAccountType === Constants::VPA and
-                    $beneAccount->getAddress() === $testAccount[Constants::ADDRESS])
-                {
-                    $beneMerchantId = $testAccount[Entity::MERCHANT_ID];
-                    break;
-                }
-
-                if ($beneAccountType === Constants::BANK_ACCOUNT and
-                    $beneAccount->getAccountNumber() === $testAccount[self::ACCOUNT_NUMBER])
-                {
-                    $beneIfsc = $beneAccount->getIfscCode();
-
-                    $beneBankName = (new BankName())->getName($beneIfsc);
-                    $beneMerchantId = $testAccount[Entity::MERCHANT_ID];
-                    break;
-                }
-            }
-        }
-
-        // $beneBankName call be null if payout was made to VPA type fund account
-        return [$beneBankName, $beneMerchantId];
+        return $internal->toArray();
     }
 
-    public function getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelisted(Payout\Entity $payout)
+    public function getBeneBankNameAndMerchantIdIfBeneficiaryAccountIsWhitelistedForPayout(Payout\Entity $payout)
     {
         // based on the payout_id, the beneficiary's account number has to be identified.
         // account number is fetched by payout -> fund_account -> bank_account
         // get account_id from fund account using id
         $bankName       = null;
         $beneMerchantId = null;
-
-        $fundAccount = $this->repo->fund_account->find($payout->getFundAccountId(), [FundAccount\Entity::ACCOUNT_ID]);
-
-        if (empty($fundAccount) === true)
-        {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
-        }
-
-        // get account_number from bank account using id
-        $bankAccount = $this->repo->bank_account->find($fundAccount->getAccountId(), [BankAccount\Entity::ACCOUNT_NUMBER, BankAccount\Entity::IFSC_CODE]);
-        if (empty($bankAccount) === true)
-        {
-            // throw exception
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INTERNAL_ACCOUNT_NOT_FOUND);
-        }
-
-        // fetch bank_name for the given payout
-        // payout -> fund_account -> bank_account -> ifsc_code
-        $ifscCode = $bankAccount->getIfscCode();
-        // ifsc_code -> bank_name
-        $bankName = (new BankName)->getName($ifscCode);
+        $beneAccount              = $payout->fundAccount->account;
+        $beneAccountType          = $beneAccount->getEntity();
+        $payoutType = Payout\Core::getInterAccountPayoutType($payout);
 
         // RZP_INTERNAL_ACCOUNTS contains list of internal accounts belonging to Razorpay
         // Check if the account belongs to RZP Internal accounts and it's an RZPX Account
-        $rzpInternalAccounts = (new AdminService)->getConfigKey(['key' => ConfigKey::RZP_INTERNAL_ACCOUNTS]);
+        // RZP_INTERNAL_TEST_ACCOUNTS contains list of internal accounts belonging to Razorpay
+        // It contains both bank accounts and Vpas
+        $configKey = (($payoutType === self::INTER_ACCOUNT_PAYOUT) or
+            ($payoutType === self::ONDEMAND_SETTLEMENT_XVA_PAYOUT)) ? ConfigKey::RZP_INTERNAL_ACCOUNTS :
+            ConfigKey::RZP_INTERNAL_TEST_ACCOUNTS;
+
+        $rzpInternalAccounts = (new AdminService)->getConfigKey(['key' => $configKey]);
 
         if (empty($rzpInternalAccounts) === true)
         {
             $this->trace->error(TraceCode::REDIS_CONFIG_VALUE_EMPTY,
-                                [
-                                    'config_key'   => ConfigKey::RZP_INTERNAL_ACCOUNTS,
-                                    'config_value' => $rzpInternalAccounts,
-                                ]);
+                [
+                    'config_key'   => $configKey,
+                    'config_value' => $rzpInternalAccounts,
+                ]);
 
             return [$bankName, $beneMerchantId];
         }
 
         for ($i = 0; $i < count($rzpInternalAccounts); $i++)
         {
-            if (isset($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER])
-                && $rzpInternalAccounts[$i][self::ACCOUNT_NUMBER] === $bankAccount->getAccountNumber()
-                && $rzpInternalAccounts[$i][Constants::RZP_ENTITY] === Constants::RZP_ENTITY_RZPX)
+            if (($beneAccountType === Constants::BANK_ACCOUNT) and
+                (isset($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER]) === true) and
+                ($rzpInternalAccounts[$i][Constants::RZP_ENTITY] === Constants::RZP_ENTITY_RZPX) and
+                ($rzpInternalAccounts[$i][self::ACCOUNT_NUMBER] === $beneAccount->getAccountNumber()))
+            {
+                // get account_number from bank account using id
+                // fetch bank_name for the given payout
+                // payout -> fund_account -> bank_account -> ifsc_code
+                $ifscCode = $beneAccount->getIfscCode();
+                // ifsc_code -> bank_name
+                $bankName = (new BankName)->getName($ifscCode);
+                $beneMerchantId = $rzpInternalAccounts[$i][self::MERCHANT_ID];
+                break;
+            }
+            else if (($beneAccountType === Constants::VPA) and
+                (isset($rzpInternalAccounts[$i][Constants::ADDRESS]) === true) and
+                ($rzpInternalAccounts[$i][Constants::RZP_ENTITY] === Constants::RZP_ENTITY_RZPX) and
+                ($rzpInternalAccounts[$i][Constants::ADDRESS] === $beneAccount->getAddress()))
             {
                 $beneMerchantId = $rzpInternalAccounts[$i][self::MERCHANT_ID];
                 break;
@@ -347,5 +259,11 @@ class Service extends Base\Service
         }
 
         return [$bankName, $beneMerchantId];
+    }
+
+    private function createJournal(array $request): array
+    {
+        $response =  $this->ledgerService->createJournal($request, true);
+        return $response[LedgerService::RESPONSE_BODY];
     }
 }

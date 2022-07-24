@@ -49,6 +49,8 @@ class Payout extends Base
 
     const VA_TO_VA_PAYOUT_INITIATED = "va_to_va_payout_initiated";
     const VA_TO_VA_PAYOUT_FAILED    = "va_to_va_payout_failed";
+    const NODAL_FUND_LOADING = 'nodal_fund_loading';
+    const NODAL_FUND_LOADING_REVERSE = 'nodal_fund_loading_reverse';
 
     // Ledger Events for Direct Accounting
     const DA_PAYOUT_PROCESSED           = "da_payout_processed";

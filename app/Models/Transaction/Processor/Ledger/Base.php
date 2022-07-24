@@ -42,6 +42,7 @@ class Base extends Core
     const API_TRANSACTION_ID    = 'api_transaction_id';
     const IDENTIFIERS           = 'identifiers';
     const ADDITIONAL_PARAMS     = 'additional_params';
+    const FTS_INFO              = 'fts_info';
 
     const BANKING_ACCOUNT_STMT_DETAIL_ID  = "banking_account_stmt_detail_id";
 

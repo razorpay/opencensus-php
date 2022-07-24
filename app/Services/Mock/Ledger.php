@@ -341,6 +341,10 @@ class Ledger extends BaseLedger
         {
             $balance = $app['repo']->adjustment->findByPublicId($input['transactor_id'])->balance->getBalance();
         }
+        else if (strpos($input['transactor_event'], 'nodal_fund_loading') !== false)
+        {
+            $balance = $merchant->sharedBankingBalance->getBalance();
+        }
         else if (strpos($input['transactor_event'], 'fund_loading') !== false)
         {
             // credits fund loading

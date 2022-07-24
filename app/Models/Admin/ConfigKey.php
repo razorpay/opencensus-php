@@ -297,6 +297,8 @@ class ConfigKey
     // This key will be a flag for creating a DB connection with master instead of slave
     const USE_MASTER_DB_CONNECTION = self::PREFIX . 'use_master_db_connection';
 
+    const ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS = SELF::PREFIX . 'ondemand_settlement_internal_merchants';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -419,6 +421,7 @@ class ConfigKey
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES,
         self::SCROOGE_0LOC_ENABLED,
+        self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
     ];
 
     const REDIS_CONFIG_MAP = [

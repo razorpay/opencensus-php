@@ -2326,13 +2326,17 @@ class Core extends Base\Core
             }
         }
 
-        if ($payout->isInterAccountPayout() === true)
+        $isondemandXVaPayout = self::isOndemandXVaPayout($payout);
+
+        if (($payout->isInterAccountPayout() === true) or
+        ($isondemandXVaPayout === true))
         {
+            $internal = null;
+
             try
             {
-                $isInterAccountTestPayout = $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT ? false : true;
-                $internalEntityService = new \RZP\Models\Internal\Service();
-                $internalEntityService->createOnPayout($payout, $isInterAccountTestPayout);
+                $internalEntityService = new \RZP\Models\Internal\PayoutService();
+                $internal = $internalEntityService->createOnPayout($payout);
             }
             catch(\Throwable $ex)
             {
@@ -2341,13 +2345,38 @@ class Core extends Base\Core
                     Trace::ALERT,
                     TraceCode::INTERNAL_ENTITY_CREATION_FAILED);
             }
+
+            // if its an es payout done to internal account, we need to create
+            // a receivable entry for the internal entity. This is because Finops
+            // will not be manually verifying and creating receivables for these
+            // payouts unlike inter account payouts.
+            // If the payout gets reversed we will reverse the recievable entries
+            if (($internal !== null) and
+                ($isondemandXVaPayout === true))
+            {
+                try
+                {
+                    $internalEntityService = new \RZP\Models\Internal\Service();
+                    $internal = $internalEntityService->receive($internal[Entity::ID],
+                        [PayoutsLedgerProcessor::TRANSACTOR_EVENT => PayoutsLedgerProcessor::NODAL_FUND_LOADING,
+                            PayoutsLedgerProcessor::FTS_INFO => $ftsSourceAccountInformation]);
+
+                    $this->trace->info(TraceCode::INTERNAL_ENTITY_RECEIVED, $internal);
+                }
+                catch(\Throwable $ex)
+                {
+                    $this->app['trace']->traceException(
+                        $ex,
+                        Trace::ALERT,
+                        TraceCode::INTERNAL_ENTITY_RECEIVABLE_FAILED);
+                }
+            }
         }
 
         // This will do nothing for reverse shadow
         $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);
 
-        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
-        {
+        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) {
             try
             {
                 $response = (new PayoutsLedgerProcessor($payout))
@@ -2672,6 +2701,52 @@ class Core extends Base\Core
         $this->updateTransactionAndSourceToReversal($reversal, $transaction);
 
         return [$transaction->bankingAccountStatement, $bankAccStmtForPayout];
+    }
+
+    protected static function isOndemandXVaPayout(Entity $payout)
+    {
+        $ondemandXVaPayoutMerchants = (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS]);
+
+        for ($i = 0; $i < count($ondemandXVaPayoutMerchants); $i++) {
+
+            if ((isset($ondemandXVaPayoutMerchants[$i][Entity::MERCHANT_ID]) === true) and
+                ($ondemandXVaPayoutMerchants[$i][Entity::MERCHANT_ID] === $payout->getMerchantId()) and
+                (isset($ondemandXVaPayoutMerchants[$i][Entity::FUND_ACCOUNT_ID]) === true) and
+                ($ondemandXVaPayoutMerchants[$i][Entity::FUND_ACCOUNT_ID]) === $payout->getFundAccountId())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    protected function isInterAccountPayout(Entity $payout)
+    {
+        return $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT;
+    }
+
+    protected function isInterAccountTestPayout(Entity $payout)
+    {
+        return $payout->merchant->isFeatureEnabled(FeatureConstants::INTER_ACCOUNT_TEST_PAYOUT) === true;
+    }
+
+    public static function getInterAccountPayoutType(Entity $payout)
+    {
+        if ($payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT)
+        {
+            return \RZP\Models\Internal\Service::INTER_ACCOUNT_PAYOUT;
+        }
+        else if ($payout->merchant->isFeatureEnabled(FeatureConstants::INTER_ACCOUNT_TEST_PAYOUT) === true)
+        {
+            return \RZP\Models\Internal\Service::TEST_INTER_ACCOUNT_PAYOUT;
+        }
+        else if (self::isOndemandXVaPayout($payout) === true)
+        {
+            return \RZP\Models\Internal\Service::ONDEMAND_SETTLEMENT_XVA_PAYOUT;
+        }
+
+        return null;
     }
 
     protected function handleProcessedPayoutViaReversedPayout(Reversal\Entity $reversal)
@@ -3081,12 +3156,16 @@ class Core extends Base\Core
         }
 
         // if a reversal happens on the payout with inter_account_payout then mark the internal entity as failed
-        if(($previousStatus === Status::PROCESSED) and ($payout->isInterAccountPayout() === true))
+        if(($previousStatus === Status::PROCESSED) and
+            (($payout->isInterAccountPayout() === true)
+                or self::isOndemandXVaPayout($payout) === true))
         {
             try {
                 // get internal entity
-                $internalEntityService = new \RZP\Models\Internal\Service();
-                $internalEntityService->failOnPayoutReversal($payout);
+                $internalEntityService = new \RZP\Models\Internal\PayoutService();
+                $internalEntityService->failOnPayoutReversal($payout,
+                    [PayoutsLedgerProcessor::TRANSACTOR_EVENT => PayoutsLedgerProcessor::NODAL_FUND_LOADING_REVERSE,
+                        PayoutsLedgerProcessor::FTS_INFO => $ftsSourceAccountInformation]);
             }
             catch(\Throwable $ex)
             {

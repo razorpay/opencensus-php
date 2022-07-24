@@ -197,6 +197,7 @@ class Validator extends Base\Validator
         ConfigKey::USE_MASTER_DB_CONNECTION                                            => 'filled|boolean',
         ConfigKey::PAYER_ACCOUNT_NAME_INVALID_REGEXES                                  => 'filled|array',
         ConfigKey::SCROOGE_0LOC_ENABLED                                                => 'filled|boolean',
+        ConfigKey::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS                              => 'array',
     ];
 
     protected static $setRedisKeysRules = [
