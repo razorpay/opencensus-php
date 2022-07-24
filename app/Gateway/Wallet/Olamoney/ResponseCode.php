@@ -42,7 +42,7 @@ class ResponseCode
     ];
 
     public static $eligible = [
-        'OC_000'
+        'OC_000','OC_010'
     ];
 
     protected static $success = [
