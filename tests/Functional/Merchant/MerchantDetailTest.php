@@ -685,6 +685,52 @@ class MerchantDetailTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testUpdatedAccountsFetchAccountService()
+    {
+        // test fetch updated accounts without data
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4&limit=2';
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
+
+        //mids should appear
+        $this->fixtures->create('stakeholder', ['updated_at'=> 1,'merchant_id' => "m2"]);
+        $this->fixtures->create('merchant_email', ['updated_at'=> 2, 'merchant_id' => "m3"]);
+        $this->fixtures->create('merchant_document', ['updated_at'=> 3, 'merchant_id' => "m4"]);
+        $merchantDetail = $this->fixtures->create('merchant_detail', ['updated_at'=> 1, 'business_category' => 'financial_services']);
+        $merchant       = $merchantDetail->merchant;
+        $merchantnew = $this->fixtures->create('merchant', ['updated_at'=> 1]);
+
+
+        //duplicate mids should be removed
+        $this->fixtures->create('stakeholder', ['updated_at'=> 2, 'merchant_id' => "m3"]);
+        $this->fixtures->create('merchant_email', ['updated_at'=> 3, 'merchant_id' => "m4"]);
+        $this->fixtures->create('merchant_document', ['updated_at'=> 4, 'merchant_id' => "m2"]);
+
+        //time out of range mids should not be considered
+        $this->fixtures->create('stakeholder', ['updated_at'=> 0,'merchant_id' => "m78"]);
+        $this->fixtures->create('merchant_email', ['updated_at'=> 6, 'merchant_id' => "m54"]);
+        $this->fixtures->create('merchant_document', ['updated_at'=> 7, 'merchant_id' => "m7"]);
+
+        // test fetch updated accounts
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4';
+        $testData['response']['content']['count'] = 5;
+        array_push($testData['response']['content']['account_ids'], $merchant->getId(), "m3",  "m4" ,$merchantnew->getId(),"m2");
+
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
+
+        // test fetch updated accounts with limit
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/account_service/updated_accounts?from=1&duration=4&limit=2';
+        $testData['response']['content']['count'] = 2;
+        array_push($testData['response']['content']['account_ids'], $merchant->getId(), "m3");
+
+        $this->ba->accountServiceAuth();
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testMerchantDetailsPatchShouldUpdateMethodsBasedOnCategory()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

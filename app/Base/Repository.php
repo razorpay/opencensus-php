@@ -1248,4 +1248,27 @@ class Repository extends \Razorpay\Spine\Repository
 
         return $data->limit($limit)->update(['balance_id' => $balanceId]);
     }
+
+    /**
+     *
+     * Returns the rows where updated_at is in the specified range
+     *
+     * @param int $from
+     * @param int $to
+     * @param int|null $limit
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function getIfUpdatedBetween(int $from, int $to, ?int $limit = null)
+    {
+        $data = $this->newQueryOnSlave()
+            ->WhereBetween(PublicEntity::UPDATED_AT, [$from, $to]);
+
+        if (isset($limit)) {
+            $data->limit($limit);
+        }
+
+        return $data->get();
+    }
+
 }

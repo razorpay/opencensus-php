@@ -2513,6 +2513,7 @@ class Route
         'stakeholder_fetch_v2'                     => ['GET',     'accounts/{id}/stakeholders/{stakeholderId}',      'StakeholderController@fetch'                                       ],
         'stakeholder_fetch_all_v2'                 => ['GET',     'accounts/{id}/stakeholders',                      'StakeholderController@fetchAll'                                    ],
 
+        'account_service_updated_accounts_fetch'   => ['GET',     'account_service/updated_accounts',                'MerchantController@getUpdatedAccountsForAccountService'            ],
         'account_service_details_fetch'            => ['GET',     'account_service/accounts/{accountId}',            'MerchantController@getMerchantDetailsForAccountService'            ],
         'account_service_trigger_sync'             => ['POST',    'account_service/trigger_sync',                    'AcsController@triggerSync'                                         ],
         'account_service_trigger_full_sync'        => ['POST',    'account_service/trigger_full_sync',               'AcsController@triggerFullSync'                                     ],
@@ -4626,6 +4627,7 @@ class Route
 
         // account service routes
         'account_service_details_fetch',
+        'account_service_updated_accounts_fetch',
 
         // Razorpay Capital
         // Capital Collections
@@ -13243,6 +13245,7 @@ class Route
 
         'account_service' => [
             'account_service_details_fetch',
+            'account_service_updated_accounts_fetch',
         ],
 
         'downtime_service' => [

@@ -68,4 +68,19 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::TYPE, $types)
                     ->get();
     }
+
+    /**
+     *
+     * Returns the emails that were updated in the specified range
+     * @param int $from
+     * @param int $to
+     * @return mixed
+     */
+    public function getEmailsUpdatedBetween(int $from, int $to)
+    {
+        return $this->newQueryOnSlave()
+                    ->WhereBetween(Entity::UPDATED_AT, [$from, $to])
+                    ->Where(Entity::TYPE, '<>', Type::PARTNER_DUMMY)
+                    ->get();
+    }
 }

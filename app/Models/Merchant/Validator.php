@@ -657,6 +657,12 @@ class Validator extends Base\Validator
         Constants::WORKFLOW_CLARIFICATION_DOCUMENTS_IDS     => 'sometimes|array',
     ];
 
+    protected static $getUpdatedAccountsForAccountServiceRules = [
+        "from"      => 'required|int|min:0',
+        "duration"  => 'required|int|min:0|max:86400',
+        "limit"     => 'sometimes|int|min:1'
+    ];
+
     public function validateSmartDashboardMerchantEditInput(array $input)
     {
         foreach ($input as $key => $value)

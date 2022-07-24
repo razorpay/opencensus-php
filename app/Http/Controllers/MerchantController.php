@@ -57,6 +57,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getUpdatedAccountsForAccountService()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getUpdatedAccountsForAccountService($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postCreateSubMerchant()
     {
         $input = Request::all();

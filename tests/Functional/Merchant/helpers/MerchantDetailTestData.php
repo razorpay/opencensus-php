@@ -472,6 +472,21 @@ return [
         ],
     ],
 
+    'testUpdatedAccountsFetchAccountService' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/account_service/updated_accounts',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'account_ids' => [
+                ]
+            ]
+        ],
+    ],
+
 
     'testMerchantDetailsPatch' => [
         'request'  => [

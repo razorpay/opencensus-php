@@ -8349,6 +8349,73 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     *
+     * Returns the ids for account whose data was updated in the specified time range
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\ServerErrorException
+     */
+    public function getUpdatedAccountsForAccountService(array $input): array
+    {
+
+        $this->trace->info(TraceCode::ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST, ['query' => $input]);
+
+        (new Validator)->validateInput('getUpdatedAccountsForAccountService', $input);
+
+        $fromTimestamp = intval($input['from']);
+        $toTimestamp = $fromTimestamp + intval($input['duration']);
+
+
+        // get Merchants whose email was updated between the query range
+        $merchantWithEmailUpdates = $this->repo->merchant_email
+                                    ->getEmailsUpdatedBetween($fromTimestamp, $toTimestamp)
+                                    ->pluck('merchant_id')->toArray();
+
+        // get Merchants whose details were updated between the query range
+        $merchantWithDetailsUpdates = $this->repo->merchant_detail
+                ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+                ->pluck('merchant_id')->toArray();
+
+        // get Merchants which were updated between the query range
+        $merchantsUpdated = $this->repo->merchant
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('id')->toArray();
+
+        // get Merchants whose documents were updated between the query range
+        $merchantsWithDocumentsUpdates = $this->repo->merchant_document
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        // get Merchants whose stakeholders were updated between the query range
+        $merchantsWithStakeholdersUpdates = $this->repo->stakeholder
+            ->getIfUpdatedBetween($fromTimestamp, $toTimestamp)
+            ->pluck('merchant_id')->toArray();
+
+        $updatedMerchantIds = array_merge($merchantWithDetailsUpdates, $merchantWithEmailUpdates,
+            $merchantsUpdated, $merchantsWithDocumentsUpdates, $merchantsWithStakeholdersUpdates);
+
+        $uniqueUpdatedMerchantIds = array_values(array_unique($updatedMerchantIds));
+
+        if(isset($input['limit'])) {
+            $uniqueUpdatedMerchantIds = array_slice($uniqueUpdatedMerchantIds , 0, intval($input['limit']));
+        }
+
+        $count = count($uniqueUpdatedMerchantIds);
+
+        $response =  [
+            "count" => $count ,
+            "account_ids" => $uniqueUpdatedMerchantIds
+        ];
+
+        $this->trace->info(TraceCode::ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE, ['count' => $count]);
+        $this->trace->debug(TraceCode::ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE, $response);
+
+        return $response;
+    }
+
     public function getMerchantDetailsForAccountService(string $accountId): array
     {
         $this->trace->info(TraceCode::ACS_FETCH_ACCOUNT_DETAILS, ['id' => $accountId]);
