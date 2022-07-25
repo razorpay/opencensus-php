@@ -62,6 +62,7 @@ export const detailsFormValues = {
   address_line2: '',
   city: '',
   state: '',
+  zipcode: '',
   country: '',
   date_of_incorporation: '',
   registration_number: '',
@@ -82,6 +83,7 @@ export const ownershipFormValues = {
   address_line2: '',
   city: '',
   state: '',
+  zipcode: '',
   country: '',
   proof_of_ownership: '',
   aadhaar: '',
@@ -174,6 +176,12 @@ export const detailsFormFields = [
     key: 'address_line2',
     label: ' ',
     placeholder: 'Line 2',
+    type: null,
+  },
+  {
+    key: 'zipcode',
+    label: ' ',
+    placeholder: 'Zipcode',
     type: null,
   },
   {
@@ -282,6 +290,12 @@ export const ownershipFormFields = [
     type: null,
   },
   {
+    key: 'zipcode',
+    label: ' ',
+    placeholder: 'Zipcode',
+    type: null,
+  },
+  {
     key: 'city',
     label: ' ',
     placeholder: 'City',
@@ -343,6 +357,9 @@ export const detailsFormSchema = (isSpecialPurposecode) =>
       address_line2: Yup.string().required('This is a required field.'),
       city: Yup.string().required('This is a required field.'),
       state: Yup.string().required('This is a required field.'),
+      zipcode: Yup.string()
+        .max(15, 'This field cannot be more than 15 characters')
+        .required('This is a required field.'),
       country: Yup.string().required('This is a required field.'),
       date_of_incorporation: Yup.string().required('This is a required field.'),
       registration_number: Yup.string()
@@ -390,6 +407,9 @@ export const ownershipFormSchema = Yup.object().shape({
       address_line2: Yup.string().required('This is a required field.'),
       city: Yup.string().required('This is a required field.'),
       state: Yup.string().required('This is a required field.'),
+      zipcode: Yup.string()
+        .max(15, 'This field cannot be more than 15 characters')
+        .required('This is a required field.'),
       country: Yup.string().required('This is a required field.'),
       proof_of_ownership: Yup.string().required('This is a required field.'),
       aadhaar: Yup.string().required('This is a required field.'),
