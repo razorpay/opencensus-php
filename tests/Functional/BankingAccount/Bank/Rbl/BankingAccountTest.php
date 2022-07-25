@@ -2940,6 +2940,24 @@ class BankingAccountTest extends TestCase
             Status::DOCS_WALK_THROUGH_PENDING);
     }
 
+    public function testUpdateBankingAccountSubStatusForDWTNotCompleted()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            null,
+            Status::PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE);
+    }
+
+    public function testUpdateBankingAccountSubStatusForUnsupportedBusinessType()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED,
+            Status::PICKED,
+            null,
+            Status::PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS);
+    }
+
     public function testUpdateBankingAccountSubStatusForNeedClarification()
     {
         $this->assertUpdateBankingAccountStatusFromTo(

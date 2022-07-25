@@ -128,8 +128,10 @@ class Status
     const PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS              = self::PENDING_ON_SALES_SUB_STRING.'merchant_preparing_kyc_docs';
     const PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS                   = self::PENDING_ON_SALES_SUB_STRING.'issue_with_commercials';
     const PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE               = self::PENDING_ON_SALES_SUB_STRING.'merchant_wants_bank_change';
-    const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding_-_spoc_to_reschedule';
-    const PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS    = self::PENDING_ON_SALES_SUB_STRING.'unsupported/_mismatch_of_biz_type_on_admin_dashboard_and_lms';
+    
+    // Shortening the string value for the following substatuses as they exceed the allowed length in DB
+    const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding'; // DWT Not Completed - MX Not Responding - SPOC to Reschedule
+    const PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS    = self::PENDING_ON_SALES_SUB_STRING.'unsupported/_mismatch_of_biz_type'; // Unsupported/Mismatch of Biz Type on Admin Dashboard And LMS
 
     //
     // Account details can be saved only if the status
