@@ -266,7 +266,8 @@ class Service extends Base\Service
             'capital_cards_unbilled_transactions',
             'capital_cards_statement',
             'international_apm_onboarding',
-            'capital_founders_card'
+            'capital_founders_card',
+            'capital_last_day_repayment'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
