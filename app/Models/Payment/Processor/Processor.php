@@ -3422,7 +3422,7 @@ class Processor
                 $e,
                 Trace::CRITICAL,
                 TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
-                $data);
+                []);
         }
 
     }
