@@ -165,6 +165,9 @@ return [
         //Digilocker EKYC
         'ENABLE_DIGILOCKER_EKYC_EXP_SPLITZ' => env('ENABLE_DIGILOCKER_EKYC_EXP_SPLITZ', ''),
 
+        //Shopify migration pop up
+        'ENABLE_SHOPIFY_MIGRATION_EXP' => env('ENABLE_SHOPIFY_MIGRATION_EXP', ''),
+        
         // New Nitro ICICI Experiment
         'NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ', ''),
         'NITRO_NEW_ICICI_BASE_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BASE_EXP_SPLITZ', ''),

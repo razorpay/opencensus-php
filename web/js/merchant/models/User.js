@@ -1615,6 +1615,12 @@ export default class User {
     const variant = getSplitzExperimentVariant('partnership_onboard_resellers');
     return variant?.name === 'exposed';
   }
+
+  get isShopifyMerchantPopUp() {
+    return (
+      getSplitzExperimentVariant('shopify_reports_transactions_page')?.variables?.result === 'on'
+    );
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

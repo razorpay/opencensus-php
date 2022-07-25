@@ -366,6 +366,12 @@ export default {
     //prod
     'JfNOewpSluhNIB',
   ],
+  shopify_reports_transactions_page: [
+    //beta
+    'JunnKRrXVp4Fsp',
+    //prod
+    'JncSo5cEAXMlXE',
+  ],
   partnership_onboard_resellers: [
     // beta
     'JpWqxoqQa6aMOZ',

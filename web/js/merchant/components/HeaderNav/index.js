@@ -26,6 +26,7 @@ import {
 import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import OffersForYou from 'common/ui/OffersForYou';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import ShopifyMigrationPopUp from 'common/ui/ShopifyMigrationPopUp';
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -47,6 +48,8 @@ class HeaderNav extends Component {
     this.state = {
       isSuccessfullyCouponApplied: false,
       mtuOfferCount: null,
+      showPopup: true,
+      nextPopUp: false,
     };
 
     this.onToggleAppMenu = this.onToggleAppMenu.bind(this);
@@ -65,10 +68,30 @@ class HeaderNav extends Component {
     }
   };
 
+  //show shopify merchant Pop up
+
+  nextPopUpFunc = () => {
+    this.setState({ nextPopUp: true });
+  };
+
+  showShopifyPopUp = () => {
+    const { closeModals, openModals } = this.props;
+    openModals({
+      component: (
+        <ShopifyMigrationPopUp closeModal={closeModals} nextPopUpFunc={this.nextPopUpFunc} />
+      ),
+      size: 'xlarge',
+    });
+  };
+
   componentDidMount() {
     const hash = this.props.history.location.hash;
     if (hash === '#profile_dropdown') {
       toggleDropdown();
+    }
+
+    if (!this.props.user?.isShopifyMerchantPopUp) {
+      this.nextPopUpFunc();
     }
 
     if (this.props.user.isAppSwitcherEnabled) {
@@ -94,6 +117,7 @@ class HeaderNav extends Component {
     analyticsAction('Click - Sidebar Toggle');
     this.props.toggleMobileMenu();
   }
+
   // function to open MTU popup
   showMTUOffer = (isButtonClicked = false) => {
     const { closeModals, openModals, user } = this.props;
@@ -119,13 +143,15 @@ class HeaderNav extends Component {
       const canShowOnboardingOffers =
         user.isOnboardingCouponEnabled && !isReferredMerchant && user.showMtuPopup;
 
-      if (
+      const showMtu =
         canShowOnboardingOffers &&
         window.session_id !== prevSessionID &&
         typeof this.state.mtuOfferCount === 'number' &&
         this.state.mtuOfferCount < COUNT_TO_SHOW_MTU_OFFER &&
-        user.autoOpenOnboardingCoupon
-      ) {
+        user.autoOpenOnboardingCoupon &&
+        this.state.nextPopUp;
+
+      if (showMtu) {
         this.showMTUOffer();
         setItem('prev_session', window.session_id);
       }
@@ -146,7 +172,7 @@ class HeaderNav extends Component {
       org,
       referee,
     } = this.props;
-    const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
+    const { isSuccessfullyCouponApplied, mtuOfferCount, showPopup } = this.state;
 
     const fragmentSpecificProps = {
       mode,
@@ -161,6 +187,11 @@ class HeaderNav extends Component {
       onSwitchMode,
       onSwitchMerchant,
     };
+
+    if (user?.isShopifyMerchantPopUp && showPopup) {
+      this.showShopifyPopUp();
+      this.setState({ showPopup: false });
+    }
 
     return (
       <div className="nav-wrapper">
@@ -191,6 +222,7 @@ class HeaderNav extends Component {
                 <ShowWhen additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}>
                   <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
                 </ShowWhen>
+
                 {/* Will uncomment later. Please dont block this from going to prod  */}
                 {!showMobileNav && user.isMobileSignupCareActive && (
                   <li id="support-request">
