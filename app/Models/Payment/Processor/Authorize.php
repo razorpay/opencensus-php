@@ -17,6 +17,7 @@ use RZP\Jobs;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -79,7 +80,6 @@ use RZP\Models\Customer\GatewayToken;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Locale\Core as LocaleCore;
-use RZP\Models\Payment\Processor\PayLater;
 use RZP\Gateway\Mozart\GetSimpl\Constants;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
@@ -1909,6 +1909,12 @@ trait Authorize
         $key = Payment\Entity::getCardlessEmiOnetimeTokenCacheKey($input['ott']);
 
         $cardlessEmiData = $this->app['cache']->get($key);
+
+        //Invalidating the ott once it is verified
+        if ($input['provider'] === PayLater::GETSIMPL)
+        {
+                $this->app['cache']->delete($key);
+        }
 
         if ($cardlessEmiData === null)
         {

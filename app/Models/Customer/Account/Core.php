@@ -247,7 +247,7 @@ class Core extends Base\Core
         if ((empty($input['method']) === false) and
             ($input['method'] === Payment\Method::PAYLATER))
         {
-            $token = (new Payment\Service)->generateAndSaveOneTimeTokenWithContact($input);
+            $token = (new Payment\Service)->generateAndSaveOneTimeTokenWithContact($input, 12);
 
             return [
                 'success'   => 1,

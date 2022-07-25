@@ -3753,9 +3753,10 @@ class Service extends Base\Service
         return $payment;
     }
 
-    public function generateAndSaveOneTimeTokenWithContact($input)
+    //$ttl is in minutes
+    public function generateAndSaveOneTimeTokenWithContact($input, $ttl=15)
     {
-        $cacheTtl = 15 * 60; // multiplying by 60 since put() expects in seconds
+        $cacheTtl = $ttl * 60; // multiplying by 60 since put() expects in seconds
 
         $length = 14;
 

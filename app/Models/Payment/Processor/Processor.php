@@ -5037,7 +5037,7 @@ class Processor
 
         $this->unsetSensitiveBankDetails($inputTrace);
 
-        unset($inputTrace['notes'], $inputTrace['contact'], $inputTrace['email']);
+        unset($inputTrace['notes'], $inputTrace['contact'], $inputTrace['email'], $inputTrace['ott']);
 
         $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $inputTrace);
     }
