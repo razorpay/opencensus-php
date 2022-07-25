@@ -72,7 +72,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'description'   => 'Your payment could not be completed due to a temporary technical issue. To complete the payment, use another payment method.',
                 ],
             ],
             'status_code' => 502,

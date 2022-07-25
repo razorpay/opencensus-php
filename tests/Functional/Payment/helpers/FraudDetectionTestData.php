@@ -57,7 +57,7 @@ return [
             'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction.'
+                    'description' => 'This business is not allowed to accept payments on this website. We suggest not going ahead with the payment.'
                 ],
             ],
             'status_code' => 400,
