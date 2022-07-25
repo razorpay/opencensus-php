@@ -1,4 +1,26 @@
 export const partnerProducts = {
+  pabbly: {
+    slug: 'pabbly',
+    title: 'Pabbly Connect',
+    url: 'https://www.pabbly.com/subscriptions/docs/razorpay-integration/',
+    category: 'Workflow Automation',
+    description:
+      'Pabbly Connect provides you the ability to integrate multiple applications by managing the data flow smoothly with no technical skills required. It holds more than 850+ integration.',
+    logo: 'pabbly.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#00755E',
+    isNew: true,
+  },
+  dronaHQ: {
+    slug: 'dronaHQ',
+    title: 'DronaHQ',
+    url: 'https://www.dronahq.com/integrations/Razorpay',
+    category: 'No-Code/Low-Code',
+    description:
+      'Build a webpage or mobile app that can allow you to accept payments via payment links.',
+    logo: 'dronaHQ.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#4B9CD3',
+    isNew: true,
+  },
   haptik: {
     slug: 'haptik',
     title: 'Haptik Interakt',
