@@ -1551,10 +1551,10 @@ class ScroogeFetchEntitiesTest extends TestCase
             ]
         ]);
 
-        $this->getLastEntity('settlement', true);
-
         $this->fixtures->transaction->edit($txnId, ['settlement_id' => $testSettlementId]);
         $this->fixtures->settlement->edit($testSettlementId, ['transaction_id' => $txnId]);
+
+        $sid = 'SettlementRaid';
 
         $input = [
             "public_entities" => [
@@ -1571,6 +1571,13 @@ class ScroogeFetchEntitiesTest extends TestCase
                 [
                     "entity_id" => $payment['id'],
                     "entity_type" => "payment",
+                ],
+            ],
+            "custom_public_entities" => [
+                [
+                    "entity_id" => $sid,
+                    "entity_type" => "optimizer_settlement",
+                    "transaction_id" => $txnId,
                 ],
             ]
         ];
@@ -1596,5 +1603,10 @@ class ScroogeFetchEntitiesTest extends TestCase
         $this->assertEquals('txn_' . $txnId, $response[$testRefundId]['data']['transaction']['id']);
         $this->assertEquals('setl_' . $testSettlementId, $response[$testRefundId]['data']['transaction']['settlement']['id']);
         $this->assertNull($response[$testRefundId]['error']);
+
+        $this->assertEquals('setl_settlement0001', $response[$sid]['data']['id']);
+        $this->assertEquals('Razorpay', $response[$sid]['data']['settled_by']);
+        $this->assertEquals('Razorpay', $response[$sid]['data']['optimizer_provider']);
+        $this->assertNull($response[$sid]['error']);
     }
 }

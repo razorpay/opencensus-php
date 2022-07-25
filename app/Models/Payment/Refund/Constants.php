@@ -17,6 +17,7 @@ class Constants
     const DB_FETCH_LIMIT                       = 'limit';
     const GATEWAY_ENTITY                       = 'gateway_entity';
     const PUBLIC_ENTITIES                      = 'public_entities';
+    const CUSTOM_PUBLIC_ENTITIES               = 'custom_public_entities';
     const SPEED_CHANGE_TIME                    = 'speed_change_time';
     const REFUND_REFERENCE1                    = 'refund_reference1';
     const INSTANT_REFUND_SUPPORT               = 'instant_refund_support';

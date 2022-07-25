@@ -4059,6 +4059,13 @@ class Service extends Base\Service
      *             "expand": ["transaction.settlement"]
      *         }
      *     ]
+     *  "custom_public_entities": [
+     *         {
+     *             "entity_id": "JR4h9ibYDKjbel",
+     *             "entity_type": "optimizer_settlement",
+     *             "transaction_id": "JR4h9ibYDKjbel"
+     *         }
+     *     ]
      * }
      *
      * Sample Response Body :
@@ -4118,6 +4125,51 @@ class Service extends Base\Service
                 $entity = $this->repo->$entityRepo->findOrFailByPublicIdWithParams($entityId, $fetchInput)->toArrayPublicWithExpand();
 
                 $responseArray[$entityId][RefundConstants::DATA] = $entity;
+            }
+            catch (\Throwable $ex)
+            {
+                $responseArray[$entityId][RefundConstants::ERROR] = [
+                    RefundConstants::CODE => $ex->getCode(),
+                    RefundConstants::MESSAGE => $ex->getMessage()
+                ];
+            }
+        }
+
+        if (isset($input[RefundConstants::CUSTOM_PUBLIC_ENTITIES]) === false)
+        {
+            $input[RefundConstants::CUSTOM_PUBLIC_ENTITIES] = [];
+        }
+
+        foreach ($input[RefundConstants::CUSTOM_PUBLIC_ENTITIES] as $requestEntity)
+        {
+            $entityId   = $requestEntity[RefundConstants::ENTITY_ID];
+            $entityType = $requestEntity[RefundConstants::ENTITY_TYPE];
+
+            $responseArray[$entityId] = [
+                RefundConstants::DATA  => NULL,
+                RefundConstants::ERROR => NULL,
+            ];
+
+            try
+            {
+                switch ($entityType)
+                {
+                    case 'optimizer_settlement':
+                        $fetchInput = ['transaction_id' => $requestEntity['transaction_id'] ?? ''];
+
+                        $settlementResponse = app('settlements_merchant_dashboard')->getSettlementForTransaction($fetchInput);
+
+                        $settlement = $settlementResponse['settlement'];
+
+                        if (empty($settlement) === false)
+                        {
+                            $setl = new Settlement\Entity($settlement);
+
+                            $setl->setPublicAttributeForOptimiser($settlement);
+
+                            $responseArray[$entityId][RefundConstants::DATA] = $setl->toArrayPublic();
+                        }
+                }
             }
             catch (\Throwable $ex)
             {

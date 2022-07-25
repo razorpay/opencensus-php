@@ -197,10 +197,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchPublicEntitiesRules = [
-        'public_entities'               => 'required|array',
-        'public_entities.*.entity_id'   => 'required|unsigned_id|size:14',
-        'public_entities.*.entity_type' => 'required|string',
-        'public_entities.*.expand'      => 'sometimes|array',
+        'public_entities'                      => 'required|array',
+        'public_entities.*.entity_id'          => 'required|unsigned_id|size:14',
+        'public_entities.*.entity_type'        => 'required|string',
+        'public_entities.*.expand'             => 'sometimes|array',
+        'custom_public_entities'               => 'sometimes|array',
+        'custom_public_entities.*.entity_id'   => 'required|string|min:1',
+        'custom_public_entities.*.entity_type' => 'required|string',
     ];
 
     protected $payment;
