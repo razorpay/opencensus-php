@@ -5410,4 +5410,39 @@ class Service extends Base\Service
         $nachToken->saveOrFail();
     }
 
+
+    public function markPosPaymentAsCaptured($id) {
+
+        $payment  = $this->repo->payment->findOrFail($id);
+
+        if($payment[Entity::STATUS] !== 'authorized') {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_AUTHORIZED);
+        }
+        if($payment[Entity::METHOD] !== Entity::CARD) {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD);
+        }
+
+        if($payment[Entity::RECEIVER_TYPE] !== 'pos') {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES);
+        }
+
+        if($payment[Entity::GATEWAY] !== 'hdfc_ezetap') {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+        }
+
+        $merchant_id = $payment['merchant_id'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchant_id);
+
+        $input = [
+            'amount'        => $payment->getAmount(),
+            'currency'      => $payment->getCurrency()
+        ];
+
+        return $this->getNewProcessor($merchant)->capture($payment, $input);
+    }
 }

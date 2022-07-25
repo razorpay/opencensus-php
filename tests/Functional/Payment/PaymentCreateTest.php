@@ -8600,6 +8600,122 @@ class PaymentCreateTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testCreateReminderPaymentforPos()
+    {
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals('authorized', $response['status']);
+
+        $payment_id = explode('_', $response['id']);
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/reminders/send/test/payment/capture_pos_payment/' . $payment_id[1],
+            'method'  => 'post',
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+            ],
+        ];
+
+        $payment = Payment\Entity::findOrFail($payment_id[1]);
+        $payment->setGateway('hdfc_ezetap');
+        $this->repo = (new Payment\Repository());
+        $this->repo->saveOrFail($payment);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $data  = DB::select('select * from payments order by created_at desc limit 1')[0];
+
+        $this->assertEquals('captured', $data->status);
+
+    }
+
+    public function testCreateReminderPaymentforPosStatusCaptured()
+    {
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals('authorized', $response['status']);
+
+        $payment_id = explode('_', $response['id']);
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/reminders/send/test/payment/capture_pos_payment/' . $payment_id[1],
+            'method'  => 'post',
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'error' =>  ['code' => 'BAD_REQUEST_ERROR']
+            ],
+            'status_code'   => 400,
+        ];
+
+        $this->testData[__FUNCTION__]['exception'] = [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
+        ];
+
+        $payment = Payment\Entity::findOrFail($payment_id[1]);
+        $payment->setStatus(Payment\Status::CAPTURED);
+        $this->repo = (new Payment\Repository());
+        $this->repo->saveOrFail($payment);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateReminderPaymentforNonPos()
+    {
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals('authorized', $response['status']);
+
+        $payment_id = explode('_', $response['id']);
+
+        $this->testData[__FUNCTION__]['request'] =  [
+            'url'     => '/reminders/send/test/payment/capture_pos_payment/' . $payment_id[1],
+            'method'  => 'post',
+        ];
+
+        $this->testData[__FUNCTION__]['response'] =   [
+            'content' => [
+                'error' =>  ['code' => 'BAD_REQUEST_ERROR']
+            ],
+            'status_code'   => 400,
+        ];
+
+
+        $this->testData[__FUNCTION__]['exception'] = [
+        'class'               => 'RZP\Exception\BadRequestException',
+        'internal_error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE
+        ];
+
+        $payment = Payment\Entity::findOrFail($payment_id[1]);
+        $payment->setReceiverType('nonpos');
+        $this->repo = (new Payment\Repository());
+        $this->repo->saveOrFail($payment);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+    }
+
     public function testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable()
     {
         $this->ba->publicAuth();
