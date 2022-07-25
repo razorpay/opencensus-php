@@ -11,15 +11,15 @@ return [
             'method' => 'post',
             'content' => [
                 'iin'          => "112333",
-                'high_range'   => '9999999',
-                'low_range'    => '1111111',
+                'high_range'   => '999999999',
+                'low_range'    => '111111111',
             ],
         ],
         'response' => [
             'content' => [
                 'iin'          => '112333',
-                'high_range'   => '9999999',
-               'low_range'    => '1111111',
+                'high_range'   => '999999999',
+               'low_range'    => '111111111',
             ],
         ],
     ],
@@ -52,8 +52,8 @@ return [
         'response' => [
             'content' => [
                 'iin'  => '112333',
-                'high_range'   => '9999999',
-                'low_range'    => '1111111',
+                'high_range'   => '999999999',
+                'low_range'    => '111111111',
             ],
         ],
     ],
@@ -68,8 +68,8 @@ return [
         'response' => [
             'content' => [
                 'iin'  => '112333',
-                'high_range'   => '9999999',
-                'low_range'    => '1111111',
+                'high_range'   => '999999999',
+                'low_range'    => '111111111',
             ],
         ],
     ],
