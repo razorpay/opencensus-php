@@ -1501,7 +1501,9 @@ class GatewayController extends Controller
 
         $this->app['rzp.mode'] = $mode;
 
-        if (Gateway::gatewaysAlwaysRoutedThroughNbplusService($gatewayName, null) === true)
+        $bank = $input['bank'] ?? null;
+
+        if (Gateway::gatewaysAlwaysRoutedThroughNbplusService($gatewayName, $bank) === true)
         {
             $variant = 'nbplusps';
         }
