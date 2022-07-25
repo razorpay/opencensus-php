@@ -3,7 +3,8 @@ function Data(brandColor) {
     listBg: { backgroundColor: brandColor },
     brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
   };
-  const howToVideoUrl = 'https://www.youtube.com/playlist?list=PLgffPJ6GjbaJI59pvLMrn_zHXqyRXkhRX';
+  const howToVideoUrl =
+    'https://www.youtube.com/embed/videoseries?list=PLgffPJ6GjbaJI59pvLMrn_zHXqyRXkhRX';
 
   return (
     <main>

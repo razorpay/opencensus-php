@@ -2,7 +2,7 @@ function Data(brandColor) {
   const brandStyles = {
     brandBorderLeft: { borderLeft: `8px solid ${brandColor}` },
   };
-  const howToVideoUrl = 'https://www.youtube.com/watch?v=BcuvGkKt2J8';
+  const howToVideoUrl = 'https://www.youtube.com/embed/BcuvGkKt2J8';
 
   return (
     <main>
