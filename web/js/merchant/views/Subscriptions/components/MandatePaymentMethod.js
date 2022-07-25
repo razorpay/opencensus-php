@@ -1,4 +1,5 @@
-import { titleCase } from 'common/utils/rzp-utils';
+import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
+import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
@@ -7,7 +8,6 @@ import moment from 'moment';
 
 const CARD_EXPIRY_DATE_FORMAT = 'MMM YYYY';
 const CARD_EXPIRY_INPUTE_DATE_FORMAT = 'MM YYYY';
-const CARD_MAX_AMOUNT = 500000;
 
 const getCardExpiry = ({ expiry_month, expiry_year }) => {
   return moment(`${expiry_month} ${expiry_year}`, CARD_EXPIRY_INPUTE_DATE_FORMAT).format(
@@ -73,7 +73,7 @@ export default function MandatePaymentMethod({ mandate }) {
         </>
         <>
           Max Auto-debit Amount:{' '}
-          <Amount value={mandate.max_amount || CARD_MAX_AMOUNT} currency="INR" />{' '}
+          <Amount value={mandate.max_amount || rupeesToPaise(CARD_AFA_MAX_LIMIT)} currency="INR" />{' '}
         </>
       </Definition>
     );

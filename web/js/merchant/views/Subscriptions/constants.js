@@ -8,4 +8,15 @@ export const CARD_AFA_MAX_LIMIT = 15000; // Rs
 export const MAX_TOKEN_AMOUNT = 100000000; // in Paisa
 export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
 
+export const GATEWAY_MAX_LIMIT = 20000000; // Paisa
+
+export const UPI_AFA_MAX_LIMIT = 500000; // Paisa
+export const UPI_MAX_LIMIT_FOR_NON_BFSI = 10000000; // Paisa
+
+export const EMANDATE_MAX_LIMIT = 100000000; // Paisa
+
+export const DEFAULT_NACH_LIMIT = 10000000; // Rs
+export const DEFAULT_UPI_LIMIT = 200000; // Rs
+export const DEFAULT_EMANDATE_LIMIT = 99999; // Rs
+
 export const tokenStatuses = ['initiated', 'confirmed', 'rejected', 'cancelled', 'paused'];

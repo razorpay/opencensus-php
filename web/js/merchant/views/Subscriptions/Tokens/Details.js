@@ -12,7 +12,7 @@ import Time from 'common/ui/Time';
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { getFormattedAmount, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NACHDetails from 'merchant/views/Subscriptions/components/UploadNACHForm/Details';
@@ -27,6 +27,7 @@ import { fetchToken, deleteToken, resubmitNACHFile, cancelToken } from 'merchant
 import { downloadSignedNACHFile } from 'merchant/reducers/registration_link';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 
 import { getTokenStatus } from './List';
 import ChargeToken from './components/ChargeToken';
@@ -37,8 +38,6 @@ import {
   trackClickViewNACHForm,
 } from './ga';
 import analytics from '../analytics';
-
-const CARD_MAX_AMOUNT = 500000;
 
 @withRouter
 @connect((state) => ({ ...state.token, user: state.session.user }), {
@@ -220,7 +219,8 @@ export default class TokenDetailsContainer extends Component {
     if (entity.method === 'card') {
       expireAt = entity.expired_at;
       isDomesticCard = !entity.card.international;
-      maxAmount = entity?.subscription_registration?.max_amount || CARD_MAX_AMOUNT;
+      maxAmount =
+        entity?.subscription_registration?.max_amount || rupeesToPaise(CARD_AFA_MAX_LIMIT);
     }
 
     return (

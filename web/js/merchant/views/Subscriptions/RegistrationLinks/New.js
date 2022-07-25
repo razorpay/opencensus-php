@@ -34,10 +34,14 @@ import analytics from '../analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { isAmountLiesInRange } from '../utils';
 import {
-  CARD_AFA_MAX_LIMIT,
   MAX_TOKEN_AMOUNT,
-  MAX_TOKEN_AMOUNT_NACH,
+  GATEWAY_MAX_LIMIT,
+  CARD_AFA_MAX_LIMIT,
   topEmandateBankCodes,
+  MAX_TOKEN_AMOUNT_NACH,
+  DEFAULT_NACH_LIMIT,
+  DEFAULT_UPI_LIMIT,
+  DEFAULT_EMANDATE_LIMIT,
 } from 'merchant/views/Subscriptions/constants';
 
 const CustomerDetailsMandatoryFields = [
@@ -78,9 +82,8 @@ const PAYMENT_METHODS = {
   CARD: 'card',
 };
 
-let DEFAULT_MAX_AMOUNT = 99999;
+let DEFAULT_MAX_AMOUNT = DEFAULT_EMANDATE_LIMIT;
 const DEFAULT_FIRST_CHARGE = 0; // in Paisa
-const GATEWAY_MAX_LIMIT = 200000;
 
 // gatewayMaxLimitValidator fn restrics the max gateway amount to be not greater than GATEWAY_MAX_LIMIT.
 const gatewayMaxLimitValidator = (value) =>
@@ -167,7 +170,7 @@ export default class NewRegistrationLink extends React.Component {
   get isEmandatePayment() {
     const isEmandate = this.state.formFields.mandateMethod === 'emandate';
     if (isEmandate) {
-      DEFAULT_MAX_AMOUNT = 99999;
+      DEFAULT_MAX_AMOUNT = DEFAULT_EMANDATE_LIMIT;
     }
     return isEmandate;
   }
@@ -180,7 +183,7 @@ export default class NewRegistrationLink extends React.Component {
     const isUPI = this.state.formFields.mandateMethod === 'upi';
 
     if (isUPI) {
-      DEFAULT_MAX_AMOUNT = 200000;
+      DEFAULT_MAX_AMOUNT = DEFAULT_UPI_LIMIT;
     }
 
     return isUPI && this.props.user.isUPICAWEnabled;
@@ -189,12 +192,12 @@ export default class NewRegistrationLink extends React.Component {
   get isNACHPayment() {
     const isNACH = this.state.formFields.mandateMethod === 'nach';
     if (isNACH) {
-      DEFAULT_MAX_AMOUNT = 10000000;
+      DEFAULT_MAX_AMOUNT = DEFAULT_NACH_LIMIT;
 
       return isNACH;
     }
 
-    DEFAULT_MAX_AMOUNT = 99999;
+    DEFAULT_MAX_AMOUNT = DEFAULT_EMANDATE_LIMIT;
     return isNACH;
   }
 
@@ -424,7 +427,6 @@ export default class NewRegistrationLink extends React.Component {
     }
 
     let maxAmount = rupeesToPaise(DEFAULT_MAX_AMOUNT);
-
     if (this.isEmandatePayment || this.isNACHPayment) {
       if (data.firstPaymentAmount) {
         payload.subscription_registration.first_payment_amount = rupeesToPaise(

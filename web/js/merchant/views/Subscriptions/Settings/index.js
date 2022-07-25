@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { classList, findBy } from 'common/utils/rzp-utils';
+import { classList, findBy, rupeesToPaise } from 'common/utils/rzp-utils';
 
 import DocsLink, { DocLink } from 'merchant/components/DocsLink';
 import Amount from 'common/ui/Amount';
@@ -14,6 +14,13 @@ import Spinner from 'common/ui/Spinner';
 
 import { fetchSettings, saveSettings } from 'merchant/reducers/subscriptions';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import {
+  CARD_AFA_MAX_LIMIT,
+  GATEWAY_MAX_LIMIT,
+  UPI_AFA_MAX_LIMIT,
+  EMANDATE_MAX_LIMIT,
+  UPI_MAX_LIMIT_FOR_NON_BFSI,
+} from 'merchant/views/Subscriptions/constants';
 import analytics from '../analytics';
 
 const PAYMENT_METHODS = {
@@ -22,9 +29,6 @@ const PAYMENT_METHODS = {
   EMANDATE: 'emandate',
 };
 
-const GATEWAY_MAX_LIMIT = 20000000;
-const UPI_MAX_LIMIT = 10000000;
-const EMANDATE_MAX_LIMIT = 100000000;
 const enableDisableMap = {
   '1': 'enable',
   '0': 'disable',
@@ -168,7 +172,9 @@ export default class SubscriptionsSettings extends React.Component {
                             <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />
                           </strong>
                           <br />
-                          Payments above ₹ 5000 will ask the customer for OTP verification as well.
+                          Payments above{' '}
+                          <Amount value={rupeesToPaise(CARD_AFA_MAX_LIMIT)} hidePaisa /> will ask
+                          the customer for OTP verification as well.
                         </>
                       )}
                       note={() => (
@@ -212,12 +218,12 @@ export default class SubscriptionsSettings extends React.Component {
                           Accept payments upto{' '}
                           <strong>
                             {' '}
-                            <Amount value={UPI_MAX_LIMIT} hidePaisa />
+                            <Amount value={UPI_MAX_LIMIT_FOR_NON_BFSI} hidePaisa />
                           </strong>{' '}
                           (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />)
                           <br />
-                          Payments above ₹ 5000 will ask the customer for UPI PIN verification as
-                          well.
+                          Payments above <Amount value={UPI_AFA_MAX_LIMIT} hidePaisa /> will ask the
+                          customer for UPI PIN verification as well.
                         </>
                       )}
                     />
