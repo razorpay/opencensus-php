@@ -72,6 +72,23 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::MID_OFFICE_POC_NAME => 'Name2',
                 ],
                 [
+                    Batch\Header::RZP_REF_NO => $refno,
+                    Batch\Header::COMMENT => $comment,
+                    Batch\Header::NEW_BANK_STATUS => 'razorpay dependent',
+                    Batch\Header::NEW_STATUS => 'SentToBank',
+                    Batch\Header::NEW_SUBSTATUS => 'Needs Clarification from RZP',
+                    Batch\Header::NEW_ASSIGNEE => 'sales',
+                    Batch\Header::RM_NAME => 'Name1',
+                    Batch\Header::RM_PHONE_NUMBER => '1234543121',
+                    Batch\Header::ACCOUNT_OPEN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::ACCOUNT_LOGIN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::SALES_TEAM => '',
+                    Batch\Header::SALES_POC_EMAIL => '',
+                    Batch\Header::API_ONBOARDED_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::API_ONBOARDING_LOGIN_DATE => '20/7/2020 12:00:00 AM',
+                    Batch\Header::MID_OFFICE_POC_NAME => 'Name2',
+                ],
+                [
                     Batch\Header::RZP_REF_NO => '102020', // non-existent
                     Batch\Header::COMMENT => $comment,
                     Batch\Header::NEW_STATUS => 'RazorpayProcessing',

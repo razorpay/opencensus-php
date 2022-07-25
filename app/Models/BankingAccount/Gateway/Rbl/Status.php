@@ -32,6 +32,7 @@ class Status
     const ACTIVATED = 'activated';
     const DROP_OFF = 'drop_off';
     const REJECTED = 'rejected';
+    const RAZORPAY_DEPENDENT = 'razorpay_dependent';
 
     const MERCHANT_NOT_AVAILABLE_EXTERNAL = 'merchant is not available';
     const MERCHANT_PREPARING_DOCS_EXTERNAL = 'merchant is preparing docs';
@@ -46,6 +47,8 @@ class Status
     const ACTIVATED_EXTERNAL = 'ca activated';
     const DROP_OFF_EXTERNAL = 'drop- off';
     const REJECTED_EXTERNAL = 'bank rejected due to compliance';
+    const RAZORPAY_DEPENDENT_EXTERNAL = 'razorpay dependent';
+
 
     //
     // RBL webhook wants the final status of processing from our end.
@@ -73,6 +76,9 @@ class Status
             ],
             BankingAccount\Status::BANK_PICKED_UP_DOCS => [
                 self::PICKED_UP_DOCS
+            ],
+            BankingAccount\Status::NEEDS_CLARIFICATION_FROM_RZP => [
+                self::RAZORPAY_DEPENDENT
             ]
         ],
         BankingAccount\Status::PROCESSING     => [
@@ -155,6 +161,7 @@ class Status
         self::API_ONBOARDING_IN_PROGRESS,
         self::ACTIVATED,
         self::DROP_OFF,
+        self::RAZORPAY_DEPENDENT,
         self::REJECTED
     ];
 
@@ -169,6 +176,7 @@ class Status
         self::MERCHANT_PREPARING_API_DOCS_EXTERNAL => self::MERCHANT_PREPARING_API_DOCS,
         self::DISCREPANCY_IN_API_DOCS_EXTERNAL => self::DISCREPANCY_IN_API_DOCS,
         self::API_ONBOARDING_IN_PROGRESS_EXTERNAL => self::API_ONBOARDING_IN_PROGRESS,
+        self::RAZORPAY_DEPENDENT_EXTERNAL => self::RAZORPAY_DEPENDENT,
         self::ACTIVATED_EXTERNAL => self::ACTIVATED,
         self::DROP_OFF_EXTERNAL => self::DROP_OFF,
         self::REJECTED_EXTERNAL => self::REJECTED
