@@ -1515,6 +1515,12 @@ class Service extends Base\Service
             $this->mode
         );
 
+        // ToDo : remove this condition once notes filtering is supported on scrooge
+        if (isset($input['notes']) === true)
+        {
+            $nonShadowModeVariant = RefundConstants::RAZORX_VARIANT_OFF;
+        }
+
         if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
         {
             return $this->app['scrooge']->refundsFetchMultiple($input);
