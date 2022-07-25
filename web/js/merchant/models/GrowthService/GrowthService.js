@@ -142,7 +142,7 @@ export default class GrowthService extends GenericEntity {
   getExclusiveOfferModal = async (fromWhere) => {
     let exclusive_offers = {};
 
-    if (this.user.isGSExclusiveOfferEnabled) {
+    try {
       const gsExclusiveOffer = await this.fetchAssetData(
         getChannelID(fromWhere, this.user.isOrgRZP),
         assetNames.EXCLUSIVE_OFFER,
@@ -151,6 +151,8 @@ export default class GrowthService extends GenericEntity {
       if (Array.isArray(gsExclusiveOffer) && gsExclusiveOffer.length > 0) {
         exclusive_offers = gsExclusiveOffer[0];
       }
+    } catch (e) {
+      console.error(e);
     }
 
     return exclusive_offers;
