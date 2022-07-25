@@ -42,7 +42,8 @@ class RefundJournalEvents
             {
                 $amount = abs($txn->getAmount());
                 $moneyParams = [
-                    Constants::AMOUNT   => $amount
+                    Constants::AMOUNT       => strval($amount),
+                    Constants::BASE_AMOUNT  => strval($amount)
                 ];
 
                 $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, $moneyParams);

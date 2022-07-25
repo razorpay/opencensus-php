@@ -14,6 +14,7 @@ class SettlementJournalEvents
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         $moneyParams = [
+            Constants::BASE_AMOUNT  => strval($transaction->getAmount()),
             Constants::AMOUNT       => strval($transaction->getAmount()),
         ];
 
