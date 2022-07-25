@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Utils as ShopifyUtils;
 use RZP\Models\Merchant;
+use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -133,6 +134,30 @@ class Service extends Base\Service
 
                 if(($reset === true ) || ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))
                 {
+                    if ($updatedCodIntelligenceEnabledFlag === true)
+                    {
+                        $topic =  env('APP_MODE', 'prod').'-'. Constants::RTO_MLMODEL_ASSIGNMENT;
+                        try
+                        {
+                            $this->trace->info(TraceCode::STARTING_RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD,
+                                [
+                                    'merchant_id' => $this->merchant->getId(),
+                                    'topic' => $topic
+                                ]);
+                            $message = array("merchant_id" => $this->merchant->getId());
+                            (new KafkaProducer($topic, stringify($message)))->Produce();
+                        }
+                        catch (\Exception $e)
+                        {
+                            $this->trace->error(TraceCode::RTO_MLMODEL_ASSIGNMENT_KAFKA_UPLOAD_FAILED,
+                                [
+                                    'error' => $e->getMessage(),
+                                    'merchant_id' => $this->merchant->getId(),
+                                    'topic' => $topic
+                                ]
+                            );
+                        }
+                    }
                     (new Core)->associateMerchant1ccConfig(
                         Type::COD_INTELLIGENCE,
                         $updatedCodIntelligenceEnabledFlag

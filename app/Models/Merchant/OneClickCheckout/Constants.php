@@ -114,6 +114,8 @@ class Constants
         self::APPLY_COUPON_URL
     ];
 
+    const RTO_MLMODEL_ASSIGNMENT   = 'rto-mlmodel-assignment-events';
+
     const ONE_CLICK_CHECKOUT_ENABLED = "oneClickCheckoutEnabled";
     const BUY_NOW_ENABLED = "buyNowEnabled";
     const MAGIC_CHECKOUT = "magic_checkout";
