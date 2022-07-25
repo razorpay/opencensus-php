@@ -71,6 +71,19 @@ class CmmaEscalation
                     'milestone' => $type . '_' . $level
                 ]);
 
+                $cmmaExperimentForNewProcessEnabled = self::isCMMAEscalationExperimentEnabled($merchantId, Constants::CMMA_NEW_EXPERIMENT_ID_KEY);
+
+                if ($cmmaExperimentForNewProcessEnabled === true)
+                {
+                    $processId =  $this->app['config']->get(Constants::CMMA_NEW_PROCESS_ID_KEY);
+                }
+
+                $this->trace->info(TraceCode::CMMA_ESCALATION_ATTEMPT, [
+                    'merchant_id'   => $merchantId,
+                    '$cmmaExperimentEnabled' => $cmmaExperimentForNewProcessEnabled,
+                    'milestone' => $type . '_' . $level
+                ]);
+
                 if ($cmmaExperimentEnabled === true)
                 {
                     $escalationPayload = [
