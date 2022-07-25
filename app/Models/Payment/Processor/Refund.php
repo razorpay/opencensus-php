@@ -2169,6 +2169,12 @@ trait Refund
                     'the status is ' . $payment->getStatus());
             }
 
+            if ($this->refundAmountValid($this->refund, $payment) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT);
+            }
+
             $this->repo->transaction(function()
             {
                 $this->recordTransactionForRefund();
@@ -2192,6 +2198,35 @@ trait Refund
             ]);
 
         return $this->refund;
+    }
+
+    public function refundAmountValid(Payment\Refund\Entity $refundEntity, Payment\Entity $payment) : bool
+    {
+        $variant = $this->app->razorx->getTreatment(
+            $refundEntity->getId(),
+            Merchant\RazorxTreatment::REFUND_AMOUNT_VALIDATION_FROM_REFUND_ENTITY,
+            $this->mode);
+
+        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        {
+            $sumOfRefundAmount = $payment->refunds()->sum("amount");
+            $amountUnrefunded = $payment->getAmount() - $sumOfRefundAmount;
+
+            if ($amountUnrefunded < $refundEntity->getAmount())
+            {
+                $this->trace->info(
+                    TraceCode::REFUND_AMOUNT_NOT_VALID,
+                    [
+                        'refund_id'             => $refundEntity->getId(),
+                        'payment_id'            => $refundEntity->getPaymentId(),
+                        'refund_amount'         => $refundEntity->getAmount(),
+                        'sum_of_refund_amount'  => $sumOfRefundAmount
+                    ]);
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function callRefundFunctionOnScrooge($refund, $data = [])

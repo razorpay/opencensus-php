@@ -564,6 +564,8 @@ final class RazorxTreatment
 
     public const EMAIL_EASY_ONBOARDING_SIGNUP = 'email_easy_onboarding_signup';
 
+    public const REFUND_AMOUNT_VALIDATION_FROM_REFUND_ENTITY = 'refund_amt_validation_from_refund_entity';
+
     // This is for upi autopay subsequent payment if capture setting time is less then 36 hours
     public const DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY = "default_capture_setting_config_upi_autopay";
 
