@@ -1,4 +1,4 @@
-import { NavLink, Redirect } from 'react-router-dom';
+import { NavLink, Redirect, Switch } from 'react-router-dom';
 import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { useCallback } from 'react';
@@ -25,17 +25,19 @@ const RouteContainer = ({ user }) => {
         {magicCheckoutRoutes.map(renderNav)}
       </header>
       <content>
-        {magicCheckoutRoutes.map((item) => (
-          <ShowWhenRoute
-            path={item.path}
-            key={item.path}
-            exact
-            component={item.Component}
-            additionalCondition={(_user) => !item.condition || item.condition(_user)}
-          />
-        ))}
+        <Switch>
+          {magicCheckoutRoutes.map((item) => (
+            <ShowWhenRoute
+              path={item.path}
+              key={item.path}
+              exact
+              component={item.Component}
+              additionalCondition={(_user) => !item.condition || item.condition(_user)}
+            />
+          ))}
+          <Redirect to={redirectPath} />
+        </Switch>
       </content>
-      <Redirect to={redirectPath} />
     </tabbed-container>
   );
 };
