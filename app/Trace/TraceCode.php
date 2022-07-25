@@ -2372,6 +2372,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_FILE_DETAILS                                    = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                                    = 'RECON_INFO_SUMMARY';
     const RECON_FILE_LINK                                       = 'RECON_FILE_LINK';
+    const RECON_REARCH_PAYMENT_CAPTURED                         = 'RECON_REARCH_PAYMENT_CAPTURED';
     const IIN_INSERT_FAILED                                     = 'IIN_INSERT_FAILED';
     const IIN_UPDATE_BULK                                       = 'IIN_UPDATE_BULK';
     const IIN_UPDATE_FAILED                                     = 'IIN_UPDATE_FAILED';

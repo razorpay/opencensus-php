@@ -178,6 +178,14 @@ class Core extends Base\Core
 
         if ($payment->getStatus() == "captured")
         {
+            $paymentTxn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+            if (($paymentTxn !== null) and
+                ($paymentTxn->isBalanceUpdated() === true))
+            {
+                return $paymentTxn;
+            }
+
             $txn =  $this->createTransactionForCapturedPayment($payment);
 
             $this->repo->transaction(function() use ($payment)

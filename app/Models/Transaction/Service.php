@@ -435,28 +435,32 @@ class Service extends Base\Service
 
         $payment->setExternal(true);
 
-        try
-        {
-            $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::ERROR,
-                TraceCode::PG_ROUTER_TRANSACTION_FAILURE,
-                [
-                    'data' => $ex->getMessage()
-                ]);
-            $dimensions =  (new Payment\Metric)->getDefaultExceptionDimensions($ex);
+        return $this->mutex->acquireAndRelease(
+            $payment->getId()."_"."transaction",
+            function () use ($payment)
+            {
+                try
+                {
+                    $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::PG_ROUTER_TRANSACTION_FAILURE,
+                        [
+                            'data' => $ex->getMessage()
+                        ]);
+                    $dimensions = (new Payment\Metric)->getDefaultExceptionDimensions($ex);
 
-            $this->trace->count(self::PG_ROUTER_TRANSACTION_FAILURE, $dimensions);
+                    $this->trace->count(self::PG_ROUTER_TRANSACTION_FAILURE, $dimensions);
 
-            throw $ex;
-        }
+                    throw $ex;
+                }
 
-
-        return $txn->toArrayPublic();
+                return $txn->toArrayPublic();
+            });
     }
 
     public function postInternalTransactionCron(array $input)

@@ -754,6 +754,19 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
                 break;
 
+            case VerifyResult::REARCH_CAPTURED:
+                $this->trace->info(
+                    TraceCode::RECON_REARCH_PAYMENT_CAPTURED,
+                    [
+                        'message'       => 'CPS has already captured the payment and txn will get created',
+                        'payment_id'    => $this->payment->getId(),
+                        'amount'        => $this->payment->getAmount(),
+                        'gateway'       => $this->gateway,
+                        'captured_at'   => $this->payment->getCapturedAt(),
+                    ]);
+
+                $authorizeSuccess = true;
+                break;
             // If payment is already being authorized by other thread
             // or any unexpected gateway error comes, null is returned. No slack
             // message in this case, happens for all the payments in the file.
@@ -784,6 +797,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         $response = $this->app['pg_router']->paymentVerify($this->payment->getId());
 
         $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
+
+        if ($this->payment->hasBeenCaptured() === true)
+        {
+            return VerifyResult::REARCH_CAPTURED;
+        }
 
         if (($status === Payment\Status::FAILED) and
             ($this->payment->hasBeenAuthorized() === true))
@@ -2142,43 +2160,50 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $cardNetwork = $card->getNetworkCode();
         }
 
-        $isHDFCDICL = ($cardNetwork === Card\Network::DICL) and
-                      ($this->payment->isGateway(Payment\Gateway::HDFC) === true);
-
-        $isNotCapturedButAuthorized = ($this->payment->isCaptured() === false) and
-                                      ($this->payment->hasBeenAuthorized() === true);
-
-        if (($isHDFCDICL === true) or
-            ($isNotCapturedButAuthorized === true) or
-            ($this->payment->isExternal() === true))
-        {
-            try
+        return $this->mutex->acquireAndRelease(
+            $this->payment->getId() . "_" . "transaction",
+            function () use ($cardNetwork)
             {
-                $this->createMissingPaymentTransaction();
+                $isHDFCDICL = ($cardNetwork === Card\Network::DICL) and
+                              ($this->payment->isGateway(Payment\Gateway::HDFC) === true);
 
-                return true;
-            }
-            catch (\Exception $ex)
-            {
-                $message = 'Payment transaction create failed with -> '. $ex->getMessage();
+                $isNotCapturedButAuthorized = ($this->payment->isCaptured() === false) and
+                                              ($this->payment->hasBeenAuthorized() === true);
 
-                $this->trace->info(
-                    TraceCode::RECON_FAILURE,
-                    [
-                        'failure_code'                      => 'PAYMENT_TRANSACTION_CREATE_FAIL',
-                        'message'                           => $message,
-                        'is_hdfc_dicl'                      => $isHDFCDICL,
-                        'is_not_captured_but_authorized'    => $isNotCapturedButAuthorized,
-                        'payment_id'                        => $this->payment->getId(),
-                        'gateway'                           => $this->gateway,
-                        'batch_id'                          => $this->batchId,
-                    ]);
+                if (($isHDFCDICL === true) or
+                    ($isNotCapturedButAuthorized === true) or
+                    ($this->payment->isExternal() === true))
+                {
+                    try
+                    {
+                        $this->createMissingPaymentTransaction();
 
-                $this->trace->traceException($ex);
+                        return true;
+                    }
+                    catch (\Exception $ex)
+                    {
+                        $message = 'Payment transaction create failed with -> ' . $ex->getMessage();
+
+                        $this->trace->info(
+                            TraceCode::RECON_FAILURE,
+                            [
+                                'failure_code' => 'PAYMENT_TRANSACTION_CREATE_FAIL',
+                                'message' => $message,
+                                'is_hdfc_dicl' => $isHDFCDICL,
+                                'is_not_captured_but_authorized' => $isNotCapturedButAuthorized,
+                                'payment_id' => $this->payment->getId(),
+                                'gateway' => $this->gateway,
+                                'batch_id' => $this->batchId,
+                            ]);
+
+                        $this->trace->traceException($ex);
+
+                        return false;
+                    }
+                }
 
                 return false;
-            }
-        }
+            });
 
         return false;
     }
