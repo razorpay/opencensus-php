@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
+use RZP\Error\PublicErrorDescription;
 
 class Base
 {
@@ -224,10 +225,20 @@ class Base
             }
             else if (strtoupper($error[Error::PUBLIC_ERROR_CODE]) === ErrorCode::BAD_REQUEST_ERROR)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_ERROR,
-                    $error[Error::FIELD], null,
-                    $error[Error::DESCRIPTION]);
+                if ($error[Error::DESCRIPTION] ===
+                    PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+                        null, null);
+                }
+                else
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        $error[Error::FIELD], null,
+                        $error[Error::DESCRIPTION]);
+                }
             }
             else
             {

@@ -17,6 +17,7 @@ use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Merchant\Balance\Entity as Balance;
@@ -77,7 +78,7 @@ class PayoutServiceTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    public function mockPayoutServiceCreate($fail = false, $request = [], $status = 'created')
+    public function mockPayoutServiceCreate($fail = false, $request = [], $status = 'created', $insufficient_balance = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -109,7 +110,7 @@ class PayoutServiceTest extends TestCase
                                 // We are returning this response only as we don't have a use case of supporting
                                 // response based on $request, if needed, that can also be added here using
                                 // andReturnUsing method instead of andReturn
-                                    $this->createResponseForPayoutServiceMock($fail, $status)
+                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance)
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
@@ -340,7 +341,7 @@ class PayoutServiceTest extends TestCase
                                                                                                 Status::CANCELLED));
     }
 
-    public function createResponseForPayoutServiceMock($fail, $status = 'created')
+    public function createResponseForPayoutServiceMock($fail, $status = 'created', $insufficient_balance = false)
     {
         $response = new Requests_Response();
 
@@ -353,6 +354,24 @@ class PayoutServiceTest extends TestCase
                             "code"        => ErrorCode::BAD_REQUEST_ERROR,
                             "description" => "Service Failure",
                             "field"      => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        }
+        elseif ($insufficient_balance === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error"   =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => PublicErrorDescription::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING,
+                            "field"       => "",
+                            "source"      => "",
+                            "step"        => "",
+                            "reason"      => "",
+                            "metadata"    => [],
                         ]
                 ]);
             $response->status_code = 400;
@@ -735,6 +754,16 @@ class PayoutServiceTest extends TestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    public function testCreatePayoutInsufficientBalance()
+    {
+        $this->mockPayoutServiceCreate(false, [], 'created', true);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
     }
 
     public function testCreateInternalPayoutViaMicroService(): array
