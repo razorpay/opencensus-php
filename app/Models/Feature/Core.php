@@ -34,6 +34,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
@@ -305,12 +306,50 @@ class Core extends Base\Core
 
         $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
 
-        if(($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
+        $this->handleEsFeatureDeletion($feature);
+
+        $this->notifyFeatureUpdateOnSlack($feature, true);
+    }
+
+    /**
+     * Handle deletion of Early Settlement Features
+     *
+     * @param Entity $feature
+     */
+    private function handleEsFeatureDeletion(Entity $feature)
+    {
+        if ($feature->getEntityType() !== Constants::MERCHANT)
+        {
+            return;
+        }
+        if ($feature->getName() === Feature::ES_ON_DEMAND)
         {
             (new Merchant\Service)->removeMerchantFromOnDemandEnabledMailingList($feature->getEntityId());
         }
+        if ($feature->getName() === Feature::ES_AUTOMATIC)
+        {
+            $merchant = $this->repo->merchant->findByPublicId($feature->getEntityId());
 
-        $this->notifyFeatureUpdateOnSlack($feature, true);
+            if ($merchant->isFeatureEnabled(Feature::ES_ON_DEMAND) === false)
+            {
+                return;
+            }
+
+            $pricing = (new \RZP\Models\Settlement\Ondemand\Core)->getOndemandPricingByFeature($merchant, PricingFeature::SETTLEMENT_ONDEMAND);
+            if ($pricing === null)
+            {
+                $percentRate = null;
+            } else
+            {
+                [$percentRate, $fixedRate] =  $pricing->getRates();
+            }
+
+            $this->trace->info(TraceCode::ES_AUTOMATIC_FEATURE_DELETED,
+                [
+                    PublicEntity::MERCHANT_ID              => $feature->getEntityId(),
+                    "ondemand_pricing_percent_rate_in_bps" => $percentRate,
+                ]);
+        }
     }
 
     /**
