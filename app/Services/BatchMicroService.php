@@ -14,6 +14,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use GuzzleHttp\RequestOptions;
+use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Http\BasicAuth\KeylessPublicAuth;
 use GuzzleHttp\Exception\ConnectException;
@@ -91,7 +92,12 @@ class BatchMicroService
         {
             $subType = $input[Batch\Entity::SUB_TYPE];
             $gateway = $input[Batch\Entity::GATEWAY];
-            $data['batchTypeId'] = 'emandate_' . $subType . '_' . $gateway;
+
+            if($gateway === Gateway::ENACH_NPCI_NETBANKING){
+                $data['batchTypeId'] = $gateway;
+            } else {
+                $data['batchTypeId'] = 'emandate_' . $subType . '_' . $gateway;
+            }
         }
 
         $this->checkAndInsert('name', $input, $data);
