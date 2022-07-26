@@ -190,6 +190,26 @@ final class P2pRoute
                 'BeneficiaryController@handle'
             ],
 
+        /************* Blacklist **************/
+        Requests::P2P_MERCHANT_BLACKLIST_ADD_BATCH =>
+            [
+                'post',
+                'merchant/blacklist/add_batch',
+                'BlackListController@create'
+            ],
+        Requests::P2P_MERCHANT_BLACKLIST_REMOVE_BATCH =>
+            [
+                'post',
+                'merchant/blacklist/remove_batch',
+                'BlackListController@remove'
+            ],
+        Requests::P2P_MERCHANT_BLACKLIST_FETCH_ALL =>
+            [
+                'post',
+                'merchant/blacklist',
+                'BlackListController@fetchAll'
+            ],
+
         /************* Transactions **************/
         Requests::P2P_CUSTOMER_TRANSACTIONS_INITIATE_PAY =>
             [
@@ -437,6 +457,9 @@ final class P2pRoute
         Requests::P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION,
         Requests::P2P_MERCHANT_DEVICES_FETCH_ALL,
         Requests::P2P_MERCHANT_VPA_FETCH_ALL,
+        Requests::P2P_MERCHANT_BLACKLIST_ADD_BATCH,
+        Requests::P2P_MERCHANT_BLACKLIST_REMOVE_BATCH,
+        Requests::P2P_MERCHANT_BLACKLIST_FETCH_ALL,
     ];
 
     public static $routePermission = [];

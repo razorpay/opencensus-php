@@ -70,4 +70,8 @@ class Requests
     const P2P_CUSTOMER_MANDATE_PAUSE                       = 'p2p_customer_mandate_pause';
     const P2P_CUSTOMER_MANDATE_UNPAUSE                     = 'p2p_customer_mandate_unpause';
     const P2P_CUSTOMER_MANDATE_REVOKE                      = 'p2p_customer_mandate_revoke';
+
+    const P2P_MERCHANT_BLACKLIST_ADD_BATCH                = 'p2p_merchant_blacklist_add_batch';
+    const P2P_MERCHANT_BLACKLIST_FETCH_ALL                = 'p2p_merchant_blacklist_fetch_all';
+    const P2P_MERCHANT_BLACKLIST_REMOVE_BATCH             = 'p2p_merchant_blacklist_remove_batch';
 }
