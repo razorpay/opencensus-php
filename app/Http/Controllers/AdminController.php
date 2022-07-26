@@ -9,6 +9,7 @@ use Input;
 use Cache;
 use Config;
 use Session;
+use Request;
 use Response;
 use Redirect;
 use App\Admin;
@@ -141,13 +142,22 @@ class AdminController extends Controller
 
         $admin_validation_route = array('admin_catchall', 'razorx_catchall', 'capital_catchall');
         if (in_array($currentRouteName , $admin_validation_route, true)) {
-            return redirect(self::REDIRECT_TO);
+            $params = [
+                'next' => Request::fullUrl(),
+            ];
+            return redirect(self::REDIRECT_TO. '?' .http_build_query($params));
         }
 
         switch($org['auth_type'])
         {
             case 'google_auth':
-                return redirect($this->getGoogleOAuthUrl());
+                $url = $this->getGoogleOAuthUrl();
+
+                $this->app['trace']->info(TraceCode::ADMIN_LOGIN_DEBUG, [
+                    'google_auth_url' => $url,
+                ]);
+
+                return redirect($url);
         }
 
         // Password login by default
@@ -185,7 +195,16 @@ class AdminController extends Controller
     {
         $googleService = OAuthFacade::consumer('Google');
 
-        return (string) $googleService->getAuthorizationUri(["prompt" => "consent"]);
+        // construct state
+        $state    = [];
+        $nextUrl      = Request::query('next');
+        if (empty($nextUrl) === false)
+        {
+            $state['next'] = $nextUrl;
+        }
+        $stateStr = base64_encode(json_encode($state));
+
+        return (string) $googleService->getAuthorizationUri(["prompt" => "consent", 'state' => $stateStr]);
     }
 
     public function triggerGoogleOAuth($code)
@@ -199,6 +218,23 @@ class AdminController extends Controller
 
             if (empty($error) === true)
             {
+                $state = [];
+                $stateStr = Request::query('state');
+                if (empty($stateStr) === false)
+                {
+                    $state = json_decode(base64_decode($stateStr), true);
+                }
+
+                $nextUrl = $state['next'] ?? '';
+                if (empty($nextUrl) == false)
+                {
+                    // if next url specified is invalid, redirect to homepage
+                    if (filter_var($nextUrl, FILTER_VALIDATE_URL) === false) {
+                        return redirect(self::REDIRECT_TO);
+                    }
+                    return redirect($nextUrl);
+                }
+
                 // sort of a page reload/refresh
                 return redirect(self::REDIRECT_TO);
             }
