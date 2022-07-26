@@ -621,6 +621,8 @@ class Route
         'fts_dashboard_merchant_configurations_delete'      => ['delete',   'fts/dashboard/merchant_configurations',                            'FTSController@deleteMerchantConfigurations'                        ],
         'fts_dashboard_merchant_configurations_patch'       => ['patch',    'fts/dashboard/merchant_configurations',                            'FTSController@patchMerchantConfigurations'                         ],
         'fts_dashboard_fail_fast_status_manual_update'      => ['post',     'fts/dashboard/fail_fast_status/manual_update',                     'FTSController@failFastStatusManualUpdate'                          ],
+        'fts_dashboard_key_value_store_patch'               => ['patch',    'fts/dashboard/key_value_store',                                    'FTSController@patchKeyValuePair'                                   ],
+        'fts_dashboard_key_value_store_post'                => ['post',     'fts/dashboard/key_value_store',                                    'FTSController@postKeyValuePair'                                   ],
 
         'nodal_file_upload_retry'                  => ['post',     'nodal_file_upload/retry',                        'FundTransferAttemptController@nodalFileUploadThroughBeam',         ],
         'channel_health_check'                     => ['post',     'channel_health_check/{channel}',                 'FundTransferAttemptController@healthCheck',                        ],
@@ -6758,6 +6760,8 @@ class Route
         'fts_dashboard_merchant_configurations_delete',
         'fts_dashboard_merchant_configurations_patch',
         'fts_dashboard_fail_fast_status_manual_update',
+        'fts_dashboard_key_value_store_patch',
+        'fts_dashboard_key_value_store_post',
 
         'create_merchant_options_admin',
         'read_merchant_options_admin',
@@ -8032,6 +8036,8 @@ class Route
         'fts_dashboard_merchant_configurations_create'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_merchant_configurations_delete'      => Permission::FTS_ROUTING_RULES_UPDATE,
         'fts_dashboard_merchant_configurations_patch'       => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_key_value_store_patch'               => Permission::FTS_ROUTING_RULES_UPDATE,
+        'fts_dashboard_key_value_store_post'               => Permission::FTS_ROUTING_RULES_UPDATE,
 
         //relay permissions
         'relay_get_apps'                                    => Permission::RELAY_READ_PERMISSION,
@@ -10895,6 +10901,8 @@ class Route
             'fts_dashboard_merchant_configurations_delete',
             'fts_dashboard_merchant_configurations_patch',
             'fts_dashboard_fail_fast_status_manual_update',
+            'fts_dashboard_key_value_store_patch',
+            'fts_dashboard_key_value_store_post',
             'fund_account_bulk_create',
             'fund_account_create',
             'fund_account_create_public',

@@ -1506,6 +1506,26 @@ class FundTransfer extends Base
             $input);
     }
 
+    public function patchKeyValuePair(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_KEY_VALUE_STORE_PATCH_URL,
+            Requests::PATCH,
+            $input);
+    }
+
+    public function postKeyValuePair(array $input)
+    {
+        $this->setAdminHeader();
+
+        return $this->createAndSendRequest(
+            parent::FTS_KEY_VALUE_STORE_POST_URL,
+            Requests::POST,
+            $input);
+    }
+
     public function getHolidayDetails(array $input)
     {
         $this->trace->info(

@@ -276,4 +276,18 @@ class FTSController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function patchKeyValuePair()
+    {
+        $response = $this->app['fts_fund_transfer']->patchKeyValuePair($this->input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postKeyValuePair()
+    {
+        $response = $this->app['fts_fund_transfer']->postKeyValuePair($this->input);
+
+        return ApiResponse::json($response);
+    }
 }
