@@ -467,7 +467,7 @@ export default class User {
   }
 
   get isDisputePresentmentEnabled() {
-    return this.isFeatureEnabled('dispute_presentment');
+    return !this.isFeatureEnabled('exclude_disp_presentment');
   }
 
   get currentMerchant() {
