@@ -1376,12 +1376,14 @@ class Validator extends Base\Validator
     protected static $netbankingSaraswatTerminalRules = [
         Entity::GATEWAY                 => 'required|in:netbanking_saraswat',
         Entity::GATEWAY_MERCHANT_ID     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'required|string',
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingSaraswatEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID     => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET   => 'sometimes|string',
         Entity::TPV                     => 'sometimes|in:0,1,2',
         Entity::STATUS                  => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::TYPE                    => 'sometimes|array',
