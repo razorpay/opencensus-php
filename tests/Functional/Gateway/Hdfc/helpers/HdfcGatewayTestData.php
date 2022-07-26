@@ -176,7 +176,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment didn\'t go through as it was declined by the bank. Try another payment method or contact your bank.',
+                    'description' => 'Payment declined',
                 ],
             ],
             'status_code' => 400,

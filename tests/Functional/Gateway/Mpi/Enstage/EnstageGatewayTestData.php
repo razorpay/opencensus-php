@@ -25,7 +25,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => "Your payment could not be completed due to incorrect OTP or verification details. Try another payment method or contact your bank for details.",
+                    'description'   => "Payment failed because card holder couldn't be authenticated",
                 ],
             ],
             'status_code' => 502,

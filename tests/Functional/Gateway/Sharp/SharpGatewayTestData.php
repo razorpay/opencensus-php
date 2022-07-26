@@ -132,7 +132,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment processing failed because of incorrect OTP',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
                 ],
             ],
             'status_code' => 400,
@@ -322,7 +322,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment could not be completed as your card is blocked. Try another payment method or contact your bank for details. '
+                    'description' => 'Payment processing failed because cardholder\'s card was blocked'
                 ],
             ],
             'status_code' => 400,

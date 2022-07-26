@@ -116,7 +116,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.',
+                    'description' => 'Payment processing failed by bank due to risk',
                 ],
             ],
             'status_code' => 400,

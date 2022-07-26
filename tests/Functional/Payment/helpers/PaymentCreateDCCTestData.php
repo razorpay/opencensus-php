@@ -25,7 +25,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.',
+                    'description' => 'International card is not allowed.',
                 ],
             ],
             'status_code' => 400,

@@ -294,7 +294,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment could not be completed due to incorrect OTP or verification details. Try another payment method or contact your bank for details.',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
             'status_code' => 400,
@@ -310,7 +310,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Your payment could not be completed due to incorrect OTP or verification details. Try another payment method or contact your bank for details.',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
                 ],
             ],
             'status_code' => 400,

@@ -15,7 +15,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment failed',
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
                 ],
             ],
             'status_code' => 400,
