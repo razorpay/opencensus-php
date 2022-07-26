@@ -405,7 +405,7 @@ const trackingDataSchema = yup
   .default(undefined)
   .shape({
     campaign: yup.string().required().strict(true),
-    campaign_description: yup.string().required().strict(true),
+    campaign_description: yup.string().optional().strict(true),
     sub_campaign: yup.string().optional().strict(true),
     sub_campaign_description: yup.string().optional().strict(true),
     campaign_id: yup.string().optional().strict(true),

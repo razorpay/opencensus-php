@@ -29,7 +29,7 @@ interface MetaType {
 
 interface TrackingDataType {
   campaign: string;
-  campaign_description: string;
+  campaign_description?: string;
   sub_campaign?: string;
   sub_campaign_description?: string;
   campaign_id?: string;
