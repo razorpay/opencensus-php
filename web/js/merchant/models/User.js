@@ -894,6 +894,10 @@ export default class User {
     return this.getExpStatus('refund_credit_self_serve');
   }
 
+  get isRefundSourceFallbackEnabled() {
+    return this.getExpStatus('refund_source_fallback_enabled');
+  }
+
   get isReserveBalanceSelfServeEnabled() {
     return this.getExpStatus('reserve_bal_self_serve');
   }

@@ -231,6 +231,7 @@ class Service extends Base\Service
             'rx_ca_sales_led_welcome_screen',
             'fee_credit_self_serve',
             'refund_credit_self_serve',
+            'refund_source_fallback_enabled',
             'reserve_bal_self_serve',
             'disable_msme_upload',
             'adharEkyc_for_reg_businessTypes',

@@ -119,70 +119,65 @@ class RefundModal extends Component {
     }
   }
 
-  UNSAFE_componentWillMount() {
-    const payment = this.props.payment;
+  componentDidMount() {
+    const {
+      payment,
+      user,
+      fetchTransfers,
+      fetchMerchantBalance,
+      transfers,
+      onMount,
+      initialize,
+    } = this.props;
 
-    if (this.props.user.isMarketplaceEnabled) {
-      this.props.fetchTransfers(payment);
+    if (user?.isMarketplaceEnabled) {
+      fetchTransfers(payment);
     }
 
-    this.props.initialize({
+    initialize({
       comment: '',
       partial: false,
-      amount: `${(payment.amount - payment.amount_refunded) / 100} `,
+      amount: `${(payment?.amount - payment?.amount_refunded) / 100} `,
       reverse_all: false,
     });
-  }
 
-  componentDidMount() {
-    if (this.props.payment && this.props.payment.id) {
+    if (payment?.id) {
       analyticsTrack({
         objectName: 'refund amount popup',
         actionName: 'rendered',
         screen: 'home page',
         properties: {
-          paymentId: this.props.payment.id,
+          paymentId: payment.id,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
     }
 
-    if (this.props.onMount) this.props.onMount(this.props.payment);
+    if (onMount) onMount(payment);
 
-    this.props.fetchMerchantBalance();
+    fetchMerchantBalance();
 
     if (!this.hasEnoughFunds()) {
       window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Issue Refund',
-        eventLabel: `Add Funds | Default speed ${
-          this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
-        }`,
+        eventLabel: `Add Funds | Default speed ${this.getLabelForRefundDefaultSpeed()}`,
       });
     }
 
-    if (
-      !(
-        this.props.payment.instant_refund_support &&
-        this.props.payment.instant_refund_support === true
-      )
-    ) {
+    if (!payment?.instant_refund_support) {
       window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Issue Refund',
-        eventLabel: `Instant Refund not supported | Default speed ${
-          this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
-        }`,
+        eventLabel: `Instant Refund not supported | Default speed ${this.getLabelForRefundDefaultSpeed()}`,
       });
     }
 
-    if (this.props.transfers.items.length > 0) {
+    if (transfers?.items?.length) {
       window.rzpAnalytics?.({
         eventCategory: 'Dashboard - Instant Refund',
         eventAction: 'Issue Refund',
-        eventLabel: `Route transfer | Default speed ${
-          this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
-        }`,
+        eventLabel: `Route transfer | Default speed ${this.getLabelForRefundDefaultSpeed()}`,
       });
     }
   }
@@ -206,9 +201,9 @@ class RefundModal extends Component {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Yes Refund',
-      eventLabel: `${speedValue === 'normal' ? 'Normal' : 'Instant'} Refund | Default speed ${
-        this.props.default_refund_speed === 'normal' ? 'Normal' : 'Instant'
-      } `,
+      eventLabel: `${
+        speedValue === 'normal' ? 'Normal' : 'Instant'
+      } Refund | Default speed ${this.getLabelForRefundDefaultSpeed()} `,
     });
     analyticsTrack({
       objectName: 'issue refund',
@@ -392,20 +387,30 @@ class RefundModal extends Component {
     }
   };
 
+  getLabelForRefundDefaultSpeed = () => {
+    const { default_refund_speed } = this.props;
+    return default_refund_speed === 'normal' ? 'Normal' : 'Instant';
+  };
+
   hasEnoughFunds = () => {
-    const { payment, payable_amount, user } = this.props;
-    const { data } = this.props.current_balance;
+    const { payment, payable_amount, user, current_balance } = this.props;
+    const { instantChecked } = this.state;
+    const { data } = current_balance;
 
     // if this flag is true and they opt for normal refund, we skip balance check validations
-    if (payment.direct_settlement_refund && this.state.instantChecked === false) return true;
+    if (payment?.direct_settlement_refund && !instantChecked) return true;
 
-    const merchant = user.merchants[user.current] || {};
-    const isBalanceSource = merchant.refund_source === 'balance';
+    const merchant = user?.merchants[user.current] || {};
+    const isBalanceSource = merchant?.refund_source === 'balance';
 
     const amount = rupeesToPaise(payable_amount);
-    const balance = isBalanceSource ? data.balance : data.refund_credits;
+    let balance = isBalanceSource ? data?.balance : data?.refund_credits;
 
-    if (this.props.current_balance.loading === true) {
+    if (user?.isRefundCreditSelfServeEnabled && user?.isRefundSourceFallbackEnabled) {
+      balance = Math.max(data?.balance || 0, data?.refund_credits || 0);
+    }
+
+    if (current_balance?.loading) {
       return true;
     }
 
@@ -515,20 +520,26 @@ class RefundModal extends Component {
             (() => {
               if (isInstantDisabled) {
                 return (
-                  <div class={`low-funds ${this.shouldFormBeOpaque() ? `make-opaque` : null}`}>
+                  <div className={`low-funds ${this.shouldFormBeOpaque() ? `make-opaque` : null}`}>
                     Your account does not have sufficient balance to instantly refund this payment.
-                    &nbsp;{' '}
+                    &nbsp;
                     <span>
-                      <Link to="/addfunds" target="_blank" rel="noreferrer noopener">
-                        Add Funds &nbsp; <i class="i i-external-link" />
-                      </Link>
+                      {user.isRefundCreditSelfServeEnabled && user.isRefundSourceFallbackEnabled ? (
+                        <Link to="/credits" target="_blank" rel="noreferrer noopener">
+                          Add Credits &nbsp; <i className="i i-external-link" />
+                        </Link>
+                      ) : (
+                        <Link to="/addfunds" target="_blank" rel="noreferrer noopener">
+                          Add Funds &nbsp; <i className="i i-external-link" />
+                        </Link>
+                      )}
                     </span>
                   </div>
                 );
               }
               if (!instant_refund_supported) {
                 return (
-                  <div class="low-funds">
+                  <div className="low-funds">
                     Currently, Instant Refunds are available on TPV, netbanking, UPI and select
                     credit cards and debit cards.
                   </div>
