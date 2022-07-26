@@ -1660,4 +1660,14 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'entity_owner_id' => $entityOwnerId,
         ];
     }
+
+    public function testCreateQrCodeWithInvalidUtf8Chars()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Only plain text characters are allowed');
+
+        //Here , \xf8 is an invalid utf8 character
+        $response = $this->createQrCode(['name' => "vinay\xf8surya"]);
+    }
 }

@@ -16,11 +16,11 @@ class Validator extends QrCode\Validator
 
     protected static $createRules = [
         Entity::REQ_PROVIDER   => 'required|in:bharat_qr,upi_qr',
-        Entity::NAME           => 'sometimes|string',
+        Entity::NAME           => 'sometimes|custom',
         Entity::FIXED_AMOUNT   => 'required|boolean',
         Entity::REQ_AMOUNT     => 'required_if:fixed_amount,true|integer|min:1',
         Entity::REQ_USAGE_TYPE => 'required|in:single_use,multiple_use',
-        Entity::DESCRIPTION    => 'sometimes|string|nullable',
+        Entity::DESCRIPTION    => 'sometimes|custom|nullable',
         Entity::NOTES          => 'filled|notes',
         Entity::CUSTOMER_ID    => 'filled|string|nullable',
         Entity::CLOSE_BY       => 'filled|epoch|custom',
@@ -58,6 +58,26 @@ class Validator extends QrCode\Validator
         if ($closeBy < $minCloseBy->getTimestamp())
         {
             $message = 'close_by should be at least ' . $minCloseBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateName($attribute, $value)
+    {
+        if (is_valid_utf8($value) === false)
+        {
+            $message = 'Only plain text characters are allowed';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateDescription($attribute, $value)
+    {
+        if (is_valid_utf8($value) === false)
+        {
+            $message = 'Only plain text characters are allowed';
 
             throw new BadRequestValidationFailureException($message);
         }
