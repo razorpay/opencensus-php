@@ -84,15 +84,16 @@ class NbplusNetbankingBdblCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
 
         $files = $this->getEntities('file_store', [
-            'count' => 1
+            'count' => 2
         ], true);
 
         $expectedFilesContent = [
             'entity' => 'collection',
-            'count' => 1,
+            'count' => 2,
             'items' => [
                 [
                     'type' => 'bdbl_netbanking_refund',
+                    'type' => 'bdbl_netbanking_combined',
                 ],
             ],
         ];
@@ -118,7 +119,7 @@ class NbplusNetbankingBdblCombinedFileTest extends NbPlusPaymentServiceNetbankin
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
-            $this->assertCount(1, $mail->attachments);
+            $this->assertCount(2, $mail->attachments);
 
             $this->checkRefundsFile($mail->viewData['refundsFile'],
                 $paymentEntity1,

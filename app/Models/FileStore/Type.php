@@ -191,6 +191,8 @@ class Type
 
     const BDBL_NETBANKING_REFUND            = 'bdbl_netbanking_refund';
 
+    const BDBL_NETBANKING_COMBINED            = 'bdbl_netbanking_combined';
+
     const SARASWAT_NETBANKING_REFUND        = 'saraswat_netbanking_refund';
 
     const SARASWAT_NETBANKING_CLAIMS        = 'saraswat_netbanking_claims';
@@ -440,6 +442,7 @@ class Type
             self::AUBL_CORP_NETBANKING_CLAIM,
             self::AUBL_CORP_NETBANKING_REFUND,
             self::AUBL_CORP_NETBANKING_COMBINED,
+            self::BDBL_NETBANKING_COMBINED,
             self::KOTAK_CORP_NETBANKING_REFUND,
             self::RECON_INPUT,
             self::BDBL_NETBANKING_REFUND,
@@ -632,6 +635,7 @@ class Type
         self::AUBL_CORP_NETBANKING_CLAIM,
         self::AUBL_CORP_NETBANKING_REFUND,
         self::AUBL_CORP_NETBANKING_COMBINED,
+        self::BDBL_NETBANKING_COMBINED,
         self::DLB_NETBAKING_REFUND,
         self::UJJIVAN_NETBANKING_REFUND,
         self::UJJIVAN_NETBANKING_CLAIMS,
@@ -803,6 +807,7 @@ class Type
             self::AUBL_CORP_NETBANKING_REFUND,
             self::AUBL_CORP_NETBANKING_CLAIM,
             self::AUBL_CORP_NETBANKING_COMBINED,
+            self::BDBL_NETBANKING_COMBINED,
             self::SIB_NETBANKING_REFUND,
             self::VIJAYA_NETBANKING_REFUND,
             self::YESB_NETBANKING_REFUND,
