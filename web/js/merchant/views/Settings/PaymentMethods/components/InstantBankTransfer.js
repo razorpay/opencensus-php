@@ -72,6 +72,7 @@ const InstantBankTransfer = ({
   };
 
   const onRequest = () => {
+    trackActivateClicked(false, true);
     fetchApmForm();
     openModal({
       component: <ApmOnboarding instrumentList={leafList?.list} />,
@@ -103,7 +104,7 @@ const InstantBankTransfer = ({
           message: 'Request has been successfully created!',
         });
         trackActivateClicked(true, false, true);
-        trackInstrumentsRequested(instrument?.name);
+        trackInstrumentsRequested([instrument?.name]);
         refreshEntries(history);
       } catch (error) {
         showNotification({
@@ -112,7 +113,6 @@ const InstantBankTransfer = ({
         });
       }
     } else {
-      trackActivateClicked(false, true);
       onRequest();
     }
   };

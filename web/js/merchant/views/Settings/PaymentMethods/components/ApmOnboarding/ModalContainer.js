@@ -71,6 +71,7 @@ const ModalContainer = ({
   const containerRef = useRef(null);
 
   const CurrentTab = tabs[selectedTab].component;
+  const tabName = tabs[selectedTab].name;
   const isTabValid = !errors?.[tabs[selectedTab].dataKey];
 
   //common function to reinitialize form values to reset dirty
@@ -92,21 +93,21 @@ const ModalContainer = ({
    */
   const saveData = async (data = values, isSubmitted = false) => {
     try {
-      trackDataSaving(true, isSubmitted);
+      trackDataSaving(true, tabName, isSubmitted);
       setLoading(LOADING.PENDING);
       const body = transformApiBody(values, errors, documents, activeOwner, isSubmitted);
       const ownerId = await saveForm(body, setFormData);
       if (ownerId) data[OWNER_DETAILS][activeOwner].id = ownerId;
       reinitializeValues(data);
       setLoading(LOADING.SUCCESS);
-      trackDataSaveSuccess(isSubmitted);
+      trackDataSaveSuccess(tabName, data?.[OWNER_DETAILS], isSubmitted);
     } catch (error) {
       showNotification({
         type: 'error',
         message: error?.errors,
       });
       setLoading(LOADING.ERROR);
-      trackDataSaveError(isSubmitted, error?.errors);
+      trackDataSaveError(tabName, isSubmitted, error?.errors);
       return false;
     } finally {
       setTimeout(() => setLoading(LOADING.INITIAL), 4000);
@@ -178,7 +179,7 @@ const ModalContainer = ({
     } else {
       onTabClick(selectedTab + 1, containerRef);
     }
-    trackFormButtonClicked(getButtonText());
+    trackFormButtonClicked(tabName, getButtonText());
   };
 
   /**
@@ -303,7 +304,7 @@ const ModalContainer = ({
                   ) : null}
                   <div className="title">
                     {isTabValid ? <i className="i-check" /> : null}
-                    {tabs[selectedTab].name}
+                    {tabName}
                   </div>
                   <div className="description">{tabs[selectedTab].description}</div>
                 </div>

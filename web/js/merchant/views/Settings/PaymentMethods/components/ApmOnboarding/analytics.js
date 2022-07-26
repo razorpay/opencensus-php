@@ -41,13 +41,14 @@ export const trackModalClosed = (isSubmitted = false) => {
   });
 };
 
-export const trackFormButtonClicked = (buttonText) => {
+export const trackFormButtonClicked = (tab, buttonText) => {
   track({
     objectName: apmPopupButton,
     actionName: 'action',
     properties: {
       isButtonClicked: true,
       buttonText,
+      tab,
     },
   });
 };
@@ -75,33 +76,37 @@ export const trackFormOwnerDeleted = (ownerId) => {
   });
 };
 
-export const trackDataSaving = (isSaving = true, isSubmitted) => {
+export const trackDataSaving = (isSaving = true, tab, isSubmitted) => {
   track({
     objectName: apmSaveData,
     actionName: 'click',
     properties: {
       isSaving,
+      tab,
       isSubmitted,
     },
   });
 };
 
-export const trackDataSaveSuccess = (isSubmitted) => {
+export const trackDataSaveSuccess = (tab, owners = [], isSubmitted) => {
   track({
     objectName: apmSaveData,
     actionName: 'response',
     properties: {
+      tab,
       isSubmitted,
+      owners: owners?.length,
       status: 'success',
     },
   });
 };
 
-export const trackDataSaveError = (isSubmitted, errorResponse) => {
+export const trackDataSaveError = (tab, isSubmitted, errorResponse) => {
   track({
     objectName: apmSaveData,
     actionName: 'response',
     properties: {
+      tab,
       isSubmitted,
       status: 'error',
       errorResponse,
@@ -109,12 +114,13 @@ export const trackDataSaveError = (isSubmitted, errorResponse) => {
   });
 };
 
-export const trackInstrumentsRequested = (instruments) => {
+export const trackInstrumentsRequested = (instruments = []) => {
   track({
     objectName: apmInstruments,
     actionName: 'requested',
     properties: {
       isSubmitted: true,
+      instrumentCount: instruments?.length,
       instruments,
     },
   });
