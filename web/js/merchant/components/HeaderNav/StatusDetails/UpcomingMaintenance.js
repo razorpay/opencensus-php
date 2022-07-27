@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useReducer } from 'react';
 import ScheduledDowntime from './ScheduledDowntime';
 import { fetchScheduledDowntimes } from './service';
 import Spinner from 'common/ui/Spinner';
+import { PAYMENT_METHOD_MAP } from '../StatusDetails/constants';
 
 const initialState = {
   scheduledDowntimes: {},
@@ -62,6 +63,8 @@ const UpcomingMaintenance = (props) => {
 
   const { paymentMethod } = props;
   const { scheduledDowntimes, isLoading } = state;
+  const currentPaymentMethod = PAYMENT_METHOD_MAP[paymentMethod];
+
   return (
     <section>
       <p className="section-title">
@@ -76,30 +79,13 @@ const UpcomingMaintenance = (props) => {
         <div className="page-spinner-container">
           <Spinner />
         </div>
-      ) : paymentMethod === 'Cards' ? (
-        'card' in scheduledDowntimes ? (
-          <div>
-            {scheduledDowntimes?.card.map((scheduledDowntime) => (
+      ) : currentPaymentMethod in scheduledDowntimes ? (
+        <div>
+          {scheduledDowntimes &&
+            scheduledDowntimes[currentPaymentMethod]?.map((scheduledDowntime) => (
               <ScheduledDowntime key={scheduledDowntime.id} scheduledDowntime={scheduledDowntime} />
             ))}
-          </div>
-        ) : (
-          <p className="no-maintenance">No Upcoming Maintenance</p>
-        )
-      ) : paymentMethod === 'UPI' ? (
-        'upi' in scheduledDowntimes ? (
-          <div>
-            {scheduledDowntimes?.upi.map((scheduledDowntime) => (
-              <ScheduledDowntime key={scheduledDowntime.id} scheduledDowntime={scheduledDowntime} />
-            ))}
-          </div>
-        ) : (
-          <p className="no-maintenance">No Upcoming Maintenance</p>
-        )
-      ) : 'netbanking' in scheduledDowntimes ? (
-        scheduledDowntimes?.netbanking.map((scheduledDowntime) => (
-          <ScheduledDowntime key={scheduledDowntime.id} scheduledDowntime={scheduledDowntime} />
-        ))
+        </div>
       ) : (
         <p className="no-maintenance">No Upcoming Maintenance</p>
       )}

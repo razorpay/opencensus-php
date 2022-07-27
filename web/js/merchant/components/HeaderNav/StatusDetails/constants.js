@@ -8,6 +8,15 @@ export const BANKS = [
   { code: 'KKBK', bankName: 'Kotak Mahindra Bank' },
 ];
 
+export const EMANDATE_BANKS = [
+  { code: 'SBIN', bankName: 'State Bank of India' },
+  { code: 'KKBK', bankName: 'Kotak Mahindra Bank' },
+  { code: 'HDFC', bankName: 'HDFC Bank' },
+  { code: 'ICIC', bankName: 'ICICI Bank' },
+  { code: 'UTIB', bankName: 'Axis Bank' },
+  { code: 'PYTM', bankName: 'Paytm Bank' },
+];
+
 export const VPA_HANDLES = [
   'okhdfcbank',
   'okaxis',
@@ -51,9 +60,11 @@ export const PSPs = [
 export const CARDS_PAYMENT_METHOD = 'Cards';
 export const UPI_PAYMENT_METHOD = 'UPI';
 export const NETBANKING_PAYMENT_METHOD = 'Net Banking';
+export const EMANDATE_PAYMENT_METHOD = 'Emandate';
 
 export const PAYMENT_METHOD_MAP = {
   [CARDS_PAYMENT_METHOD]: 'card',
   [UPI_PAYMENT_METHOD]: 'upi',
   [NETBANKING_PAYMENT_METHOD]: 'netbanking',
+  [EMANDATE_PAYMENT_METHOD]: 'emandate',
 };

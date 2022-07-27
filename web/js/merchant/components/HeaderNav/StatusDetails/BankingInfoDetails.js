@@ -2,8 +2,8 @@ import React from 'react';
 import { NoIssuesStatus } from './NoIssuesStatus';
 import OngoingDowntime from './OngoingDowntime';
 
-const NetBankingInfoDetails = (props) => {
-  const { netBankingDowntimes: downtimes, netBankingOperational: operational } = props;
+const BankingInfoDetails = (props) => {
+  const { downtimes, operational } = props;
   return (
     <div>
       <p className="title">Banks</p>
@@ -18,4 +18,4 @@ const NetBankingInfoDetails = (props) => {
   );
 };
 
-export default NetBankingInfoDetails;
+export default BankingInfoDetails;

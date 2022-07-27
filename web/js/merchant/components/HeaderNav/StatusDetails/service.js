@@ -4,6 +4,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { getTimeinTwelveHourFormat } from './utilities';
 import {
   BANKS,
+  EMANDATE_BANKS,
   VPA_HANDLES,
   PSPs,
   CARD_ISSUERS,
@@ -12,6 +13,7 @@ import {
   UPI_PAYMENT_METHOD,
   NETBANKING_PAYMENT_METHOD,
   PAYMENT_METHOD_MAP,
+  EMANDATE_PAYMENT_METHOD,
 } from './constants';
 
 export const fetchOngoingDowntimes = () => {
@@ -31,6 +33,7 @@ export const fetchOngoingDowntimes = () => {
       const vpaOperational = [...VPA_HANDLES];
       const pspOperational = [...PSPs];
       const netBankingOperational = [...BANKS];
+      const emandateOperational = [...EMANDATE_BANKS]; // changes common Banks to Emandate supported banks
 
       if (data.length === 0) {
         // Setting time
@@ -42,11 +45,13 @@ export const fetchOngoingDowntimes = () => {
             cardDowntimes: {},
             upiDowntimes: {},
             netBankingDowntimes: {},
+            emandateDowntimes: {},
             cardNetworksOperational,
             cardIssuersOperational,
             vpaOperational,
             pspOperational,
             netBankingOperational,
+            emandateOperational,
             time,
             timeObj: now,
           });
@@ -55,6 +60,7 @@ export const fetchOngoingDowntimes = () => {
         const cardDowntimes = {};
         const upiDowntimes = {};
         const netBankingDowntimes = {};
+        const emandateDowntimes = {};
         let overallStatus = '';
         const methodsDown = [];
 
@@ -248,6 +254,42 @@ export const fetchOngoingDowntimes = () => {
                 }
               }
               break;
+            case 'emandate':
+              {
+                // Mapping to bank name
+                downtime.mapToName = true;
+                const bank = EMANDATE_BANKS.find(
+                  (element) => element.code === downtime?.instrument?.bank,
+                );
+                if (bank != undefined) {
+                  const bankName = bank.bankName;
+                  downtime.providerName = bankName;
+                }
+
+                const index = emandateOperational.findIndex(
+                  (element) => element.code === downtime?.instrument?.bank,
+                );
+                if (index > -1) {
+                  emandateOperational.splice(index, 1);
+                }
+
+                switch (downtime.severity) {
+                  case 'low':
+                    if ('low' in emandateDowntimes) emandateDowntimes.low.push(downtime);
+                    else emandateDowntimes.low = [downtime];
+                    break;
+                  case 'medium':
+                    if ('medium' in emandateDowntimes) emandateDowntimes.medium.push(downtime);
+                    else emandateDowntimes.medium = [downtime];
+                    break;
+                  case 'high':
+                    if ('high' in emandateDowntimes) emandateDowntimes.high.push(downtime);
+                    else emandateDowntimes.high = [downtime];
+                    break;
+                  default:
+                }
+              }
+              break;
             default:
           }
         });
@@ -260,7 +302,8 @@ export const fetchOngoingDowntimes = () => {
           cardDowntimes?.issuer?.high?.length > 2 ||
           upiDowntimes?.vpa_handle?.high?.length > 2 ||
           upiDowntimes?.psp?.high?.length > 1 ||
-          netBankingDowntimes.high > 2
+          netBankingDowntimes.high > 2 ||
+          emandateDowntimes.high > 2
         )
           overallStatus = 'majorDrops';
         else overallStatus = 'fewDrops';
@@ -274,6 +317,9 @@ export const fetchOngoingDowntimes = () => {
         if (Object.keys(netBankingDowntimes).length > 0) {
           methodsDown.push('Net Banking');
         }
+        if (Object.keys(emandateDowntimes).length > 0) {
+          methodsDown.push('Emandate');
+        }
 
         // Setting time
         const now = new Date();
@@ -286,11 +332,13 @@ export const fetchOngoingDowntimes = () => {
             cardDowntimes,
             upiDowntimes,
             netBankingDowntimes,
+            emandateDowntimes,
             cardNetworksOperational,
             cardIssuersOperational,
             vpaOperational,
             pspOperational,
             netBankingOperational,
+            emandateOperational,
             time,
             timeObj: now,
           });
@@ -378,6 +426,24 @@ export const fetchScheduledDowntimes = () => {
               scheduledDowntimes.netbanking.push(scheduledDowntime);
             }
             break;
+          case 'emandate':
+            {
+              if (!('emandate' in scheduledDowntimes)) {
+                scheduledDowntimes.emandate = [];
+              }
+
+              // Mapping to bank name
+              scheduledDowntime.mapToName = true;
+              const bank = EMANDATE_BANKS.find(
+                (element) => element.code === scheduledDowntime?.instrument?.bank,
+              );
+              if (bank != undefined) {
+                const bankName = bank.bankName;
+                scheduledDowntime.providerName = bankName;
+              }
+              scheduledDowntimes.emandate.push(scheduledDowntime);
+            }
+            break;
 
           default:
             break;
@@ -454,6 +520,15 @@ export const fetchHistoricalDowntimes = async (skip, count, paymentMethod) => {
               {
                 historicalDowntime.mapToName = true;
                 const bank = BANKS.find(
+                  (element) => element.code === historicalDowntime?.instrument?.bank,
+                );
+                historicalDowntime.providerName = bank.bankName;
+              }
+              break;
+            case EMANDATE_PAYMENT_METHOD:
+              {
+                historicalDowntime.mapToName = true;
+                const bank = EMANDATE_BANKS.find(
                   (element) => element.code === historicalDowntime?.instrument?.bank,
                 );
                 historicalDowntime.providerName = bank.bankName;

@@ -18,8 +18,8 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 const UPIDetails = lazy(() => import(/* webpackChunkName: 'UPIDetails' */ './UPIDetails'));
 const CardsDetails = lazy(() => import(/* webpackChunkName: 'CardsDetails' */ './CardsDetails'));
 
-const NetBankingDetails = lazy(() =>
-  import(/* webpackChunkName: 'NetBankingDetails' */ './NetBankingDetails'),
+const BankingDetails = lazy(() =>
+  import(/* webpackChunkName: 'BankingDetails' */ './BankingDetails'),
 );
 const CardsInfoDetails = lazy(() =>
   import(/* webpackChunkName: 'CardsInfoDetails' */ './CardsInfoDetails'),
@@ -27,8 +27,8 @@ const CardsInfoDetails = lazy(() =>
 const UPIInfoDetails = lazy(() =>
   import(/* webpackChunkName: 'UPIInfoDetails' */ './UPIInfoDetails'),
 );
-const NetBankingInfoDetails = lazy(() =>
-  import(/* webpackChunkName: 'NetBankingInfoDetails' */ './NetBankingInfoDetails'),
+const BankingInfoDetails = lazy(() =>
+  import(/* webpackChunkName: 'BankingInfoDetails' */ './BankingInfoDetails'),
 );
 const UpcomingMaintenance = lazy(() =>
   import(/* webpackChunkName: 'UpcomingMaintenance' */ './UpcomingMaintenance'),
@@ -43,11 +43,13 @@ const initialState = {
   cardDowntimes: {},
   upiDowntimes: {},
   netBankingDowntimes: {},
+  emandateDowntimes: {},
   cardNetworksOperational: [],
   cardIssuersOperational: [],
   vpaOperational: [],
   pspOperational: [],
   netBankingOperational: [],
+  emandateOperational: [],
   methodsDown: [],
   time: '',
   timeObj: null,
@@ -116,6 +118,8 @@ function StatusDetails(props) {
       vpaOperational,
       netBankingDowntimes,
       netBankingOperational,
+      emandateDowntimes,
+      emandateOperational,
       overallStatus,
       methodsDown,
     },
@@ -191,6 +195,8 @@ function StatusDetails(props) {
       currentDowntimes = upiDowntimes;
     } else if (pmtMethod === 'Net Banking') {
       currentDowntimes = netBankingDowntimes;
+    } else if (pmtMethod === 'Emandate') {
+      currentDowntimes = emandateDowntimes;
     }
 
     // analyticsTrack
@@ -230,6 +236,35 @@ function StatusDetails(props) {
   /* callback method when we clicked outside */
   const onOutSideClick = () => {
     hideSlider();
+  };
+
+  const getPaymentMethodSummaryUI = (paymentMethod) => {
+    switch (paymentMethod) {
+      case 'Cards':
+        return (
+          <CardsInfoDetails
+            cardDowntimes={cardDowntimes}
+            cardNetworksOperational={cardNetworksOperational}
+            cardIssuersOperational={cardIssuersOperational}
+          />
+        );
+      case 'UPI':
+        return (
+          <UPIInfoDetails
+            upiDowntimes={upiDowntimes}
+            pspOperational={pspOperational}
+            vpaOperational={vpaOperational}
+          />
+        );
+      case 'Emandate':
+        return (
+          <BankingInfoDetails downtimes={emandateDowntimes} operational={emandateOperational} />
+        );
+      default:
+        return (
+          <BankingInfoDetails downtimes={netBankingDowntimes} operational={netBankingOperational} />
+        );
+    }
   };
   //  using the out side click custom hook
   useClickOutSide([statusDetailsRef, downtimeIconRef], onOutSideClick);
@@ -311,24 +346,7 @@ function StatusDetails(props) {
                           ) : (
                             <div className="status-method">
                               <section className="summary">
-                                {paymentMethod === 'Cards' ? (
-                                  <CardsInfoDetails
-                                    cardDowntimes={cardDowntimes}
-                                    cardNetworksOperational={cardNetworksOperational}
-                                    cardIssuersOperational={cardIssuersOperational}
-                                  />
-                                ) : paymentMethod === 'UPI' ? (
-                                  <UPIInfoDetails
-                                    upiDowntimes={upiDowntimes}
-                                    pspOperational={pspOperational}
-                                    vpaOperational={vpaOperational}
-                                  />
-                                ) : (
-                                  <NetBankingInfoDetails
-                                    netBankingDowntimes={netBankingDowntimes}
-                                    netBankingOperational={netBankingOperational}
-                                  />
-                                )}
+                                {getPaymentMethodSummaryUI(paymentMethod)}
                                 <p className="message">
                                   We only detect downtime fluctuations for the instruments which
                                   have sufficient payment volume
@@ -390,8 +408,14 @@ function StatusDetails(props) {
                                   upiDowntimes={upiDowntimes}
                                   switchToInfoView={switchToInfoView}
                                 />
-                                <NetBankingDetails
-                                  netBankingDowntimes={netBankingDowntimes}
+                                <BankingDetails
+                                  downtimes={netBankingDowntimes}
+                                  methodName="Net Banking"
+                                  switchToInfoView={switchToInfoView}
+                                />
+                                <BankingDetails
+                                  downtimes={emandateDowntimes}
+                                  methodName="Emandate"
                                   switchToInfoView={switchToInfoView}
                                 />
                               </div>
