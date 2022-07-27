@@ -60,7 +60,6 @@ class PanStatusUpdater extends DefaultStatusUpdater
        $store = new StoreCore();
        $merchantDetailCore = (new MerchantDetailCore());
        $featureCore = (new FeatureCore());
-       $artefactType =
 
        $data = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
            [ConfigKey::NO_DOC_ONBOARDING_INFO],StoreConstants::INTERNAL);
@@ -102,9 +101,9 @@ class PanStatusUpdater extends DefaultStatusUpdater
                    'gstin' => $gstDetailsFromPan
                ];
 
-               $dedupeResponse = $merchantDetailCore->triggerStrictDedupeForNoDocOnboarding($this->merchantDetails, $fieldMap, $noDocConfig, []);
+               $dedupeResponse = $merchantDetailCore->triggerStrictDedupeForNoDocOnboarding($this->merchantDetails, $fieldMap, $noDocData, []);
 
-               $merchantDetailCore->processDedupeResponse([DetailEntity::GSTIN], $dedupeResponse, $noDocConfig);
+               $merchantDetailCore->processDedupeResponse([DetailEntity::GSTIN], $dedupeResponse, $noDocData);
            }
 
            $noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE] = array_merge($noDocData[DEConstants::VERIFICATION][DetailEntity::GSTIN][DEConstants::VALUE], $gstDetailsFromPan);
@@ -122,6 +121,16 @@ class PanStatusUpdater extends DefaultStatusUpdater
 
            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
        }
+
+
+       $this->trace->info(
+           TraceCode::PAN_RETRY_STATUS,
+           [
+               'merchant_id'      => $this->merchant->getId(),
+               'artefact_type'    => $artefactType,
+               'noDocData'        => $noDocData
+           ]
+       );
 
        $isPanValidationDone = (new UpdateContextRequirements())->isNoDocPanValidationCompleted($this->merchantDetails);
 

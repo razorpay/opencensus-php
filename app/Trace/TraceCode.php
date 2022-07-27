@@ -7493,6 +7493,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const METRO_PUBLISH_FOR_CAPTURE_VERIFY                            = 'METRO_PUBLISH_FOR_CAPTURE_VERIFY';
 
+    const PAN_RETRY_STATUS                                            = 'PAN_RETRY_STATUS';
+
+    const BANK_ACCOUNT_RETRY_STATUS                                   = 'BANK_ACCOUNT_RETRY_STATUS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

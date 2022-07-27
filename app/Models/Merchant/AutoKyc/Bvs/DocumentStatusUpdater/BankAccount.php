@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Trace\TraceCode;
 
 class BankAccount extends DefaultStatusUpdater
 {
@@ -87,5 +88,14 @@ class BankAccount extends DefaultStatusUpdater
             }
             $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
         }
+
+        $this->trace->info(
+            TraceCode::BANK_ACCOUNT_RETRY_STATUS,
+            [
+                'merchant_id'      => $this->merchant->getId(),
+                'noDocData'        => $noDocData
+            ]
+        );
+
     }
 }

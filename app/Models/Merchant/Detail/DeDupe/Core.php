@@ -390,7 +390,11 @@ class Core extends Base\Core
             }
         }
 
-        return $this->merchantRiskClient->getMerchantRiskScores(
+        $response =  $this->merchantRiskClient->getMerchantRiskScores(
             $clientType, $merchantId, $fields);
+
+        $response = (empty($response) === false) ? $response : [];
+
+        return $response;
     }
 }
