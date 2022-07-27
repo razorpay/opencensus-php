@@ -12443,7 +12443,15 @@ class Route
             // BVS admin dashboard proxy routes
             'bvs_admin_proxy',
             'bvs_admin_proxy_pii',
-            'admin_bulk_assign_role'
+            'admin_bulk_assign_role',
+
+            //CAC
+            'cac_privileges_fetch',
+            'cac_role_fetch_all',
+            'view_cac_role',
+            //'delete_cac_role',
+            'create_cac_role',
+            'edit_cac_role',
         ],
 
         //
