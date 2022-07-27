@@ -304,7 +304,7 @@ return [
         ],
     ],
 
-    'testCreateFraudBatchVisaDruidQueryFails' => [
+    'testCreateFraudBatchVisaDatalakeQueryFails' => [
         'request'  => [
             'url'     => '/fraud/batch',
             'content' => [

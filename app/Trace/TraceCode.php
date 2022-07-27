@@ -5784,8 +5784,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DRUID_REQUEST_FAILURE                                   = 'DRUID_REQUEST_FAILURE';
     const GET_MERCHANT_DATA_FOR_SEGMENT                           = 'GET_MERCHANT_DATA_FOR_SEGMENT';
     const DRUID_RESPONSE_TIME                                     = 'DRUID_RESPONSE_TIME';
-    const PAYMENT_DATA_NOT_FOUND_ON_DRUID                         = 'PAYMENT_DATA_NOT_FOUND_ON_DRUID';
-    const DISPUTE_CHARGEBACK_DRUID_RESPONSE                       = 'DISPUTE_CHARGEBACK_DRUID_RESPONSE';
+    const PAYMENT_DATA_NOT_FOUND_ON_PRESTO                        = 'PAYMENT_DATA_NOT_FOUND_ON_PRESTO';
+    const DISPUTE_CHARGEBACK_PRESTO_RESPONSE                      = 'DISPUTE_CHARGEBACK_PRESTO_RESPONSE';
 
     const DATALAKE_PRESTO_QUERY                                   = 'DATALAKE_PRESTO_QUERY';
     const DATALAKE_PRESTO_REQUEST_FAILURE                         = 'DATALAKE_PRESTO_REQUEST_FAILURE';

@@ -28,7 +28,7 @@ class BulkFraudNotifyTest extends TestCase
 
     use WorkflowTrait;
 
-    protected $druidMock;
+    protected $datalakeMock;
 
     public function setUp(): void
     {
@@ -40,16 +40,16 @@ class BulkFraudNotifyTest extends TestCase
 
         $this->setUpSalesforceMock();
 
-        $this->setUpDruidMock();
+        $this->setUpDatalakeMock();
     }
 
-    protected function setUpDruidMock(): void
+    protected function setUpDatalakeMock(): void
     {
-        $this->druidMock = Mockery::mock('RZP\Services\DruidService')->makePartial();
+        $this->datalakeMock = Mockery::mock('RZP\Services\Mock\DataLakePresto')->makePartial();
 
-        $this->druidMock->shouldAllowMockingProtectedMethods();
+        $this->datalakeMock->shouldAllowMockingProtectedMethods();
 
-        $this->app['druid.service'] = $this->druidMock;
+        $this->app['datalake.presto'] = $this->datalakeMock;
     }
 
     protected function validateContent($actualContent, $expectedContent): bool
@@ -70,12 +70,12 @@ class BulkFraudNotifyTest extends TestCase
         return true;
     }
 
-    protected function mockDruidRequest($expectedContent, $response, $times = 1): void
+    protected function mockPrestoService($expectedContent, $response, $times = 1): void
     {
-        $this->druidMock->shouldReceive('getDataFromDruid')
+        $this->datalakeMock->shouldReceive('getDataFromDataLake')
                         ->times($times)
                         ->with(Mockery::on(function($request) use ($expectedContent) {
-                            return $this->validateContent($request, $expectedContent);
+                            return $request == $expectedContent;
                         }))
                         ->andReturnUsing(function() use ($response) {
                             return $response;
@@ -599,15 +599,12 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
-        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('74110751299033415520957','74110751299033415520957')"],
+        $this->mockPrestoService("select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('74110751299033415520957','74110751299033415520957')",
                                 [
-                                    null,
                                     [
-                                        [
-                                            'payments_reference1' => '74110751299033415520957',
-                                            'payments_id' => $paymentId,
-                                            'payments_merchant_id' => '10000000000000'
-                                        ]
+                                        'payments_reference1' => '74110751299033415520957',
+                                        'payments_id' => $paymentId,
+                                        'payments_merchant_id' => '10000000000000'
                                     ]
                                 ]);
 
@@ -637,9 +634,9 @@ class BulkFraudNotifyTest extends TestCase
 
     }
 
-    public function testCreateFraudBatchVisaDruidQueryFails()
+    public function testCreateFraudBatchVisaDatalakeQueryFails()
     {
-        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('74110751299033415520957')"], null);
+        $this->mockPrestoService("select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('74110751299033415520957')", []);
 
         $this->ba->batchAppAuth();
 
@@ -956,19 +953,15 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
-        $this->mockDruidRequest(['query' => "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('02705601344033737573894')"],
-            [null, []]);
+        $this->mockPrestoService("select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('02705601344033737573894')", []);
 
-        $this->mockDruidRequest(['query' => "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('003373757389')"],
+        $this->mockPrestoService("select authorization_rrn, authorization_payment_id, payments_merchant_id  from hive.warehouse.payments where authorization_rrn in ('003373757389')",
             [
-                null,
-                [
                     [
                         'authorization_rrn'        => '003373757389',
                         'authorization_payment_id' => $paymentId,
                         'payments_merchant_id'     => '10000000000000'
                     ]
-                ]
             ]);
 
         $this->ba->batchAppAuth();

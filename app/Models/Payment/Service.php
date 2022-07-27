@@ -4830,40 +4830,26 @@ class Service extends Base\Service
 
         /*
          *  For ARN
-         *  way to fetch Data from Druid table payments
+         *  way to fetch Data from Data Lake warehouse.payments
         */
-        $query1 = "select payments_reference1, payments_id, payments_merchant_id  from druid.payments_fact  where payments_reference1 in ('" . implode("','", $allArn) . "')";
+        $query1 = "select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('" . implode("','", $allArn) . "')";
 
-        $druidService = $this->app['druid.service'];
+        try {
+            $data1 = $this->app['datalake.presto']->getDataFromDataLake($query1);
 
-        $content1 = [
-            'query' => $query1
-        ];
-
-        // extract data from druid service
-        list($error1, $data1) = $druidService->getDataFromDruid($content1);
-
-        $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_DRUID_RESPONSE, [
-            'error1'    => $error1,
-            'data1'      => $data1,
-        ]);
-
-        if (empty($error1) === false)
-        {
-            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
-                'query'   => $query1,
-                'message' => $error1
+            $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_PRESTO_RESPONSE, [
+                'data1'      => $data1,
             ]);
+        } catch (\Throwable $e) {
+            // Not logging anything here as the datalake.presto client takes care of that
         }
-        else
+
+        if (isset($data1) === false || array_key_exists(0, $data1) === false)
         {
-            if (isset($data1) === false || array_key_exists(0, $data1) === false)
-            {
-                $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_DRUID, [
-                    'arn-data' => $allArn,
-                    'data'     => $data1,
-                ]);
-            }
+            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_PRESTO, [
+                'arn-data' => $allArn,
+                'data'     => $data1  ?? [],
+            ]);
         }
 
         foreach ($data1 as $item)
@@ -4903,37 +4889,26 @@ class Service extends Base\Service
 
         /*
          *  For RRN
-         *  way to fetch Data from Druid table authorization
+         *  way to fetch Data from Data Lake warehouse.payments
         */
-        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id  from druid.payments_fact where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
+        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id  from hive.warehouse.payments where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
 
-        $content2 = [
-            'query' => $query2
-        ];
+        try {
+            $data2 = $this->app['datalake.presto']->getDataFromDataLake($query2);
 
-        list($error2, $data2) = $druidService->getDataFromDruid($content2);
-
-        $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_DRUID_RESPONSE, [
-            'error2'    => $error2,
-            'data2'     => $data2,
-        ]);
-
-        if (empty($error2) === false)
-        {
-            $this->trace->info(TraceCode::DRUID_REQUEST_FAILURE, [
-                'query'   => $query2,
-                'message' => $error2
+            $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_PRESTO_RESPONSE, [
+                'data2'     => $data2,
             ]);
+        } catch (\Throwable $e) {
+            // Not logging anything here as the datalake.presto client takes care of that
         }
-        else
+
+        if (isset($data2) === false || array_key_exists(0, $data2) === false)
         {
-            if (isset($data2) === false || array_key_exists(0, $data2) === false)
-            {
-                $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_DRUID, [
-                    'rrn-data' => $requiredRrn,
-                    'data'     => $data2,
-                ]);
-            }
+            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_PRESTO, [
+                'rrn-data' => $requiredRrn,
+                'data'     => $data2 ?? [],
+            ]);
         }
 
         $rrnVsPaymentData =  [];
