@@ -53,5 +53,10 @@ return [
         'email_regex'           => env('EMAIL_REGEX_FOR_REDACTING'),
         'cvv_regex'             => env('CVV_REGEX_FOR_REDACTING'),
         'phone_number_regex'    => env('PHONE_NUMBER_REGEX_FOR_REDACTING'),
-    ]
+    ],
+
+    'pii_fields' => [
+        'aadhar_number'
+]
+
 ];
