@@ -119,6 +119,9 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->assertEquals(false, $response["merchant_foh"]);
         $this->assertEquals(false, $response["merchant_suspended"]);
         $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+        $this->assertEquals(45, $response["merchant_authorized_lifetime_gmv"]);
+        $this->assertEquals(2, $response["merchant_authorized_lifetime_payment_count"]);
+        $this->assertEquals(false, $response["merchant_ods"]);
 
         //live is true, hold_funds is false, suspended at is false and no foh_workflow is open
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -130,6 +133,9 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->assertEquals(false, $response["merchant_foh"]);
         $this->assertEquals(false, $response["merchant_suspended"]);
         $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+        $this->assertEquals(45, $response["merchant_authorized_lifetime_gmv"]);
+        $this->assertEquals(2, $response["merchant_authorized_lifetime_payment_count"]);
+        $this->assertEquals(false, $response["merchant_ods"]);
 
         //live is true, hold_funds is true, suspended at is false and no foh_workflow is open
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -141,7 +147,9 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->assertEquals(true, $response["merchant_foh"]);
         $this->assertEquals(false, $response["merchant_suspended"]);
         $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
-
+        $this->assertEquals(45, $response["merchant_authorized_lifetime_gmv"]);
+        $this->assertEquals(2, $response["merchant_authorized_lifetime_payment_count"]);
+        $this->assertEquals(false, $response["merchant_ods"]);
 
         //live is true, hold_funds is false, suspended at is true and no foh_workflow is open
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -153,6 +161,9 @@ class MerchantRiskAlertsServiceTest extends TestCase
         $this->assertEquals(false, $response["merchant_foh"]);
         $this->assertEquals(true, $response["merchant_suspended"]);
         $this->assertEquals(false, $response["merchant_foh_workflow_open"]);
+        $this->assertEquals(45, $response["merchant_authorized_lifetime_gmv"]);
+        $this->assertEquals(2, $response["merchant_authorized_lifetime_payment_count"]);
+        $this->assertEquals(false, $response["merchant_ods"]);
 
         //live = true, hold_funds = false, suspended at is false and foh_workflow is open
         $this->fixtures->edit('merchant', '10000000000000', [
@@ -161,11 +172,16 @@ class MerchantRiskAlertsServiceTest extends TestCase
 
         $this->createMerchantRiskAlertsFoHWorkflow();
 
+        $this->fixtures->merchant->addFeatures(['es_on_demand']);
+
         $response = $this->startTest();
         $this->assertEquals(true, $response["merchant_live"]);
         $this->assertEquals(false, $response["merchant_foh"]);
         $this->assertEquals(false, $response["merchant_suspended"]);
         $this->assertEquals(true, $response["merchant_foh_workflow_open"]);
+        $this->assertEquals(45, $response["merchant_authorized_lifetime_gmv"]);
+        $this->assertEquals(2, $response["merchant_authorized_lifetime_payment_count"]);
+        $this->assertEquals(true, $response["merchant_ods"]);
     }
 
     /**

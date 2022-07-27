@@ -142,6 +142,7 @@ class Service extends Base\Service
             Constants::MERCHANT_FOH_WORKFLOW_KEY => $workflowActions->isNotEmpty() === true,
             Constants::MERCHANT_CREATED_AT       => $merchant->getCreatedAt(),
             Constants::MERCHANT_HAS_AOV          => false,
+            Constants::MERCHANT_ODS              => $merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND),
         ];
 
         $merchantAov = $merchant->merchantDetail->avgOrderValue;
@@ -154,7 +155,43 @@ class Service extends Base\Service
             $details[Constants::MERCHANT_MAX_AOV] = $merchantAov->getMaxAov();
         }
 
+        $druidData = $this->getRasLifetimePaymentDataFromDruid($merchantId);
+
+        $details[Constants::MERCHANT_AUTHORIZED_LIFETIME_GMV]            = $druidData[Constants::MERCHANT_AUTHORIZED_LIFETIME_GMV] ?? 0;
+        $details[Constants::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT] = $druidData[Constants::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT] ?? 0;
+
         return $details;
+    }
+
+    private function getRasLifetimePaymentDataFromDruid($merchantId)
+    {
+        $druidData = [];
+
+        $query = sprintf(Constants::DRUID_RAS_QUERY, $merchantId);
+
+        [$error, $res] = $this->app['druid.service']->getDataFromDruid(['query' => $query]);
+
+        if (empty($error) === false)
+        {
+            $this->trace->info(TraceCode::GET_MERCHANT_RISK_DATA_DRUID_ERROR, ['error' => $error]);
+
+            return $druidData;
+        }
+
+        if (is_null($res) === true || count($res) === 0)
+        {
+            return $druidData;
+        }
+
+        foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $returnKey => $druidKey)
+        {
+            if (array_key_exists($druidKey, $res[0]) === true)
+            {
+                $val = $res[0][$druidKey];
+                array_set($druidData, $returnKey, $val);
+            }
+        }
+        return $druidData;
     }
 
     private function handleManualFOH(Merchant\Entity $merchant, array $input)

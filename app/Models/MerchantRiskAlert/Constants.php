@@ -17,6 +17,17 @@ class Constants
     const MERCHANT_PAYMENTS_DISPUTED_COUNT        = 'merchant_payments_disputed_count';
     const MERCHANT_PAYMENTS_HIGHER_DISPUTED_COUNT = 'merchant_payments_higher_disputed_count';
 
+    const MERCHANT_ODS                       = 'merchant_ods';
+    const MERCHANT_AUTHORIZED_LIFETIME_GMV            = 'merchant_authorized_lifetime_gmv';
+    const MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT = 'merchant_authorized_lifetime_payment_count';
+
+    const MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING = [
+        self::MERCHANT_AUTHORIZED_LIFETIME_GMV            => 'merchant_fact_authorized_gmv_ltd',
+        self::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT => 'merchant_fact_authorized_payment_count_ltd',
+    ];
+
+    const DRUID_RAS_QUERY = 'SELECT * FROM druid.merchant_risk_fact WHERE merchants_id = \'%s\'';
+
     const ACTION_MANUAL_FOH      = 'manual';
     const ACTION_AUTO_FOH        = 'auto';
     const ACTION_AUTO_REVIEW_FOH = 'auto_review';
