@@ -61,6 +61,7 @@ class Service extends Base\Service
     const LEDGER_TYPE_BOOK_FX = 'Book Fx';
     const LEDGER_TYPE_PAYOUTS = 'Payouts';
     const LEDGER_TYPE_RECEIVE = 'Receive';
+    const NIUM_REPAT_FILE_TYPE = 'acct';
 
     protected static $headers = [
         'MID',
@@ -548,7 +549,7 @@ class Service extends Base\Service
         if($input['partner'] === self::NIUM &&
             empty($fileNameDetails) === false &&
             sizeof($fileNameDetails) >=2 &&
-            $fileNameDetails[1] === 'vra'){
+            $fileNameDetails[1] === self::NIUM_REPAT_FILE_TYPE){
 
             $handler = fopen($fileDetails['file_path'],"r");
 
@@ -564,7 +565,7 @@ class Service extends Base\Service
                 $row = fgetcsv($handler);
                 if($row[1]=='')
                     continue;
-                $ledgerType = $row[6];
+                $ledgerType = $row[4];
 
                 if(strcasecmp($ledgerType, self::LEDGER_TYPE_PAYOUTS) === 0){
 
@@ -574,29 +575,29 @@ class Service extends Base\Service
                         ->setTimezone(Timezone::IST)->getTimestamp();;
                     $repatriationEntity[RepatEntity::SETTLED_AT] = $settledAt;
                     $repatriationEntity[RepatEntity::PARTNER_MERCHANT_ID] = $row[2];
-                    $repatriationEntity[RepatEntity::PARTNER_SETTLEMENT_ID] = $row[4];
+                    $repatriationEntity[RepatEntity::PARTNER_SETTLEMENT_ID] = $row[3];
                     $repatriationEntity[RepatEntity::CURRENCY] ='INR';
-                    $repatriationEntity[RepatEntity::CREDIT_CURRENCY] =$row[7];
-                    $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID]=$row[12];
+                    $repatriationEntity[RepatEntity::CREDIT_CURRENCY] =$row[5];
+                    $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID]=$row[9];
 
                 }
                 elseif (strcasecmp($ledgerType, self::LEDGER_TYPE_BOOK_FX) === 0){
 
-                    if($row[7] === 'INR')
+                    if($row[5] === 'INR')
                     {
-                        $amount = $row[8];
+                        $amount = $row[6];
                         $formattedAmount = number_format((float)$amount, 2, '.', '');
                         $repatriationEntity[RepatEntity::AMOUNT] = $formattedAmount * 100;
                     }else
                     {
-                        $creditAmount = $row[9];
+                        $creditAmount = $row[7];
                         $formattedCreditAmount = number_format((float)$creditAmount, 2, '.', '');
                         $repatriationEntity[RepatEntity::CREDIT_AMOUNT] = $formattedCreditAmount * 100;
                     }
                 }
                 elseif (strcasecmp($ledgerType, self::LEDGER_TYPE_RECEIVE) === 0){
 
-                    $transactionId = $row[4];
+                    $transactionId = $row[3];
 
                     $transaction = $this->repo->transaction->findOrFail($transactionId);
                     $settlementId = $transaction->getSettlementId();

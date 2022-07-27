@@ -29,19 +29,16 @@ class NiumTest extends OAuthTestCase
     const DATE_TIME                 = 'Date Time';
     const CLIENT                    = 'Client';
     const ACCOUNT_NUMBER            = 'Account Number';
-    const ACCOUNT_LABEL             = 'Account Label';
     const TRANSACTION               = 'Transaction #';
-    const VAC                       = 'Virtual Account Number';
     const LT                        = 'Ledger Type';
     const CURRENCY                  = 'Currency';
     const DR_AMOUNT                 = 'Dr.Amount';
     const CR_AMOUNT                 = 'Cr.Amount';
-    const BALANCE                   = 'Running Balance';
     const REMARK                    = 'Remark';
     const TXN_ID                    = 'Transaction ID';
     const USD_DR_AMT                = 'USD Dr.Amount';
     const USD_CR_AMT                = 'USD Cr.Amount';
-    const USD_RUN_BAL               = 'USD Running Balance';
+    const STATUS                    = 'status';
 
 
     protected function setUp(): void
@@ -215,113 +212,95 @@ class NiumTest extends OAuthTestCase
                 self::DATE_TIME                 => '17/05/2022 15:30:03',
                 self::CLIENT                    => 'Churn',
                 self::ACCOUNT_NUMBER            => '1234512345',
-                self::ACCOUNT_LABEL             => 'USD',
                 self::TRANSACTION               => 'TR12345',
-                self::VAC                       => '',
                 self::LT                        => 'Payouts',
                 self::CURRENCY                  => 'USD',
                 self::DR_AMOUNT                 => '100',
                 self::CR_AMOUNT                 => '',
-                self::BALANCE                   => '0',
                 self::REMARK                    => 'remark',
                 self::TXN_ID                    => 'TRIS1234',
                 self::USD_DR_AMT                => '10',
                 self::USD_CR_AMT                => '',
-                self::USD_RUN_BAL               => '',
+                self::STATUS                    => '',
             ],
             [
                 self::DATE_TIME                 => '17/05/2022 15:30:03',
                 self::CLIENT                    => 'Churn',
                 self::ACCOUNT_NUMBER            => '1234512345',
-                self::ACCOUNT_LABEL             => 'USD',
                 self::TRANSACTION               => 'TR123456',
-                self::VAC                       => '',
                 self::LT                        => 'Book Fx',
                 self::CURRENCY                  => 'USD',
                 self::DR_AMOUNT                 => '',
                 self::CR_AMOUNT                 => '100',
-                self::BALANCE                   => '0',
                 self::REMARK                    => 'remark',
                 self::TXN_ID                    => 'TRIS1234',
                 self::USD_DR_AMT                => '',
                 self::USD_CR_AMT                => '10',
-                self::USD_RUN_BAL               => '10',
+                self::STATUS                    => '',
             ],
             [
                 self::DATE_TIME                 => '17/05/2022 15:30:03',
                 self::CLIENT                    => 'Churn',
                 self::ACCOUNT_NUMBER            => '1234512345',
-                self::ACCOUNT_LABEL             => 'INR',
                 self::TRANSACTION               => '',
-                self::VAC                       => '',
                 self::LT                        => 'Book Fx',
                 self::CURRENCY                  => 'INR',
                 self::DR_AMOUNT                 => $settlementAmount,
                 self::CR_AMOUNT                 => '',
-                self::BALANCE                   => '0',
                 self::REMARK                    => 'remark',
                 self::TXN_ID                    => 'TRIS1234',
                 self::USD_DR_AMT                => '',
                 self::USD_CR_AMT                => '10',
-                self::USD_RUN_BAL               => '10',
+                self::STATUS                    => '',
             ],
             [
                 self::DATE_TIME                 => '17/05/2022 15:30:03',
                 self::CLIENT                    => 'Churn',
                 self::ACCOUNT_NUMBER            => '1234512345',
-                self::ACCOUNT_LABEL             => 'INR',
                 self::TRANSACTION               => substr($paymentTransaction1['items'][0]['id'], 4),
-                self::VAC                       => '',
                 self::LT                        => 'Receive',
                 self::CURRENCY                  => 'INR',
                 self::DR_AMOUNT                 => '',
                 self::CR_AMOUNT                 => '100000',
-                self::BALANCE                   => '0',
                 self::REMARK                    => 'remark',
                 self::TXN_ID                    => 'TRIS1234',
                 self::USD_DR_AMT                => '',
                 self::USD_CR_AMT                => '10',
-                self::USD_RUN_BAL               => '10',
+                self::STATUS                    => '',
             ],
             [
                 self::DATE_TIME                 => '17/05/2022 15:30:03',
                 self::CLIENT                    => 'Churn',
                 self::ACCOUNT_NUMBER            => '1234512345',
-                self::ACCOUNT_LABEL             => 'INR',
                 self::TRANSACTION               => substr($paymentTransaction2['items'][0]['id'], 4),
-                self::VAC                       => '',
                 self::LT                        => 'Receive',
                 self::CURRENCY                  => 'INR',
                 self::DR_AMOUNT                 => '',
                 self::CR_AMOUNT                 => '100000',
-                self::BALANCE                   => '0',
                 self::REMARK                    => 'remark',
                 self::TXN_ID                    => 'TRIS1234',
                 self::USD_DR_AMT                => '',
                 self::USD_CR_AMT                => '10',
-                self::USD_RUN_BAL               => '10',
+                self::STATUS                    => '',
             ],
             [
                 self::DATE_TIME                 => '17/05/2022 15:30:03',
                 self::CLIENT                    => 'Churn',
                 self::ACCOUNT_NUMBER            => '1234512345',
-                self::ACCOUNT_LABEL             => 'INR',
                 self::TRANSACTION               => substr($refundTransaction['items'][0]['id'], 4),
-                self::VAC                       => '',
                 self::LT                        => 'Receive',
                 self::CURRENCY                  => 'INR',
                 self::DR_AMOUNT                 => '100',
                 self::CR_AMOUNT                 => '',
-                self::BALANCE                   => '0',
                 self::REMARK                    => 'remark',
                 self::TXN_ID                    => 'TRIS1234',
                 self::USD_DR_AMT                => '',
                 self::USD_CR_AMT                => '10',
-                self::USD_RUN_BAL               => '10',
+                self::STATUS                    => '',
             ],
         ];
 
-        $fileName = 'file_vra_'.$settlement['id'];
+        $fileName = 'file_acct_'.$settlement['id'];
         $url = $this->writeToCsvFile($entries, $fileName, null, 'files/settlement');
 
         $uploadedFile = $this->createUploadedFileCsv($url);
@@ -357,7 +336,7 @@ class NiumTest extends OAuthTestCase
 
     }
 
-    public function createUploadedFileCsv(string $url, $fileName = 'file_vra_0123.csv'): UploadedFile
+    public function createUploadedFileCsv(string $url, $fileName = 'file_acct_0123.csv'): UploadedFile
     {
         $mime = 'text/csv';
 
