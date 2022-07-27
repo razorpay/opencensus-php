@@ -13672,7 +13672,10 @@ class Route
         'create_virtual_account_from_order'    => [Feature::OFFLINE_PAYMENTS],
         'payment_status_count'                 => [Feature::PAYMENT_STATUS_AGGREGATE],
         'order_create_admin'                   => [Feature::ALLOW_FORCE_TERMINAL_ID],
+        'get_dispute_document_types_metadata'  => [Feature::DISPUTE_PRESENTMENT],
         'bbps_bill_payments'                   => [Feature::FEATURE_BBPS],
+        'patch_dispute_contest_by_id'          => [Feature::DISPUTE_PRESENTMENT],
+        'post_dispute_accept_by_id'            => [Feature::DISPUTE_PRESENTMENT],
     ];
 
     /**

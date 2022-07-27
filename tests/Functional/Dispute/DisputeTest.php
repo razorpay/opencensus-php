@@ -2622,42 +2622,42 @@ class DisputeTest extends TestCase
     {
         return [
             'dispute_presentment_and_no_deduct_at_onset' => [
-                'features'                 => [],
+                'features'                 => ['dispute_presentment'],
                 'dispute_create_input'     => [],
                 'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
                 'mobile_signup_test'       => false,
             ],
             'no_dispute_presentment_and_no_deduct_at_onset' => [
-                'features'                 => ['exclude_disp_presentment'],
+                'features'                 => [],
                 'dispute_create_input'     => [],
                 'expected_mail_view'       => 'bulk_creation',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
                 'mobile_signup_test'       => false,
             ],
             'dispute_presentment_and_deduct_at_onset' => [
-                'features'                 => [],
+                'features'                 => ['dispute_presentment'],
                 'dispute_create_input'     => ['deduct_at_onset' => true],
                 'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
                 'mobile_signup_test'       => false,
             ],
             'no_dispute_presentment_deduct_at_onset' => [
-                'features'                 => ['exclude_disp_presentment'],
+                'features'                 => [],
                 'dispute_create_input'     => ['deduct_at_onset' => true],
                 'expected_mail_view'       => 'bulk_creation',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => true],
                 'mobile_signup_test'       => false,
             ],
             'no_dispute_presentment_and_no_deduct_at_onset_mobile_signup' => [
-                'features'                 => ['exclude_disp_presentment'],
+                'features'                 => [],
                 'dispute_create_input'     => [],
                 'expected_mail_view'       => 'bulk_creation',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => false],
                 'mobile_signup_test'       => true,
             ],
             'dispute_presentment_and_deduct_at_onset_mobile_signup' => [
-                'features'                 => [],
+                'features'                 => ['dispute_presentment'],
                 'dispute_create_input'     => ['deduct_at_onset' => true],
                 'expected_mail_view'       => 'bulk_creation_dispute_presentment_enabled',
                 'expected_mail_view_data'  => ['hasDeductAtOnset' => true],

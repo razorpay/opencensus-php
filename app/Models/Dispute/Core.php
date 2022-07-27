@@ -889,7 +889,7 @@ class Core extends Base\Core
     {
         try
         {
-           $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === false
+           $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true
                 ? 'emails.dispute.bulk_creation_dispute_presentment_enabled'
                 : 'emails.dispute.bulk_creation';
 

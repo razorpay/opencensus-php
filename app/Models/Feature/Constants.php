@@ -1032,7 +1032,7 @@ class Constants
     /**
      * Dispute presentment needs to be enabled on the merchant via private auth
      */
-    const EXCLUDE_DISPUTE_PRESENTMENT = 'exclude_disp_presentment';
+    const DISPUTE_PRESENTMENT = 'dispute_presentment';
 
     const ORG_ENABLE_REFUNDS = 'enable_refunds';
 
@@ -1879,7 +1879,7 @@ class Constants
         self::SKIP_SUBM_ONBOARDING_COMM       => true,
         self::ORG_CONTACT_VERIFY_DEFAULT      => true,
         self::SKIP_CUSTOMER_ID_CHECKOUT       => true,
-        self::EXCLUDE_DISPUTE_PRESENTMENT     => true,
+        self::DISPUTE_PRESENTMENT             => true,
         self::ORG_ENABLE_REFUNDS              => true,
         self::MERCHANT_ENABLE_REFUND          => true,
         self::ORG_EMAIL_UPDATE_2FA_ENABLED    => true,
@@ -2609,9 +2609,9 @@ class Constants
             'display_name'  => 'Enable BBPS Product for the merchant',
             'documentation' => '',
         ],
-        self::EXCLUDE_DISPUTE_PRESENTMENT => [
-            'feature'       => self::EXCLUDE_DISPUTE_PRESENTMENT,
-            'display_name'  => 'Disable dispute presentment',
+        self::DISPUTE_PRESENTMENT => [
+            'feature'       => self::DISPUTE_PRESENTMENT,
+            'display_name'  => 'Enable dispute presentment',
             'documentation' => '',
         ],
         self::M2M_REFERRAL =>[
