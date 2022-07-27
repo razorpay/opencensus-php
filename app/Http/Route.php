@@ -13547,7 +13547,7 @@ class Route
         'payment_create_ajax',
         'payment_create_checkout',
         'payment_create_private_old',
-        'payment_create_private_json',
+//        'payment_create_private_json',
     ];
 
     /**
