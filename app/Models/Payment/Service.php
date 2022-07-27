@@ -5024,36 +5024,79 @@ class Service extends Base\Service
                     'gateway'                   => $gateway
                 ]);
 
-                $response = $this->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
+            /* This check provides early action for unexpected payments created in callback flow. If the upi_entity is
+            already present, then we can simply return without entering the payment creation flow by unexpectedCallback.
+            TODO : Revisit this logic against isDuplicateUnexpectedPaymentV2
+            */
 
-                if (empty($response['payment_id']) === false)
+            $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($npciReferenceId, $gateway);
+
+            if (empty($upiEntity) === false)
+            {
+                if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
                 {
-                    $unexpectedPaymentId = $response['payment_id'];
+                    $unexpectedPaymentId = $upiEntity->getPaymentId();
 
-                    $this->trace->info(
-                        TraceCode::UPI_UNEXPECTED_PAYMENT_CREATED,
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
                         [
-                            'payment_id'            => $unexpectedPaymentId,
-                            'npci_reference_id'     => $npciReferenceId,
-                            'gateway'               => $gateway,
-
-                        ]);
+                            'payment_id'        => $unexpectedPaymentId,
+                            'npci_reference_id' => $npciReferenceId,
+                            'gateway'           => $gateway,
+                        ],
+                        'Duplicate Unexpected payment with same amount'
+                    );
                 }
-                else
-                {
-                    $this->trace->info(
-                        TraceCode::UPI_UNEXPECTED_PAYMENT_FAILED,
-                        [
-                            'npci_reference_id'     => $npciReferenceId,
-                            'gateway'               => $gateway,
+            }
 
-                        ]);
-                }
+            $response = $this->unexpectedCallback($input, $input['upi']['merchant_reference'], $gateway);
+
+            if (empty($response['payment_id']) === false)
+            {
+                $unexpectedPaymentId = $response['payment_id'];
+
+                $this->trace->info(
+                    TraceCode::UPI_UNEXPECTED_PAYMENT_CREATED,
+                    [
+                        'payment_id'        => $unexpectedPaymentId,
+                        'npci_reference_id' => $npciReferenceId,
+                        'gateway'           => $gateway,
+
+                    ]);
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::UPI_UNEXPECTED_PAYMENT_FAILED,
+                    [
+                        'npci_reference_id' => $npciReferenceId,
+                        'gateway'           => $gateway,
+
+                    ]);
+            }
 
             return [
-                'payment_Id' => $unexpectedPaymentId,
+                'payment_id' => $unexpectedPaymentId,
                 'success' => (empty($unexpectedPaymentId) === false),
             ];
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::UPI_UNEXPECTED_PAYMENT_FAILED,
+                [
+                    'npci_reference_id'         => $npciReferenceId,
+                    'gateway'                   => $gateway,
+                    'payment_id'                => $unexpectedPaymentId,
+                ]
+            );
+
+            $ex->getError()->setMetadata(['payment_id' => $unexpectedPaymentId]);
+
+            throw $ex;
         }
         catch (\Exception $ex)
         {
@@ -5164,7 +5207,7 @@ class Service extends Base\Service
 
         return [
             'success'        => ($payment->getStatus() === Payment\Status::AUTHORIZED),
-            'payment_Id'     => $payment->getId(),
+            'payment_id'     => $payment->getId(),
             'amount'         => $payment->getAmount(),
             'status'         => $payment->getStatus(),
             'rrn'            => $payment->getReference16(),
@@ -5202,7 +5245,7 @@ class Service extends Base\Service
 
             return [
                 'success'        => ($payment->getStatus() === Payment\Status::AUTHORIZED),
-                'payment_Id'     => $payment->getId(),
+                'payment_id'     => $payment->getId(),
                 'amount'         => $payment->getAmount(),
                 'status'         => $payment->getStatus(),
                 'rrn'            => $payment->getReference16(),

@@ -1719,7 +1719,7 @@ EOT;
 
         $this->assertTrue($response['success']);
 
-        $this->assertNotEmpty($response['payment_Id']);
+        $this->assertNotEmpty($response['payment_id']);
     }
 
     /**
@@ -1779,9 +1779,45 @@ EOT;
 
         $this->assertEquals($upi['amount'], $content['payment']['amount']);
 
-        $this->assertNotEmpty($response['payment_Id']);
+        $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
+    }
+
+    /**
+     * Tests the payment create for duplicate unexpected payment
+     */
+    public function testDuplicateUnexpectedPaymentCreate()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame('created', $payment->getStatus());
+
+        $callbackResponse = $this->mockServer()->getAsyncCallbackContent($upi->toArray(), $payment->toArray());
+
+        $this->makeS2SCallbackAndGetContent($callbackResponse);
+
+        $content['upi']['merchant_reference'] = $upi->getPaymentId();
+        $content['upi']['npci_reference_id'] = $upi->getNpciReferenceId();
+
+        // Hit payment create again
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+           'Duplicate Unexpected payment with same amount');
     }
 
     public function testDuplicateUnexpectedPaymentCreateAmountMismatch()
@@ -1812,15 +1848,22 @@ EOT;
 
         $this->assertEquals($upiEntity['amount'],$content['payment']['amount']);
 
-        $this->assertNotEmpty($response['payment_Id']);
+        $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
 
-        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+        // Hitting the payment create again for same amount mismatch request
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
 
-        $this->assertEmpty($response['payment_Id']);
-
-        $this->assertFalse($response['success']);
+        }, Exception\BadRequestException::class,
+           'Duplicate Unexpected payment with same amount');
     }
 
     /**
@@ -1870,6 +1913,8 @@ EOT;
         $content['meta']['force_auth_payment'] = true;
 
         $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $this->assertNotEmpty($response['payment_id']);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 

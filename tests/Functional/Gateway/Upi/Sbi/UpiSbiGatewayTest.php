@@ -1373,7 +1373,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals($gatewayData['addInfo2'],$content['upi']['gateway_data']['addInfo2']);
 
-        $this->assertNotEmpty($response['payment_Id']);
+        $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
     }
@@ -1418,7 +1418,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->assertEquals($gatewayData['addInfo2'],$content['upi']['gateway_data']['addInfo2']);
 
-        $this->assertNotEmpty($response['payment_Id']);
+        $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
     }
@@ -1446,6 +1446,45 @@ class UpiSbiGatewayTest extends TestCase
 
             $this->makeRequestAndGetContent($request);
         },Exception\BadRequestValidationFailureException::class);
+    }
+
+    /**
+     * Tests the payment create for duplicate unexpected payment
+     */
+    public function testDuplicateUnexpectedPayment()
+    {
+        $this->payment[Payment\Entity::VPA] = 'unexpectedPayment@sbi';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertSame(Payment\Status::CREATED, $payment->getStatus());
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upi->toArray());
+
+        $this->makeS2SCallbackAndGetContent($content);
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        $content['upi']['merchant_reference'] = $upi->getPaymentId();
+
+        $content['upi']['vpa'] = $upi->getVpa();
+
+        // Hit payment create again
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+           'Duplicate Unexpected payment with same amount');
     }
 
     /**
@@ -1479,15 +1518,21 @@ class UpiSbiGatewayTest extends TestCase
         //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
-        $this->assertNotEmpty($response['payment_Id']);
+        $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
         // Hitting the payment create again for same amount mismatch request
-        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
 
-        $this->assertEmpty($response['payment_Id']);
-
-        $this->assertFalse($response['success']);
+        }, Exception\BadRequestException::class,
+           'Duplicate Unexpected payment with same amount');
     }
 
     /**
@@ -1518,7 +1563,7 @@ class UpiSbiGatewayTest extends TestCase
 
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
 
-        $this->assertEmpty($response['payment_Id']);
+        $this->assertEmpty($response['payment_id']);
 
         $this->assertFalse($response['success']);
     }
@@ -1570,6 +1615,8 @@ class UpiSbiGatewayTest extends TestCase
         $content['meta']['force_auth_payment'] = true;
 
         $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $this->assertNotEmpty($response['payment_id']);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -1702,6 +1749,8 @@ class UpiSbiGatewayTest extends TestCase
         $content['meta']['force_auth_payment'] = false;
 
         $response = $this->makeAuthorizeFailedPaymentAndGetPayment($content);
+
+        $this->assertNotEmpty($response['payment_id']);
 
         $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
 
