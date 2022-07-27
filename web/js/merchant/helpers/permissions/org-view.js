@@ -13,17 +13,14 @@ const HDFC_restrictedModules = [
   'profile_gst',
 ];
 
-const HDFC_restrictedFeatures = [
-  'flashcheckout',
-  'current_balance',
-  'external_links',
-];
+const HDFC_restrictedFeatures = ['flashcheckout', 'current_balance', 'external_links'];
 
 const Bajaj_restrictedModules = [
   'marketplace', //internal name for route feature
   'accounts',
   'virtual_accounts',
-  'payment_pages',
+  // enabling PP for bajaj temporary change
+  // 'payment_pages',
   'invoices',
 ];
 
