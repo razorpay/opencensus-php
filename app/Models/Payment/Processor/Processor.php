@@ -3462,6 +3462,7 @@ class Processor
             'acquirer'            => $terminal->getGatewayAcquirer(),
             'gateway_merchant_id' => $terminal->getGatewayMerchantId(),
             'gateway_terminal_id' => $terminal->getGatewayTerminalId(),
+            'mode'                => $terminal->getMode(),
         ];
 
         $card = $payment->card;
