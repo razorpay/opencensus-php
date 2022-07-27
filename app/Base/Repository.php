@@ -470,6 +470,49 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * This gives the connection to payment fetch Replica with a feature of `lagThreshold`.
+     * If the current lag is more than the threshold provided, we will fail the query immediately with a
+     * ServerError. If no lagThreshold is provided, it will return back the slave connection
+     * irrespective of what the current lag is.
+     *
+     * @param null $lagThreshold To be give in Milliseconds.
+     *                           For example, 5 minutes lag threshold is 300000 milliseconds
+     *
+     * @return Builder
+     * @throws Exception\ServerErrorException
+     */
+    public function newQueryOnPaymentFetchReplica($lagThreshold = null)
+    {
+        $slaveConnection = $this->getPaymentFetchReplicaConnection();
+
+        $heartbeatConfig = $this->app['config']->get('database.connections.live.heartbeat_check');
+
+        $heartbeatEnabled = $heartbeatConfig['enabled'] ?? true ;
+
+        //If heartbeat check is false then we don't check the replication lag and directly make the query to slave db
+        if ($heartbeatEnabled === false)
+        {
+            return $this->newQueryWithConnection($slaveConnection);
+        }
+
+        $replicationLagInMilli = $this->app['db.connector.mysql']->getReplicationLagInMilli($slaveConnection);
+
+        if (($lagThreshold !== null) and
+            ($replicationLagInMilli > $lagThreshold))
+        {
+            throw new Exception\ServerErrorException(
+                'Replication lag greater than the defined threshold',
+                ErrorCode::SERVER_ERROR_SLAVE_LAG_THRESHOLD_BREACHED,
+                [
+                    'lag_threshold'    => $lagThreshold,
+                    'actual_lag_in_ms' => $replicationLagInMilli
+                ]);
+        }
+
+        return $this->newQueryWithConnection($slaveConnection);
+    }
+
+    /**
      * Overwriting this here, as we want to reuse the find method overridden
      * in certain repository classes (required for query caching). We want to execute find and throw exception
      * if the entity is not found.

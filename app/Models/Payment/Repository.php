@@ -2063,7 +2063,7 @@ EOT;
 
         $selectCols = $this->repo->payment->dbColumn('*');
 
-        return $this->newQueryOnSlave(600000)
+        return $this->newQueryOnPaymentFetchReplica(600000)
                     ->select($selectCols)
                     ->join(
                         Table::TOKEN,

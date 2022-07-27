@@ -519,7 +519,7 @@ class Repository extends Base\Repository
 
         $selectCols = $this->dbColumn('*');
 
-        $tokens = $this->newQueryOnSlave(600000)
+        $tokens = $this->newQueryOnPaymentFetchReplica(600000)
                         ->select($selectCols, 'payments.id as payment_id')
                         ->from(\DB::raw('`tokens`, `payments`'))
                         ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
