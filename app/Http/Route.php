@@ -8388,7 +8388,7 @@ class Route
         'emerchantpay_get_request_data'         => Permission::VIEW_MERCHANT,
         'emerchantpay_create_request_data'      => Permission::VIEW_MERCHANT,
 
-        'admin_collect_info_merchant_details_patch'        =>Permission::EDIT_MERCHANT,
+        'admin_collect_info_merchant_details_patch'        =>Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
 
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
