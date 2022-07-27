@@ -346,6 +346,7 @@ export default class ActivationContainer extends Component {
     let content = null;
     let modalClasses = ['animate-down'];
     let trackerIntent = null;
+    let isModalWrap = true;
 
     if (isLoading) {
       modalClasses = ['spinner', 'transparent'];
@@ -357,6 +358,7 @@ export default class ActivationContainer extends Component {
       );
     } else if (shouldBlockMerchantKYC) {
       // show modal to complete the Partner KYC first before proceeding to Merchant KYC
+      isModalWrap = false;
       content = (
         <KYCStatusModal
           onGoToDashboard={() => {
@@ -386,8 +388,20 @@ export default class ActivationContainer extends Component {
 
     return isModal ? (
       <div>
+        {isModalWrap ? (
+          <Modal
+            className={classList(...modalClasses)}
+            onClose={this.props.onClose}
+            onCloseCB={this.handleCloseActivationForm}
+            canDisableCloseBtn={isActivationFormLoading}
+          >
+            <ModalContent>{content || spinner}</ModalContent>
+          </Modal>
+        ) : (
+          <>{content || spinner}</>
+        )}
         <Modal
-          class={classList(...modalClasses)}
+          className={classList(...modalClasses)}
           onClose={this.props.onClose}
           onCloseCB={this.handleCloseActivationForm}
           canDisableCloseBtn={isActivationFormLoading}
