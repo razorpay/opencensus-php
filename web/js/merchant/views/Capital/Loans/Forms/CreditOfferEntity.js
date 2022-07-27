@@ -1,22 +1,18 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import CreditOffer from '../../components/CreditOffer';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import {
   acceptCreditOffer,
   fetchCreditOffers,
   fetchLoanApplicationMeta,
   getAcceptedOffer,
 } from 'merchant/reducers/capital';
-import Button, { AsyncBtn } from 'common/new-ui/Button';
-import { triggerHotjarRecording } from 'common/utils/hotjar';
-import RepaymentInformation from '../../components/RepaymentInformation';
+import { Component } from 'react';
+import { connect } from 'react-redux';
+import CreditOffer from '../../components/CreditOffer';
 import { FormLoader } from '../../components/FormSectionLoadingSkeleton';
-import {
-  APPLICATION_STATES,
-  CAPITAL_PRODUCT_CODES,
-  CAPITAL_PRODUCT_NAME_CODE_MAP,
-  HOTJAR_TRIGGERS,
-} from '../constants';
+import RepaymentInformation from '../../components/RepaymentInformation';
+import { isCashAdvanceProduct } from '../../utils';
+import { HOTJAR_TRIGGERS } from '../constants';
 
 @connect(
   (state) => ({
@@ -59,6 +55,7 @@ class CreditOfferEntity extends Component {
           }),
         ]);
       }
+      return null;
     });
   };
 
@@ -84,6 +81,7 @@ class CreditOfferEntity extends Component {
     const isOfferAccepted =
       accepted_offer_details.data && accepted_offer_details.data.credit_offer_id;
 
+    const showRepaymentInfo = !isCashAdvanceProduct(meta.product);
     return (
       <div className="credit-offer-container">
         <div className="loan-offer-wrapper">
@@ -92,11 +90,13 @@ class CreditOfferEntity extends Component {
             _fromWhere={`${meta.product} Offer`}
             product={meta.product}
           />
-          <RepaymentInformation
-            product={meta.product}
-            creditOffer={creditOffer}
-            _fromWhere={`${meta.product} Offer`}
-          />
+          {showRepaymentInfo && (
+            <RepaymentInformation
+              product={meta.product}
+              creditOffer={creditOffer}
+              _fromWhere={`${meta.product} Offer`}
+            />
+          )}
           {!isOfferAccepted ? (
             <div className="loan-offer-action">
               <Button.Transparent onClick={this.handleBack}>
