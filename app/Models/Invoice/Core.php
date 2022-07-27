@@ -1392,7 +1392,7 @@ class Core extends Base\Core
             $this->repo->saveOrFail($order);
         }
 
-        $this->repo->saveOrFail($order);
+       // $this->repo->saveOrFail($order);
     }
 
     protected function unsetFirstPaymentMinAmountFieldIfApplicable(Entity $invoice)
