@@ -873,7 +873,7 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_PENDING                               => Feature\Constants::ONE_CLICK_CHECKOUT,
-        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => Feature\Constants::NO_DOC_ONBOARDING,
+        self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => Feature\Constants::SUBM_NO_DOC_ONBOARDING,
     ];
 
     /**
