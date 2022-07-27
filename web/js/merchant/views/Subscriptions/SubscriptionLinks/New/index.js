@@ -285,6 +285,8 @@ export default class NewSubscriptionLink extends React.Component {
   };
 
   handleChangeInPlan = ({ option }) => {
+    if (!option) return;
+
     const { currencyOfSelectedPlan, fields, internals } = this.state;
 
     trackAddPlans(option.currency);

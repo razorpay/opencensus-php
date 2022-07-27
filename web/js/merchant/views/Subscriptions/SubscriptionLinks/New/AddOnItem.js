@@ -43,6 +43,7 @@ export default class AddOnItem extends Component {
     return (
       <div class="Addon--Item">
         <TypeAhead
+          showClear={false}
           name={`${props.name}.item`}
           options={props.items}
           disabled={props.itemsLoading}

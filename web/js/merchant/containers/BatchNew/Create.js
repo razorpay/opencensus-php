@@ -70,13 +70,12 @@ class BatchCreate extends Component {
           this.props.onCreation(response);
         })
         .catch(() => {
-          this.props
-            .showNotification({
-              type: 'error',
-              message: 'Failed to create batch.',
-            })
-            .finally(() => this.setState({ isCreatingBatch: false }));
-        }),
+          this.props.showNotification({
+            type: 'error',
+            message: 'Failed to create batch.',
+          });
+        })
+        .finally(() => this.setState({ isCreatingBatch: false })),
     );
   };
 
