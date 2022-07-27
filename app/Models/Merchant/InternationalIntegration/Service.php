@@ -220,7 +220,7 @@ class Service extends Base\Service
         {
             $requestedPaymentMethods = $this->createEmerchantPayRequestedTerminals($merchant->getId(), $requestedApm);
             $this->setEmerchantpayInstrumentsRequested($merchant->getId(), $mii, $requestedPaymentMethods, 'terminal_request_sent');
-            $this->createEmerchantpayFileGenerationReminder($merchant->getId(), $requestedApm);
+            $this->createEmerchantpayFileGenerationReminder($merchant->getId());
         }
 
         return $this->createEmerchantpayApmFormResponse($mii, $owners);
@@ -377,9 +377,9 @@ class Service extends Base\Service
         return $requestedPaymentMethods;
     }
 
-    protected function createEmerchantpayFileGenerationReminder($merchantId, $requestedApm)
+    protected function createEmerchantpayFileGenerationReminder($merchantId)
     {
-        $request = $this->createApmRemindersRequest($merchantId, $requestedApm);
+        $request = $this->createApmRemindersRequest($merchantId);
         try
         {
             $this->reminderService->createReminder($request, self::SHARED_MERCHANT_ID);
@@ -397,15 +397,13 @@ class Service extends Base\Service
         }
     }
 
-    protected function createApmRemindersRequest($merchantId, $requestedApm)
+    protected function createApmRemindersRequest($merchantId)
     {
 
         $req_id = Entity::generateUniqueId();
 
         $reminderData = [
             'submitted_at' => Carbon::now(Timezone::IST)->getTimestamp(),
-            'payment_methods' => array_column($requestedApm, 'instrument'),
-            'send_file' => true,
         ];
 
         $url = sprintf('merchant/international/apm_request/reminder/%s', $merchantId);
@@ -421,7 +419,7 @@ class Service extends Base\Service
         return $request;
     }
 
-    public function postProcessEmerchantpayMaf($mid, $paymentMethods)
+    public function postProcessEmerchantpayMaf($mid)
     {
         $this->app['basicauth']->setMerchant($this->repo->merchant->findOrFailPublic($mid));
         $this->merchant = $this->app['basicauth']->getMerchant();
@@ -444,6 +442,10 @@ class Service extends Base\Service
         $this->saveEmerchantpayMerchantDocuments($mii, $owners, $mid);
 
         // Mark the requested payment methods as processed
+        $paymentMethods = array_filter($mii->getPaymentMethods(),
+            function ($i) { return ($i['terminal_request_sent'] && !$i['file_request_sent']); });
+
+        $paymentMethods = array_column($paymentMethods, 'instrument');
         $this->setEmerchantpayInstrumentsRequested($mid, $mii, $paymentMethods, 'file_request_sent');
     }
 

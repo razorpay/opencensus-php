@@ -71,10 +71,20 @@ class EmerchantpayApmRequestFile extends Base\BaseGifuFile
 
         $this->validateEntities($mii, $owners);
 
+        $paymentMethods = array_filter($mii->getPaymentMethods(),
+            function ($i) { return ($i['terminal_request_sent'] && !$i['file_request_sent']); });
+
+        $paymentMethods = array_column($paymentMethods, 'instrument');
+
+        if(count($paymentMethods) === 0)
+        {
+            return $data;
+        }
+
         try {
             $this->createApplicantCompanyDetailsSection($data, $merchant, $mii->getNotes());
-            $this->createPaymentMethodsSection($data, $input['payment_methods']);
-            $this->createBusinessOverviewSection($data, $mii->getNotes(), $input['payment_methods']);
+            $this->createPaymentMethodsSection($data, $paymentMethods);
+            $this->createBusinessOverviewSection($data, $mii->getNotes(), $paymentMethods);
             $this->createWebsiteDetailsSection($data, $merchant, $merchantDetail);
             $this->createManagementAndOwnershipSection($data, $owners);
         }
@@ -104,7 +114,7 @@ class EmerchantpayApmRequestFile extends Base\BaseGifuFile
         array_push($data,
             [self::MAF => 'Registered Address', self::IFTM => '']);
         array_push($data,
-            [self::MAF => 'Building Name or Number and Street', self::IFTM => $miiNotes['adddress_line1'] . ' ' . $miiNotes['adddress_line2']]);
+            [self::MAF => 'Building Name or Number and Street', self::IFTM => $miiNotes['address_line1'] . ' ' . $miiNotes['address_line2']]);
         array_push($data,
             [self::MAF => 'City, Post (PIN) Code', self::IFTM => $miiNotes['city'] . ' ' . $miiNotes['state'] . ' ' . $miiNotes['zipcode']]);
         array_push($data,
@@ -135,7 +145,7 @@ class EmerchantpayApmRequestFile extends Base\BaseGifuFile
         array_push($data,
             [self::MAF => 'Business Overview', self::IFTM => '']);
         array_push($data,
-            [self::MAF => Constant::GOODS_TYPE_DESC, self::IFTM => $miiNotes['goods_type']]);
+            [self::MAF => Constant::GOODS_TYPE_DESC, self::IFTM => $miiNotes['service_offered']]);
         array_push($data,
             [self::MAF => Constant::PHYSICAL_DELIVERY_DESC, self::IFTM => $miiNotes['physical_delivery']]);
         array_push($data,
@@ -209,7 +219,7 @@ class EmerchantpayApmRequestFile extends Base\BaseGifuFile
             array_push($data,
                 [self::MAF => 'Current Home Address', self::IFTM => '']);
             array_push($data,
-                [self::MAF => 'Building Name or Number and Street', self::IFTM => $od['adddress_line1'] . ' ' . $od['adddress_line2']]);
+                [self::MAF => 'Building Name or Number and Street', self::IFTM => $od['address_line1'] . ' ' . $od['address_line2']]);
             array_push($data,
                 [self::MAF => 'City, Post (PIN) Code', self::IFTM => $od['city'] . ' ' . $od['state'] . ' ' . $od['zipcode']]);
             array_push($data,

@@ -43,20 +43,20 @@ class MerchantApmEnablementController extends Controller
 
         $this->trace->info(
             TraceCode::EMERCHANTPAY_APM_REQUEST_MAF_GENERATE,
-            ['mid' => $mid, 'payment_methods' => $input['payment_methods']]
+            ['mid' => $mid]
         );
 
         $input['merchant_id'] = $mid;
 
         $fileProcessor = new EmerchantpayApmRequestFile;
         $ufhResponse = $fileProcessor->generate($input, null, null);
-        if($input['send_file'] === true && count($ufhResponse) !== 0)
+        if(count($ufhResponse) !== 0)
         {
             $fileProcessor->sendGifuFile();
         }
 
         $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
-            ->postProcessEmerchantpayMaf($mid, $input['payment_methods']);
+            ->postProcessEmerchantpayMaf($mid);
 
         return $ufhResponse;
     }
