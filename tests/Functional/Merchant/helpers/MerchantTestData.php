@@ -8848,6 +8848,7 @@ return [
                         "paylater",
                         "phonepe",
                         "hdfc_debit_emi",
+                        "amazonpay"
                     ]
             ],
         ],

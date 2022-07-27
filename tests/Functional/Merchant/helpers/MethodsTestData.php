@@ -487,6 +487,29 @@ return [
             ],
     ],
 
+    'testEnableAmazonPayForBlacklistedMccs' => [
+            'request' => [
+                'url' => '/merchants/10000000000000/methods',
+                'method' => 'put',
+                'content'   => [
+                        'amazonpay' => '1',
+                ]
+            ],
+            'response'  => [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'AmazonPay cannot be enabled for this MCC: 6211',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class' => RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+    ],
+   
     'testMerchantsMethodUpdateInternal' => [
         'request' => [
             'url' => '/internal/methods/bulkupdate',

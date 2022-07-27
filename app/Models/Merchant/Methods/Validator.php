@@ -192,4 +192,11 @@ class Validator extends Base\Validator
                 'Paylater cannot be enabled for this MCC: '.$mcc);
         }
     }
+    public function validateCategoryForAmazonPay(string $mcc)
+    {
+        if (in_array($mcc, DefaultMethodsForCategory::AMAZONPAY_DISABLED_MCCS)) {
+            throw new Exception\BadRequestValidationFailureException(
+                'AmazonPay cannot be enabled for this MCC: '.$mcc);
+        }
+    }
 }

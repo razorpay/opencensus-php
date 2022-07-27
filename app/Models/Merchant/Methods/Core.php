@@ -101,6 +101,10 @@ class Core extends Base\Core
             (new Validator)->validateCategoryForPaylater($mcc);
         }
 
+        if (isset($input['amazonpay']) === true && $input['amazonpay'] === '1') {
+            (new Validator)->validateCategoryForAmazonPay($mcc);
+        }
+        
         if (isset($input[Methods\Entity::CARD_NETWORKS]) === true)
         {
             $inputCardNetworks = $input[Methods\Entity::CARD_NETWORKS];

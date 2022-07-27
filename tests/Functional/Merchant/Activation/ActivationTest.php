@@ -824,6 +824,7 @@ class ActivationTest extends OAuthTestCase
             'payzapp'       => true,
             'sbibuddy'      => true,
             'phonepe'       => false,
+            'amazonpay'     => false,
             'cardless_emi'  => true,
             'debit_emi_providers' => [],
         ];
@@ -891,6 +892,7 @@ class ActivationTest extends OAuthTestCase
             'sbibuddy'      => true,
             'phonepe'       => false,
             'cardless_emi'  => true,
+            'amazonpay'     => false,
         ];
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);

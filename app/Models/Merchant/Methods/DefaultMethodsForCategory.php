@@ -80,6 +80,68 @@ class DefaultMethodsForCategory
             '6534'
         ];
 
+        const AMAZONPAY_DISABLED_MCCS = [
+            '6051',
+            '6012',
+            '6010',
+            '8931',
+            '6050',
+            '6211',
+            '7361',
+            '6538',
+            '4829',
+            '6011',
+            '7012',
+            '5971',
+            '5993',
+            '5999',
+            '5972',
+            '5169',
+            '5933',
+            '5921',
+            '5681',
+            '5932',
+            '5931',
+            '5813',
+            '7801',
+            '5816',
+            '7994',
+            '7829',
+            '7311',
+            '5964',
+            '8041',
+            '5969',
+            '763',
+            '7297',
+            '7802',
+            '7321',
+            '7800',
+            '5963',
+            '5962',
+            '7995',
+            '5968',
+            '5960',
+            '7399',
+            '5967',
+            '5996',
+            '5966',
+            '7296',
+            '6513',
+            '8661',
+            '8398',
+            '7273',
+            '8641',
+            '4821',
+            '8699',
+            '8651',
+            '743',
+            '744',
+            '5715',
+            '5832',
+            '5965',
+            '7322',
+        ];
+
         // map of category to auto prohibited methods i.e. methods which should not be enabled automatically by default
         // for the merchant belonging to that category, however can be enabled by admins
         // key is currently merchant category concatanated by category2, (in future business type etc can also come)
@@ -1068,6 +1130,11 @@ class DefaultMethodsForCategory
             array_push($prohibitedMethods, Entity::PAYLATER);
         }
 
+        if (in_array($category, self::AMAZONPAY_DISABLED_MCCS) && !in_array(Entity::AMAZONPAY, $prohibitedMethods))
+        {
+            array_push($prohibitedMethods, Entity::AMAZONPAY);
+        }
+
         foreach($orgWiseMethodsForEnablement as $method)
         {
             $methodData[$method] = true;
@@ -1112,6 +1179,11 @@ class DefaultMethodsForCategory
         if (in_array($category, self::PAYLATER_DISABLED_MCCS) && !in_array(Entity::PAYLATER, $disabledMethodsForInstrumentRequest))
         {
             array_push($disabledMethodsForInstrumentRequest, Entity::PAYLATER);
+        }
+
+        if (in_array($category, self::AMAZONPAY_DISABLED_MCCS) && !in_array(Entity::AMAZONPAY, $disabledMethodsForInstrumentRequest))
+        {
+            array_push($disabledMethodsForInstrumentRequest, Entity::AMAZONPAY);
         }
 
         return array_values($disabledMethodsForInstrumentRequest);
