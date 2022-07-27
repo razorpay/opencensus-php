@@ -7,6 +7,10 @@
     username = "rzp_test_10000000000000"
     password = "RANDOM_DASH_PASSWORD"
 
+[OneClickCheckout]
+    username = "rzp_test_0Vsp9weqfeCcKw"
+    password = "dm2ANMx5K5NrSG18zRiUey83"
+
 [Payments]
     username = "rzp_test_1DP5mmOlF5G5ag"
     password = "thisissupersecret"
