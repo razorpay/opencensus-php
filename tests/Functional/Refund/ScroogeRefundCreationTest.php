@@ -529,8 +529,6 @@ class ScroogeRefundCreationTest extends TestCase
 
     public function testRefundBackWriteOnApi()
     {
-        $this->markTestSkipped('Failing for Multiple PRs. Code Owner Need to debug');
-        
         $payment = $this->defaultAuthPayment();
 
         $this->capturePayment($payment['id'], $payment['amount']);
@@ -570,8 +568,6 @@ class ScroogeRefundCreationTest extends TestCase
             "currency"=> "INR",
             "fee"=> 0,
             "gateway"=> "hdfc",
-            "gateway_amount"=> NULL,
-            "gateway_currency"=> NULL,
             "id"=> $refundId,
             "last_attempted_at"=> 1655703199,
             "merchant_id"=> "10000000000000",
@@ -581,9 +577,7 @@ class ScroogeRefundCreationTest extends TestCase
             ],
             "payment_id"=> $paymentId,
             "processed_at"=> 1655703199,
-            "receipt"=> NULL,
             "reference1"=> "74332742172217179755346",
-            "reversal_id"=> NULL,
             "settled_by"=> "Razorpay",
             "speed_processed"=> "normal",
             "speed_decisioned"=> "normal",
