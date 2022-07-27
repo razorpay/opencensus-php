@@ -2,13 +2,17 @@
 
 namespace RZP\Models\Transaction\Statement\Ledger\Statement;
 
-use RZP\Models\Merchant\Balance\Type;
+use App;
+use Razorpay\Trace\Logger;
+
 use RZP\Models\Payout;
 use RZP\Models\External;
+use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\BankTransfer;
 use RZP\Models\CreditTransfer;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
 Use RZP\Models\Transaction\Statement\Ledger\Journal;
 use RZP\Models\Transaction\Statement\Ledger\LedgerEntry;
@@ -90,14 +94,11 @@ class Entity extends LedgerEntry\Entity
         self::DEBIT,
     ];
 
-    public function bankingAccount()
-    {
-        return $this->hasOne(\RZP\Models\BankingAccount\Entity::class, Entity::MERCHANT_ID, Entity::MERCHANT_ID);
-    }
-
     public function accountBalance()
     {
-        return $this->belongsTo(\RZP\Models\Merchant\Balance\Entity::class, Entity::MERCHANT_ID, Entity::MERCHANT_ID);
+        return $this->belongsTo(\RZP\Models\Merchant\Balance\Entity::class, Entity::MERCHANT_ID, Entity::MERCHANT_ID)
+            ->where(Balance\Entity::TYPE, Balance\Type::BANKING)
+            ->where(Balance\Entity::ACCOUNT_TYPE, Balance\AccountType::SHARED);
     }
 
     public function source()
@@ -139,7 +140,7 @@ class Entity extends LedgerEntry\Entity
     // Appends
     public function getAccountNumberAttribute()
     {
-        return $this->bankingAccount->getAccountNumber();
+        return $this->accountBalance->getAccountNumber();
     }
 
     public function getCreditAttribute()
@@ -164,7 +165,7 @@ class Entity extends LedgerEntry\Entity
 
     public function isBalanceTypeBanking(): bool
     {
-        return (optional($this->accountBalance)->getType() === Type::BANKING);
+        return (optional($this->accountBalance)->getType() === Balance\Type::BANKING);
     }
 
     /**
@@ -179,13 +180,29 @@ class Entity extends LedgerEntry\Entity
     {
         $createdAt = (int) $this->attributes[self::CREATED_AT];
 
-        // Commenting out this code as DA won't come here
-//         if ($this->isBalanceAccountTypeDirect() === true)
-//         {
-//             $postedAt = (int) $this->attributes[self::POSTED_AT];
-//
-//             return $postedAt ? $postedAt : $createdAt;
-//         }
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            $app['trace']->info(
+                TraceCode::LEDGER_STATEMENT_BALANCE_ENTITY,
+                [
+                    'balance_id' => $this->accountBalance->getId(),
+                    'balance_type' => $this->accountBalance->getType(),
+                    'balance_account_type' => $this->accountBalance->getAccountType(),
+                ]);
+
+            if ($this->isBalanceAccountTypeDirect() === true)
+            {
+                $postedAt = (int) $this->attributes[self::POSTED_AT];
+
+                return $postedAt ? $postedAt : $createdAt;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $app['trace']->traceException($e, Logger::ERROR, TraceCode::LEDGER_STATEMENT_CREATED_AT_ERROR);
+        }
 
          return $createdAt;
     }

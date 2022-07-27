@@ -7504,6 +7504,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANK_ACCOUNT_RETRY_STATUS                                   = 'BANK_ACCOUNT_RETRY_STATUS';
 
+    const LEDGER_STATEMENT_BALANCE_ENTITY   = 'LEDGER_STATEMENT_BALANCE_ENTITY';
+    const LEDGER_STATEMENT_CREATED_AT_ERROR = 'LEDGER_STATEMENT_CREATED_AT_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
