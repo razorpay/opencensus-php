@@ -165,8 +165,8 @@ class Core extends Base\Core
         /* get loggedIn merchant user role */
         $user = $this->app['basicauth']->getUser();
         $merchantUserRole = $this->repo->merchant_user->getMerchantUserRoles($user->getId(),$merchantId);
-        $merchantRole = array_pluck($merchantUserRole->toArray(), User\Entity::ROLE)[0];
-
+        $merchantRoleId = array_pluck($merchantUserRole->toArray(), User\Entity::ROLE)[0];
+        $merchantRole = $this->repo->roles->fetchRoleName($merchantRoleId);
         /* get userEmail & userName for merchant have roleId that has been edited */
         $merchantUsers = $this->repo->merchant_user
             ->findByRolesAndMerchantId([$roleId], $merchantId);

@@ -391,30 +391,30 @@ return [
     ],
 
     'testFetchRoleByIdCustomRole' => [
-    'request'  => [
-        'method'  => 'GET',
-        'url'   => '/cac/role',
-        'content'   => [],
-        'server' => [
-            'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/role',
+            'content'   => [],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => array (
+                'id' => '100customRole2',
+                'name' => 'CAC 2',
+                'description' => 'Test custom role',
+                'type' => 'custom',
+                'merchant_id' => '100000merchant',
+                'access_policy_ids' =>
+                    array (
+                        0 => 'accessPolicy10',
+                        1 => 'accessPolicy11',
+                        2 => 'accessPolicy13',
+                    ),
+            )
         ],
     ],
-    'response' => [
-        'content' => array (
-            'id' => '100customRole2',
-            'name' => 'CAC 2',
-            'description' => 'Test custom role',
-            'type' => 'custom',
-            'merchant_id' => '100000merchant',
-            'access_policy_ids' =>
-                array (
-                    0 => 'accessPolicy10',
-                    1 => 'accessPolicy11',
-                    2 => 'accessPolicy13',
-                ),
-        )
-    ],
-],
 
     'testDeleteRole' => [
         'request'  => [
