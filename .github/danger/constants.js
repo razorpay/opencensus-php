@@ -1,0 +1,3 @@
+const PR_AUTOMATED_CHECKS = 'PR_AUTOMATED_CHECKS';
+
+module.exports = { PR_AUTOMATED_CHECKS };

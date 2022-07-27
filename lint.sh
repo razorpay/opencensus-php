@@ -9,7 +9,8 @@ eslint web/js/merchant/views/Settlements \
   web/js/common/hooks \
   web/js/common/context \
   web/js/common/components \
-  web/js/common/services --ext .js,.jsx,.ts,.tsx
+  web/js/common/services  \
+  .github/danger/ --ext .js,.jsx,.ts,.tsx
 
 if [[ $? != 0 ]] ; then
     echo "eslint check failed"
