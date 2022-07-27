@@ -539,9 +539,6 @@ final class RazorxTreatment
     // Experiment to control sync/async call on scrooge
     public const SCROOGE_SYNC_CALL = 'scrooge_sync_call';
 
-    // Experiment to use the new batch transfer processing queue
-    public const PAYMENT_TRANSFER_PROCESS_BATCH_QUEUE = 'payment_transfer_process_batch_queue';
-
     const PAYMENT_METHOD_CONFIG_UPDATE = 'payment_method_config_update';
 
     // Razorx treatment constant  for which validating multiple sheets for recurring charge axis;

@@ -957,16 +957,7 @@ class Core extends Base\Core
             $isCapitalFloatOrSliceRouteMerchant = (($merchant->isCapitalFloatRouteMerchant() === true) or
                                                    ($merchant->isSliceRouteMerchant() === true));
 
-            $routeName = $this->app['api.route']->getCurrentRouteName();
-
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::PAYMENT_TRANSFER_PROCESS_BATCH_QUEUE,
-                $this->mode
-            );
-
-            if (($routeName === 'payment_transfer_batch') and
-                (strtolower($variant) === 'on'))
+            if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
             {
                 (new Metric())->pushTransferProcessingBatchTimeMetrics($sourceType, $processingTime);
             }
@@ -1034,16 +1025,7 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
-        $routeName = $this->app['api.route']->getCurrentRouteName();
-
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::PAYMENT_TRANSFER_PROCESS_BATCH_QUEUE,
-            $this->mode
-        );
-
-        if (($routeName === 'payment_transfer_batch') and
-            (strtolower($variant) === 'on'))
+        if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
         {
             TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType);
 
