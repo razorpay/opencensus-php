@@ -1,4 +1,5 @@
 import errorService from '@razorpay/universe-utils/errorService';
+import { captureErrorOnAnalytics } from 'common/utils/analytics';
 
 export function initSentry(appName) {
   let environment = window.APP_ENV;
@@ -18,6 +19,8 @@ export function initSentry(appName) {
           if (hint?.originalException?.code === 'UNKNOWN_ERROR_CODE') {
             return null;
           }
+
+          captureErrorOnAnalytics(event, hint);
 
           return event;
         },

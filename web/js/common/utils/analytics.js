@@ -1,4 +1,5 @@
-import { titleCase } from './rzp-utils';
+import uuid from 'uuid';
+import { titleCase, getCommonAnalyticsProperties } from './rzp-utils';
 import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
@@ -128,6 +129,38 @@ export const getDeviceSource = () => {
   return source;
 };
 
+export function extractExceptionProps(event) {
+  const {
+    exception: { values },
+    level,
+    event_id,
+    environment,
+    release,
+    tags,
+    request,
+  } = event;
+
+  let exceptionProps = {};
+
+  try {
+    exceptionProps = {
+      exceptionType: values[0].type,
+      exceptionTitle: values[0].value,
+      exceptionURL: request.url,
+      exceptionLevel: level,
+      exceptionId: event_id,
+      exceptionTeam: tags.team || 'UNKNOWN',
+      exceptionApp: tags.app || 'Merchant',
+      exceptionUserRole: tags.role || 'UNKNOWN',
+      exceptionEnvironment: environment,
+      exceptionRelease: release,
+    };
+  } catch (ex) {
+    console.error(ex, event, 'Error in capturing exception info');
+  }
+  return exceptionProps;
+}
+
 export const analyticsTrack = ({
   objectName,
   actionName,
@@ -192,7 +225,28 @@ export const analyticsTrack = ({
         ...properties,
         screen,
         eventTimestamp,
+        uuid: uuid(),
       },
+    });
+  }
+};
+
+export const captureErrorOnAnalytics = (event, hint) => {
+  if (
+    event?.level === 'error' &&
+    !hint?.originalException?.message?.includes?.('cross-origin error') &&
+    event?.rank !== Ranks.P2 &&
+    event?.rank !== Ranks.P3
+  ) {
+    analyticsTrack({
+      objectName: 'Sentry Error',
+      actionName: 'Captured',
+      screen: window.location.pathname,
+      properties: {
+        ...extractExceptionProps(event),
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toLumberjack: true,
     });
   }
 };
