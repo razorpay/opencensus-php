@@ -8,6 +8,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Throwable;
@@ -112,7 +113,18 @@ class SavedCardTokenisationJob extends Job
             // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)
             {
-                $this->notifyToMandateHqForSuccessfulTokenisation($token);
+                try
+                {
+                    $this->notifyToMandateHubForSuccessfulTokenisation($token);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::CRITICAL,
+                        TraceCode::FAILED_REPORTING_TO_MANDATEHUB_AFTER_RECURRING_TOKENISATION,
+                        ['tokenId' => $token->getId()]);
+                }
             }
 
             $this->trace->info(TraceCode::SAVED_CARD_TOKENISATION_JOB_SUCCESS, [
@@ -245,8 +257,27 @@ class SavedCardTokenisationJob extends Job
         app('diag')->trackTokenisationEvent($eventData, $properties);
     }
 
-    protected function notifyToMandateHqForSuccessfulTokenisation(Token\Entity $token)
+    protected function notifyToMandateHubForSuccessfulTokenisation(Token\Entity $token)
     {
+        $hub = $token->cardMandate->getMandateHub();
+
+        $app = App::getFacadeRoot();
+
+        $blockReportingToHubAfterAsyncRecurringTokenisationExperiment = $app['razorx']->getTreatment(
+            strtolower($hub),
+            RazorxTreatment::BLOCK_HUB_REPORT_AFTER_ASYNC_RECURRING_TOKENISATION,
+            $this->mode);
+
+        if((strtolower($blockReportingToHubAfterAsyncRecurringTokenisationExperiment) === 'on'))
+        {
+            $this->trace->info(TraceCode::SKIPPED_REPORTING_TO_MANDATEHUB_AFTER_RECURRING_TOKENISATION, [
+                'tokenId'       => $this->tokenId ?? '',
+                'hub'           => $hub ?? ''
+            ]);
+
+            return;
+        }
+
         $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
 
         (new CardMandate\Core)->updateTokenisedCardTokenInMandate($token->cardMandate, $tokenInput);
