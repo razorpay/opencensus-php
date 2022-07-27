@@ -429,10 +429,13 @@ class Constants
     const X_LOGIN_OTP_ACTION            = 'x_login_otp';
     const X_VERIFY_USER_ACTION          = 'x_verify_user';
 
+    const BULK_APPROVE_PAYOUT           = 'bulk_approve_payout';
+
     const SEND_SMS_VIA_STORK            = [
         self::X_SECOND_FACTOR_AUTH_ACTION,
         self::X_LOGIN_OTP_ACTION,
-        self::X_VERIFY_USER_ACTION
+        self::X_VERIFY_USER_ACTION,
+        self::BULK_APPROVE_PAYOUT
     ];
 
     const LOGIN_OTP_ACTION_V2                      = 'login_otp_v2';

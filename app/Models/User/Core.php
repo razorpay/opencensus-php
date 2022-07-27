@@ -3792,6 +3792,10 @@ class Core extends Base\Core
                     'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
                 ];
 
+                $extraParams = $this->getExtraStorkSmsPayload($input);
+
+                $smsPayload['contentParams'] = array_merge($extraParams, $smsPayload['contentParams']);
+
                 /** @var $stork \RZP\Services\Stork */
                 $stork = $this->app['stork_service'];
 
@@ -4237,6 +4241,9 @@ class Core extends Base\Core
                 $smsPayload['templateNamespace'] = 'razorpayx_acquisition';
                 break;
 
+            case Constants::BULK_APPROVE_PAYOUT:
+                $this->populateTemplateMetaForBulkPayoutAction($input, $smsPayload);
+                break;
         }
 
         return $smsPayload;
@@ -5232,5 +5239,70 @@ class Core extends Base\Core
         $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
         return [$segmentEventName, $segmentProperties];
+    }
+
+    protected function getExtraStorkSmsPayload(array $input): array
+    {
+        $contentParams = array();
+
+        switch ($input[Entity::ACTION])
+        {
+            case Constants::BULK_APPROVE_PAYOUT:
+                $contentParams = $this->getExtraStorkPayloadForBulkPayoutAction($input);
+        }
+
+        return $contentParams;
+    }
+
+    protected function getExtraStorkPayloadForBulkPayoutAction(array $input): array
+    {
+        $contentParams = array();
+
+        $approvedPayoutCount = array_pull($input, 'approved_payout_count', 0);
+
+        $rejectedPayoutCount = array_pull($input, 'rejected_payout_count', 0);
+
+        if ($approvedPayoutCount > 0)
+        {
+            $contentParams += [
+                'approved_payout_count'     => $approvedPayoutCount,
+                'approved_payout_amount'    => $input['approved_payout_amount'],
+            ];
+        }
+        if ($rejectedPayoutCount > 0)
+        {
+            $contentParams += [
+                'rejected_payout_count'     => $rejectedPayoutCount,
+                'rejected_payout_amount'    => $input['rejected_payout_amount'],
+            ];
+        }
+
+        return $contentParams;
+    }
+
+    protected function populateTemplateMetaForBulkPayoutAction(array $input, array &$smsPayload)
+    {
+        $approvedPayoutCount = array_pull($input, 'approved_payout_count', 0);
+
+        $rejectedPayoutCount = array_pull($input, 'rejected_payout_count', 0);
+
+        if (($approvedPayoutCount > 0) and ($rejectedPayoutCount === 0))
+        {
+            $templateName = 'Sms.User.Bulk_payouts_approve';
+        }
+        else if (($approvedPayoutCount === 0) and ($rejectedPayoutCount > 0))
+        {
+            $templateName = 'Sms.User.Bulk_payouts_reject';
+        }
+        else
+        {
+            $templateName = 'Sms.User.Bulk_payouts_approve_reject_action';
+        }
+
+        $smsPayload['sender'] = 'RZPAYX';
+
+        $smsPayload['templateNamespace'] = 'razorpayx_payouts_core';
+
+        $smsPayload['templateName'] = $templateName;
     }
 }
