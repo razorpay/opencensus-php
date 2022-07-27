@@ -484,24 +484,25 @@ class ApiEventSubscriber extends Base\Core
                         'mode'                => $this->mode,
                         'razorpay_order_id'   => $order->getPublicId(),
                         'razorpay_payment_id' => $payment->getPublicId(),
-                        'merchant_id'         => $this->merchant->getId(),
+                        'merchant_id'         => $payment->getMerchantId(),
                         'dispatch_time'       => millitime() - $start,
                     ])->delay(now()->addMinutes(5));
-                }
 
-                // To debug payloads not being handled properly in sqs
-                $this->trace->info(
-                    TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
-                    [
-                        'step'                => 'dispatch',
-                        'dispatched'          => $dispatched,
-                        'mode'                => $this->mode,
-                        'razorpay_order_id'   => $order->getPublicId(),
-                        'razorpay_payment_id' => $payment->getPublicId(),
-                        'payment_method'      => $payment->getMethod(),
-                        'payment_status'      => $payment->getStatus(),
-                        'merchant_id'         => $this->merchant->getId(),
-                    ]);
+                    // To debug payloads not being handled properly in sqs
+                    $this->trace->info(
+                        TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
+                        [
+                            'step'                => 'dispatch',
+                            'dispatched'          => $dispatched,
+                            'mode'                => $this->mode,
+                            'razorpay_order_id'   => $order->getPublicId(),
+                            'razorpay_payment_id' => $payment->getPublicId(),
+                            'payment_method'      => $payment->getMethod(),
+                            'payment_status'      => $payment->getStatus(),
+                            'merchant_id'         => $payment->getMerchantId(),
+                            'from'                => 'ApiEventSubscriber',
+                        ]);
+                }
             }
 
         }

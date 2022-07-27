@@ -11333,22 +11333,22 @@ trait Authorize
                         'merchant_id'         => $this->merchant->getId(),
                         'dispatch_time'       => millitime() - $start,
                     ])->delay(now()->addMinutes(5));
-                }
 
-                // To debug payloads not being handled properly in sqs
-                $this->trace->info(
-                    TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
-                    [
-                        'step'                => 'dispatch',
-                        'dispatched'          => $dispatched,
-                        'mode'                => $this->mode,
-                        'razorpay_order_id'   => $order->getPublicId(),
-                        'razorpay_payment_id' => $payment->getPublicId(),
-                        'payment_method'      => $payment->getMethod(),
-                        'payment_status'      => $payment->getStatus(),
-                        'payment_define'      => $payment->isCod(),
-                        'merchant_id'         => $this->merchant->getId(),
-                    ]);
+                    // To debug payloads not being handled properly in sqs
+                    $this->trace->info(
+                        TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
+                        [
+                            'step'                => 'dispatch',
+                            'dispatched'          => $dispatched,
+                            'mode'                => $this->mode,
+                            'razorpay_order_id'   => $order->getPublicId(),
+                            'razorpay_payment_id' => $payment->getPublicId(),
+                            'payment_method'      => $payment->getMethod(),
+                            'payment_status'      => $payment->getStatus(),
+                            'merchant_id'         => $this->merchant->getId(),
+                            'from'                => 'Authorize',
+                        ]);
+                }
             }
 
         }
