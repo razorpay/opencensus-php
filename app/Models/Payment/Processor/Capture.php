@@ -326,6 +326,12 @@ trait Capture
 
                         $this->repo->saveOrFail($this->payment);
 
+                        $this->trace->info(
+                            TraceCode::PAYMENT_GATEWAY_CAPTURED,
+                            [
+                                'payment_id'        => $this->payment->getId(),
+                            ]);
+
                         $this->createLedgerEntriesForGatewayCapture($this->payment);
                     }
 
@@ -352,6 +358,13 @@ trait Capture
                 $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
 
                 LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'message'           => $transactionMessage,
+                    ]);
             }
         }
         catch (\Exception $e)
@@ -635,6 +648,12 @@ trait Capture
                     // in a transaction, which could fail and end up rolling back.
                     $this->repo->saveOrFail($this->payment);
 
+                    $this->trace->info(
+                        TraceCode::PAYMENT_GATEWAY_CAPTURED,
+                        [
+                            'payment_id'        => $this->payment->getId(),
+                        ]);
+
                     $this->createLedgerEntriesForGatewayCapture($this->payment);
                 }
             }
@@ -833,6 +852,12 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
+            $this->trace->info(
+                TraceCode::PAYMENT_MERCHANT_CAPTURED,
+                [
+                    'payment_id'        => $payment->getId(),
+                ]);
+
             $this->createLedgerEntriesForMerchantCapture($payment, $txn, $isTransactionPresent);
 
             // Please keep this function at the end of transaction block, as
@@ -865,6 +890,14 @@ trait Capture
                     // Job will be dispatched only if the transaction commits.
                     LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
                 }));
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_MERCHANT_CAPTURED_EVENT_TRIGGERED,
+                    [
+                        'payment_id'            => $payment->getId(),
+                        'message'               => $transactionMessage,
+                        'isTransactionPresent'  => $isTransactionPresent
+                    ]);
             }
         }
         catch (\Exception $e)

@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Ledger;
 
+use App;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Trace\TraceCode;
 
 class CaptureJournalEvents
 {
@@ -31,6 +33,9 @@ class CaptureJournalEvents
 
     public static function createTransactionMessageForGatewayCapture(Payment\Entity $payment): array
     {
+        $app = App::getFacadeRoot();
+        $trace = $app['trace'];
+
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
         // api transaction id is assigned to transaction id if it is present in payment entity else payment id is passed as api transaction id
@@ -52,6 +57,14 @@ class CaptureJournalEvents
         if($payment->getTransactionId() !== null)
         {
             $message[Constants::API_TRANSACTION_ID] = $payment->getTransactionId();
+        }
+        else
+        {
+            $trace->info(
+                TraceCode::TRANSACTION_ID_UNAVAILABLE_AT_GATEWAY_CAPTURE,
+                [
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
 
         return $message;

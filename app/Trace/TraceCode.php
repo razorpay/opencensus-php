@@ -6560,11 +6560,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAV_FTA_MANUAL_UPDATE_SUCCESSFUL                           = 'FAV_FTA_MANUAL_UPDATE_SUCCESSFUL';
 
 
-    const KAFKA_JOURNAL_ENTRY_PUSH_SUCESS                            = "KAFKA_JOURNAL_ENTRY_PUSH_SUCESS";
-    const KAFKA_JOURNAL_ENTRY_PUSH_FAILED                            = "KAFKA_JOURNAL_ENTRY_PUSH_FAILED";
-    const KAFKA_JOURNAL_ENTRY_QUEUE_DELETE                           = "KAFKA_JOURNAL_ENTRY_QUEUE_DELETE";
-    const LEDGER_ENTRY_FAILED                                        = "LEDGER_ENTRY_FAILED";
-    const PG_LEDGER_ENTRY_FAILED                                     = "PG_LEDGER_ENTRY_FAILED";
+    const KAFKA_JOURNAL_ENTRY_PUSH_SUCESS                           = "KAFKA_JOURNAL_ENTRY_PUSH_SUCESS";
+    const KAFKA_JOURNAL_ENTRY_PUSH_FAILED                           = "KAFKA_JOURNAL_ENTRY_PUSH_FAILED";
+    const KAFKA_JOURNAL_ENTRY_QUEUE_DELETE                          = "KAFKA_JOURNAL_ENTRY_QUEUE_DELETE";
+    const LEDGER_ENTRY_FAILED                                       = "LEDGER_ENTRY_FAILED";
+    const PG_LEDGER_ENTRY_FAILED                                    = "PG_LEDGER_ENTRY_FAILED";
+    const PAYMENT_GATEWAY_CAPTURED                                  = "PAYMENT_GATEWAY_CAPTURED";
+    const GATEWAY_CAPTURED_EVENT_TRIGGERED                          = "GATEWAY_CAPTURED_EVENT_TRIGGERED";
+    const PAYMENT_MERCHANT_CAPTURED                                 = "PAYMENT_MERCHANT_CAPTURED";
+    const PAYMENT_MERCHANT_CAPTURED_EVENT_TRIGGERED                 = "PAYMENT_MERCHANT_CAPTURED_EVENT_TRIGGERED";
+    const TRANSACTION_ID_UNAVAILABLE_AT_GATEWAY_CAPTURE             = "TRANSACTION_ID_UNAVAILABLE_AT_GATEWAY_CAPTURE";
 
     // Merchant Website Checker
     const HEALTH_CHECKER_PERIODIC_CRON_STARTED             = 'HEALTH_CHECKER_PERIODIC_CRON_STARTED';

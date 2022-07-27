@@ -9069,6 +9069,13 @@ trait Authorize
 
                 $this->repo->saveOrFail($txn);
 
+                $this->trace->info(
+                    TraceCode::PAYMENT_GATEWAY_CAPTURED,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'late_authorize'    => $wasFailed,
+                ]);
+
                 $this->createLedgerEntriesForGatewayCaptureOnAuthorize($payment);
             }
 
@@ -9108,6 +9115,13 @@ trait Authorize
                 {
                     LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
                 }));
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'message'           => $transactionMessage,
+                    ]);
             }
         }
         catch (\Exception $e)
