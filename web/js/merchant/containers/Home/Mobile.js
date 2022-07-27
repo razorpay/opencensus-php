@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import LazyLoad from 'react-lazyload';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
@@ -12,14 +13,11 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
-import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
-import Traffic from 'merchant/containers/Home/Traffic';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
 import PersonaliseBanner from 'merchant/components/Announcements/PersonaliseAccount';
+import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import { trackPersonaliseBanner } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import {
@@ -40,6 +38,18 @@ import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
 import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
+
+import lazy from 'merchant/routes/LazyLoader';
+
+const PaymentMethods = lazy(() =>
+  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
+);
+const Traffic = lazy(() =>
+  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
+);
+const RecentActivity = lazy(() =>
+  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
+);
 
 @connect(
   (state) => ({
@@ -285,14 +295,16 @@ class AnalyticsMobile extends Component {
           {!isAdmin && (
             <div className="content">
               <p className="section-title">{recentActivityTitle}</p>
-              <RecentActivity
-                sectionTitle={recentActivityTitle}
-                onFetchPayments={onFetchPayments}
-                isTabletResolution={true}
-                user={this.props.user}
-                currentBalance={current_balance}
-                onSelect={this.showOndemandSettlementForm}
-              />
+              <LazyLoad height={100} offset={50} once>
+                <RecentActivity
+                  sectionTitle={recentActivityTitle}
+                  onFetchPayments={onFetchPayments}
+                  isTabletResolution={true}
+                  user={this.props.user}
+                  currentBalance={current_balance}
+                  onSelect={this.showOndemandSettlementForm}
+                />
+              </LazyLoad>
             </div>
           )}
         </div>
@@ -336,26 +348,32 @@ class AnalyticsMobile extends Component {
             isMobile={true}
           />
           <p className="section-title">{paymentInsightsTitle}</p>
-          <EasterEgg extraClass="ftx-home-page" page="Home" />
-          <PaymentMethods
-            startDate={startDate}
-            endDate={endDate}
-            mode={mode}
-            analyticsFetch={analyticsFetch}
-            sectionTitle={paymentInsightsTitle}
-            isMobile={true}
-          />
-          {showGroupingByPtfm && (
-            <React.Fragment>
-              <p className="section-title">{trafficSectionTitle}</p>
-              <Traffic
+          <LazyLoad height={100} offset={50} once>
+            <>
+              <EasterEgg extraClass="ftx-home-page" page="Home" />
+              <PaymentMethods
                 startDate={startDate}
                 endDate={endDate}
                 mode={mode}
                 analyticsFetch={analyticsFetch}
-                sectionTitle=""
+                sectionTitle={paymentInsightsTitle}
                 isMobile={true}
               />
+            </>
+          </LazyLoad>
+          {showGroupingByPtfm && (
+            <React.Fragment>
+              <p className="section-title">{trafficSectionTitle}</p>
+              <LazyLoad height={100} offset={50} once>
+                <Traffic
+                  startDate={startDate}
+                  endDate={endDate}
+                  mode={mode}
+                  analyticsFetch={analyticsFetch}
+                  sectionTitle=""
+                  isMobile={true}
+                />
+              </LazyLoad>
             </React.Fragment>
           )}
         </div>

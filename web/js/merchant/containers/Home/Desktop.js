@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
+import LazyLoad from 'react-lazyload';
 import { Link } from 'react-router-dom';
 import {
   fetchInternationalProductsStatus as fnFetchInternationalProductsStatus,
@@ -17,9 +18,6 @@ import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBa
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import Announcement from 'merchant/components/Announcements/Instant';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
 import CapitalAnnouncement from 'merchant/components/Announcements/Capital';
@@ -80,7 +78,17 @@ import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaym
 import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
+import lazy from 'merchant/routes/LazyLoader';
 
+const PaymentMethods = lazy(() =>
+  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
+);
+const Traffic = lazy(() =>
+  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
+);
+const RecentActivity = lazy(() =>
+  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
+);
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
@@ -928,42 +936,46 @@ class AnalyticsDesktop extends Component {
             </div>
           </div>
           <div className="row">
-            <div className="col-md-12">
-              <EasterEgg extraClass="ftx-home-page" page="Home" />
-              <div className="section-title payment-insights-title">
-                {paymentInsightsTitle}&nbsp;
-                <small>
-                  <i className="i i-help" />
-                  <Popover align="top">
-                    <PopoverBody>
-                      <p>
-                        This graph helps you gain insights into your overall payments by seeing how
-                        different payment methods stack up against each other in your revenue pool.
-                      </p>
-                      <div>
-                        <span className="popover-highlight">Click tiles</span> to drill-down into
-                        the hierarchy.
-                      </div>
-                      <div>
-                        <span className="popover-highlight">Hover</span> to view information for
-                        smaller tiles.
-                      </div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
+            <LazyLoad height={100} offset={50} once>
+              <div className="col-md-12">
+                <EasterEgg extraClass="ftx-home-page" page="Home" />
+                <div className="section-title payment-insights-title">
+                  {paymentInsightsTitle}&nbsp;
+                  <small>
+                    <i className="i i-help" />
+                    <Popover align="top">
+                      <PopoverBody>
+                        <p>
+                          This graph helps you gain insights into your overall payments by seeing
+                          how different payment methods stack up against each other in your revenue
+                          pool.
+                        </p>
+                        <div>
+                          <span className="popover-highlight">Click tiles</span> to drill-down into
+                          the hierarchy.
+                        </div>
+                        <div>
+                          <span className="popover-highlight">Hover</span> to view information for
+                          smaller tiles.
+                        </div>
+                      </PopoverBody>
+                    </Popover>
+                  </small>
+                </div>
               </div>
-            </div>
-            <div className="col-md-12">
-              <PaymentMethods
-                startDate={startDate}
-                endDate={endDate}
-                mode={mode}
-                analyticsFetch={analyticsFetch}
-                sectionTitle={paymentInsightsTitle}
-              />
-            </div>
+              <div className="col-md-12">
+                <Suspense fallback={null}>
+                  <PaymentMethods
+                    startDate={startDate}
+                    endDate={endDate}
+                    mode={mode}
+                    analyticsFetch={analyticsFetch}
+                    sectionTitle={paymentInsightsTitle}
+                  />
+                </Suspense>
+              </div>
+            </LazyLoad>
           </div>
-
           <div className="row">
             <div
               className={`col-md-12 traffic-activity-row clearfix${
@@ -974,13 +986,15 @@ class AnalyticsDesktop extends Component {
                 <div className="traffic-container">
                   <p className="content-title section-title">{trafficSectionTitle}</p>
                   <div className="content">
-                    <Traffic
-                      startDate={startDate}
-                      endDate={endDate}
-                      mode={mode}
-                      analyticsFetch={analyticsFetch}
-                      sectionTitle={trafficSectionTitle}
-                    />
+                    <LazyLoad height={100} offset={50} once>
+                      <Traffic
+                        startDate={startDate}
+                        endDate={endDate}
+                        mode={mode}
+                        analyticsFetch={analyticsFetch}
+                        sectionTitle={trafficSectionTitle}
+                      />
+                    </LazyLoad>
                   </div>
                 </div>
               )}
@@ -988,15 +1002,17 @@ class AnalyticsDesktop extends Component {
                 <div className="activity-container">
                   <p className="content-title section-title">{recentActivityTitle}</p>
                   <div className="content">
-                    <RecentActivity
-                      startDate={startDate}
-                      endDate={endDate}
-                      sectionTitle={recentActivityTitle}
-                      onFetchPayments={onFetchPayments}
-                      user={this.props.user}
-                      currentBalance={current_balance}
-                      onSelect={this.showOndemandSettlementForm}
-                    />
+                    <LazyLoad height={100} offset={50} once>
+                      <RecentActivity
+                        startDate={startDate}
+                        endDate={endDate}
+                        sectionTitle={recentActivityTitle}
+                        onFetchPayments={onFetchPayments}
+                        user={this.props.user}
+                        currentBalance={current_balance}
+                        onSelect={this.showOndemandSettlementForm}
+                      />
+                    </LazyLoad>
                   </div>
                 </div>
               )}
