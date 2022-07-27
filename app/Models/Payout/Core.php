@@ -5482,12 +5482,18 @@ class Core extends Base\Core
         }
         else
         {
-            $downstreamProcessor = new DownstreamProcessor('fund_account_payout',
-                $payout,
-                $this->mode,
-                $payout->fundAccount->account);
+            $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payout->getId(), Entity::PAYOUT);
 
-            $downstreamProcessor->processCreateFundTransferAttempt();
+            if (empty($fta) === true)
+            {
+                // Only calling downstreamProcessor if FTA is not created for a payout.
+                $downstreamProcessor = new DownstreamProcessor('fund_account_payout',
+                    $payout,
+                    $this->mode,
+                    $payout->fundAccount->account);
+
+                $downstreamProcessor->processCreateFundTransferAttempt();
+            }
         }
 
         try {
