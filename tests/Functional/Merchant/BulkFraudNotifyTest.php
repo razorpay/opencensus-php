@@ -194,6 +194,7 @@ class BulkFraudNotifyTest extends TestCase
 
     protected function getExpectedSNSPayload($fraud, $payment)
     {
+        $merchant = $payment->merchant;
         return [
             'mode'   => 'test',
             'events' => [
@@ -205,19 +206,26 @@ class BulkFraudNotifyTest extends TestCase
                     'properties'    => [
                         'payment_fraud' => [
                             'id'                      => $fraud->id,
-                            'payment_id' => $fraud->payment_id,
+                            'payment_id'              => $fraud->payment_id,
                             'reported_to_razorpay_at' => $fraud->reported_to_razorpay_at ?? $fraud->created_at,
                             'reported_to_issuer_at'   => (int) ($fraud->reported_to_issuer_at ?? $fraud->reported_to_razorpay_at ?? $fraud->created_at),
                         ],
                         'payment'       => [
                             'id'          => $payment->getPublicId(),
-                            'amount' => 1000000,
+                            'amount'      => 1000000,
                             'base_amount' => 1000000,
                             'currency'    => 'INR',
                             'method'      => 'card',
                             'issuer'      => null,
                             'type'        => 'PG',
                             'gateway'     => 'hdfc',
+                            'created_at'   => $payment->getCreatedAt(),
+                        ],
+                        'merchant'      => [
+                            'id'        => $merchant->getId(),
+                            'name'      => $merchant->getBillingLabel(),
+                            'mcc'       => $merchant->getCategory(),
+                            'category'  => $merchant->getCategory2(),
                         ],
                         'error_code'    => 'SUCCESS',
                     ],

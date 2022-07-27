@@ -9,13 +9,20 @@ class PaymentFraudEvent extends Event
     const EVENT_TYPE = 'payment-fraud-events';
     const EVENT_VERSION = 'v1';
 
+    protected $payment = null;
+    protected $merchant = null;
+
     protected function getEventProperties()
     {
         $properties = [];
 
+        $this->payment = (new Payment\Repository)->findOrFailPublic($this->entity->getPaymentId());
+
         $this->addPaymentFraudDetails($properties);
 
         $this->addPaymentDetails($properties);
+
+        $this->addMerchantDetails($properties);
 
         return $properties;
     }
@@ -34,7 +41,7 @@ class PaymentFraudEvent extends Event
 
     private function addPaymentDetails(array &$properties)
     {
-        $payment = (new Payment\Repository)->findOrFailPublic($this->entity->getPaymentId());
+        $payment = $this->payment;
 
         $properties['payment'] = [
             'id'           => $payment->getPublicId(),
@@ -45,6 +52,7 @@ class PaymentFraudEvent extends Event
             'issuer'       => $payment->getIssuer(),
             'type'         => $payment->getTransactionType(),
             'gateway'      => $payment->getGateway(),
+            'created_at'   => $payment->getCreatedAt(),
         ];
 
         // upi properties
@@ -76,6 +84,18 @@ class PaymentFraudEvent extends Event
         {
             $properties['metadata'] = $metadata;
         }
+    }
+
+    private function addMerchantDetails(array &$properties)
+    {
+        $merchant = $this->payment->merchant;
+
+        $properties['merchant'] = [
+            'id'        => $merchant->getId(),
+            'name'      => $merchant->getBillingLabel(),
+            'mcc'       => $merchant->getCategory(),
+            'category'  => $merchant->getCategory2(),
+        ];
     }
 
     protected function getEventMetaDetails()

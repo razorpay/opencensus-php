@@ -45,6 +45,7 @@ class DisputeEvent extends Event
                 'issuer'       => $payment->getIssuer(),
                 'type'         => $payment->getTransactionType(),
                 'gateway'      => $payment->getGateway(),
+                'created_at'   => $payment->getCreatedAt(),
         ];
 
         // upi properties
