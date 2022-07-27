@@ -48,6 +48,9 @@ class ReconServiceController extends Controller
             '^extraction_item\/extraction_methods$',
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
+            '^reports$',
+            '^reports\/[[:alnum:]]{14}$',
+            '^reports\/[[:alnum:]]{14}\/result'
         ],
         self::POST => [
             '^output_email$',
@@ -62,6 +65,7 @@ class ReconServiceController extends Controller
             '^custom_method$',
             '^recon_state$',
             '^workspaces$',
+            '^reports$'
         ],
         self::PATCH => [
             '^file_types\/[[:alnum:]]{14}$',
