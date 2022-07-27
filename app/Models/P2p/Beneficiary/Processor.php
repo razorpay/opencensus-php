@@ -30,6 +30,13 @@ class Processor extends Base\Processor
 
     public function validate(array $input): array
     {
+        // convert to lower case in case of entity type is vpa
+        if(isset($input[BankAccount\Entity::HANDLE]) === true and
+           $input[Entity::TYPE] === Vpa\Entity::VPA)
+        {
+            $input[BankAccount\Entity::HANDLE] = strtolower($input[BankAccount\Entity::HANDLE]);
+        }
+
         $this->initialize(Action::VALIDATE, $input, true);
 
         // For Bank Account, we don't have to hit gateway

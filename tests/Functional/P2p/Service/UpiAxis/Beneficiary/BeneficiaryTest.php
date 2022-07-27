@@ -161,4 +161,23 @@ class BeneficiaryTest extends TestCase
             ]
         ]);
     }
+
+    public function testValidateVpaWithUpperCaseHandle()
+    {
+        $helper = $this->getBeneficiaryHelper();
+
+        $helper->withSchemaValidated();
+
+        $content = ['handle' => 'razorHdfc'];
+
+        $response = $helper->validateVpa($content);
+
+        $this->assertArraySubset([
+                 'validated'         => true,
+                 'type'              => 'vpa',
+                 'address'           => 'customer@razorhdfc',
+                 'beneficiary_name'  => 'Razorpay Customer',
+                 'verified'          => false,
+             ], $response);
+    }
 }
