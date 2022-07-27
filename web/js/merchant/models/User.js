@@ -1369,6 +1369,10 @@ export default class User {
     return this.getExpStatus('capital_loc_x_migration');
   }
 
+  get isCARerouteExperiment() {
+    return this.getExpStatus('capital_loc_x_migration_reroute');
+  }
+
   // No experiment of disable-edit-<moduleName> => Module is not restricted
   isViewRestrictedByRazorX(moduleName) {
     // Eg: disable-view-reports (if corresponding experiment is "on", it can't be viewed by those merchants)

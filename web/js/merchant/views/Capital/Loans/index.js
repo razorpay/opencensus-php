@@ -392,6 +392,7 @@ export default class LoanApplicationOverview extends React.Component {
 
   getApplicationOverview = () => {
     const { loanApplicationDetails } = this.props;
+    const isProductCashAdvance = isCashAdvanceProduct(loanApplicationDetails?.meta?.product);
 
     const productDetails = this.getProductDetails();
 
@@ -403,6 +404,7 @@ export default class LoanApplicationOverview extends React.Component {
           productId={productDetails.id}
           applicantPan={this.state.applicantPan}
           isPANLinkedWithPG={this.isPANLinkedWithPG()}
+          isProductCashAdvance={isProductCashAdvance}
           handleCoApplicantPan={this.handleCoApplicantPan}
         />
       );
@@ -420,7 +422,7 @@ export default class LoanApplicationOverview extends React.Component {
               <h4>
                 <strong>
                   Your{' '}
-                  {isCashAdvanceProduct(loanApplicationDetails.meta.product)
+                  {isCashAdvanceProduct(loanApplicationDetails?.meta?.product)
                     ? 'Cash Advance'
                     : 'Loan'}{' '}
                   Application

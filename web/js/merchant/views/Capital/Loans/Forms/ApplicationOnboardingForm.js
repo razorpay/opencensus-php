@@ -18,6 +18,7 @@ import {
 import moment from 'moment';
 import { trackCheckEligibilityCta, trackTabChange } from './ga';
 import { MERCHANT_OWNER_TYPE } from '../../CashAdvance/constants';
+import { CASH_ADVANCE_LINK } from '../../CashAdvanceV2/constants';
 
 const ApplicationOnboardingForm = (props) => {
   const [view, setView] = React.useState('get_started');
@@ -298,11 +299,15 @@ const ApplicationOnboardingForm = (props) => {
   }
 
   const handleIntentSubmit = (data) => {
+    const { isCARerouteExperiment } = props.user;
     setFormsData({
       ...formsData,
       intent: data,
     });
     setView('business_details');
+    if (props.isProductCashAdvance && isCARerouteExperiment) {
+      window.open(CASH_ADVANCE_LINK, '_self');
+    }
   };
 
   const handleBusinessDetailsSubmit = (data) => {
