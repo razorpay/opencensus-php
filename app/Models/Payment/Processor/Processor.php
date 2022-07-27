@@ -3,6 +3,8 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Request;
+
 use Neves\Events\TransactionalClosureEvent;
 use Route;
 use Config;
@@ -21,7 +23,6 @@ use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
 use RZP\Models\Offer;
-use RZP\Services\NbPlus\Request;
 use RZP\Trace\Tracer;
 use RZP\Models\Gateway;
 use RZP\Constants\Mode;
@@ -745,7 +746,17 @@ class Processor
             return true;
         }
 
-        $result = $this->app->razorx->getTreatment($input[Payment\Entity::BANK], self::NETBANKING_PAYMENTS_VIA_PGROUTER, $this->mode);
+        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER;
+        if ($this->isDarkRequest() === true)
+        {
+            $featureFlag .= '_dark';
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_CREATE_ON_PUBLIC, [
+            'flag' => $featureFlag,
+        ]);
+
+        $result = $this->app->razorx->getTreatment($input[Payment\Entity::BANK], $featureFlag, $this->mode);
 
         return ($result === 'on');
     }
@@ -6708,5 +6719,12 @@ class Processor
                     null);
             }
         }
+    }
+
+    public function isDarkRequest(): bool
+    {
+        $url = Request::url();
+
+        return starts_with($url, 'https://api-dark.razorpay.com');
     }
 }
