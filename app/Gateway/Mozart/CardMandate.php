@@ -65,4 +65,14 @@ trait CardMandate {
 
         return $response;
     }
+
+    protected function cardMandateUpdateToken($input)
+    {
+        parent::action($input, Action::UPDATE_TOKEN);
+
+        list($response) = $this->sendMozartRequestAndGetResponse($input, TraceCode::GATEWAY_UPDATE_TOKEN_REQUEST,
+            TraceCode::GATEWAY_UPDATE_TOKEN_RESPONSE, true);
+
+        return $response;
+    }
 }

@@ -54,6 +54,8 @@ class Action
     const NOTIFY                = 'notify';
 
     const VALIDATE              = 'validate';
-    
+
     const PRE_PROCESS           = 'pre_process';
+
+    const UPDATE_TOKEN          = 'update_token';
 }

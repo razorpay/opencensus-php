@@ -2001,6 +2001,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT            => null,
                 Action::PAY_VERIFY          => null,
                 Action::MANDATE_REVOKE      => null,
+                Action::UPDATE_TOKEN        => null,
             ],
         ];
 
@@ -2185,6 +2186,7 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT            => null,
                 Action::PAY_VERIFY          => null,
                 Action::MANDATE_REVOKE      => null,
+                Action::UPDATE_TOKEN        => null,
             ],
         ];
 

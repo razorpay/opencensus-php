@@ -447,6 +447,23 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
     public function updateTokenisedCardTokenInMandate($cardMandate, $input)
     {
-        // TODO: Implement updateTokenisedCardTokenInMandate() method.
+        $billDeskInput = $this->getUpdateTokenInput($cardMandate, $input);
+
+        return $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB,
+            Payment\Action::CARD_MANDATE_UPDATE_TOKEN, $billDeskInput, $this->mode);
+    }
+
+    protected function getUpdateTokenInput($cardMandate, $input)
+    {
+        return [
+            Constants::PAYMENT      => [
+                Constants::GATEWAY => MandateHubs::BILLDESK_SIHUB,
+                Constants::ID      => null,
+            ],
+            Constants::TERMINAL     => [],
+            Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
+            Constants::CARD_MANDATE => $cardMandate,
+            Constants::TOKEN        => $input[Constants::TOKEN],
+        ];
     }
 }

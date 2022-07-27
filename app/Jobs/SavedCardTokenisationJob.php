@@ -247,7 +247,7 @@ class SavedCardTokenisationJob extends Job
 
     protected function notifyToMandateHqForSuccessfulTokenisation(Token\Entity $token)
     {
-        $tokenInput = $token->card->buildTokenisedTokenForMandateHQ();
+        $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
 
         (new CardMandate\Core)->updateTokenisedCardTokenInMandate($token->cardMandate, $tokenInput);
     }
