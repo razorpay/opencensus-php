@@ -4361,6 +4361,18 @@ return [
         ]
     ],
 
+    'testPayoutsListApi' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts?account_number=2224440041626905',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testGetPayoutsWithRemovingPayoutFeatureForMerchant' => [
         'request' => [
             'method'  => 'get',

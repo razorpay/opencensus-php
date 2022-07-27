@@ -25402,5 +25402,26 @@ class PayoutTest extends OAuthTestCase
         $internalEntity = $this->getDbLastEntity('internal');
         $this->assertNull($internalEntity);
     }
+
+    public function testPayoutsListApi()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $payouts = $this->startTest();
+
+        $this->assertEquals($payouts['entity'], 'collection');
+
+        $this->assertEquals($payouts['count'], 1);
+
+        $this->assertNotEquals($payouts['items'], null);
+
+        $this->assertFalse(array_key_exists('workflow_history', $payouts['items'][0]));
+    }
  }
 

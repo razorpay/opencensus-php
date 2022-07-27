@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use App;
 use RZP\Constants;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\User;
@@ -121,6 +122,7 @@ class Entity extends Base\PublicEntity
     const QUEUED_REASON                         = 'queued_reason';
     const SOURCE_TYPE_EXCLUDE                   = 'source_type_exclude';
     const ON_HOLD_AT                            = 'on_hold_at';
+    const PAYOUT_FETCH_MULTIPLE                 = 'payout_fetch_multiple';
 
     // string constants
     const PARTNER_APPLICATION    = 'partner_application';
@@ -629,6 +631,49 @@ class Entity extends Base\PublicEntity
         self::FUND_ACCOUNT,
         self::PENDING_ON_USER,
         self::WORKFLOW_HISTORY,
+        self::BANKING_ACCOUNT_ID,
+        self::REVERSAL,
+        // We want to show the failure reason only if the status is reversed.
+        // This is because we might have intermittent failure reasons even
+        // when the payout is not completely processed (succeeded/failed)
+        self::FAILURE_REASON,
+        self::INITIATED_AT,
+        self::QUEUED_AT,
+        self::CANCELLED_AT,
+        self::PROCESSED_AT,
+        self::PENDING_AT,
+        self::REVERSED_AT,
+        self::FAILED_AT,
+        self::REJECTED_AT,
+        self::TRANSACTION_ID,
+        self::BATCH_ID,
+        self::TRANSACTION,
+        self::SCHEDULED_ON,
+        self::ORIGIN,
+        self::SOURCE_DETAILS,
+        self::REGISTERED_NAME,
+        self::META,
+        self::REMARKS,
+        self::CANCELLATION_USER_ID,
+        self::CANCELLATION_USER,
+        self::QUEUEING_DETAILS,
+        self::ON_HOLD_AT,
+        self::STATUS_DETAILS,
+        self::STATUS_SUMMARY,
+    ];
+
+    // TODO: review all the public setters and remove fileds which are not required.
+    protected $publicSettersListView = [
+        self::ID,
+        self::ENTITY,
+        self::STATUS,
+        self::BALANCE_ID,
+        self::DESTINATION,
+        self::CUSTOMER_ID,
+        self::USER_ID,
+        self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT,
+        self::PENDING_ON_USER,
         self::BANKING_ACCOUNT_ID,
         self::REVERSAL,
         // We want to show the failure reason only if the status is reversed.
@@ -2603,7 +2648,21 @@ class Entity extends Base\PublicEntity
      */
     public function toArrayPublic()
     {
+        /** @var Route $route */
+        $route = app('api.route');
+
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
         $this->removeRecursiveRelation();
+
+        $routeName = $route->getCurrentRouteName();
+
+        if (($routeName === self::PAYOUT_FETCH_MULTIPLE) and
+            ($basicAuth->isSlackApp() === false))
+        {
+            $this->publicSetters = $this->publicSettersListView;
+        }
 
         $payoutArray = parent::toArrayPublic();
 
