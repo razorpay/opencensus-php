@@ -86,6 +86,7 @@ class DisputeEvent extends Event
         $properties['dispute'] = [
                 'id'           => $dispute->getPublicId(),
                 'amount'       => $dispute->getAmount(),
+                'base_amount'  => $dispute->getBaseAmount(),
                 'currency'     => $dispute->getCurrency(),
                 'phase'        => $dispute->getPhase(),
                 'reason_code'  => $dispute->getReasonCode(),

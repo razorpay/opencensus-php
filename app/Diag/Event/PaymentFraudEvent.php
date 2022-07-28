@@ -34,6 +34,7 @@ class PaymentFraudEvent extends Event
         $properties['payment_fraud'] = [
             'id'                      => $paymentFraud->getPublicId(),
             'payment_id'              => $paymentFraud->getPaymentId(),
+            'base_amount'             => (int)$paymentFraud->getBaseAmount(),
             'reported_to_razorpay_at' => (int)$paymentFraud->getReportedToRazorpayAt(),
             'reported_to_issuer_at'   => (int)$paymentFraud->getReportedToIssuerAt(),
         ];
