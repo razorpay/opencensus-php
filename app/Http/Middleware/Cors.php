@@ -121,7 +121,8 @@ class Cors
                 'x-org-id',
                 'x-dashboard-merchant-id',
                 'x-dashboard-user-id',
-                'request-start-time'
+                'request-start-time',
+                'sentry-trace'
             ];
 
             $headers = [
