@@ -326,7 +326,7 @@ class Authenticate
             return $request->bearerToken();
         }
 
-        $authHeader = getallheaders()['Authorization'] ?? null;
+        $authHeader = getallheaders()['Authorization'] ?? getallheaders()['authorization'] ?? null;
 
         $bearerToken = '';
 

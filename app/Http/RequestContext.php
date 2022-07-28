@@ -323,7 +323,7 @@ final class RequestContext
 
     public function getBearerTokenFromRequestForApache(): string
     {
-        $headers = getallheaders()['Authorization'] ?? null;
+        $headers = getallheaders()['Authorization'] ?? getallheaders()['authorization'] ?? null;
 
         return (starts_with($headers, 'Bearer ') ? substr($headers, 7) : '');
     }
