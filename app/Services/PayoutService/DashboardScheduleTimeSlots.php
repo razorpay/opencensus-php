@@ -20,10 +20,13 @@ class DashboardScheduleTimeSlots extends Base
     {
         $this->trace->info(TraceCode::DASHBOARD_SCHEDULE_TIME_SLOTS_VIA_MICROSERVICE_REQUEST);
 
+        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+
         $response = $this->makeRequestAndGetContent(
             [],
             self::DASHBOARD_SCHEDULE_TIME_SLOTS_PAYOUT_SERVICE_URI,
-            Requests::GET
+            Requests::GET,
+            $headers
         );
 
         $this->trace->info(

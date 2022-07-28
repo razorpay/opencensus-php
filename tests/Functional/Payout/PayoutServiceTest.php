@@ -2906,6 +2906,7 @@ class PayoutServiceTest extends TestCase
 
         $testData = $this->testData['testGetScheduleTimeSlotsForDashboard'];
         $this->testData[__FUNCTION__] = $testData;
+        $this->testData[__FUNCTION__]['request']['headers']['X-Passport-JWT-V1'] = "";
 
         $this->ba->proxyAuth();
 
