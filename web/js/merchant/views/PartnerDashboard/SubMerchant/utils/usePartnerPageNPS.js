@@ -9,10 +9,11 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import store from 'merchant/store';
 import moment from 'moment';
 
-export default function usePartnerPageNPS(surveyID) {
+export default function usePartnerPageNPS(surveyID, isUserPartner = false, isPartnerMTU = false) {
   const user = store.getState().session.user;
   const [partnerNPSSurveyPopup, setPartnerNPSSurveyPopup] = useState();
   const refPartnerNPSEnableTypeForm = useRef(null);
+  const npsSurveyStatusFlag = `razorpay_partner_nps_survey_showed_${surveyID}`;
 
   const closePartnerSurvey = () => {
     setPartnerNPSSurveyPopup(false);
@@ -21,7 +22,7 @@ export default function usePartnerPageNPS(surveyID) {
 
   const handleSubmit = useCallback(() => {
     closePartnerSurvey();
-    setItem('razorpay_partner_nps_survey_showed', 'submit');
+    setItem(npsSurveyStatusFlag, 'submit');
   }, []);
 
   const loadFuxData = async () => {
@@ -31,7 +32,8 @@ export default function usePartnerPageNPS(surveyID) {
         method: 'get',
       });
       const { first_earning_generated, first_submerchant_added } = data;
-      return first_earning_generated && first_submerchant_added;
+      const partnerMTUCheck = isPartnerMTU ? first_earning_generated : true;
+      return partnerMTUCheck && first_submerchant_added;
     } catch (_) {
       showNotification({
         type: 'error',
@@ -57,7 +59,7 @@ export default function usePartnerPageNPS(surveyID) {
   const isShowPopup = useCallback(
     async (created_at, activation_status) => {
       const fuxData = await loadFuxData();
-      const userCheck = checkUserDetails(created_at, activation_status);
+      const userCheck = isUserPartner ? checkUserDetails(created_at, activation_status) : true;
       const isShowNPS = fuxData && userCheck;
       analyticsTrack({
         objectName: 'partner nps survey check',
@@ -77,8 +79,7 @@ export default function usePartnerPageNPS(surveyID) {
     const { created_at, activation_status, isPartnershipNPS, email, id } = user;
     if (
       isPartnershipNPS &&
-      (getItem('razorpay_partner_nps_survey_showed') === null ||
-        getItem('razorpay_partner_nps_survey_showed') === 'show')
+      (getItem(npsSurveyStatusFlag) === null || getItem(npsSurveyStatusFlag) === 'show')
     ) {
       const show = await isShowPopup(created_at, activation_status);
       if (show) {
@@ -106,9 +107,9 @@ export default function usePartnerPageNPS(surveyID) {
 
   // Show or Hide survey form
   const getSurveyForm = useCallback(() => {
-    if (partnerNPSSurveyPopup && getItem('razorpay_partner_nps_survey_showed') === null) {
+    if (partnerNPSSurveyPopup && getItem(npsSurveyStatusFlag) === null) {
       refPartnerNPSEnableTypeForm.current?.open();
-      setItem('razorpay_partner_nps_survey_showed', 'show');
+      setItem(npsSurveyStatusFlag, 'show');
     }
   }, [partnerNPSSurveyPopup]);
 
