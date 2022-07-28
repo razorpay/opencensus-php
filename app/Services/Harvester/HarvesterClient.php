@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Services\AbstractEventClient;
 use RZP\Exception\IntegrationException;
@@ -30,6 +31,7 @@ class HarvesterClient extends AbstractEventClient
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
 
     const QUERY_API_PATH = 'analytics/pokedex';
+    const QUERY_API_PATH_V2 = 'pql/analytics';
 
     const RETRY = true;
 
@@ -136,15 +138,38 @@ class HarvesterClient extends AbstractEventClient
 
     public function query($data = '', $timeout = self::REQUEST_TIMEOUT)
     {
-        return $this->sendRequest(self::QUERY_API_PATH, $data, self::RETRY, self::RETRY_TIMES, $timeout);
+        $config = $this->config;
+        $queryPath = self::QUERY_API_PATH;
+
+        $merchantId = $this->merchant->getId();
+
+        if(empty($merchantId) === false) {
+
+            $v2ExperimentEnabled = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                RazorxTreatment::HARVESTER_V2_MIGRATION,
+                $this->app['basicauth']->getMode() ?? "live"
+            );
+
+            if($v2ExperimentEnabled === true)
+            {
+                $queryPath = self::QUERY_API_PATH_V2;
+                $config = $this->app['config']->get('applications.harvester_v2');
+            }
+        }
+
+        return $this->sendRequest($queryPath, $data, $config, self::RETRY, self::RETRY_TIMES, $timeout);
     }
 
-    protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT)
+    protected function sendRequest(string $urlPath, $data, $config, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT)
     {
         $startTime = microtime(true);
 
+        $hostUrl = $config['url'];
+        $accessToken = $config['analytics_token'];
+
         $request = [
-            'url'           => $this->queryBaseUrl . $urlPath,
+            'url'           => $hostUrl . $urlPath,
             'method'        => 'POST',
             'content'       => json_encode($data),
             'content-type'  => 'application/json',
@@ -155,13 +180,14 @@ class HarvesterClient extends AbstractEventClient
         $this->trace->info(
             TraceCode::HARVESTER_REQUEST,
             [
+                'host'    => $hostUrl,
                 'path'    => $urlPath,
                 'data'    => $data,
                 'request' => $request
             ]);
 
         $headers = [
-            'x-signature'   => $this->accessToken,
+            'x-signature'   => $accessToken,
             'Accept'        => 'application/json'
         ];
 

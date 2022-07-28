@@ -428,6 +428,8 @@ final class RazorxTreatment
 
     const HARVESTER_SEGREGATE_QUERIES = 'HARVESTER_SEGREGATE_QUERIES';
 
+    const HARVESTER_V2_MIGRATION = 'HARVESTER_V2_MIGRATION';
+
     const WHATCMS_EXPERIMENT = 'WHATCMS_EXPERIMENT';
 
     //Experiment for removal of extra fields in payment response

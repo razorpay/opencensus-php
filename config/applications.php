@@ -349,6 +349,13 @@ return [
         'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
     ],
 
+    'harvester_v2' => [
+        'url'               => env('HARVESTER_V2_URL'),
+        'mock'              => env('HARVESTER_MOCK', false),
+        'analytics_token'   => env('HARVESTER_ANALYTICS_V2_TOKEN'),
+        'identifier'        => env('HARVESTER_API_IDENTIFIER'),
+    ],
+
     'health_check_client' => [
         'mock'              => env('HEALTH_CHECK_CLIENT_MOCK', false),
     ],
