@@ -949,6 +949,11 @@ class TerminalsService
 
         $params = self::PARAMS[self::INSTRUMENT_RULES_EVENT];
 
+        $this->trace->info(TraceCode::TEMPORARY_INSTRUMENT_EVENT_CONSUME_LOG, [
+            'input'   => $input,
+            'content' => $content,
+        ]);
+
         $response = $this->handleRequestAndResponse($params[self::PATH], $content, $params[self::METHOD]);
 
         return $this->parseAndReturnResponse($response)['data'] ?? [];
