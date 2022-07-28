@@ -311,18 +311,19 @@ const Details = ({
                 <div className="sub-segment" key={j}>
                   {Object.keys(s).map((g, ix) => {
                     if (s[g] === null) {
-                      return true;
+                      return null;
                     }
 
                     const isArray = s[g] instanceof Array;
 
-                    <div key={ix}>
-                      <span className="label">{titleCase(g)}: </span>
-                      <span className={classList(isArray && 'sub-segment-group')}>
-                        {isArray ? s[g].join(', ') : s[g]}
-                      </span>
-                    </div>;
-                    return true;
+                    return (
+                      <div key={`sub-segment-${g}-${ix}`}>
+                        <span className="label">{titleCase(g)}: </span>
+                        <span className={classList(isArray && 'sub-segment-group')}>
+                          {isArray ? s[g].join(', ') : s[g]}
+                        </span>
+                      </div>
+                    );
                   })}
                 </div>
               ))}
