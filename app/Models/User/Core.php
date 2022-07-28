@@ -671,7 +671,6 @@ class Core extends Base\Core
                     'user_details'         => [
                         'restricted'     => $user->restricted,
                         'account_locked' => true,
-                        'user_id'        => $user->getId(),
                         'is_owner'       => $user->isOwner()
                         ],
                     ]);
@@ -1202,7 +1201,6 @@ class Core extends Base\Core
                     'user_details'         => [
                         'restricted'     => $user->restricted,
                         'account_locked' => true,
-                        'user_id'        => $user->getId(),
                         'is_owner'       => $user->isOwner()
                     ],
                 ]);
@@ -1625,7 +1623,6 @@ class Core extends Base\Core
                 [
                     'internal_error_code' => ErrorCode::BAD_REQUEST_LOGIN_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
                     'user_details'        => [
-                        'user_id'   => $user->getId(),
                         'account_locked' => true,
                         'is_owner'       => $user->isOwner()
                     ]
@@ -2213,9 +2210,6 @@ class Core extends Base\Core
                 null,
                 [
                     'internal_error_code'   => ErrorCode::BAD_REQUEST_VERIFICATION_OTP_VERIFICATION_THRESHOLD_EXHAUSTED,
-                    'user_details'          => [
-                        'user_id'   => $userId
-                    ]
                 ]
             );
         }
