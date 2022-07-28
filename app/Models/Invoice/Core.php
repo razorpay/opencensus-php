@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use App;
 use RZP\Constants\Environment;
+use RZP\Mail\System\Trace;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Offer;
@@ -1665,23 +1666,41 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE,
             [
-                'payment_id'    => $payment->getId(),
-                'invoice_id'    => $invoice->getId(),
-                'order_id'      => $invoice->getOrderId(),
+                'payment_id'                    => $payment->getId(),
+                'invoice_id'                    => $invoice->getId(),
+                'order_id'                      => $invoice->getOrderId(),
+                'payment_amount'                => $payment->getAmount(),
+                'invoice_amount'                => $invoice->getAmount(),
+                'invoice_amount_paid_attribute' => $invoice->getAmountPaidAttribute(),
+                'invoice_amount_paid'           => $invoice->getAmountPaid(),
+                'invoice_status'                => $invoice->getStatus(),
             ]);
 
         if ($invoice->hasBeenPaid() === true)
         {
+            $this->trace->info(TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE_IS_FULLY_PAID,
+                               [
+                                   'invoice_status' => $invoice->getStatus()
+                               ]);
             return;
         }
 
         $invoice->updateStatusPostCapture($payment);
-
 
         $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
         $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
         $this->trace->count(Metric::INVOICE_PAID_TOTAL, $dimensions);
 
         $this->repo->saveOrFail($invoice);
+
+        $this->trace->info(TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE_SAVED,
+                           [
+                               'payment_amount'                => $payment->getAmount(),
+                               'invoice_amount'                => $invoice->getAmount(),
+                               'invoice_amount_paid_attribute' => $invoice->getAmountPaidAttribute(),
+                               'invoice_amount_paid'           => $invoice->getAmountPaid(),
+                               'invoice_status'                => $invoice->getStatus(),
+                           ]
+        );
     }
 }

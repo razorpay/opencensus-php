@@ -17,6 +17,7 @@ use RZP\Models\Address;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\PaymentLink;
 use RZP\Models\Currency\Currency;
@@ -1025,8 +1026,15 @@ class Entity extends Base\PublicEntity
 
    public function isFullyPaid(Payment\Entity $payment)
     {
+        $trace = App::getFacadeRoot()['trace'];
+
         if($payment->discount !== null)
         {
+            $trace->info(TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE_WITH_DISCOUNT,
+                                      [
+                                          'discount_amount' => $payment->discount->getAmount(),
+                                      ]);
+
             $discount = $payment->discount->getAmount();
 
             // logic : paid amount + offer discount amount = PL amount
@@ -1036,7 +1044,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        return ($this->getAmount() === $this->getAmountPaid());
+        return $this->getAmount() == $this->getAmountPaid();
     }
 
     public function getAllowedLineItemTypes()
@@ -1383,8 +1391,32 @@ class Entity extends Base\PublicEntity
      */
     public function updateStatusPostCapture(Payment\Entity $payment)
     {
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->info(TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE_NOT_FULLY_PAID,
+                                  [
+                                      'payment_id'                    => $payment->getId(),
+                                      'invoice_id'                    => $this->getId(),
+                                      'payment_amount'                => $payment->getAmount(),
+                                      'invoice_amount_paid_attribute' => $this->getAmountPaidAttribute(),
+                                      'invoice_amount_paid'           => $this->getAmountPaid(),
+                                      'invoice_amount'                => $this->getAmount(),
+                                      'invoice_status'                => $this->getStatus(),
+                                  ]);
+
         $newStatus = ($this->isFullyPaid($payment) === true) ?
                         Status::PAID : Status::PARTIALLY_PAID;
+
+        $trace->info(TraceCode::PAYMENT_CAPTURE_INVOICE_UPDATE_NEW_STATUS,
+                                  [
+                                      'payment_id'                    => $payment->getId(),
+                                      'invoice_id'                    => $this->getId(),
+                                      'payment_amount'                => $payment->getAmount(),
+                                      'invoice_amount_paid_attribute' => $this->getAmountPaidAttribute(),
+                                      'invoice_amount_paid'           => $this->getAmountPaid(),
+                                      'invoice_amount'                => $this->getAmount(),
+                                      'invoice_status'                => $this->getStatus(),
+                                  ]);
 
         $this->setStatus($newStatus);
     }
