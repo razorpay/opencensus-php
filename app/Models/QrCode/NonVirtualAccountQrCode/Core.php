@@ -57,7 +57,7 @@ class Core extends QrCode\Core
         return $qrCode;
     }
 
-    protected function generateQrCodeFile($qrCode)
+    public function generateQrCodeFile($qrCode)
     {
         if (($qrCode->getRequestSource() === RequestSource::CHECKOUT) or
             ($qrCode->getRequestSource() === RequestSource::FALLBACK))

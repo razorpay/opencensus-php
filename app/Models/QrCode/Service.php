@@ -6,6 +6,9 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Core as NonVaQrCore;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVaQrEntity;
 
 class Service extends Base\Service
 {
@@ -22,7 +25,33 @@ class Service extends Base\Service
         // Can't use merchant here because this is a direct route
         $qrCode = $this->repo->qr_code->findByPublicId($id);
 
-        $qrCodeFile = $this->core()->fetchQrCodePathFromUfh($qrCode);
+        $this->trace->info(TraceCode::QR_CODE_IMAGE_DOWNLOAD_REQUEST,
+                           [
+                               'usage_type'  => $qrCode instanceof NonVaQrEntity ? $qrCode->getUsageType() : null,
+                               'provider'    => $qrCode->getProvider(),
+                               'entity_type' => $qrCode->getEntityType(),
+                           ]
+        );
+
+        try
+        {
+            $qrCodeFile = $this->core()->fetchQrCodePathFromUfh($qrCode);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->info(TraceCode::QR_CODE_DOWNLOAD_FAILED_REGENERATING, $qrCode->toArrayPublic());
+
+            if($qrCode->getEntityType() == EntityConstants::VIRTUAL_ACCOUNT)
+            {
+                $this->core()->generateQrCodeFile($qrCode);
+            }
+            else
+            {
+                (new NonVaQrCore())->generateQrCodeFile($qrCode);
+            }
+
+            $qrCodeFile = $this->core()->fetchQrCodePathFromUfh($qrCode);
+        }
 
         return $qrCodeFile;
     }
