@@ -540,9 +540,13 @@ class Processor
                      ($order->isDiscountApplicable() === true) or
                      ($order->getProductId() !== null) or
                      ($order->getFeeConfigId() !== null) or
-                     ($order->invoice !== null) or
-                     (empty($orderTransfers) === false))
-                    )
+                     ($order->invoice !== null)))
+                {
+                    return false;
+                }
+
+                if ((empty($orderTransfers) === false) and 
+                    (count($orderTransfers) > 0))
                 {
                     return false;
                 }
