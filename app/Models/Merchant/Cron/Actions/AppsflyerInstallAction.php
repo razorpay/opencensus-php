@@ -11,7 +11,7 @@ use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 
-class AppsflyerUninstallAction extends BaseAction
+class AppsflyerInstallAction extends BaseAction
 {
     public function execute($data = []): ActionDto
     {
@@ -20,7 +20,7 @@ class AppsflyerUninstallAction extends BaseAction
             return new ActionDto(Constants::SKIPPED);
         }
 
-        $collectorData = $data['appsflyer_uninstall_events']; // since data collector is an array
+        $collectorData = $data['appsflyer_install_events']; // since data collector is an array
 
         $appsflyerIdList = $collectorData->getData();
 
@@ -35,7 +35,7 @@ class AppsflyerUninstallAction extends BaseAction
         {
             try
             {
-                $this->pushSegmentAndDatalakeEvent($appsflyerId, $eventTime);
+                $this->pushDatalakeEvent($appsflyerId, $eventTime);
 
                 $successCount++;
             }
@@ -47,8 +47,6 @@ class AppsflyerUninstallAction extends BaseAction
                 ]);
             }
         }
-
-        $this->app['segment-analytics']->buildRequestAndSend();
 
         if ($successCount === 0)
         {
@@ -62,7 +60,7 @@ class AppsflyerUninstallAction extends BaseAction
         return new ActionDto($status);
     }
 
-    private function pushSegmentAndDatalakeEvent($appsflyerId, $eventTime)
+    private function pushDatalakeEvent($appsflyerId, $eventTime)
     {
         $eventTimestamp = Carbon::createFromFormat('Y-m-d H:i:s', $eventTime, Timezone::IST)->getTimestamp();
 
@@ -82,14 +80,12 @@ class AppsflyerUninstallAction extends BaseAction
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, [], SegmentEvent::APPSFLYER_UNINSTALL, $eventTimestamp);
-
         $customProperties =[
             "appsflyer_id" => $appsflyerId,
             "event_time"   => $eventTime
         ];
 
-        $this->app['diag']->trackOnboardingEvent(EventCode::APP_UNINSTALL, $merchant, null, $customProperties);
+        $this->app['diag']->trackOnboardingEvent(EventCode::APP_INSTALL, $merchant, null, $customProperties);
 
     }
 }

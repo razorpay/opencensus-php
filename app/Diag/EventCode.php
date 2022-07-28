@@ -569,6 +569,15 @@ class EventCode
         'name'  => 'mtu.apply_coupon_code.failed',
     ];
 
+    const APP_INSTALL = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.app_install',
+    ];
+
+    const APP_UNINSTALL = [
+        'group' => 'onboarding',
+        'name'  => 'merchant.app_uninstall',
+    ];
 
     //M2M
     const M2M_APPLY_COUPON_CODE_SUCCESS = [
