@@ -6,12 +6,14 @@ use RZP\Exception;
 use Requests_Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Models\Payout\Entity;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\Edge\Passport\Passport;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 
@@ -80,11 +82,15 @@ class Scrooge
     ];
 
     // Headers
-    const ACCEPT        = 'Accept';
-    const X_MODE        = 'X-Mode';
-    const ADMIN_EMAIL   = 'X-Dashboard-Admin-Email';
-    const CONTENT_TYPE  = 'Content-Type';
-    const X_REQUEST_ID  = 'X-Request-ID';
+    const ACCEPT            = 'Accept';
+    const X_MODE            = 'X-Mode';
+    const ADMIN_EMAIL       = 'X-Dashboard-Admin-Email';
+    const CONTENT_TYPE      = 'Content-Type';
+    const X_REQUEST_ID      = 'X-Request-ID';
+    Const X_ADMIN_EMAIL     = 'X-ADMIN-EMAIL';
+    Const X_USER_EMAIL      = 'X-USER-EMAIL';
+    Const X_IS_CRON         = 'X-IS-CRON';
+    Const X_IS_DASHBOARD    = 'X-IS-DASHBOARD';
 
     const REQUEST_TIMEOUT = 60;
 
@@ -572,14 +578,23 @@ class Scrooge
         // send passport token to Scrooge
         $this->enablePassport();
 
+        //TODO check this in case of refund on boarding to edge
+        $customheader = [
+            RequestHeader::X_Creator_Id         => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
+            RequestHeader::X_Creator_Type       => $this->request->header(RequestHeader::X_Creator_Type) ?? null,
+            self::X_ADMIN_EMAIL                 => $this->getAdminEmail(),
+            self::X_USER_EMAIL                  => $this->getUserEmail(),
+            self::X_IS_CRON                     => $this->auth->isCron(),
+            self::X_IS_DASHBOARD                => $this->auth->isDashboardApp(),
+        ];
+
         if (isset($input['payment_page']) === true)
         {
-            $customheader = [
-                self::PAYMENT_PAGE => ($input['payment_page'] ? 'yes': 'no'),
-            ];
-            $this->setCustomHeaders($customheader);
+            $customheader[self::PAYMENT_PAGE] = ($input['payment_page'] ? 'yes': 'no');
             unset($input['payment_page']);
         }
+
+        $this->setCustomHeaders($customheader);
 
         $scroogeResponse = $this->sendRequest(
             self::RefundsBaseURL . '/' . self::URLS['create_new_refund_v2'],
@@ -1025,6 +1040,14 @@ class Scrooge
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()['admin_email'] ?? '';
+    }
+
+    /**
+     * @return string
+     */
+    protected function getUserEmail(): string
+    {
+        return $this->auth->getDashboardHeaders()[Constants::USER_EMAIL] ?? '';
     }
 
     /**
