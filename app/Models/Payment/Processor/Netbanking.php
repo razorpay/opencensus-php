@@ -60,6 +60,7 @@ class Netbanking
         self::UTIB_C,
         self::YESB_C,
         self::KKBK_C,
+        self::HDFC_C,
     ];
 
     protected static $names = [
