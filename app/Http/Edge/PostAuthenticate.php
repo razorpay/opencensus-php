@@ -66,6 +66,7 @@ final class PostAuthenticate
         $funcStartedAt = millitime();
 
         $this->ensureRequestContextAdditionalAttrs($request);
+        $this->reportAuthenticationMismatches($authenticated, $request);
         $this->ensureRequestContextPassport($authenticated);
         $this->reportAuthorizationEnforcementMismatches($authenticated, $request);
         $this->updateAPIPassport();
@@ -351,6 +352,49 @@ final class PostAuthenticate
         $dimensions['merchant_id'] = $this->ba->getMerchantId();
         $dimensions['trace_id'] = $this->reqCtx->edgeTraceId;
         $this->trace->warning(TraceCode::EDGE_AUTHORIZATION_MISMATCH, $dimensions);
+    }
+
+    /**
+     * Reports any mismatches in authentication between edge and API
+     *
+     * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param Request $request Current request object
+     */
+
+    private function reportAuthenticationMismatches(bool $authenticated, Request $request)
+    {
+
+        //for now edge only sends this header in case of private auth
+        $edgeAuthNResultStr = $request->headers->get(Constant::AUTHN_RESULT_HEADER);
+        // no headers from edge so skip
+        if ( $edgeAuthNResultStr === NULL ) {
+            return;
+        }
+
+        $edgeAuthNResult = $edgeAuthNResultStr === Constant::AUTHN_RESULT_ALLOWED;
+
+        // API & Edge results are same. no miss match
+        if ( $edgeAuthNResult ==  $authenticated ){
+            return;
+        }
+
+        $passport = $this->reqCtx->passport;
+
+        if ($passport === NULL){
+            return;
+        }
+
+        $dimensions                            = $this->ba->getRequestMetricDimensions();
+        $dimensions['is_api_authenticated']    = $authenticated;
+        $dimensions['is_edge_authenticated']   = $edgeAuthNResult;
+        $dimensions['consumer_type']           = $passport->consumer->type;
+        //skipping metrics as of now because api counter metrics is not working 
+        // For logs, add merchant_id & key_id as well.
+        // Not adding these for prom metrics since that'll increase the cardinality of the metric unnecessarily.
+        $dimensions['key_id']       = $this->ba->getPublicKey();
+        $dimensions['merchant_id']  = $this->ba->getMerchantId();
+        $dimensions['trace_id']     = $this->reqCtx->edgeTraceId;
+        $this->trace->warning(TraceCode::EDGE_AUTHENTICATION_MISMATCH, $dimensions);
     }
 }
 

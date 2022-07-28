@@ -8,6 +8,7 @@ use RZP\Tests\TestCase;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Edge\PostAuthenticate;
 use RZP\Tests\Unit\Request\Traits\HasRequestCases;
+use \Mockery;
 
 class PostAuthenticateTest extends TestCase
 {
@@ -66,13 +67,11 @@ class PostAuthenticateTest extends TestCase
         $this->assertNotNull($passport);
         $this->assertSame($passport->identified, $expectedIdentified);
         $this->assertSame($passport->authenticated, $expectedAuthenticated);
-        if ($expectedAuthenticated === true)
-        {
+        if ($expectedAuthenticated === true) {
             $this->assertSame($passport->mode, $expectedMode);
         }
         $this->assertSame($passport->consumer !== null, $expectedMerchantId !== null);
-        if ($expectedMerchantId !== null)
-        {
+        if ($expectedMerchantId !== null) {
             $this->assertSame($passport->consumer->id, $expectedMerchantId);
             $this->assertSame($passport->consumer->type, 'merchant');
         }
@@ -121,7 +120,7 @@ class PostAuthenticateTest extends TestCase
     {
         $mock = $this->getMockBuilder(BasicAuth::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId'])
+            ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId', 'getPublicKey'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
 
@@ -149,7 +148,7 @@ class PostAuthenticateTest extends TestCase
     {
         $request = $this->mockPrivateRouteWithOAuthBearerToken();
         app('request.ctx')->init();
-        $reqCtx           = app('request.ctx.v2');
+        $reqCtx = app('request.ctx.v2');
 
         $ba = $this->mockBasicAuth();
         $ba->expects($this->atLeastOnce())->method('getMode')->willReturn($expectedMode);
@@ -205,15 +204,15 @@ class PostAuthenticateTest extends TestCase
      * @param                   $expectedMismatch
      */
     public function testPartnerAuth(Passport\Passport $passport,
-                                   $expectedMode,
-                                   $expectedPartnerMerchantId,
-                                   $expectedMerchantId,
-                                   $expectedMismatch)
+                                    $expectedMode,
+                                    $expectedPartnerMerchantId,
+                                    $expectedMerchantId,
+                                    $expectedMismatch)
     {
         $request = $this->mockPrivateRouteWithPartnerAuthToken();
         app('request.ctx')->init();
         app('request.ctx')->resolveKeyIdIfApplicable();
-        $reqCtx           = app('request.ctx.v2');
+        $reqCtx = app('request.ctx.v2');
 
         $ba = $this->mockBasicAuth();
         $ba->expects($this->atLeastOnce())->method('getMode')->willReturn($expectedMode);
@@ -230,19 +229,19 @@ class PostAuthenticateTest extends TestCase
 
     public function getPartnerAuthCases()
     {
-        $passport                 = new Passport\Passport;
-        $passport->identified     = true;
-        $passport->authenticated  = true;
-        $passport->mode           = "live";
-        $passport->consumer       = new Passport\ConsumerClaims;
-        $passport->consumer->id   = "partner_id";
+        $passport = new Passport\Passport;
+        $passport->identified = true;
+        $passport->authenticated = true;
+        $passport->mode = "live";
+        $passport->consumer = new Passport\ConsumerClaims;
+        $passport->consumer->id = "partner_id";
         $passport->consumer->type = "merchant";
 
-        $passport->impersonation                    = new Passport\ImpersonationClaims;
-        $passport->impersonation->consumer          = new Passport\ConsumerClaims;
-        $passport->impersonation->consumer->id      = "merchant_id";
-        $passport->impersonation->consumer->type    = "merchant";
-        $passport->impersonation->type              = "partner";
+        $passport->impersonation = new Passport\ImpersonationClaims;
+        $passport->impersonation->consumer = new Passport\ConsumerClaims;
+        $passport->impersonation->consumer->id = "merchant_id";
+        $passport->impersonation->consumer->type = "merchant";
+        $passport->impersonation->type = "partner";
         return [
             // Case 1 - Successful case.
             [$passport, $passport->mode, $passport->consumer->id, $passport->impersonation->consumer->id, false],
@@ -250,6 +249,85 @@ class PostAuthenticateTest extends TestCase
             [$passport, $passport->mode, 'i_partner_id', $passport->impersonation->consumer->id, true],
             // Case 3 - Mismatch merchant_id
             [$passport, $passport->mode, $passport->consumer->id, 'i_merchant_id', true],
+        ];
+    }
+
+    /**
+     * @dataProvider getAuthenticationMismatchesCases
+     *
+     * @param Passport\Passport $passport
+     * @param                   $consumerId
+     * @param                   $edgeAuthenticated
+     * @param                   $consumerType
+     * @param                   $publicKey
+     * @param                   $apiAuthenticated
+     * @param                   $mode
+     */
+    public function testAuthenticationMismatches(Passport\Passport $passport,
+                                                 $consumerId,
+                                                 $consumerType,
+                                                 $publicKey,
+                                                 $mode,
+                                                 $edgeAuthenticated,
+                                                 $apiAuthenticated)
+    {
+
+        $edgeAuthenticatedBool = $edgeAuthenticated === 'true';
+        $passport->mode=$mode;
+        $passport->consumer->id = $consumerId;
+        $passport->consumer->type = $consumerType;
+        $passport->credential->username = $publicKey;
+        $passport->authenticated=$edgeAuthenticatedBool;
+        $passport->identified=true;
+
+        $request = $this->mockPrivateRouteWithLiveMode();
+
+        $request->headers->set('X-AUTHENTICATION-RESULT', $edgeAuthenticated);
+
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+
+        $reqCtx = app('request.ctx.v2');
+        $reqCtx->passport = $passport;
+
+        $svc = Mockery::mock('Razorpay\Trace\Logger');
+
+
+        $count = $edgeAuthenticatedBool !== $apiAuthenticated ? 1:0;
+
+        $svc->shouldReceive('warning')->times($count);
+
+        $svc->shouldReceive('histogram')->times(1);
+
+        $this->app->instance("trace", $svc);
+
+        $ba = $this->mockBasicAuth();
+
+        $ba->expects($this->any())->method('getMode')->willReturn($mode);
+
+        if ($edgeAuthenticatedBool !== $apiAuthenticated) {
+            $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($consumerId);
+            $ba->expects($this->atLeastOnce())->method('getPublicKey')->willReturn($publicKey);
+        }
+
+
+        (new PostAuthenticate)->handle($apiAuthenticated, $request);
+        $this->assertSame($passport->mode, "live");
+        Mockery::close();
+    }
+
+    public function getAuthenticationMismatchesCases()
+    {
+        $passport = new Passport\Passport;
+        $passport->identified = true;
+        $passport->consumer = new Passport\ConsumerClaims;
+        $passport->credential = new Passport\CredentialClaims;
+        return [
+            // Case 1 - Successful case.
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "true", false],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", true],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "true", true],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", false]
         ];
     }
 }
