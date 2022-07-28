@@ -130,9 +130,9 @@ class PincodeSearch
         return $response;
     }
 
-    protected function checkErrors(array $response)
+    protected function checkErrors($response)
     {
-        if (isset($response['status']) === false)
+        if (!is_array($response) or isset($response['status']) === false)
         {
             throw new Exception\IntegrationException(
                 'Third Party Error',
