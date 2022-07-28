@@ -12,7 +12,6 @@ import QuickGuide from './QuickGuide';
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import CustomDomainBanner from 'merchant/components/Announcements/PaymentPageCustomDomain';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 
 @connect((state) => {
@@ -34,7 +33,6 @@ export default class PaymentPagesContainer extends Component {
       <>
         <div className="banner-container">
           <DashboardBanner />
-          <CustomDomainBanner userId={user.current} email={user.email} />
         </div>
 
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
