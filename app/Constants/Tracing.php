@@ -469,7 +469,7 @@ class Tracing
 
     public static function maskQueryString($queryString): string
     {
-        $queryParamsToRedact = ['email', 'contact', 'customer_email', 'customer_contact'];
+        $queryParamsToRedact = ['email', 'contact', 'customer_email', 'customer_contact', 'contact_ps'];
         parse_str($queryString, $queryParams);
 
         foreach ($queryParamsToRedact as $param)

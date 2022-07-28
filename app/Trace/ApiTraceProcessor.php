@@ -95,6 +95,7 @@ class ApiTraceProcessor
         'otp',
         'fund_account_name',
         'fund_account_number',
+        'contact.partial_search',
     ];
 
     public function __construct($app)
