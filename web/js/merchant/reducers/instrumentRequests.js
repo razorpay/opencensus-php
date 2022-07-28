@@ -718,6 +718,13 @@ const initialState = {
           header: 'Wallets',
           list: [
             {
+              name: 'Amazon Pay',
+              description: '',
+              status: 'greyed',
+              slug: 'amazonpay',
+              icon: 'amazonpay',
+            },
+            {
               name: 'Paytm',
               description: '',
               status: 'account_linkable',
