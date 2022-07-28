@@ -835,6 +835,10 @@ class Service extends Base\Service
 
         $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->repo->merchant->getSharedAccount());
 
+        if ($app === null) {
+            return null;
+        }
+
         return $this->repo->customer->fetchByAppToken($app);
     }
 

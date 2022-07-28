@@ -171,7 +171,7 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
-    public function getSharedAccount()
+    public function getSharedAccount(): Entity
     {
         if ($this->sharedMerchant === null)
         {

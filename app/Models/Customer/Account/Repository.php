@@ -22,7 +22,7 @@ class Repository extends Base\Repository
         }
     }
 
-    public function fetchByAppToken($appToken)
+    public function fetchByAppToken(AppToken\Entity $appToken): Entity
     {
         if ($appToken->hasRelation('customer'))
         {

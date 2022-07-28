@@ -52,13 +52,13 @@ class Core extends Base\Core
         return [];
     }
 
-    public function getAppByAppTokenId($appTokenId, Merchant\Entity $merchant)
+    public function getAppByAppTokenId($appTokenId, Merchant\Entity $merchant): ?Entity
     {
         $sharedMerchant = $this->repo->merchant->getSharedAccount();
 
         $app = $this->getAppByAppTokenIdAndMerchant($appTokenId, $sharedMerchant);
 
-        if ($app === null)
+        if (($app === null) && ($merchant->getId() !== $sharedMerchant->getId()))
         {
             $app = $this->getAppByAppTokenIdAndMerchant($appTokenId, $merchant);
         }
@@ -81,7 +81,7 @@ class Core extends Base\Core
         return $apps[0];
     }
 
-    protected function getAppByAppTokenIdAndMerchant(string $appTokenId, Merchant\Entity $merchant)
+    protected function getAppByAppTokenIdAndMerchant(string $appTokenId, Merchant\Entity $merchant): ?Entity
     {
         AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
