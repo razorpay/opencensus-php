@@ -17,6 +17,8 @@ import { splitzFetch } from 'razorx/helpers/fetch';
 export default class AddEditExperiment extends React.Component {
   state = this.initState();
 
+  mentions = null;
+
   initState() {
     let variants = [
       {
@@ -100,6 +102,7 @@ export default class AddEditExperiment extends React.Component {
               rules: this.state.rules,
             }),
         variants: this.state.variants,
+        mentions: this?.mentions?.replace(/ /g, '').split(','),
       },
     };
 
@@ -291,6 +294,10 @@ export default class AddEditExperiment extends React.Component {
     }
 
     return segments.find((s) => s.id === segmentId);
+  };
+
+  storeMentionValue = (e) => {
+    this.mentions = e?.target?.value || '';
   };
 
   render() {
@@ -757,9 +764,22 @@ export default class AddEditExperiment extends React.Component {
                     });
                   }}
                 >
-                  + Add Varaint
+                  + Add Variant
                 </button>
               </div>
+            </div>
+            <br />
+            <div className="field-container">
+              <h3 className="title subheading">Slack Mention(s)</h3>
+              <p className="side-note">*For adding multiple ids, use comma seperated strings </p>
+              <Field
+                type="text"
+                label="Slack Mentions"
+                name="mentions"
+                placeholder="Group ID or User ID"
+                onChange={this.storeMentionValue}
+                defaultValue={isEdit ? data?.mentions : ''}
+              />
             </div>
             <div style={{ marginTop: 24 }} />
           </React.Fragment>

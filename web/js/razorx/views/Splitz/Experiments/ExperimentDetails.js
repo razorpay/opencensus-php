@@ -609,6 +609,15 @@ export default class ExperimentDetails extends React.Component {
               </div>
             </React.Fragment>
           )}
+          {data?.mentions?.length > 0 && (
+            <>
+              <br />
+              <div>
+                <div className="title section-heading">Slack Mention(s)</div>
+                <p>{data?.mentions.join(', ')}</p>
+              </div>
+            </>
+          )}
           <br />
           <br />
           <div>
