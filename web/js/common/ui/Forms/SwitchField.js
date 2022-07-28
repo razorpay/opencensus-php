@@ -1,3 +1,4 @@
+import { Component } from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
 /*
@@ -12,7 +13,7 @@ import { classList } from 'common/utils/rzp-utils';
     />
 */
 
-export default class SwitchField extends React.Component {
+export default class SwitchField extends Component {
   buttonClass = 'checkbox-knob';
   type = this.props.type || 'default';
 
@@ -25,33 +26,37 @@ export default class SwitchField extends React.Component {
     return typeof this.props.checked !== 'undefined';
   }
 
-  toggle = e => {
+  controlledStateChange = (state) => {
+    this.setState(state);
+  };
+
+  toggle = (e) => {
     // it's an actual click, not triggered syntheticmouseevent due to form submission
     if (e.pageX && e.pageY) {
       const onChange = this.props.onChange;
-      const isChecked = !this.state.checked;
+      const { checked } = this.state;
+      const isChecked = !checked;
 
       if (this.props.disabled) return;
 
-      this.setState({ checked: isChecked }, _ => {
+      this.setState({ checked: isChecked }, (_) => {
         const self = this;
 
-        if (onChange) {
-          function postActionCB(isSuccess) {
-            if (!isSuccess) {
-              setTimeout(
-                () =>
-                  self.setState({
-                    checked: !isChecked,
-                    isActionPending: false,
-                  }),
-                100
-              ); // Revert if false
-            } else {
-              self.setState({ isActionPending: false });
-            }
+        function postActionCB(isSuccess) {
+          if (!isSuccess) {
+            setTimeout(
+              () =>
+                self.setState({
+                  checked: !isChecked,
+                  isActionPending: false,
+                }),
+              100,
+            ); // Revert if false
+          } else {
+            self.setState({ isActionPending: false });
           }
-
+        }
+        if (onChange) {
           const actionCall = onChange(isChecked, postActionCB);
 
           if (actionCall && actionCall.then) {
@@ -65,22 +70,21 @@ export default class SwitchField extends React.Component {
   };
 
   render() {
-    let { checked, isActionPending } = this.state;
+    const { isActionPending } = this.state;
+    let { checked } = this.state;
     checked = this.isControlled ? this.props.checked : checked;
 
-    let typeClasses = this.props.type
-      .split(' ')
-      .map(type => `checkbox-knob--${type}`);
-    typeClasses = typeClasses.join(' ');
+    let typeClasses = this.props.type?.split(' ').map((type) => `checkbox-knob--${type}`);
+    typeClasses = typeClasses?.join(' ');
 
     return (
       <button
         {...this.props}
-        class={classList(
+        className={classList(
           this.buttonClass,
           checked && 'checked',
           typeClasses,
-          isActionPending && 'checkbox-knob--pending'
+          isActionPending && 'checkbox-knob--pending',
         )}
         value={checked}
         onClick={this.toggle}

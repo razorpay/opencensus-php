@@ -38,3 +38,4 @@ export const VIEW_SETTLEMENT_CYCLE = 'view-settlement-cycle';
 export const UPDATE_SETTLEMENT_CYCLE = 'update-settlement-cycle';
 export const UPDATE_WEBSITE_DETAILS = 'update-website-details';
 export const UPDATE_BANK_ACCOUNT = 'update-bank-account';
+export const ENABLE_2FA = 'enable-2fa';

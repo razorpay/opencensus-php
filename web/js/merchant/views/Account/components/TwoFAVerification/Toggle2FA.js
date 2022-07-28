@@ -1,7 +1,10 @@
-import { Component } from 'react';
+import { Component, createRef } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import RTracking from 'react-tracking';
+import { withRouter } from 'react-router-dom';
+import qs from 'query-string';
+import isEmpty from '@universe/utils/isEmpty';
 
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
@@ -14,6 +17,12 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import UpdateSelfContactMobile from 'merchant/views/Account/Profile/components/UpdateSelfContactMobile';
 import PasswordVerification from './PasswordVerification';
 import { analyticsTrack } from 'common/utils/analytics';
+import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import {
+  ACTION_QUERY_PARAM_KEY,
+  ENABLE_2FA,
+} from 'merchant/views/Account/Profile/deeplink-constants';
+
 @connect((state) => ({ user: state.session.user }), {
   openModal,
   closeModal,
@@ -26,10 +35,15 @@ class Toggle2FA extends Component {
     confirm: PropTypes.func,
   };
 
+  switchBtnRef = createRef();
+
   showModal = (component) => {
     this.props.openModal({
       size: 'small',
       component,
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: ENABLE_2FA,
+      },
     });
   };
 
@@ -193,6 +207,7 @@ class Toggle2FA extends Component {
       } else {
         this.confirmDisable({ action, flag });
       }
+      this.removeActionQueryParams();
     });
   };
 
@@ -206,34 +221,80 @@ class Toggle2FA extends Component {
       cb(completed);
     });
 
+  removeActionQueryParams = () => {
+    const params = qs.parse(this.props.location.search);
+    Object.keys({
+      [ACTION_QUERY_PARAM_KEY]: ENABLE_2FA,
+    }).forEach((queryParamKey) => {
+      delete params[queryParamKey];
+    });
+    this.props.history.replace({ search: isEmpty(params) ? '' : qs.stringify(params) });
+  };
+
+  enable2faTriggeredByDeepLink = () => {
+    const { twoFaEnabled } = this.props;
+    const changeSwitchState = this.switchBtnRef.current?.controlledStateChange;
+    // trigger only when 2fa is disabled
+    if (!twoFaEnabled && changeSwitchState) {
+      changeSwitchState({
+        checked: true,
+        isActionPending: true,
+      });
+      this.props.onToggleChange(this.onToggleChange)(true, (isSuccess) => {
+        if (!isSuccess) {
+          setTimeout(
+            () =>
+              changeSwitchState({
+                checked: false,
+                isActionPending: false,
+              }),
+            100,
+          ); // Revert if false
+        } else {
+          changeSwitchState({ isActionPending: false });
+        }
+      });
+    }
+  };
   render() {
     const { twoFaEnabled } = this.props;
     return (
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          {this.props.renderTitle && this.props.renderTitle()}
+      <TriggerOnQueryParamMatch
+        queryParamsMapping={[
+          {
+            key: ACTION_QUERY_PARAM_KEY,
+            value: ENABLE_2FA,
+            trigger: this.enable2faTriggeredByDeepLink,
+          },
+        ]}
+      >
+        <div className="panel panel-default">
+          <div className="panel-heading">
+            {this.props.renderTitle && this.props.renderTitle()}
 
-          <span class="toggler-btn">
-            <SwitchField
-              defaultChecked={twoFaEnabled}
-              // temporarily using onChange callback from props
-              // otherwise this component will require access to both
-              // new and old context
-              onChange={this.props.onToggleChange(this.onToggleChange)}
-              type="prime"
-            />
-            <strong class={classList('m-l', twoFaEnabled ? 'text-primary' : 'text-faded')}>
-              {twoFaEnabled ? 'Enabled' : 'Disabled'}
-            </strong>
-          </span>
-        </div>
+            <span className="toggler-btn">
+              <SwitchField
+                ref={this.switchBtnRef}
+                defaultChecked={twoFaEnabled}
+                // temporarily using onChange callback from props
+                // otherwise this component will require access to both
+                // new and old context
+                onChange={this.props.onToggleChange(this.onToggleChange)}
+                type="prime"
+              />
+              <strong className={classList('m-l', twoFaEnabled ? 'text-primary' : 'text-faded')}>
+                {twoFaEnabled ? 'Enabled' : 'Disabled'}
+              </strong>
+            </span>
+          </div>
 
-        <div class="panel-body">
-          <form class="form-horizontal">
-            <div class="description">{this.props.renderDescription()}</div>
-          </form>
+          <div className="panel-body">
+            <form className="form-horizontal">
+              <div className="description">{this.props.renderDescription()}</div>
+            </form>
+          </div>
         </div>
-      </div>
+      </TriggerOnQueryParamMatch>
     );
   }
 
@@ -251,4 +312,4 @@ class Toggle2FA extends Component {
 // eslint-disable-next-line babel/new-cap
 export default RTracking(() => {
   return window.rzpQ.component('Toggle2FA');
-})(Toggle2FA);
+})(withRouter(Toggle2FA));
