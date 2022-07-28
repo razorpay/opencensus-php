@@ -369,7 +369,9 @@ class Service extends Base\Service
 
         $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'POST', $bookingDetails);
 
-        if ($channel === 'rbl')
+        $responseStatus = $response[Constants::STATUS] ?? 'Failure';
+
+        if ($channel === 'rbl' and $responseStatus !== 'Failure')
         {
             $clarityContextCollection = (new Merchant\Attribute\Service())->getPreferencesByGroupAndType(
                 Group::X_MERCHANT_CURRENT_ACCOUNTS, MerchantAttributeType::CLARITY_CONTEXT)->first();

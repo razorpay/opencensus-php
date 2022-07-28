@@ -266,6 +266,7 @@ class BankingAccountService
         else if($path == 'booking/slot/book' ||  $path == 'booking/slot/reschedule' and $method == 'POST')
         {
             $result = [
+                'status' => 'Success',
                 'data' => [
                     'id' => '20000000000000',
                     'bookingStartTime' => '',
