@@ -51,6 +51,8 @@ class GrowthService extends Base\Service
     // Max allowed file size - 1MB (1024*1024).
     const MAX_FILE_SIZE = 1048576;
 
+    const X_SPLITZ_EXPERIMENT_REUSE      =  'X-Experiment-Reuse';
+
     /**
      * @var string
      */
@@ -193,6 +195,7 @@ class GrowthService extends Base\Service
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        $headers[self::X_SPLITZ_EXPERIMENT_REUSE] = Request::header(self::X_SPLITZ_EXPERIMENT_REUSE);
 
         $options = [
             'timeout' => $this->requestTimeout,
