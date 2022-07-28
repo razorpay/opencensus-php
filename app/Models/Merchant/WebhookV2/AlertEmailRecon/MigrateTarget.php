@@ -64,7 +64,7 @@ class MigrateTarget implements \RZP\Modules\Migrate\Target
 
             $webhook['alert_email'] = $alertEmail;
 
-            if (sizeof($webhook['context']) === 0)
+            if (isset($webhook['context']) === false || sizeof($webhook['context']) === 0)
             {
                 $webhook['context'] = json_decode('{}');
             }

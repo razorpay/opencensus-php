@@ -236,6 +236,12 @@ class Stork
             $webhook['disabled_at'] = strtotime($webhook['disabled_at']);
         }
 
+        if (isset($webhook['subscriptions']) === false)
+        {
+            // setting as empty array to avoid null exceptions
+            $webhook['subscriptions'] = [];
+        }
+
         $webhook['subscriptions'] = array_map(function($v)
         {
             if (isset($v['created_at']) === true)

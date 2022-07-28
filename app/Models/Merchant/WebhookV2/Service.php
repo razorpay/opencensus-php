@@ -532,6 +532,12 @@ class Service extends Base\Service
             $apiWk[self::EVENTS] = [];
         }
 
+        if (isset($apiWk[self::SUBSCRIPTIONS]) === false)
+        {
+            // setting as empty array to avoid null exceptions
+            $apiWk[self::SUBSCRIPTIONS] = [];
+        }
+
         $storkWk = $apiWk;
 
         $storkWk[self::SUBSCRIPTIONS] = array_map(
