@@ -248,6 +248,7 @@ class UserRolesScope
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],
             'capital_cards_service'       => [Role::OWNER, Role::ADMIN],
+            'capital_cards_onboarding'    =>  Role::ALL_ROLES,
             'capital_collections_service' => [Role::OWNER, Role::ADMIN],
             'capital_virtual_cards_generate_token' => [Role::OWNER, Role::ADMIN],
 

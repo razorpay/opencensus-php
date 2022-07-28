@@ -41,6 +41,7 @@ class Tracing
             // used by capital-cards service
             'user_fetch',
             'capital_cards_service',
+            'capital_cards_onboarding',
             'capital_cards_admin',
 
             // care Routes

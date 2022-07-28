@@ -32,6 +32,10 @@ class CapitalCardsController extends Controller
 
     const MAIL_ERROR_REGEX = '/View \[emails.capital_cards.(?:\w+)?\] not found./';
 
+    protected function handlePhysicalCardRequest(){
+        return $this->handleProxyRequests('v1/carddelivery');
+    }
+
     protected function handleProxyRequests($path = null)
     {
 
