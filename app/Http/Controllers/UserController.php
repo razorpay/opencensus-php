@@ -536,6 +536,42 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
 
+    public function postRegisterUnbounce()
+    {
+        $timeStart = microtime(true);
+        $input = Input::all();
+        $data = null;
+        $error = [];
+
+        try
+        {
+            $formInput = json_decode($input['data_json']);
+
+            $registerInput = [
+                'email'             => $formInput->email[0],
+                'password'          => $formInput->password[0],
+                'captcha_disable'   => "DISABLE_THE_CAPTCHA_YOU_SHALL",
+                'signup_campaign'   => 'unbounce'
+            ];
+
+            list($error, $data, $httpCode) = (new User\Service)->register($registerInput);
+
+        }
+        catch (User\RecoverableException $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        $timeTaken = microtime(true) - $timeStart;
+
+        $this->traceDuration($timeTaken, TraceCode::USER_SIGNUP_DURATION);
+
+        Helper::pushSignUpLoginMetrics(Constants::USER_SIGNUP, $registerInput, $error, $timeTaken);
+
+        return AppResponse::jsonResponse($error, $httpCode);
+
+    }
+
     public function postOauthRegister()
     {
         $timeStart = microtime(true);

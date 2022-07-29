@@ -34,7 +34,7 @@ Route::group(['middleware' => ['web']], function () {
     // keeping it in app layer.
     Route::options('/{path?}', 'GenericController@handleAny')
         ->where(['path' => '.*']);
-    
+
     Route::group(['middleware'  =>  ['set_csp_header']], function () {
         Route::get('/', 'UserController@getIndex')->name('dashboard');
         Route::get('/signup', 'UserController@getIndex')->name('signup');
@@ -89,6 +89,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('user_verify_user_otp_verify');
 
         Route::post('/register', 'UserController@postRegister')->name('user_register'); // ePOS
+        Route::post('/register_unbounce', 'UserController@postRegisterUnbounce')->name('user_register_unbounce');
         Route::post('/register/otp', 'UserController@postRegisterSendOtp')->name('user_register_otp'); // ePOS
         Route::post('/register/otp/verify', 'UserController@postRegisterVerifyOtp')->name('user_register_otp_verify'); // ePOS
         Route::post('/oauth-signin', 'UserController@postOauthSignIn')->name('user_oauth_signin');

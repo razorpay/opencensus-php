@@ -42,6 +42,7 @@ class RouteTeamMap
         'tnc'                   => [self::TEAM_PAYMENTS_GROWTH],
         'user_pre_signup'       => [self::TEAM_PAYMENTS_GROWTH],
         'user_business_types'   => [self::TEAM_PAYMENTS_GROWTH],
+        'user_register_unbounce'=> [self::TEAM_PAYMENTS_GROWTH],
         'merchant_details'      => [self::TEAM_PAYMENTS_GROWTH],
         'get_keys'              => [self::TEAM_PAYMENTS_GROWTH],
         'keys_setup'            => [self::TEAM_PAYMENTS_GROWTH],
