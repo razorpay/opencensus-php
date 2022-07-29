@@ -545,7 +545,7 @@ class Processor
                     return false;
                 }
 
-                if ((empty($orderTransfers) === false) and 
+                if ((empty($orderTransfers) === false) and
                     (count($orderTransfers) > 0))
                 {
                     return false;
@@ -3455,7 +3455,7 @@ class Processor
             'captured_at'   => $payment->getCapturedAt(),
             'created_at'    => $payment->getCreatedAt(),
             'merchant_id'   => $payment->getMerchantId(),
-
+            'base_amount'   => $payment->getBaseAmount(),
         ];
 
         $terminal = $payment->terminal;
@@ -3467,6 +3467,7 @@ class Processor
             'gateway_merchant_id' => $terminal->getGatewayMerchantId(),
             'gateway_terminal_id' => $terminal->getGatewayTerminalId(),
             'mode'                => $terminal->getMode(),
+            'currency'            => $terminal->getCurrency(),
         ];
 
         $card = $payment->card;
