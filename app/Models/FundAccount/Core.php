@@ -502,6 +502,9 @@ class Core extends Base\Core
                 {
                     $token = $this->repo->token->findByPublicId($accountInput[Card\Entity::TOKEN_ID]);
 
+                    // For now, we are blocking the saved card flow if the token entity is created by a different merchant
+                    $this->checkIfTokenIdBelongsToDifferentMerchant($token, $merchant);
+
                     // token entity will always have an associated card entity because of foreign key constraint
                     $account = $token->card;
 
@@ -601,6 +604,25 @@ class Core extends Base\Core
                     "Token not supported for fund account creation."
                 );
             }
+        }
+    }
+
+    public function checkIfTokenIdBelongsToDifferentMerchant($token, $merchant)
+    {
+        if ($token->merchant->getId() !== $merchant->getId())
+        {
+            $this->trace->error(TraceCode::TOKEN_ENTITY_BELONGS_TO_DIFFERENT_MERCHANT,
+                                [
+                                    'token_merchant_id'  => $token->merchant->getId(),
+                                    'payout_merchant_id' => $merchant->getId()
+                                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+                null,
+                [],
+                "Token not supported for fund account creation."
+            );
         }
     }
 

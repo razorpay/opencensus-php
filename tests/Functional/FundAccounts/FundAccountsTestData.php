@@ -2607,6 +2607,35 @@ return [
         ],
     ],
 
+    'testCreateRzpSavedCardFundAccountWithDifferentMerchant' => [
+        'request'  => [
+            'content' => [
+                'account_type' => 'card',
+                'contact_id'   => 'cont_1000000contact',
+                'card'         => [
+                    'token_id'       => 'token_100000000token',
+                    'input_type'     => 'razorpay_token',
+                    'token_provider' => 'razorpay'
+                ]
+            ],
+            'url'     => '/fund_accounts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Token not supported for fund account creation.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT,
+        ],
+    ],
+
     'testCreateSavedCardOtherTSPFundAccount' => [
         'request'  => [
             'content' => [

@@ -682,6 +682,8 @@ class CompositePayoutTest extends TestCase
 
     public function testCreateCompositePayoutForTokenisedRzpSavedCardFlowWithTokenOfDifferentMerchant()
     {
+        $this->markTestSkipped("Skipped for now since we are blocking the flow");
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
                                                 Feature\Constants::S2S,
                                                 Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
