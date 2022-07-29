@@ -2190,6 +2190,8 @@ class Core extends Base\Core
     {
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
 
+        $limit = empty($input['limit']) === false ? $input['limit'] : $limit;
+
         if (empty($limit) === true)
         {
             $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
