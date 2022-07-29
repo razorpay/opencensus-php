@@ -190,10 +190,10 @@ class Service extends Base\Service
 
             $merchantId = $data['id'];
 
-            $experiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
+            $easyOnboardingExperiment = (new Merchant\Core)->isRazorxExperimentEnable($merchantId,Merchant\RazorxTreatment::EMAIL_EASY_ONBOARDING_SIGNUP);
 
             if ((empty($signupCampaign) === false) and
-                ($experiment === true))
+                ($easyOnboardingExperiment === true or $signupCampaign === DeviceDetail\Constants::UNBOUNCE))
             {
                 $ddInput = [
                     DeviceDetail\Entity::MERCHANT_ID        => $merchantId,
