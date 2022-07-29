@@ -404,6 +404,23 @@ return [
         ],
     ],
 
+    'testRetrieveLinkedAccountsForMerchantIdAdminDashboard' => [
+        'request'  => [
+            'url' => '/admin/merchants/10000000000000/linked_accounts',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'acc_10000000000001',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testRetrieveLinkedAccountsForMerchantIdWithoutLa' => [
         'request'  => [
             'url' => '/merchants/10000000000000/linked_accounts',

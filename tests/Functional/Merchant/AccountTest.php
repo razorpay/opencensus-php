@@ -269,6 +269,22 @@ class AccountTest extends TestCase
         $this->assertEquals('0002020000304030434', $bankAccount['account_number']);
     }
 
+    protected function addPermissionToBaAdmin(string $permissionName): void
+    {
+        $admin = $this->ba->getAdmin();
+
+        if ($admin->hasPermission($permissionName) === true)
+        {
+            return;
+        }
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
+    }
+
     public function testRetrieveLinkedAccountsForMerchantId()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account',  ['id' => '10000000000001']);
@@ -285,6 +301,26 @@ class AccountTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $this->ba->settlementsAuth();
+
+        $this->startTest($testData);
+    }
+
+    public function testRetrieveLinkedAccountsForMerchantIdAdminDashboard()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account',  ['id' => '10000000000001']);
+
+        $this->fixtures->create('merchant_detail',
+                                [
+                                    'merchant_id' => $merchant['id'],
+                                    'submitted'   => true,
+                                    'locked'      => true
+                                ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->adminAuth();
+
+        $this->addPermissionToBaAdmin('view_merchant');
 
         $this->startTest($testData);
     }
