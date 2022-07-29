@@ -2658,11 +2658,11 @@ class Entity extends Base\PublicEntity
 
         $routeName = $route->getCurrentRouteName();
 
-        if (($routeName === self::PAYOUT_FETCH_MULTIPLE) and
-            ($basicAuth->isSlackApp() === false))
-        {
-            $this->publicSetters = $this->publicSettersListView;
-        }
+        //if (($routeName === self::PAYOUT_FETCH_MULTIPLE) and
+        //    ($basicAuth->isSlackApp() === false))
+        //{
+        //    $this->publicSetters = $this->publicSettersListView;
+        //}
 
         $payoutArray = parent::toArrayPublic();
 
