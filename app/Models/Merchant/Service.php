@@ -466,16 +466,32 @@ class Service extends Base\Service
             $this->core()->sendPartnerLeadInfoToSalesforce($output['id'], $merchant->getId(), $product, $partnerLeadData);
         }
 
-        $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);
+        if($isLinkedAccount === false)
+        {
+            $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);
 
-        $properties = [
-            'partner_id'          =>  $data['partner_id'],
-            'count_of_affiliate'  =>  $count,
-            'product_group'       =>  $data['product_group']
-        ];
+            $submerchantId = substr($submerchantId, 4); // removes 'acc_' prefix from account id
 
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $merchant, $properties, SegmentEvent::AFFILIATE_ACCOUNT_ADDED);
+            $properties = [
+                'partner_id'         => $data['partner_id'],
+                'merchant_id'        => $submerchantId,
+                'count_of_affiliate' => $count,
+                'product_group'      => $data['product_group']
+            ];
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $properties, SegmentEvent::AFFILIATE_ACCOUNT_ADDED);
+
+            if ($count === 1)
+            {
+                $properties = [
+                    'partner_id'  => $data['partner_id'],
+                    'merchant_id' => $submerchantId
+                ];
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                    $merchant, $properties, SegmentEvent::PARTNER_ADDED_FIRST_SUBMERCHANT);
+            }
+        }
 
         return $output;
     }

@@ -302,6 +302,46 @@ return [
         ],
     ],
 
+    'testSegmentEventSkipPartnerAddedFirstSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'submerchant@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'NewSubmerchant',
+                'name'            => 'Submerchant',
+                'email'           => 'submerchant@razorpay.com',
+                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testSegmentEventPartnerAddedFirstSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'submerchant@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'NewSubmerchant',
+                'name'            => 'Submerchant',
+                'email'           => 'submerchant@razorpay.com',
+                'pricing_plan_id' => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
     'testCreateSubMerchantWithEmailUserExists' => [
         'request'  => [
             'url'     => '/submerchants',

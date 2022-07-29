@@ -114,4 +114,5 @@ class EventCode
 
     const INTERNATIONAL_PAYMENTS_ENABLED =  "International Payments Enabled";
 
+    const PARTNER_ADDED_FIRST_SUBMERCHANT =  "Partner Added First Submerchant";
 }

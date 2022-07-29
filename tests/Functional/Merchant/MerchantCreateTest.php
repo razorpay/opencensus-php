@@ -36,6 +36,7 @@ use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Merchant\Detail\Status as MerchantDetailStatus;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing as TestPricing;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -424,6 +425,74 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($testMapping);
 
         $this->assertNull($liveMapping);
+    }
+
+    public function testSegmentEventSkipPartnerAddedFirstSubmerchant()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMapping($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId  = '101Submerchant';
+        $submerchantId2 = '102Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId2]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Affiliate Account Added"], true));
+                    }));
+
+        $this->startTest();
+    }
+
+    public function testSegmentEventPartnerAddedFirstSubmerchant()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMapping($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId = '101Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(2))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Affiliate Account Added", "Partner Added First Submerchant"], true));
+                    }));
+
+        $this->startTest();
     }
 
     public function testCreateSubMerchantWithEmailUserExists()
