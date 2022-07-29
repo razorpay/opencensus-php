@@ -1125,7 +1125,11 @@ class Service extends Base\Service
 
                 case E::ADJUSTMENT:
 
-                    $paymentMeta = $txn->source->entity->payment->paymentMeta;
+                    $paymentMeta = null;
+
+                    if($txn->source->entity != null && $txn->source->entity->payment != null){
+                        $paymentMeta = $txn->source->entity->payment->paymentMeta;
+                    }
 
                     $googleRequestId = null;
 
@@ -1142,7 +1146,11 @@ class Service extends Base\Service
 
                 case E::DISPUTE:
 
-                    $paymentMeta = $txn->source->entity->payment->paymentMeta;
+                    $paymentMeta = null;
+
+                    if($txn->source->entity != null && $txn->source->entity->payment != null){
+                        $paymentMeta = $txn->source->entity->payment->paymentMeta;
+                    }
 
                     $googleRequestId = null;
 
@@ -1151,7 +1159,9 @@ class Service extends Base\Service
                         $googleRequestId = $paymentMeta->getReferenceId();
                     }
 
-                    $response['source_id'] = $txn->source->entity->getId();
+                    if($txn->source->entity != null) {
+                        $response['source_id'] = $txn->source->entity->getId();
+                    }
 
                     $response['external_id'] = $googleRequestId;
 
