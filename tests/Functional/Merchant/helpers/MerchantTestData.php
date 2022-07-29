@@ -12785,4 +12785,40 @@ return [
             'status_code' => 200,
         ]
     ],
+
+    'testTagsWhitelistForMerchantSuspend' => [
+        'requestWorkflowActionCreation'  => [
+            'content' => [
+                'action'          => 'suspend',
+                'merchant_id'     => '10000000000000',
+                'risk_attributes' => [
+                    'trigger_communication' => '0',
+                    'risk_tag'              => 'risk_review_watchlist',
+                    'risk_source'           => 'risk_engine_dedupe',
+                    'risk_reason'           => 'razorpay_x',
+                    'risk_sub_reason'       => 'multiple_va_creations',
+                ],
+            ],
+            'url'     => '/risk-actions/create',
+            'method'  => 'POST',
+        ],
+        'responseWorkflowActionCreation' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity_name'   => 'merchant',
+                'entity_id'     => "10000000000000",
+                'state'         => "open",
+                'maker_type'    => "admin",
+                'org_id'        => "org_100000razorpay",
+                'approved'      => false,
+                'current_level' => 1,
+                'maker'         => [
+                    'id' => "admin_RzrpySprAdmnId",
+                ],
+                'permission'    => [
+                    'name' => "edit_merchant_suspend",
+                ],
+            ],
+        ],
+    ],
 ];

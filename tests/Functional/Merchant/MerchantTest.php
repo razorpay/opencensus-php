@@ -16121,4 +16121,35 @@ The same has been enabled for the account.
         $this->assertEquals($workflowActionId, $response['id']);
     }
 
+    public function testTagsWhitelistForMerchantSuspend()
+    {
+        $merchantId = '10000000000000';
+
+        $this->fixtures->edit('merchant', $merchantId);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->ba->adminAuth();
+
+        $this->setupWorkflow('suspend_merchant', PermissionName::EDIT_MERCHANT_SUSPEND, "test");
+
+        $request = $this->testData[__FUNCTION__]['requestWorkflowActionCreation'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $expectedResponse = $this->testData[__FUNCTION__]['responseWorkflowActionCreation']['content'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertEquals('10000000000000', $response['entity_id']);
+
+        $workflowActionId = $response['id'];
+
+        $this->performWorkflowAction($workflowActionId, true, 'test');
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNotEquals('risk_review_watchlist_tag', $merchantDetails['fraud_type']);
+    }
+
 }

@@ -2414,8 +2414,8 @@ class Core extends Base\Core
 
     protected function updateFraudTypeIfApplicable($merchant, $action, $fraudType)
     {
-
-        if (in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_SETTING_FRAUD_TYPE) === false)
+        if ((in_array($action, Merchant\Action::RISK_ACTIONS_LIST_FOR_SETTING_FRAUD_TYPE) === false) or
+            (in_array($fraudType, RiskActionConstants::FRAUD_WHITELIST_TAGS) === true))
         {
             return;
         }

@@ -165,6 +165,19 @@ class Constants
     const RISK_TAG_MS_RISK_REVIEW_DISABLE_LIVE  = 'ms_risk_review_disable_live';
     const RISK_TAG_INTERNATIONAL_DISABLEMENT    = 'risk_international_disablement';
 
+    //Old Tags, No longer in use
+    const RISK_REVIEW                           = 'risk_review';
+    const RISK_SUSPECT                          = 'risk_suspect';
+
+    const FRAUD_WHITELIST_TAGS = [
+        self::RISK_TAG_RISK_REVIEW_WATCHLIST,
+        self::RISK_TAG_SC_RISK_REVIEW_WATCHLIST,
+        self::RISK_TAG_SC_FEATURE_BLOCKED,
+        self::RISK_TAG_MS_RISK_REVIEW_WATCHLIST,
+        self::RISK_REVIEW,
+        self::RISK_SUSPECT
+    ];
+
     //risk tag allowed values
     const RISK_TAGS_CSV =
         self::RISK_TAG_RISK_REVIEW_SUSPEND . ',' .
