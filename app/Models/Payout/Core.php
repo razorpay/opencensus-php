@@ -2418,12 +2418,6 @@ class Core extends Base\Core
             return;
         }
 
-        // Skip ledger shadow mode for high TPS merchant
-        if ($payout->merchant->isFeatureEnabled(FeatureConstants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
-        {
-            return;
-        }
-
         // return if reverse shadow is enabled
         if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
         {

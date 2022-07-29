@@ -3226,15 +3226,6 @@ Regards,
         $this->startTest();
     }
 
-    public function testHighTpsCompositePayoutFeatureAdditionWhenLedgerJournalWritesIsEnabled()
-    {
-        $this->fixtures->merchant->addFeatures(['ledger_journal_writes']);
-
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-
     public function testDualCheckoutFeature()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');

@@ -1259,13 +1259,6 @@ class Core extends Base\Core
             );
         }
 
-        if ($newFeatureName === Constants::HIGH_TPS_COMPOSITE_PAYOUT and
-            in_array(Constants::LEDGER_JOURNAL_WRITES, $assignedFeatureNames, true) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::LEDGER_JOURNAL_WRITES . ' is already enabled.'
-            );
-        }
     }
 
     public function removeFeature(string $featureName, bool $shouldSync = false)

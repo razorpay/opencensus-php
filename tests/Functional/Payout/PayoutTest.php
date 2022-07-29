@@ -18567,6 +18567,74 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
+    public function testLedgerShadowModeForHighTpsCompositePayout()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $this->testProcessingOfCreateRequestSubmittedPayoutWithHighTpsCompositePayoutFeature();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        $ledgerRequestPayload = $ledgerSnsPayloadArray[0];
+
+        $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+        $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+        $this->assertEquals('test', $ledgerRequestPayload['mode']);
+        $this->assertEquals($payout->getPublicId(), $ledgerRequestPayload['transactor_id']);
+        $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+        $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+        $this->assertEquals($payout->getFees(), $ledgerRequestPayload['commission']);
+        $this->assertEquals($payout->getTax(), $ledgerRequestPayload['tax']);
+        $this->assertEquals('payout_initiated', $ledgerRequestPayload['transactor_event']);
+
+        $notesSection = json_decode($ledgerRequestPayload['notes'], true);
+        $this->assertEquals($balance->getId(), $notesSection['balance_id']);
+        $this->assertEquals($payout->transaction->getPublicId(), $notesSection['transaction_id']);
+
+        $identifiersSection = json_decode($ledgerRequestPayload['identifiers'], true);
+        $this->assertEquals($balance->bankingAccount->getPublicId(), $identifiersSection['banking_account_id']);
+    }
+
+    public function testLedgerShadowModeForHighTpsAsyncIngressPayoutReversed()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $this->testProcessingOfCreateRequestSubmittedPayoutForHighTpsWithForcedError();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        $reversal = $this->getDbLastEntity(Constants\Entity::REVERSAL);
+
+        $ledgerRequestPayload = $ledgerSnsPayloadArray[0];
+
+        $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+        $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+        $this->assertEquals('test', $ledgerRequestPayload['mode']);
+        $this->assertEquals($reversal->getPublicId(), $ledgerRequestPayload['transactor_id']);
+        $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+        $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+        $this->assertEquals($payout->getFees(), $ledgerRequestPayload['commission']);
+        $this->assertEquals($payout->getTax(), $ledgerRequestPayload['tax']);
+        $this->assertEquals('payout_reversed', $ledgerRequestPayload['transactor_event']);
+
+        $notesSection = json_decode($ledgerRequestPayload['notes'], true);
+        $this->assertEquals($balance->getId(), $notesSection['balance_id']);
+        $this->assertEquals($reversal->transaction->getPublicId(), $notesSection['transaction_id']);
+
+        $identifiersSection = json_decode($ledgerRequestPayload['identifiers'], true);
+        $this->assertEquals($balance->bankingAccount->getPublicId(), $identifiersSection['banking_account_id']);
+    }
+
     public function testGetPayoutsAndGetBalanceForHighTpsMerchantsWithSubBalances()
     {
         $this->testProcessingOfCreateRequestSubmittedPayoutForHighTps();
