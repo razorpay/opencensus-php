@@ -1,6 +1,9 @@
 import React from 'react';
 import store, { getUser } from '../../../merchant/store';
-import { openModal as openModalProp } from 'merchant_common/reducers/modals';
+import {
+  openModal as openModalProp,
+  closeModal as closeModalProp,
+} from 'merchant_common/reducers/modals';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
@@ -29,6 +32,8 @@ const gSOpenUrl = (url, history) => {
   if (isExternal) {
     window.open(url, '_blank');
   } else {
+    const closeModal = (payload) => store.dispatch(closeModalProp(payload));
+    closeModal();
     history.push(url);
   }
 };
