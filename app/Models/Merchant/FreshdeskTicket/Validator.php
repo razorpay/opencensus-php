@@ -272,7 +272,7 @@ class Validator extends Base\Validator
     protected static $postOtpRules = [
         'email'                => 'required_without:phone|email',
         'phone'                => 'required_without:email|max:15|contact_syntax',
-        'g_recaptcha_response' => 'sometimes|string|custom',
+        'g_recaptcha_response' => 'required|string|custom',
     ];
 
     protected function validateGRecaptchaResponse($attribute, $captchaResponse)

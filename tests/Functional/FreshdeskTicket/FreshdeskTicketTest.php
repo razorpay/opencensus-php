@@ -268,6 +268,7 @@ class FreshdeskTicketTest extends TestCase
             'method'    => 'POST',
             'content'   => [
                 'phone' => $phone,
+                'g_recaptcha_response' => '***',
             ]
         ];
 
@@ -287,6 +288,7 @@ class FreshdeskTicketTest extends TestCase
             'method'    => 'POST',
             'content'   => [
                 'email' => $email,
+                'g_recaptcha_response' => '***',
             ]
         ];
 

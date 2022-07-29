@@ -279,16 +279,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(__FUNCTION__, $input);
 
-        if (array_key_exists(Constants::G_RECAPTCHA_RESPONSE, $input) === false)
-        {
-            $this->trace->info(TraceCode::CUSTOMER_FLOW_CAPTCHA_NOT_BEING_SENT, [
-                'log' => 'captcha is not being sent'
-            ]);
-        }
-        else
-        {
-            unset($input[Constants::G_RECAPTCHA_RESPONSE]);
-        }
+        unset($input[Constants::G_RECAPTCHA_RESPONSE]);
 
         if (empty($input[Constants::PHONE]) === false)
         {

@@ -166,6 +166,7 @@ return [
             'method' => 'POST',
             'content' => [
                 'email' => 'test@gmail.com',
+                'g_recaptcha_response' => '***',
             ]
         ],
         'response' => [
@@ -181,6 +182,7 @@ return [
             'method' => 'POST',
             'content' => [
                 'phone' => '9876543210',
+                'g_recaptcha_response' => '***',
             ]
         ],
         'response' => [
