@@ -43,6 +43,11 @@ class Type
         string $type,
         string $subType = null): bool
     {
+        if(Constants::PAPER_NACH_CITI_V2 === $target)
+        {
+            return true;
+        }
+
         if ((isset(self::TARGET_SUBTYPES[$type]) === true) and
             (isset(self::TARGET_SUBTYPES[$type][$target]) === true))
         {

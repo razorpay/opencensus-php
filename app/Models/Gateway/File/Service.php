@@ -103,6 +103,11 @@ class Service extends Base\Service
             return;
         }
 
+        if ($this->PaperNachCitiV2($input, $targets))
+        {
+            return;
+        }
+
         // When called via cron, we update the timestamps for the
         // gateway file for the to indicate the previous days time period.
 
@@ -114,6 +119,45 @@ class Service extends Base\Service
         $input[Entity::BEGIN] = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
         $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+    }
+
+    /**
+     * If the cron is for early debit offset, Need to change the begin and end based on range
+     *
+     * @param array $input
+     * @param $targets
+     * @return bool
+     */
+    protected function PaperNachCitiV2(array & $input, $targets): bool
+    {
+
+        if (($input[Entity::TYPE] === Type::NACH_DEBIT) and
+            (in_array(Constants::PAPER_NACH_CITI_V2, $targets) === true))
+        {
+            if (isset($input[Entity::BEGIN]) === false)
+            {
+                $endTime = Carbon::today(Timezone::IST)->addHours($input[Entity::END]);
+
+                $input[Entity::END] = $endTime->getTimestamp() - 1;
+
+                $input[Entity::BEGIN] = $endTime->subHours($input[Entity::TIME_RANGE])->getTimestamp();
+            }
+
+            if(empty($input[Entity::SUB_TYPE]) === false)
+            {
+                $input[Entity::SUB_TYPE] = (string) $input[Entity::SUB_TYPE];
+            }
+            else
+            {
+                $input[Entity::SUB_TYPE] = (string) 0;
+            }
+
+            unset($input[Entity::TIME_RANGE]);
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

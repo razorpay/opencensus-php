@@ -360,4 +360,40 @@ return [
         ],
     ],
 
+    'testGatewayFileForAutomation' => [
+        'request' => [
+            'content' => [
+                'type'       => 'nach_debit',
+                'targets'    => ['paper_nach_citi_v2'],
+                'end'        => 9,
+                'time_range' => 24,
+                'sub_type'   => 0,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'type'                => 'nach_debit',
+                        'target'              => 'paper_nach_citi_v2',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ],
+    ],
+
 ];

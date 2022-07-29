@@ -538,4 +538,19 @@ class NachCitiGatewayTest extends NachGatewayTest
 
         return (new TestingFile('MMS-CANCEL-CITI-CITI137268-06052021-000001-INP-ACK.zip', $handle));
     }
+
+    public function testGatewayFileForAutomation()
+    {
+        $response = $this->createRecurringNachPayment();
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->fixtures->edit('payment', $response['razorpay_payment_id'], [
+            'created_at' => Carbon::yesterday(Timezone::IST)->addHours(11)->timestamp
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
 }
