@@ -106,6 +106,7 @@ class Table
     const SETTLEMENT                = 'settlements';
     const ENTITY_OFFER              = 'entity_offer';
     const FEE_BREAKUP               = 'fees_breakup';
+    const FEE_BREAKUP_NEW           = 'fees_breakup_new';
     const TRANSACTION               = 'transactions';
     const APP_TOKEN                 = 'customer_apps';
     const BANK_ACCOUNT              = 'bank_accounts';

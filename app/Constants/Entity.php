@@ -90,6 +90,7 @@ class Entity
     const SETTLEMENT                 = 'settlement';
     const TRANSACTION                = 'transaction';
     const FEE_BREAKUP                = 'fee_breakup';
+    const FEE_BREAKUP_NEW            = 'fee_breakup_new';
     const UPI_MANDATE                = 'upi_mandate';
     const CARD_MANDATE               = 'card_mandate';
     const CARD_MANDATE_NOTIFICATION  = 'card_mandate_notification';
@@ -1006,6 +1007,7 @@ class Entity
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,
+        self::FEE_BREAKUP_NEW           => \RZP\Models\Transaction\FeeBreakupNew::class,
         self::ENTITY_OFFER              => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
         self::OFFLINE_CHALLAN           => \RZP\Models\OfflineChallan::class,
