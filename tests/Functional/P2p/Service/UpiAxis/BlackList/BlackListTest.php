@@ -3,6 +3,7 @@
 namespace Functional\P2p\Service\UpiAxis\BlackList;
 
 use RZP\Exception\RuntimeException;
+use RZP\Models\P2p\BlackList\Entity;
 
 class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
 {
@@ -37,5 +38,13 @@ class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
         $this->expectExceptionMessage("Not implemented, service Implementation is on the way");
 
         $response = $helper->fetchAll();
+    }
+
+    public function testEntity()
+    {
+        $entity         = new Entity();
+        $entityClass    = $entity->getEntity();
+        $entityName     = $entityClass->getP2pEntityName();
+        $this->assertEquals('blacklist', $entityName);
     }
 }
