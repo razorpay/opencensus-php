@@ -210,8 +210,8 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             }
         }
 
-        $this->assertEquals(40, $debtcount);
-        $this->assertEquals(42, $netcount);
+        $this->assertEquals(46, $debtcount);
+        $this->assertEquals(44, $netcount);
 
     }
 
@@ -1301,27 +1301,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
                 $this->assertEquals('USFB', $content['BankID']);
         });
 
-        $this->doAuthPayment($paymentInput);
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals(0, $payment['amount']);
-        $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals('initial', $payment['recurring_type']);
-
-        $enach = $this->getLastEntity('enach', true);
-        $this->assertNotNull($enach['gateway_reference_id']);
-        $this->assertNotNull($enach['gateway_reference_id2']);
-        $this->assertNotNull($enach['umrn']);
-        $this->assertEquals('true', $enach['status']);
-        $this->assertEquals($this->sharedTerminal['gateway_acquirer'], $enach['acquirer']);
-
-        $token = $this->getLastEntity('token', true);
-        $this->assertEquals('netbanking', $token['auth_type']);
-        $this->assertEquals('confirmed', $token['recurring_status']);
-        $this->assertNotNull($token['gateway_token']);
-        $this->assertEquals($token['gateway_token'], $enach['umrn']);
-        $this->assertEquals($token['account_type'], $paymentInput['bank_account']['account_type']);
-        $this->assertNull($token['expired_at']);
+        $this->makeRequestAndCatchException(function () use ($paymentInput) {
+            $this->doAuthPayment($paymentInput);
+        }, \RZP\Exception\BadRequestException::class, 'Recurring is not supported on this bank');
     }
 
     public function testOrderCreationWithBankAccount()
@@ -1354,11 +1336,9 @@ class EnachNetbankingNpciGatewayTest extends TestCase
             Order::PAYMENT_CAPTURE => true,
         ];
 
-        $testData = $this->testData[__FUNCTION__];
+        $order = $this->createOrder($orderInput);
 
-        $this->runRequestResponseFlow($testData, function() use ($orderInput) {
-            $this->createOrder($orderInput);
-        });
+        $this->assertEquals('created', $order['status']);
     }
 
     public function mockBeam(callable $callback)

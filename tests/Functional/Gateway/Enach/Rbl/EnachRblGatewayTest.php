@@ -1306,7 +1306,7 @@ class EnachRblGatewayTest extends TestCase
             }
         }
 
-        $this->assertEquals(256, $count);
+        $this->assertEquals(373, $count);
 
         $this->assertArrayNotHasKey(IFSC::UTBI, $banks);
     }
