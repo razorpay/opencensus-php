@@ -24,6 +24,12 @@ class Status
         self::REVERSED
     ];
 
+    const REFUND_NON_FAILURE_STATUS = [
+        self::CREATED,
+        self::INITIATED,
+        self::PROCESSED
+    ];
+
     const TRACKED_STATUSES = [
         Status::PROCESSED,
         Status::FAILED,

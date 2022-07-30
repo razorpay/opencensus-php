@@ -2209,7 +2209,9 @@ trait Refund
 
         if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
         {
-            $sumOfRefundAmount = $payment->refunds()->sum("amount");
+            $sumOfRefundAmount = $payment->refunds()
+                ->whereIn(Payment\Refund\Entity::STATUS, Payment\Refund\Status::REFUND_NON_FAILURE_STATUS)
+                ->sum("amount");
             $amountUnrefunded = $payment->getAmount() - $sumOfRefundAmount;
 
             if ($amountUnrefunded < $refundEntity->getAmount())
