@@ -1786,6 +1786,7 @@ class BasicAuth
                 ($this->isCapitalCollectionsApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
+                ($this->isReminderServiceAuth() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user') or
                 (($this->isExpress() === true) and
@@ -1895,6 +1896,11 @@ class BasicAuth
     public function isLambda(): bool
     {
         return ($this->internalApp === 'h2h');
+    }
+
+    public function isReminderServiceAuth()
+    {
+        return ($this->internalApp === 'reminders');
     }
 
 // --------------------- Getters Ends ------------------------------------------
