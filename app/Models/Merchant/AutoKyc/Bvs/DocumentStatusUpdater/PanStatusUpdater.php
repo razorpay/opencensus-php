@@ -116,7 +116,7 @@ class PanStatusUpdater extends DefaultStatusUpdater
            if ($noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] > 1)
            {
                $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
-               $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, false);
+               $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
            }
 
            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);

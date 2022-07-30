@@ -84,7 +84,7 @@ class BankAccount extends DefaultStatusUpdater
             if ($noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::RETRY_COUNT] > 1)
             {
                 $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
-                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, false);
+                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
             }
             $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
         }

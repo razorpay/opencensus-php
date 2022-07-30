@@ -153,7 +153,7 @@ class GstInStatusUpdater extends DefaultStatusUpdater
 
                     $this->repo->merchant_detail->saveOrFail($merchantDetails);
                 });
-                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, false);
+                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
                 $this->postUpdateValidationStatus();
             }
         }
