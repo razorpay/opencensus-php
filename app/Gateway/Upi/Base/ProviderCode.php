@@ -168,12 +168,16 @@ class ProviderCode
     const LIV                = 'liv';
     const SLICEAXIS          = 'sliceaxis';
     const PZ                 = 'pz';
+    const APAY               = 'apay';
+    const AMAZON_PAY         = 'amazonpay';
+    const AMAZON             = 'amazon';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
 
     // IFSC
-    const PPIW    = 'PPIW';
+    const PPIW           = 'PPIW';
+
     /**
      * PSP handle to bank code mapping
      * In some cases, we don't have the proper
@@ -326,6 +330,9 @@ class ProviderCode
         self::LIV                => self::PPIW,
         self::SLICEAXIS          => IFSC::UTIB,
         self::PZ                 => IFSC::HDFC,
+        self::APAY               => self::PPIW,
+        self::AMAZON             => self::PPIW,
+        self::AMAZON_PAY         => self::PPIW,
     ];
 
     /**

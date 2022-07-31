@@ -3483,6 +3483,9 @@ trait PaymentTrait
             "liv",
             "sliceaxis",
             "pz",
+            "apay",
+            "amazon",
+            "amazonpay",
         ];
 
         return $vpaHandles;
