@@ -3144,6 +3144,7 @@ class Route
 
         'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
         'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
+        'internal_fd_add_note'                    => ['post',      'internal/fd/ticket/{id}/note',                              'FreshdeskTicketController@addNoteToTicket',                  ],
         'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
         'fd_fetch_tickets'                        => ['get',       'fd/{type}/ticket',                                          'FreshdeskTicketController@getTickets'                         ],
         'fd_fetch_converations'                   => ['get',       'fd/{type}/ticket/{id}/conversations',                       'FreshdeskTicketController@getConversations'                   ],
@@ -12593,6 +12594,7 @@ class Route
             'merchant_bulk_update_pricing_cron',
             // crons for autoKYC'd merchants who have not been verified manually yet
             'merchant_autokyc_soft_limit',
+            'internal_fd_add_note',
             'merchant_autokyc_hard_limit',
             'merchant_autokyc_escalation',
             'partner_send_weekly_activation_summary_emails',
@@ -13405,6 +13407,7 @@ class Route
             'internal_merchant_fetch',
             'freshdesk_update_ticket_internal',
             'internal_fd_create_ticket',
+            'internal_fd_add_note',
             'internal_fd_fetch_agent_detail_for_ticket',
         ],
 

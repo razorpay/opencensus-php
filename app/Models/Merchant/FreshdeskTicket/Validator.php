@@ -68,6 +68,11 @@ class Validator extends Base\Validator
         'custom_fields'                       => 'sometimes|array',
     ];
 
+    protected static $addNoteRules = [
+        'description'                         => 'required|string|max:1000',
+        'private'                             => 'sometimes|boolean'
+    ];
+
     protected static $fetchCustomerTicketsRules = [
         Entity::CUSTOMER_EMAIL  => 'required|email',
         'otp'                   => 'required',

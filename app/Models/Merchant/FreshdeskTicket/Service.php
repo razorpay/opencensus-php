@@ -502,6 +502,31 @@ class Service extends Base\Service
         return $freshdeskTicketResponse;
     }
 
+    public function addNoteToTicket($ticketId, $input)
+    {
+
+        // verify input body
+        (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('add_note', $input);
+
+        $isPrivate = (boolean) $input['private'];
+
+        $customerDescription = trim($input['description']);
+
+        $noteData = [
+            'body'    => $customerDescription,
+            'private' => $isPrivate,
+        ];
+
+        // add note to ticket
+        $noteResponse = $this->app[Constants::FRESHDESK_CLIENT]->addNoteToTicket($ticketId, $noteData);
+        
+
+        // validate note response
+        $this->validateNoteResponse($noteResponse);
+
+        return $noteResponse;
+    }
+
     public function getAgentDetailForFreshdeskTicket($ticketId)
     {
         $freshdeskTicketResponse = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId);
