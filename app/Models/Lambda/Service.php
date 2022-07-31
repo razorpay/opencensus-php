@@ -58,7 +58,7 @@ class Service extends Base\Service
     const RBL = "rbl";
     const ICICI = "icici";
     const NIUM = "NIUM";
-    const LEDGER_TYPE_BOOK_FX = 'Book Fx';
+    const LEDGER_TYPE_BOOK_FX = 'Book_FX';
     const LEDGER_TYPE_PAYOUTS = 'Payouts';
     const LEDGER_TYPE_RECEIVE = 'Receive';
     const NIUM_REPAT_FILE_TYPE = 'acct';
