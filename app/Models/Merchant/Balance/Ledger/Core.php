@@ -117,10 +117,12 @@ class Core extends Base\Core
         {
             // onboard to ledger in sync for reverse shadow mode
             $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, self::BANKING_ACCOUNT_ID, $bankingAccount->getPublicId(), $balanceAmount, $creditBalance, $bankingAccount->getFtsFundAccountId());
+            $requestHeaders = [
+                self::TENANT          => self::X,
+                self::IDEMPOTENCY_KEY => Uuid::uuid1()
+            ];
             $ledgerService = $this->app['ledger'];
-            $ledgerService->setIdempotencyKey(Uuid::uuid1());
-            $ledgerService->setTenantHeader('X');
-            $ledgerService->createAccountsOnEvent($payload, true);
+            $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
         }
         catch (\Throwable $ex)
         {
@@ -147,10 +149,12 @@ class Core extends Base\Core
         try
         {
             $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::PG_MERCHANT_ONBOARDING, $balanceAmount, $creditBalances);
+            $requestHeaders = [
+                self::TENANT          => self::PG,
+                self::IDEMPOTENCY_KEY => Uuid::uuid1()->toString()
+            ];
             $ledgerService = $this->app['ledger'];
-            $ledgerService->setIdempotencyKey(Uuid::uuid1()->toString());
-            $ledgerService->setTenantHeader(self::PG);
-            $ledgerService->createAccountsOnEvent($payload, true);
+            $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
         }
         catch (\Throwable $ex)
         {
@@ -171,10 +175,12 @@ class Core extends Base\Core
         try
         {
             $payload = $this->getPGLedgerGatewayAccountCreatePayload($mode, $merchantId, self::PG_GATEWAY_ONBOARDING, $gateway);
+            $requestHeaders = [
+                self::TENANT          => self::PG,
+                self::IDEMPOTENCY_KEY => Uuid::uuid1()->toString()
+            ];
             $ledgerService = $this->app['ledger'];
-            $ledgerService->setIdempotencyKey(Uuid::uuid1()->toString());
-            $ledgerService->setTenantHeader(self::PG);
-            $ledgerService->createAccountsOnEvent($payload, true);
+            $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
         }
         catch (\Throwable $ex)
         {
@@ -393,10 +399,12 @@ class Core extends Base\Core
         {
             // onboard to ledger in sync for reverse shadow mode
             $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, self::BANKING_ACCOUNT_STMT_DETAILS_ID, $bankingAccountStmtDetails->getPublicId(), $balanceAmount, $creditBalance, null);
+            $requestHeaders = [
+                self::TENANT          => self::X,
+                self::IDEMPOTENCY_KEY => Uuid::uuid1()
+            ];
             $ledgerService = $this->app['ledger'];
-            $ledgerService->setIdempotencyKey(Uuid::uuid1());
-            $ledgerService->setTenantHeader('X');
-            $ledgerService->createAccountsOnEvent($payload, true);
+            $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
         }
         catch (\Throwable $ex)
         {
@@ -430,6 +438,10 @@ class Core extends Base\Core
                     self::BANKING_ACCOUNT_ID => $bankingAccountId,
                 ];
 
+                $requestHeaders = [
+                    self::TENANT => self::X,
+                ];
+
                 $ledgerBalanceFetchTiDBEnabled = $this->isBalanceFetchFromLedgerTiDBEnabled($merchantId, $this->mode);
 
                 if($ledgerBalanceFetchTiDBEnabled)
@@ -438,7 +450,7 @@ class Core extends Base\Core
                 }
                 else
                 {
-                    $response = $this->ledgerService->fetchMerchantAccounts($request);
+                    $response = $this->ledgerService->fetchMerchantAccounts($request, $requestHeaders);
                     $statusCode = $response[LedgerService::RESPONSE_CODE];
 
                     if ($statusCode !== 200)
@@ -621,6 +633,10 @@ class Core extends Base\Core
                 ]
             ];
 
+            $requestHeaders = [
+                self::TENANT => self::X
+            ];
+
             if ($balance != null)
             {
                 $payload[self::BALANCE] = (string) $balance;
@@ -638,8 +654,7 @@ class Core extends Base\Core
                 ]);
 
             $ledgerService = $this->app['ledger'];
-            $ledgerService->setTenantHeader('X');
-            $ledgerService->updateAccountByEntitiesAndMerchantID($payload, true);
+            $ledgerService->updateAccountByEntitiesAndMerchantID($payload, $requestHeaders, true);
         }
         catch (\Throwable $ex)
         {

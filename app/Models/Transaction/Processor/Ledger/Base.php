@@ -236,8 +236,12 @@ class Base extends Core
     {
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_FROM_JOB, $payload);
         $ledgerService = $this->app['ledger'];
-        $ledgerService->setIdempotencyKey(Uuid::uuid1());
-        $response = $ledgerService->createJournal($payload, true);
+        $requestHeaders = [
+            self::TENANT          => self::X,
+            self::IDEMPOTENCY_KEY => Uuid::uuid1()
+        ];
+
+        $response = $ledgerService->createJournal($payload, $requestHeaders, true);
 
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE_FROM_JOB, $response);
         return $response;
@@ -261,12 +265,15 @@ class Base extends Core
         try
         {
             $ledgerService = $this->app['ledger'];
-            // use same idempotency key for retry
+            $requestHeaders = [
+                self::TENANT => self::X
+            ];
+            // create a new idempotency key for the first call, use the same idempotency key for retry
             if ($retryCount === 0)
             {
-                $ledgerService->setIdempotencyKey(Uuid::uuid1());
+                $requestHeaders[self::IDEMPOTENCY_KEY] = Uuid::uuid1();
             }
-            $response = $ledgerService->createJournal($payload, true);
+            $response = $ledgerService->createJournal($payload, $requestHeaders, true);
 
             // For testing retries through LedgerStatus Job, uncomment this
 //            $retryCount = 10; // to skip retry and go to async job
@@ -352,7 +359,10 @@ class Base extends Core
         try
         {
             $ledgerService = $this->app['ledger'];
-            $response = $ledgerService->fetchByTransactor($payload, true);
+            $requestHeaders = [
+                self::TENANT => self::X
+            ];
+            $response = $ledgerService->fetchByTransactor($payload, $requestHeaders, true);
         }
         catch (\Requests_Exception $re)
         {

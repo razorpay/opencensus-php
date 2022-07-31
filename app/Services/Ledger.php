@@ -65,7 +65,6 @@ class Ledger
 
     const DashboardURL = '/twirp/rzp.ledger.dashboard.v1.DashboardAPI';
 
-    const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
 
     const MERCHANT_IDS = 'merchant_ids';
 
@@ -101,12 +100,15 @@ class Ledger
     ];
 
     // Headers
-    const ACCEPT               = 'Accept';
-    const X_MODE               = 'X-Mode';
-    const ADMIN_EMAIL          = 'X-Dashboard-Admin-Email';
-    const CONTENT_TYPE         = 'Content-Type';
-    const X_REQUEST_ID         = 'X-Request-ID';
-    const LEDGER_TENANT_HEADER = 'Ledger-Tenant';
+    const ACCEPT                 = 'Accept';
+    const X_MODE                 = 'X-Mode';
+    const ADMIN_EMAIL            = 'X-Dashboard-Admin-Email';
+    const CONTENT_TYPE           = 'Content-Type';
+    const X_REQUEST_ID           = 'X-Request-ID';
+    const TENANT                 = 'tenant';
+    const LEDGER_TENANT_HEADER   = 'Ledger-Tenant';
+    const IDEMPOTENCY_KEY        = 'idempotency_key';
+    const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
 
     const REQUEST_TIMEOUT = 60; // In seconds
 
@@ -114,6 +116,8 @@ class Ledger
     const RESPONSE_BODY          = 'body';
 
     const MODE = 'mode';
+
+    const RAZORPAY_X_TENANT = 'X';
 
     /**
      * Ledger constructor.
@@ -146,353 +150,377 @@ class Ledger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createAccount($input, bool $throwExceptionOnFailure = false): array
+    public function createAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['create'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createAccountsOnEvent($input, bool $throwExceptionOnFailure = false): array
+    public function createAccountsOnEvent($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['createOnEvent'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createAccountsInBulk($input, bool $throwExceptionOnFailure = false): array
+    public function createAccountsInBulk($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['createInBulk'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function activateAccount($input, bool $throwExceptionOnFailure = false): array
+    public function activateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['activate'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function deactivateAccount($input, bool $throwExceptionOnFailure = false): array
+    public function deactivateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['deactivate'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function archiveAccount($input, bool $throwExceptionOnFailure = false): array
+    public function archiveAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['archive'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function updateAccount($input, bool $throwExceptionOnFailure = false): array
+    public function updateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['update'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function updateAccountByEntitiesAndMerchantID($input, bool $throwExceptionOnFailure = false): array
+    public function updateAccountByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountBaseURL . '/' . self::URLS['updateAccountByEntitiesAndMerchantID'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function updateAccountDetail($input, bool $throwExceptionOnFailure = false): array
+    public function updateAccountDetail($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::AccountDetailBaseURL . '/' . self::URLS['update'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createJournal($input, bool $throwExceptionOnFailure = false): array
+    public function createJournal($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['create'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchById($input, bool $throwExceptionOnFailure = false): array
+    public function fetchById($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['fetchById'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchByTransactor($input, bool $throwExceptionOnFailure = false): array
+    public function fetchByTransactor($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['fetchByTransactor'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function createLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    public function createLedgerConfig($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::LedgerConfigBaseURL . '/' . self::URLS['create'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function updateLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    public function updateLedgerConfig($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::LedgerConfigBaseURL . '/' . self::URLS['update'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function deleteLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    public function deleteLedgerConfig($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::LedgerConfigBaseURL . '/' . self::URLS['delete'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
+    public function requestGovernor($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::GovernorURL . '/' . self::URLS['request'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetch($input, bool $throwExceptionOnFailure = false): array
+    public function fetch($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::CommonDashboardURL . '/' . self::URLS['fetch'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchMultiple($input, bool $throwExceptionOnFailure = false): array
+    public function fetchMultiple($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::CommonDashboardURL . '/' . self::URLS['fetchMultiple'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchFilter($input, bool $throwExceptionOnFailure = false): array
+    public function fetchFilter($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchFilter'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchAccountFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchAccountFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAccountFormFieldOptions'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchJournalFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchJournalFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchJournalFormFieldOptions'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchLedgerConfigFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchLedgerConfigFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchLedgerConfigFormFieldOptions'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchAccountTypes($input, bool $throwExceptionOnFailure = false): array
+    public function fetchAccountTypes($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchAccountTypes'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
+    public function deleteMerchants($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $ledgerReverseShadowMerchantIds = [];
         if (empty(self::ENTITIES) === false)
         {
-            if (empty($input[self::ENTITIES][self::BANKING_ACCOUNT_ID]) === false)
+            if (empty($requestBody[self::ENTITIES][self::BANKING_ACCOUNT_ID]) === false)
             {
                 // if RX VA case, prevent deletion of VA's reverse shadow merchants
-                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::LEDGER_REVERSE_SHADOW, $input[self::MERCHANT_IDS]);
+                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::LEDGER_REVERSE_SHADOW, $requestBody[self::MERCHANT_IDS]);
             }
-            else if (empty($input[self::ENTITIES][self::BANKING_ACCOUNT_STMT_DETAIL_ID]) === false)
+            else if (empty($requestBody[self::ENTITIES][self::BANKING_ACCOUNT_STMT_DETAIL_ID]) === false)
             {
                 // if RX DA case, prevent deletion of DA's reverse shadow merchants
-                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::DA_LEDGER_REVERSE_SHADOW, $input[self::MERCHANT_IDS]);
+                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::DA_LEDGER_REVERSE_SHADOW, $requestBody[self::MERCHANT_IDS]);
             }
 
-            $input[self::MERCHANT_IDS] = empty($ledgerReverseShadowMerchantIds) ? $input[self::MERCHANT_IDS] : array_diff($input[self::MERCHANT_IDS], $ledgerReverseShadowMerchantIds);
+            $requestBody[self::MERCHANT_IDS] = empty($ledgerReverseShadowMerchantIds) ? $requestBody[self::MERCHANT_IDS] : array_diff($requestBody[self::MERCHANT_IDS], $ledgerReverseShadowMerchantIds);
         }
 
         $this->trace->info(TraceCode::LEDGER_DELETE_MERCHANTS_REQUEST, [
             'excluded_merchant_ids' => $ledgerReverseShadowMerchantIds,
-            'merchant_ids_to_be_deleted' => $input[self::MERCHANT_IDS],
+            'merchant_ids_to_be_deleted' => $requestBody[self::MERCHANT_IDS],
         ]);
 
         // Call ledger only if there is something to delete
-        if (empty($input[self::MERCHANT_IDS]) === true)
+        if (empty($requestBody[self::MERCHANT_IDS]) === true)
         {
             throw new Exception\RuntimeException(
                 'No merchants to delete after prerequisite checks',
@@ -503,39 +531,42 @@ class Ledger
         }
 
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['deleteMerchants'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchMerchantAccounts($input, bool $throwExceptionOnFailure = false): array
+    public function fetchMerchantAccounts($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchMerchantAccounts'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
-     * @param $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      * @return array
      * @throws Exception\RuntimeException
      * @throws \Throwable
      */
-    public function fetchMerchantLedgerEntryByID($input, bool $throwExceptionOnFailure = false): array
+    public function fetchMerchantLedgerEntryByID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchMerchantLedgerEntryByID'],
-            Requests::POST, $input, $throwExceptionOnFailure);
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
      * @param string $endpoint
      * @param string $method
-     * @param array $data
+     * @param array $body
+     * @param array $headers
      * @param bool $throwExceptionOnFailure
      *
      * @return array
@@ -545,10 +576,11 @@ class Ledger
     protected function sendRequest(
         string $endpoint,
         string $method,
-        array $data = [],
+        array $body = [],
+        array $headers = [],
         bool $throwExceptionOnFailure = false): array
     {
-        $request = $this->generateRequest($endpoint, $method, $data);
+        $request = $this->generateRequest($endpoint, $method, $body, $headers);
 
         $response = $this->sendLedgerRequest($request);
 
@@ -577,6 +609,31 @@ class Ledger
         $headers[self::X_REQUEST_ID]         = $this->request->getId();
 
         $this->headers = $headers;
+    }
+
+    /**
+     * @param array $headers
+     * Function used to add headers to the request
+     */
+    private function addHeaders(array $headers)
+    {
+        // Add Ledger-Tenant header
+        if(isset($headers[self::TENANT]) === true)
+        {
+            $this->headers[self::LEDGER_TENANT_HEADER] = $headers[self::TENANT];
+        }
+        // for backward compatibility adding X as default value
+        // As we have only onboarded X use cases till now
+        else
+        {
+            $this->headers[self::LEDGER_TENANT_HEADER] = self::RAZORPAY_X_TENANT;
+        }
+
+        // Add idempotency-key header
+        if(isset($headers[self::IDEMPOTENCY_KEY]) === true)
+        {
+            $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $headers[self::IDEMPOTENCY_KEY];
+        }
     }
 
     public function setIdempotencyKey(string $key)
@@ -681,11 +738,12 @@ class Ledger
     /**
      * @param string $endpoint
      * @param string $method
-     * @param array  $data
+     * @param array  $body
+     * @param array  $headers
      *
      * @return array
      */
-    protected function generateRequest(string $endpoint, string $method, array $data): array
+    protected function generateRequest(string $endpoint, string $method, array $body, array $headers): array
     {
         $url = '';
 
@@ -699,12 +757,15 @@ class Ledger
             $url = $this->baseTestUrl . $endpoint;
         }
 
-        $this->headers[self::LEDGER_TENANT_HEADER] = $this->getTenant($data);
+        // Will remove statement once we've the tenant header present in the request header list
+        $this->headers[self::LEDGER_TENANT_HEADER] = $this->getTenant($body);
+
+        $this->addHeaders($headers);
 
         // json encode if data is must, else ignore.
         if (in_array($method, [Requests::POST, Requests::PATCH, Requests::PUT], true) === true)
         {
-            $data = (empty($data) === false) ? json_encode($data) : null;
+            $body = (empty($body) === false) ? json_encode($body) : null;
         }
 
         $options = [
@@ -720,7 +781,7 @@ class Ledger
             'method'    => $method,
             'headers'   => $this->headers,
             'options'   => $options,
-            'content'   => $data
+            'content'   => $body
         ];
     }
 
@@ -749,9 +810,9 @@ class Ledger
         }
         // reading from request if call is internal.
         // Eg if payout want to trigger some endpoint the header will not contain the tenant
-        elseif (isset($data['tenant']) === true and $data['tenant'] !== NULL)
+        elseif (isset($data[self::TENANT]) === true and $data[self::TENANT] !== NULL)
         {
-            return $data['tenant'];
+            return $data[self::TENANT];
         }
         // for backward compatibility adding X as default value
         // As we have only onboarded X use cases till now

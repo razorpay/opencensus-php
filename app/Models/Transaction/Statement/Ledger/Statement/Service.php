@@ -120,7 +120,11 @@ class Service extends Base\Service
                 self::ID         => PublicEntity::stripDefaultSign($id),
             ];
 
-            $response = $this->ledgerService->fetchById($request);
+            $requestHeaders = [
+                LedgerProcessor\Base::TENANT => LedgerProcessor\Base::X
+            ];
+
+            $response = $this->ledgerService->fetchById($request, $requestHeaders);
 
             $statusCode = $response[LedgerService::RESPONSE_CODE];
             $body       = $response[LedgerService::RESPONSE_BODY];

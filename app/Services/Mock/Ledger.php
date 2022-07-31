@@ -16,12 +16,13 @@ use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation;
 class Ledger extends BaseLedger
 {
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function createAccount($input, bool $throwExceptionOnFailure = false): array
+    public function createAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "merchant_id"       => "sampleMerchant",
@@ -44,12 +45,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function createAccountsOnEvent($input, bool $throwExceptionOnFailure = false): array
+    public function createAccountsOnEvent($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "accounts" => [
@@ -101,12 +103,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function createAccountsInBulk($input, bool $throwExceptionOnFailure = false): array
+    public function createAccountsInBulk($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "accounts" => [
@@ -133,12 +136,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function activateAccount($input, bool $throwExceptionOnFailure = false): array
+    public function activateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "merchant_id"       => "sampleMerchant",
@@ -161,12 +165,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function deactivateAccount($input, bool $throwExceptionOnFailure = false): array
+    public function deactivateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "merchant_id"       => "sampleMerchant",
@@ -189,12 +194,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function archiveAccount($input, bool $throwExceptionOnFailure = false): array
+    public function archiveAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "merchant_id"       => "sampleMerchant",
@@ -217,12 +223,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function updateAccount($input, bool $throwExceptionOnFailure = false): array
+    public function updateAccount($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "merchant_id"       => "sampleMerchant",
@@ -245,16 +252,17 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function updateAccountByEntitiesAndMerchantID($input, bool $throwExceptionOnFailure = false): array
+    public function updateAccountByEntitiesAndMerchantID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
-            "merchant_id"       => $input['merchant_id'],
-            "balance"           => $input['balance'],
+            "merchant_id"       => $requestBody['merchant_id'],
+            "balance"           => $requestBody['balance'],
             "status"            => "IN_REVIEW",
             "name"              => "test name",
             "parent_account_id" => "Parent00000002",
@@ -262,7 +270,7 @@ class Ledger extends BaseLedger
             "description"       => "sample description",
             "account_category"  => "asset",
             "business_category" => "nominal",
-            "entities"          => $input['entities'],
+            "entities"          => $requestBody['entities'],
         ];
 
         return [
@@ -272,12 +280,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function updateAccountDetail($input, bool $throwExceptionOnFailure = false): array
+    public function updateAccountDetail($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "id"                => "sampleAccountD",
@@ -301,68 +310,69 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function createJournal($input, bool $throwExceptionOnFailure = false): array
+    public function createJournal($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $presentTime      = (string) Carbon::now(Timezone::IST)->timestamp;
         $app              = App::getFacadeRoot();
-        $merchant         = $app['repo']->merchant->find($input['merchant_id']);
+        $merchant         = $app['repo']->merchant->find($requestBody['merchant_id']);
         $bankingAccountId = $merchant->bankingAccounts->first()->getId();
 
-        if (strpos($input['transactor_event'], 'fav') !== false)
+        if (strpos($requestBody['transactor_event'], 'fav') !== false)
         {
-            if (strpos($input['transactor_event'], 'failed') !== false and
-                $input['commission'] !== '0')
+            if (strpos($requestBody['transactor_event'], 'failed') !== false and
+                $requestBody['commission'] !== '0')
             {
-                $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
+                $balance = $app['repo']->reversal->findByPublicId($requestBody['transactor_id'])->entity->balance->getBalance();
             }
             else
             {
-                $balance = $app['repo']->fund_account_validation->findByPublicId($input['transactor_id'])->balance->getBalance();
+                $balance = $app['repo']->fund_account_validation->findByPublicId($requestBody['transactor_id'])->balance->getBalance();
             }
         }
-        else if (strpos($input['transactor_event'], 'payout') !== false)
+        else if (strpos($requestBody['transactor_event'], 'payout') !== false)
         {
-            if ((strpos($input['transactor_event'], 'failed') !== false) or
-                (strpos($input['transactor_event'], 'reversed') !== false))
+            if ((strpos($requestBody['transactor_event'], 'failed') !== false) or
+                (strpos($requestBody['transactor_event'], 'reversed') !== false))
             {
-                $balance = $app['repo']->reversal->findByPublicId($input['transactor_id'])->entity->balance->getBalance();
+                $balance = $app['repo']->reversal->findByPublicId($requestBody['transactor_id'])->entity->balance->getBalance();
             }
             else
             {
-                $balance = $app['repo']->payout->findByPublicId($input['transactor_id'])->balance->getBalance();
+                $balance = $app['repo']->payout->findByPublicId($requestBody['transactor_id'])->balance->getBalance();
             }
         }
-        else if (strpos($input['transactor_event'], 'adjustment') !== false)
+        else if (strpos($requestBody['transactor_event'], 'adjustment') !== false)
         {
-            $balance = $app['repo']->adjustment->findByPublicId($input['transactor_id'])->balance->getBalance();
+            $balance = $app['repo']->adjustment->findByPublicId($requestBody['transactor_id'])->balance->getBalance();
         }
-        else if (strpos($input['transactor_event'], 'nodal_fund_loading') !== false)
+        else if (strpos($requestBody['transactor_event'], 'nodal_fund_loading') !== false)
         {
             $balance = $merchant->sharedBankingBalance->getBalance();
         }
-        else if (strpos($input['transactor_event'], 'fund_loading') !== false)
+        else if (strpos($requestBody['transactor_event'], 'fund_loading') !== false)
         {
             // credits fund loading
-            if (isset($input['additional_params']) === true)
+            if (isset($requestBody['additional_params']) === true)
             {
-                $additional_params = $input['additional_params'];
+                $additional_params = $requestBody['additional_params'];
                 if ((isset($additional_params['fee_accounting']) === true) && $additional_params['fee_accounting'] === 'reward')
                 {
                     $balance = 0;
                 }
                 else
                 {
-                    $balance = $app['repo']->bank_transfer->findByPublicId($input['transactor_id'])->balance->getBalance();
+                    $balance = $app['repo']->bank_transfer->findByPublicId($requestBody['transactor_id'])->balance->getBalance();
                 }
             }
             else
             {
-                $balance = $app['repo']->bank_transfer->findByPublicId($input['transactor_id'])->balance->getBalance();
+                $balance = $app['repo']->bank_transfer->findByPublicId($requestBody['transactor_id'])->balance->getBalance();
             }
         }
         else
@@ -393,19 +403,19 @@ class Ledger extends BaseLedger
 
         $isCredit = false;
 
-        if (in_array($input['transactor_event'], $merchantBalanceCreditEvents, true) === true)
+        if (in_array($requestBody['transactor_event'], $merchantBalanceCreditEvents, true) === true)
         {
             $isCredit = true;
         }
 
-        $balanceDelta = $input['amount'];
+        $balanceDelta = $requestBody['amount'];
 
-        if (strpos($input['transactor_event'], 'fav') !== false)
+        if (strpos($requestBody['transactor_event'], 'fav') !== false)
         {
-            $balanceDelta = $input['commission'];
+            $balanceDelta = $requestBody['commission'];
         }
 
-        if (in_array($input['transactor_event'], $merchantBalanceNoChangeEvents, true) === true)
+        if (in_array($requestBody['transactor_event'], $merchantBalanceNoChangeEvents, true) === true)
         {
             $balanceDelta = 0;
         }
@@ -416,49 +426,49 @@ class Ledger extends BaseLedger
             'id'               => $journalId,
             'created_at'       => $presentTime,
             'updated_at'       => $presentTime,
-            'amount'           => $input['amount'],
-            'base_amount'      => $input['base_amount'],
-            'currency'         => $input['currency'],
-            'tenant'           => $input['tenant'] ?? 'X',
-            'transactor_id'    => $input['transactor_id'],
-            'transactor_event' => $input['transactor_event'],
-            'transaction_date' => $input['transaction_date'],
+            'amount'           => $requestBody['amount'],
+            'base_amount'      => $requestBody['base_amount'],
+            'currency'         => $requestBody['currency'],
+            'tenant'           => $requestBody['tenant'] ?? 'X',
+            'transactor_id'    => $requestBody['transactor_id'],
+            'transactor_event' => $requestBody['transactor_event'],
+            'transaction_date' => $requestBody['transaction_date'],
             'ledger_entry'     => [
                 [
                     'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
                     'created_at'       => $presentTime,
                     'updated_at'       => $presentTime,
-                    'merchant_id'      => $input['merchant_id'],
+                    'merchant_id'      => $requestBody['merchant_id'],
                     'journal_id'       => $journalId,
                     'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
-                    'amount'           => $input['amount'],
-                    'base_amount'      => $input['base_amount'],
+                    'amount'           => $requestBody['amount'],
+                    'base_amount'      => $requestBody['base_amount'],
                     'type'             => $isCredit ? 'debit' : 'credit',
-                    'currency'         => $input['currency'],
+                    'currency'         => $requestBody['currency'],
                     'balance'          => '',
                     'account_entities' => [
                         'account_type'      => ['cash'],
                         'fund_account_type' => ['adjustment'], //TODO: Determine how to correct this
-                        'transactor'        => [$input['tenant'] ?? 'X'],
+                        'transactor'        => [$requestBody['tenant'] ?? 'X'],
                     ],
                 ],
                 [
                     'id'               => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
                     'created_at'       => $presentTime,
                     'updated_at'       => $presentTime,
-                    'merchant_id'      => $input['merchant_id'],
+                    'merchant_id'      => $requestBody['merchant_id'],
                     'journal_id'       => $journalId,
                     'account_id'       => \RZP\Models\Base\UniqueIdEntity::generateUniqueId(),
-                    'amount'           => $input['amount'],
-                    'base_amount'      => $input['base_amount'],
+                    'amount'           => $requestBody['amount'],
+                    'base_amount'      => $requestBody['base_amount'],
                     'type'             => $isCredit ? 'credit' : 'debit',
-                    'currency'         => $input['currency'],
+                    'currency'         => $requestBody['currency'],
                     'balance'          => $isCredit ? ($balance + $balanceDelta) : ($balance - $balanceDelta),
                     'account_entities' => [
                         'account_type'       => ['payable'],
                         'banking_account_id' => [$bankingAccountId],
                         'fund_account_type'  => ['merchant_va'],
-                        'transactor'         => [$input['tenant'] ?? 'X'],
+                        'transactor'         => [$requestBody['tenant'] ?? 'X'],
                     ],
                 ]
             ]
@@ -471,12 +481,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function fetchById($input, bool $throwExceptionOnFailure = false): array
+    public function fetchById($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "id"                => "IWx1NL90G02vxr",
@@ -536,12 +547,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-    * @param      $input
-    * @param bool $throwExceptionOnFailure
+    * @param      $requestBody
+    * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
     *
     * @return array
     */
-    public function fetchByTransactor($input, bool $throwExceptionOnFailure = false): array
+    public function fetchByTransactor($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "id"                => "HNjsypA96SgJKJ",
@@ -551,8 +563,8 @@ class Ledger extends BaseLedger
             "base_amount"       => "130.000000",
             "currency"          => "INR",
             "tenant"            => "X",
-            "transactor_id"     => $input['transactor_id'],
-            "transactor_event"  => $input['transactor_event'],
+            "transactor_id"     => $requestBody['transactor_id'],
+            "transactor_event"  => $requestBody['transactor_event'],
             "transaction_date"  => "1611132045",
             "ledger_entry" => [
                 [
@@ -591,12 +603,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function createLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    public function createLedgerConfig($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "id"                    => "I0u53VkCM4wMMs",
@@ -643,12 +656,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function updateLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    public function updateLedgerConfig($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "id"                    => "I0u53VkCM4wMMs",
@@ -695,12 +709,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function deleteLedgerConfig($input, bool $throwExceptionOnFailure = false): array
+    public function deleteLedgerConfig($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "id"                    => "I0u53VkCM4wMMs",
@@ -747,12 +762,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function requestGovernor($input, bool $throwExceptionOnFailure = false): array
+    public function requestGovernor($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "code"                      => "200",
@@ -800,12 +816,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function fetch($input, bool $throwExceptionOnFailure = false): array
+    public function fetch($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "entity" => [
@@ -853,12 +870,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function fetchMultiple($input, bool $throwExceptionOnFailure = false): array
+    public function fetchMultiple($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response =  [
             "entities" => [
@@ -909,7 +927,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function fetchFilter($input, bool $throwExceptionOnFailure = false): array
+    public function fetchFilter($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "status" => [
@@ -1034,7 +1052,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function fetchAccountFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchAccountFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "parent_account" => [
@@ -1234,12 +1252,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function fetchAccountTypes($input, bool $throwExceptionOnFailure = false): array
+    public function fetchAccountTypes($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "account_types" => [
@@ -1257,7 +1276,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function fetchJournalFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchJournalFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "tenant" => [
@@ -1330,7 +1349,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function fetchLedgerConfigFormFieldOptions($input, bool $throwExceptionOnFailure = false): array
+    public function fetchLedgerConfigFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "tenant" => [
@@ -1426,12 +1445,13 @@ class Ledger extends BaseLedger
     }
 
     /**
-     * @param      $input
+     * @param      $requestBody
+     * @param      $requestHeaders
      * @param bool $throwExceptionOnFailure
      *
      * @return array
      */
-    public function fetchMerchantLedgerEntryByID($input, bool $throwExceptionOnFailure = false): array
+    public function fetchMerchantLedgerEntryByID($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
             "ledger_entry" => [
@@ -1456,7 +1476,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function deleteMerchants($input, bool $throwExceptionOnFailure = false): array
+    public function deleteMerchants($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [
              "merchant_ids_not_deleted" => [
@@ -1473,7 +1493,7 @@ class Ledger extends BaseLedger
         ];
     }
 
-    public function fetchMerchantAccounts($input, bool $throwExceptionOnFailure = false): array {
+    public function fetchMerchantAccounts($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array {
         $response = [
             "merchant_id"      => "10000000000000",
             "merchant_balance" => [
