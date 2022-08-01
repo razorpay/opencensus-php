@@ -817,8 +817,12 @@ trait Capture
 
             //The below condition will help us identify if a transaction was created at the gateway capture stage itself.
             //If it is created then we don't send the same transaction ID again in journal request.
-            //Always initialize this variable before we update the payment status to captured.
-            $isTransactionPresent = $payment->isGatewayCaptured() and $payment->isAuthorized();
+            //Always initialize this variable before we create / update txn.
+            $isTransactionPresent = true;
+            if ($payment->hasTransaction() === false)
+            {
+                $isTransactionPresent = false;
+            }
 
             $this->updatePaymentCaptured($payment, $autoCaptured);
 
