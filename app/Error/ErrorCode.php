@@ -2634,6 +2634,8 @@ class ErrorCode
     const SERVER_ERROR_OTP_ELF_ALREADY_SUCCEEDED                                    = 'SERVER_ERROR_OTP_ELF_ALREADY_SUCCEEDED';
     const SERVER_ERROR_OTP_ELF_ALREADY_INITIATED                                    = 'SERVER_ERROR_OTP_ELF_ALREADY_INITIATED';
     const SERVER_ERROR_OTP_ELF_IP_BLOCKED                                           = 'SERVER_ERROR_OTP_ELF_IP_BLOCKED';
+    const BAD_REQUEST_ERROR_OTP_ELF_INVALID_OTP_LENGTH                              = 'BAD_REQUEST_ERROR_OTP_ELF_INVALID_OTP_LENGTH';
+    const BAD_REQUEST_ERROR_OTP_ELF_INVALID_IP_ADDRESS                              = 'BAD_REQUEST_ERROR_OTP_ELF_INVALID_IP_ADDRESS';
 
     // Merchant Config Error codes
     const BAD_REQUEST_INVALID_INPUT_LOGO_URL                                       =  'BAD_REQUEST_INVALID_INPUT_LOGO_URL';
