@@ -144,6 +144,12 @@ class SyncEventManager
                 ]);
         }
 
+        $this->trace->info(TraceCode::RECORDED_ACCOUNT_ID, [
+            'accountId' => $accountId,
+            'mode' => $mode,
+            'outbox_jobs' => $outboxJobs,
+        ]);
+
         // for live mode, store the stats like the number of updates for each entity etc..
         if ($mode == Mode::LIVE)
         {

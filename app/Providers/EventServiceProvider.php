@@ -4,8 +4,9 @@ namespace RZP\Providers;
 
 use Illuminate\Queue\Jobs\SyncJob;
 use Illuminate\Support\Facades\Queue;
-use Illuminate\Cache\Events as CacheEvents;
 use Illuminate\Queue\Events as QueueEvents;
+use Illuminate\Cache\Events as CacheEvents;
+use Illuminate\Console\Events as ConsoleEvents;
 use Illuminate\Database\Events as DatabaseEvents;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -134,6 +135,9 @@ class EventServiceProvider extends ServiceProvider
         Merchant\Detail\EventSaved::class => [
             Listeners\MerchantDetailEventListener::class . '@onSaved',
         ],
+        ConsoleEvents\CommandFinished::class => [
+            Acs\TriggerSyncListener::class,
+        ]
     ];
 
     public function boot()

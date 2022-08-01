@@ -6758,6 +6758,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_ENTITY_FETCH_EXCEPTION                            = 'ACS_ENTITY_FETCH_EXCEPTION';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST                 = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE                = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE';
+    const RECORDED_ACCOUNT_ID                                   = 'RECORDED_ACCOUNT_ID';
 
     # Onboarding APIs
     const MERCHANT_PRODUCT_CONFIG_REQUEST                       = 'MERCHANT_PRODUCT_CONFIG_REQUEST';
