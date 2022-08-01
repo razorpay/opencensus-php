@@ -1,6 +1,8 @@
 name: Format Checker Workflow
 
-on: pull_request
+on: 
+  pull_request:
+    types: [ edited, opened, synchronize, reopened, assigned, labeled, review_requested ]
 
 env:
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

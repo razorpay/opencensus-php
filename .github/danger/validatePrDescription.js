@@ -64,7 +64,7 @@ function validatePrDescription(body) {
         type,
       },
     });
-  } else {
+  } else if (!prAboutContent) {
     const individualPointsContent = getContentOfAPattern(body, individualPointsRegex, [
       '[Screenshot with each point if necessary]',
     ]);
