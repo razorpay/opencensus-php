@@ -27,7 +27,7 @@ class Bob extends Base
     const GATEWAY                = Payment\Gateway::NETBANKING_BOB;
     const GATEWAY_CODE           = [Payment\Processor\Netbanking::BARB_R, Payment\Processor\Netbanking::BARB_C, IFSC::VIJB];
 
-    protected function formatDataForFile(array $inputData)
+    protected function formatDataForFile(array $inputData): string
     {
         $totalAmount = 0;
 
@@ -73,7 +73,8 @@ class Bob extends Base
 
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway']['bank_transaction_id'];
         }
@@ -83,7 +84,8 @@ class Bob extends Base
 
     protected function fetchBankAccountNumber($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway']['bank_account_number'];
         }
@@ -91,7 +93,7 @@ class Bob extends Base
         return $data['gateway']['account_number'];
     }
 
-    protected function getDataForRow($accountNumber, $amount, $particulars, $type, $bankRefNumber = '')
+    protected function getDataForRow($accountNumber, $amount, $particulars, $type, $bankRefNumber = ''): array
     {
         $amt = $this->getFormattedAmountString($amount);
 

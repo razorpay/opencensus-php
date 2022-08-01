@@ -229,7 +229,8 @@ class Icici extends Base
 
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+        ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             if ($data['payment']['method'] === Payment\Method::EMANDATE)
             {

@@ -30,7 +30,7 @@ class Bob extends NetbankingBase
 
     const BASE_STORAGE_DIRECTORY = 'Bob/Claims/Netbanking/';
 
-    protected function formatDataForFile($data)
+    protected function formatDataForFile($data): string
     {
         $formattedData = [];
 
@@ -56,7 +56,8 @@ class Bob extends NetbankingBase
 
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway']['bank_transaction_id'];
         }
@@ -64,7 +65,7 @@ class Bob extends NetbankingBase
         return $data['gateway']['bank_payment_id'];
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function getFileToWriteNameWithoutExt(): string
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
