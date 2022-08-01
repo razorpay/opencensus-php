@@ -29,6 +29,7 @@ use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
 
 class Factory
@@ -86,6 +87,8 @@ class Factory
                 return (new BVSPartlyExecutedValidationCronJob($input));
             case Constants::MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME:
                 return (new SaveMerchantTransactionCountForSegmentType($input));
+            case Constants::MERCHANT_FIRST_TRANSACTION_POST_EVENT_CRON:
+                return (new MerchantPostFirstTransactionEventCronJob($input));
             case "autokyc-soft-limit":
                 return (new MerchantAutoKycSoftLimitCronJob($input));
             case "autokyc-hard-limit":

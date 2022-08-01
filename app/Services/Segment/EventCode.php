@@ -33,6 +33,7 @@ class EventCode
     const M2M_ENABLED = 'M2M  ENABLED';
     const M2M_ENABLED_EXPERIMENT = 'M2M EXPERIMENT ENABLED';
 
+    const ONE_MONTH_POST_MTU = '1 Month Post MTU';
 
     const AMP_EMAIL_L1_SUBMISSION = 'AMPEmail L1Submission';
 

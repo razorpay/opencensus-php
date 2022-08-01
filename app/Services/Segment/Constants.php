@@ -53,6 +53,12 @@ class Constants
 
     const SELF_SERVE        = 'Self Serve';
 
+    const ONE_MONTH_POST    = '1 Month Post';
+
+    const MTU               = 'mtu';
+
+    const SIGNUP_SOURCE     = 'signup_source';
+
     const SUCCESS           = 'Success';
 
     const BE                = 'BE';
