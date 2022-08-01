@@ -143,7 +143,10 @@ class Bdbl extends Base
     {
 
         $refundArr = [];
+        $refundArr['count'] = [];
+
         $claimArr = [];
+        $claimArr['count'] = [];
 
 
         if (isset($data['refunds']) === true)
