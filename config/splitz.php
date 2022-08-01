@@ -202,6 +202,9 @@ return [
 
         // Onboarding all as resellers
         'PARTNERSHIP_ONBOARD_RESELLERS' => env('PARTNERSHIP_ONBOARD_RESELLERS', ''),
-        'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', '')
+        'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', ''),
+
+        // Cash Advance sidebar link position
+        'CASH_ADVANCE_SIDEBAR_POSITION' => env('CASH_ADVANCE_SIDEBAR_POSITION', '')
     ]
 ];

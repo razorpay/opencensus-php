@@ -393,4 +393,11 @@ export default {
     // prod experiment ids
     'Jhk9i7jzGtL2OT',
   ],
+  cash_advance_sidebar_position: [
+    // beta
+    'JyQuy8T813nUno',
+
+    // prod
+    'JyimKdpm7rIDOw',
+  ],
 };

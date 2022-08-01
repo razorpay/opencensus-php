@@ -31,6 +31,24 @@ function MerchantNavLinks(props) {
     props.payment === 0 &&
     user.isProductRecommendationEnabled;
 
+  // checks if the splitz experiment 'cash_advance_sidebar_position' variant is 'top'
+  const isCashAdvanceSidebarPosTopExp = !!user.isCashAdvanceSidebarPosTopExp;
+  const cashAdvanceMainNavLink = (
+    <MainNavLink
+      label="Loans (Cash Advance)"
+      icon="i fa fa-star text-warning"
+      to="/capital/cash-advance/"
+      isLive
+      additionalCondition={(currentUser) =>
+        currentUser.isAllowedView('cash_advance') &&
+        (currentUser.isLOCEnabled ||
+          currentUser.isCashAdvanceStage2Enabled ||
+          currentUser.isWithdrawFeatureEnabled ||
+          currentUser.isCashOnCardEnabled)
+      }
+    />
+  );
+
   useEffect(() => {
     //set recommend product to localstorage.
     const query = QueryString.parse(window.location.search);
@@ -93,6 +111,10 @@ function MerchantNavLinks(props) {
       />
 
       <div class="divider" />
+
+      {/* Renders sidebar link for Cash Advance at this position if splitz 
+          experiment 'cash_advance_sidebar_position' variant is 'top' */}
+      {isCashAdvanceSidebarPosTopExp && cashAdvanceMainNavLink}
 
       <MainNavLink
         label="Invoices"
@@ -289,19 +311,7 @@ function MerchantNavLinks(props) {
         }
       />
 
-      <MainNavLink
-        label="Loans (Cash Advance)"
-        icon="i fa fa-star text-warning"
-        to="/capital/cash-advance/"
-        isLive
-        additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('cash_advance') &&
-          (currentUser.isLOCEnabled ||
-            currentUser.isCashAdvanceStage2Enabled ||
-            currentUser.isWithdrawFeatureEnabled ||
-            currentUser.isCashOnCardEnabled)
-        }
-      />
+      {!isCashAdvanceSidebarPosTopExp && cashAdvanceMainNavLink}
 
       <MainNavLink
         label="Corporate Cards"
