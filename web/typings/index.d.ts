@@ -14,4 +14,5 @@ interface Window {
   cdnBaseUrl: string;
   bankingServiceUrl: string;
   rzp_user: any;
+  BANK_DETAILS_URL: string;
 }

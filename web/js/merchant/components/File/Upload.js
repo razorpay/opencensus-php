@@ -382,7 +382,7 @@ export default class FileUpload extends React.Component {
                   />
                   <div className="Dropzone-content-desc">
                     <p className="Dropzone-content-desc--primary upload-file-heading">
-                      Drop file here or <b class="text-primary">Click to Upload</b>{' '}
+                      Drop file here or <b class="text-primary">click to upload</b>{' '}
                       {maxSize && (
                         <React.Fragment>({readableFileSize(maxSize)} Max)</React.Fragment>
                       )}

@@ -1,30 +1,33 @@
-export default props => {
-  let {
+import React from 'react';
+import { classList } from 'common/utils/rzp-utils';
+
+const InputGroupField = (props) => {
+  const {
     input,
     validate,
     tagName = 'input',
-    meta: { submitFailed, error },
+    meta: { touched, submitFailed, error },
     showInlineErrorText = true,
     prefix,
     suffix,
+    validateOnChange = false,
     ...otherProps
   } = props;
 
-  let InputComponent = tagName;
+  const InputComponent = tagName;
+  const showError = showInlineErrorText && (submitFailed || (touched && validateOnChange)) && error;
 
   return (
-    <div
-      class={`InputField ${submitFailed && error ? 'InputField--error' : ''}`}
-    >
-      <div class="input-group">
-        {prefix && <span class="input-group-addon">{prefix}</span>}
+    <div className={classList('InputField', submitFailed && error && 'InputField--error')}>
+      <div className="input-group">
+        {prefix && <span className="input-group-addon">{prefix}</span>}
         <InputComponent {...input} {...otherProps} />
-        {suffix && <span class="input-group-addon">{suffix}</span>}
+        {suffix && <span className="input-group-addon">{suffix}</span>}
       </div>
 
-      {showInlineErrorText &&
-        submitFailed &&
-        error && <div class="InputField__ErrorText text-danger">{error}</div>}
+      {showError && <div className="InputField__ErrorText text-danger">{error}</div>}
     </div>
   );
 };
+
+export default InputGroupField;

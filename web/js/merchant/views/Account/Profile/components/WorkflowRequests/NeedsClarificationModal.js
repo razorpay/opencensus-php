@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import Input from 'common/new-ui/Input';
 import Spinner from 'common/ui/Spinner';
 import ModalHeader from 'common/ui/ModalHeader';
-import FileUpload from 'merchant/components/File/Upload';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
@@ -10,8 +8,11 @@ import { showNotification as fnShowNotification } from 'merchant_common/reducers
 import { merchantFetch } from 'merchant/utils/ajax';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
+import { getCommonAnalyticsProperties, classList } from 'common/utils/rzp-utils';
+import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
+import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import NeedsClarificationModalContent from './components/NeedsClarificationModalContent';
 
 /**
  * Needs Clarification Modal for merchant to respond to queries
@@ -37,8 +38,9 @@ const NeedsClarificationModal = ({
   const [isResponseValid, setIsResponseValid] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const MAX_SIZE_LIMIT = 5242880; // 5 MB
+  const [isClarificationSubmitted, setIsClarificationSubmitted] = useState(false);
   const MAX_FILES = 10;
+  const isBankAccountUpdateWorkflow = workflowType === WORKFLOW_TYPES.BANK_DETAIL_UPDATE;
 
   const onChange = (e) => {
     const input = e.target.value;
@@ -108,7 +110,7 @@ const NeedsClarificationModal = ({
   const onBiggerFileSize = () => {
     showNotification({
       type: 'error',
-      message: `File exceeds total upload limit of ${MAX_SIZE_LIMIT / 1024 / 1024}MB!`,
+      message: `File exceeds total upload limit of ${MAX_FILE_SIZE_LIMIT / 1024 / 1024}MB!`,
     });
   };
 
@@ -155,7 +157,8 @@ const NeedsClarificationModal = ({
           });
           fetchWorkflowStatus(workflowType);
           onResponseSubmit?.();
-          closeModal();
+          setIsClarificationSubmitted(true);
+          !isBankAccountUpdateWorkflow && closeModal();
         }
       })
       .catch((err) => {
@@ -170,12 +173,12 @@ const NeedsClarificationModal = ({
             ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
-        setIsSubmitting(false);
         showNotification({
           type: 'error',
           message: err.errors,
         });
-      });
+      })
+      .finally(() => setIsSubmitting(false));
   };
 
   useEffect(() => {
@@ -208,53 +211,31 @@ const NeedsClarificationModal = ({
   }, []);
 
   return (
-    <div>
+    <div className={classList(isBankAccountUpdateWorkflow && 'bank-details-change')}>
       <ModalHeader title={workflowName} onCloseClick={closeModal} />
-      <div class="modal-body needs-clarification-form">
-        {workflows[workflowType].loading && (
-          <center>
-            <Spinner />
-          </center>
-        )}
-        {workflows[workflowType].needs_clarification && (
-          <>
-            <p>
-              <strong>Needs Clarification on: </strong>
-            </p>
-            <p class="text-muted">{workflows[workflowType].needs_clarification}</p>
-          </>
-        )}
-
-        <Input.Textarea
-          name="response-text"
-          class="Input--vTop Input--space"
-          label="Add your reply below"
-          placeholder="Enter here"
-          onChange={onChange}
-          required
-        />
-        {isResponseValid === false && <p class="notify-error">Minimum 50 words required</p>}
-        <FileUpload
-          name="response-files"
-          size="small"
-          maxSize={MAX_SIZE_LIMIT}
-          showFileSize={false}
-          showAcceptInfo={false}
-          onCloseClick={removeFile}
-          onFileChange={handleFileUpload}
-          onBiggerFileSize={onBiggerFileSize}
-          multi
-          showCloseBtn
-        />
-        {/* Add AsyncBtn here */}
-        <button
-          type="submit"
-          class="btn btn-primary btn-block"
-          onClick={onSubmit}
-          disabled={workflows[workflowType].loading || isSubmitting || !isResponseValid}
-        >
-          Submit Clarification
-        </button>
+      <div className="modal-body needs-clarification-form">
+        <div className={classList(isBankAccountUpdateWorkflow && 'bank-details-change-content')}>
+          {workflows[workflowType].loading && (
+            <center>
+              <Spinner />
+            </center>
+          )}
+          <NeedsClarificationModalContent
+            workflowType={workflowType}
+            workflowName={workflowName}
+            workflows={workflows}
+            closeModal={closeModal}
+            isSubmitting={isSubmitting}
+            isResponseValid={isResponseValid}
+            isClarificationSubmitted={isClarificationSubmitted}
+            onChange={onChange}
+            onSubmit={onSubmit}
+            removeFile={removeFile}
+            handleFileUpload={handleFileUpload}
+            onBiggerFileSize={onBiggerFileSize}
+            isBankAccountUpdateWorkflow={isBankAccountUpdateWorkflow}
+          />
+        </div>
       </div>
     </div>
   );

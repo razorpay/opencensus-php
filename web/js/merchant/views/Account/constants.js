@@ -20,3 +20,5 @@ export const ATTR_DETAILS = {
     desc: 'This change will also get reflected in the checkout page title.',
   },
 };
+
+export const MAX_FILE_SIZE_LIMIT = 5242880; // 5 MB = 5 * 1024 * 1024

@@ -14,6 +14,9 @@ import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRe
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
+const REVIEW_STATUS =
+  'Your bank account change request is under review - This should take 2-3 working days';
+
 const BankAccountDetails = ({
   bankAccount,
   bank_detail_update_workflow,
@@ -40,8 +43,9 @@ const BankAccountDetails = ({
       },
     });
     openModal({
-      size: 'small',
+      size: 'large',
       component: <NeedsClarificationModal {...data} />,
+      className: 'bank-account-details-change-modal',
     });
   };
 
@@ -123,25 +127,36 @@ const BankAccountDetails = ({
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
+                analyticsTrack({
+                  objectName: 'Bank Account Update Edit',
+                  actionName: 'Clicked',
+                  screen: 'My Account',
+                  properties: {
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
                 onChangeBankAccountDetails(...e);
               }}
             >
-              Request Change
+              Change bank account
             </span>
           ) : null)}
-        <WorkflowStatus
-          roles={[rolesList.OWNER]}
-          workflowType={WORKFLOW_TYPES.BANK_DETAIL_UPDATE}
-          reviewStatus=" Your request to update your bank account has been received. Our team is going
-                    through the information provided by you."
-          onReplyClick={() =>
-            openNeedsClarificationModal({
-              workflowType: WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
-              workflowName: 'Update Bank Account Details',
-            })
-          }
-        />
       </div>
+      <WorkflowStatus
+        roles={[rolesList.OWNER]}
+        workflowType={WORKFLOW_TYPES.BANK_DETAIL_UPDATE}
+        reviewStatus={REVIEW_STATUS}
+        onReplyClick={() =>
+          openNeedsClarificationModal({
+            workflowType: WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
+            workflowName: 'Change your bank account',
+          })
+        }
+        isBankAccountUpdateWorkflow
+        successStatus="Your bank account is successfully changed"
+        showSuccessStatus
+        customerRespondedStatus={REVIEW_STATUS}
+      />
       <div className="list-group details-row-container">
         <DetailRow label="IFSC Code" value={bankAccount.ifsc} />
         <DetailRow label="Account Number" value={bankAccount.account_number} />

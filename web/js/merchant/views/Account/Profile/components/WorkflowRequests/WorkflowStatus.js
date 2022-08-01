@@ -2,12 +2,12 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-
-export const isWorkflowInClarification = (workflow, statuses) => {
-  if (!workflow) return false;
-  const { workflow_status, needs_clarification, request_under_validation } = workflow;
-  return statuses.includes(workflow_status) && needs_clarification && !request_under_validation;
-};
+import { isWorkflowInClarification, isVisible } from './utils';
+import ReviewStatusContent from './components/ReviewStatusContent';
+import RejectedStatusContent from './components/RejectedStatusContent';
+import CustomerRespondedContent from './components/CustomerRespondedContent';
+import AwaitingCustomerResponseContent from './components/AwaitingCustomerResponseContent';
+import SuccessStatusContent from './components/SuccessStatusContent';
 
 /**
  * Shows following workflow status based on the workflow status response
@@ -32,15 +32,20 @@ const WorkflowStatus = ({
   responseRequiredWorkflowStatus = ['open', 'approved'],
   respondedWorkflowStatus = ['open', 'approved'],
   rejectedWorkflowStatus = ['rejected'],
+  successWorkflowStatus = ['executed'],
   showReviewStatus = true,
   showResponseRequiredStatus = true,
   showRespondedStatus = true,
   showRejectedStatus = true,
   showAddReplyButton = true,
+  showSuccessStatus = false,
+  successStatus = 'Your request is successfully exectuted',
+  customerRespondedStatus = 'Thank you for providing us with further information. Our team is going through the information provided by you and will help resolve this issue.',
   workflows,
   reviewStatus,
   fetchWorkflowStatus,
   user,
+  isBankAccountUpdateWorkflow = false,
 }) => {
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the workflow
@@ -60,43 +65,75 @@ const WorkflowStatus = ({
     rejection_reason_message,
   } = workflow;
 
+  const hasReviewStatus =
+    showReviewStatus &&
+    ((reviewWorkflowStatus.includes(workflow_status) && !needs_clarification) ||
+      request_under_validation);
+  const hasRejectedStatus =
+    showRejectedStatus &&
+    rejectedWorkflowStatus.includes(workflow_status) &&
+    !request_under_validation &&
+    isVisible(isBankAccountUpdateWorkflow, user.id);
+  const hasCustomerRespondedStatus =
+    showRespondedStatus &&
+    isWorkflowInClarification(workflow, respondedWorkflowStatus) &&
+    tags?.includes('customer-responded');
+  const hasAwaitingCustomerResponseStatus =
+    showResponseRequiredStatus &&
+    isWorkflowInClarification(workflow, responseRequiredWorkflowStatus) &&
+    tags?.includes('awaiting-customer-response');
+  const hasSuccessStatus =
+    showSuccessStatus &&
+    successWorkflowStatus.includes(workflow_status) &&
+    !request_under_validation &&
+    isVisible(isBankAccountUpdateWorkflow, user.id);
+
   return (
     <>
       {/* Request in review */}
-      {showReviewStatus &&
-        ((reviewWorkflowStatus.includes(workflow_status) && !needs_clarification) ||
-          request_under_validation) && <div class="workflow-status inprogress">{reviewStatus}</div>}
+      {hasReviewStatus && (
+        <ReviewStatusContent
+          isBankAccountUpdateWorkflow={isBankAccountUpdateWorkflow}
+          content={reviewStatus}
+        />
+      )}
 
       {/* Request Rejected */}
-      {showRejectedStatus &&
-        rejectedWorkflowStatus.includes(workflow_status) &&
-        !request_under_validation && (
-          <div class="workflow-status rejected">{rejection_reason_message}</div>
-        )}
+      {hasRejectedStatus && (
+        <RejectedStatusContent
+          isBankAccountUpdateWorkflow={isBankAccountUpdateWorkflow}
+          content={rejection_reason_message}
+          user={user}
+        />
+      )}
 
       {/* Needs Clarification Customer Responded */}
-      {showRespondedStatus &&
-        isWorkflowInClarification(workflow, respondedWorkflowStatus) &&
-        tags?.includes('customer-responded') && (
-          <div class="workflow-status inprogress">
-            Thank you for providing us with further information. Our team is going through the
-            information provided by you and will help resolve this issue.
-          </div>
-        )}
+      {hasCustomerRespondedStatus && (
+        <CustomerRespondedContent
+          isBankAccountUpdateWorkflow={isBankAccountUpdateWorkflow}
+          content={customerRespondedStatus}
+        />
+      )}
 
       {/* Needs Clarification Awaiting Customer Response */}
-      {showResponseRequiredStatus &&
-        isWorkflowInClarification(workflow, responseRequiredWorkflowStatus) &&
-        tags?.includes('awaiting-customer-response') && (
-          <div class="workflow-status rejected">
-            {needs_clarification}
-            {showAddReplyButton && (
-              <button class="btn btn-link" onClick={onReplyClick ? onReplyClick : null}>
-                Add Reply
-              </button>
-            )}
-          </div>
-        )}
+      {hasAwaitingCustomerResponseStatus && (
+        <AwaitingCustomerResponseContent
+          isBankAccountUpdateWorkflow={isBankAccountUpdateWorkflow}
+          content={customerRespondedStatus}
+          needsClarificationMessage={needs_clarification}
+          showAddReplyButton={showAddReplyButton}
+          onReplyClick={onReplyClick}
+        />
+      )}
+
+      {/* Request Successfully executed */}
+      {hasSuccessStatus && (
+        <SuccessStatusContent
+          isBankAccountUpdateWorkflow={isBankAccountUpdateWorkflow}
+          content={successStatus}
+          user={user}
+        />
+      )}
     </>
   );
 };

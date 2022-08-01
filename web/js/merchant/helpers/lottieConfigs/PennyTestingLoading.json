@@ -1,0 +1,153 @@
+{
+  "v": "4.8.0",
+  "meta": { "g": "LottieFiles AE 1.0.0", "a": "", "k": "", "d": "", "tc": "" },
+  "fr": 60,
+  "ip": 0,
+  "op": 120,
+  "w": 64,
+  "h": 64,
+  "nm": "Razorpay logo",
+  "ddd": 0,
+  "assets": [
+    {
+      "id": "image_0",
+      "w": 106,
+      "h": 117,
+      "u": "",
+      "p": "data:image/png;base64,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",
+      "e": 1
+    }
+  ],
+  "layers": [
+    {
+      "ddd": 0,
+      "ind": 1,
+      "ty": 2,
+      "nm": "gg.png",
+      "cl": "png",
+      "refId": "image_0",
+      "sr": 1,
+      "ks": {
+        "o": { "a": 0, "k": 100, "ix": 11 },
+        "r": { "a": 0, "k": 0, "ix": 10 },
+        "p": { "a": 0, "k": [32, 32, 0], "ix": 2 },
+        "a": { "a": 0, "k": [53, 58.5, 0], "ix": 1 },
+        "s": { "a": 0, "k": [18, 18, 100], "ix": 6 }
+      },
+      "ao": 0,
+      "ip": 0,
+      "op": 120,
+      "st": 0,
+      "bm": 0
+    },
+    {
+      "ddd": 0,
+      "ind": 2,
+      "ty": 4,
+      "nm": "Circle",
+      "sr": 1,
+      "ks": {
+        "o": { "a": 0, "k": 100, "ix": 11 },
+        "r": {
+          "a": 1,
+          "k": [
+            { "i": { "x": [0.667], "y": [1] }, "o": { "x": [0.333], "y": [0] }, "t": 0, "s": [0] },
+            { "t": 120, "s": [359] }
+          ],
+          "ix": 10
+        },
+        "p": { "a": 0, "k": [32, 32, 0], "ix": 2 },
+        "a": { "a": 0, "k": [0, 0, 0], "ix": 1 },
+        "s": { "a": 0, "k": [10, 10, 100], "ix": 6 }
+      },
+      "ao": 0,
+      "shapes": [
+        {
+          "ty": "gr",
+          "it": [
+            {
+              "d": 1,
+              "ty": "el",
+              "s": { "a": 0, "k": [594, 594], "ix": 2 },
+              "p": { "a": 0, "k": [0, 0], "ix": 3 },
+              "nm": "Ellipse Path 1",
+              "mn": "ADBE Vector Shape - Ellipse",
+              "hd": false
+            },
+            {
+              "ty": "st",
+              "c": { "a": 0, "k": [0.258823543787, 0.611764729023, 1, 1], "ix": 3 },
+              "o": { "a": 0, "k": 100, "ix": 4 },
+              "w": { "a": 0, "k": 16, "ix": 5 },
+              "lc": 2,
+              "lj": 1,
+              "ml": 4,
+              "bm": 0,
+              "nm": "Stroke 1",
+              "mn": "ADBE Vector Graphic - Stroke",
+              "hd": false
+            },
+            {
+              "ty": "tr",
+              "p": { "a": 0, "k": [0, 0], "ix": 2 },
+              "a": { "a": 0, "k": [0, 0], "ix": 1 },
+              "s": { "a": 0, "k": [100, 100], "ix": 3 },
+              "r": { "a": 0, "k": 0, "ix": 6 },
+              "o": { "a": 0, "k": 100, "ix": 7 },
+              "sk": { "a": 0, "k": 0, "ix": 4 },
+              "sa": { "a": 0, "k": 0, "ix": 5 },
+              "nm": "Transform"
+            }
+          ],
+          "nm": "Ellipse 1",
+          "np": 2,
+          "cix": 2,
+          "bm": 0,
+          "ix": 1,
+          "mn": "ADBE Vector Group",
+          "hd": false
+        },
+        {
+          "ty": "tm",
+          "s": {
+            "a": 1,
+            "k": [
+              {
+                "i": { "x": [0.667], "y": [1] },
+                "o": { "x": [0.333], "y": [0] },
+                "t": 46,
+                "s": [0]
+              },
+              { "t": 120, "s": [100] }
+            ],
+            "ix": 1
+          },
+          "e": {
+            "a": 1,
+            "k": [
+              {
+                "i": { "x": [0.667], "y": [1] },
+                "o": { "x": [0.333], "y": [0] },
+                "t": 0,
+                "s": [0]
+              },
+              { "t": 60, "s": [100] }
+            ],
+            "ix": 2
+          },
+          "o": { "a": 0, "k": 0, "ix": 3 },
+          "m": 1,
+          "ix": 2,
+          "nm": "Trim Paths 1",
+          "mn": "ADBE Vector Filter - Trim",
+          "hd": false
+        }
+      ],
+      "ip": 0,
+      "op": 120,
+      "st": 0,
+      "bm": 0
+    }
+  ],
+  "markers": []
+}

@@ -1,12 +1,16 @@
 export const PROPRIETORSHIP = 1;
+export const INDIVIDUAL = 2;
 export const PARTNERSHIP = 3;
 export const PRIVATE = 4; // 'Private Limited',
 export const PUBLIC = 5; // 'Public Limited',
 export const LLP = 6; // 'LLP'
 export const NGO = 7; // 'NGO'
+export const EDUCATIONAL_INSTITUTE = 8;
 export const TRUST = 9; // 'Trust'
 export const SOCIETY = 10; // 'Society'
 export const NOT_REGISTERED = 11; // 'Unregistered Businesses
+export const OTHER = 12;
+export const HUF = 13;
 
 export const CIN_BusinessTypes = [PRIVATE, PUBLIC];
 export const LLPIN_BusinessTypes = [LLP];
@@ -19,14 +23,18 @@ export const UNREGISTERED_TYPES = {
 
 export const BusinessTypes = {
   [PROPRIETORSHIP]: 'Proprietorship',
+  [INDIVIDUAL]: 'Individual',
   [PARTNERSHIP]: 'Partnership',
   [PRIVATE]: 'Private Limited',
   [PUBLIC]: 'Public Limited',
   [LLP]: 'LLP',
   [NGO]: 'NGO',
+  [EDUCATIONAL_INSTITUTE]: 'Educational Institutes',
   [TRUST]: 'Trust',
   [SOCIETY]: 'Society',
   [NOT_REGISTERED]: 'Not Registered',
+  [OTHER]: 'Other',
+  [HUF]: 'HUF',
 };
 
 export const BUSINESS_PROOF_CERTIFICATE_TYPES = {

@@ -1,8 +1,19 @@
-$white-color = rgb(255, 255, 255);
+$white-color = #FFFFFF;
 $label-suggestions-border-color = #E8EAEE;
 $selected-label-bg-color = #dbe9ff;
 $light-blue-color = #2B83EA;
 $shadow-black-color = #3A45671E;
+$accent-negative-900 = #D12D2D;
+$accent-neutral-900 = #CD8214;
+$accent-positive-900 = #1F890E;
+$shade-700 = #536582;
+$shade-900 = #162F56;
+$shade-940 = #162F561A;
+$shade-960 = #162F568A;
+$shade-970 = #162F56BD;
+$primary-900 = #0B70E7;
+
+$bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/bank-details-change/";
 
 .profile-container {
   .panel-heading {
@@ -153,13 +164,13 @@ $shadow-black-color = #3A45671E;
     padding-left 10px
 
     &.inprogress
-      border-left 4px solid #CD8214
+      border-left 4px solid $accent-neutral-900
 
     &.rejected
-      border-left 4px solid #D12D2D
+      border-left 4px solid $accent-negative-900
 
     &.success
-      border-left 4px solid #1F890E
+      border-left 4px solid $accent-positive-900
 
 .transaction-limit-update-form
 
@@ -215,16 +226,16 @@ $shadow-black-color = #3A45671E;
     padding-left 10px
 
     &.inprogress
-      border-left 4px solid #CD8214
+      border-left 4px solid $accent-neutral-900
 
     &.rejected
-      border-left 4px solid #D12D2D
+      border-left 4px solid $accent-negative-900
 
     &.success
-      border-left 4px solid #1F890E
+      border-left 4px solid $accent-positive-900
 
 .gst-invoice-note
-  border-left 3px solid #CD8214
+  border-left 3px solid $accent-neutral-900
   padding-left 10px
   color rgba(22, 47, 86, 0.54)
 
@@ -267,7 +278,7 @@ $shadow-black-color = #3A45671E;
   border 1px solid rgba(11, 112, 231, 0.74)
   background rgba(11, 112, 231, 0.05)
   margin-top 15px !important
-  color #2B83EA
+  color $light-blue-color
 
 .gst-help-block
   padding 1px
@@ -321,11 +332,11 @@ $shadow-black-color = #3A45671E;
 .website-self-serve__change-info
     width 200%
     margin-top 10px
-    border-left 4px solid #CD8214
+    border-left 4px solid $accent-neutral-900
     padding-left 10px
 
     &.reject
-      border-left-color #D12D2D
+      border-left-color $accent-negative-900
 
 .website-self-serve-initiate-modal
 
@@ -409,11 +420,455 @@ $shadow-black-color = #3A45671E;
   opacity 0.3
 }
 
-.temporary-hold-banner {
-  display flex
-  margin-bottom 17px
-  padding 16px
-  background #ffeeee
+.ReactModal__Overlay {
+  padding: 10px;
+}
+
+.bank-account-details-change-modal {
+  width: 100%;
+  background: $white-color;
+  border: 1px solid #0B70E705;
+  margin: auto;
+
+  .bank-details-change {
+    .modal-header {
+      height: 48px;
+      padding: 14px 24px;
+      background: #162F5605;
+
+      .modal-title {
+        font-size: 14px;
+        line-height: 20px;
+        color: $shade-700;
+      }
+
+      .close {
+        color: #2E3345;
+        opacity: 1;
+        font-weight: normal;
+        font-size: 18px;
+        line-height: 20px;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: 24px 24px 42px;
+
+    .bank-details-change-content {
+      max-width: 416px;
+      margin: auto;
+
+      .bank-details-header {
+        font-weight: bold;
+        font-size: 16px;
+        line-height: 24px;
+        color: $shade-900;
+        margin-bottom: 14px;
+      }
+    }
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+
+    &:focus-within {
+      >label {
+        color: $primary-900;
+      }
+
+      .material-input {
+        border-bottom: 1px solid $primary-900;
+      }
+    }
+
+    >label {
+      width: unset;
+      font-weight: normal;
+      font-size: 12px;
+      line-height: 18px;
+      color: $shade-960;
+      padding-top: 0;
+      margin-bottom: 0;
+    }
+
+    .label-required::after,
+    .text-danger {
+      color: $accent-negative-900;
+    }
+
+    .label-required::after {
+      right: 10px;
+      top: 0;
+    }
+
+    .InputField__ErrorText {
+      font-size: 12px;
+      line-height: 18px;
+      text-align: left;
+      margin-top: 4px;
+    }
+
+    .input-group:not(.fileupload-input-group) {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .material-input {
+      height: 36px;
+      background: #E0E4F91A;
+      border-radius: 2px 2px 0px 0px;
+      border: none;
+      border-bottom: 1px solid $shade-940;
+    }
+
+    .material-input+.input-group-addon {
+      color: $accent-positive-900;
+      font-size: 11px;
+      line-height: 18px;
+      margin-left: auto;
+      width: auto;
+      height: auto;
+      margin-top: -36px;
+      border: none;
+      background: transparent;
+      padding: 9px 12px;
+      max-width: calc(100% - 96px);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow-x: hidden;
+    }
+
+    [role=loader] {
+      border-width: 1.5px;
+    }
+
+    .Dropzone-content {
+      &.small {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    }
+
+    .Dropzone-cavity {
+      margin-bottom: 0;
+      border: 1px dashed #4B95ED;
+      background: #F9FBFE;
+
+      &--staged {
+        .Dropzone-content {
+          padding-left: 12px;
+        }
+      }
+    }
+
+    .Dropzone-content-desc {
+      font-size: 14px;
+      line-height: 20px;
+      padding-left: 12px;
+      width: auto;
+      max-width: 100%;
+    }
+  }
+
+  .form-actions {
+    margin-top: 36px;
+
+    button {
+      width: 100%;
+      background: $light-blue-color;
+      border-radius: 2px;
+      color: $white-color;
+      font-weight: bold;
+      padding: 10px 24px;
+      border: none;
+    }
+  }
+
+  .Alert {
+    display: flex;
+    color: $shade-700;
+
+    &-icon--before {
+      align-self: center;
+      font-size: 18px;
+      margin-right: 14px;
+    }
+
+    &--warning {
+      background: #FAF2E7;
+      border-color: #FFF3E2;
+    }
+
+    &-content {
+      color: #344A6C;
+    }
+
+    &:last-of-type {
+      margin-bottom: 36px;
+    }
+  }
+
+  .needs-clarification-form {
+    .Alert {
+      margin-bottom: 36px;
+
+      .Alert-icon--before {
+        align-self: flex-start;
+        font-size: 16px;
+        margin-right: 14px;
+      }
+    }
+
+    .razorpay-support {
+      .title {
+        color: $shade-700;
+        font-weight: bold;
+        font-size: 12px;
+        line-height: 18px;
+      }
+
+      .description {
+        margin-top: 8px;
+        font-size: 13px;
+        line-height: 18px;
+        color: $shade-900;
+      }
+    }
+
+    .Input {
+      margin-bottom: 0;
+    }
+
+    .is-focused>.Input-label {
+      border-color: $primary-900;
+    }
+
+    .Input:not(.Input--disabled) .Input-el:focus {
+      border-color: $primary-900;
+    }
+
+    .Input--vTop .Input-label {
+      color: $shade-960;
+      font-weight: normal;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    textarea::placeholder {
+      /* Chrome, Firefox, Opera, Safari 10.1+ */
+      color: $shade-940;
+      opacity: 1;
+      /* Firefox */
+    }
+
+    textarea::-ms-input-placeholder {
+      /* Microsoft Edge */
+      color: $shade-940;
+    }
+
+    textarea.Input-el {
+      resize: vertical;
+      min-height: 72px;
+      margin-bottom: 4px;
+    }
+
+    .Input--required .Input-label::after {
+      color: $accent-negative-900;
+    }
+
+    .Input-error,
+    .notify-error {
+      color: $accent-negative-900;
+      font-size: 12px;
+      line-height: 18px;
+    }
+
+    .Dropzone {
+      margin-top: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.bank-details-change-content {
+  .file-upload {
+    .description {
+      text-align: center;
+      font-size: 16px;
+      line-height: 20px;
+      color: $shade-970;
+
+      .sub-title {
+        font-weight: bold;
+      }
+    }
+
+    .divider {
+      border: 1px solid #F0F3F4;
+      width: 100%;
+    }
+
+    .upload-info {
+      color: #818FA4;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.bank-account-update-form,
+.file-upload,
+.bank-details-change-states-wrapper {
+  min-height: 450px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.bank-details-change-states-wrapper {
+  max-width: 320px;
+  margin: auto;
+
+  .bank-details-change-state {
+    text-align: center;
+
+    &-muted-text {
+      font-size: 12px;
+      line-height: 18px;
+      color: $shade-960;
+    }
+
+    hr {
+      background: $shade-940;
+    }
+
+    .bank-details-icon {
+      display: inline-block;
+      height: 84px;
+      width: 84px;
+      background: no-repeat center background-size contain;
+
+      &--account-blocked {
+        background-image: url($bank-account-update-assets + 'account_blocked.svg');
+      }
+
+      &--invalid-ifsc {
+        background-image: url($bank-account-update-assets +'invalid_ifsc.svg');
+      }
+
+      &--nre-account {
+        background-image: url($bank-account-update-assets + 'bank_error_circle.svg');
+      }
+
+      &--account-number {
+        background-image: url($bank-account-update-assets + 'bank_error_circle.svg');
+      }
+
+      &--account-closed {
+        background-image: url($bank-account-update-assets + 'bank_error_triangle.svg');
+      }
+
+      &--couldnt-verify {
+        background-image: url($bank-account-update-assets + 'bank_error_triangle.svg');
+      }
+
+      &--bank-circle {
+        background-image: url($bank-account-update-assets + 'bank_circle.svg');
+      }
+    }
+  }
+
+  .mb-20 {
+    margin-bottom: 20px;
+  }
+}
+
+.bank-account-update-status {
+  .Alert {
+    display: flex;
+    align-items: center;
+    margin: 4px;
+    padding: 8px;
+    border: none;
+    .Alert-icon--before, .Alert-icon--close {
+      font-size: 16px;
+      line-height: 16px;
+    }
+    .Alert-icon--before {
+      margin-right: 6px;
+    }
+    .Alert-icon--close {
+      margin-left: 6px;
+      cursor: pointer;
+      color: $shade-900;
+    }
+    &--warning {
+      background: #CD82141A;
+
+      .Alert-icon--before {
+        color: $accent-neutral-900;
+      }
+    }
+
+    &--error {
+      background: #D12D2D1A;
+
+      .Alert-icon--before {
+        color: $accent-negative-900;
+      }
+    }
+
+    &--success {
+      background: #1F890E1A;
+
+      .Alert-icon--before {
+        color: $accent-positive-900;
+      }
+    }
+
+    &-content {
+      font-size: 12px;
+      line-height: 18px;
+      color: $shade-900;
+    }
+  }
+
+  .needs-clarification {
+    .Alert-icon--before {
+      align-self: flex-start;
+    }
+
+    .action-required {
+      color: $shade-970;
+
+      .title {
+        color: $accent-neutral-900;
+        font-weight: bold;
+      }
+
+      .btn-link {
+        color: $primary-900;
+        padding: 0;
+        font-size: 12px;
+        line-height: 18px;
+      }
+    }
+  }
+
+  &+.list-group {
+    .list-group-item:first-child {
+      border-top: none;
+    }
+  }
 }
 
 .pr-12 {
@@ -421,7 +876,7 @@ $shadow-black-color = #3A45671E;
 }
 
 .bank-details-review {
-  color #CD8214
+  color $accent-neutral-900
 }
 
 .profile-container {
@@ -447,7 +902,7 @@ $shadow-black-color = #3A45671E;
   }
 
   .label {
-    color: #162F568A;
+    color: $shade-960;
   }
 
   .select {
@@ -459,7 +914,7 @@ $shadow-black-color = #3A45671E;
     border-bottom: 1px solid #162F5619;
 
     &--invalid {
-      color: #d12d2d;
+      color: $accent-negative-900;
     }
   }
 
@@ -469,7 +924,7 @@ $shadow-black-color = #3A45671E;
     .count-label {
       border-bottom: 1px solid #E1E5EA;
       padding-bottom: 8px;
-      color: #162F56;
+      color: $shade-900;
       opacity: 0.54;
     }
 
@@ -533,13 +988,13 @@ $shadow-black-color = #3A45671E;
   padding-left 10px
 
   &.inprogress
-    border-left 4px solid #CD8214
+    border-left 4px solid $accent-neutral-900
 
   &.rejected
-    border-left 4px solid #D12D2D
+    border-left 4px solid $accent-negative-900
 
   &.success
-    border-left 4px solid #1F890E
+    border-left 4px solid $accent-positive-900
 
 .panel-heading
   .workflow-status

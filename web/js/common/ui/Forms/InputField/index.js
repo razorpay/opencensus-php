@@ -1,23 +1,26 @@
-export default props => {
-  let {
+import React from 'react';
+import { classList } from 'common/utils/rzp-utils';
+
+const InputField = (props) => {
+  const {
     input,
     validate,
     tagName = 'input',
-    meta: { submitFailed, error } = {},
+    meta: { touched, submitFailed, error } = {},
     showInlineErrorText = true,
+    validateOnChange = false,
     ...otherProps
   } = props;
 
-  let InputComponent = tagName;
+  const InputComponent = tagName;
+  const showError = showInlineErrorText && (submitFailed || (touched && validateOnChange)) && error;
 
   return (
-    <div
-      class={`InputField ${submitFailed && error ? 'InputField--error' : ''}`}
-    >
+    <div className={classList('InputField', submitFailed && error && 'InputField--error')}>
       <InputComponent {...input} {...otherProps} />
-      {showInlineErrorText &&
-        submitFailed &&
-        error && <div class="InputField__ErrorText text-danger">{error}</div>}
+      {showError && <div className="InputField__ErrorText text-danger">{error}</div>}
     </div>
   );
 };
+
+export default InputField;

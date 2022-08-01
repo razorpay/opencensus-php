@@ -14,9 +14,7 @@ import Gst from 'merchant/views/Account/Profile/components/GST';
 import BankAccountDetails from 'merchant/views/Account/Profile/components/BankAccountDetails';
 import LoggedInUserDetails from 'merchant/views/Account/Profile/components/LoggedInUserDetails';
 import Invitations from 'merchant/views/Account/Profile/components/Invitations';
-import BankAccountDetailsChange, {
-  BankVerificationErrors,
-} from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
+import BankAccountDetailsChange from 'merchant/views/Account/Profile/components/BankAccountDetailsChange';
 import { fetchUser, updateSession } from 'merchant/reducers/session';
 import PasswordForm from 'merchant/views/Account/Profile/components/PasswordForm';
 import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
@@ -57,17 +55,25 @@ import {
   getWorkflowNameForRoute,
 } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
+import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import {
+  BankVerificationErrorInDetailsMap,
+  getResponseTime,
+  trackBankAccountDetailsChange,
+} from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
+import moment from 'moment';
 
 const FIRCSection = lazy(() =>
   import(
     /* webpackChunkName: "FIRCSection" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
   ),
 );
+
+// eslint-disable-next-line react/no-unsafe
 class Profile extends Component {
   state = {
     loggedInUser: {},
@@ -166,7 +172,6 @@ class Profile extends Component {
 
   handleUpdateClick = () => {
     const { user } = this.props;
-    console.log('🚀 ~ file: index.js ~ line 167 ~ Profile ~ user', user);
     analyticsTrack({
       objectName: 'Edit email',
       actionName: 'Clicked',
@@ -471,6 +476,7 @@ class Profile extends Component {
               onSave={this.saveBankAccountChanges}
             />
           ),
+          className: 'bank-account-details-change-modal',
           queryParams: {
             [ACTION_QUERY_PARAM_KEY]: UPDATE_BANK_ACCOUNT,
           },
@@ -480,8 +486,15 @@ class Profile extends Component {
     });
   };
 
-  saveBankAccountChanges = (data) => {
-    const { user } = this.props;
+  saveBankAccountChanges = (data, setBankDetailsStepCallback = () => {}) => {
+    const {
+      user,
+      saveBankAccountChangesAutomate,
+      fetchBankAccount,
+      fetchWorkflowStatus,
+      closeModal,
+      showNotification,
+    } = this.props;
     const body = { ...data };
     const formdata = new FormData();
 
@@ -496,8 +509,9 @@ class Profile extends Component {
       },
     });
     //required fields for api
-    body.beneficiary_email = this.props.user.email;
-    body.beneficiary_mobile = this.props.user.contact_mobile;
+    body.beneficiary_email = user.email;
+    body.beneficiary_mobile = user.contact_mobile;
+    body.beneficiary_name = user.bank_account_name;
 
     for (const prop in body) {
       if (body.hasOwnProperty(prop)) {
@@ -512,29 +526,82 @@ class Profile extends Component {
     });
 
     if (user.bankAccountAutoUpdateOrWorkflow()) {
-      return this.props
-        .saveBankAccountChangesAutomate(user.id, formdata) //user.id is merchant_id not user_id
+      setBankDetailsStepCallback({
+        state: 'penny-testing-started',
+      });
+      trackBankAccountDetailsChange({
+        objectName: 'Bank Account Update Submit',
+        actionName: 'Request',
+      });
+      const requestStartedAt = new Date();
+      return saveBankAccountChangesAutomate(user.id, formdata) //user.id is merchant_id not user_id
         .then(({ data }) => {
-          let message;
-          if (data.new_bank_account && data.sync_flow === true) {
-            message = 'Bank account details updated successfully.';
-            this.props.fetchBankAccount();
-          } else {
-            message = 'Bank Account change request updated successfully.';
-            this.props.fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
-            this.setState({ isBankAccountChangeAllowed: false });
-          }
-          this.props.showNotification({
-            type: 'success',
-            message,
+          trackBankAccountDetailsChange({
+            objectName: 'Bank Account Update Submit',
+            actionName: 'Result',
+            properties: {
+              status: 'success',
+              responseTime: getResponseTime(requestStartedAt),
+              requestType: data?.sync_flow ? 'sync' : 'async',
+            },
           });
-          this.props.closeModal();
+          if (data.new_bank_account && data.sync_flow === true) {
+            fetchBankAccount();
+            setBankDetailsStepCallback({
+              state: 'penny-testing-success',
+            });
+          } else {
+            // async workflow created for bank account update
+            fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
+            const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${user.id}`;
+            const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
+            const newWorkflowStatus = {
+              ...workflowStatus,
+              [workflowStatusKey]: {
+                expireAt: moment().add(15, 'days').format(),
+                isVisible: true,
+              },
+            };
+            localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
+            this.setState({ isBankAccountChangeAllowed: false });
+            setBankDetailsStepCallback({
+              state: 'sync-failed-async-started',
+            });
+          }
+          if (!data.sync_flow) {
+            trackBankAccountDetailsChange({
+              objectName: 'Bank Account Request',
+              actionName: 'Timeout',
+            });
+          }
         })
         .catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message:
-              errors?.[0] in BankVerificationErrors ? BankVerificationErrors[errors[0]] : errors,
+          const inputError =
+            errors?.[0] in BankVerificationErrorInDetailsMap
+              ? BankVerificationErrorInDetailsMap[errors[0]]
+              : null;
+
+          if (inputError) {
+            // bank verification error because of user input
+            setBankDetailsStepCallback({
+              state: 'penny-testing-details-error',
+              error: inputError,
+            });
+          } else {
+            closeModal();
+            showNotification({
+              type: 'error',
+              message: errors,
+            });
+          }
+          trackBankAccountDetailsChange({
+            objectName: 'Bank Account Update Submit',
+            actionName: 'Result',
+            properties: {
+              status: 'failure',
+              responseTime: getResponseTime(requestStartedAt),
+              errorMessage: inputError ? errors?.[0] : `${errors}`,
+            },
           });
         });
     }

@@ -332,7 +332,7 @@ export function getDetailsForIFSC(ifscCode: string): any {
     return null;
   }
 
-  return axios(`https://ifsc.razorpay.com/${ifscCode}`).then((info: any) => {
+  return axios(`${window.BANK_DETAILS_URL}/${ifscCode}`).then((info: any) => {
     info = info.data;
     if (info) {
       info = {
