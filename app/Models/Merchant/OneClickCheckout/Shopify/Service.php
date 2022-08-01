@@ -316,9 +316,9 @@ class Service extends Base\Service
 
         (new Order\Service)->update($rzpOrderId, array('notes'=> $notes));
 
-        $shopifyOrderNumber = strval($shopifyOrder['order']['order_number']);
+        $shopifyOrderName = strval($shopifyOrder['order']['name']);
 
-        $rzpOrder->setReceipt($shopifyOrderNumber);
+        $rzpOrder->setReceipt($shopifyOrderName);
 
         $this->repo->saveOrFail($rzpOrder);
     }
