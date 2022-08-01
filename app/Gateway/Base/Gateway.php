@@ -1155,6 +1155,30 @@ class Gateway
             ]);
     }
 
+    protected function traceVirtualAccountCreateRequest(
+        array $request,
+        $traceCode = TraceCode::GATEWAY_CREATE_VIRTUAL_ACCOUNT_REQUEST)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+            ]);
+    }
+
+    protected function traceVirtualAccountResponse(
+        $response,
+        $traceCode = TraceCode::GATEWAY_CREATE_VIRTUAL_ACCOUNT_RESPONSE)
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'response'   => $response,
+                'gateway'    => $this->gateway
+            ]);
+    }
+
     protected function traceGatewayTerminalOnboarding(
         array $data,
         $dataKey,
@@ -1197,6 +1221,7 @@ class Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
     }
+
 
     protected function getPaymentToVerify(Verify $verify)
     {
@@ -1835,7 +1860,8 @@ class Gateway
             (in_array($action, $nonPaymentActions)) or
             ((isset($input['gateway']) === true) and
                 (($input['gateway'] === Payment\Gateway::GOOGLE_PAY) or
-                    ($input['gateway'] === Payment\Gateway::BILLDESK_SIHUB)))
+                    ($input['gateway'] === Payment\Gateway::BILLDESK_SIHUB) or
+                    ($input['gateway'] === Payment\Gateway::BT_RBL)))
         )
         {
             return $input['gateway'] ?? 'mozart';

@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const BENEFICIARY_STATE             = 'beneficiary_state';
     const BENEFICIARY_COUNTRY           = 'beneficiary_country';
     const DELETED_AT                    = 'deleted_at';
+    const GATEWAY_SYNC                  = 'is_gateway_sync';
     const MOBILE_BANKING_ENABLED        = 'mobile_banking_enabled';
     const ACCOUNT_TYPE                  = 'account_type';
     const MPIN                          = 'mpin';
@@ -179,6 +180,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::MOBILE_BANKING_ENABLED => 'bool',
+        self::GATEWAY_SYNC           => 'bool'
     ];
 
     protected $ignoredRelations = [
@@ -444,6 +446,11 @@ class Entity extends Base\PublicEntity
     public function setMobileBankingEnabled($mobileBankingEnabled)
     {
         return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
+    }
+
+    public function setIsGatewaySync($isGatewaySync)
+    {
+        return $this->setAttribute(self::GATEWAY_SYNC, $isGatewaySync);
     }
 
     public function setMpin($mpin)

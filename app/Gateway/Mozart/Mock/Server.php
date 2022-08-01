@@ -41,6 +41,13 @@ class Server extends Base\Mock\Server
         return $this->processMockResponse($input, $reconcileObj, 'reconcile');
     }
 
+    public function createVirtualAccount($input)
+    {
+        $createVirtualAccountObj = new CreateVirtualAccount();
+
+        return $this->processMockResponse($input, $createVirtualAccountObj, Action::CREATE_VIRTUAL_ACCOUNT);
+    }
+
     public function payInit($input)
     {
         $payInitObj = new PayInitData();
@@ -177,7 +184,8 @@ class Server extends Base\Mock\Server
         $input = json_decode($input, true);
 
         if ((isset($input['entities']) === false) and
-            ($action === Action::PRE_PROCESS))
+            (($action === Action::PRE_PROCESS) or
+             ($action === Action::CREATE_VIRTUAL_ACCOUNT)))
         {
             $input['entities'] = $input;
         }
@@ -258,7 +266,7 @@ class Server extends Base\Mock\Server
     {
         $gateway = $payment['gateway'] ?? '';
 
-        if ($gateway !== 'upi_airtel') 
+        if ($gateway !== 'upi_airtel')
         {
             return [];
         }
@@ -268,7 +276,7 @@ class Server extends Base\Mock\Server
         switch ($description)
         {
             case 'payment_failed':
-                $response = [                    
+                $response = [
                     'amount' => $payment['amount'] / 100,
                     'mid' => 'MER0000000548542',
                     'rrn' => '987654321',
@@ -284,7 +292,7 @@ class Server extends Base\Mock\Server
 
                 break;
             default:
-                $response = [                    
+                $response = [
                     'amount' => $payment['amount'] / 100,
                     'mid' => 'MER0000000548542',
                     'rrn' => '987654321',
@@ -1166,7 +1174,9 @@ class Server extends Base\Mock\Server
     protected function getGateway($entities)
     {
         if ((isset($entities['gateway']) === true) and
-            (($entities['gateway'] === 'google_pay') or ($entities['gateway'] === 'billdesk_sihub')))
+            (($entities['gateway'] === 'google_pay') or
+             ($entities['gateway'] === 'billdesk_sihub') or
+              $entities['gateway'] === 'bt_rbl'))
         {
             return $entities['gateway'];
         }

@@ -332,6 +332,8 @@ final class RazorxTreatment
 
     const APPS_RISK_CHECK_CREATE_VA = 'apps_risk_check_create_va';
 
+    const BT_RBL_CREATE_VIRTUAL_ACCOUNT = 'bt_rbl_create_virtual_account';
+
     const GSTIN_SELF_SERVE_V2 = 'gstin_self_serve_v2';
 
     const SYSTEM_BASED_NEEDS_CLARIFICATION_NOT_MATCHED = 'system_based_needs_clarification_not_matched';

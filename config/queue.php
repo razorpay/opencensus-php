@@ -475,6 +475,11 @@ return [
         'test'       => env('AWS_PARTNER_BANK_HEALTH_NOTIFY_TEST_QUEUE'),
         'live'       => env('AWS_PARTNER_BANK_HEALTH_NOTIFY_LIVE_QUEUE'),
     ],
+
+    'rbl_virtual_account_create' => [
+        'live'       => env('AWS_RBL_VIRTUAL_ACCOUNT_CREATE_LIVE_QUEUE'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

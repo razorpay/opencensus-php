@@ -57,5 +57,7 @@ class Action
 
     const PRE_PROCESS           = 'pre_process';
 
+    const CREATE_VIRTUAL_ACCOUNT = 'create_virtual_account';
+
     const UPDATE_TOKEN          = 'update_token';
 }

@@ -62,6 +62,9 @@ class CreateBankAccounts extends Migration
             $table->tinyInteger(BankAccount::MOBILE_BANKING_ENABLED)
                   ->nullable();
 
+            $table->tinyInteger(BankAccount::GATEWAY_SYNC)
+                  ->nullable();
+
             $table->string(BankAccount::MPIN, 255)
                   ->nullable();
 

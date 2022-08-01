@@ -1716,6 +1716,11 @@ class Gateway extends Base\Gateway
             $url =  $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
         }
 
+        if ($gateway === Payment\Gateway::BT_RBL)
+        {
+            $url = $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
+        }
+
         return $url;
     }
 
@@ -3366,5 +3371,40 @@ class Gateway extends Base\Gateway
         }
 
         return $content;
+    }
+
+    public function createVirtualAccount($input, $handleException = true) {
+
+        parent::action($input, Action::CREATE_VIRTUAL_ACCOUNT);
+
+        $request = $this->getVirtualAccountMozartRequestArray($input);
+
+        $this->traceVirtualAccountCreateRequest($request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->traceVirtualAccountResponse($response);
+
+        if ($handleException === true)
+        {
+            $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+        }
+
+        return $this->getVirtualAccountResponseArray($response);
+    }
+
+    protected function getVirtualAccountMozartRequestArray($input) {
+
+        $url = $this->getUrlForMozartRequest($input, 'smartCollect');
+
+        return $this->getAuthenticatedMozartRequestArray($url, $input);
+    }
+
+    protected function getVirtualAccountResponseArray($response)
+    {
+        $res = $this->jsonToArray($response['data']['_raw']);
+        $res['isSuccess']  = $response['success'];
+
+        return $res;
     }
 }

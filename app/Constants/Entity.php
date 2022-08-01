@@ -273,6 +273,7 @@ class Entity
     const HDFC                   = 'hdfc';
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
+    const BT_RBL                 = 'bt_rbl';
     const CASHFREE               = 'cashfree';
     const ZAAKPAY                = 'zaakpay';
     const CCAVENUE               = 'ccavenue';
@@ -1223,6 +1224,7 @@ class Entity
         self::CHECKOUT_DOT_COM       => \RZP\Gateway\Mozart::class,
         self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
         self::EMERCHANTPAY           => \RZP\Gateway\Mozart::class,
+        self::BT_RBL                 => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

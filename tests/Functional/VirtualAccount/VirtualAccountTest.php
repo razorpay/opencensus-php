@@ -237,6 +237,91 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals('RATN0000001', $jswAccount['ifsc_code']);
     }
 
+    public function testCreateVirtualAccountRBL()
+    {
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::BT_RBL_CREATE_VIRTUAL_ACCOUNT))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+
+        $terminalAttributes = [
+            'gateway'               => Gateway::RBL,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '2223',
+            'type'                  => [
+                Type::NON_RECURRING      => '1',
+                Type::NUMERIC_ACCOUNT    => '1',
+            ]
+        ];
+
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->createVirtualAccount([], true);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertNotNull( $virtualAccount['bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
+
+        $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
+        $this->assertEquals(true, $bankAccount['is_gateway_sync']);
+    }
+
+    public function testCreateVirtualAccountRBLWithWrongJsonFormat()
+    {
+        $this->app['config']->set('gateway.mock_bt_rbl', true);
+
+        $this->app['config']->set('rbl_create_virtual_account.error_code', 'ER001');
+
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::BT_RBL_CREATE_VIRTUAL_ACCOUNT))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+
+        $terminalAttributes = [
+            'gateway'               => Gateway::RBL,
+            'merchant_id'           => '10000000000000',
+            'gateway_merchant_id'   => '2223',
+            'type'                  => [
+                Type::NON_RECURRING      => '1',
+                Type::NUMERIC_ACCOUNT    => '1',
+            ]
+        ];
+
+        $this->fixtures->on('test')->create('terminal:bank_account_terminal', $terminalAttributes);
+
+        $this->createVirtualAccount([], true);
+
+        $virtualAccount = $this->getDbLastEntity('virtual_account');
+        $bankAccount = $this->getDbLastEntity('bank_account');
+
+        $this->assertNotNull( $virtualAccount['bank_account_id']);
+        $this->assertEquals($bankAccount['id'], $virtualAccount['bank_account_id']);
+        $this->assertEquals('RATN0VAAPIS', $bankAccount['ifsc_code']);
+        $this->assertEquals(false, $bankAccount['is_gateway_sync']);
+    }
+
     public function testCreateVirtualAccountWithCustomAccountNumberLengthForMerchant()
     {
         $settingInput =  [

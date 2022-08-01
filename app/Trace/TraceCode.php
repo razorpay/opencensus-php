@@ -1478,6 +1478,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_UPDATE_CARD_MANDATE_REQUEST                   = 'GATEWAY_UPDATE_CARD_MANDATE_REQUEST';
     const GATEWAY_UPDATE_CARD_MANDATE_RESPONSE                  = 'GATEWAY_UPDATE_CARD_MANDATE_RESPONSE';
     const GET_GATEWAY_DOWNTIME_REQUEST                          = 'GET_GATEWAY_DOWNTIME_REQUEST';
+    const GATEWAY_CREATE_VIRTUAL_ACCOUNT_REQUEST                = 'GATEWAY_CREATE_VIRTUAL_ACCOUNT_REQUEST';
+    const GATEWAY_CREATE_VIRTUAL_ACCOUNT_RESPONSE               = 'GATEWAY_CREATE_VIRTUAL_ACCOUNT_RESPONSE';
     const FETCH_GATEWAY_DOWNTIME_ERROR                          = 'FETCH_GATEWAY_DOWNTIME_ERROR';
     const CHECK_NEOSTONE                                        = 'CHECK_NEOSTONE';
     const NEOSTONE_HUBSPOT_REQUEST                              = 'NEOSTONE_HUBSPOT_REQUEST';
@@ -1768,6 +1770,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_PROCESS_DUPLICATE_UTR                   = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
     const BANK_TRANSFER_DISABLED_GATEWAY                        = 'BANK_TRANSFER_DISABLED_GATEWAY';
     const VIRTUAL_ACCOUNT_CLOSED                                = 'VIRTUAL_ACCOUNT_CLOSED';
+    const VIRTUAL_ACCOUNT_NOT_FOUND                             = 'VIRTUAL_ACCOUNT_NOT_FOUND';
+    const VIRTUAL_ACCOUNT_PROCESS_QUEUE                         = 'VIRTUAL_ACCOUNT_PROCESS_QUEUE';
+    const CREATE_VIRTUAL_ACCOUNT_QUEUE_INITIATED                = 'CREATE_VIRTUAL_ACCOUNT_QUEUE_INITIATED';
+    const CREATE_VIRTUAL_ACCOUNT_QUEUE_COMPLETED                = 'CREATE_VIRTUAL_ACCOUNT_QUEUE_COMPLETED';
+    const VIRTUAL_ACCOUNT_GATEWAY_SYNC_FAILED                   = 'VIRTUAL_ACCOUNT_GATEWAY_SYNC_FAILED';
     // Ideally BANK_TRANSFER_PROCESS_DUPLICATE_UTR should have named as BANK_TRANSFER_PROCESS_DUPLICATE_REQUEST
     // or something on those lines. Since it has been in use already, don't want to rename it.
     // BANK_TRANSFER_PROCESS_WITH_EXISTING_UTR is used to log info when UTR is duplicate but Payee Account Number
@@ -1798,7 +1805,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANK_ACCOUNT_DELETED                                  = 'BANK_ACCOUNT_DELETED';
     const BANK_ACCOUNT_EDIT                                     = 'BANK_ACCOUNT_EDIT';
-
+    const BANK_ACCOUNT_SYNC_UPADTE_FAILED                       = 'BANK_ACCOUNT_SYNC_UPADTE_FAILED';
     const ACCOUNT_NOT_FOUND_FOR_BENE_REG                        = 'ACCOUNT_NOT_FOUND_FOR_BENE_REG';
     const ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER                   = 'ACCOUNT_NOT_FOUND_FOR_FUND_TRANSFER';
     const ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG               = 'ACCOUNT_TYPE_NOT_SUPPORTED_FOR_BENE_REG';

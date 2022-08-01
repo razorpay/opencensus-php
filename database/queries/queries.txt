@@ -358,6 +358,9 @@ ALTER TABLE bank_accounts
     ADD COLUMN deleted_at INTEGER UNSIGNED AFTER updated_at;
 
 ALTER TABLE bank_accounts
+    ADD COLUMN is_gateway_sync TINYINT(1) DEFAULT NULL
+
+ALTER TABLE bank_accounts
     ADD INDEX bank_accounts_deleted_at_index (deleted_at);
 
 UPDATE settlements

@@ -4,9 +4,9 @@ namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
 
-use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Base\BuilderEx;
 use RZP\Models\Feature;
@@ -15,6 +15,7 @@ use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\AppsRiskCheck;
 use RZP\Models\EntityOrigin;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\VirtualAccountTpv;
@@ -26,7 +27,7 @@ use RZP\Models\VirtualAccountProducts;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Trace\Tracer;
+use RZP\Jobs\RblVirtualAccountCreateProcess;
 
 class Core extends Base\Core
 {
@@ -98,6 +99,21 @@ class Core extends Base\Core
         $this->dispatchForRiskCheck($virtualAccount);
 
         (new Metric)->pushCreateSuccessMetrics($input);
+
+        $createVirtualvariant  = $this->app->razorx->getTreatment($merchant->getId(),
+                                                                  RazorxTreatment::BT_RBL_CREATE_VIRTUAL_ACCOUNT,
+                                                                  $this->mode);
+        if (($createVirtualvariant == 'on')  and
+            ($virtualAccount->isBalanceTypeBanking() === false) and
+            ($virtualAccount->bankAccount !== null) and
+            in_array($virtualAccount->bankAccount->getIfscCode(), Provider::getGatewaySyncProvider()))
+        {
+            $bankAccount = $virtualAccount->bankAccount;
+            $bankAccount->setIsGatewaySync(false);
+            $this->repo->bank_account->saveOrFail($bankAccount);
+
+            RblVirtualAccountCreateProcess::dispatch($this->mode, $virtualAccount->getId());
+        }
 
         return $virtualAccount;
     }

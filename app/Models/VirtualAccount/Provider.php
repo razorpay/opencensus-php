@@ -299,4 +299,12 @@ class Provider
             self::KOTAK => self::IFSC[self::KOTAK],
         ];
     }
+
+    public static function getGatewaySyncProvider() {
+        return [
+            self::IFSC[Provider::RBL],
+            self::IFSC[Provider::RBL_JSW]
+        ];
+    }
+
 }
