@@ -249,6 +249,7 @@ class Service extends Base\Service
             'aadharEkyc_for_trust_society_ngo',
             'capital_loc_x_migration',
             'rx_tds_and_attachments',
+            'rx_tds_in_payouts_rollout',
             'capital_enable_physical_card',
             'rx_cohesive_invoice',
             'rx_custom_access_control_enabled',
