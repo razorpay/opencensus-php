@@ -1523,10 +1523,13 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['dakpay_postbank_allow']         = ['razorpay@postbank', $throwables['whitelisted']];
         $cases['mobikwik_ikwik_allow']          = ['razorpay@ikwik', $throwables['whitelisted']];
         $cases['digibank_dbs_allow']            = ['razorpay@dbs', $throwables['whitelisted']];
-        $cases['bhim_dlb_allow']                =['razorpay@dlb', $throwables['whitelisted']];
-        $cases['bhim_axispay_allow']                  =['razorpay@sliceaxis', $throwables['whitelisted']];
-        $cases['payzapp_allow']                       =['razorpay@pz', $throwables['whitelisted']];
-        $cases['bhim_induspay_allow']                 =['razorpay@indus', $throwables['whitelisted']];
+        $cases['bhim_dlb_allow']                = ['razorpay@dlb', $throwables['whitelisted']];
+        $cases['bhim_axispay_allow']            = ['razorpay@sliceaxis', $throwables['whitelisted']];
+        $cases['payzapp_allow']                 = ['razorpay@pz', $throwables['whitelisted']];
+        $cases['bhim_induspay_allow']           = ['razorpay@indus', $throwables['whitelisted']];
+        $cases['amazonpay_apay_allow']          = ['razorpay@apay', $throwables['whitelisted']];
+        $cases['amazonpay_amazon_allow']        = ['razorpay@amazon', $throwables['whitelisted']];
+        $cases['amazonpay_amazonpay_allow']     = ['razorpay@amazonpay', $throwables['whitelisted']];
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
         $cases['gpay_oksbi_reject']             = ['razorpay@oksbi', $throwables['not_whitelisted']];

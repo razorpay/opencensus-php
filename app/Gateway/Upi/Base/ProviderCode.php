@@ -446,6 +446,9 @@ class ProviderCode
         self::SLICEAXIS     => ProviderPsp::BHIM_AXISPAY,
         self::PZ            => ProviderPsp::PAYZAPP,
         self::INDUS         => ProviderPsp::BHIM_INDUSPAY,
+        self::APAY          => ProviderPsp::AMAZON_PAY,
+        self::AMAZON        => ProviderPsp::AMAZON_PAY,
+        self::AMAZON_PAY    => ProviderPsp::AMAZON_PAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
