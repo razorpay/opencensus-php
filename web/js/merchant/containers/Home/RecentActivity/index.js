@@ -111,7 +111,7 @@ class RecentActivity extends Component {
     });
   }
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     this.fetchData(DEFAULT_PARAMS);
   }
 

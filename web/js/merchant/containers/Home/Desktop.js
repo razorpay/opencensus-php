@@ -79,17 +79,9 @@ import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaym
 import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
-import lazy from 'merchant/routes/LazyLoader';
-
-const PaymentMethods = lazy(() =>
-  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
-);
-const Traffic = lazy(() =>
-  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
-);
-const RecentActivity = lazy(() =>
-  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
-);
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
+import Traffic from 'merchant/containers/Home/Traffic';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
@@ -412,7 +404,6 @@ class AnalyticsDesktop extends Component {
     const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
     const isOnHold = no_settlement?.on_hold;
     const isSettlementOnHold = isOnTemporaryHold || isOnHold;
-
     if (balance < 0) {
       balance = Math.abs(current_balance.data.balance);
       negativeBalanceClassName = 'negative-balance';

@@ -193,7 +193,7 @@ class PaymentMethods extends Component {
     this.fetchData(startDate, endDate, option.value);
   }
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     const { startDate, endDate } = this.props;
 
     this.fetchData(startDate, endDate);

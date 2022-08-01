@@ -39,18 +39,9 @@ import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
 import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
-
-import lazy from 'merchant/routes/LazyLoader';
-
-const PaymentMethods = lazy(() =>
-  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
-);
-const Traffic = lazy(() =>
-  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
-);
-const RecentActivity = lazy(() =>
-  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
-);
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
+import Traffic from 'merchant/containers/Home/Traffic';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
 
 @connect(
   (state) => ({

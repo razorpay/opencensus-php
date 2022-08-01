@@ -190,10 +190,6 @@ class Traffic extends Component {
       });
   }
 
-  UNSAFE_componentWillMount() {
-    this.getData();
-  }
-
   onGroupChange({ option: selectedGrouping }) {
     this.setState(
       {
@@ -283,6 +279,7 @@ class Traffic extends Component {
   }
 
   componentDidMount() {
+    this.getData();
     if (this.props.isMobile) {
       return;
     }
