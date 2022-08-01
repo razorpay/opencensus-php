@@ -39,7 +39,7 @@ class Payout extends Base
     /** @var PayoutModel\Entity */
     protected $source;
 
-    public function createTransactionForLedger($txnId, $newBalance)
+    public function createTransactionForLedger($txnId, $newBalance, $createdAt = null)
     {
         // Let us first check if a transaction is already created with this ID or not.
         // May be possible that at high TPS, multiple workers pick the same SQS job.
@@ -100,6 +100,13 @@ class Payout extends Base
             ]);
 
         $this->txn->setBalance($newBalance, 0, false);
+
+        if (empty($createdAt) === false)
+        {
+            $this->txn->setCreatedAt($createdAt);
+            $this->txn->setSettledAt($createdAt);
+            $this->txn->setPostedDate($createdAt);
+        }
 
         if (in_array($this->txn->getType(), Constants::DO_NOT_DISPATCH_FOR_SETTLEMENT, true) === false)
         {

@@ -341,8 +341,9 @@ class Base extends FundAccountPayout\Base
 
         $txnId = $ledgerResponse[Entity::ID];
         $newBalance = Ledger\Payout::getMerchantBalanceFromLedgerResponse($ledgerResponse);
+        $createdAt = $ledgerResponse[Entity::CREATED_AT];
 
-        list($txn, $feeSplit) = (new PayoutTxnProcessor($payout))->createTransactionForLedger($txnId, $newBalance);
+        list($txn, $feeSplit) = (new PayoutTxnProcessor($payout))->createTransactionForLedger($txnId, $newBalance, $createdAt);
 
         // if fee split is null, it may mean that a txn is already created.
         if ($feeSplit !== null)
