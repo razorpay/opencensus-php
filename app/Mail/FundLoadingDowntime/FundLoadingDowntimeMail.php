@@ -113,6 +113,7 @@ class FundLoadingDowntimeMail extends Mailable
             'template_name'      => $this->templateName,
             'params'             => $this->emailParams,
             'org_id'             => $this->orgId,
+            'owner_id'           => $this->merchantId,
         ];
     }
 
