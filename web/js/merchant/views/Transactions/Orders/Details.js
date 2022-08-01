@@ -5,13 +5,28 @@ import * as OrderActions from 'merchant/reducers/orders/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import { bindActionCreators } from 'redux';
 import MagicCheckoutOrderDetails from 'merchant/views/Transactions/Orders/components/MagicCheckoutOrderDetails';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class OrderDetailsContainer extends Component {
+  fetchItem(id) {
+    const { fetchItem } = this.props;
+    fetchItem(id).then((response) => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Order Details Fetched',
+        page: 'Order Listing',
+        screen: 'Transaction',
+      });
+      return response;
+    });
+  }
+
   UNSAFE_componentWillReceiveProps({ id }) {
     if (this.props.id !== id) {
-      const { ordersListItems, fetchItem, fetchMagicCheckoutItem } = this.props;
+      const { ordersListItems, fetchMagicCheckoutItem } = this.props;
 
-      this.isMagicCheckoutOrder(ordersListItems, id) ? fetchMagicCheckoutItem(id) : fetchItem(id);
+      this.isMagicCheckoutOrder(ordersListItems, id)
+        ? fetchMagicCheckoutItem(id)
+        : this.fetchItem(id);
     }
   }
 
@@ -23,10 +38,12 @@ class OrderDetailsContainer extends Component {
   };
 
   componentDidMount() {
-    const { closeUrl, id, ordersListItems, fetchItem, fetchMagicCheckoutItem } = this.props;
+    const { closeUrl, id, ordersListItems, fetchMagicCheckoutItem } = this.props;
     const eventCategory = getEventCategoryFromPath(closeUrl);
 
-    this.isMagicCheckoutOrder(ordersListItems, id) ? fetchMagicCheckoutItem(id) : fetchItem(id);
+    this.isMagicCheckoutOrder(ordersListItems, id)
+      ? fetchMagicCheckoutItem(id)
+      : this.fetchItem(id);
 
     if (eventCategory) {
       window.rzpAnalytics?.({

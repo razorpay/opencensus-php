@@ -14,6 +14,7 @@ class MoreOptionsButtonContainer extends Component {
 
   handleClick() {
     trackOverflowDDClick(this.props.sectionTitle, this.props.tabName);
+    this.props.handleClick && this.props.handleClick();
   }
 
   handleCSVDownload() {

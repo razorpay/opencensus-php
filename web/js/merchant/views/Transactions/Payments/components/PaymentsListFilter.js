@@ -3,16 +3,19 @@ import DateRangePicker from 'common/ui/DateRangePicker';
 import { Field } from 'redux-form';
 import { useState } from 'react';
 import ProviderSelector from 'merchant/components/ProviderSelector';
+import { handleChangeTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 const dateRangePresets = [
   ['Past 7 Days', -7, 'days'],
   ['Past 30 Days', -30, 'days'],
   ['Past 90 Days', -90, 'days'],
 ];
+const track = handleChangeTrack('payment');
 
 export default ({ showBatchIdFilter, ...props }) => {
   const [date, setDate] = useState({ from: '', to: '' });
   const onDatesChange = (from, to) => {
+    track({ type: 'filter', args: [] });
     setDate({
       from: from.unix(),
       to: to.unix(),
@@ -25,7 +28,14 @@ export default ({ showBatchIdFilter, ...props }) => {
     <ListFilter date={date} provider={provider} setProvider={setProvider} {...props}>
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field
+          name="id"
+          component="input"
+          class="form-control input-sm"
+          onChange={(...args) => {
+            track({ type: 'search', args });
+          }}
+        />
       </div>
 
       <div className="form-group datepicker-group">
@@ -38,13 +48,27 @@ export default ({ showBatchIdFilter, ...props }) => {
       {showBatchIdFilter && (
         <div class="form-group list-filter-item">
           <label>Batch Id</label>
-          <Field name="batch_id" component="input" class="form-control input-sm" />
+          <Field
+            name="batch_id"
+            component="input"
+            class="form-control input-sm"
+            onChange={(...args) => {
+              track({ type: 'search', args });
+            }}
+          />
         </div>
       )}
 
       <div class="form-group list-filter-item">
         <label>Status</label>
-        <Field name="status" component="select" class="form-control input-sm">
+        <Field
+          name="status"
+          component="select"
+          class="form-control input-sm"
+          onChange={(...args) => {
+            track({ type: 'filter', args });
+          }}
+        >
           <option value="">All</option>
           <option value="authorized">Authorized</option>
           <option value="captured">Captured</option>
@@ -55,7 +79,15 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       <div class="form-group list-filter-item">
         <label>Email</label>
-        <Field name="email" component="input" type="email" class="form-control input-sm" />
+        <Field
+          name="email"
+          component="input"
+          type="email"
+          class="form-control input-sm"
+          onChange={(...args) => {
+            track({ type: 'search', args });
+          }}
+        />
       </div>
 
       {props.user?.isSingleReconEnabled &&
@@ -75,12 +107,26 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       <div class="form-group list-filter-item">
         <label>Notes</label>
-        <Field name="notes" component="input" class="form-control input-sm" />
+        <Field
+          name="notes"
+          component="input"
+          class="form-control input-sm"
+          onChange={(...args) => {
+            track({ type: 'search', args });
+          }}
+        />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Bank Reference Number</label>
-        <Field name="va_transaction_id" component="input" class="form-control input-sm" />
+        <Field
+          name="va_transaction_id"
+          component="input"
+          class="form-control input-sm"
+          onChange={(...args) => {
+            track({ type: 'search', args });
+          }}
+        />
       </div>
 
       <div class="form-group list-filter-item count">

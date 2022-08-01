@@ -19,6 +19,7 @@ import setGaTrack from 'merchant/containers/BatchNew/ga';
 import { titleCase } from 'common/utils/rzp-utils';
 import { getCustomURL } from '../../../../components/DocsLink';
 import { bindActionCreators } from 'redux';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
@@ -139,6 +140,11 @@ class BatchList extends Component {
   };
 
   openBatchUploadModal = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Batch refund File Uploaded',
+      page: 'Batch Refunds',
+      screen: 'Transactions',
+    });
     this.props.openModal({
       size: 'large',
       component: (

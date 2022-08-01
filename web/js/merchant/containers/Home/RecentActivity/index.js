@@ -17,7 +17,8 @@ import GenericPanel, {
 } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
 
-import { trackTabClick, trackEntityClick, trackGoToLinks } from './ga';
+import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const shouldDisplayCompact = (windowWidth) => {
   return windowWidth < 480;
@@ -43,11 +44,12 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
             : value;
 
         if (columnMeta.recordKey === 'id') {
-          value = (
-            <value.type {...value.props} onClick={() => trackEntityClick(tabTitle, sectionTitle)}>
-              {value.props.children}
-            </value.type>
-          );
+          value = React.cloneElement(value, {
+            onClick: () => {
+              trackEntityClick(tabTitle, sectionTitle);
+              selfServeTracking(tabName);
+            },
+          });
         }
 
         return <td key={`${tabName}-${index}`}>{value}</td>;
@@ -128,6 +130,11 @@ class RecentActivity extends Component {
   }
 
   enableInstantRefunds = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Enable Instant Refund',
+      page: 'Home',
+      screen: 'Home',
+    });
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Instant Refund',
       eventAction: 'Enable Now',

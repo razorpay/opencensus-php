@@ -13,6 +13,7 @@ import PaymentDetails from 'merchant/views/Transactions/Payments/Details';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 import { compose } from 'redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;
@@ -36,7 +37,14 @@ class DisputeDetailsContainer extends Component {
   }
 
   loadDispute(disputeId) {
-    this.props.loadDispute(findDispute(this.props.disputes, disputeId));
+    this.props.loadDispute(findDispute(this.props.disputes, disputeId)).then((response) => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Dispute Details Fetched',
+        page: 'Disputes Listing',
+        screen: 'Transaction',
+      });
+      return response;
+    });
   }
 
   goToLink = (link) => {

@@ -3,6 +3,9 @@ import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 import { connect } from 'react-redux';
 import ProviderSelector from 'merchant/components/ProviderSelector';
+import { handleChangeTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+
+const track = handleChangeTrack('refund');
 
 class RefundListFilter extends React.Component {
   state = {
@@ -16,22 +19,42 @@ class RefundListFilter extends React.Component {
   render() {
     const { provider } = this.state;
     const { user, terminalProviders } = this.props;
-
     return (
       <ListFilter provider={provider} setProvider={this.setProvider} {...this.props}>
         <div class="form-group list-filter-item">
           <label>Refund Id</label>
-          <Field name="id" component="input" class="form-control input-sm" />
+          <Field
+            name="id"
+            component="input"
+            class="form-control input-sm"
+            onChange={(...args) => {
+              track({ type: 'search', args });
+            }}
+          />
         </div>
 
         <div class="form-group list-filter-item">
           <label>Payment Id</label>
-          <Field name="payment_id" component="input" class="form-control input-sm" />
+          <Field
+            name="payment_id"
+            component="input"
+            class="form-control input-sm"
+            onChange={(...args) => {
+              track({ type: 'search', args });
+            }}
+          />
         </div>
         {this.props.rs_filter ? (
           <div class="form-group list-filter-item">
             <label>Status</label>
-            <Field name="public_status" component="select" class="form-control input-sm">
+            <Field
+              name="public_status"
+              component="select"
+              class="form-control input-sm"
+              onChange={(...args) => {
+                track({ type: 'filter', args });
+              }}
+            >
               <option value="">All</option>
               <option value="processed">Processed</option>
               <option value="processing">Processing</option>
@@ -54,7 +77,14 @@ class RefundListFilter extends React.Component {
 
         <div class="form-group list-filter-item">
           <label>Notes</label>
-          <Field name="notes" component="input" class="form-control input-sm" />
+          <Field
+            name="notes"
+            component="input"
+            class="form-control input-sm"
+            onChange={(...args) => {
+              track({ type: 'search', args });
+            }}
+          />
         </div>
 
         <div class="form-group list-filter-item count">

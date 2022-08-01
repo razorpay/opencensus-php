@@ -59,6 +59,7 @@ import M2MSuccessModal from 'merchant/components/M2M/M2MSuccessModal';
 import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -577,6 +578,11 @@ export default class HomeContainer extends Component {
 
     if (selectedPreset.name === customRangeText) {
       trackDatesChange(startDate, endDate);
+      selfServeTrackInitiate({
+        selfServeAction: 'Payment Details Fetched',
+        page: 'Home',
+        screen: 'Home',
+      });
     }
   }
 

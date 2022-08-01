@@ -13,6 +13,7 @@ export default ({
   isMobileResolution,
   mobileColumns,
   customMobileRow,
+  onCellClick,
 }) => {
   const rowItems = [];
   const cols = isMobileResolution && mobileColumns ? mobileColumns : columns;
@@ -49,7 +50,7 @@ export default ({
           <EntityItemRow key={`${item.id}_${index}`} id={item.id}>
             {cols.map((column, index) => (
               <td class={column.columnClass ? column.columnClass : ''} key={index}>
-                {column.value(item)}
+                {column.value(item, onCellClick)}
               </td>
             ))}
           </EntityItemRow>

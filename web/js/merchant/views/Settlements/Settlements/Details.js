@@ -6,15 +6,27 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import SettlementBreakupModal from 'merchant/views/Settlements/Settlements/components/Modals/BreakupModal';
 import { bindActionCreators } from 'redux';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class SettlementDetailsContainer extends Component {
+  fetchItem(id) {
+    const { fetchItem } = this.props;
+    fetchItem(id).then((response) => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Settlement Details Fetched',
+        page: 'Home',
+        screen: 'Home',
+      });
+      return response;
+    });
+  }
   UNSAFE_componentWillMount() {
-    this.props.fetchItem(this.props.id);
+    this.fetchItem(this.props.id);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchItem(nextProps.id);
+      this.fetchItem(nextProps.id);
     }
   }
 

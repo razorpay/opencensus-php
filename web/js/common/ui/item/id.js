@@ -45,7 +45,7 @@ const commissionBase = {
 export const idItem = (id) => <code>{id}</code>;
 
 /* if label not present id will be used as label */
-export const idLink = (id = '', label, _baseUrl = baseUrl) => {
+export const idLink = (id = '', label, _baseUrl = baseUrl, onClick, { type }) => {
   let url = _baseUrl[id.split('_')[0]];
   const item = label || idItem(id);
   if (url) {
@@ -57,19 +57,28 @@ export const idLink = (id = '', label, _baseUrl = baseUrl) => {
       url += hash;
     }
 
-    return <Link to={url}>{item}</Link>;
+    return (
+      <Link to={url} {...(onClick ? { onClick: () => onClick({ type }) } : {})}>
+        {item}
+      </Link>
+    );
   }
   return item;
 };
-
 /*
   idKey: value of this key in item object will be appened to url
   labeKey: value of this key in item object will be displayed as label in link
 */
 const makePropLink = (idKey, labelKey) => (item) => idLink(item[idKey], item[labelKey]);
 
-export const makeIdLink = (type) => (item) => {
-  return idLink(item[`${item.entity === type ? '' : `${type}_`}id`]);
+export const makeIdLink = (type) => (item, onClick) => {
+  return idLink(
+    item[`${item.entity === type ? '' : `${type}_`}id`],
+    undefined,
+    undefined,
+    onClick,
+    { type },
+  );
 };
 
 export const payment = makeIdLink('payment');

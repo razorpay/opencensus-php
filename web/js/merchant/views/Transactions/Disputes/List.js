@@ -20,6 +20,7 @@ import { getCustomURL } from '../../../components/DocsLink';
 import { bindActionCreators } from 'redux';
 import EmptyList from 'merchant/components/EmptyList';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
@@ -104,6 +105,7 @@ class Dispute extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           EmptyComponent={EmptyComponent}
+          onCellClick={selfServerTrack}
           {...this.props}
         />
 

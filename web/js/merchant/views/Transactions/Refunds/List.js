@@ -10,6 +10,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
@@ -120,6 +121,7 @@ class RefundsListContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
+          onCellClick={selfServerTrack}
           {...this.props}
         />
       </div>

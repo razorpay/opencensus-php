@@ -24,6 +24,7 @@ import {
   trackPresetChange,
   trackSettlementsClick,
   trackSettleNow,
+  selfServeSettleTracking,
   EVENT_CATEGORY_DASHBOARD_HOME,
 } from './ga';
 import { getSettlementStatus } from 'merchant/views/Capital/utils';
@@ -93,6 +94,7 @@ class AnalyticsMobile extends Component {
   showOndemandSettlementForm() {
     const { current_balance, ondemand_restrictions, user } = this.props;
     trackSettleNow();
+    selfServeSettleTracking();
     const esOndemandSettlementEnabled = user.isFeatureEnabled('es_on_demand');
     const balance = current_balance.data.balance;
     const settlableAmount = ondemand_restrictions && ondemand_restrictions.data.settlable_amount;

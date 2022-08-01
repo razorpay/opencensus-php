@@ -33,6 +33,7 @@ export default function DataTable(props) {
     isMobileResolution,
     customMobileRow,
     mobileColumns,
+    onCellClick,
   } = props;
 
   const classes = `${noStripe ? '' : 'table-striped'} ${columns ? customClass : ''}`;
@@ -60,6 +61,7 @@ export default function DataTable(props) {
         mobileColumns={mobileColumns}
         customMobileRow={customMobileRow}
         isMobileResolution={isMobileResolution}
+        onCellClick={onCellClick}
       />
       {!progressLoader && loading && (
         <div style={{ padding: 77 }} class="text-center">

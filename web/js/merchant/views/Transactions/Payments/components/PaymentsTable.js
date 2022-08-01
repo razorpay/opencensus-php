@@ -11,6 +11,7 @@ import {
 } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
@@ -33,7 +34,7 @@ const getOrderId = ({ notes }) => {
 const getRazorpayOrderId = ({ order_id }) => {
   if (order_id) {
     return (
-      <Link to={`/orders/${order_id}`}>
+      <Link to={`/orders/${order_id}`} onClick={() => selfServerTrack({ type: 'order' })}>
         <code>{order_id}</code>
       </Link>
     );
@@ -95,5 +96,12 @@ export default (props) => {
     paymentColumns.splice(1, 0, rzpPaymentOrder(rzpOrders));
   }
 
-  return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
+  return (
+    <EntityTable
+      title="Payments"
+      columns={paymentColumns}
+      onCellClick={selfServerTrack}
+      {...props}
+    />
+  );
 };

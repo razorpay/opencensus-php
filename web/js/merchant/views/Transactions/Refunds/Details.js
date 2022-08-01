@@ -4,15 +4,28 @@ import RefundDetails from 'merchant/views/Transactions/Refunds/components/Refund
 import * as RefundActions from 'merchant/reducers/refunds/details';
 import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import { bindActionCreators } from 'redux';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class RefundDetailsContainer extends Component {
+  fetchItem(id) {
+    const { fetchItem } = this.props;
+    fetchItem(id).then((response) => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Refund Details Fetched',
+        page: 'Refund Listing',
+        screen: 'Transaction',
+      });
+      return response;
+    });
+  }
+
   UNSAFE_componentWillMount() {
-    this.props.fetchItem(this.props.id);
+    this.fetchItem(this.props.id);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchItem(nextProps.id);
+      this.fetchItem(nextProps.id);
     }
 
     if (nextProps.refund) {

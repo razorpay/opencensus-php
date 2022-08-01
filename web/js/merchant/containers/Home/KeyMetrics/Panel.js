@@ -379,6 +379,7 @@ class Panel extends Component {
                 sectionTitle={sectionTitle}
                 tabName={this.meta.title}
                 handleImageDownload={this.handleImageExportClick}
+                handleClick={this.props.handleDownloadClick}
               />
             </div>
           </div>

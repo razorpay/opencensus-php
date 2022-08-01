@@ -7,6 +7,7 @@ import { orderId, attempts, amount, status, receipt, createdAt } from 'common/ui
 import { analyticsTrack } from 'common/utils/analytics';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { bindActionCreators } from 'redux';
+import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 class OrdersListContainer extends ListContainer {
   componentDidMount() {
@@ -96,6 +97,7 @@ class OrdersListContainer extends ListContainer {
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
+          onCellClick={selfServerTrack}
           {...this.props}
         />
       </div>

@@ -23,6 +23,7 @@ import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
 import Mobile from './Mobile';
 import { trackBreadcrumbClick } from './ga';
 import { getQuery, aggTypes } from './data';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function getLevels(hierarchy, levels = []) {
   if (hierarchy.parent) {
@@ -112,7 +113,13 @@ class PaymentMethods extends Component {
           data: agg.result,
           lastUpdatedAt: agg.last_updated_at,
         });
-
+        if (aggType) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Payment Insights Fetched',
+            page: 'Home',
+            screen: 'Home',
+          });
+        }
         return resp;
       })
       .catch((err) => {
@@ -172,6 +179,11 @@ class PaymentMethods extends Component {
   }
 
   onAggChange({ option }) {
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Insights Fetched',
+      page: 'Home',
+      screen: 'Home',
+    });
     const { startDate, endDate } = this.props;
 
     this.setState({
@@ -266,7 +278,17 @@ class PaymentMethods extends Component {
               />
             </div>
             <div className="panel-action-item">
-              <MoreOptionsButton csvData={csvData} sectionTitle={sectionTitle} />
+              <MoreOptionsButton
+                csvData={csvData}
+                sectionTitle={sectionTitle}
+                handleClick={() => {
+                  selfServeTrackInitiate({
+                    selfServeAction: 'Payment Insight Downloaded',
+                    page: 'Home',
+                    screen: 'Home',
+                  });
+                }}
+              />
             </div>
           </div>
         </PanelTopbar>

@@ -24,6 +24,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDetailView';
 import { updateItemInPayments } from 'merchant/reducers/collection';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class PaymentDetailsContainer extends Component {
   constructor(props) {
@@ -53,6 +54,11 @@ class PaymentDetailsContainer extends Component {
       if (['created', 'authorized', 'failed'].indexOf(payment.status) < 0) {
         this.props.fetchTransfers(payment);
       }
+      selfServeTrackSuccess({
+        selfServeAction: 'Payment Details Fetched',
+        page: 'Payment Listing',
+        screen: 'Transaction',
+      });
     });
   };
 
@@ -83,7 +89,6 @@ class PaymentDetailsContainer extends Component {
         eventAction: 'Open Details - Payments',
         eventLabel: `payment_id=${id}`,
       });
-
     this.props.fetchMerchantManualAction(id);
   }
 

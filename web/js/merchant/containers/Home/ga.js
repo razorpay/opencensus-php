@@ -1,5 +1,6 @@
 import { setTrackData } from 'common/utils/googleAnalytics';
 import { EVENT_CATEGORY_DASHBOARD_EARLY_SETTLEMENT } from 'merchant/views/Settlements/Settlements/ga';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const pageTitle = 'Dashboard - Home V2';
 
@@ -23,9 +24,9 @@ export const trackPresetChange = (preset) => {
 };
 
 export const trackDatesChange = (from, to) => {
-  const seconds = to.unix() - from.unix(),
-    fromDateString = from.toLocaleString(),
-    toDateString = to.toLocaleString();
+  const seconds = to.unix() - from.unix();
+  const fromDateString = from.toLocaleString();
+  const toDateString = to.toLocaleString();
 
   track({
     eventAction: 'Select - Start Date',
@@ -153,19 +154,19 @@ export const iaActivations = {
   },
 };
 
-const SupportDetailsTrack = setTrackData({
+const supportDetailsTrack = setTrackData({
   eventCategory: 'Dashboard - Support Detail Data Collection',
 });
 
 export const trackSupportDetailPopupClose = () => {
-  SupportDetailsTrack({
+  supportDetailsTrack({
     eventAction: 'Click - Close button',
     eventLabel: 'Support detail popup _cancel',
   });
 };
 
 export const trackSupportDetailSubmitAction = (value) => {
-  SupportDetailsTrack({
+  supportDetailsTrack({
     eventAction: 'Click - Submit button',
     eventLabel: 'Support detail popup_submit',
     eventValue: {
@@ -177,10 +178,17 @@ export const trackSupportDetailSubmitAction = (value) => {
 };
 
 export const trackSupportDetailPopupDisplay = () => {
-  SupportDetailsTrack({
+  supportDetailsTrack({
     eventAction: 'Displayed',
     eventLabel: 'Support detail popup_displayed',
   });
 };
+
+export const selfServeSettleTracking = () =>
+  selfServeTrackInitiate({
+    selfServeAction: 'Settle Now Requested',
+    page: 'Home',
+    screen: 'Home',
+  });
 
 export const EVENT_CATEGORY_DASHBOARD_HOME = 'Dashboard - Home';

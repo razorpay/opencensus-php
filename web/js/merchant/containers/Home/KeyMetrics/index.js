@@ -45,6 +45,7 @@ import { trackTabClick, trackBreakdownChange, trackSavedCardsHidden } from './ga
 import Panel from './Panel';
 import MiniChart from './TinyAreaChart';
 import Mobile from './Mobile';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const csvDateFormat = 'DD-MM-YYYY';
 
@@ -601,6 +602,12 @@ class KeyMetricsContainer extends Component {
         if (isInitialLoad) {
           // eslint-disable-next-line react/no-direct-mutation-state
           this.state.loading = false;
+        } else {
+          selfServeTrackSuccess({
+            selfServeAction: 'Payment Insights Fetched',
+            page: 'Home',
+            screen: 'Home',
+          });
         }
 
         if (!this.props.isMobile) {
@@ -826,7 +833,11 @@ class KeyMetricsContainer extends Component {
         return !data.loading && data.fetchData && this.fetchData();
       },
     );
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Details Fetched',
+      page: 'Home',
+      screen: 'Home',
+    });
     trackTabClick(tabsMeta[tabName].title);
   }
 
@@ -858,6 +869,11 @@ class KeyMetricsContainer extends Component {
   }
 
   onGroupingChange(tabName, selectedGrouping) {
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Details Fetched',
+      page: 'Home',
+      screen: 'Home',
+    });
     const { tabsState } = this.state;
     const tabState = tabsState[tabName];
 
@@ -883,7 +899,11 @@ class KeyMetricsContainer extends Component {
     this.setState({ tabsState }, () => {
       this.fetchData();
     });
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Details Fetched',
+      page: 'Home',
+      screen: 'Home',
+    });
     trackBreakdownChange(selectedBreakdown);
   }
 
@@ -970,7 +990,9 @@ class KeyMetricsContainer extends Component {
             return (
               <Tab
                 key={index}
-                onClick={() => this.handleTabChange(tabName)}
+                onClick={() => {
+                  this.handleTabChange(tabName);
+                }}
                 style={{
                   width: tabWidth,
                   marginLeft: `${index === 0 ? 0 : gutterBetweenTabs}px`,
@@ -1017,6 +1039,13 @@ class KeyMetricsContainer extends Component {
                   externalUrl={`/#/app/${tabsMeta[tabName].index}`}
                   showGroupingByPtfm={showGroupingByPtfm}
                   sectionTitle={sectionTitle}
+                  handleDownloadClick={() => {
+                    selfServeTrackInitiate({
+                      selfServeAction: 'Payment Details Downloaded',
+                      page: 'Home',
+                      screen: 'Home',
+                    });
+                  }}
                 />
               </TabPane>
             );
