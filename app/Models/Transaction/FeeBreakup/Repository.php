@@ -99,6 +99,7 @@ class Repository extends Base\Repository
     {
         parent::saveOrFail($entity, $options);
 
+/*
         try
         {
             $fillArray = $entity->toArrayPublic();
@@ -118,6 +119,7 @@ class Repository extends Base\Repository
                     'error' => $ex->getMessage(),
                 ]);
         }
+*/
 
         return $entity;
     }
