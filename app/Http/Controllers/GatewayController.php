@@ -747,7 +747,7 @@ class GatewayController extends Controller
 
         if((isset($input['token']) === false) or ($input['token'] === "null"))
         {
-            throw new Exception\BadRequestException(
+            $e = new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
                 null,
                 [
@@ -756,6 +756,14 @@ class GatewayController extends Controller
                     'payment_id' => $payment->getPublicId(),
                     'order_id'   => $payment->getOrderId(),
                 ]);
+
+            $processor = new Payment\Processor\Processor($merchant);
+
+            $processor->setPayment($payment);
+
+            $processor->updatePaymentAuthFailed($e);
+
+            throw $e;
         }
 
         $this->app['trace']->info(

@@ -6418,10 +6418,9 @@ class Processor
 
     protected function preProcessGetSimplCoproto($response, $input, $payment, $merchant)
     {
+        $this->repo->saveOrFail($payment);
         if (empty($response['next']['redirect']['url']) === false )
         {
-            $this->repo->saveOrFail($payment);
-
             $url = $response['next']['redirect']['url'];
 
             $coproto = [
@@ -6447,7 +6446,28 @@ class Processor
 
             (new Customer\Raven)->sendOtp($input, $merchant);
 
-            $coproto = $this->preProcessPaylaterCoproto($payment, $input, $payment->merchant);
+            $coproto = [
+                'type'      => 'respawn',
+                'method'    => 'paylater',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
+                        'method'   => 'paylater',
+                        'provider' => $input['provider']
+                    ]),
+                    'method'  => 'POST',
+                    'content' => $input,
+                ],
+                'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
+                'theme'      => $payment->merchant->getBrandColorElseDefault(),
+                'merchant'   => $merchant->getDbaName(),
+                'gateway'    => $this->getEncryptedGatewayText(Payment\Gateway::PAYLATER),
+                'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
+                'key_id'     => $this->ba->getPublicKey(),
+                'version'    => '1',
+                'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_redirect_to_authenticate_post',
+                    ['id' => $payment->id]),
+            ];
+
 
             return $coproto;
         }

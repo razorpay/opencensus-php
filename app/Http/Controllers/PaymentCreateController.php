@@ -768,7 +768,26 @@ class PaymentCreateController extends Controller
 
     public function postRedirectToAuthorize($id)
     {
-        $data = $this->service(E::PAYMENT)->redirectToAuthorize($id);
+        $input = Request::all();
+
+        //This is to ensure nothing is breaking in existing flows
+        if (!((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL)))
+        {
+            $input = [];
+        }
+
+        $data = $this->service(E::PAYMENT)->redirectToAuthorize($id, $input);
+
+        if ((is_array($data)) and
+            (isset($data['request']) === false))
+        {
+            if((isset($this->input['provider'])) and ($this->input['provider'] === Payment\Gateway::GETSIMPL) and ($this->app['rzp.mode'] != 'test'))
+            {
+                assertTrue ($data !== null);
+
+                return $this->returnCheckoutCallbackView($data);
+            }
+        }
 
         $merchant =  $this->app['basicauth']->getMerchant();
 

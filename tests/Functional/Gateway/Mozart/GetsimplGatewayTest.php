@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Mozart;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -161,6 +162,8 @@ class GetsimplGatewayTest extends TestCase
 
         catch( BadRequestException $e)
         {
+            $payment = $this->getLastEntity('payment', true);
+            $this->assertequals($payment['status'], 'failed');
             self::assertNotNull($e->getData()['payment_id']);
             self::assertNotNull($e->getData()['order_id']);
             self::assertNotNull($e->getError());
@@ -186,6 +189,8 @@ class GetsimplGatewayTest extends TestCase
 
         catch( BadRequestException $e)
         {
+            $payment = $this->getLastEntity('payment', true);
+            $this->assertequals($payment['status'], 'failed');
             self::assertNotNull($e->getData()['payment_id']);
             self::assertNotNull($e->getData()['order_id']);
             self::assertNotNull($e->getError());
@@ -317,20 +322,29 @@ class GetsimplGatewayTest extends TestCase
 
     public function testInvalidOtt()
     {
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__],
-            function () {
-                $payment = $this->payment;
+        $payment = $this->payment;
 
-                $payment['contact'] = '7602579721';
+        $payment['contact'] = '7602579721';
 
-                $payment['email']   = 'invalidott@gmail.com';
+        $payment['email']   = 'invalidott@gmail.com';
 
-                $this->setOtp('123456');
+        $this->setOtp('123456');
 
-                $this->ba->publicAuth();
+        $this->ba->publicAuth();
 
-                $this->doAuthPayment($payment);
-            });
+        try
+        {
+            $this->doAuthPayment($payment);
+        }
+        catch (BadRequestValidationFailureException $e)
+        {
+            $payment = $this->getLastEntity('payment', true);
+
+            $this->assertequals($payment['status'], 'created');
+
+            self::assertNotNull($e->getError());
+        }
+
     }
 
     public function processStaticCallback($key = null, $tkey = 'token', $tval = 'Test_Token', $route = 'new')

@@ -566,6 +566,8 @@ class Service extends Base\Service
 
         $payment = null;
 
+        $merchant = null;
+
         try
         {
             list($merchant, $payment) = $this->setRequiredDetailsGetMerchantAndPaymentId($id);
@@ -995,6 +997,16 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setMerchant($merchant);
 
+        if ($payment->getWallet() === Gateway::GETSIMPL)
+        {
+            if (($payment->isCreated() === false))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
+                );
+            }
+            return [$merchant, $payment];
+        }
         $key = Payment\Entity::getRedirectToAuthorizeTrackIdKey($id);
 
         $encryptedText = $this->app['cache']->get($key);
@@ -1036,7 +1048,6 @@ class Service extends Base\Service
                 $this->app['basicauth']->setOAuthClientId($payload['oauth_client_id']);
             }
         }
-
         return [$merchant, $payment];
     }
 

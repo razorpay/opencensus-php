@@ -10147,8 +10147,7 @@ trait Authorize
                 {
                     return $ret;
                 }
-
-
+                $this->validatePayLaterIfApplicable($payment, $input);
 
                 //Address validation if required
                 $this->validateAddressIfPresent($payment,$input);
@@ -10156,6 +10155,8 @@ trait Authorize
                 $key = $payment->getCacheRedirectInputKey();
 
                 $inputDetails = $this->getInputDetails($payment, $key);
+
+                $inputDetails = $this->getInputDetailsForPaylaterIfApplicable($payment, $input, $inputDetails);
 
                 //DCC S2S Flow. Doing this inside mutex to avoid duplicate processing
                 $this->ValidateAndProcessDccInput($payment,$input,$inputDetails);
@@ -10166,7 +10167,11 @@ trait Authorize
                     $inputDetails['gateway_input']['billing_address'] = $input[Payment\Entity::BILLING_ADDRESS];
                 }
 
-                $gatewayInput = $inputDetails['gateway_input'];
+                $gatewayInput = [];
+
+                if (isset($inputDetails['gateway_input'])){
+                    $gatewayInput = $inputDetails['gateway_input'];
+                }
 
                 /*
                  * In double redirect scenario terminal will be set
@@ -10299,6 +10304,16 @@ trait Authorize
         return 'authorize_' . $payment->getId();
     }
 
+    protected function getInputDetailsForPaylaterIfApplicable($payment, $input, $inputDetails)
+    {
+        if ($payment->isPayLater() === true and $payment->getWallet() === Gateway::GETSIMPL)
+        {
+            $inputDetails = $input;
+        }
+
+        return $inputDetails;
+    }
+
     protected function getInputDetails($payment, $key = null)
     {
         if ($key === null)
@@ -10320,7 +10335,7 @@ trait Authorize
 
         $inputDetails = $this->cache->get($key);
 
-        if ($inputDetails === null)
+        if ($inputDetails === null and !($payment->isPaylater() === true and $payment->getWallet() === Gateway::GETSIMPL))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
