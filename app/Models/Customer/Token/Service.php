@@ -686,6 +686,15 @@ class Service extends Base\Service
 
                 $response = $token->toArrayPublicTokenizedCard($serviceProviderTokens);
 
+                if ($token->card->isNetworkTokenisedCard() === true)
+                {
+                    $response['compliant_with_tokenisation_guidelines'] = true;
+                }
+                else
+                {
+                    $response['compliant_with_tokenisation_guidelines'] = false;
+                }
+
                 (new Token\Event())->pushEvents($input, Event::FETCH_TOKEN, "_REQUEST_PROCESSED", $response);
 
                 return $response;
