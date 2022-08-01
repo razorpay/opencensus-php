@@ -7,6 +7,7 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use Illuminate\Support\Str;
 use RZP\Http\Controllers\MerchantController;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Type;
@@ -470,7 +471,10 @@ class Service extends Base\Service
         {
             $count = $this->repo->merchant_access_map->getSubMerchantCount($data['partner_id']);
 
-            $submerchantId = substr($submerchantId, 4); // removes 'acc_' prefix from account id
+            if (Str::startsWith($submerchantId, 'acc_'))
+            {
+                $submerchantId = substr($submerchantId, 4);
+            }
 
             $properties = [
                 'partner_id'         => $data['partner_id'],
