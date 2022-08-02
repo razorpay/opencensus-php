@@ -172,7 +172,13 @@ class UserRolePermissionsMap
                  Permission::CREATE_LOW_BALANCE_ALERTS,
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
-                 Permission::RBL_BANK_MID_OFFICE
+                 Permission::RBL_BANK_MID_OFFICE,
+                 Permission::VIEW_ROLE,
+                 Permission::CREATE_ROLE,
+                 Permission::DELETE_ROLE,
+                 Permission::EDIT_ROLE,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::ADMIN => [
@@ -304,6 +310,9 @@ class UserRolePermissionsMap
                  Permission::FILL_KYC,
                  Permission::DOWNLOAD_REPORTING,
                  Permission::HAS_APP_ACCESS,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ROLE,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -414,6 +423,9 @@ class UserRolePermissionsMap
                  Permission::FILL_KYC,
                  Permission::DOWNLOAD_REPORTING,
                  Permission::HAS_APP_ACCESS,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ROLE,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::OPERATIONS => [
@@ -478,6 +490,8 @@ class UserRolePermissionsMap
                  Permission::VIEW_KYC,
                  Permission::FILL_KYC,
                  Permission::HAS_APP_ACCESS,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -509,6 +523,8 @@ class UserRolePermissionsMap
 
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -557,6 +573,8 @@ class UserRolePermissionsMap
 
                  Permission::HAS_APP_ACCESS,
                  Permission::DOWNLOAD_REPORTING,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::VENDOR => [
@@ -567,6 +585,8 @@ class UserRolePermissionsMap
                  Permission::UPDATE_USER_PROFILE,
                  Permission::HAS_APP_ACCESS,
                  Permission::DOWNLOAD_REPORTING,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ALL_ROLES
              ],
 
             // BankingRole::BANK_MID_OFFICE_POC => [

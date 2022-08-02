@@ -8806,8 +8806,8 @@ class Route
         'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
 
         //CAC
-        'cac_privileges_fetch'              => Permission::VIEW_PRIVILEGES,
-        'cac_role_fetch_all'                           => Permission::VIEW_MANAGE_TEAM,
+        'cac_privileges_fetch'                         => Permission::VIEW_PRIVILEGES,
+        'cac_role_fetch_all'                           => Permission::VIEW_ALL_ROLES,
         'view_cac_role'                                => Permission::VIEW_ROLE,
         'role_self_get'                                => Permission::VIEW_USER,
         //'delete_cac_role'                              => Permission::DELETE_ROLE,

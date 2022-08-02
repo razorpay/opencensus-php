@@ -1017,6 +1017,7 @@ class Name
     //FE premissions
     const VIEW_PUBLIC_PROFILE                   = 'view_public_profile';
     const VIEW_MANAGE_TEAM                      = 'view_manage_team';
+    const VIEW_ALL_ROLES                        = 'view_all_roles';
     const VIEW_DEVELOPER_CONTROLS               = 'view_developer_controls';
     const VIEW_BANKING                          = 'view_banking';
     const VIEW_BILLING                          = 'view_billing';
