@@ -208,6 +208,15 @@ class Tracing
 
             //Login route analysis
             'user_login',
+            'user_otp_login',
+            'verify_user_otp_login',
+            'user_oauth_login',
+            'user_register',
+            'user_otp_register',
+            'verify_user_otp_register',
+            'user_oauth_register',
+            'merchant_edit_pre_signup_details',
+            'merchant_pre_signup_details',
             'merchant_features_fetch',
             'merchant_get_tags',
             'merchant_product_switch',
