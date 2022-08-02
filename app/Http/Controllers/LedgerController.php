@@ -128,7 +128,7 @@ class LedgerController extends Controller
 
     public function fetchFilter()
     {
-        $response = $this->app['ledger']->fetchFilter($this->input, true);
+        $response = $this->app['ledger']->fetchFilter($this->input, [], true);
 
         return ApiResponse::json($response['body'], $response['code']);
     }
