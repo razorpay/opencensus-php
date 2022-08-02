@@ -453,6 +453,7 @@ class Processor
     {
         try
         {
+            $result = '';
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
 
@@ -501,29 +502,6 @@ class Processor
                 (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false))
             {
                 return false;
-            }
-
-
-            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) and
-                ($merchant->isHeadlessEnabled() === false))
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::JSON_V2_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                if ($result !== 'on')
-                {
-                    return false;
-                }
-            }
-
-
-            if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === true)
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                if ($result !== 'on')
-                {
-                    return false;
-                }
             }
 
 
@@ -623,35 +601,39 @@ class Processor
             {
                 $raasResult = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($raasResult !== 'on') {
-                    return false;
-                }
+                return ($result === 'on');
             }
+
+            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) and
+                ($merchant->isHeadlessEnabled() === false))
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::JSON_V2_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
+
+            if ($merchant->isFeatureEnabled(Feature::MARKETPLACE) === true)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
 
             if ($this->ba->getOAuthClientId() !== null)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::OAUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($result !== 'on')
-                {
-                    return false;
-                }
+                return ($result === 'on');
             }
 
             if ($this->ba->isPartnerAuth() === true)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($result !== 'on')
-                {
-                    return false;
-                }
+                return ($result === 'on');
             }
-
-            $isRupay = ($iin->getNetworkCode() === Card\Network::RUPAY);
-            $isHeadless = (in_array(Card\IIN\Flow::HEADLESS_OTP, $enabledFlows, true) === true);
-            $isIVR = (in_array(Card\IIN\Flow::IVR, $enabledFlows, true) === true);
-            $isOTP = (in_array(Card\IIN\Flow::OTP, $enabledFlows, true) === true);
 
             if ($this->app['basicauth']->isPrivateAuth() === false)
             {
