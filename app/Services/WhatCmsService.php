@@ -60,7 +60,8 @@ class WhatCmsService extends Base\Service
 
     public function getPrecedenceOfPluginType($pluginType) : int
     {
-        switch($pluginType){
+        switch($pluginType)
+        {
             case self::WOOCOMMERCE:
             case self::GRAVITYFORMS:
             case self::EASYDIGITALDOWNLOADS:

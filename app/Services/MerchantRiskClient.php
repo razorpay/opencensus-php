@@ -245,10 +245,20 @@ class MerchantRiskClient
         if (json_last_error() === JSON_ERROR_NONE)
         {
             $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RESPONSE, [
-                'response'   => $parsedBody,
+                'response'   => $bodyLog,
                 'service'   => 'merchants-risk'
             ]);
             return $parsedBody;
+        }
+
+        if ($res->status_code === 404)
+        {
+            $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_RECORD_NOT_FOUND, [
+                'response'   => $bodyLog,
+                'service'   => 'merchants-risk'
+            ]);
+
+            return [];
         }
 
         // Else throws exception.
