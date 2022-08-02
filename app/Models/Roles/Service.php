@@ -44,6 +44,13 @@ class Service extends Base\Service
         return $rolesGrouppedByType;
     }
 
+    public function fetchSelfRole()
+    {
+        $id = 'role_'.$this->app['basicauth']->getUserRole();
+
+        return $this->fetch($id, []);
+    }
+
     public function fetch(string $id, array $input): array
     {
         $input['expand'] = [Entity::ACCESS_POLICY];

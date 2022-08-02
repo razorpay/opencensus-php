@@ -3719,6 +3719,7 @@ class Route
         //CAC routes
         'cac_role_fetch_all'                    => ['get',                    'cac/roles',                                               'RolesController@listRolesForMerchant'],
         'view_cac_role'                         => ['get',                    'cac/role/{id}',                                                  'RolesController@getRole'],
+        'role_self_get'                         => ['get',                    'cac/self/role',                                                   'RolesController@getSelfRole'                                    ],
         //'delete_cac_role'                       => ['delete',                 'cac/role/{id}',                                                  'RolesController@deleteRole'                                 ],
         'cac_privileges_fetch'                  => ['get',                    'cac/privileges',                                          'AccessControlPrivilegesController@listPrivileges'],
         'create_cac_role'                       => ['post',                   'cac/role',                                                   'RolesController@create'],
@@ -5969,6 +5970,7 @@ class Route
         //CAC
         'cac_privileges_fetch',
         'cac_role_fetch_all',
+        'role_self_get',
         'view_cac_role',
         //'delete_cac_role',
         'create_cac_role',
@@ -8807,6 +8809,7 @@ class Route
         'cac_privileges_fetch'              => Permission::VIEW_PRIVILEGES,
         'cac_role_fetch_all'                           => Permission::VIEW_MANAGE_TEAM,
         'view_cac_role'                                => Permission::VIEW_ROLE,
+        'role_self_get'                                => Permission::VIEW_USER,
         //'delete_cac_role'                              => Permission::DELETE_ROLE,
         'create_cac_role'                              => Permission::CREATE_ROLE,
         'edit_cac_role'                                => Permission::EDIT_ROLE
@@ -10374,6 +10377,7 @@ class Route
             //CAC
             'cac_privileges_fetch',
             'cac_role_fetch_all',
+            'role_self_get',
             'view_cac_role',
             //'delete_cac_role',
             'create_cac_role',
@@ -10385,6 +10389,8 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'role_self_get',
+
             'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',

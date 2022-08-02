@@ -166,6 +166,36 @@ class RolesTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchSelfRole()
+    {
+        $this->createPrivileges();
+
+        $merchant = $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $user1->getId());
+
+        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 2', 'id' => '100customRole2', 'org_id' => "100000razorpay"]);
+
+        $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
+
+        $this->fixtures->create('role_access_policy_map',
+            [
+                'role_id' => '100customRole2',
+                'authz_roles'   => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'access_policy_ids' => ['accessPolicy10', 'accessPolicy11', 'accessPolicy13'],
+            ]);
+
+        $this->startTest();
+    }
+
     // currently this API is scoped out for phase 1, we will be needing this in future
     /*public function testDeleteRole()
     {

@@ -46,6 +46,15 @@ class RolesController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSelfRole()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchSelfRole();
+
+        return ApiResponse::json($data);
+    }
+
     public function deleteRole($id)
     {
         $data = $this->service()->deleteRole($id);

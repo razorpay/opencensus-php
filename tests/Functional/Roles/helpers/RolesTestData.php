@@ -390,6 +390,27 @@ return [
         ],
     ],
 
+    'testFetchSelfRole' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/self/role',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => array (
+                'id' => 'owner',
+                'name' => 'Owner',
+                'description' => NULL,
+                'type' => 'standard',
+                'merchant_id' => '100000Razorpay',
+                'access_policy_ids' => [],
+                'members' => 1,
+            )
+        ],
+    ],
+
     'testFetchRoleByIdCustomRole' => [
         'request'  => [
             'method'  => 'GET',
