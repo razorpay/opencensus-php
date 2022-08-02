@@ -459,10 +459,10 @@ class Core extends Base\Core
     /**
      * This function updates the application for all configs associated with provided existing application id.
      *
-     * @param $existingAppId // ApplicationId associated with Partner config
-     * @param $appId  // ApplicationId to update the partner config
+     * @param string $existingAppId // ApplicationId associated with Partner config
+     * @param string $appId // ApplicationId to update the partner config
      *
-     * @return array
+     * @return void
      */
     public function updateApplicationsForPartnerConfigs(string $existingAppId, string $appId)
     {

@@ -7,6 +7,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Partner\Config\Repository as PartnerConfigRepo;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 use RZP\Models\User\Role;
 use RZP\Services\Mock\Settlements\Api;
@@ -77,28 +79,116 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertCount(1, $commission);
     }
 
-    public function testResellerToAggregatorPartnerTypeUpdate()
+    public function testResellerToAggregatorPartnerWithNewAuth()
     {
-        list($merchantId, $managedAppId) = $this->createResellerPartnerAndSubmerchantAndFetchMocks();
+        list(
+            $partnerId, $resellerAppId, $managedAppId, $referredAppId, $subMerchant
+            ) = $this->createResellerPartnerAndSubmerchantAndFetchMocks();
 
-        $this->core->updateResellerToAggregator($merchantId);
+        $input = ["merchant_id" => $partnerId, "new_auth_create" => true];
+        $this->core->migrateResellerToAggregatorPartner($input);
 
         // partner type should be updated as reseller
-        $merchant = $this->getDbEntityById('merchant', $merchantId);
-        $this->assertEquals('aggregator', $merchant->getPartnerType());
+        $merchantOnLive = $this->getDbEntityById('merchant', $partnerId, 'live');
+        $merchantOnTest = $this->getDbEntityById('merchant', $partnerId, 'test');
+        $this->assertEquals('aggregator', $merchantOnLive->getPartnerType());
+        $this->assertEquals('aggregator', $merchantOnTest->getPartnerType());
+        $this->assertOnMerchantApplication($partnerId, $managedAppId, $referredAppId);
+        $this->assertOnAccessMaps($partnerId, $subMerchant, $managedAppId);
+        $this->assertOnPartnerConfigs($resellerAppId, $managedAppId, $referredAppId);
+        $this->assertOnMerchantUser($merchantOnLive, $subMerchant);
+    }
 
+    private function assertOnMerchantApplication(string $partnerId, string $managedAppId, string $referredAppId)
+    {
         // new merchant applications should be created for managed and referred
-        $applications = $this->getDbEntities('merchant_application',
-            ['merchant_id' => $merchantId])->toArray();
-        $this->assertCount(2, $applications);
-        $this->assertEquals('managed', $applications[0]['type']);
-        $this->assertEquals('referred', $applications[1]['type']);
+        $applicationsOnLive = $this->getDbEntities('merchant_application', ['merchant_id' => $partnerId], 'live')->toArray();
+        $applicationsOnTest = $this->getDbEntities('merchant_application', ['merchant_id' => $partnerId], 'test')->toArray();
+        $this->assertCount(2, $applicationsOnLive);
+        $this->assertEquals('managed', $applicationsOnLive[0]['type']);
+        $this->assertEquals($managedAppId, $applicationsOnLive[0]['application_id']);
+        $this->assertEquals('referred', $applicationsOnLive[1]['type']);
+        $this->assertEquals($referredAppId, $applicationsOnLive[1]['application_id']);
 
+        $this->assertCount(2, $applicationsOnTest);
+        $this->assertEquals('managed', $applicationsOnTest[0]['type']);
+        $this->assertEquals($managedAppId, $applicationsOnTest[0]['application_id']);
+        $this->assertEquals('referred', $applicationsOnTest[1]['type']);
+        $this->assertEquals($referredAppId, $applicationsOnTest[1]['application_id']);
+    }
+
+    private function assertOnAccessMaps(string $partnerId, MerchantEntity $subMerchant, string $managedAppId)
+    {
         // merchant access map should be updated with new application id
-        $accessMaps = $this->getDbEntities('merchant_access_map',
-            ['entity_type' => 'application', 'entity_owner_id' => $merchantId])->toArray();
-        $this->assertCount(1, $accessMaps);
-        $this->assertEquals($managedAppId, $accessMaps[0]['entity_id']);
+        $accessMapsOnLive = $this->getDbEntities(
+            'merchant_access_map',
+            ['entity_type' => 'application', 'entity_owner_id' => $partnerId],
+            Mode::LIVE
+        )->toArray();
+        $accessMapsOnTest = $this->getDbEntities(
+            'merchant_access_map',
+            ['entity_type' => 'application', 'entity_owner_id' => $partnerId],
+            Mode::TEST
+        )->toArray();
+        $this->assertCount(1, $accessMapsOnLive);
+        $this->assertEquals($managedAppId, $accessMapsOnLive[0]['entity_id']);
+        $this->assertEquals($subMerchant->getId(), $accessMapsOnLive[0]['merchant_id']);
+        $this->assertCount(1, $accessMapsOnTest);
+        $this->assertEquals($managedAppId, $accessMapsOnTest[0]['entity_id']);
+        $this->assertEquals($subMerchant->getId(), $accessMapsOnTest[0]['merchant_id']);
+    }
+
+    private function assertOnPartnerConfigs(string $resellerAppId, string $managedAppId, string $referredAppId)
+    {
+        // old partner configs are still present
+        $partnerConfigRepo = new PartnerConfigRepo();
+        $oldConfigsOnLive = $partnerConfigRepo->fetchAllConfigForApps([$resellerAppId], Mode::LIVE);
+        $this->assertCount(0, $oldConfigsOnLive);
+        $oldConfigsOnTest = $partnerConfigRepo->fetchAllConfigForApps([$resellerAppId], Mode::TEST);
+        $this->assertCount(0, $oldConfigsOnTest);
+
+        // partner configs of managed apps should be updated
+        $managedConfigsOnLive = $partnerConfigRepo->fetchAllConfigForApps([$managedAppId], Mode::LIVE);
+        $this->assertCount(2, $managedConfigsOnLive);
+        $managedConfigsOnTest = $partnerConfigRepo->fetchAllConfigForApps([$managedAppId], Mode::TEST);
+        $this->assertCount(2, $managedConfigsOnTest);
+
+        // one partner config of referred app should be created
+        $referredConfigsOnLive = $partnerConfigRepo->fetchAllConfigForApps([$referredAppId], Mode::LIVE);
+        $this->assertCount(1, $referredConfigsOnLive);
+        $referredConfigsOnTest = $partnerConfigRepo->fetchAllConfigForApps([$referredAppId], Mode::TEST);
+        $this->assertCount(1, $referredConfigsOnTest);
+    }
+
+    private function assertOnMerchantUser(MerchantEntity $partner, MerchantEntity $subMerchant)
+    {
+        // partner user should be created for subM: owner role for PG, view_only role for X
+        $partnerUserId = $partner->primaryOwner()->getId();
+        $partnerXUserOnLive = $this->getDbEntities(
+            'merchant_user',
+            ['merchant_id' => $subMerchant->getId(), 'user_id' => $partnerUserId, 'role' => 'view_only', 'product' => 'banking'],
+            'live'
+        );
+        $partnerXUserOnTest = $this->getDbEntities(
+            'merchant_user',
+            ['merchant_id' => $subMerchant->getId(), 'user_id' => $partnerUserId, 'role' => 'view_only', 'product' => 'banking'],
+            'test'
+        );
+        $this->assertCount(0, $partnerXUserOnLive);
+        $this->assertCount(0, $partnerXUserOnTest);
+
+        $partnerPGUserOnLive = $this->getDbEntities(
+            'merchant_user',
+            ['merchant_id' => $subMerchant->getId(), 'user_id' => $partnerUserId, 'role' => 'owner', 'product' => 'primary'],
+            'live'
+        );
+        $partnerPGUserOnTest = $this->getDbEntities(
+            'merchant_user',
+            ['merchant_id' => $subMerchant->getId(), 'user_id' => $partnerUserId, 'role' => 'owner', 'product' => 'primary'],
+            'test'
+        );
+        $this->assertCount(1, $partnerPGUserOnLive);
+        $this->assertCount(1, $partnerPGUserOnTest);
     }
 
     public function testDeleteSwitchMerchantAccessForPartner()
@@ -303,20 +393,19 @@ class MerchantCoreTest extends OAuthTestCase
 
     private function createResellerPartnerAndSubmerchantAndFetchMocks(string $submerchantId = '101submerchant')
     {
-        list($merchantId, $app) = $this->createResellerPartnerAndSubmerchant($submerchantId);
+        list($partnerId, $app, $subMerchant) = $this->createResellerPartnerAndSubmerchant($submerchantId);
+        $oldAppId = $app->getId();
 
         $createParams = [
             'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod',
-            'merchant_id' => $merchantId,
+            'merchant_id' => $partnerId,
             'type' => 'partner'
         ];
-
         $managedAppRequestParams = array_merge(['name' => 'et'], $createParams);
-
         $referredAppRequestParams = array_merge(['name' => 'Referred application'], $createParams);
-
-        $managedAppId = '7fheiryr64ifke';
-        $referredAppId = '9reeiryr64ifke';
+        $managedAppId = 'managedr64ifke';
+        $referredAppId = 'referred64ifke';
+        $this->createManagedAndResellerOAuthApp($partnerId, $managedAppId, $referredAppId);
 
         $this->authServiceMock
             ->expects($this->exactly(3))
@@ -324,28 +413,44 @@ class MerchantCoreTest extends OAuthTestCase
             ->withConsecutive(
                 ['applications', 'POST', $managedAppRequestParams],
                 ['applications', 'POST', $referredAppRequestParams],
-                ['applications/'.$app->getId(), 'PUT', ['merchant_id' => $merchantId]])
+                ['applications/'.$app->getId(), 'PUT', ['merchant_id' => $partnerId]])
             ->willReturnOnConsecutiveCalls($app = ['id'=> $managedAppId], ['id'=> $referredAppId], []);
 
-        return [$merchantId, $managedAppId];
+        return [$partnerId, $oldAppId, $managedAppId, $referredAppId, $subMerchant];
     }
 
-    private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant')
+    private function createManagedAndResellerOAuthApp(string $partnerId, string $managedAppId, string $referredAppId)
     {
-        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller']);
+        $managedAppAttributes = [
+            'merchant_id' => $partnerId,
+            'partner_type'=> 'managed',
+            'id' => $managedAppId,
+            'name' => 'managed'
+        ];
+        $this->fixtures->merchant->createDummyPartnerApp($managedAppAttributes, false);
 
-        $merchantId = $partner->getId();
+        $referredAppAttributes = [
+            'merchant_id' => $partnerId,
+            'partner_type'=> 'referred',
+            'id' => $referredAppId,
+            'name' => 'referred'
+        ];
+        $this->fixtures->merchant->createDummyPartnerApp($referredAppAttributes, false);
+    }
 
-        $this->fixtures->merchant->edit($merchantId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+    private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant', string $appId = 'reseller84ifke')
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller'], ['id' => $appId]);
 
+        $partnerId = $partner->getId();
+        $this->fixtures->merchant->edit($partnerId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
         $this->createConfigForPartnerApp($app->getId());
 
-        $this->createSubMerchant($partner, $app, ['id' => $submerchantId], ['id' => 'J00dqRlTeStNzb']);
+        list($subMerchant, $accessMap) = $this->createSubMerchant($partner, $app, ['id' => $submerchantId], ['id' => 'J00dqRlTeStNzb']);
+        $this->createConfigForPartnerApp($app->getId(), $subMerchant->getId());
 
         $this->ba->adminAuth();
 
-        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller', 'id' => '9reeiryr64ifke']);
-
-        return [$merchantId, $app];
+        return [$partnerId, $app, $subMerchant];
     }
 }

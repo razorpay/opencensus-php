@@ -3,8 +3,10 @@
 namespace RZP\Models\Partner\Config;
 
 use RZP\Exception;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Constants as AppConstants;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -25,6 +27,7 @@ class Repository extends Base\Repository
     /**
      * @param string $appId
      *
+     * @param string|null $mode
      * @return null|Entity
      */
     public function getApplicationConfig(string $appId)
@@ -57,10 +60,10 @@ class Repository extends Base\Repository
      * Fetch default and overridden configs of the OAuth applications
      *
      * @param array $appIds
-     *
+     * @param string|null $mode
      * @return mixed
      */
-    public function fetchAllConfigForApps(array $appIds)
+    public function fetchAllConfigForApps(array $appIds, string $mode = null)
     {
         if (empty($appIds) === true)
         {
@@ -82,12 +85,43 @@ class Repository extends Base\Repository
                   ->whereIn(Entity::ORIGIN_ID, $appIds);
         };
 
-        return $this->newQuery()
-                    ->where($defaultConfig)
-                    ->orWhere($overriddenConfig)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->orderBy(Entity::ID, 'desc')
-                    ->get();
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+        return $query->where($defaultConfig)
+                     ->orWhere($overriddenConfig)
+                     ->orderBy(Entity::CREATED_AT, 'desc')
+                     ->orderBy(Entity::ID, 'desc')
+                     ->get();
+    }
+
+    /**
+     * Fetch default and overridden configs in sync for given applicationIDs.
+     * It fails if data is not in sync in test and live DB.
+     *
+     * @param array $appIds
+     *
+     * @return Base\PublicCollection
+     * @throws LogicException
+     */
+    public function fetchAllConfigsInSyncOrFail(array $appIds) : Base\PublicCollection
+    {
+        $liveEntities = $this->fetchAllConfigForApps($appIds, 'live');
+        $testEntities = $this->fetchAllConfigForApps($appIds, 'test');
+        $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
+        if ($isSynced === true)
+        {
+            return $liveEntities;
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::DATA_MISMATCH_ON_LIVE_AND_TEST,
+                [
+                    'on_live' => $liveEntities,
+                    'on_test' => $testEntities
+                ]
+            );
+            throw new LogicException("Data is not synced on Live and Test DB");
+        }
     }
 
     /**

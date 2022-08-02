@@ -8,7 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 
-class ResellerToAggregatorUpdateJob extends Job
+class BulkMigrateResellerToAggregatorJob extends Job
 {
     const RETRY_INTERVAL    = 300;
 
@@ -16,20 +16,27 @@ class ResellerToAggregatorUpdateJob extends Job
 
     protected $queueConfigKey = 'commission';
 
-    protected $merchantIds;
+    protected $requestParams;
 
-    public function __construct(array $merchantIds)
+    /**
+     * Create a new job instance.
+     * @param $requestParams  array[ 'merchant_id' => string, 'new_auth_create' => bool ]  An associative array containing params to be set in
+     *                                                                                     the requestParams instance variable that is required to run the job
+     *
+     * @return void
+     */
+    public function __construct(array $requestParams)
     {
         parent::__construct();
 
-        $this->merchantIds = $merchantIds;
+        $this->requestParams = $requestParams;
     }
 
     public function handle()
     {
         parent::handle();
 
-        $traceInfo = ['merchant_ids' => $this->merchantIds];
+        $traceInfo = ['request_params' => $this->requestParams];
 
         $this->trace->info(
             TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_JOB_REQUEST,
@@ -40,20 +47,28 @@ class ResellerToAggregatorUpdateJob extends Job
 
         $core = new Merchant\Core;
 
-        foreach ($this->merchantIds as $merchantId) {
+        foreach ($this->requestParams as $param) {
             try
             {
-                $core->updateResellerToAggregator($merchantId);
+                $success = $core->migrateResellerToAggregatorPartner($param);
+                if ($success === false)
+                {
+                    $failedMerchantIds[] = $param['merchant_id'];
+                }
             }
-            catch (\Throwable $e) {
+            catch (\Throwable $e)
+            {
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
                     TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_JOB_FAILED,
-                    ['merchant_id' => $merchantId]
+                    [
+                        'merchant_id' => $param['merchant_id'],
+                        'new_auth_create' => $param['new_auth_create']
+                    ]
                 );
 
-                $failedMerchantIds[] = $merchantId;
+                $failedMerchantIds[] = $param['merchant_id'];
             }
         }
 

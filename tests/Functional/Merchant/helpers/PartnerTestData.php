@@ -2027,7 +2027,7 @@ return [
                     '10000000000000'
                 ],
             ],
-            'url'     => '/merchant/migrate_aggregator_to_reseller/bulk',
+            'url'     => '/partner/migrate_aggregator_to_reseller/bulk',
             'method'  => 'PUT',
         ],
         'response' => [

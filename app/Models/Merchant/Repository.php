@@ -8,6 +8,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Base\Common;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Mode;
@@ -1065,6 +1066,65 @@ class Repository extends Base\Repository
         return $query->firstOrFail();
     }
 
+    /**
+     * @param string $appId
+     *
+     * @param string $partnerId
+     *
+     * @param string|null $mode connection mode
+     *
+     * @return Base\PublicCollection
+     */
+    public function getSubMerchantsForPartnerAndApplication(string $appId, string $partnerId, string $mode = null)
+    {
+        $accessMapRepo = $this->repo->merchant_access_map;
+
+        $accessMapMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+        $accessMapOwnerId    = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
+        $accessMapEntityId   = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+
+        $merchantsId         = $this->dbColumn(Entity::ID);
+
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+
+        return $query->select($this->getTableName() . '.*')
+                     ->join(Table::MERCHANT_ACCESS_MAP, $accessMapMerchantId, $merchantsId)
+                     ->where($accessMapOwnerId, $partnerId)
+                     ->where($accessMapEntityId, $appId)
+                     ->get();
+    }
+
+    /**
+     * Fetch merchants in sync for given appId and partner's MID.
+     * It fails if data is not in sync in test and live DB.
+     *
+     * @param string $appId
+     * @param string $partnerId
+     * @return Base\PublicCollection
+     * @throws LogicException
+     */
+    public function getSubMerchantsForPartnerAndAppInSyncOrFail(string $appId, string $partnerId) : Base\PublicCollection
+    {
+        $liveEntities = $this->getSubMerchantsForPartnerAndApplication($appId, $partnerId, 'live');
+        $testEntities = $this->getSubMerchantsForPartnerAndApplication($appId, $partnerId, 'test');
+        $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
+        if ($isSynced === true)
+        {
+            return $liveEntities;
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::DATA_MISMATCH_ON_LIVE_AND_TEST,
+                [
+                    'on_live' => $liveEntities,
+                    'on_test' => $testEntities
+                ]
+            );
+            throw new LogicException("Data is not synced on Live and Test DB");
+        }
+    }
+
     public function getAllPartnerBankAccountsForSubmerchants(array $submerchantIds): Base\PublicCollection
     {
         // filter mIds so that we get only merchantIds which are mapped to at least one partner
@@ -1550,7 +1610,7 @@ class Repository extends Base\Repository
 
     public function getActivatedSubMInPastDays(string $partnerMerchantId, int $pastDays, int $limit){
         $pastDaysTimestamp        = Carbon::now()->subDays($pastDays)->getTimestamp();
-        
+
         $merchantId               = $this->dbColumn(Entity::ID);
         $activatedAt              = $this->dbColumn(Entity::ACTIVATED_AT);
         $merchantDetailRepo       = $this->repo->merchant_detail;
@@ -1605,7 +1665,7 @@ class Repository extends Base\Repository
     public function getSubmerchantIdsInTerminalStateInPastDays(string $partnerMerchantId, int $pastDays, int $limit)
     {
         $activatedIds = $this->getActivatedSubMInPastDays($partnerMerchantId, $pastDays, $limit);
-        
+
         $rejectedIds = $this->getRejectedSubMInPastDays($partnerMerchantId, $pastDays, $limit);
 
         return array_merge($activatedIds, $rejectedIds);

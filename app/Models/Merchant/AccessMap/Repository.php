@@ -4,12 +4,14 @@ namespace RZP\Models\Merchant\AccessMap;
 
 use DB;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use \RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -205,6 +207,7 @@ class Repository extends Base\Repository
     {
         $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
         $accessMapsEntityType = Table::MERCHANT_ACCESS_MAP . '.' . Entity::ENTITY_TYPE;
+        $accessMapsCreatedAt  = Table::MERCHANT_ACCESS_MAP . '.' . Entity::CREATED_AT;
         $applicationIds       = $this->repo->merchant_application->dbColumn(MerchantApp\Entity::APPLICATION_ID);
         $applicationType      = Table::MERCHANT_APPLICATION . '.' . MerchantApp\Entity::TYPE;
         $applicationDeleted   = Table::MERCHANT_APPLICATION . '.' . MerchantApp\Entity::DELETED_AT;
@@ -216,6 +219,7 @@ class Repository extends Base\Repository
                     ->where($accessMapsEntityType, '=', Entity::APPLICATION)
                     ->where($applicationType, '=', $appType)
                     ->whereNull($applicationDeleted)
+                    ->orderBy($accessMapsCreatedAt, 'asc')
                     ->get();
     }
 
@@ -264,12 +268,45 @@ class Repository extends Base\Repository
                     ->exists();
     }
 
-    public function getAllMappingsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId)
+    public function getAllMappingsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId, string $mode = null)
     {
-        return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, $entityId)
-                    ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
-                    ->get();
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+        return $query->where(Entity::ENTITY_ID, $entityId)
+                     ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
+                     ->orderBy(Entity::ID)
+                     ->get();
+    }
+
+    /**
+     * Fetch merchant access maps in sync for given entityId and entityOwnerId.
+     * It fails if data is not in sync in test and live DB.
+     *
+     * @param string $entityId
+     * @param string $entityOwnerId
+     * @return Base\PublicCollection
+     * @throws LogicException
+     */
+    public function fetchAccessMapsInSyncOrFail(string $entityId, string $entityOwnerId) : Base\PublicCollection
+    {
+        $liveEntities = $this->getAllMappingsByEntityIdAndEntityOwnerId($entityId, $entityOwnerId, 'live');
+        $testEntities = $this->getAllMappingsByEntityIdAndEntityOwnerId($entityId, $entityOwnerId, 'test');
+
+        $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
+        if ($isSynced === true)
+        {
+            return $liveEntities;
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::DATA_MISMATCH_ON_LIVE_AND_TEST,
+                [
+                    'on_live' => $liveEntities,
+                    'on_test' => $testEntities
+                ]
+            );
+            throw new LogicException("Data is not synced on Live and Test DB");
+        }
     }
 
     public function getMerchantIdForSubmerchantsOfAPartner(string $partnerId)

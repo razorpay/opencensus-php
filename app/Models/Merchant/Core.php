@@ -77,7 +77,7 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Jobs\AggregatorToResellerUpdateJob;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
-use RZP\Jobs\ResellerToAggregatorUpdateJob;
+use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Fraud\HealthChecker;
@@ -3551,7 +3551,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates a merchant_application for a given merchant
+     * Creates a merchant_application for a given merchant and applicationId provided
      *
      * @param Entity $merchant
      * @param string $applicationId
@@ -4129,6 +4129,7 @@ class Core extends Base\Core
     }
 
     /**
+     * Creates OAuth application via AuthService for merchant
      * @param Entity $merchant
      * @param array  $appInput
      */
@@ -4225,6 +4226,7 @@ class Core extends Base\Core
      * @param string $ownerId
      * @param Entity $subMerchant
      * @param string|null $product
+     * @param string|null $role
      */
     public function attachSubMerchantUser(string $ownerId, Entity $subMerchant, string $product = null, string $role = null)
     {
@@ -4784,13 +4786,18 @@ class Core extends Base\Core
             });
     }
 
-    protected function isPartnerUserAddedToSubmerchant(Entity $partner, Entity $submerchant): bool
+    protected function isPartnerUserAddedToSubMUser(
+        Entity $partner, Entity $submerchant, string $product, array $roles
+    ): bool
     {
-        $partnerUser = $partner->primaryOwner();
+        $partnerUserId = $partner->primaryOwner()->getId();
+        $subMUserIds = $submerchant->users()
+                                   ->where('product', $product)
+                                   ->whereIn('role', $roles)
+                                   ->get()
+                                   ->getIds();
 
-        $ownerIds = $submerchant->owners->getIds();
-
-        return (in_array($partnerUser->getId(), $ownerIds, true) === true);
+        return (in_array($partnerUserId, $subMUserIds, true) === true);
     }
 
     /**
@@ -4809,7 +4816,7 @@ class Core extends Base\Core
             return;
         }
 
-        if ($this->isPartnerUserAddedToSubmerchant($partner, $submerchant) === false)
+        if ($this->isPartnerUserAddedToSubMUser($partner, $submerchant, Product::PRIMARY, [Role::OWNER]) === false)
         {
             // Attaches partners's user to the submerchant account as an owner
             $this->attachSubMerchantUser($partner->primaryOwner()->getId(), $submerchant);
@@ -7736,7 +7743,9 @@ class Core extends Base\Core
             (new PartnerConfigCore())->updateApplicationsForPartnerConfigs($existingAppId, $updatedAppId);
         }
 
-        (new AccessMap\Core())->updateApplicationsByEntityIdAndEntityOwnerId($existingAppId, $merchantId, $updatedAppId);
+        $accessMaps = $this->repo->merchant_access_map->getAllMappingsByEntityIdAndEntityOwnerId($existingAppId, $merchantId);
+
+        (new AccessMap\Core())->updateApplications($accessMaps, $updatedAppId);
 
         $this->updateWebhooksForApplication($existingAppId, $updatedAppId);
     }
@@ -7770,38 +7779,72 @@ class Core extends Base\Core
         }
     }
 
-    public function bulkConvertResellerToAggregatorPartner(array $merchantIds)
+    public function bulkMigrateResellerToAggregatorPartner(array $input)
     {
-        $traceInfo = ['merchant_ids' => $merchantIds];
+        $traceInfo = ['params' => $input];
 
-        $this->trace->info(TraceCode::BULK_CONVERT_RESELLER_TO_AGGREGATOR_REQUEST, $traceInfo);
+        $this->trace->info(TraceCode::BULK_MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST, $traceInfo);
 
-        ResellerToAggregatorUpdateJob::dispatch($merchantIds);
+        $batches = array_chunk($input['data'], $input['batch_size']);
+        foreach ($batches as $batch)
+        {
+            BulkMigrateResellerToAggregatorJob::dispatch($batch);
+        }
 
-        $this->trace->info(TraceCode::BULK_CONVERT_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
+        $this->trace->info(TraceCode::BULK_MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
     }
 
-    public function updateResellerToAggregator(string $merchantId)
+    /**
+     * Acquires mutex lock on reseller partner's merchantID and migrates to aggregator partner
+     *
+     * @param   $input array [ "merchant_id" => string, "new_auth_create" => bool ]
+     * @return  bool
+     * @throws  Throwable It will throw an error when updating of partner mapping fails
+     */
+    public function migrateResellerToAggregatorPartner($input)
     {
+        (new Validator)->validateInput('resellerToAggregatorMigration', $input);
+
+        $merchantId = $input['merchant_id'];
+        $newAuthCreate = $input['new_auth_create'];
         $mutex = App::getFacadeRoot()['api.mutex'];
 
         $mutexKey = Constants::RESELLER_TO_AGGREGATOR_UPDATE.$merchantId;
 
         return $mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($merchantId)
+            function() use ($merchantId, $newAuthCreate)
             {
-                return $this->processUpdateResellerToAggregator($merchantId);
+                if ($newAuthCreate)
+                {
+                    $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST_WITH_NEW_AUTH);
+                    return $this->updateResellerToAggregatorWithNewAuth($merchantId);
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST_WITH_OLD_AUTH);
+                    return true;
+                }
             },
             Constants::RESELLER_TO_AGGREGATOR_UPDATE_LOCK_TIME_OUT,
-            ErrorCode::BAD_REQUEST_RESELLER_TO_AGGREGATOR_MIGRATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_RESELLER_TO_AGGREGATOR_MIGRATION_IN_PROGRESS
+        );
     }
 
-    private function processUpdateResellerToAggregator(string $merchantId)
+    /**
+     * validates partner's existing details and creates supporting entities as required
+     *
+     * @param   string  $merchantId
+     *
+     * @return  bool
+     * @throws  Exception\LogicException|Throwable
+     */
+    private function updateResellerToAggregatorWithNewAuth(string $merchantId)
     {
         $this->trace->info(
             TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_REQUEST,
-            ['merchant_id' => $merchantId]);
+            [ 'merchant_id' => $merchantId ]
+        );
 
         $merchant = $this->repo->merchant->find($merchantId);
 
@@ -7809,59 +7852,190 @@ class Core extends Base\Core
         {
             $this->trace->info(
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_PARTNER,
-                ['merchant_id' => $merchantId]);
-
-            return;
+                ['merchant_id' => $merchantId]
+            );
+            return false;
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
+        $result = $this->validateAndCreateSupportingEntities($merchant);
+
+        if ($result === true)
         {
-            $merchantApplicationsCore = new MerchantApplicationsCore();
+            $this->trace->info(
+                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
+                ['merchant_id' => $merchantId]
+            );
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR,
+                ['merchant_id' => $merchantId]
+            );
+        }
+        return $result;
+    }
 
-            $applications = $merchantApplicationsCore->getMerchantAppIds($merchant->getId());
-
+    /**
+     * Validates existing entities on live and test DB and creates supporting entities to migrate reseller to aggregator
+     * @param   Entity  $merchant
+     *
+     * @return  bool
+     *
+     * @throws  Exception\LogicException
+     * @throws  Throwable
+     */
+    private function validateAndCreateSupportingEntities(Merchant\Entity $merchant) : bool
+    {
+        try
+        {
+            $applications = $this->repo->merchant_application->fetchMerchantApplicationsInSyncOrFail($merchant->getId());
             if (count($applications) > 1)
             {
-                $this->trace->info(TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_APPLICATIONS, [
-                        'applications' => $applications
+                $this->trace->info(
+                    TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_APPLICATIONS,
+                    [ 'applications' => $applications ]
+                );
+                return false;
+            }
+            $existingAppId = $applications[0]->getApplicationId();
+
+            $configs = $this->repo->partner_config->fetchAllConfigsInSyncOrFail([$existingAppId]);
+            $defaultConfig = $this->filterDefaultConfig($configs);
+            $accessMaps = $this->repo->merchant_access_map->fetchAccessMapsInSyncOrFail(
+                $existingAppId, $merchant->getId()
+            );
+            $subMs = $this->repo->merchant->getSubMerchantsForPartnerAndAppInSyncOrFail($existingAppId, $merchant->getId());
+
+            return $this->createAndUpdateSupportingEntities(
+                $merchant, $existingAppId, $defaultConfig, $accessMaps, $subMs
+            );
+        }
+        catch (Exception\LogicException $e)
+        {
+            $this->trace->error(TraceCode::RESELLER_TO_AGGREGATOR_DATA_MISMATCH);
+            throw $e;
+        }
+    }
+
+    private function filterDefaultConfig($configs)
+    {
+        return $configs->where(PartnerConfig\Entity::ENTITY_TYPE, 'application')
+                        ->whereNull(PartnerConfig\Entity::ORIGIN_ID)
+                        ->whereNull(PartnerConfig\Entity::ORIGIN_ID)
+                        ->first();
+    }
+
+    /**
+     * Creates new application for aggregator.
+     * Updates partner configs for application.
+     * Assigns submerchants dashboard access to aggregator partners.
+     * Deletes old OAuth and Merchant application for reseller partner.
+     *
+     * @param   Entity                  $merchant       the reseller partner
+     * @param   string                  $existingAppId  the existing referred application ID
+     * @param   PartnerConfig\Entity    $defaultConfig  the default partner config for the referred app
+     * @param   PublicCollection        $accessMaps     the existing access maps for sub-merchants
+     * @param   PublicCollection        $subMerchants   the sub-merchants of reseller partner
+     *
+     * @return  bool
+     *
+     * @throws  Exception\LogicException
+     * @throws  Throwable
+     */
+    private function createAndUpdateSupportingEntities(
+        Merchant\Entity $merchant, string $existingAppId, PartnerConfig\Entity $defaultConfig,
+        Base\PublicCollection $accessMaps, Base\PublicCollection $subMerchants
+    ): bool
+    {
+        try
+        {
+            $this->repo->transactionOnLiveAndTest(function () use (
+                $merchant, $existingAppId, $defaultConfig, $accessMaps, $subMerchants
+            )
+            {
+                $managedAppId = $this->createPartnerAndMerchantApplication(
+                    $merchant, [], MerchantApplicationsEntity::MANAGED
+                );
+                $referredAppId = $this->createPartnerAndMerchantApplication(
+                    $merchant,
+                    [OAuthApp\Entity::NAME => Entity::REFERRED_APPLICATION],
+                    MerchantApplicationsEntity::REFERRED
+                );
+                $this->createPartnerConfigFromExistingConfig($merchant, $defaultConfig, $referredAppId);
+                $this->trace->info(TraceCode::RESELLER_TO_AGGREGATOR_APPLICATION_CREATED, [
+                        'old_application_id' => $existingAppId,
+                        'new_application_ids' => [$managedAppId, $referredAppId]
                     ]
                 );
 
-                return;
-            }
+                (new PartnerConfigCore())->updateApplicationsForPartnerConfigs($existingAppId, $managedAppId);
+                (new AccessMap\Core())->updateApplications($accessMaps, $managedAppId);
+                if ($subMerchants !== null)
+                {
+                    $this->assignDashboardAccessForSubmerchants($merchant, $subMerchants);
+                }
 
-            $existingAppId = $applications[0];
-
-            $managedAppId = $this->createPartnerAndMerchantApplication($merchant, [], MerchantApplicationsEntity::MANAGED);
-
-            $referredAppId = $this->createPartnerAndMerchantApplication(
-                $merchant,
-                [OAuthApp\Entity::NAME => Entity::REFERRED_APPLICATION],
-                MerchantApplicationsEntity::REFERRED);
-
-            $this->createPartnerConfigFromExistingConfig($merchant, $existingAppId, $referredAppId);
-
-            $this->trace->info(TraceCode::RESELLER_TO_AGGREGATOR_APPLICATION_CREATED, [
-                    'old_application_id' => $existingAppId,
-                    'new_application_ids' => [$managedAppId, $referredAppId]
-                ]
+                $merchant->setPartnerType(Constants::AGGREGATOR);
+                $this->repo->merchant->saveOrFail($merchant);
+                app('authservice')->deleteApplication($existingAppId, $merchant->getId());
+            });
+        } catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR,
+                [ 'error' => $e ]
             );
-
-            $this->updateExistingApplicationMappings($merchant->getId(), $existingAppId, $managedAppId, true);
-
-            $merchant->setPartnerType(Constants::AGGREGATOR);
-
-            $this->repo->merchant->saveOrFail($merchant);
-
-            $this->deletePartnerAppForIds($merchant->getId(), [$existingAppId]);
-        });
-
-        $this->trace->info(
-            TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_PARTNER_SUCCESS,
-            ['merchant_id' => $merchantId]);
+            throw $e;
+        }
+        return true;
     }
 
-    private function createPartnerAndMerchantApplication(Entity $merchant, array $appInput, string $appType)
+    /**
+     * This function creates partner's MerchantUser entries for subMerchants based on product is Primary or Banking.
+     *
+     * @param   Entity              $partner
+     * @param   PublicCollection    $subMerchants
+     *
+     * @return  void
+     */
+    private function assignDashboardAccessForSubmerchants(
+        Merchant\Entity $partner, Base\PublicCollection $subMerchants
+    )
+    {
+        foreach ($subMerchants as $subMerchant)
+        {
+            if ($this->isPartnerUserAddedToSubMUser($partner, $subMerchant, Product::PRIMARY, [Role::OWNER]) === false)
+            {
+                // Attaches partners's user to the submerchant account with owner role
+                $this->attachSubMerchantUser($partner->primaryOwner()->getId(), $subMerchant, Product::PRIMARY);
+            }
+            if (
+                ($subMerchant->primaryOwner(Product::BANKING) !== null) and
+                ($this->isPartnerUserAddedToSubMUser(
+                    $partner, $subMerchant, Product::BANKING, [Role::OWNER, Role::VIEW_ONLY]
+                    ) === false)
+            )
+            {
+                // Attaches partners's user to the submerchant Banking account with view_only role
+                $this->attachSubMerchantUser(
+                    $partner->primaryOwner()->getId(), $subMerchant,
+                    Product::BANKING, User\Role::VIEW_ONLY
+                );
+            }
+        }
+    }
+
+    /**
+     * This function creates OAuth application and merchant application for given merchant and appType.
+     *
+     * @param   Entity  $merchant
+     * @param   array   $appInput
+     * @param   string  $appType
+     *
+     * @return  string
+     */
+    private function createPartnerAndMerchantApplication(Entity $merchant, array $appInput, string $appType) : string
     {
         $app = $this->createPartnerApp($merchant, $appInput);
 
@@ -7870,14 +8044,21 @@ class Core extends Base\Core
         return $app[OAuthApp\Entity::ID];
     }
 
-    private function createPartnerConfigFromExistingConfig(Entity $merchant, string $existingAppId, string $appId)
+    /**
+     * This function clones existing config and creates new ones for given appId and merchant.
+     *
+     * @param   Entity                  $merchant
+     * @param   PartnerConfig\Entity    $existingConfig // Existing config to clone from
+     * @param   string                  $appId // ApplicationId to update the partner config
+     *
+     * @return  void
+     */
+    private function createPartnerConfigFromExistingConfig(
+        Merchant\Entity $merchant, Partner\Config\Entity $existingConfig, string $appId
+    )
     {
-        $existingConfig = $this->repo->partner_config->getApplicationConfig($existingAppId);
-
-        $application = (new OAuthApp\Repository())->findOrFail($appId);
-
         $config = (new PartnerConfigCore())->getClonedPartnerConfig($existingConfig, []);
-
+        $application = (new OAuthApp\Repository())->findOrFail($appId);
         $this->createPartnerConfig($application, $merchant, $config);
     }
 

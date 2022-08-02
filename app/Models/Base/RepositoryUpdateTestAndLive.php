@@ -266,6 +266,28 @@ trait RepositoryUpdateTestAndLive
         return [$liveEntity, $testEntity];
     }
 
+    public function areEntitiesSyncOnLiveAndTest($entitiesOnLive, $entitiesOnTest) : bool
+    {
+        if ((!is_null($entitiesOnLive) and is_null($entitiesOnTest)) or
+            (is_null($entitiesOnLive) and !is_null($entitiesOnTest)) or
+            (count($entitiesOnLive) !== count($entitiesOnTest)))
+        {
+            return false;
+        }
+
+        $count = count($entitiesOnLive);
+        for ($i=0; $i<$count; $i++)
+        {
+            try {
+                $this->validateEntitiesMatch($entitiesOnLive[$i], $entitiesOnTest[$i]);
+            } catch (Exception\LogicException $e)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected function validateEntitiesMatch($liveEntity, $testEntity)
     {
         $testAttributes = $testEntity->getAttributes();

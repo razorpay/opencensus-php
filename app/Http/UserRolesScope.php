@@ -366,6 +366,7 @@ class UserRolesScope
             'fd_fetch_tickets'                              => Role::ALL_ROLES,
             'fd_post_ticket_reply'                          => Role::ALL_ROLES,
             'fd_reserve_balance_ticket_status'              => Role::ALL_ROLES,
+            'migrate_reseller_to_aggregator'                => [Role::ADMIN, Role::OWNER, Role::MANAGER],
             'fetch_merchant_balance_configs'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SELLERAPP, Role::SUPPORT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::AGENT,],
             'fetch_merchant_escalation'                     => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::FINANCE, Role::SUPPORT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::AGENT,],
             'fetch_order_line_items'                        => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS],

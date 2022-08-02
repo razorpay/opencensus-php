@@ -455,10 +455,15 @@ class Core extends Base\Core
         return $this->repo->merchant_access_map->findMerchantAccessMapOnEntityIds($merchantId, $finalAppIds, 'application');
     }
 
-    public function updateApplicationsByEntityIdAndEntityOwnerId(string $entityId, string $entityOwnerId, string $newAppId)
+    /**
+     * This function updates the application for all accessMaps with provided new application id.
+     *
+     * @param Base\PublicCollection $accessMaps the merchant access maps to be updated
+     * @param string                $newAppId   new application ID to update
+     * @return void
+     */
+    public function updateApplications(Base\PublicCollection $accessMaps, string $newAppId)
     {
-        $accessMaps = $this->repo->merchant_access_map->getAllMappingsByEntityIdAndEntityOwnerId($entityId, $entityOwnerId);
-
         foreach ($accessMaps as $accessMap) {
             $accessMap->setEntityId($newAppId);
         }

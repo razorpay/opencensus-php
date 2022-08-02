@@ -10021,11 +10021,70 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function bulkConvertResellerToAggregatorPartner(array $input)
+    /**
+     * bulk migrates reseller partners to aggregator partners by pushing jobs
+     *
+     * @param $input {
+     *                  "data" => array({ "merchant_id" => <merchantID>, "new_auth_create" => <Boolean> }),
+     *                  "batch_size" => <Int>
+     *              }
+     * @return mixed
+     * @throws Throwable
+     */
+    public function bulkMigrateResellerToAggregatorPartner(array $input)
     {
-        $merchantIds = $input['merchant_ids'];
+        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.product_config_issue_exp_id'),
+        ];
+        $isExperimentEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
 
-        return $this->core()->bulkConvertResellerToAggregatorPartner($merchantIds);
+        if ($isExperimentEnabled === false)
+        {
+            return ['success' => true, 'errorMessage' => null];
+        }
+        return $this->core()->bulkMigrateResellerToAggregatorPartner($input);
+    }
+
+    /**
+     * migrates a single reseller partner to aggregator partner
+     *
+     * @param $input { "merchant_id" => <merchantID>, "new_auth_create" => Boolean }
+     * @return mixed
+     * @throws Throwable
+     */
+    public function migrateResellerToAggregatorPartner($input)
+    {
+        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.product_config_issue_exp_id'),
+        ];
+        $isExperimentEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($isExperimentEnabled === false)
+        {
+            return ['success' => true, 'errorMessage' => null];
+        }
+
+        $traceInfo = ['params' => $input];
+        $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST, $traceInfo);
+        $result = null;
+
+        try
+        {
+            $result = $this->core()->migrateResellerToAggregatorPartner($input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR, $traceInfo);
+            throw $e;
+        }
+
+        $traceInfo = ['success' => $result, 'errorMessage' => null];
+        $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
+        return $traceInfo;
     }
 
     private function getMerchantTransactionsInLastMonth()

@@ -333,6 +333,11 @@ class Validator extends Base\Validator
         'es_enabled'                => 'sometimes|boolean',
     ];
 
+    protected static $resellerToAggregatorMigrationRules = [
+        'merchant_id'     => 'required|alpha_num|size:14',
+        'new_auth_create' => 'required|boolean',
+    ];
+
     protected static $addTagsRules = [
         'tags'   => 'required|array',
         'tags.*' => 'required|string',
