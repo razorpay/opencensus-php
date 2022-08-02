@@ -21,7 +21,12 @@ import { REQUESTABLE, GREYED } from '../constants';
 //Components
 import ApmOnboarding from './ApmOnboarding';
 import InstrumentContainer from './InstrumentContainer/index';
-import { trackInstrumentsRequested } from './ApmOnboarding/analytics';
+import {
+  trackInstrumentsRequested,
+  trackDataSaving,
+  trackDataSaveError,
+  trackDataSaveSuccess,
+} from './ApmOnboarding/analytics';
 
 //Functions
 const track = ({ properties, ...args }) => {
@@ -97,20 +102,23 @@ const InstantBankTransfer = ({
   const onInstrumentButtonClick = async (instrument) => {
     if (isSubmitted) {
       try {
+        trackActivateClicked(true, false, true);
+        trackDataSaving(true, null, true);
         const data = transformApiBody(instrument?.name?.toLowerCase());
         await saveForm(data, setFormData);
         showNotification({
           type: 'success',
           message: 'Request has been successfully created!',
         });
-        trackActivateClicked(true, false, true);
-        trackInstrumentsRequested([instrument?.name]);
         refreshEntries(history);
+        trackDataSaveSuccess(null, null, true);
+        trackInstrumentsRequested([instrument?.name]);
       } catch (error) {
         showNotification({
           type: 'error',
           message: error?.errors,
         });
+        trackDataSaveError(null, true, error?.errors);
       }
     } else {
       onRequest();
