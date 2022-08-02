@@ -351,8 +351,6 @@ class DisputeTest extends TestCase
 
     public function testDisputeCreateWithDeductAdjustmentRecoveryMethodWithoutEnoughBalance()
     {
-        $this->fixtures->merchant->addFeatures(['allow_negative_dispute']);
-
         $payment = $this->fixtures->create('payment:captured');
 
         $this->fixtures->refund->createFromPayment(['payment' => $payment]);
@@ -609,8 +607,6 @@ class DisputeTest extends TestCase
             [
                 'balance'      => 0,
             ]);
-
-        $this->fixtures->merchant->addFeatures(['allow_negative_dispute']);
 
         $this->runRequestResponseFlow($data);
 

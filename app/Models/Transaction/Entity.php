@@ -1097,8 +1097,7 @@ class Entity extends Base\PublicEntity
     {
         if(($this->isTypeAdjustment()) and
             (method_exists($this->source, 'isDispute') === true) and
-            ($this->source->isDispute() === true) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NEGATIVE_DISPUTE) === true))
+            ($this->source->isDispute() === true))
         {
             return true;
         }

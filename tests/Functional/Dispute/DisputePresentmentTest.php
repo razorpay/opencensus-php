@@ -870,8 +870,6 @@ class DisputePresentmentTest extends TestCase
 
     public function testAcceptDisputeRecoveryViaAdjustmentFail()
     {
-        $this->fixtures->merchant->addFeatures(['allow_negative_dispute']);
-
         $this->setUpForInitiateDraftEvidenceTest();
 
         $this->fixtures->edit('balance', '10000000000000', [
