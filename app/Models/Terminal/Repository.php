@@ -499,7 +499,7 @@ class Repository extends Base\Repository
 
     public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false)
     {
-        $query =  $this->newQuery()
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
                        ->where(Entity::GATEWAY, '=', $gateway);
 
         foreach ($terminalData as $key => $value)
