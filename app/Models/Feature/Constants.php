@@ -787,6 +787,7 @@ class Constants
     const WHITE_LABELLED_STORES                  = 'white_labelled_stores';
     const WHITE_LABELLED_OFFERS                  = 'white_labelled_offers';
     const WHITE_LABELLED_CHECKOUT_REWARDS        = 'white_labelled_chk_reward';
+    const CROSS_ORG_LOGIN                        = 'cross_org_login';
 
     /*
      * Org level feature to hide activation form by deafult
@@ -2000,6 +2001,7 @@ class Constants
         self::RAZORPAY_SECURE_MERCHANT        => true,
         self::RBL_BANK_LMS_DASHBOARD          => true,
         self::FK_NEW_ERROR_RESPONSE           => true,
+        self::CROSS_ORG_LOGIN                 => true,
     ];
 
     // Entity type constants

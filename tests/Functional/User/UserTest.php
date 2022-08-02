@@ -1122,6 +1122,90 @@ class UserTest extends TestCase
         $this->assertFalse(isset($response['merchants'][0]['methods']));
     }
 
+    public function testLoginWithCrossOrgLoginDisable()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
+
+        $this->fixtures->create('org', [
+            OrgEntity::ID                          => '100000tazorpay',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::ORG_ID => '100000tazorpay',
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+    }
+
+    public function testLoginWithCrossOrgLoginEnable()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $user = $this->fixtures->create('user', ['password' => 'hello123']);
+
+        $this->fixtures->create('org', [
+            OrgEntity::ID                          => '100000tazorpay',
+        ]);
+
+        $merchant = $this->fixtures->create('merchant', [
+            MerchantEntity::ORG_ID => '100000tazorpay',
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::CROSS_ORG_LOGIN], $merchant->getId());
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+            'browser_details'       => ['device' => 'Web', 'browser' => 'Chrome', 'os' => 'Windows 7']
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+    }
+
     protected function createAndFetchMocks()
     {
         $mockMC = $this->getMockBuilder(MerchantCore::class)

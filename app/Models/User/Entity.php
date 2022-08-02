@@ -5,6 +5,7 @@ use App;
 use Hash;
 use RZP\Models\Base;
 use RZP\Models\Admin;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Constants\Table;
@@ -13,6 +14,7 @@ use RZP\Models\Admin\Role;
 use RZP\Models\Invitation;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Feature\Constants as Features;
 
 class Entity extends Base\PublicEntity
 {
@@ -599,11 +601,25 @@ class Entity extends Base\PublicEntity
     {
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1);
-        $merchants = (new Merchant\Repository)->findMany($merchantIds)->where(Merchant\Entity::ORG_ID, $orgId);
-        if(empty($merchants) === false)
+        $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
+
+        $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
+
+        $merchants = (new Merchant\Repository)->findMany($merchantIds);
+
+        $filteredMerchants = new Base\PublicCollection;
+
+        foreach ($merchants as $merchant)
         {
-            return $merchants[0];
+            if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
+            {
+                $filteredMerchants->add($merchant);
+            }
+        }
+
+        if(empty($filteredMerchants) === false)
+        {
+            return $filteredMerchants[0];
         }
         else
         {

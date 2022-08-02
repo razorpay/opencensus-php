@@ -45,6 +45,7 @@ use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Mail\User\OtpSignup as OtpSignup;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
@@ -3211,23 +3212,39 @@ class Core extends Base\Core
         // - So the fix will be bypassed for apple watch calling user_fetch_self
         // - For other use cases, the fix will be present.
 
-        $orgId = $this->app['basicauth']->getOrgId() ;
+        $orgId = $this->app['basicauth']->getOrgId();
 
         if(empty($orgId) === true)
         {
             $orgId = Org\Entity::RAZORPAY_ORG_ID;
         }
 
-        if($this->app['basicauth']->isAppleWatchApp() === true or $orgId === Org\Entity::BAJAJ_ORG_SIGNED_ID)
+        $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+
+
+        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+
+        $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
+
+        $filteredMerchants = new Base\PublicCollection;
+
+        if($this->app['basicauth']->isAppleWatchApp() === true or $orgId === Org\Entity::BAJAJ_ORG_ID)
         {
-            $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+            $filteredMerchants = $merchantEntities;
         }
         else
         {
-            $merchantEntities = $user->merchantsForOrg($orgId)->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+            foreach ($merchantEntities as $merchant)
+            {
+                if ($merchant->getOrgID() === $orgId or in_array($merchant->getId(), $merchantIdsWithCrossOrgFeature, true) === true)
+                {
+                    $filteredMerchants->add($merchant);
+                }
+            }
         }
 
-        $merchants = $merchantEntities->callOnEveryItem('toArrayUser');
+        $merchants = $filteredMerchants->callOnEveryItem('toArrayUser');
 
         $merchantsUnique = $this->getUnifiedMerchants($merchants);
 
