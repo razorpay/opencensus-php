@@ -176,6 +176,27 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this->esFetchParams;
     }
 
+    public function redactSensitiveInformation($array, $sensitiveKeys)
+    {
+        foreach ($array as $key => $item)
+        {
+            if (in_array($key, $sensitiveKeys, true) === true)
+            {
+                $array[$key] = '***';
+
+                return $array;
+            }
+            elseif (is_array($item))
+            {
+                $redactedArray = $this->redactSensitiveInformation($item, $sensitiveKeys);
+
+                $array[$key] = $redactedArray;
+            }
+        }
+
+        return $array;
+    }
+
     /**
      * @param array       $params
      * @param string|null $merchantId
@@ -190,7 +211,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
 
-        $this->trace->info(TraceCode::ES_REQUEST_PARAMS, $esRequestParams);
+        $sensitiveKeys = ['email', 'contact', 'customer_email', 'customer_contact'];
+
+        $this->trace->info(TraceCode::ES_REQUEST_PARAMS, $this->redactSensitiveInformation($esRequestParams, $sensitiveKeys));
 
         return $this->esDao->search($esRequestParams);
     }

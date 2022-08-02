@@ -51,6 +51,7 @@ class Service extends Base\Service
     const TO_MODE                    = 'to_mode';
     const FIELDS_TO_SYNC             = 'fields_to_sync';
     const WHATSAPP_ENTITY_PREFIX_REG = '/^whatsapp_/';
+    const SENSITIVE_KEYS_TO_BE_REDACTED = ['email', 'contact', 'customer_email', 'customer_contact'];
 
     public function getAllEntities($input, $isExternalAdmin = false)
     {
@@ -482,9 +483,22 @@ class Service extends Base\Service
         return $currentAdmins;
     }
 
+    public function redactInput($data, $sensitiveKeys)
+    {
+        foreach ($sensitiveKeys as $sensitiveKey)
+        {
+            if (array_key_exists($sensitiveKey, $data))
+            {
+                $data[$sensitiveKey] = '***';
+            }
+        }
+
+        return $data;
+    }
+
     public function fetchMultipleEntities($entity, $input, $isExternalAdmin = false)
     {
-        $data = ["function" => "fetchMultipleEntities", "entity" => $entity, "input" => $input];
+        $data = ["function" => "fetchMultipleEntities", "entity" => $entity, "input" => $this->redactInput($input, self::SENSITIVE_KEYS_TO_BE_REDACTED)];
 
         $this->app['trace']->info(TraceCode::FETCH_MULTIPLE_ENTITIES, $data);
 
