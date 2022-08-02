@@ -113,7 +113,15 @@ class Activate extends Base\Core
             $merchant->getValidator()->validateHasBankAccount();
         }
 
-        $merchant->enableReceiptEmails();
+        if($merchant->org->isDisableDefaultEmailReceipt() === true)
+        {
+            $merchant->disableReceiptEmails();
+        }
+
+        else
+        {
+            $merchant->enableReceiptEmails();
+        }
 
         // set methods before activating
         $merchant->setDefaultMethodsBasedOnCategory();
@@ -201,7 +209,15 @@ class Activate extends Base\Core
 
         $this->validateMethodsAndPricing($merchant);
 
-        $merchant->enableReceiptEmails();
+        if($merchant->org->isDisableDefaultEmailReceipt() === true)
+        {
+            $merchant->disableReceiptEmails();
+        }
+
+        else
+        {
+            $merchant->enableReceiptEmails();
+        }
 
         // set methods before activating
         $merchant->setDefaultMethodsBasedOnCategory();
