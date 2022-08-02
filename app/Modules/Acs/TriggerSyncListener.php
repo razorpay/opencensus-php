@@ -2,6 +2,7 @@
 
 namespace RZP\Modules\Acs;
 
+use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Queue\Events\JobProcessed as QueueJobProcessed;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Metric;
@@ -72,6 +73,10 @@ class TriggerSyncListener
             }
             $jobName = str_replace('\\', '_', $jobName);
             $metadata[Metric::LABEL_ASYNC_JOB_NAME] = $jobName;
+        }
+        elseif(is_a($event, CommandFinished::class))
+        {
+            $metadata[Metric::LABEL_ASYNC_JOB_NAME] = 'CommandFinished';
         }
         else
         {
