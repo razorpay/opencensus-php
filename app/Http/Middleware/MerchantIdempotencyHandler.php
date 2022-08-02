@@ -79,7 +79,8 @@ class MerchantIdempotencyHandler
     public function handle(Request $request, Closure $next)
     {
         //
-        // Handling this only for strictly private auth requests for now.
+        // Handling this only for strictly private auth requests for now with
+        // exception of route direct transfer api.
         // Will explore handling this for others as well, later.
         // Update:
         // Vendor Payments app will be using Idempotency feature to
@@ -90,7 +91,8 @@ class MerchantIdempotencyHandler
             ($this->basicauth->isPayoutLinkApp() === false) and
             ($this->basicauth->isAccountsReceivableApp() === false) and
             ($this->basicauth->isSettlementsApp() === false) and
-            ($this->basicauth->isXPayrollApp() === false))
+            ($this->basicauth->isXPayrollApp() === false) and
+            ($this->basicauth->isRouteDirectTransferRequest() === false))
         {
             return $next($request);
         }
@@ -121,9 +123,11 @@ class MerchantIdempotencyHandler
 
         $mutexKey = $idempotencyKey . $merchant->getId();
 
+        $errorCode = $this->getErrorCodeForMutexLock();
+
         $lockResponse = $this->mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($idempotencyKey, $request, $merchant, $next)
+            function() use ($idempotencyKey, $request, $merchant, $next, $errorCode)
             {
                 /** @var Entity $idempotencyEntity */
                 $idempotencyEntity = $this->repo->idempotency_key->findByIdempotencyKeyAndMerchant($idempotencyKey,
@@ -165,10 +169,19 @@ class MerchantIdempotencyHandler
                 return $next($request);
             },
             static::MUTEX_LOCK_TTL,
-            ErrorCode::SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY
+            $errorCode
         );
 
         return $lockResponse;
+    }
+
+    protected function getErrorCodeForMutexLock()
+    {
+        if ($this->route->httpStatusCodeConflictForIdempotency() === true)
+        {
+            return ErrorCode::BAD_REQUEST_CONFLICT_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY;
+        }
+        return ErrorCode::SERVER_ERROR_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY;
     }
 
     protected function createIdempotencyKeyEntity(Request $request, string $idempotencyKey, Merchant\Entity $merchant)

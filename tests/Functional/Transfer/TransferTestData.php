@@ -1,5 +1,6 @@
 <?php
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -721,6 +722,117 @@ return [
             'content' => [
                 'amount'    => 200,
             ],
+        ],
+    ],
+
+    'testCreateDirectTransferWithIKeyHeader' => [
+        'request'   => [
+            'method'   => 'POST',
+            'url'      => '/transfers',
+            'content'   => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response'  =>  [
+            'content' => [
+                'entity' => 'transfer',
+                'status' => 'processed',
+                'source' => 'acc_10000000000000',
+                'recipient' => 'acc_10000000000001',
+                'amount' => 1000,
+                'currency' => 'INR',
+                'notes' =>  [
+                                'order_info' => 'random_string',
+                                'version' => 2,
+                                'roll_no' => 'iec2011025',
+                                'student_name' => 'student',
+                            ],
+                'linked_account_notes' =>
+                    [
+                        'roll_no',
+                        'student_name',
+                    ],
+                'on_hold' => true,
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+    ],
+
+    'testCreateDirectTransferWithIKeyInProgress' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/transfers',
+            'server'  => [
+                'HTTP_X-Transfer-Idempotency'  => 'unique-ikey'
+            ],
+            'content' => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Request failed because another request is in progress with the same Idempotency Key',
+                    'reason'      => 'transfer_request_with_same_idempotency_key_in_progress'
+                ],
+            ],
+            'status_code' => 409,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONFLICT_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY,
+        ],
+    ],
+
+    'testCreateTwoDirectTransfersWithSameIKeyDiffRequest' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/transfers',
+            'content' => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 2000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'Same Ikey with different request body',
+                    'version'       => 3,
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Different request body sent for the same Idempotency Header',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
         ],
     ],
 ];

@@ -1767,6 +1767,11 @@ class BasicAuth
         return (in_array($this->getInternalApp(), self::DASHBOARD_APPS, true) === true);
     }
 
+    public function isRouteDirectTransferRequest()
+    {
+        return ($this->app['api.route']->getCurrentRouteName() === 'transfer_create');
+    }
+
     public function isXDashboardApp()
     {
         return (in_array($this->getInternalApp(), self::X_DASHBOARD_APPS, true) === true);

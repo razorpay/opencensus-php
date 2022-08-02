@@ -8,9 +8,11 @@ use Mockery;
 use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
+use RZP\Http\RequestHeader;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
+use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -1495,14 +1497,14 @@ class TransferTest extends TestCase
 
                     if ($this->cpsCount === 1)
                     {
-                        $this->assertEquals($data['amount_transferred'], 1000);    
+                        $this->assertEquals($data['amount_transferred'], 1000);
                     }
 
                     if ($this->cpsCount === 2)
                     {
-                        $this->assertEquals($data['amount_transferred'], 800);    
+                        $this->assertEquals($data['amount_transferred'], 800);
                     }
-                    
+
                     return [];
                 }
 
@@ -1843,5 +1845,106 @@ class TransferTest extends TestCase
         }
 
         $this->assertArraySelectiveEquals($expectedTxn, $txn);
+    }
+
+    public function testCreateDirectTransferWithIKeyHeader($ikeyValue = 'unique-ikey', $amount = null)
+    {
+        $headers = [
+            'HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY => $ikeyValue,
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        if (empty($amount) === false)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['amount'] = $amount;
+        }
+
+        $this->ba->privateAuth();
+
+        $transfer = $this->startTest();
+
+        $ikey = $this->getDbLastEntity(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertEquals($transfer['id'], 'trf_' . $ikey->getSourceId());
+        $this->assertEquals($ikeyValue, $ikey->getIdempotencyKey());
+
+        return $transfer;
+    }
+
+    public function testCreateTwoDirectTransfersWithoutIKey()
+    {
+        $transferOne = $this->createTransfer('account');
+
+        $transferTwo = $this->createTransfer('account');
+
+        $this->assertNotEquals($transferOne['id'], $transferTwo['id']);
+    }
+
+    public function testCreateTwoDirectTransfersWithSameIKey()
+    {
+        $transfer1 = $this->testCreateDirectTransferWithIKeyHeader('unique-ikey');
+
+        $transfer2 = $this->testCreateDirectTransferWithIKeyHeader('unique-ikey');
+
+        $this->assertEquals($transfer1['id'], $transfer2['id']);
+
+        $ikeys = $this->getDbEntities(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(1, $ikeys);
+    }
+
+
+    public function testCreateDirectTransferWithIKeyInProgress()
+    {
+        $mockMutex = new MockMutexService($this->app);
+
+        $this->app->instance('api.mutex', $mockMutex);
+
+        $mutex = $this->app['api.mutex'];
+
+        $headers = $this->testData[__FUNCTION__]['request']['server'];
+
+        $idempotencyKey = $headers['HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY];
+
+        $this->ba->privateAuth();
+
+        $mutex->acquireAndRelease(
+            $idempotencyKey.'10000000000000',
+            function () use ($idempotencyKey)
+            {
+                $this->startTest($this->testData['testCreateDirectTransferWithIKeyInProgress']);
+            },
+            120);
+    }
+
+    public function testCreateTwoDirectTransfersWithDiffIKey()
+    {
+        $transfer1 = $this->testCreateDirectTransferWithIKeyHeader('unique-ikey-1');
+
+        $transfer2 = $this->testCreateDirectTransferWithIKeyHeader('unique-ikey-2');
+
+        $this->assertNotEquals($transfer1['id'], $transfer2['id']);
+
+        $ikeys = $this->getDbEntities(Entity::IDEMPOTENCY_KEY);
+
+        $this->assertCount(2, $ikeys);
+    }
+
+    public function testCreateTwoDirectTransfersWithSameIKeyDiffRequest()
+    {
+        $this->testCreateDirectTransferWithIKeyHeader('unique-ikey');
+
+        $headers = [
+            'HTTP_' . RequestHeader::X_TRANSFER_IDEMPOTENCY => 'unique-ikey',
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
     }
 }

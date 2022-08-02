@@ -13823,6 +13823,23 @@ class Route
             IdempotencyKey\Entity::SOURCE_TYPE => Entity::PAYOUT,
             IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_PAYOUT_IDEMPOTENCY,
         ],
+        'transfer_create' => [
+            IdempotencyKey\Entity::SOURCE_TYPE => Entity::TRANSFER,
+            IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_TRANSFER_IDEMPOTENCY,
+        ],
+    ];
+
+    /**
+     * Config array which contains Idempotency Routes
+     * for which 409 Conflict http status is thrown when duplicate
+     * request is received but the first request is still being processed.
+     *
+     * The routes added here must be present in
+     * self::$idempotentRoutesConfig array.
+     * @var string[]
+     */
+    public static $httpStatusCodeConflictIdempotentRoutes = [
+        'transfer_create',
     ];
 
     /**
@@ -15271,6 +15288,13 @@ class Route
         $routeName = $this->getCurrentRouteName();
 
         return self::$idempotentRoutesConfig[$routeName][IdempotencyKey\Entity::HEADER_KEY] ?? null;
+    }
+
+    public function httpStatusCodeConflictForIdempotency()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return (in_array($routeName, self::$httpStatusCodeConflictIdempotentRoutes) === true);
     }
 
     public function getEntitiesForIdempotencyRequest()
