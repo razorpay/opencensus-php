@@ -89,6 +89,7 @@ class CmmaProxyController extends BaseProxyController
     {
         return [
             'X-Admin-id'       => optional($this->ba->getAdmin())->getPublicId() ?? '',
+            'X-Admin-Name'     => optional($this->ba->getAdmin())->getName() ?? '',
             'X-Task-Id'        => $this->app['request']->getTaskId(),
             'Content-Type'     => 'application/json',
             'Accept'           => 'application/json',
