@@ -24,9 +24,14 @@ class Entity extends Base\PublicEntity
     protected $entity = 'fee_breakup_new';
 
     public $fillable = [
+        self::ID,
         self::NAME,
         self::AMOUNT,
         self::PERCENTAGE,
+        self::TRANSACTION_ID,
+        self::PRICING_RULE_ID,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [

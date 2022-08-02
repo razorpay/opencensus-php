@@ -99,10 +99,14 @@ class Repository extends Base\Repository
     {
         parent::saveOrFail($entity, $options);
 
-/*
         try
         {
             $fillArray = $entity->toArrayPublic();
+
+            if (isset($fillArray[Entity::PRICING_RULE]) === true)
+            {
+                unset($fillArray[Entity::PRICING_RULE]);
+            }
 
             $newEntity = (new Transaction\FeeBreakupNew\Entity)->build($fillArray);
 
@@ -119,7 +123,6 @@ class Repository extends Base\Repository
                     'error' => $ex->getMessage(),
                 ]);
         }
-*/
 
         return $entity;
     }
