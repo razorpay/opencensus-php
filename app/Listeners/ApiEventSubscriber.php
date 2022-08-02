@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Event;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout;
 use RZP\Models\QrCode;
 use RZP\Models\Invoice;
@@ -520,6 +521,14 @@ class ApiEventSubscriber extends Base\Core
 
     private function pushForRevival(Payment\Entity $payment)
     {
+        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::PL_MO_CREATION_VIA_PL_SERVICE, $this->mode);
+
+        if ($variant === 'on')
+        {
+            (new Payment\Core())->pushFailedPaymentForRevival($payment);
+            return;
+        }
+
         if (ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER === $payment->getInternalErrorCode())
             return;
 

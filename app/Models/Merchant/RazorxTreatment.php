@@ -244,6 +244,9 @@ final class RazorxTreatment
     // experiment for controlling delay seconds for missed order payment link creation
     const PL_MO_SEND_AFTER_SECONDS = 'pl_mo_send_after_seconds';
 
+    // experiment for controlling mopl creation routing via pl service
+    const PL_MO_CREATION_VIA_PL_SERVICE = 'pl_mo_creation_via_pl_service';
+
     // experiment for merchant when trim migration in progress
     const TRIM_MIGRATION_IN_PROGRESS = 'trim_migration_in_progress';
 

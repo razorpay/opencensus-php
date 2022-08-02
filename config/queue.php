@@ -401,6 +401,11 @@ return [
         'live'       => env('AWS_BANK_TRANSFER_CREATE_LIVE_QUEUE'),
     ],
 
+    'missed_orders_pl_create' => [
+        'test'       => env('PAYMENT_LINKS_PAYMENT_FAILED_QUEUE'),
+        'live'       => env('PAYMENT_LINKS_PAYMENT_FAILED_QUEUE'),
+    ],
+
     'sync_order_pg_router' => [
         'test'      => env('AWS_SYNC_ORDER_PG_ROUTER_TEST_QUEUE'),
         'live'      => env('AWS_SYNC_ORDER_PG_ROUTER_LIVE_QUEUE'),

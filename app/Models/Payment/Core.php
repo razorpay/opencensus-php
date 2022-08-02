@@ -486,6 +486,67 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function pushFailedPaymentForRevival($payment)
+    {
+        if ($payment->hasOrder()) {
+            $queueName = $this->app['config']->get('queue.missed_orders_pl_create.' . $this->mode);
+
+            $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+
+            $data = [
+                'mode' => $this->mode,
+                'merchant_id' => $payment->getMerchantId(),
+                'push_time' => Carbon::now()->unix(),
+                'payment' => [
+                    'id' => $payment->getId(),
+                    'internal_error_code' => $payment->getInternalErrorCode(),
+                    'contact' => $payment->getContact(),
+                    'email' => $payment->getEmail(),
+                    'integration' => $pa != null ? $pa->getIntegration() : null,
+                ],
+                'order' => [
+                    'id' =>  $payment->order->getId(),
+                    'product_type' => $payment->order->getProductType(),
+                    'is_invoice_order' => empty($payment->order->invoice),
+                    'is_partial_payment_allowed' => $payment->order->isPartialPaymentAllowed(),
+                    'amount' => $payment->order->getAmount(),
+                    'currency' => $payment->order->getCurrency(),
+                    'notes' => $payment->order->getNotes(),
+                ]
+            ];
+
+            try {
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($data), $queueName);
+
+                $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_SQS_PUSH_SUCCESS, [
+                    'data' => $data,
+                    'queueName' => $queueName,
+                ]);
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_FAILED_SQS_PUSH_SUCCESS, $payment);
+            }
+            catch (\Exception $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::FAILED_PAYMENT_PL_CREATION_SQS_PUSH_FAILURE,
+                    [
+                        'queueName' => $queueName,
+                        'data' => $data,
+                    ]
+                );
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_FAILED_SQS_PUSH_FAILED, $payment, $ex);
+            }
+        }
+        else {
+            $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_DEBUG, [
+                'merchant_id' => $payment->getMerchantId(),
+                'payment_id' => $payment->getId()
+            ]);
+        }
+    }
+
     public function pushFailedPaymentToKafkaForPLCreation($payment)
     {
         $producerKey = $payment->getId();
@@ -493,10 +554,6 @@ class Core extends Base\Core
         $topic = env('REGISTER_PAYMENT_FAILED_SCHEDULER_EVENT');
 
         $namespace = 'payment_failed_retry';
-
-        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_DEBUG, [
-            'msg' => 'Inside PL creation flow for missed orders'
-        ]);
 
         $paymentFailedConfig = (new Config\Core())->getPaymentFailedConfig($payment->getMerchantId());
 

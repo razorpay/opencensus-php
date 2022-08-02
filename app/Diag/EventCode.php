@@ -950,6 +950,16 @@ class EventCode
         'name'  => 'payment.failed.kafka.push.failed'
     ];
 
+    const PAYMENT_FAILED_SQS_PUSH_SUCCESS                  = [
+        'group' => 'sqs_push',
+        'name'  => 'payment.failed.sqs.push.success'
+    ];
+
+    const PAYMENT_FAILED_SQS_PUSH_FAILED                  = [
+        'group' => 'sqs_push',
+        'name'  => 'payment.failed.sqs.push.failed'
+    ];
+
     const PAYMENT_SCHEDULER_DEREGISTER_PUSH_SUCCESS       = [
         'group' => 'kafka_push',
         'name'  => 'payment.scheduler.deregister.kafka.push.success'
