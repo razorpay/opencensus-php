@@ -124,6 +124,9 @@ class AnalyticsDesktop extends Component {
       objectName: 'home page',
       actionName: 'displayed',
       screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
     });
     this.props.trackEvents({
       objectName: 'Page',
