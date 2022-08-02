@@ -1079,4 +1079,13 @@ class Authorization
     {
         $this->appHeaders['X-Dashboard-Ip'] = $hostName;
     }
+
+    public function capitalEarlySettlementAuth($mode = 'test')
+    {
+        $capitalESConfig = \Config::get('applications.capital_early_settlements');
+
+        $pwd = $capitalESConfig['secret'];
+
+        $this->appAuth('rzp_'.$mode, $pwd);
+    }
 }

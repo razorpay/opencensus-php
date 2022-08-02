@@ -324,6 +324,9 @@ return [
     'capital_cards_m2p' => [
         'secret' => env('CAPITAL_CARDS_M2P_WEBHOOK_SECRET','api')
     ],
+    'capital_early_settlements' => [
+        'secret' => env('CAPITAL_ES_PASSWORD')
+    ],
     'leegality' => [
         'secret' => env('LEEGALITY_WEBHOOK_SECRET')
     ],

@@ -13000,6 +13000,9 @@ class Route
             'feature_get_multiple_internal'
         ],
 
+        'capital_early_settlements' => [
+        ],
+
         'leegality' => [
             'leegality_webhook',
         ],

@@ -1784,6 +1784,7 @@ class BasicAuth
                 ($this->isMobApp() === true) or
                 ($this->isCapitalLOCApp() === true) or
                 ($this->isCapitalCollectionsApp() === true) or
+                ($this->isCapitalEarlySettlementApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
                 ($this->isReminderServiceAuth() === true) or
@@ -1864,6 +1865,11 @@ class BasicAuth
     public function isCapitalCollectionsApp(): bool
     {
         return ($this->getInternalApp() === 'capital_collections_client');
+    }
+
+    public function isCapitalEarlySettlementApp(): bool
+    {
+        return ($this->getInternalApp() === 'capital_early_settlements');
     }
 
     public function isPaymentLinkServiceApp(): bool
