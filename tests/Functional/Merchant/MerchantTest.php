@@ -525,6 +525,64 @@ class MerchantTest extends TestCase
         $this->assertTrue(in_array('manager', $roles));
     }
 
+    public function testGetMerchantUsersInternalByRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
+
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->ba->setAppAuthHeaders([
+            'x-product-name' => 'primary',
+            'x-role-id'      => 'owner',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/internal-users';
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $roles = array_column($response, 'role');
+
+        $this->assertEquals(count($roles), 1);
+
+        $this->assertTrue(in_array('owner', $roles));
+    }
+
+    public function testGetMerchantUsersInternalInvalidRole()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $user1 = $this->fixtures->create('user');
+        $user2 = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($user1['id'], $merchant['id'], 'owner');
+
+        $this->createUserMerchantMapping($user2['id'], $merchant['id'], 'manager');
+
+        $collectionsServiceConfig = \Config::get('applications.capital_collections_client');
+        $pwd = $collectionsServiceConfig['secret'];
+        $this->ba->appAuth('rzp_'.'test', $pwd);
+        $this->ba->setAppAuthHeaders([
+            'x-product-name' => 'primary',
+            'x-role-id'      => 'invalid',
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/merchants/' . $merchant['id'] . '/internal-users';
+
+        $response = $this->startTest();
+    }
+
     public function testGetBalance()
     {
         // The merchant and balances have been created in

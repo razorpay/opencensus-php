@@ -4805,6 +4805,23 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function getInternalUsersByRole($merchantId, $product, $roleId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $roleEntity = $this->repo->roles->fetchRole($roleId);
+
+        if(empty($roleEntity) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException("Invalid Role Id" ,
+                ['roleId' => $roleId]);
+        }
+
+        $users =  $this->core()->getUsersByRole($merchant, $roleId, $product);
+
+        return $users;
+    }
+
     public function createBatches(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);

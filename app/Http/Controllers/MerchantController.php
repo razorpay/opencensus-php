@@ -1320,7 +1320,15 @@ class MerchantController extends Controller
 
         $product = $headers['x-product-name'][0];
 
-        $data = $this->service()->getInternalUsers($merchantId, $product);
+        if( empty($headers['x-role-id'][0]) === true ) {
+
+            $data = $this->service()->getInternalUsers($merchantId, $product);
+
+        } else {
+
+            $data = $this->service()->getInternalUsersByRole($merchantId, $product, $headers['x-role-id'][0]);
+
+        }
 
         return ApiResponse::json($data);
     }

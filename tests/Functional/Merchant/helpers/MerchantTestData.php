@@ -471,6 +471,39 @@ return [
         ],
     ],
 
+    'testGetMerchantUsersInternalByRole' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/users',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'role' => 'owner'
+                ]
+            ],
+        ],
+    ],
+
+    'testGetMerchantUsersInternalInvalidRole' => [
+        'request' => [
+            'url' => '/merchants/1X4hRFHFx4UiXt/users',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testGetBalance' => [
         'request' => [
             'url' => '/balance',
