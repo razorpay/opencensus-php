@@ -18,6 +18,7 @@ use RZP\Services\Beam\Service as BeamService;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Mail\Gateway\EMandate\Base as EMandateMail;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
+use RZP\Trace\TraceCode;
 
 class EnachRbl extends Base
 {
@@ -85,6 +86,12 @@ class EnachRbl extends Base
             $this->gatewayFile->setFileGeneratedAt($file->getCreatedAt());
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            $this->trace->info(
+                TraceCode::NACH_DEBIT_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                ]);
         }
         catch (\Throwable $e)
         {

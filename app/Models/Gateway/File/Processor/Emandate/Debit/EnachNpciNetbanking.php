@@ -204,6 +204,12 @@ class EnachNpciNetbanking extends Base
             $this->fileStore = $fileStoreIds;
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            $this->trace->info(
+                TraceCode::NACH_DEBIT_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                ]);
         }
         catch (\Throwable $e)
         {

@@ -14,6 +14,7 @@ use RZP\Models\Gateway\File;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as Headings;
+use RZP\Trace\TraceCode;
 
 class Sbi extends Base
 {
@@ -152,6 +153,12 @@ class Sbi extends Base
             $this->fileStore = $fileStoreIds;
 
             $this->gatewayFile->setStatus(File\Status::FILE_GENERATED);
+
+            $this->trace->info(
+                TraceCode::NACH_DEBIT_FILE_GENERATED,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                ]);
         }
         catch (\Throwable $e)
         {
