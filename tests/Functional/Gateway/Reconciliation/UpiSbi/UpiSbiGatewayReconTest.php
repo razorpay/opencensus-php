@@ -402,7 +402,7 @@ class UpiSbiGatewayReconTest extends TestCase
         $this->makeRequestAndCatchException(function() use ($content)
         {
             $request = [
-                'url' => '/reconciliate/update/upi/data',
+                'url'    => '/reconciliate/data',
                 'method' => 'POST',
                 'content' => $content,
             ];
@@ -571,7 +571,7 @@ class UpiSbiGatewayReconTest extends TestCase
         $request = [
             'method'  => 'POST',
             'content' => $input,
-            'url'     => '/reconciliate/update/upi/data',
+            'url'     => '/reconciliate/data',
         ];
 
         $this->ba->appAuth();

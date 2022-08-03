@@ -1005,7 +1005,7 @@ class Route
         'reconciliate_via_batch_service'           => ['post',     'reconciliate/batch_service/bulk',                'ReconciliatorController@postBulkReconciliationViaBatchService'     ],
         'recon_fetch_batchs_files_multiple'        => ['get',      'reconciliate/batches',                           'ReconciliatorController@getReconBatches'],
         'recon_fetch_files_count'                  => ['get',      'reconciliate/files',                             'ReconciliatorController@getReconFiles'],
-        'recon_update_upi_data'                    => ['post',     'reconciliate/update/upi/data',                   'ReconciliatorController@updateUpiReconciliationData'               ],
+        'recon_update_data'                        => ['post',     'reconciliate/data',                              'ReconciliatorController@updateUpiReconciliationData'               ],
         'refunds_reconcile_bulk'                   => ['post',     'reconciliate/refunds/bulk',                      'ReconciliatorController@postBulkRefundsReconciliation'             ],
         'dummy_return_callback'                    => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                     => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -5042,7 +5042,7 @@ class Route
 
         'payout_update_tax_payment_id',
 
-        'recon_update_upi_data',
+        'recon_update_data',
         'payment_transfer_retry_batch',
 
         'firs_collect_and_zip_cron',
@@ -13355,7 +13355,7 @@ class Route
             'internal_validate_order_checkout_config',
             'internal_validate_order_tpv',
             'internal_create_order_relations',
-            'recon_update_upi_data',
+            'recon_update_data',
             'internal_payment_pricing',
             'internal_merchant_risk_notification',
             'internal_sign_payload',
@@ -13524,6 +13524,7 @@ class Route
             'internal_fail',
             'internal_reconcile',
             'internal_receive',
+            'recon_update_data'
         ],
 
         'consumer_app' => [
