@@ -1585,6 +1585,36 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('checkout_config', $response);
     }
 
+    public function testGetCheckoutPreferencesWithDefaultConfigWhenMoreThanOneDefaultConfigExistsExpectsMostRecentlyUpdatedConfig()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('config', [
+            'config'=> '{"sequence": ["block.gpay","card","block.hdfc"]}'
+        ]);
+
+        $this->fixtures->create('config', [
+            'config' => '{"sequence": ["block.hdfc","card"]}',
+            'updated_at' => Carbon::now()->getTimestamp() + 1
+        ]);
+
+        $order = $this->fixtures->create('order');
+
+        $testData = $this->testData['testGetCheckoutPreferencesWithDefaultConfig'];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $expectedConfig = [];
+
+        $expectedConfig['sequence'] = ['block.hdfc', 'card'];
+
+        $this->assertArrayHasKey('checkout_config', $response);
+
+        $this->assertEquals($expectedConfig, $response['checkout_config']);
+    }
+
     public function testGetCheckoutPreferencesForInvoiceWithOffer()
     {
         $this->ba->publicAuth();

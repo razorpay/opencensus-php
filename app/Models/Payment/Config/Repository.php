@@ -4,7 +4,7 @@
 namespace RZP\Models\Payment\Config;
 
 use RZP\Models\Base;
-
+use Illuminate\Database\Eloquent\Builder;
 
 class Repository extends Base\Repository
 {
@@ -47,6 +47,9 @@ class Repository extends Base\Repository
                     ->where(Entity::TYPE, $type)
                     ->where(Entity::IS_DEFAULT, true)
                     ->where(Entity::IS_DELETED, false)
+                    ->when($type === Type::CHECKOUT, static function (Builder $query) {
+                        return $query->orderBy(Entity::UPDATED_AT, 'desc');
+                    })
                     ->first();
     }
 
