@@ -126,15 +126,16 @@ trait PaymentEvent
 
         if (empty($metaDetails) === false)
         {
-            $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties, $metaDetails['metadata'], $metaDetails['read_key'], $metaDetails['write_key']);
+            $event = $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties, $metaDetails['metadata'], $metaDetails['read_key'], $metaDetails['write_key']);
         }
         else
         {
-            $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties);
+            $event = $this->trackEvent(PE::EVENT_TYPE, 'v2', $eventData, $properties);
         }
 
         //Deprecating v1 events
         //$this->trackPaymentEvent($eventData, $payment, $ex, $customProperties);
 
+        return $event;
     }
 }

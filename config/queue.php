@@ -436,6 +436,8 @@ return [
         'live'       => env('AWS_RISK_APP_CHECKER_LIVE_QUEUE'),
     ],
 
+    'shield_create_rule_analytics'  => env('AWS_SHIELD_CREATE_RULE_ANALYTICS_QUEUE'),
+
     'rbl_banking_account_statement_fetch' => [
         'test'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_FETCH_TEST_QUEUE'),
         'live'       => env('AWS_RBL_BANKING_ACCOUNT_STATEMENT_FETCH_LIVE_QUEUE'),

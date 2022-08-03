@@ -2302,6 +2302,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIELD_SLACK_REQUEST_INITIATED                        = 'SHIELD_SLACK_REQUEST_INITIATED';
     const SHIELD_SLACK_REQUEST_COMPLETE                         = 'SHIELD_SLACK_REQUEST_COMPLETE';
     const SHIELD_SLACK_INTEGRATION_ERROR                        = 'SHIELD_SLACK_INTEGRATION_ERROR';
+    const SHIELD_SQS_ENQUEUE_FAILED                             = 'SHIELD_SQS_ENQUEUE_FAILED';
     const REVERSAL_ADJUSTMENT_CREATE_REQUEST                    = 'REVERSAL_ADJUSTMENT_CREATE_REQUEST';
 
     const SUMO_LOGIC_REQUEST_INITIATED                          = 'SUMO_LOGIC_REQUEST_INITIATED';

@@ -54,6 +54,8 @@ class DiagClient extends EventTrackerClient
         }
 
         $this->events[] = $event;
+
+        return $event;
     }
 
     protected function getEventContext()

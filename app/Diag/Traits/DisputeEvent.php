@@ -17,6 +17,6 @@ trait DisputeEvent
 
         $properties = $event->getProperties();
 
-        $this->trackEvent(DE::EVENT_TYPE, DE::EVENT_VERSION, $eventData, $properties);
+        return $this->trackEvent(DE::EVENT_TYPE, DE::EVENT_VERSION, $eventData, $properties);
     }
 }

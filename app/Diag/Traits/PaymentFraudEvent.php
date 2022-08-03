@@ -17,6 +17,6 @@ trait PaymentFraudEvent
 
         $properties = $event->getProperties();
 
-        $this->trackEvent(PFE::EVENT_TYPE, PFE::EVENT_VERSION, $eventData, $properties);
+        return $this->trackEvent(PFE::EVENT_TYPE, PFE::EVENT_VERSION, $eventData, $properties);
     }
 }

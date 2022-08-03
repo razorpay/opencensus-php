@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Services\Stork;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Services\Shield;
 use RZP\Models\Dispute\Constants as DisputeConstants;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
@@ -24,7 +25,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Mail\Dispute as DisputeMailer;
 use RZP\Constants\Entity as EntityConstants;
-use RZP\Constants\{Entity as E, Timezone, Table};
+use RZP\Constants\{Entity as E, Mode, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
 use RZP\Models\
@@ -162,7 +163,9 @@ class Core extends Base\Core
                     return $dispute;
                 });
 
-                $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_CREATED, $dispute);
+                $event = $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_CREATED, $dispute);
+
+                (new Shield($this->app))->enqueueShieldEvent($event);
 
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
 
@@ -231,7 +234,9 @@ class Core extends Base\Core
     {
         if ($dispute->isClosed() === false)
         {
-            $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_PROCESSED, $dispute);
+            $event = $this->app['diag']->trackDisputeEvent(EventCode::DISPUTE_PROCESSED, $dispute);
+
+            (new Shield($this->app))->enqueueShieldEvent($event);
         }
     }
 

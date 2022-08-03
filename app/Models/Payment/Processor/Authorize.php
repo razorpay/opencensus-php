@@ -11,6 +11,7 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Services\Shield;
 use RZP\Constants\Procurer;
 use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Jobs;
@@ -966,7 +967,9 @@ trait Authorize
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
-        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
+        $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
+
+        (new Shield($this->app))->enqueueShieldEvent($event);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -9087,7 +9090,9 @@ trait Authorize
 
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
-            $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
+            $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
+
+            (new Shield($this->app))->enqueueShieldEvent($event);
 
             return true;
         });

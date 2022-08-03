@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Carbon\Carbon;
 use RZP\Models\Address;
+use RZP\Constants\Mode;
 use RZP\Models\Feature\Constants;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
@@ -30,6 +31,14 @@ class Shield
 
     protected $repo;
 
+    protected $config;
+
+    protected $runningUnitTests;
+
+    protected $queue;
+
+    protected $mode;
+
     public function __construct($app)
     {
         $this->request = $app['request'];
@@ -44,6 +53,39 @@ class Shield
 
         $this->merchantCore = new Merchant\Core;
 
+        $this->config = $app['config'];
+
+        $this->queue = $app['queue'];
+
+        $this->mode = $app['rzp.mode'] ?? ($app->runningUnitTests() ? Mode::TEST : Mode::LIVE);
+
+        $this->runningUnitTests = $app->runningUnitTests();
+    }
+
+
+    public function enqueueShieldEvent($event)
+    {
+        try
+        {
+            if ($this->runningUnitTests === true)
+            {
+                return;
+            }
+
+            $queueName = $this->config->get(ShieldConstants::SHIELD_SQS);
+
+            $event['mode'] = $this->mode ?? Mode::LIVE;
+
+            $this->queue->connection('sqs')->pushRaw(json_encode($event), $queueName);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::SHIELD_SQS_ENQUEUE_FAILED
+            );
+        }
     }
 
     public function getRiskAssessment(Payment\Entity $payment, $input = [])

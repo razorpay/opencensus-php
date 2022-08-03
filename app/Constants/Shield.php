@@ -142,4 +142,6 @@ final class Shield
         'rule_J2yeMfz5AxeSN6',
         'rule_IJ2Jr5h6qohz1W'
     ];
+
+    const SHIELD_SQS = 'queue.shield_create_rule_analytics';
 }
