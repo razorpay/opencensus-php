@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Services\RazorXClient;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Models\BankAccount;
@@ -118,6 +119,12 @@ class Service extends Base\Service
         }
 
         $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
+
+        if (($merchant->getId() === 'CYseUgx4bt9VFp') and
+            ($result === RazorXClient::DEFAULT_CASE))
+        {
+            return true;
+        }
 
         return ($result === 'on');
     }
