@@ -13041,6 +13041,7 @@ class Route
             'refund_fetch_status',
             'scrooge_entities',
             'scrooge_entities_fetch',
+            'feature_get_multiple_internal',
             'scrooge_public_entities_fetch',
             'fund_transfer_attempt_modes',
             'scrooge_refund_reference1_bulk_update',
