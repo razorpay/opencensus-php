@@ -2346,7 +2346,7 @@ class Service extends Base\Service
         ]);
     }
 
-    protected function getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchantId, $validationId)
+    public function getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchantId, $validationId)
     {
         $verificationDetails = $this->getBvsValidationArtefactDetails($merchantId,
             BvsConstant::GSTIN,

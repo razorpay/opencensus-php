@@ -3689,6 +3689,17 @@ class Core extends Base\Core
 
             $pluginData = $this->getPluginData($merchant, $merchantDetails, $pluginDetails);
 
+            $addressSuggestedFromGSTIN = null;
+
+            try
+            {
+                $addressSuggestedFromGSTIN = (new Merchant\Detail\Service)->getRegisteredBusinessAddressFromBvsForGstinUpdateSelfServe($merchant->getMerchantId(), null);
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::GSTIN_SELF_SERVE_BVS_CALLBACK_RECEIVED);
+            }
+
             $response[Merchant\Entity::ACTIVATED]                     = (int) $merchant->isActivated();
             $response[Merchant\Entity::LIVE]                          = $merchant->isLive();
             $response[Merchant\Entity::INTERNATIONAL]                 = $merchant->isInternational();
@@ -3708,6 +3719,7 @@ class Core extends Base\Core
             $response[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY] = $merchantBusinessDetails[BusinessDetailEntity::BUSINESS_PARENT_CATEGORY];
             $response[Entity::PROMOTER_PAN_NAME_SUGGESTED]            = $merchantDetails->getPromoterPanNameSuggested();
             $response[Entity::BUSINESS_NAME_SUGGESTED]                = $merchantDetails->getBusinessNameSuggested();
+            $response['business_registered_address_suggested']        = $addressSuggestedFromGSTIN;
 
             if (empty($merchantDetails->getKycClarificationReasons()) === false)
             {
