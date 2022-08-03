@@ -10,7 +10,6 @@ import Amount from 'common/ui/Amount';
 import Sticky from 'common/ui/Sticky';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
@@ -34,18 +33,37 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import { getFormattedAmountNew, checkHTML5APIvalidity } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import RepaymentAnnouncment from 'merchant/components/Announcements/PaymentRecovery';
-
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import { fetchCarouselBanner as fetchCarouselBannerProp } from '../../../merchant/reducers/growthService';
 import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
+import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
+import {
+  fetchActivationDetails,
+  fetchMerchantWebsiteDetails,
+  getBannerAndModalVisibility,
+} from 'merchant/reducers/websitecompliance';
+import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
+
+import lazy from 'merchant/routes/LazyLoader';
+
+const PaymentMethods = lazy(() =>
+  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
+);
+const Traffic = lazy(() =>
+  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
+);
+const RecentActivity = lazy(() =>
+  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
+);
 
 @connect(
   (state) => ({
     windowWidth: state.app.windowWidth,
+    activationData: state.websiteCompliance.activationData,
+    websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+    websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
     user: state.session.user,
     config: state.config,
     can_refer: state.merchantReferral.data.can_refer,
@@ -54,11 +72,18 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
     ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
     bannerCarouselData: state?.growthService?.banner_carousel_items,
   }),
-  { openModal, fetchCarouselBanner: fetchCarouselBannerProp },
+  {
+    openModal,
+    fetchCarouselBanner: fetchCarouselBannerProp,
+    fetchActivationDetails,
+    fetchMerchantWebsiteDetails,
+    getBannerAndModalVisibility,
+  },
 )
 class AnalyticsMobile extends Component {
   state = {
     settlementExists: true,
+    isWebsiteComplianceModalShown: false,
   };
 
   constructor(props) {
@@ -70,6 +95,11 @@ class AnalyticsMobile extends Component {
     this.checkIfFirstEverSettlement();
     const holdFeature = false; // TODO: remove it once feature is live for prod
     if (holdFeature) this?.props?.fetchCarouselBanner({ fromWhere: window.location.pathname });
+
+    // website compliance flow
+    this.props.fetchActivationDetails();
+    this.props.fetchMerchantWebsiteDetails();
+    this.props.getBannerAndModalVisibility();
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
@@ -113,6 +143,35 @@ class AnalyticsMobile extends Component {
       <ProductRecommendationnCard user={user} />
     );
     return ProductRecommendationWidget;
+  };
+
+  renderWebsiteCompliancePrompt = () => {
+    // Have split de-structing into multiple lines as lint was throwing prettier errors
+    const { activationData } = this.props;
+    const { websiteSectionDetailsData } = this.props;
+    const { websiteComplianceModalVisibility } = this.props;
+
+    if (
+      activationData.data &&
+      websiteSectionDetailsData.data &&
+      websiteComplianceModalVisibility.data
+    ) {
+      const shouldShowModal = shouldShowWebsiteComplianceModal(
+        activationData,
+        websiteSectionDetailsData,
+        websiteComplianceModalVisibility,
+      );
+
+      if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {
+        this.setState({
+          isWebsiteComplianceModalShown: true,
+        });
+        this.props.openModal({
+          component: <WebsiteCompliancePrompt />,
+          size: 'small',
+        });
+      }
+    }
   };
 
   render() {
@@ -212,6 +271,8 @@ class AnalyticsMobile extends Component {
               100% FREE*
             </AnnouncementBanner>
           ) : null}
+          <WebsiteComplianceNudge screen="Home page" />
+          {user.isWebsiteComplianceFlowEnabled && this.renderWebsiteCompliancePrompt()}
           {carouselItem.length ? <Carousel carouselItem={carouselItem} /> : null}
           {!user.isOnboardingV2Enabled ? (
             <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>

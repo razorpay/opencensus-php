@@ -879,6 +879,13 @@ export default class User {
     return getSplitzExperimentVariant('whats_new_text_experiment')?.variables?.result === 'on';
   }
 
+  get isWebsiteComplianceFlowEnabled() {
+    return (
+      this.isOrgRZP &&
+      getSplitzExperimentVariant('website_compliance_flow_experiment')?.variables?.result === 'on'
+    );
+  }
+
   get isWhatsNewSectionEnabled() {
     return this.getExpStatus('whats-new-dec-2020');
   }

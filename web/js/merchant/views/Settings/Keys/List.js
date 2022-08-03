@@ -3,7 +3,6 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import Alert from 'common/ui/Forms/Alert';
 import RTracking from 'react-tracking';
-// import Role from 'merchant/components/Role'
 import ListContainer from 'merchant/containers/ListContainer';
 import * as KeyActions from 'merchant/reducers/keys';
 import * as ModalActions from 'merchant_common/reducers/modals';
@@ -15,8 +14,17 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 import DashboardBanner from '../../../../common/ui/DashboardBanner';
+import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
+import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
+import WebsiteComplianceDesktopPrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
+import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 class KeysListContainer extends ListContainer {
+  state = {
+    isWebsiteComplianceModalShown: false,
+  };
+
   fetchEntityList() {
     return this.props.fetchKeys(
       { mode: this.props.session.mode },
@@ -43,12 +51,11 @@ class KeysListContainer extends ListContainer {
     });
   };
 
-  @RTracking(() =>
+  generateKey = (params) => {
     window.rzpQ.onbr().initiated('dash.settings_action', {
       action: 'Initiate_API_Key_Gen',
-    }),
-  )
-  generateKey = (params) => {
+    });
+
     return this.props
       .generateKey(params)
       .then((response) => {
@@ -89,16 +96,53 @@ class KeysListContainer extends ListContainer {
       });
   };
 
+  renderPrompt = () => {
+    // Have split de-structing into multiple lines as lint was throwing prettier errors
+    const { activationData } = this.props;
+    const { websiteSectionDetailsData } = this.props;
+    const { websiteComplianceModalVisibility } = this.props;
+
+    if (
+      activationData.data &&
+      websiteSectionDetailsData.data &&
+      websiteComplianceModalVisibility.data
+    ) {
+      const shouldShowModal = shouldShowWebsiteComplianceModal(
+        activationData,
+        websiteSectionDetailsData,
+        websiteComplianceModalVisibility,
+      );
+
+      if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {
+        this.setState({
+          isWebsiteComplianceModalShown: true,
+        });
+        if (isMobileDevice()) {
+          this.props.openModal({
+            component: <WebsiteComplianceMobilePrompt />,
+            size: 'small',
+          });
+        } else {
+          this.props.openModal({
+            component: <WebsiteComplianceDesktopPrompt />,
+            size: 'small',
+          });
+        }
+      }
+    }
+  };
+
   render() {
     const { loading, keys } = this.props.keys;
     const mode = this.props.session.modeFormatted;
     const status = this.state.status;
     const hasKeyAccess = this.props.session.user.has_key_access;
     const businessWebsite = this.props.session.user.business_website;
-    const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
+    const { isWebsiteInWorkflow, onWebsiteAdd, user } = this.props;
 
     return (
       <>
+        <WebsiteComplianceNudge screen="API Keys" />
         <div className="banner-container">
           <DashboardBanner />
           <CSATSurveyBanner user={this.props.session.user} />
@@ -118,6 +162,7 @@ class KeysListContainer extends ListContainer {
             onWebsiteAdd={onWebsiteAdd}
           />
         </div>
+        {user.isWebsiteComplianceFlowEnabled && this.renderPrompt()}
       </>
     );
   }
@@ -129,6 +174,10 @@ export default compose(
       return {
         keys: state.keys,
         session: state.session,
+        user: state.session.user,
+        websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+        websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
+        activationData: state.websiteCompliance.activationData,
       };
     },
     { ...KeyActions, ...ModalActions, ...NotificationsActions },

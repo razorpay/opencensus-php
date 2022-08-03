@@ -77,27 +77,49 @@
         }
 
   .prompt-container
+    position: relative
+
     .modal-header
-      background-color: #0000ae
+      background-color: #F08A0A
       color: #FFFFFF
       font-size: 18px
       font-weight: 700
       line-height: 22px
-      padding: 25px
+      padding: 35px
       text-align: center
       margin-top: -20px
+
+    .prompt-modal-close
+      position: absolute
+      top: -10px
+      right: 15px
+      color: white
+      cursor: pointer
 
     .image-container
       margin: 0 15px
       border-radius: 3px
       background-color: purple
-      height: 135px
+      height: 160px
 
-    .prompt-description
+      img {
+        height: 100%
+        width: 100%
+      }
+
+    .prompt-description, .prompt-title, .prompt-footer
       font-size: 14px
       line-height: 20px
       padding: 10px 20px
       font-weight: 400
+
+    .prompt-footer
+      color: #162F56
+      opacity: .7
+
+    .prompt-title
+      font-weight: bold
+      font-size: 16px
 
     .page-listing
       font-size: 14px
@@ -128,6 +150,7 @@
     box-shadow: 0 4px 10px #0b70e70d
     border-radius: 4px
     padding: 20px
+    margin: 0 16px 16px 16px
 
     div:nth-of-type(1)
       color: #162F56
@@ -148,6 +171,37 @@
       width: 100%
     }
 
+  .view-nc-comments-container
+
+    .content
+      padding: 25px 0 0 25px
+
+      .title
+        font-weight: bold
+        font-size: 16px
+
+      .comment
+        color: #213554
+        opacity: .67
+        font-weight: 400
+        font-size: 16px
+
+    .actions
+      padding: 5px 0 25px 0
+      display: flex
+      flex-direction: column
+      align-items: center
+
+      button {
+        padding: 7px 25px
+        width: 80%
+      }
+
+      span{
+        margin-top: 15px
+        font-weight: 700
+        font-size: 14px
+      }
 
 .website-app-info-status
   border-radius: 15px
@@ -157,7 +211,7 @@
     background-color: #1f890e1a
     color: #1F890E
 
-  &.action-required
+  &.action-required, &.rejected
     background-color: #d12d2d1a
     color: #D12D2D
 
@@ -204,6 +258,14 @@
   flex-direction: row
   align-items: center
 
+  .separator
+    display: inline-block
+    width: 12px
+    height: 10px
+    margin: 0px 24px
+    background-color: #536582
+    border-radius: 50%
+
   .announcement-content p{
     font-size: 14px
     line-height: 20px
@@ -218,3 +280,10 @@
   }
 
 
+@media (max-width:900px ) {
+  .website-compliance-announcement-container{
+    .separator{
+      display: none
+    }
+  }
+}

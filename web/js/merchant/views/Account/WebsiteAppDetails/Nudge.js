@@ -1,28 +1,134 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import {
+  formatStatus,
+  getStatusClass,
+  isNudgeHardForWebsiteCompliance,
+  isNudgeSoftForWebsiteCompliance,
+} from 'merchant/views/Account/WebsiteAppDetails/utils';
+import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
+import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-function WebsiteAppDetailsNudge() {
+/* renders only on mobile devices/resolutions */
+function WebsiteAppDetailsNudge({
+  activationData,
+  websiteSectionDetailsData,
+  showNotification,
+  screen,
+  user,
+}) {
   const isMobileResolution = isMobileDevice();
+  const shouldShowNudge =
+    isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
+    isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
 
-  if (!isMobileResolution) return null;
+  const nudgeType = isNudgeSoftForWebsiteCompliance() ? 'soft' : 'hard';
+
+  useEffect(() => {
+    const { error } = websiteSectionDetailsData;
+    if (error) {
+      showNotification({
+        type: 'error',
+        message: error,
+      });
+    }
+  }, [websiteSectionDetailsData, showNotification]);
+
+  useEffect(() => {
+    // send analytics on nudge load
+    if (isMobileResolution && user.isWebsiteComplianceFlowEnabled && shouldShowNudge) {
+      const analyticsObj = {
+        objectName: 'Website wizard banner',
+        actionName: 'Loaded',
+        screen,
+        properties: {
+          bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      };
+      analyticsTrack({
+        analyticsObj,
+      });
+    }
+  }, []);
+
+  if (!isMobileResolution || !shouldShowNudge || !user.isWebsiteComplianceFlowEnabled) return null;
+
+  const onUpdateClick = () => {
+    const analyticsObj = {
+      objectName: 'Website wizard banner',
+      actionName: 'Interacted',
+      screen,
+      properties: {
+        bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    };
+    analyticsTrack({
+      analyticsObj,
+    });
+    window.open('website-app-details?from=banner', '_self');
+  };
+
+  const renderStatus = () => {
+    const { data, error } = websiteSectionDetailsData;
+    if (error) return null;
+
+    if (Array.isArray(data)) {
+      const status = 'details required';
+      return (
+        <span className="website-app-info-status details-required">
+          <p>{status.toUpperCase()}</p>
+        </span>
+      );
+    }
+
+    if (typeof data === 'object' && !Array.isArray(data)) {
+      const formattedStatus = formatStatus(data.status);
+      const statusClassName = getStatusClass(formattedStatus);
+      return (
+        <span className={`website-app-info-status ${statusClassName}`}>
+          <p>{formattedStatus.toUpperCase()}</p>
+        </span>
+      );
+    } else return null;
+  };
 
   return (
     <div className="website-app-details-container">
       <div className="nudge-container">
-        <span className="website-app-info-status details-required">
-          <p>UNDER VERIFICATION</p>
-        </span>
-        <div>Update details about your website/app</div>
+        {renderStatus()}
+        <div>{websiteComplianceEntryPointsData[nudgeType].title}</div>
         <div>
           Terms & Conditions, Privacy Policy, Contact Us, Cancellation and Refund Policy, and
           Shipping and Delivery Policy pages are required as per RBI guidelines.
         </div>
         <div>
-          <button className="btn btn-primary">Update</button>
+          <button className="btn btn-primary" onClick={onUpdateClick}>
+            Update or create page
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-export default WebsiteAppDetailsNudge;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+  websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+  activationData: state.websiteCompliance.activationData,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      showNotification: fnShowNotification,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(WebsiteAppDetailsNudge);

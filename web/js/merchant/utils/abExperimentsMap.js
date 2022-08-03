@@ -393,6 +393,14 @@ export default {
     // prod experiment ids
     'Jhk9i7jzGtL2OT',
   ],
+  website_compliance_modal_exp: [
+    // beta experiment ids
+    'JylGhh8kdwbZqj',
+  ],
+  website_compliance_flow_exp: [
+    // beta experiment ids
+    'JypZv2PFYYWJPg',
+  ],
   cash_advance_sidebar_position: [
     // beta
     'JyQuy8T813nUno',

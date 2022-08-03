@@ -167,7 +167,7 @@ return [
 
         //Shopify migration pop up
         'ENABLE_SHOPIFY_MIGRATION_EXP' => env('ENABLE_SHOPIFY_MIGRATION_EXP', ''),
-        
+
         // New Nitro ICICI Experiment
         'NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BRANDED_EXP_SPLITZ', ''),
         'NITRO_NEW_ICICI_BASE_EXP_SPLITZ' => env('NITRO_NEW_ICICI_BASE_EXP_SPLITZ', ''),
@@ -203,6 +203,9 @@ return [
         // Onboarding all as resellers
         'PARTNERSHIP_ONBOARD_RESELLERS' => env('PARTNERSHIP_ONBOARD_RESELLERS', ''),
         'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', ''),
+
+        'WEBSITE_COMPLIANCE_MODAL_EXP'      => env('WEBSITE_COMPLIANCE_MODAL_EXP', ''),
+        'WEBSITE_COMPLIANCE_FLOW_EXP'      => env('WEBSITE_COMPLIANCE_FLOW_EXP', ''),
 
         // Cash Advance sidebar link position
         'CASH_ADVANCE_SIDEBAR_POSITION' => env('CASH_ADVANCE_SIDEBAR_POSITION', '')

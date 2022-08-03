@@ -76,17 +76,35 @@ import SupportRequest from 'merchant/components/Announcements/SupportRequest';
 import Carousel from 'common/components/Carousel';
 import IntlPaymentsRecommendation from 'merchant/containers/Home/ProductRecommendationnCard/IntlPaymentsRecommendation';
 import IntlPaymentsAnnouncement from 'merchant/components/Announcements/IntlPaymentsAnnouncement';
+import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
-import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
-import Traffic from 'merchant/containers/Home/Traffic';
-import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import lazy from 'merchant/routes/LazyLoader';
+import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
+import {
+  fetchActivationDetails,
+  getBannerAndModalVisibility,
+  fetchMerchantWebsiteDetails,
+} from 'merchant/reducers/websitecompliance';
+import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
+
+const PaymentMethods = lazy(() =>
+  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
+);
+const Traffic = lazy(() =>
+  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
+);
+const RecentActivity = lazy(() =>
+  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
+);
+
 class AnalyticsDesktop extends Component {
   state = {
     showNcPopup: true,
     settlementExists: true,
     shouldShowTnCBannerForAxis: false,
+    isWebsiteComplianceModalShown: false,
   };
 
   constructor(props) {
@@ -118,6 +136,9 @@ class AnalyticsDesktop extends Component {
       fetchBankAccountChangeStatus,
       fetchCarouselBanner,
       fetchInternationalSettingStatus,
+      fetchActivationDetails,
+      fetchMerchantWebsiteDetails,
+      getBannerAndModalVisibility,
     } = this.props;
     fetchEscalations();
     analyticsTrack({
@@ -144,6 +165,11 @@ class AnalyticsDesktop extends Component {
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
 
+    // website compliance flow
+    fetchActivationDetails(user.id);
+    fetchMerchantWebsiteDetails();
+    getBannerAndModalVisibility();
+
     this.checkIfFirstEverSettlement();
 
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
@@ -163,6 +189,35 @@ class AnalyticsDesktop extends Component {
 
     if (user.isOrgRZP && Boolean(user.activated)) fetchInternationalSettingStatus();
   }
+
+  renderWebsiteCompliancePrompt = () => {
+    // Have split de-structing into multiple lines as lint was throwing prettier errors
+    const { activationData } = this.props;
+    const { websiteSectionDetailsData } = this.props;
+    const { websiteComplianceModalVisibility } = this.props;
+
+    if (
+      activationData.data &&
+      websiteSectionDetailsData.data &&
+      websiteComplianceModalVisibility.data
+    ) {
+      const shouldShowModal = shouldShowWebsiteComplianceModal(
+        activationData,
+        websiteSectionDetailsData,
+        websiteComplianceModalVisibility,
+      );
+
+      if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {
+        this.setState({
+          isWebsiteComplianceModalShown: true,
+        });
+        this.props.openModal({
+          component: <WebsiteCompliancePrompt />,
+          size: 'small',
+        });
+      }
+    }
+  };
 
   canShowBannerForAxis = (activationState, isOrgAxis, isTncGenerated) => {
     const showTncForAxis =
@@ -380,7 +435,6 @@ class AnalyticsDesktop extends Component {
       bannerCarouselData: { banner_carousel_items = [] } = {},
       internationalSettingStatus,
     } = this.props;
-
     const {
       data: { items },
     } = lateAuthConfig;
@@ -446,23 +500,8 @@ class AnalyticsDesktop extends Component {
               shouldShowTnCBannerForAxis={shouldShowTnCBannerForAxis}
             />
           )}
-          {/* TODO: DO NOT UN-COMMENT */}
-          {/* <AnnouncementBanner title="Update website/App info" theme="warning" canBeClosed={false}>
-            <div className="website-compliance-announcement-container">
-              <div className="announcement-content">
-                <p>
-                  Terms & Conditions, Privacy Policy, Contact Us, Cancellation & Refund Policy, and
-                  Shipping and Delivery Policy pages & required as per RBI guidelines.
-                </p>
-              </div>
-              <div className="big-circle-seprator" />
-              <div className="cta">
-                <Link className="" to="">
-                  Update Now
-                </Link>
-              </div>
-            </div>
-          </AnnouncementBanner> */}
+          <WebsiteComplianceBanner />
+          {user.isWebsiteComplianceFlowEnabled && this.renderWebsiteCompliancePrompt()}
           {checkHTML5APIvalidity() && (
             <AnnouncementBanner title="Outdated Browser" theme="warning">
               Please update your web browser. We recommend you to download the latest version of
@@ -1024,6 +1063,9 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   mode: state.session.mode,
   config: state.config,
+  websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+  websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
+  activationData: state.websiteCompliance.activationData,
   internationalProductsStatus: state.config.internationalProductsStatus,
   limitBreach: state.home.limitBreach,
   settlementConfig: state.settlement.config,
@@ -1048,6 +1090,9 @@ export default withRouter(
     fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
     fetchCarouselBanner: fetchCarouselBannerProp,
     showProductsModal,
+    fetchMerchantWebsiteDetails,
+    getBannerAndModalVisibility,
+    fetchActivationDetails,
     ...EventActions,
   })(AnalyticsDesktop),
 );

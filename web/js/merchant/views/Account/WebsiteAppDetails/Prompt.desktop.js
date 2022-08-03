@@ -1,12 +1,74 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ModalHeader from 'common/ui/ModalHeader';
 import { pages } from 'merchant/views/Account/WebsiteAppDetails/data';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { updateBannerAndModalVisibility } from 'merchant/reducers/websitecompliance';
 
-function PromptDesktop() {
+function PromptDesktop({
+  websiteComplianceModalVisibility,
+  updateBannerAndModalVisibility,
+  closeModal,
+}) {
+  const onUpdateClick = () => {
+    const analyticsObj = {
+      objectName: 'Website wizard modal',
+      actionName: 'Interacted',
+      screen: 'Home page',
+      properties: {
+        bannerTitle: 'Update details about your website/app',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    };
+    analyticsTrack({
+      analyticsObj,
+    });
+    window.open('website-app-details?from=modal', '_self');
+  };
+
+  useEffect(() => {
+    // send analytics on modal load
+    const analyticsObj = {
+      objectName: 'Website wizard modal',
+      actionName: 'Loaded',
+      screen: 'Home page',
+      properties: {
+        bannerTitle: 'Update details about your website/app',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    };
+    analyticsTrack({
+      analyticsObj,
+    });
+  }, []);
+
+  const onCloseClick = () => {
+    closeModal();
+    const previousViewCount = Number(
+      websiteComplianceModalVisibility.data.website_incomplete_soft_nudge_count,
+    );
+    const modalPayload = {
+      website_incomplete_soft_nudge_count: websiteComplianceModalVisibility.data
+        .website_incomplete_soft_nudge_count
+        ? previousViewCount - 1
+        : 4,
+      website_incomplete_soft_nudge_timestamp: Math.round(Date.now() / 1000).toString(), // unix time
+    };
+    updateBannerAndModalVisibility(modalPayload);
+  };
+
+  const title = 'Update details about your website/app';
+
   return (
     <div className="website-app-details-container">
       <div className="prompt-container">
-        <ModalHeader title="Update details about your website/app" />
+        <ModalHeader title={title} />
+        <span className="prompt-modal-close">
+          <i class="i i-close" onClick={onCloseClick} />
+        </span>
         <div className="prompt-description">
           According to RBI guidelines, we require the following pages on your website/app:
         </div>
@@ -15,12 +77,30 @@ function PromptDesktop() {
             return <li key={`${page}_${idx}`}>{page}</li>;
           })}
         </ul>
+        <div className="prompt-footer">Don’t have these details? We’ll help you create them.</div>
         <div className="actions">
-          <button className="btn btn-primary">Update</button>
+          <button className="btn btn-primary" onClick={onUpdateClick}>
+            Update or create page
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-export default PromptDesktop;
+const mapStateToProps = (state) => ({
+  websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+  activationData: state.websiteCompliance.activationData,
+  websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      ...ModalActions,
+      updateBannerAndModalVisibility,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(PromptDesktop);

@@ -147,12 +147,8 @@ const contactFields = [
     type: 'tel',
     info: 'We will reach out to this phone for any account related issues.',
     _disabledWhen: (activation) => {
-      const {
-        isEmailMandatoryOnL1,
-        isEmailNonMandatoryOnL1,
-        isEmailNonMandatoryOnL2Form,
-        user,
-      } = activation.props.user;
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form, user } =
+        activation.props.user;
       const hasContactNumber = !!activation.props.data.contact_mobile;
       // if user signup from mobile disable the field
       return (
@@ -212,12 +208,8 @@ const contactFields = [
       this.sendErrorMessageToSegment(e, error);
     },
     _disabledWhen: (activation) => {
-      const {
-        isEmailMandatoryOnL1,
-        isEmailNonMandatoryOnL1,
-        isEmailNonMandatoryOnL2Form,
-        user,
-      } = activation.props.user;
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form, user } =
+        activation.props.user;
       // if user email is verified disable the field
       return (
         !activation.isOnKYCTab() &&
@@ -226,12 +218,8 @@ const contactFields = [
       );
     },
     addonAfter: (activation) => {
-      const {
-        isEmailMandatoryOnL1,
-        isEmailNonMandatoryOnL1,
-        isEmailNonMandatoryOnL2Form,
-        user,
-      } = activation.props.user;
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form, user } =
+        activation.props.user;
       if (
         !activation.isOnKYCTab() &&
         (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
@@ -565,7 +553,9 @@ const businessModel = [
       },
     },
     {
-      label: '',
+      getLabel: (activation) => {
+        return activation.isNeedsClarificationMode() && activation.isOnKYCTab() && 'Playstore URL';
+      },
       name: 'playstore_url',
       placeholder: 'Enter App Link',
       type: 'url',
@@ -579,12 +569,36 @@ const businessModel = [
         });
         this.sendErrorMessageToSegment(e, error);
       },
-      info:
-        'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
+      info: 'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
       _when: (activation) =>
         activation.state.app_url === '1' &&
         activation.state.has_url === '1' &&
         !activation.props.user.isActivationFormFullView,
+    },
+    {
+      getLabel: (activation) => {
+        return activation.isNeedsClarificationMode() && activation.isOnKYCTab() && 'Appstore URL';
+      },
+      name: 'appstore_url',
+      placeholder: 'Enter App Link',
+      type: 'url',
+      className: 'Input--App-Url',
+      onBlur: function onBlur(e, error) {
+        this.sendInputToSegment({
+          'Field Name': 'Accept payments on app',
+          'Field Type': 'Text',
+          'Tab Title': 'Business Overview',
+          Mandatory: 'No',
+        });
+        this.sendErrorMessageToSegment(e, error);
+      },
+      info: 'Your app url would look something like this “https://apps.apple.com/in/app/<app_name>/<app_id>” Provide just the app store url in case you operate in multiple stores or any one url in case you don’t have a app store url',
+      _when: (activation) =>
+        activation.state.app_url === '1' &&
+        activation.state.has_url === '1' &&
+        !activation.props.user.isActivationFormFullView &&
+        activation.isNeedsClarificationMode() &&
+        activation.isOnKYCTab(),
     },
     {
       className: 'only-content',
@@ -1843,7 +1857,7 @@ const uploadFields = [
       </>
     ),
     _when: (activation) => {
-      /* when we ramp up the experiement, merchants who didn't fall 
+      /* when we ramp up the experiement, merchants who didn't fall
         under the experiment shouldn't face any issue under needs clarfication flow */
       return (
         excludeFor_Indiv(activation) &&
@@ -1875,7 +1889,7 @@ const uploadFields = [
       </span>
     ),
     _when: (activation) => {
-      /* when we ramp up the experiement, merchants who didn't fall 
+      /* when we ramp up the experiement, merchants who didn't fall
         under the experiment shouldn't face any issue under needs clarfication flow */
       return (
         excludeFor_Indiv(activation) &&
