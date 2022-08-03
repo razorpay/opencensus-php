@@ -368,6 +368,16 @@ trait PaymentsUpiRecurringTrait
         return $newEntity;
     }
 
+    protected function getAndAssertUpiDbEntity(string $entity, array $actualDiff = [], array $conditionParam)
+    {
+        $newEntity = $this->getDbEntity($entity, $conditionParam);
+        if($newEntity !== null)
+        {
+            $this->assertArraySubset($actualDiff, $newEntity->toArray(), true);
+        }
+        return $newEntity;
+    }
+
     protected function assertUpiMetadataStatus(string $status, UpiMetadata\Entity $entity = null)
     {
         if ($entity === null)

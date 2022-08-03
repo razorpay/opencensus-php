@@ -392,14 +392,29 @@ trait RecurringTrait
 
         if ($sequenceNo === 1)
         {
-            //When mandate is not in confirmed state, $input['upi_mandate']['sequence_number']) will not be set.
-            //In such situation return default sequence number.
-            if (isset($input['upi_mandate']['sequence_number']) === true)
+            // If this is debit call then make sure sequence no must be same with pre-debit call in case of auto
+            // recurring payments
+            $preDebitUpiEntity = null;
+            if(($input['payment']['recurring_type'] === Payment\RecurringType::AUTO) and
+                ($action === Action::AUTHORIZE))
+            {
+                $preDebitUpiEntity = $this->getUpiEntityForAction($input, Action::PRE_DEBIT);
+            }
+
+            if((($preDebitUpiEntity instanceof Entity) === true) and
+                (empty($preDebitUpiEntity->getGatewayData()) === false) and
+                (empty($preDebitUpiEntity->getGatewayData()[Constants::SEQUENCE]) === false))
+            {
+                $sequenceNo = $preDebitUpiEntity->getGatewayData()[Constants::SEQUENCE];
+            }
+            else if (isset($input['upi_mandate']['sequence_number']) === true)
             {
                 $sequenceNo = $input['upi_mandate']['sequence_number'];
             }
             else
             {
+                //When mandate is not in confirmed state, $input['upi_mandate']['sequence_number']) will not be set.
+                //In such situation return default sequence number.
                 $sequenceNo = UpiMandate\SequenceNumber::DEFAULT_SEQUENCE_NUMBER;
             }
         }
