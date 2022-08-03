@@ -45,7 +45,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::INITIATE_AUTHORIZE, $input);
 
-        $mandate = $this->core->fetch($input[Entity::ID]);
+        $mandate = $this->core->fetch($this->input->get(Entity::ID));
 
         //TODO: implement validator logic
 

@@ -59,4 +59,15 @@ abstract class Transformer
             Vpa\Entity::HANDLE      => $vpa[1] ?? null,
         ];
     }
+
+    /**
+     * get handle from vpa
+     *
+     * @param $vpa
+     * @return string
+     */
+    public function getVpaHandle($vpa)
+    {
+        return explode(Vpa\Entity::AEROBASE, $vpa)[1];
+    }
 }

@@ -39,14 +39,14 @@ class Response
         $this->content = $content;
     }
 
-    public function finish()
+    public function finish(bool $isValidateSignature)
     {
         if (isset($this->actionMap[Action::VALIDATOR]))
         {
             $this->validateInput($this->actionMap[Action::VALIDATOR]);
         }
 
-        if (isset($this->actionMap[Action::SIGNATURE]))
+        if (isset($this->actionMap[Action::SIGNATURE]) && $isValidateSignature === true)
         {
             $this->validateSignature($this->actionMap[Action::SIGNATURE]);
         }

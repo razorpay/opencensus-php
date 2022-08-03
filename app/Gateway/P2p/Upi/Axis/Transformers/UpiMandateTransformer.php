@@ -12,6 +12,8 @@ use RZP\Models\P2p\Mandate\UpiMandate;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
 
 use RZP\Models\P2p\Transaction\Status;
+use RZP\Gateway\P2p\Upi\Axis\Actions\MandateAction;
+use RZP\Models\P2p\Transaction\UpiTransaction\Entity;
 
 class UpiMandateTransformer extends Transformer
 {
@@ -36,6 +38,27 @@ class UpiMandateTransformer extends Transformer
                 $this->input[Fields::GATEWAY_RESPONSE_MESSAGE]  = 'Incoming mandate collect request';
 
                 break;
+        }
+
+        if(isset($this->input[Fields::GATEWAY_RESPONSE_STATUS]))
+        {
+            switch($this->input[Fields::GATEWAY_RESPONSE_STATUS])
+            {
+                case MandateAction::SUCCESS:
+                    $output = [
+                        UpiMandate\Entity::ACTION    => Action::INITIATE_AUTHORIZE,
+                        UpiMandate\Entity::STATUS    => Mandate\Status::APPROVED,
+                    ];
+
+                    break;
+                case MandateAction::DECLINED:
+                    $output = [
+                        UpiMandate\Entity::ACTION    => Action::INITIATE_REJECT,
+                        UpiMandate\Entity::STATUS    => Mandate\Status::REJECTED,
+                    ];
+
+                    break;;
+            }
         }
 
         return $output;
@@ -145,6 +168,62 @@ class UpiMandateTransformer extends Transformer
         {
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
                 return Carbon::parse($this->input[Fields::EXPIRY])->getTimestamp();
+        }
+    }
+
+    public function transformSdk(): array
+    {
+        $request = $this->transform();
+
+        $output = [
+            UpiMandate\Entity::MANDATE_ID                             => $this->transformTransactionId(),
+            UpiMandate\Entity::NETWORK_TRANSACTION_ID                 => $this->input[Fields::GATEWAY_MANDATE_ID],
+            UpiMandate\Entity::GATEWAY_TRANSACTION_ID                 => $this->input[Fields::GATEWAY_MANDATE_ID],
+            UpiMandate\Entity::GATEWAY_REFERENCE_ID                   => $this->input[Fields::GATEWAY_REFERENCE_ID],
+            UpiMandate\Entity::RRN                                    => $this->input[Fields::GATEWAY_MANDATE_ID],
+            UpiMandate\Entity::GATEWAY_ERROR_CODE                     => $this->input[Fields::GATEWAY_RESPONSE_CODE],
+            UpiMandate\Entity::GATEWAY_ERROR_DESCRIPTION              => $this->input[Fields::GATEWAY_RESPONSE_MESSAGE],
+        ];
+
+
+        $gatewayData = array_only($this->input,[Fields::MERCHANT_REQUEST_ID,
+                                                Fields::GATEWAY_RESPONSE_STATUS,
+                                                Fields::ORG_MANDATE_ID,
+                                                Fields::MANDATE_TIMESTAMP]);
+
+        if(isset($this->input[Mandate\Entity::UPI]))
+            $output[UpiMandate\Entity::GATEWAY_DATA] = array_merge($this->input[Mandate\Entity::UPI][UpiMandate\Entity::GATEWAY_DATA],$gatewayData);
+        else
+            $output[UpiMandate\Entity::GATEWAY_DATA] = $gatewayData;
+
+
+        $output[Mandate\Entity::MANDATE] = [
+            Mandate\Entity::ID               => $this->transformTransactionId(),
+            Mandate\Entity::AMOUNT           => $this->toPaisa($this->input[Fields::AMOUNT]),
+            Mandate\Entity::NAME             => $this->input[Fields::MANDATE_NAME],
+            Mandate\Entity::TYPE             => $this->input[Fields::MANDATE_TYPE],
+            Mandate\Entity::COMPLETED_AT     => isset($this->input[Fields::MANDATE_APPROVAL_TIMESTAMP]) ? $this->input[Fields::MANDATE_APPROVAL_TIMESTAMP] :'',
+            Mandate\Entity::AMOUNT_RULE      => $this->input[Fields::AMOUNT_RULE],
+            Mandate\Entity::RECURRING_TYPE   => $this->input[Fields::RECURRENCE_PATTERN],
+            Mandate\Entity::RECURRING_RULE   => $this->input[Fields::RECURRENCE_RULE],
+            Mandate\Entity::RECURRING_VALUE  => $this->toInteger($this->input[Fields::RECURRENCE_VALUE]),
+            Mandate\Entity::START_DATE       => isset($this->input[Fields::VALIDITY_START])? Carbon::parse($this->input[Fields::VALIDITY_START])->getTimestamp() :0,
+            Mandate\Entity::END_DATE         => isset($this->input[Fields::VALIDITY_END])? Carbon::parse($this->input[Fields::VALIDITY_END])->getTimestamp() :0,
+            Mandate\Entity::DESCRIPTION      => $this->input[Fields::REMARKS],
+            Mandate\Entity::EXPIRE_AT        => isset($this->input[Fields::EXPIRY])? Carbon::parse($this->input[Fields::EXPIRY])->getTimestamp() :0,
+            Mandate\Entity::UMN              => $this->input[Fields::UMN],
+            Mandate\Entity::PAUSE_START      => isset($this->input[Fields::PAUSE_START]) ? Carbon::parse($this->input[Fields::PAUSE_START])->getTimestamp(): 0,
+            Mandate\Entity::PAUSE_END       =>  isset($this->input[Fields::PAUSE_END]) ? Carbon::parse($this->input[Fields::PAUSE_END])->getTimestamp(): 0,
+        ];
+
+        return array_merge($request, $output);
+    }
+
+    public function transformTransactionId()
+    {
+        if (isset($this->input[Fields::MERCHANT_REQUEST_ID]) === true)
+        {
+            return substr($this->input[Fields::MERCHANT_REQUEST_ID], -14);
         }
     }
 }

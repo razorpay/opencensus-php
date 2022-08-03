@@ -6,9 +6,11 @@ use RZP\Models\P2p\Mandate\Flow;
 use RZP\Models\P2p\Mandate\Type;
 use RZP\Models\P2p\Mandate\Entity;
 use RZP\Models\P2p\Mandate\Status;
+use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Axis\ErrorMap;
 use RZP\Models\P2p\Mandate\UpiMandate;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
+use RZP\Gateway\P2p\Upi\Axis\Actions\MandateAction;
 
 /**
  * Class MandateTransformer
@@ -32,7 +34,31 @@ class MandateTransformer extends TransactionTransformer
                     Entity::FLOW                => Flow::DEBIT,
                     Entity::INTERNAL_STATUS     => Status::REQUESTED,
                 ];
+                break;
+        }
 
+
+        // switch in case of mandate status
+        switch ($this->input[Fields::STATUS])
+        {
+            case Status::APPROVED:
+                $output = [
+                    Entity::TYPE                             => Type::COLLECT,
+                    Entity::FLOW                             => Flow::DEBIT,
+                    Entity::ACTION                           => MandateAction::APPROVE_DECLINE_MANDATE,
+                    Entity::STATUS                           => Status::APPROVED,
+                    Entity::INTERNAL_STATUS                  => Status::APPROVED,
+                ];
+                break;
+
+            case Status::REJECTED:
+                $output = [
+                    Entity::TYPE                             => Type::COLLECT,
+                    Entity::FLOW                             => Flow::DEBIT,
+                    Entity::ACTION                           => MandateAction::APPROVE_DECLINE_MANDATE,
+                    Entity::STATUS                           => Status::REJECTED,
+                    Entity::INTERNAL_STATUS                  => Status::REJECTED,
+                ];
                 break;
         }
 
@@ -54,6 +80,21 @@ class MandateTransformer extends TransactionTransformer
         $mandate = $this->input[Entity::MANDATE];
 
         return array_merge($mandate, $output);
+    }
+
+    /**
+     * This is the method to transform sdk response
+     * @return array
+     */
+    public function transformSdk(): array
+    {
+        $request = $this->input[Entity::MANDATE];
+
+        $output = $this->transform();
+
+        $this->checkForError($output);
+
+        return array_merge($request, $output);
     }
 
     /**

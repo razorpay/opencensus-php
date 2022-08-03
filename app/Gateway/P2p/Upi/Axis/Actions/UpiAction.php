@@ -29,6 +29,10 @@ class UpiAction extends Action
 
     const CUSTOMER_INCOMING_MANDATE_UPDATED                             = 'CUSTOMER_INCOMING_MANDATE_UPDATED';
 
+    const AUTHORIZE_MANDATE                                             = 'AUTHORIZE_MANDATE';
+
+    const REJECT_MANDATE                                                = 'REJECT_MANDATE';
+
     const CUSTOMER_INCOMING_PRE_PAYMENT_NOTIFICATION_MANDATE_RECEIVED   = 'CUSTOMER_INCOMING_PRE_PAYMENT_NOTIFICATION_MANDATE_RECEIVED';
 
     const CUSTOMER_OUTGOING_MANDATE_PAUSED                              = 'CUSTOMER_OUTGOING_MANDATE_PAUSED';

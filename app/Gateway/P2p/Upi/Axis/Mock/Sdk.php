@@ -7,6 +7,7 @@ use phpseclib\Crypt\RSA;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Axis\Gateway;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
+use RZP\Gateway\P2p\Upi\Axis\Actions\MandateAction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\TransactionAction;
 use RZP\Gateway\P2p\Upi\Axis\Actions\BankAccountAction;
 
@@ -242,10 +243,20 @@ class Sdk
         return $response;
     }
 
+    public function sdkApproveDeclineMandate()
+    {
+        switch($this->input[Fields::REQUEST_TYPE])
+        {
+            case MandateAction::APPROVE:
+                return $this->sdkAuthorizeMandate();
+            case MandateAction::DECLINE:
+                return $this->sdkRejectMandate();
+        }
+    }
+
     public function sdkAuthorizeMandate()
     {
         $response = [
-            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
             Fields::AMOUNT                      => 100,
             Fields::AMOUNT_RULE                 => 'EXACT',
             Fields::BLOCK_FUND                  => false,
@@ -259,14 +270,13 @@ class Sdk
             Fields::MANDATE_APPROVAL_TIMESTAMP  => Carbon::now()->toIso8601String(),
             Fields::MANDATE_NAME                => 'Sample mandate test',
             Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
-            Fields::MANDATA_TYPE                => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ?? 'CREATE',
+            Fields::MANDATE_TYPE                => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ?? 'CREATE',
             Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
             Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
             Fields::ORG_MANDATE_ID              => str_random(35),
             Fields::PAYEE_MCC                   => '2222',
             Fields::PAYEE_NAME                  => 'Payee Name',
             Fields::PAYEE_VPA                   => 'test@razoraxis',
-            Fields::PAYER_NAME                  => 'Payer name',
             Fields::PAYER_REVOCABLE             => true,
             Fields::PAYER_VPA                   => 'customer@razoraxis',
             Fields::RECURRENCE_PATTERN          => 'WEEKLY',
@@ -277,10 +287,10 @@ class Sdk
             Fields::ROLE                        => 'PAYER',
             Fields::SHARE_TO_PAYEE              => true,
             Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
-            Fields::UDF_PARAMETERS              => '{}',
             Fields::UMN                         => str_random(10).'@bajaj',
-            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
             Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::UDF_PARAMETERS              => '{}',
         ];
 
         $this->content($response, $this->action);
@@ -299,6 +309,7 @@ class Sdk
         $response = [
             Fields::AMOUNT                      => 100,
             Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => '162b957e5dc7957ae9fe99eed69daa5ff1d65b89a312bdede56d843f20b15645',
             Fields::BLOCK_FUND                  => false,
             Fields::EXPIRY                      => $this->formattedTime(30),
             Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::MANDATE_REQUEST_ID],
@@ -307,9 +318,10 @@ class Sdk
             Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is declined',
             Fields::GATEWAY_RESPONSE_STATUS     => 'DECLINED',
             Fields::INITIATED_BY                => 'payer',
+            Fields::MANDATE_APPROVAL_TIMESTAMP  => Carbon::now()->toIso8601String(),
             Fields::MANDATE_NAME                => 'Sample mandate test',
             Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
-            Fields::MANDATA_TYPE                => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ?? 'CREATE',
+            Fields::MANDATE_TYPE                => ($this->input[Fields::REQUEST_TYPE] === 'UPDATE') ?? 'CREATE',
             Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
             Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
             Fields::ORG_MANDATE_ID              => str_random(35),
@@ -327,10 +339,10 @@ class Sdk
             Fields::ROLE                        => 'PAYER',
             Fields::SHARE_TO_PAYEE              => true,
             Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
-            Fields::UDF_PARAMETERS              => '{}',
             Fields::UMN                         => str_random(10).'@bajaj',
-            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
             Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::UDF_PARAMETERS              => '{}',
         ];
 
         $this->content($response, $this->action);

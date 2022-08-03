@@ -79,7 +79,7 @@ class Gateway extends Upi\Gateway
         return $this->inputSdk();
     }
 
-    protected function handleSdkCallback(): ArrayBag
+    protected function handleSdkCallback(bool $isValidateSignature = true): ArrayBag
     {
         $action = $this->input->get(Fields::CALLBACK)->get(Fields::ACTION);
 
@@ -91,8 +91,8 @@ class Gateway extends Upi\Gateway
 
         $response->setContent($this->inputSdk());
 
-        $response->finish();
-
+        $response->finish($isValidateSignature);
+        
         return $this->input->get(Fields::CALLBACK);
     }
 

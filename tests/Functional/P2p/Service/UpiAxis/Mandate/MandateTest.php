@@ -3,10 +3,14 @@
 namespace Functional\P2p\Service\UpiAxis\Mandate;
 
 use Carbon\Carbon;
+use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Entity;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Mandate\UpiMandate;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
+use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
+use RZP\Tests\P2p\Service\Base\Traits\MandateTrait;
+use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
 
 /**
  * Class MandateTest
@@ -15,6 +19,9 @@ use RZP\Tests\P2p\Service\UpiAxis\TestCase;
  */
 class MandateTest extends TestCase
 {
+    use MandateTrait;
+    use MetricsTrait;
+
     /**
      * Test incoming mandate collect request from gateway.
      */
@@ -91,5 +98,70 @@ class MandateTest extends TestCase
 
         $actualUpiMandate = array_only($collection['items'][0][Entity::UPI], array_keys($expectedUpiMandateSubset));
         $this->assertEquals($expectedUpiMandateSubset, $actualUpiMandate);
+    }
+
+    public function testInitiateAuthorize()
+    {
+        $helper = $this->getMandateHelper();
+
+        $this->testIncomingCollect();
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID],$request['callback']);
+    }
+
+
+    public function testAuthorize()
+    {
+        $helper = $this->getMandateHelper();
+
+        $this->testIncomingCollect();
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->authorizeMandate($request['callback'], $content);
+
+        $this->assertArraySubset([
+             Entity::STATUS => Status::APPROVED,
+         ], $response);
+    }
+
+    public function testInitiateReject()
+    {
+        $helper = $this->getMandateHelper();
+
+        $this->testIncomingCollect();
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $request = $helper->initiateReject($lastMandate[Entity::ID], []);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID],$request['callback']);
+    }
+
+    public function testReject()
+    {
+        $helper = $this->getMandateHelper();
+
+        $this->testIncomingCollect();
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $request = $helper->initiateReject($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->authorizeMandate($request['callback'], $content);
+
+        $this->assertArraySubset([
+                Entity::STATUS => Status::REJECTED,
+         ], $response);
     }
 }
