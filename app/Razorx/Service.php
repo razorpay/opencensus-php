@@ -271,7 +271,8 @@ class Service extends Base\Service
             'international_apm_onboarding',
             'capital_founders_card',
             'capital_last_day_repayment',
-            'capital_loc_x_migration_reroute'
+            'capital_loc_x_migration_reroute',
+            'rx_vendor_balances_rollout'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
