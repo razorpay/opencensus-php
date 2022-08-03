@@ -552,7 +552,7 @@ class Gateway extends BaseProcessor
                 Entity::CHANNEL             => $this->getChannel(),
                 Entity::ACCOUNT_NUMBER      => $this->accountNumber,
                 Entity::BANK_TRANSACTION_ID => $this->getBankTransactionIdFromResponse($transactionData),
-                Entity::BANK_SERIAL_NUMBER  => $this->getBankTransactionIdFromResponse($transactionData),
+                Entity::BANK_SERIAL_NUMBER  => $this->getBankTransactionIdOrChequeNo($transactionData),
                 Entity::AMOUNT              => $this->getAmountFromResponse($transactionData),
                 Entity::CURRENCY            => Currency::INR,
                 Entity::TYPE                => $this->getTypeFromResponse($transactionData),
@@ -604,6 +604,16 @@ class Gateway extends BaseProcessor
     protected function getBankTransactionIdFromResponse(array $transaction): string
     {
         return trim($transaction[Fields::TRANSACTION_ID]);
+    }
+
+    protected function getBankTransactionIdOrChequeNo(array $transaction): string
+    {
+        $chequeNo = $transaction[Fields::CHEQUENO];
+
+        // If ChequeNo is an empty array, empty string or a string with spaces return false, else return true.
+        $fillChequeNo = (empty($chequeNo) === true) ? false : (empty(trim($chequeNo)) === false);
+
+        return ($fillChequeNo === false) ? $this->getBankTransactionIdFromResponse($transaction) : trim($chequeNo);
     }
 
     protected function getAmountFromResponse(array $transaction): int

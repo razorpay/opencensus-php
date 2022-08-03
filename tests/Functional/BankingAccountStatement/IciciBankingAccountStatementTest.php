@@ -153,7 +153,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "10,000.00",
                         "BALANCE"       => "10,000.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
                         "TRANSACTIONID" => "S71034864",
                         "TXNDATE"       => "18-02-2021 10:59:00",
@@ -163,7 +163,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
                         "TRANSACTIONID" => "S74203578",
                         "TXNDATE"       => "18-02-2021 13:20:51",
@@ -173,7 +173,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,998.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
                         "TRANSACTIONID" => "S86758818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -206,7 +206,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "100.00",
                         "BALANCE"       => "100.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "NEFT-AXISCN0118376057-RAZORPAY PVT",
                         "TRANSACTIONID" => "S71034864",
                         "TXNDATE"       => "18-02-2021 10:59:00",
@@ -216,7 +216,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "101.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/INFT/025802182571/Razorpay/Leaf",
                         "TRANSACTIONID" => "S74203578",
                         "TXNDATE"       => "18-02-2021 13:20:51",
@@ -226,7 +226,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "102.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "BIL/INFT/000270116851/TEST ICICI/Ishiki",
                         "TRANSACTIONID" => "S86758818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -236,7 +236,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "103.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "RTGS-AUBLR12021123000584069-RZP PVT-212121133524511",
                         "TRANSACTIONID" => "S86234818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -246,7 +246,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "104.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "UPI/115421282359/UPI/Jiraya/DBS Bank India",
                         "TRANSACTIONID" => "S86569818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -256,7 +256,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "103.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "BIL/BPAY/000000043NVN/Testing",
                         "TRANSACTIONID" => "S86758150",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -266,7 +266,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "102.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "BIL/ONL/000286716570/Testing",
                         "TRANSACTIONID" => "S86758346",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -276,7 +276,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "101.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "UPI/115600327157/NA/Itachi/",
                         "TRANSACTIONID" => "S86758231",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -286,7 +286,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "102.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT IMPS 212211671710 APIJQFQgSvI8qvN MR SATYANAR  SBIN0003281",
                         "TRANSACTIONID" => "S86768231",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -296,7 +296,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "103.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "IMPS 204813976491 19 02 2021 BOI",
                         "TRANSACTIONID" => "S86768232",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -329,7 +329,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
                         "TRANSACTIONID" => "S74203578",
                         "TXNDATE"       => "18-02-2021 13:20:51",
@@ -339,7 +339,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,998.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
                         "TRANSACTIONID" => "S86758818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -349,7 +349,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,997.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "CRP/DEBIT/20220201011500",
                         "TRANSACTIONID" => "S86758858",
                         "TXNDATE"       => "01-02-2022 01:15:08",
@@ -382,7 +382,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "10,000.00",
                         "BALANCE"       => "20,000.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
                         "TRANSACTIONID" => "S71034864",
                         "TXNDATE"       => "18-02-2021 10:59:00",
@@ -392,7 +392,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "19,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
                         "TRANSACTIONID" => "S74203578",
                         "TXNDATE"       => "18-02-2021 13:20:51",
@@ -402,12 +402,55 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "19,998.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
                         "TRANSACTIONID" => "S86758818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
                         "TYPE"          => "DR",
                         "VALUEDATE"     => "19-02-2021",
+                    ],
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "SATYANAR"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        return $response;
+    }
+
+    protected function getIciciDataResponseWithChequeNo()
+    {
+        $response = [
+            "data"              => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "100.00",
+                        "BALANCE"       => "9,800.00",
+                        "CHEQUENO"      => "607",
+                        "REMARKS"       => "Acc Debit Charge",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                    [
+                        "AMOUNT"        => "100.00",
+                        "BALANCE"       => "9,700.00",
+                        "CHEQUENO"      => "",
+                        "REMARKS"       => "Acc Debit Charge",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "18-02-2021"
                     ],
                 ],
                 "URN"       => "SR189932540",
@@ -435,7 +478,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "2,00,000.00",
                         "BALANCE"       => "1,50,000.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "RTGS/ICICR42021042600532487/RATN0000156/Naruto Uzumaki",
                         "TRANSACTIONID" => "S39060827",
                         "TXNDATE"       => "26-04-2021 17:04:47",
@@ -469,7 +512,7 @@ class IciciBankingAccountStatementTest extends TestCase
 
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/INFT/023652565741/TestIciciProd06/Rajat Singh",
                         "TRANSACTIONID" => "C97592667",
                         "TXNDATE"       => "23-02-2021 03:22:34",
@@ -503,7 +546,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
                         "TRANSACTIONID" => "S86758818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -536,7 +579,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "10,000.00",
                         "BALANCE"       => "10,000.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
                         "TRANSACTIONID" => "S71034864",
                         "TXNDATE"       => "18-02-2021 10:59:00",
@@ -546,7 +589,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
                         "TRANSACTIONID" => "S86758818",
                         "TXNDATE"       => "19-02-2021 04:29:52",
@@ -556,7 +599,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "10,000.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "NEFT-RETURN-23629961691DC-Naruto-ACCOUNT DOES NOT EXIST  R03",
                         "TRANSACTIONID" => "S87272425",
                         "TXNDATE"       => "19-02-2021 07:31:16",
@@ -849,7 +892,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "10,000.00",
                         "BALANCE"       => "10,000.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
                         "TRANSACTIONID" => "S71034864",
                         "TXNDATE"       => "18-02-2021 10:59:00",
@@ -859,7 +902,7 @@ class IciciBankingAccountStatementTest extends TestCase
                      [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "9,999.00",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
                         "TRANSACTIONID" => "S74203578",
                         "TXNDATE"       => "18-02-2021 13:20:51",
@@ -2049,6 +2092,75 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertArraySubset($txnExpected, $txnActual, true);
     }
 
+    public function testIciciAccountStatementFetchV2DedupeLogicWithChequeNo()
+    {
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'amount'                    => '10000',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S71034864',
+                                    'description'               => "Acc Debit Charge",
+                                    'balance'                   => 990000,
+                                    'transaction_date'          => 1613586600,
+                                    'posted_date'               => 1613626140,
+                                    'bank_serial_number'        => 'S71034864',
+                                    'transaction_id'            => 'JzYlLzcIIQL45S',
+                                    'entity_type'               => 'external',
+                                    'entity_id'                 => 'JzYlLzMRxzj6po'
+                                ]);
+
+        $mockedResponse = $this->getIciciDataResponseWithChequeNo();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basd = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit('balance', $basd[BasDetails\Entity::BALANCE_ID], ['balance' => 990000]);
+
+        IciciBankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::ICICI,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $transactions = $mockedResponse[F::DATA][F::RECORD];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $txnEntity->toArray();
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => trim($txn[F::TRANSACTION_ID]),
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10000,
+            BasEntity::BALANCE               => 980000,
+            BasEntity::POSTED_DATE           => 1613626140,
+            BasEntity::TRANSACTION_DATE      => 1613586600,
+            BasEntity::DESCRIPTION           => trim($txn[F::REMARKS]),
+            BasEntity::CHANNEL               => 'icici',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+            BasEntity::BANK_SERIAL_NUMBER    => "607"
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+    }
+
     /**
      * balance b
     t1 r1  c  a1        b+a1 = cb1      c=> credit
@@ -2193,7 +2305,7 @@ class IciciBankingAccountStatementTest extends TestCase
         $mockedResponse[F::DATA][F::RECORD][3] = [
             "AMOUNT"        => "5.00",
             "BALANCE"       => "19,995.00",
-            "CHEQUENO"      => [],
+            "CHEQUENO"      => "",
             "REMARKS"       => "INF/NEFT/023629961643/SBIN0050101/TestIcici/demon",
             "TRANSACTIONID" => "S86758817",
             "TXNDATE"       => "19-02-2021 04:29:56",
@@ -2337,7 +2449,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "0.08",
                         "BALANCE"       => "0.08",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
                         "TRANSACTIONID" => "S71034864",
                         "TXNDATE"       => "18-02-2021 10:59:00",
@@ -2378,7 +2490,7 @@ class IciciBankingAccountStatementTest extends TestCase
                     [
                         "AMOUNT"        => "1.00",
                         "BALANCE"       => "1.08",
-                        "CHEQUENO"      => [],
+                        "CHEQUENO"      => "",
                         "REMARKS"       => "MMT/IMPS/104913832918/TESTICICI/SAMPLE/Hokage",
                         "TRANSACTIONID" => "S74203578",
                         "TXNDATE"       => "18-02-2021 13:20:51",
