@@ -2532,6 +2532,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EVENT_MISSING_PAYMENT_CONTEXT                         = 'EVENT_MISSING_PAYMENT_CONTEXT';
     const EVENT_QUEUE_SEND_FAILED                               = 'EVENT_QUEUE_SEND_FAILED';
     const EVENT_POST_FAILED                                     = 'EVENT_POST_FAILED';
+    const EVENT_PLUGINS_FAILED                                  = 'EVENT_PLUGINS_FAILED';
 
     // Trace code for features
 
@@ -5103,6 +5104,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_FETCH_FAILED                                 = 'MERCHANT_FETCH_FAILED';
     const USER_FETCH_FAILED_FOR_SEGMENT_EVENT                   = 'USER_FETCH_FAILED_FOR_SEGMENT_EVENT';
     const XSEGMENT_EVENT_DISPATCH                               = 'XSEGMENT_EVENT_DISPATCH';
+    const PLUGIN_SEGMENT_EVENT_DISPATCH                         = 'PLUGIN_SEGMENT_EVENT_DISPATCH';
 
     // Trace code for ES ON Demand
     const ES_ON_DEMAND_INITIATE_TIMESTAMP                       = 'ES_ON_DEMAND_INITIATE_TIMESTAMP';
