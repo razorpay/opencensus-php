@@ -379,11 +379,7 @@ return array(
 
     'submerchant_bulk_validation_status_update_exp_id' => env('SUBMERCHANT_BULK_VALIDATION_STATUS_UPDATE_EXP_ID'),
 
-    'partner_add_submerchant_account_exp_id'    => env('PARTNER_ADD_SUBMERCHANT_ACCOUNT_EXP_ID'),
-
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),
-
-    'commission_invoice_events_exp_id' => env('COMMISSION_INVOICE_EVENTS_EXP_ID'),
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
 
@@ -412,7 +408,7 @@ return array(
     'cmma_soft_limit_breach_trigger_experiment_id' => env('CMMA_SOFT_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
 
     'cmma_escalation_new_process_id' => env('CMMA_ESCALATION_NEW_PROCESS_ID'),
-    
+
     'cmma_escalation_process_id' => env('CMMA_ESCALATION_PROCESS_ID'),
 
     'payment_handle_domain' => env('PAYMENT_HANDLE_DOMAIN'),

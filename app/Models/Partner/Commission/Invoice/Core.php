@@ -236,18 +236,6 @@ class Core extends Base\Core
     {
         $data = $this->getTemplateData($invoice);
 
-        $properties = [
-            'id'            => $data['merchant']['id'],
-            'experiment_id' => $this->app['config']->get('app.commission_invoice_events_exp_id'),
-        ];
-
-        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
-
-        if($isExpEnabled === false)
-        {
-            return ;
-        }
-
         $eventData = [
             'partner_id'                =>  $data['merchant']['id'],
             'month_of_commission'       =>  $invoice->getMonth().'-'.$invoice->getYear(),
