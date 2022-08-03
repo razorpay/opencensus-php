@@ -77,6 +77,7 @@
                 requestParams: requestParams,
                 view_preferences: data.view_preferences,
                 keyless_header: data.keyless_header,
+                checkout_2_enabled: data.checkout_2_enabled ?? false,
               };
         </script>
 

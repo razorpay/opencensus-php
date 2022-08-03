@@ -88,6 +88,7 @@ class ViewSerializer extends Base\Core
             E::MERCHANT        => $this->serializeMerchantForHosted(),
             E::PAYMENT_LINK    => $this->serializePaymentLinkForHosted(),
             E::ORG             => $this->serializeOrgPropertiesForHosted(),
+            'checkout_2_enabled' =>  $this->merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)
         ];
 
         return $this->updateNoneCachedHostedKeys($data);

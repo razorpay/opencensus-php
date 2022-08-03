@@ -978,7 +978,7 @@ class Constants
     const ORG_HDFC_VAS_CARDS_SURCHARGE  =   'hdfc_vas_cards_surcharge';
 
     /**
-     * Merchant level feature flag for HDFC 2.0 Checkout
+     * Merchant/Org level feature flag for HDFC 2.0 Checkout
      */
     const HDFC_CHECKOUT_2   = 'hdfc_checkout_2';
 

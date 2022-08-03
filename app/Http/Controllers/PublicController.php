@@ -156,24 +156,20 @@ class PublicController extends Controller
 
         $app = \App::getFacadeRoot();
 
-        if( (isset($meta['type']) === true) and
-            ($meta['type'] === 'hdfcvas') and
-            ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true) )
+        if(((isset($meta['type']) === true) and
+        ($meta['type'] === 'hdfcvas') and
+        ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true)) or ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)))
         {
-            $experimentResult = $app['razorx']->getTreatment($merchant->getOrgId(),
-                'hdfc_checkout_2', $app['rzp.mode']);
-
-            if($experimentResult === 'on')
-            {
-                $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
-            }
-
-            $app['trace']->debug(TraceCode::HDFC_CHECKOUT_2, [
-                'razorXResult'  => $experimentResult,
-                'featurePresent'=> $merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2),
-                'script'        => $script
-            ]);
+            $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
+           
         }
+
+        $app['trace']->info(TraceCode::HDFC_CHECKOUT_2, [
+            'merchantID' => $merchant['id'],
+            'merchantFeaturePresent'=> $merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2),
+            'merchantOrgFeaturePresent'=> $merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2),
+            'script'        => $script
+        ]);
 
         $options = [
             'key'          => $this->ba->getPublicKey(),

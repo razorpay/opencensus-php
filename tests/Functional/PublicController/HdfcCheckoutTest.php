@@ -8,11 +8,9 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 use Illuminate\Support\Facades\View;
-use RZP\Tests\Traits\MocksRazorx;
 
 class HdfcCheckoutTest extends TestCase
 {
-    use MocksRazorx;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -36,8 +34,6 @@ class HdfcCheckoutTest extends TestCase
         );
 
         $this->generateViewMocks($org->getCustomCode());
-
-        $this->mockRazorxTreatmentV2('hdfc_checkout_2', 'on');
 
         $this->ba->publicAuth();
 
