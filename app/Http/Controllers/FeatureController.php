@@ -5,6 +5,8 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Type;
 use RZP\Models\Feature\Constants;
 use RZP\Trace\TraceCode;
@@ -52,6 +54,21 @@ class FeatureController extends Controller
         $input = Request::all();
 
         $data = $this->service()->onboardMerchantOnPG($input);
+
+        return ApiResponse::json($data->toArrayWithItems());
+    }
+
+    /**
+     * Disables PG Ledger Service for a merchant
+     * Removes PG_LEDGER_JOURNAL_WRITES features for merchants
+     *
+     * @return ApiResponse
+     */
+    public function offboardMerchantsOnPgLedger()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->offboardMerchantOnPG($input);
 
         return ApiResponse::json($data->toArrayWithItems());
     }

@@ -1083,4 +1083,94 @@ class Service extends Base\Service
         }
         return $response;
     }
+
+    /**
+     *
+     * Offboards merchant from ledger service
+     * Removes feature for the merchant
+     *
+     * @param array $input
+     */
+    public function offboardMerchantOnPG(array $input)
+    {
+        $response = new Base\PublicCollection;
+
+        if(!isset( $input['merchant_ids']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                'merchant_ids',
+                null,
+                "merchant_ids key is missing"
+            );
+        }
+
+        $merchantIds = $input["merchant_ids"];
+
+        if(empty($merchantIds))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMPTY_PAYLOAD_ERROR,
+                null,
+                null
+            );
+        }
+        foreach ($merchantIds as $merchantId)
+        {
+            $result = [
+                Constants::MERCHANT_ID     => $merchantId,
+                Constants::STATUS          => Constants::SUCCESS,
+                CONSTANTS::FEATURE         => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+            ];
+
+            try
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                if(!$merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES))
+                {
+                    throw new \Exception(Constants::MERCHANT_FEATURE_ALREADY_DISABLED);
+                }
+
+                //Remove PG_LEDGER_JOURNAL_WRITES feature from  merchant
+                $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+                    EntityConstants::MERCHANT,
+                    $merchant->getId(),
+                    Constants::PG_LEDGER_JOURNAL_WRITES);
+
+                if (!empty($feature))
+                {
+                    (new Core)->delete($feature);
+                }
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_OFFBOARDED_FROM_PG_LEDGER,
+                    [
+                        Constants::MERCHANT_ID  => $merchantId,
+                        CONSTANTS::FEATURE => CONSTANTS::PG_LEDGER_JOURNAL_WRITES
+                    ]
+                );
+
+                $result[Constants::MESSAGE] = CONSTANTS::MERCHANT_OFFBOARDED;
+
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::FEATURE_REMOVE_FAILED,
+                    [
+                        "exception"             => $e,
+                        "message"               => $e->getMessage(),
+                        Constants::MERCHANT_ID  => $merchantId
+                    ]
+                );
+
+                $result[Constants::STATUS] = Constants::FAILURE;
+                $result[Constants::MESSAGE] = $e->getMessage();
+            }
+
+            $response->add($result);
+        }
+        return $response;
+    }
 }

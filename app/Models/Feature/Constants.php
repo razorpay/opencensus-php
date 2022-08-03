@@ -214,6 +214,7 @@ class Constants
     const SUCCESS                           = 'success';
     const FAILURE                           = 'failure';
     const MERCHANT_FEATURE_ALREADY_ENABLED  = 'merchant feature already enabled';
+    const MERCHANT_FEATURE_ALREADY_DISABLED  = 'merchant feature already disabled';
 
     const PAYMENT_STATUS_AGGREGATE        = 'payment_status_aggregate';
     const VISA_SAFE_CLICK                 = 'vsc_authorization';
@@ -1448,6 +1449,8 @@ class Constants
     const STATUS_CODE                    = 'status_code';
     const BODY                           = 'body';
     const BAD_REQUEST_MERCHANT_ID_ABSENT = "BAD_REQUEST_MERCHANT_ID_ABSENT";
+    const MERCHANT_OFFBOARDED            = 'merchant offboarded';
+
 
     const ORG_POOL_ACCOUNT_SETTLEMENT = 'org_pool_settlement';
 
