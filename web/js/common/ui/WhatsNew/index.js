@@ -699,30 +699,33 @@ const NotificationCard = ({
         <div class="description">{description}</div>
         <div class="action-buttons">
           {buttons?.map((btn, idx) => {
-            const isExternal = /^http(s)?:\/\//.test(btn.url);
-            const isHash = !isExternal && btn.url.indexOf('#') === 0;
+            let urlPath = '';
+            let isExternal = false;
+            if (btn?.url) {
+              isExternal = /^http(s)?:\/\//.test(btn.url);
+              const isHash = !isExternal && btn.url.indexOf('#') === 0;
 
-            let URL = btn.url;
+              let URL = btn.url;
 
-            if (btn.url_query_params) {
-              URL = `${URL}?`;
+              if (btn.url_query_params) {
+                URL = `${URL}?`;
 
-              btn.url_query_params.forEach((param, i) => {
-                const data = getQueryData(param, user);
+                btn.url_query_params.forEach((param, i) => {
+                  const data = getQueryData(param, user);
 
-                if (i === 0) {
-                  URL = `${URL}${param}=${data}`;
+                  if (i === 0) {
+                    URL = `${URL}${param}=${data}`;
 
-                  return;
-                }
+                    return;
+                  }
 
-                URL = `${URL}&${param}=${data}`;
-              });
+                  URL = `${URL}&${param}=${data}`;
+                });
+              }
+
+              const internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
+              urlPath = isExternal ? URL : internalUrl;
             }
-
-            const internalUrl = isHash ? `${location.href}${URL}` : `/app${URL}`;
-            const urlPath = isExternal ? URL : internalUrl;
-
             return (
               <a
                 key={idx}

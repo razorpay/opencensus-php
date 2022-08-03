@@ -438,7 +438,6 @@ export const growthAssetSchema = {
         yup.object().shape({
           type: yup.string().required().strict(true),
           label: yup.string().required().strict(true),
-          url: urlTest,
         }),
       ),
     l2_content: yup
