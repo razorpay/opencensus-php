@@ -21,6 +21,7 @@ class ErrorMappingService
         "pg/emandate"                                           => "emandate",
         "pg/pg-router"                                          => "pg_router",
         "x/payout_links"                                        => "x_payout_links",
+        "pg/emi"                                                => "emi",
         ];
 
     public const FETCHED_ERROR_CODES_PATH = 'error_codes/error_codes/%s/internal_error_codes.json';

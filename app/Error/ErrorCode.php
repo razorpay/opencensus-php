@@ -2757,6 +2757,12 @@ class ErrorCode
 
     const BAD_REQUEST_ORDER_AND_PRODUCTS_AMOUNT_MISMATCH                           = 'BAD_REQUEST_ORDER_AND_PRODUCTS_AMOUNT_MISMATCH';
 
+    const GATEWAY_ERROR_INVALID_MOBILE_NUMBER                                      = 'GATEWAY_ERROR_INVALID_MOBILE_NUMBER';
+
+    const BAD_REQUEST_TOKEN_INVALID_STATUS                                          = 'BAD_REQUEST_TOKEN_INVALID_STATUS';
+
+    const BAD_REQUEST_REFUND_AMOUNT_EXCEEDS_PAYMENT_AMOUNT                          = 'BAD_REQUEST_REFUND_AMOUNT_EXCEEDS_PAYMENT_AMOUNT';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
