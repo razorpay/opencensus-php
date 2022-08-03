@@ -56,7 +56,7 @@ const ApplicationOnboardingForm = (props) => {
       console.log(e);
     }
     await saveApplicantDetailsStart(businessDetails);
-    if (businessDetails && businessDetails.data && businessDetails.data.business) {
+    if (businessDetails?.data?.business?.id) {
       await createApplication(businessDetails.data.business.id);
     }
   }
@@ -94,7 +94,7 @@ const ApplicationOnboardingForm = (props) => {
         merchantId,
         majority_stakeholder,
         'Summary',
-        response.data.application.id,
+        response?.data?.application?.id || '',
       );
     }
   }
@@ -102,11 +102,8 @@ const ApplicationOnboardingForm = (props) => {
   function saveApplicantDetailsStart(businessDetails) {
     const { loanApplicationDetails } = props;
 
-    const applicantExists = Boolean(
-      loanApplicationDetails.promoter_details.data.applicant &&
-        loanApplicationDetails.promoter_details.data.applicant.id,
-    );
-    const applicantDetails = loanApplicationDetails.promoter_details.data.applicant;
+    const applicantDetails = loanApplicationDetails?.promoter_details?.data?.applicant;
+    const applicantExists = Boolean(applicantDetails?.id);
 
     const {
       first_name,
@@ -133,10 +130,10 @@ const ApplicationOnboardingForm = (props) => {
 
     if (applicantExists) {
       existingApplicantData.applicant.id = applicantDetails.id;
-      existingApplicantData.addresses.id = applicantDetails.addresses[0].id;
-      existingApplicantData.phones.id = applicantDetails.phones[0].id;
-      existingApplicantData.emails.id = applicantDetails.emails[0].id;
-      existingApplicantData.kyc.kyc_id = applicantDetails.kyc.kyc_id;
+      existingApplicantData.addresses.id = applicantDetails.addresses[0]?.id || '';
+      existingApplicantData.phones.id = applicantDetails.phones[0]?.id || '';
+      existingApplicantData.emails.id = applicantDetails.emails[0]?.id || '';
+      existingApplicantData.kyc.kyc_id = applicantDetails.kyc?.kyc_id || '';
     }
 
     const payload = {

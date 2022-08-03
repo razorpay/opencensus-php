@@ -62,11 +62,8 @@ const PromoterDetailsEntity = ({
   }
 
   function saveApplicantDetailsStart(businessDetails) {
-    const applicantExists = Boolean(
-      loanApplicationDetails.promoter_details.data.applicant &&
-        loanApplicationDetails.promoter_details.data.applicant.id,
-    );
-    const applicantDetails = loanApplicationDetails.promoter_details.data.applicant;
+    const applicantDetails = loanApplicationDetails?.promoter_details?.data?.applicant;
+    const applicantExists = Boolean(applicantDetails?.id);
 
     const {
       first_name,
@@ -93,10 +90,10 @@ const PromoterDetailsEntity = ({
 
     if (applicantExists) {
       existingApplicantData.applicant.id = applicantDetails.id;
-      existingApplicantData.addresses.id = applicantDetails.addresses[0].id;
-      existingApplicantData.phones.id = applicantDetails.phones[0].id;
-      existingApplicantData.emails.id = applicantDetails.emails[0].id;
-      existingApplicantData.kyc.kyc_id = applicantDetails.kyc.kyc_id;
+      existingApplicantData.addresses.id = applicantDetails.addresses[0]?.id || '';
+      existingApplicantData.phones.id = applicantDetails.phones[0]?.id || '';
+      existingApplicantData.emails.id = applicantDetails.emails[0]?.id || '';
+      existingApplicantData.kyc.kyc_id = applicantDetails.kyc?.kyc_id || '';
     }
 
     const payload = {
@@ -158,8 +155,8 @@ const PromoterDetailsEntity = ({
 
   function saveBusinessDetailsStart() {
     const { business_details } = loanApplicationDetails;
-    if (formsData.business) {
-      if (business_details.data && business_details.data.business) {
+    if (formsData?.business) {
+      if (business_details?.data?.business) {
         return updateBusinessDetails(business_details.data.business);
       }
     }
