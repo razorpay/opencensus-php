@@ -23,7 +23,7 @@ const NoDataMsg = ({ title = '', subtitle = '' }) => {
   return (
     <div className="no-data-msg">
       <p className="no-data-titile">
-        {WarningSvg()}
+        {<WarningSvg />}
         <span>&nbsp;</span>
         {title}
       </p>
@@ -36,21 +36,10 @@ const NoDataMsg = ({ title = '', subtitle = '' }) => {
  * Useful to show actionable items on top of the panel
  */
 class PanelTopbar extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const {
-      children,
-      className,
-      isLoading,
-      hasNoData,
-      error,
-      ...otherProps
-    } = this.props;
+    const { children, className, isLoading, hasNoData, error, ...otherProps } = this.props;
 
-    otherProps.className = `panel-topbar${className ? ' ' + className : ''}`;
+    otherProps.className = `panel-topbar${className ? ` ${className}` : ''}`;
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -60,14 +49,10 @@ class PanelTopbar extends Component {
  * The body of the panel, where actual content
  * goes
  */
-@connect(state => ({
+@connect((state) => ({
   windowWidth: state.app.windowWidth,
 }))
 class PanelBody extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
     const {
       children,
@@ -80,7 +65,8 @@ class PanelBody extends Component {
       ...otherProps
     } = this.props;
 
-    otherProps.className = `panel-body${className ? ' ' + className : ''}`;
+    const { customTitle, customSubtitle } = otherProps;
+    otherProps.className = `panel-body${className ? ` ${className}` : ''}`;
 
     let noDataMsg = '';
 
@@ -89,10 +75,10 @@ class PanelBody extends Component {
     } else if (hasNoData) {
       noDataMsg = (
         <NoDataMsg
-          title="No data available."
+          title={customTitle ?? 'No data available.'}
           subtitle={
-            `Tip:  You could try again by selecting ` +
-            `a different filter or date range.`
+            customSubtitle ??
+            `Tip:  You could try again by selecting a different filter or date range.`
           }
         />
       );
@@ -116,21 +102,10 @@ class PanelBody extends Component {
  * info
  */
 class PanelFooter extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const {
-      children,
-      className,
-      isLoading,
-      hasNoData,
-      error,
-      ...otherProps
-    } = this.props;
+    const { children, className, isLoading, hasNoData, error, ...otherProps } = this.props;
 
-    otherProps.className = `panel-footer${className ? ' ' + className : ''}`;
+    otherProps.className = `panel-footer${className ? ` ${className}` : ''}`;
 
     return <div {...otherProps}>{children}</div>;
   }
@@ -140,31 +115,18 @@ class PanelFooter extends Component {
  * Main Panel component that uses all the ^ components
  */
 class Panel extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const {
-      className,
-      children,
-      isLoading,
-      hasNoData,
-      error,
-      ...otherProps
-    } = this.props;
+    const { className, children, isLoading, hasNoData, error, ...otherProps } = this.props;
 
-    otherProps.className = `card panel dasboard-home-panel${
-      className ? ' ' + className : ''
-    }`;
+    otherProps.className = `card panel dasboard-home-panel${className ? ` ${className}` : ''}`;
 
     const commonProps = { isLoading, hasNoData, error };
 
-    let panelTopbar = null,
-      panelBody = null,
-      panelFooter = null;
+    let panelTopbar = null;
+    let panelBody = null;
+    let panelFooter = null;
 
-    React.Children.forEach(children, child => {
+    React.Children.forEach(children, (child) => {
       if (!panelTopbar && isChildSameType(child, PanelTopbar)) {
         panelTopbar = child;
         return;
@@ -194,25 +156,17 @@ class Panel extends Component {
 
     return (
       <div {...otherProps}>
-        {panelTopbar && (
-          <panelTopbar.type {...panelTopbar.props} {...commonProps} />
-        )}
+        {panelTopbar && <panelTopbar.type {...panelTopbar.props} {...commonProps} />}
         {panelBody && <panelBody.type {...panelBody.props} {...commonProps} />}
-        {panelFooter && (
-          <panelFooter.type {...panelFooter.props} {...commonProps} />
-        )}
+        {panelFooter && <panelFooter.type {...panelFooter.props} {...commonProps} />}
       </div>
     );
   }
 }
 
 Panel.propTypes = {
-  children: props => {
-    return checkChildrenType(props.children, [
-      PanelTopbar,
-      PanelBody,
-      PanelFooter,
-    ]);
+  children: (props) => {
+    return checkChildrenType(props.children, [PanelTopbar, PanelBody, PanelFooter]);
   },
 };
 

@@ -1,0 +1,468 @@
+$panel-border = 1px solid #E0E8F4
+
+.rto-cause-modal
+  .modal-title
+    span
+      text-transform: capitalize
+  .modal-body
+    min-width: 260px
+    .Modal__actions
+      padding-top: 16px
+      display: flex
+      justify-content: flex-end
+      .Button--transparent
+        color: #262D3A
+        opacity: 0.8
+        margin-right: 12px
+      .btn-primary
+        width: 141px
+        margin: 0
+
+.rto-magic-container
+  width: 100%
+  min-height: 400px
+  position: relative
+  background-color: #ffffff
+
+  .rto-magic-sidebar
+    position: absolute
+    left: 0
+    top: 0
+    background-color: #FAFBFD
+    border: $panel-border
+    width: 160px
+    height: 100%
+    border-top-width: 0
+    border-bottom-width: 0
+    padding-top: 10px
+
+    .rto-nav
+      background-color: transparent
+      border-left: 4px solid transparent
+      padding: 0 15px
+      line-height: 40px
+      cursor: pointer
+      margin-bottom: 4px
+
+      &.active
+        background-color: #E9F1FA
+        border-color: #1583F1
+
+  .tab-content
+    margin-left: 160px
+    padding: 15px
+    width: 100%
+    .fixed-header
+      display: flex
+      align-items: center
+      justify-content: space-between
+      margin-bottom: 20px
+      padding: 8px 12px
+      padding-right: 22px
+      background: white
+      border: $panel-border
+      border-radius: 2px
+      position: sticky
+      position: -webkit-sticky
+      top: 68px
+      z-index: 3
+      box-shadow: 0 0 0 #3f3f44, 0 1px 3px #3f3f4426
+      .cumulative
+        display: flex
+        flex-wrap: wrap
+        flex: 2
+        padding-left: 8px
+
+        .vertical-partition
+          margin: 0 30px
+          opacity: 0.5
+
+          .arrow 
+            border:solid #99B3D9
+            border-width: 0 1px 1px 0
+            display: block
+            padding: 3px
+
+          .right 
+            position:relative
+            left:-3px
+            transform: rotate(-45deg)
+            -webkit-transform: rotate(-45deg)
+
+          .vup
+          .vdown
+            border:solid #99B3D9
+            border-width: 0 0 0 1px
+            display: block
+            height: 25px
+
+        .order-count
+          line-height: 28px
+          .title
+            padding-left: 8px
+
+          .total-color
+            border: 2px solid #6886B7
+            border-radius: 1.5px
+            background-color: #6886B7
+
+          .risky-color
+            border: 2px solid #B73635
+            border-radius: 1.5px
+            background-color: #B73635
+
+          .safe-color
+            border: 2px solid #7EB471
+            border-radius: 1.5px
+            background-color: #7EB471
+
+          .number
+            display: block
+            font-size: 18px
+            font-weight: 700
+            display: flex
+            justify-content: flex-end
+
+  @media (max-width: 960px)
+    .rto-magic-sidebar
+      width: 130px
+
+    .tab-content
+      margin-left: 130px
+
+  @media (max-width: 820px)
+    .rto-magic-sidebar
+      width: 90px
+
+      .rto-nav
+        padding: 4px 8px
+        line-height: 20px
+
+    .tab-content
+      margin-left: 90px
+
+  @media (max-width: 820px)
+    .rto-magic-sidebar
+      width: 80px
+
+      .rto-nav
+        padding: 4px 4px
+        line-height: 20px
+
+    .tab-content
+      margin-left: 80px
+
+  .widget-row
+    display: flex
+    justify-content: space-between
+    gap: 0 16px
+
+    .panel
+      flex: 1
+
+  .overview-container
+  .orderInsight-container
+    .row
+      display: flex
+
+    .panel.dasboard-home-panel
+      padding: 22px 22px 69px
+
+  .feedbackRate-container
+    padding: 0
+    max-width: 276px
+    min-width: 276px
+
+  .costSaved-container
+    padding-left: 20px
+    padding-right: 0
+    padding-bottom: 20px
+
+    .cost-saved
+      height: 100%
+      .panel-body#cost-saved-body
+        height: 100%
+        padding-top: 10px
+
+        .costSaved-graph-container
+          max-height: 240px
+
+        .rzp-overlay
+          min-height: 294px
+
+  .panel.dasboard-home-panel.feedbackRate-panel
+    &.panel
+      border: $panel-border
+      border-radius: 2px
+      padding-bottom: 88px
+
+    .panel-topbar
+      font-size: 16px
+      font-weight: 700
+
+    .panel-body
+      padding-top: 10px
+      height: fit-content
+
+      .feedbackRate-panel-info
+        font-size: 13px
+        font-weight: 400
+        line-height: 20px
+        color: #676C75
+        padding-bottom: 32px
+
+        .feedbackRate-links
+          text-decoration: underline
+
+    .panel-footer
+      color: #262D3A
+
+      .i-warning
+        margin-right: 6px
+
+      .partial-status
+        color: #F1722B
+
+      .empty-status
+        color: #F12B2B
+
+      .custom-success-tick
+        background-color: #37C634
+        width: 16px
+        height: 16px
+        position: relative
+        top: 14px
+        margin-right: 4px
+        display: inline-block
+        border-radius: 50%
+
+        .i-tick
+          color: #FFFFFF
+          position: relative
+          top: -17px
+          font-size: 8px
+          left: 3px
+
+      .feedback-footer-info
+        font-size: 13px
+        font-weight: 400
+        line-height: 20px
+
+    .feedbackRate-complete-info
+      background-color: #FAFFF9
+
+    .feedbackRate-empty-info
+      background-color: #FFF5F5
+
+    .feedbackRate-partial-info
+      background-color: #FFF9F1
+
+  .panel.dasboard-home-panel.analytics-panel
+    &.panel
+      border: $panel-border
+      border-radius: 2px
+
+    .btn-group
+      z-index: 2
+
+    .legend
+      display: flex
+      font-size: 12px
+      gap: 12px
+      margin-left: 12px
+      margin-top: 16px
+    .item-box
+      display: flex
+      justify-content: space-between
+      align-items: center
+      padding: 4px
+      border: $panel-border
+      border-radius: 1px
+      height: 24px
+      white-space: nowrap
+      .colored
+        height: 100%
+        width: 12px
+        margin-right: 6px
+        border-radius: 2px
+        &.total
+          background: #6886B7
+        &.risky
+          background: #E86250
+        &.safe
+          background: #7EB471
+        &.rto
+          background: #E86250
+
+    .panel-body
+      height: auto
+      min-height: 150px
+
+      .costSaved-graph-container
+        position: relative
+        height: 270px
+
+      .rto-graph-container
+        position: relative
+        height: 220px
+
+      .charts-container
+        display: flex
+        flex-direction: row
+        flex-wrap: wrap
+        justify-content: space-around
+
+        .chart-container
+          display: flex
+          flex-direction: column
+          align-items: center
+          max-width: min-content
+          span
+            text-align: center
+
+        .doughnut-chart
+          position: relative
+          max-width: 160px
+          margin-bottom: 12px
+
+    .panel-topbar
+      font-size: 16px
+      font-weight: 700
+
+    .panel-footer
+      .i-clock
+        margin-right: 4px
+
+  .rto-cause 
+    .paginate
+      margin-top: 16px
+      display: flex
+      gap: 16px
+      .btn .i + span
+        margin-left: 0
+      button
+        span
+          font-size: 14px
+          color: #262D3A
+        i
+          position: relative
+          top: 1px
+
+    table
+      width: 100%
+    tr
+      border-bottom: 1px solid #ebebeb
+    tbody
+      tr
+        line-height: 36px
+        td:last-of-type
+          width: 12%
+          text-align: end
+        td:nth-last-child(2)
+          width: 20%
+
+    .rto-percent
+      min-width: 40px
+      padding-left: 10px
+      padding-right: 10px
+      width: 60%
+    .block-btn
+      padding: 4px 8px
+      margin-right: 0
+      width: 100%
+    thead
+      color: #262D3A
+      opacity: 0.6
+      font-size: 13px
+      th
+        font-weight: 500
+      tr
+        line-height: 40px
+
+  .cost-saved
+    .panel-footer#cost-saved-footer
+      display: flex
+      justify-content: space-between
+
+    .reimbursement-callout
+      i
+        margin-right: 4px
+
+  .flagged-reasons
+    .expand-toggle
+      margin-top: 20px
+      font-size: 12px
+      display: flex
+      justify-content: center
+
+      .clickable
+        cursor: pointer
+        font-weight: 600
+
+        i
+          vertical-align: middle
+
+    .reason-table-container
+      padding: 16px 36px 8px
+
+      .percent-bar-container
+        display: flex
+        flex-direction: row
+        align-items: center
+
+        .percent-bar
+          width: 100%
+          height: 8px
+          background-color: #e8e8e8
+          margin-right: 12px
+
+          .colored-percent
+            height: 100%
+
+      table
+        border: $panel-border
+        border-radius: 2px
+        width: 100%
+
+        th
+          margin-right: 20px
+
+        tr
+          padding: 0 20px
+          display: flex
+          justify-content: space-between
+          align-items: center
+          line-height: 36px
+          padding-top: 15px
+
+        tr:first-child
+          padding-top: 20px
+
+        tr:last-child
+          padding-bottom: 20px
+
+        thead
+          background: #FCFCFC
+          border-bottom: $panel-border
+
+        tbody
+          tr
+            line-height: 32px
+
+          td.percent
+            flex: 1
+          td.reason
+            flex: 3
+
+  @media (max-width: 1020px)
+    .flagged-reasons
+      .reason-table-container
+        table
+          tbody
+            tr
+              line-height: 20px
+              margin: 8px 0
+
+  @media (max-width: 1050px)
+    .widget-row
+      flex-direction: column

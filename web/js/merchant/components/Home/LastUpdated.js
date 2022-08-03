@@ -1,10 +1,11 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Time from 'common/ui/Time';
 
-const LastUpdated = ({ at }) =>
+const LastUpdated = ({ at, customIcon }) =>
   at ? (
     <small>
-      <i className="i i-info-circle" />&nbsp;
+      <i className={`i ${customIcon ?? 'i-info-circle'}`} />
+      &nbsp;
       <span>
         Graph last updated <Time value={at} relative />
       </span>

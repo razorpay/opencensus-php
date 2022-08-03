@@ -390,6 +390,10 @@ export default class User {
     return [rolesList.OWNER, rolesList.ADMIN].indexOf(this.userRole) > -1;
   }
 
+  get isMagicRTOAnalyticsEnabled() {
+    return this.getExpStatus('magic_rto_analytics_live');
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 

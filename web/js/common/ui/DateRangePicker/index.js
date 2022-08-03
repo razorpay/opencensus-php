@@ -5,6 +5,7 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
+import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 
 const Drp = lazy(() =>
   import(/* webpackChunkName: 'Drp' */ 'common/ui/Forms/DateRangePickerField'),
@@ -13,17 +14,6 @@ const Drp = lazy(() =>
 const defaultPresets = [];
 const customRangeText = 'Custom Range';
 const customRangeVal = 0;
-
-const getStartDateFromDiff = (diff, endDate) => {
-  /*
-   * @param {Number} diff
-   * @param {Moment} endDate
-   *
-   * given , diff (seconds) and endDate , gives startDate
-   */
-
-  return moment(endDate.toDate() - diff * 1000).startOf('day');
-};
 
 class DateRangePicker extends Component {
   constructor(props) {
@@ -103,6 +93,7 @@ class DateRangePicker extends Component {
   updatePresets(presets = this.props.presets, defaultPreset = this.props.defaultPreset) {
     const now = moment();
 
+    const { hideCustomPreset } = this.props;
     let { startDate } = this.state;
     const { endDate } = this.state;
 
@@ -128,7 +119,9 @@ class DateRangePicker extends Component {
       return result;
     });
 
-    presets.push(this.customPreset);
+    if (!hideCustomPreset) {
+      presets.push(this.customPreset);
+    }
 
     selectedPreset = selectedPreset || presets[defaultPreset || 0];
 

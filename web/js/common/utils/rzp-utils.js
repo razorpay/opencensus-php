@@ -1418,6 +1418,15 @@ export const resolvePath = (obj, path, defaultValue) => {
   return returnValue;
 };
 
+/**
+ * @param {Number} diff
+ * @param {Moment} endDate
+ *
+ * given , diff (seconds) and endDate , gives startDate
+ */
+export const getStartDateFromDiff = (diff, endDate) =>
+  moment(endDate.toDate() - diff * 1000).startOf('day');
+
 export const scrollToTop = (ref) => {
   ref?.current?.scroll({
     top: 0,

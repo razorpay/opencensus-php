@@ -3,7 +3,11 @@ import { OnBoardingWrapper, FeatureEnableSliderButton } from 'merchant/component
 import { connect } from 'react-redux';
 import { RZPFeatures } from 'merchant/helpers/data';
 import Slider, { SliderDots } from 'common/new-ui/Slider';
-import { fetchMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
+import {
+  fetchMagicCheckoutStatus,
+  fetchCODIntelligenceConfig,
+  resetCODIntelligenceConfig,
+} from 'merchant/reducers/magicCheckout';
 import { FEATURES_DATA } from 'merchant/views/MagicCheckout/data';
 import MagicCheckoutLanding from 'merchant/views/MagicCheckout/components/Landing';
 import MagicCheckoutFeatures from 'merchant/views/MagicCheckout/components/Features';
@@ -13,9 +17,19 @@ import JoinWaitlistButton from 'merchant/views/MagicCheckout/components/JoinWait
 import { isMagicCheckoutTabsEnabled } from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import 'merchant/views/MagicCheckout/css/magic_checkout.styl';
 
-const MagicCheckout = ({ active, user, fetchStatus }) => {
+const MagicCheckout = ({
+  active,
+  user,
+  fetchStatus,
+  magicCheckout,
+  fetchCODIntelligenceConfig,
+  resetCODIntelligenceConfig,
+}) => {
   useEffect(() => {
     fetchStatus();
+    fetchCODIntelligenceConfig();
+
+    return () => resetCODIntelligenceConfig();
   }, []);
 
   const getNextBtnProp = (sliderProps) => {
@@ -50,7 +64,7 @@ const MagicCheckout = ({ active, user, fetchStatus }) => {
   };
 
   if (user.isMagicCheckoutLive && isMagicCheckoutTabsEnabled(user)) {
-    return <TabsContainer user={user} />;
+    return <TabsContainer user={user} isCODIntelligenceEnabled={magicCheckout?.cod_intelligence} />;
   }
 
   return (
@@ -84,6 +98,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   fetchStatus: () => dispatch(fetchMagicCheckoutStatus()),
+  fetchCODIntelligenceConfig: () => dispatch(fetchCODIntelligenceConfig()),
+  resetCODIntelligenceConfig: () => dispatch(resetCODIntelligenceConfig()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(MagicCheckout);

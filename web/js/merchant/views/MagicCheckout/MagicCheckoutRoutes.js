@@ -1,6 +1,7 @@
 import BulkAddressUpload from 'merchant/views/MagicCheckout/BulkAddressUpload';
 import OrderStatusTab from 'merchant/views/MagicCheckout/OrderStatusTab';
 import MagicSettings from 'merchant/views/MagicCheckout/Settings';
+import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
 
 /**
  * Order of tabs:
@@ -29,6 +30,12 @@ const routes = [
     tabName: 'Upload Delivery Status',
     path: '/magic/delivery-status',
     Component: OrderStatusTab,
+  },
+  {
+    tabName: 'RTO Analytics',
+    path: '/magic/analytics',
+    condition: (_user) => _user.isMagicRTOAnalyticsEnabled,
+    Component: RTOAnalytics,
   },
 ];
 
