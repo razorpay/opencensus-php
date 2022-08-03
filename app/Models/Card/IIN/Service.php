@@ -138,6 +138,14 @@ class Service extends Base\Service
                     null,[],'The requested IIN is not a valid token IIN');
             }
 
+            if((isset($token_iin)) && (strlen($token_iin['low_range']) != strlen($id))){
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_IIN,
+                    null,[],'The requested IIN is a token IIN & should be 9 digits long.');
+
+            }
+
             if ($token_iin != null)
             {
                 $token_bin = $id ;
