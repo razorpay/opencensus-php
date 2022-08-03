@@ -16,6 +16,7 @@ class Connection
     const REPORTING_REPLICA_TEST = 'reporting-replica-test';
 
     const PAYMENT_FETCH_REPLICA_LIVE = 'payment-fetch-replica-live';
+    const ACCOUNT_SERVICE_REPLICA_LIVE = 'account-service-replica-live';
 
     const PAYMENT_ANALYTICS_PARTITION_LIVE = 'payment_analytics_partition_live';
     const PAYMENT_ANALYTICS_PARTITION_TEST = 'payment_analytics_partition_test';

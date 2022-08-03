@@ -1252,6 +1252,16 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
+    public function getAccountServiceReplicaConnection(string $mode = null)
+    {
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
+        {
+            return Config::get('database.default');
+        }
+
+        return Connection::ACCOUNT_SERVICE_REPLICA_LIVE;
+    }
+
     public function getUniqueMerchantIdsWhereBalanceIdIsNull(int $limit): array
     {
         assertTrue(
@@ -1293,6 +1303,8 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
+     * IMP: This function is for specific use case of Account Service Data Migration
+     * Please consider going through the implementation before using
      *
      * Returns the rows where updated_at is in the specified range
      *
@@ -1304,7 +1316,7 @@ class Repository extends \Razorpay\Spine\Repository
      */
     public function getIfUpdatedBetween(int $from, int $to, ?int $limit = null)
     {
-        $data = $this->newQueryOnSlave()
+        $data = $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())
             ->WhereBetween(PublicEntity::UPDATED_AT, [$from, $to]);
 
         if (isset($limit)) {

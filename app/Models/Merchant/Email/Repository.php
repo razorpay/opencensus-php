@@ -71,6 +71,9 @@ class Repository extends Base\Repository
 
     /**
      *
+     * IMP: This function is for specific use case of Account Service Data Migration
+     * Please consider going through the implementation before using
+     *
      * Returns the emails that were updated in the specified range
      * @param int $from
      * @param int $to
@@ -78,7 +81,7 @@ class Repository extends Base\Repository
      */
     public function getEmailsUpdatedBetween(int $from, int $to)
     {
-        return $this->newQueryOnSlave()
+        return  $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())
                     ->WhereBetween(Entity::UPDATED_AT, [$from, $to])
                     ->Where(Entity::TYPE, '<>', Type::PARTNER_DUMMY)
                     ->get();
