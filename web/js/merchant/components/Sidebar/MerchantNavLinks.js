@@ -6,7 +6,7 @@ import * as LocalStorageService from 'common/utils/localStorage';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { getIsBankingEnabled } from './helpers';
+import { getIsBankingEnabled, trackSidebarLinkRendered } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 
 const RECOMMANDED_PRODUCT_LIST = [
@@ -66,6 +66,11 @@ function MerchantNavLinks(props) {
     if (getIsBankingEnabled(user)) {
       trackViewedBankingNavBar();
     }
+
+    trackSidebarLinkRendered({
+      user,
+      position: isCashAdvanceSidebarPosTopExp ? 'top' : 'bottom',
+    });
   }, []);
 
   useEffect(() => {
