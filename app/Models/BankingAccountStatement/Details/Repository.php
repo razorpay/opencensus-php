@@ -17,19 +17,27 @@ class Repository extends Base\Repository
             ->first();
     }
 
-    public function fetchByAccountNumberAndChannel(string $accountNumber, string $channel)
+    public function fetchByAccountNumberAndChannel(string $accountNumber, string $channel, array $statuses = [])
     {
         $accountNumberColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);
 
         $channelColumn = $this->dbColumn(Entity::CHANNEL);
 
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+
         $BASDetailsDbColumns = $this->dbColumn('*');
 
-        return $this->newQuery()
-                    ->select($BASDetailsDbColumns)
-                    ->where($accountNumberColumn, '=', $accountNumber)
-                    ->where($channelColumn, '=', $channel)
-                    ->first();
+        $query = $this->newQuery()
+                      ->select($BASDetailsDbColumns)
+                      ->where($accountNumberColumn, '=', $accountNumber)
+                      ->where($channelColumn, '=', $channel);
+
+        if (empty($status) === false)
+        {
+            $query->whereIn($statusColumn, $statuses);
+        }
+
+        return $query->first();
     }
 
     public function fetchAccountNumbersByChannelOrderByLastStatementAttemptAt(string $channel, string $accountType = AccountType::DIRECT)

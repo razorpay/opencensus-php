@@ -5,6 +5,7 @@ namespace RZP\Models\BankingAccountStatement\Processor;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Base\PublicEntity;
 use Rzp\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -38,6 +39,8 @@ abstract class Base extends BaseCore
                                                            Merchant\Entity $merchant);
 
     abstract protected function sendRequestAndGetResponse(array $input);
+
+    abstract public function sendRequestToFetchStatement(array $input);
 
     abstract public function getUtrForChannel(PublicEntity $basEntity);
 
@@ -262,5 +265,47 @@ abstract class Base extends BaseCore
         }
 
         return $this->getStartOfFinancialYear($this->basDetails->getCreatedAt());
+    }
+
+    public function storeMissingStatementsInRedis(array $missingStatements, $accountNumber, $channel)
+    {
+        $this->app['api.mutex']->acquireAndRelease(
+            'update_redis_missing_statements_recon_' . $channel,
+            function() use ($accountNumber, $channel, $missingStatements)
+            {
+                $redisKey = Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel;
+
+                $merchantMissingStatementList = (new Admin\Service)->getConfigKey(['key' => $redisKey]);
+
+                //Check for redaction
+                $this->trace->info(
+                    TraceCode::MISSING_STATEMENTS_REDIS_UPDATE,
+                    [
+                        Entity::ACCOUNT_NUMBER   => $accountNumber,
+                        'current_redis_value'    => isset($merchantMissingStatementList[$accountNumber]) ?? [],
+                        'new_missing_statements' => $missingStatements,
+                    ]);
+
+                if (empty($merchantMissingStatementList) === true)
+                {
+                    $merchantMissingStatementList = [];
+                }
+
+                if (in_array($accountNumber, array_keys($merchantMissingStatementList)) === true)
+                {
+                    $merchantMissingStatementList[$accountNumber] = array_merge($merchantMissingStatementList[$accountNumber],
+                                                                                array_values($missingStatements));
+                }
+                else
+                {
+                    $merchantMissingStatementList[$accountNumber] = array_values($missingStatements);
+                }
+
+                (new Admin\Service)->setConfigKeys([$redisKey => $merchantMissingStatementList]);
+            },
+            60,
+            TraceCode::MISSING_BAS_UPDATE_IN_PROGRESS,
+            3
+        );
     }
 }

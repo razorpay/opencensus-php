@@ -1940,6 +1940,7 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'created_at'  => $faker->timestamp,
             'updated_at'  => $faker->timestamp,
+            'status'      => 'active'
         ]);
 
         $factory(\RZP\Models\BankingAccountStatement\Pool\Base\Entity::class, [

@@ -47,6 +47,9 @@ class Entity extends Base\PublicEntity
     const TO_DATE               = 'to_date';
     const TO_EMAIL_LIST         = 'to_emails';
 
+    // Flag to check if the missing statements should be persisted in redis
+    const SAVE_IN_REDIS         = 'save_in_redis';
+
     const UTR                   = 'utr';
 
     // Relation names/attributes

@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class BankingAccountStatementProcessor extends Job
 {
@@ -55,32 +56,41 @@ class BankingAccountStatementProcessor extends Job
 
             $BASCore = new BAS\Core;
 
-            $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
+            $basDetails = $BASCore->getBasDetails($this->params['account_number'], $this->params['channel'], BASD\Status::getStatusesForProcessing());
 
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_INIT,
-                [
-                    BAS\Entity::CHANNEL            => $this->params['channel'],
-                    BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
-                    BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                ]);
+            if (isset($basDetails) === false)
+            {
+                $this->trace->info(TraceCode::BAS_DETAILS_NOT_FOUND);
 
-            $workerStartTime = Carbon::now()->getTimestamp();
+                $this->delete();
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_INIT,
+                    [
+                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                    ]);
 
-            $BASCore->processStatementForAccountV2($this->params);
+                $workerStartTime = Carbon::now()->getTimestamp();
 
-            $workerEndTime = Carbon::now()->getTimestamp();
+                $BASCore->processStatementForAccountV2($this->params);
 
-            $this->trace->info(TraceCode::BAS_PROCESSED_BY_QUEUE,
-                [
-                    BAS\Entity::CHANNEL            => $this->params['channel'],
-                    BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
-                    BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                    'start_time'                   => $workerStartTime,
-                    'end_time'                     => $workerEndTime,
-                ]);
+                $workerEndTime = Carbon::now()->getTimestamp();
 
-            $this->delete();
+                $this->trace->info(TraceCode::BAS_PROCESSED_BY_QUEUE,
+                                   [
+                                       BAS\Entity::CHANNEL            => $this->params['channel'],
+                                       BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                                       BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                                       'start_time'                   => $workerStartTime,
+                                       'end_time'                     => $workerEndTime,
+                                   ]);
+
+                $this->delete();
+            }
         }
         catch (\Throwable $e)
         {

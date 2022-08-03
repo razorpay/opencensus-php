@@ -1035,4 +1035,49 @@ return [
             'message'             => 'Failed payout has a corresponding BAS entity. This should be reversed instead, not failed.'
         ],
     ],
+
+    'testRblMissingAccountStatement' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/fetch_missing/rbl',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'from_date'      => 1656686600,
+                'to_date'        => 1656986600,
+                'save_in_redis'  => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'expected_attempts' => 1,
+                'dispatched'        => 'success'
+            ]
+        ]
+    ],
+
+    'testfetchRblMissingAccountStatementWithInvalidDateRange' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/fetch_missing/rbl',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'from_date'      => 1656686600,
+                'to_date'        => 1657986600,
+                'save_in_redis'  => true,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Given date range exceeds the threshold of 7 days.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Rzp\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

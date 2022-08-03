@@ -194,6 +194,11 @@ class ConfigKey
     const RX_ON_HOLD_PAYOUTS_MERCHANT_SLA       = self::PREFIX . 'rx_on_hold_payouts_merchant_sla';
     const RX_ON_HOLD_PAYOUTS_DEFAULT_SLA        = self::PREFIX . 'rx_on_hold_payouts_default_sla';
 
+    const RX_CA_MISSING_STATEMENTS_RBL              = self::PREFIX . 'rx_ca_missing_statements_rbl';
+    const RX_CA_MISSING_STATEMENTS_ICICI            = self::PREFIX . 'rx_ca_missing_statements_icici';
+    const RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS   = self::PREFIX . 'rbl_missing_statements_fetch_max_records';
+    const ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS = self::PREFIX . 'icici_missing_statements_fetch_max_records';
+
     // this is used to limit the number of records fetched while querying db to get low balance configs in order
     // to reduce the load
     const LOW_BALANCE_CONFIGS_FETCH_LIMIT_IN_ONE_BATCH = self::PREFIX . 'low_balance_configs_fetch_limit_in_one_batch';
@@ -358,6 +363,10 @@ class ConfigKey
         self::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT,
         self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA,
         self::RX_ON_HOLD_PAYOUTS_DEFAULT_SLA,
+        self::RX_CA_MISSING_STATEMENTS_RBL,
+        self::RX_CA_MISSING_STATEMENTS_ICICI,
+        self::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS,
+        self::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS,
         self::RX_PAYOUTS_CUSTOM_BATCH_FILE_LIMIT_MERCHANTS,
         self::RX_PAYOUTS_DEFAULT_MAX_BATCH_FILE_COUNT,
         self::CARD_PAYMENT_SERVICE_EMI_FETCH,

@@ -2958,12 +2958,16 @@ class Route
         'banking_account_call_log_list'           => ['get',      'banking_accounts/activation/{id}/call_logs',                'BankingAccountController@getActivationCallLogs'          ],
         'banking_account_activation_details'.
         '_via_batch'                              => ['post',     'banking_accounts/activation/details/batch',                'BankingAccountController@postUpdateActivationDetailsFromBatchService' ],
-        'banking_account_statement_process'       => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
-        'banking_account_statement_generate'      => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                ],
-        'banking_account_statement_process_cron'  => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'],
-        'banking_account_statement_process_pool'  => ['post',     'banking_account_statement/pool/process',                    'BankingAccountStatementController@fetchStatementForPoolAccount'],
-        'banking_account_statement_channel_fetch' => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'],
-        'banking_account_statement_details_create'=> ['post',     'banking_account_statement/details',                         'BankingAccountStatementController@createBankingAccountStatementDetails'],
+
+        'banking_account_statement_process'             => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
+        'banking_account_statement_generate'            => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                                  ],
+        'banking_account_statement_process_cron'        => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
+        'banking_account_statement_process_pool'        => ['post',     'banking_account_statement/pool/process',                    'BankingAccountStatementController@fetchStatementForPoolAccount'              ],
+        'banking_account_statement_channel_fetch'       => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'         ],
+        'banking_account_statement_fetch_missing'       => ['post',     'banking_account_statement/fetch_missing/{channel}',         'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
+        'banking_account_statement_fetch_missing_cron'  => ['post',     'banking_account_statement/cron/fetch_missing/{channel}',    'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
+        'banking_account_statement_details_create'      => ['post',     'banking_account_statement/details',                         'BankingAccountStatementController@createBankingAccountStatementDetails'      ],
+        
         'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
         'banking_account_activation_detail'
         .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
@@ -4625,9 +4629,11 @@ class Route
         'merchant_get_org_details',
         'merchant_banking_accounts_webhook',
         'banking_account_statement_process_cron',
+        'banking_account_statement_fetch_missing_cron',
         'banking_account_statement_process_pool',
         'banking_account_send_notification_to_spoc_cron',
         'banking_account_statement_channel_fetch',
+        'banking_account_statement_fetch_missing',
         'subscription_registration_auto_charge',
         'token_pause_not_supported_card_tokens',
         'partner_submerchant_map',
@@ -7125,6 +7131,8 @@ class Route
         'bvs_admin_proxy_pii',
 
         'admin_bulk_assign_role',
+
+        'banking_account_statement_fetch_missing',
     ];
 
     public static $routePermission = [
@@ -8405,6 +8413,8 @@ class Route
         'emerchantpay_create_request_data'      => Permission::VIEW_MERCHANT,
 
         'admin_collect_info_merchant_details_patch'        =>Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
+
+        'banking_account_statement_fetch_missing'    => Permission::FETCH_MISSING_BAS,
 
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
@@ -12471,6 +12481,7 @@ class Route
             'bvs_admin_proxy_pii',
             'admin_bulk_assign_role',
 
+            'banking_account_statement_fetch_missing',
             //CAC
             'cac_privileges_fetch',
             'cac_role_fetch_all',
@@ -12596,6 +12607,7 @@ class Route
         ],
 
         'cron' => [
+            'banking_account_statement_fetch_missing_cron',
             'create_test_payouts_for_downtime_detection_icici',
             'create_test_payouts_for_downtime_detection_yesb',
             'check_status_of_test_payouts',

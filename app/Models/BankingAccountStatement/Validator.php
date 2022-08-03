@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -14,6 +16,8 @@ class Validator extends Base\Validator
     const ACCOUNT_STATEMENT_GENERATE = 'accountStatementGenerate';
 
     const SOURCE_UPDATE = 'sourceUpdate';
+
+    const FETCH_MISSING_STATEMENTS = 'fetchMissingStatements';
 
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
@@ -43,8 +47,20 @@ class Validator extends Base\Validator
         Entity::TO_EMAIL_LIST . '.*' => 'filled|email'
     ];
 
+    protected static $fetchMissingStatementsRules = [
+        Entity::CHANNEL              => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER       => 'required|string|between:5,40',
+        Entity::FROM_DATE            => 'required|epoch',
+        Entity::TO_DATE              => 'required|epoch',
+        Entity::SAVE_IN_REDIS        => 'required|boolean'
+    ];
+
     protected static $accountStatementGenerateValidators = [
         'channel_format'
+    ];
+
+    protected static $fetchMissingStatementsValidators = [
+        'date_range'
     ];
 
     protected static $sourceUpdateRules = [
@@ -116,5 +132,23 @@ class Validator extends Base\Validator
     protected function validateCategory($attribute, $category)
     {
         Category::validate($category);
+    }
+
+    protected function validateDateRange($input)
+    {
+        if (($input[Entity::FROM_DATE] > $input[Entity::TO_DATE]) === true)
+        {
+            throw new BadRequestValidationFailureException('Given date range is invalid.');
+        }
+
+        $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+
+        // we are allowing for a date range of 7 days
+        $allowedDateDiff = 7 * $secondsPerDay;
+
+        if (($input[Entity::TO_DATE] - $input[Entity::FROM_DATE]) > $allowedDateDiff)
+        {
+            throw new BadRequestValidationFailureException('Given date range exceeds the threshold of 7 days.');
+        }
     }
 }

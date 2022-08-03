@@ -34,6 +34,15 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchMissingAccountStatementsForChannel(string $channel, array $input)
+    {
+        (new Validator())->validateInput(Validator::FETCH_MISSING_STATEMENTS, $input + ['channel' => $channel]);
+
+        $response = $this->core()->fetchMissingAccountStatementsForChannel($channel, $input);
+
+        return $response;
+    }
+
     public function updateSourceLinking(array $input)
     {
         $this->trace->info(

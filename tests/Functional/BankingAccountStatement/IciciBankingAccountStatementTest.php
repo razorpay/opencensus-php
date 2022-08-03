@@ -620,6 +620,59 @@ class IciciBankingAccountStatementTest extends TestCase
         return $response;
     }
 
+    protected function getIciciDataResponseForFetchingMissingRecords()
+    {
+        $response = [
+            "data" => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "10,000.00",
+                        "BALANCE"       => "10,000.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "MMT/IMPS/104910349740/Shippuden/Naruto",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "03-07-2022 20:51:21",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "03-07-2022"
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "9,999.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto",
+                        "TRANSACTIONID" => "S86758818",
+                        "TXNDATE"       => "03-07-2022 20:51:23",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "03-07-2022",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "10,000.00",
+                        "CHEQUENO"      => [],
+                        "REMARKS"       => "NEFT-RETURN-23629961691DC-Naruto-ACCOUNT DOES NOT EXIST  R03",
+                        "TRANSACTIONID" => "S87272425",
+                        "TXNDATE"       => "03-07-2022 20:53:01",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "03-07-2022",
+                    ]
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "Sasuke"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        return $response;
+    }
+
     public function testDispatchIciciAccountStatementFetch($channel = Channel::ICICI)
     {
         $this->ba->cronAuth();
@@ -725,6 +778,70 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+    }
+
+    public function testFetchIciciMissingAccountStatement()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS => 8000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '1000000',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S71034864',
+                                    'balance'                   => 1000000,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861681,
+                                    'bank_serial_number'        => 'S71034864',
+                                    'description'               => 'MMT/IMPS/104910349740/Shippuden/Naruto',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '100',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S87272425',
+                                    'balance'                   => 1000100,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861781,
+                                    'bank_serial_number'        => 'S87272425',
+                                    'description'               => 'NEFT-RETURN-23629961691DC-Naruto-ACCOUNT DOES NOT EXIST  R03',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $mockedResponse = $this->getIciciDataResponseForFetchingMissingRecords();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantMissingStatementList = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::RX_CA_MISSING_STATEMENTS_ICICI
+            ]);
+
+        $basExpected = [
+            BasEntity::ACCOUNT_NUMBER        => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID   => 'S86758818',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 100,
+            BasEntity::BALANCE               => 999900,
+            BasEntity::POSTED_DATE           => 1656861683,
+            BasEntity::TRANSACTION_DATE      => 1656786600,
+            BasEntity::DESCRIPTION           => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
+            BasEntity::CHANNEL               => 'icici',
+        ];
+
+        $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
     }
 
     public function testIciciDisableAccountStatementFetch()

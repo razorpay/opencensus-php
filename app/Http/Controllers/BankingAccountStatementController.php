@@ -71,6 +71,15 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchMissingAccountStatementsForChannel(string $channel)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchMissingAccountStatementsForChannel($channel, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateSourceLinking()
     {
         $input = Request::all();

@@ -1257,6 +1257,12 @@ return [
             ],
         ],
 
+        PermissionCategory::BANKING_ACCOUNT_STATEMENT  => [
+            Permission::FETCH_MISSING_BAS => [
+                'description' => 'Fetch missing banking account statements',
+            ],
+        ],
+
         // RZP White label wallet config
         PermissionCategory::WALLET_CONFIG => [
             Permission::CREATE_WALLET_CONFIG => [

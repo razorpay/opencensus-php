@@ -24,14 +24,18 @@ use RZP\Models\Payout\Purpose;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Jobs\RblBankingAccountStatement;
 use RZP\Jobs\IciciBankingAccountStatement;
+use RZP\Jobs\BankingAccountStatementRecon;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
+use RZP\Models\BankingAccountStatement\Processor\Rbl\Gateway as RblGateway;
+use RZP\Models\BankingAccountStatement\Processor\Icici\Gateway as IciciGateway;
 
 
 class Core extends Base\Core
@@ -58,6 +62,10 @@ class Core extends Base\Core
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_AT_ONCE_DEFAULT = 200;
 
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT = 100;
+
+    const ACCOUNT_STATEMENT_RECORDS_TO_FETCH_MISSING_STATEMENTS_FOR_ICICI = 8000;
+
+    const ACCOUNT_STATEMENT_RECORDS_TO_FETCH_MISSING_STATEMENTS_FOR_RBL = 25000;
 
     // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
     // gateway ref no while recon.
@@ -95,13 +103,13 @@ class Core extends Base\Core
     /** @var Details\Entity $basDetails  */
     public $basDetails = null;
 
-    public function getBasDetails(string $accountNumber = null, string $channel = null)
+    public function getBasDetails(string $accountNumber = null, string $channel = null, array $statuses = [BASDetails\Status::ACTIVE])
     {
         if (($this->basDetails === null) and
             ($accountNumber !== null) and
             ($channel !== null))
         {
-            $this->basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
+            $this->basDetails = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel, $statuses);
         }
 
         return $this->basDetails;
@@ -291,6 +299,104 @@ class Core extends Base\Core
         }
     }
 
+    public function fetchAccountStatementWithRange(array $input)
+    {
+        $channel = array_pull($input, Entity::CHANNEL);
+
+        $accountNumber = array_pull($input, Entity::ACCOUNT_NUMBER);
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::FETCH_MISSING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST,
+                [
+                    'channel'        => $channel,
+                    'account_number' => $accountNumber,
+                ]);
+
+            [$fetchMore, $paginationKey] = $this->mutex->acquireAndRelease(
+                'banking_account_statement_recon_' . $accountNumber . '_' . $channel,
+                function () use ($channel, $accountNumber, $input)
+                {
+                    $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
+
+                    $merchant = $basDetailEntity->merchant;
+
+                    // There are 6 merchants excluded from v2
+                    $accountStatementApiVersion = ($channel === Channel::RBL) ? Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2 :
+                                                                              Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_1;
+
+                    $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity, $accountStatementApiVersion);
+
+                    $input[Entity::MERCHANT_ID] = $merchant->getId();
+
+                    $this->trace->info(
+                        TraceCode::FETCH_MISSING_ACCOUNT_STATEMENT_REMOTE_FETCH_SOURCE,
+                        [
+                            'input'     => $input,
+                            'source'    => Source::FETCH_API,
+                            'version'   => $accountStatementApiVersion
+                        ]);
+
+                    [$bankTransactions, $fetchMore, $paginationKey] = $processor->sendRequestToFetchStatement($input);
+
+                    $missingTransactions = $processor->checkForDuplicateTransactions(
+                        $bankTransactions,
+                        $channel,
+                        $accountNumber,
+                        $merchant);
+
+                    if ((boolval($input[Entity::SAVE_IN_REDIS]) === true) and
+                        (count($missingTransactions) !== 0))
+                    {
+                        $traceData = [
+                            'channel'               => $channel,
+                            'missing_records_found' => count($missingTransactions),
+                            'missing_records'       => $missingTransactions,
+                        ];
+
+                        $this->trace->info(TraceCode::MISSING_TRANSACTIONS_FOUND, $traceData);
+
+                        // Persisting in redis
+                        $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber, $channel);
+
+                        $operation = 'Missing records found while fetching the statement for '.$channel;
+
+                        (new SlackNotification)->send(
+                            $operation,
+                            $traceData,
+                            null,
+                            0,
+                            'rx_rbl_recon_alerts');
+                    }
+
+                    return [$fetchMore, $paginationKey];
+                },
+                300,
+                ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+            );
+        }
+        catch (Exception\BadRequestException $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
+            {
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
+                    [
+                        'channel'           => $channel,
+                        'account_number'    => $accountNumber,
+                        'message'           => $e->getMessage(),
+                    ]);
+            }
+
+            throw $e;
+        }
+
+        return [$fetchMore, $paginationKey];
+    }
+
     public function processStatementForAccountV2(array $input)
     {
         $channel = array_pull($input, Entity::CHANNEL);
@@ -313,7 +419,7 @@ class Core extends Base\Core
             $saveLimit = self::ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL_DEFAULT;
         }
 
-        $basDetails = $this->getBasDetails($accountNumber, $channel);
+        $basDetails = $this->getBasDetails($accountNumber, $channel, Details\Status::getStatusesForProcessing());
 
         $merchant = $basDetails->merchant;
 
@@ -2302,6 +2408,127 @@ class Core extends Base\Core
         }
 
         return ['accounts_processed' => $accountNumbersDispatched];
+    }
+
+    public function fetchMissingAccountStatementsForChannel($channel, $input)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_INITIATED,
+            [
+                'channel' => $channel,
+                'input'   => $input
+            ]);
+
+        $countOfStatements = $this->repo->banking_account_statement->getCountOfStatementsInGivenPostedDateRange($channel, $input);
+
+        [$expectedAttempts, $allowedToFetch] = $this->getExpectedAttemptsForChannel($channel, $countOfStatements);
+
+        $this->trace->info(
+            TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_ATTEMPTS,
+            [
+                'expected_attempts'   => $expectedAttempts,
+                'count_of_statements' => $countOfStatements,
+                'allowed_to_fetch'    => $allowedToFetch,
+            ]);
+
+        if ($allowedToFetch === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [
+                    'count_of_statements' => $countOfStatements,
+                    'allowed_to_fetch'    => $allowedToFetch,
+                ],
+                'No of statements to be fetched for date range is greater than threshold'
+            );
+        }
+
+        $delay         = array_pull($input, self::DELAY, 0);
+        $paginationKey = ($channel === Channel::RBL) ? null : '';
+
+        $this->trace->info(
+            TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_DISPATCH_JOB_REQUEST,
+            [
+                Entity::CHANNEL        => $channel,
+                Entity::ACCOUNT_NUMBER => $input[Entity::ACCOUNT_NUMBER],
+                'expected_attempts'    => $expectedAttempts,
+                Entity::FROM_DATE      => $input[Entity::FROM_DATE],
+                Entity::TO_DATE        => $input[Entity::TO_DATE],
+                self::DELAY            => $delay,
+                'pagination_key'       => $paginationKey,
+                Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS],
+            ]);
+
+        BankingAccountStatementRecon::dispatch($this->mode, [
+            Entity::CHANNEL        => $channel,
+            Entity::ACCOUNT_NUMBER => $input[Entity::ACCOUNT_NUMBER],
+            Entity::FROM_DATE      => $input[Entity::FROM_DATE],
+            Entity::TO_DATE        => $input[Entity::TO_DATE],
+            'expected_attempts'    => $expectedAttempts,
+            'pagination_key'       => $paginationKey,
+            Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS],
+        ])->delay($delay);
+
+        $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_JOB_DISPATCHED);
+
+        return ['expected_attempts' => $expectedAttempts, 'dispatched' => 'success'];
+    }
+
+    public function getExpectedAttemptsForChannel($channel, $countOfStatements)
+    {
+        $expectedAttempts = 0;
+
+        $allowedToFetch = true;
+
+        switch ($channel)
+        {
+            case Channel::RBL:
+                $rblAccountStatementV2MaxNumberOfRecords = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS]);
+
+                if (empty($rblAccountStatementV2MaxNumberOfRecords) === true)
+                {
+                    $rblAccountStatementV2MaxNumberOfRecords = RblGateway::DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS;
+                }
+
+                $expectedAttempts = (int) round($countOfStatements / $rblAccountStatementV2MaxNumberOfRecords) + 1;
+
+                $rblMissingStatementMaxRecordsFetch = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS]);
+
+                if (empty($rblMissingStatementMaxRecordsFetch) === true)
+                {
+                    $rblMissingStatementMaxRecordsFetch = self::ACCOUNT_STATEMENT_RECORDS_TO_FETCH_MISSING_STATEMENTS_FOR_RBL;
+                }
+
+                if ($countOfStatements > $rblMissingStatementMaxRecordsFetch)
+                {
+                    $allowedToFetch = false;
+                }
+
+                break;
+
+            case Channel::ICICI:
+                $expectedAttempts = round($countOfStatements / IciciGateway::ICICI_STATEMENT_FETCH_API_MAX_RECORDS) + 1;
+
+                $iciciMissingStatementMaxRecordsFetch = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS]);
+
+                if (empty($iciciMissingStatementMaxRecordsFetch) === true)
+                {
+                    $iciciMissingStatementMaxRecordsFetch = self::ACCOUNT_STATEMENT_RECORDS_TO_FETCH_MISSING_STATEMENTS_FOR_ICICI;
+                }
+
+                if ($countOfStatements > $iciciMissingStatementMaxRecordsFetch)
+                {
+                    $allowedToFetch = false;
+                }
+
+                break;
+
+            default:
+                break;
+        }
+
+        return [$expectedAttempts, $allowedToFetch];
     }
 
     public function checkIfBlackListedMerchant($merchantId)

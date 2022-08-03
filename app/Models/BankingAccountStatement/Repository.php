@@ -414,4 +414,15 @@ class Repository extends Base\Repository
             ->where(Entity::ENTITY_TYPE, $entityType)
             ->first();
     }
+
+    public function getCountOfStatementsInGivenPostedDateRange(string $channel, array $input)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                  ->selectRaw('COUNT(*) AS bas_count')
+                  ->where(Entity::ACCOUNT_NUMBER, $input[Entity::ACCOUNT_NUMBER])
+                  ->where(Entity::CHANNEL, $channel)
+                  ->where(Entity::POSTED_DATE, ">=", $input[Entity::FROM_DATE])
+                  ->where(Entity::POSTED_DATE, "<=", $input[Entity::TO_DATE])
+                  ->value('bas_count');
+    }
 }

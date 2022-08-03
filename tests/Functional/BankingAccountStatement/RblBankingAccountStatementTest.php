@@ -23,6 +23,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Payout\Status;
 use RZP\Models\BankingAccount;
 use RZP\Services\RazorXClient;
+
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Mode as EnvMode;
@@ -41,6 +42,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\BankingAccountStatementProcessor;
+use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
@@ -4572,6 +4574,102 @@ class RblBankingAccountStatementTest extends TestCase
                                 'txnSrlNo' => '  4',
                                 'valueDate' => '2016-01-05T00:00:00.000'
                             ]
+                        ],
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblBulkResponseForFetchingMissingRecords()
+    {
+        $response = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2022-07-03T20:51:21.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-03T00:00:00.000',
+                                    'txnDesc' => 'Credit to account',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '100.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S429654',
+                                'txnSrlNo' => ' 1',
+                                'valueDate' => '2022-07-03T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2022-07-03T20:51:23.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '50.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-03T00:00:00.000',
+                                    'txnDesc' => 'DEBIT IMPS 20000324344829',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '50.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807089',
+                                'txnSrlNo' => '  3',
+                                'valueDate' => '2022-07-03T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2022-07-03T20:53:01.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '114.50',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-03T00:00:00.000',
+                                    'txnDesc' => 'CREDIT NEFT',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '164.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => '  2',
+                                'valueDate' => '2022-07-03T00:00:00.000'
+                            ],
                         ],
                     ],
                     'Header' => [
@@ -10619,6 +10717,225 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($externalEntities[1]['id'], $basEntities[1]['entity_id']);
         $this->assertEquals($transactionEntities[1]['balance'], $basEntities[1]['balance']);
         $this->assertEquals(11450, $basEntities[1]['amount']);
+    }
+
+    public function testRblMissingAccountStatement($returnResponse = false)
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '10000',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429654',
+                                    'balance'                   => 10000,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861681,
+                                    'bank_serial_number'        => 1,
+                                    'description'               => 'Credit to account',
+                                    'category'                  => 'customer_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '11450',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429655',
+                                    'balance'                   => 21450,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861781,
+                                    'bank_serial_number'        => 2,
+                                    'description'               => 'CREDIT NEFT',
+                                    'category'                  => 'bank_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $mockedResponse = $this->getRblBulkResponseForFetchingMissingRecords();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+             ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                 $requestData = json_decode($request['content'], true);
+
+                 if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                 {
+                     return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                 }
+
+                 $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                 $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                 return json_encode($mockRblResponse);
+             });
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->ba->adminAuth();
+
+        $response = $this->startTest();
+
+        if ($returnResponse === true)
+        {
+            return $response;
+        }
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        $basExpected = [
+            BasEntity::ACCOUNT_NUMBER        => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID   => 'S807089',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 5000,
+            BasEntity::BALANCE               => 5000,
+            BasEntity::POSTED_DATE           => 1656861683,
+            BasEntity::TRANSACTION_DATE      => 1656786600,
+            BasEntity::DESCRIPTION           => 'DEBIT IMPS 20000324344829',
+            BasEntity::CHANNEL               => 'rbl',
+        ];
+
+        $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
+    }
+
+    public function testRblMissingAccountStatementWithCronAuth()
+    {
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '10000',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429654',
+                                    'balance'                   => 10000,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861681,
+                                    'bank_serial_number'        => 1,
+                                    'description'               => 'Credit to account',
+                                    'category'                  => 'customer_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '11450',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429655',
+                                    'balance'                   => 21450,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861781,
+                                    'bank_serial_number'        => 2,
+                                    'description'               => 'CREDIT NEFT',
+                                    'category'                  => 'bank_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                ]);
+
+        $mockedResponse = $this->getRblBulkResponseForFetchingMissingRecords();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                       {
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   });
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->ba->cronAuth();
+
+        $testData = &$this->testData['testRblMissingAccountStatement'];
+
+        $testData['request']['url'] = '/banking_account_statement/cron/fetch_missing/rbl';
+
+        $this->startTest($testData);
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        $basExpected = [
+            BasEntity::ACCOUNT_NUMBER        => '2224440041626905',
+            BasEntity::BANK_TRANSACTION_ID   => 'S807089',
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 5000,
+            BasEntity::BALANCE               => 5000,
+            BasEntity::POSTED_DATE           => 1656861683,
+            BasEntity::TRANSACTION_DATE      => 1656786600,
+            BasEntity::DESCRIPTION           => 'DEBIT IMPS 20000324344829',
+            BasEntity::CHANNEL               => 'rbl',
+        ];
+
+        $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
+    }
+
+    public function testfetchRblMissingAccountStatementWhileInProgress()
+    {
+        $mockMutex = new MockMutexService($this->app);
+
+        $this->app->instance('api.mutex', $mockMutex);
+
+        $mutex = $this->app['api.mutex'];
+
+        $this->ba->adminAuth();
+
+        $mutex->acquireAndRelease(
+            'banking_account_statement_recon_2224440041626905_rbl',
+            function() {
+                $this->testRblMissingAccountStatement(true);
+            },
+            300);
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        $this->assertArrayNotHasKey('2224440041626905', $merchantMissingStatementList);
+    }
+
+    public function testfetchRblMissingAccountStatementWithInvalidDateRange()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testRblAccountStatementFetchPoolSetUp()

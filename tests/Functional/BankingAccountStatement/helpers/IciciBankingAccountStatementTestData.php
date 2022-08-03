@@ -156,4 +156,22 @@ return [
             ],
         ],
     ],
+    'testFetchIciciMissingAccountStatement' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/fetch_missing/icici',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'from_date'      => 1656686600,
+                'to_date'        => 1656986600,
+                'save_in_redis'  => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'expected_attempts' => 1,
+                'dispatched'        => 'success'
+            ]
+        ]
+    ],
 ];

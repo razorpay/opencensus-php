@@ -448,6 +448,11 @@ return [
         'live'       => env('AWS_ICICI_BANKING_ACCOUNT_STATEMENT_FETCH_LIVE_QUEUE'),
     ],
 
+    'banking_account_statement_recon' => [
+        'test'       => env('AWS_BANKING_ACCOUNT_STATEMENT_RECON_TEST_QUEUE'),
+        'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_RECON_LIVE_QUEUE'),
+    ],
+
     'banking_account_statement_processor' => [
         'test'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_TEST_QUEUE'),
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_LIVE_QUEUE'),

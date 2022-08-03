@@ -53,6 +53,7 @@ class Category
     const PAYMENT_LINK_V2              = 'payment_links_v2';
     const TERMINAL_TESTING              = 'terminal_testing';
     const BANKING_ACCOUNT_TPV_CONFIG   = 'banking_account_tpv_config';
+    const BANKING_ACCOUNT_STATEMENT    = 'banking_account_statement';
     const TRANSACTIONS                 = 'transactions';
     const SUBSCRIPTION_REGISTRATIONS   = 'subscription_registrations';
     const INHERITANCE                  = 'inheritance';

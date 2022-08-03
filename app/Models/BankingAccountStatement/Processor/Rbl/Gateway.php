@@ -71,6 +71,10 @@ class Gateway extends BaseProcessor
 
     protected $rblAccountStatementV2MaxNumberOfRecords;
 
+    protected $fromDate = null;
+
+    protected $toDate = null;
+
     protected $savePaginationKey = true;
 
     protected $statementRecordsToMatch = [
@@ -108,7 +112,10 @@ class Gateway extends BaseProcessor
         }
     }
 
-    public function checkForDuplicateTransactions(array $bankTransactions, string $channel, string $accountNumber, $merchant)
+    public function checkForDuplicateTransactions(array $bankTransactions,
+                                                  string $channel,
+                                                  string $accountNumber,
+                                                  $merchant)
     {
         $this->alterStatementColumnsToMatch();
 
@@ -626,6 +633,156 @@ class Gateway extends BaseProcessor
         return $finalFormattedResponse;
     }
 
+    public function sendRequestToFetchStatement(array $input)
+    {
+        // Retry logic is placed to retry when gateway exceptions are caught. Retry limit is in place for upper bound.
+        $statementRetry = 0;
+        $statementRetryLimit = 1;
+        $attemptCount = 0;
+        $attemptLimit = 1;
+
+        if (array_key_exists(Entity::FROM_DATE, $input) === true)
+        {
+            $this->fromDate = $input[Entity::FROM_DATE];
+        }
+
+        if (array_key_exists(Entity::TO_DATE, $input) === true)
+        {
+            $this->toDate = $input[Entity::TO_DATE];
+        }
+
+        $isRetry = false;
+
+        $formattedResponse = [];
+
+        $finalFormattedResponse = [];
+
+        $paginationKeyToSave = null;
+
+        $requestData = $this->getRequestDataForMozartV2($input);
+
+        $this->rblAccountStatementV2MaxNumberOfRecords = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_V2_API_MAX_RECORDS]);
+
+        if (empty($this->rblAccountStatementV2MaxNumberOfRecords) === true)
+        {
+            $this->rblAccountStatementV2MaxNumberOfRecords = self::DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS;
+        }
+
+        $recordNumber = 1;
+
+        if ((array_key_exists('pagination_key', $input) === true) and
+            ($input['pagination_key'] !== null))
+        {
+            $paginationKeyToSave = $input['pagination_key'];
+        }
+
+        do
+        {
+            $paginationKey = substr($paginationKeyToSave, 11);
+
+            // Rbl api supports 2 formats of requests.
+            //     1. using from_date and to_date in api request
+            //     2. using next_key in api request.
+            // If for a merchant pagination key is not available, we use 1st format else 2nd format is used.
+            // Bank will be returning next_key in every successful api call.
+            $this->modifyRequestForFetchingStatement($requestData, $paginationKey, $isRetry);
+
+            $requestTime = Carbon::now();
+
+            try
+            {
+                $startTime = microtime(true);
+
+                // Increasing the timeout here to 80 secs because sometimes mozart times more time to
+                // load the response
+                $bankResponse = $this->app->mozart->sendMozartRequest(self::MOZART_NAMESPACE,
+                                                                      $this->getChannel(),
+                                                                      self::MOZART_ACTION,
+                                                                      $requestData,
+                                                                      $this->version,
+                                                                      false,
+                                                                      80);
+
+                $endTime = microtime(true);
+
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_RBL_V2_RESPONSE_TIME,
+                    [
+                        'merchant_id'    => $this->basDetails->getMerchantId(),
+                        'channel'        => $this->channel,
+                        'account_number' => $this->accountNumber,
+                        'response_time'  => $endTime - $startTime
+                    ]);
+
+                $this->modifyBankResponseV2($bankResponse);
+
+                $this->validateMozartResponseV2($bankResponse);
+            }
+            catch (\Throwable $ex)
+            {
+                if ($ex instanceof Exception\GatewayErrorException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED_V2,
+                        [
+                            Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                            Entity::CHANNEL        => $this->channel,
+                        ]);
+
+                    $statementRetry++;
+
+                    if ($statementRetry <= $statementRetryLimit)
+                    {
+                        $isRetry = true;
+
+                        $fetchMore = true;
+
+                        continue;
+                    }
+                }
+                if ($ex instanceof Exception\BadRequestValidationFailureException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_INVALID_MOZART_RESPONSE_V2,
+                        [
+                            Entity::ACCOUNT_NUMBER      => $this->accountNumber,
+                            Entity::CHANNEL             => $this->channel,
+                            RequestResponseFields::DATA => $bankResponse ?? [],
+                        ]);
+                }
+
+
+                // If gateway exception after retries and validation exception is thrown,
+                // then we delete the job and send a slack notification.
+                throw $ex;
+            }
+
+            $isRetry = false;
+
+            $formattedResponse = $this->getFormattedResponseV2($bankResponse[Fields::DATA], $recordNumber, $requestTime);
+
+            if ((count($formattedResponse) > 0) and ($this->savePaginationKey === true))
+            {
+                $paginationKeyToSave = last($formattedResponse)[Entity::POSTED_DATE] . '_' .
+                                       $bankResponse[Fields::DATA][Fields::FETCH_ACCOUNT_STATEMENT_RESPONSE][Fields::HEADER][Fields::NEXT_KEY];
+
+            }
+
+            $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
+
+            $attemptCount++;
+
+            $fetchMore = $this->hasMoreDataV2(count($formattedResponse), $requestData);
+
+        } while (($fetchMore === true) and ($attemptCount < $attemptLimit));
+
+        return [$finalFormattedResponse, $fetchMore, $paginationKeyToSave];
+    }
+
     // In case of pagination key already stored in DB which don't have timestamp attached,
     // we will pick last transaction and append it's posted_date.
     protected function updatePaginationKeyIfRequired()
@@ -750,6 +907,55 @@ class Gateway extends BaseProcessor
         $request[Fields::ATTEMPT][Fields::TO_DATE] = $this->getDateTimeStringFromTimestamp(
             min($statementEndTime, $statementStartTime + $allowedDateDiff),
             self::STATEMENT_START_TIME_DATE_FORMAT_V2);
+    }
+
+    protected function modifyRequestForFetchingStatement(array & $request, $paginationKey, bool $isRetry = false)
+    {
+        // $isRetry is set when a request fails and we want to retry the same request. In such scenario same request is returned.
+        if ($isRetry === true)
+        {
+            return;
+        }
+
+        if (empty($paginationKey) === false)
+        {
+            $request[Fields::ATTEMPT][Fields::NEXT_KEY] = $paginationKey;
+
+            unset($request[Fields::ATTEMPT][Fields::TO_DATE]);
+
+            unset($request[Fields::ATTEMPT][Fields::FROM_DATE]);
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PAGINATION_DETAILS,
+                               [
+                                   Entity::CHANNEL                  => Channel::RBL,
+                                   RequestResponseFields::NEXT_KEY  => $paginationKey,
+                                   RequestResponseFields::FROM_DATE => $request[Fields::ATTEMPT][Fields::FROM_DATE] ?? null,
+                                   RequestResponseFields::TO_DATE   => $request[Fields::ATTEMPT][Fields::TO_DATE] ?? null,
+                               ]);
+
+            return;
+        }
+
+        $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+
+        // Bank has kept a constraint that max difference between from_date and to_date can be 365 days.
+        $allowedDateDiff = 365 * $secondsPerDay;
+
+        $request[Fields::ATTEMPT][Fields::FROM_DATE] = $this->getDateTimeStringFromTimestamp(
+            $this->fromDate,
+            self::STATEMENT_START_TIME_DATE_FORMAT_V2);
+
+        $request[Fields::ATTEMPT][Fields::TO_DATE] = $this->getDateTimeStringFromTimestamp(
+            min($this->toDate, $this->fromDate + $allowedDateDiff),
+            self::STATEMENT_START_TIME_DATE_FORMAT_V2);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PAGINATION_DETAILS,
+                           [
+                               Entity::CHANNEL                  => Channel::RBL,
+                               RequestResponseFields::NEXT_KEY  => $paginationKey,
+                               RequestResponseFields::FROM_DATE => $request[Fields::ATTEMPT][Fields::FROM_DATE] ?? null,
+                               RequestResponseFields::TO_DATE   => $request[Fields::ATTEMPT][Fields::TO_DATE] ?? null,
+                           ]);
     }
 
     protected function modifyBankResponseV2(array & $response)

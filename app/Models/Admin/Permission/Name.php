@@ -1037,6 +1037,7 @@ class Name
     const ADMIN_BULK_ASSIGN_ROLE                = 'admin_bulk_assign_role';
 
     const VIEW_PRIVILEGES                       = 'view_privileges';
+    const FETCH_MISSING_BAS                     = 'fetch_missing_bas';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,

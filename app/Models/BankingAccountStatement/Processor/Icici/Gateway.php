@@ -40,6 +40,8 @@ class Gateway extends BaseProcessor
 
     const ICICI_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT = 200;
 
+    const ICICI_STATEMENT_FETCH_API_MAX_RECORDS = 200;
+
     /**
      * NEFT credit remarks => "NEFT-RETURN-23629988951DC-AYUSH MITTAL-ACCOUNT DOES NOT EXIST  R03"
      * utr is 023629988951
@@ -103,6 +105,12 @@ class Gateway extends BaseProcessor
     ];
 
     protected $allowRecordsToSave = true;
+
+    protected $fromDate = null;
+
+    protected $toDate = null;
+
+    protected $previousTrid = '';
 
     public function __construct(string $channel,
                                 string $accountNumber,
@@ -308,6 +316,151 @@ class Gateway extends BaseProcessor
         return $finalFormattedResponse;
     }
 
+    public function sendRequestToFetchStatement(array $input)
+    {
+        $statementRetry = 0;
+        $statementRetryLimit = 1;
+        $attemptCount = 0;
+        $attemptLimit = 1;
+
+        if (array_key_exists(Entity::FROM_DATE, $input) === true)
+        {
+            $this->fromDate = $input[Entity::FROM_DATE];
+        }
+
+        if (array_key_exists(Entity::TO_DATE, $input) === true)
+        {
+            $this->toDate = $input[Entity::TO_DATE];
+        }
+
+        if (array_key_exists('pagination_key', $input) === true)
+        {
+            $this->previousTrid = $input['pagination_key'];
+        }
+
+        $finalFormattedResponse = [];
+
+        $lastBankTransaction = [];
+
+        $merchantId = $this->basDetails->getMerchantId();
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_ATTEMPT_AND_RETRY_LIMITS,
+            [
+                'merchant_id'    => $merchantId,
+                'channel'        => $this->channel,
+                'account_number' => $this->accountNumber,
+                'attempt_count'  => $attemptCount,
+                'attempt_limit'  => $attemptLimit,
+                'retry_limit'    => $statementRetryLimit,
+            ]);
+
+        $isRetry = false;
+
+        $recordNumber = 1;
+
+        $previousLasttrid = null;
+
+        $credentials = $this->getCredentialsFromBAS();
+
+        do
+        {
+            $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
+
+            if ($isRetry === false)
+            {
+                $requestData = $this->modifyRequestForFetchingStatement($lastFormattedResponse, $previousLasttrid, $credentials);
+            }
+
+            try
+            {
+                $bankResponse = $this->app->mozart->sendMozartRequest(self::MOZART_NAMESPACE,
+                                                                      $this->getChannel(),
+                                                                      self::MOZART_ACTION,
+                                                                      $requestData);
+
+                $bankResponse = $this->preValidationUpdates($bankResponse);
+
+                $this->validateMozartResponse($bankResponse);
+            }
+            catch (\Throwable $ex)
+            {
+                if ($ex instanceof GatewayErrorException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
+                        [
+                            Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                            Entity::CHANNEL        => $this->channel,
+                        ]);
+
+                    $errorCodeAndDescription = $ex->getGatewayErrorCodeAndDesc();
+                    $errorCode               = $errorCodeAndDescription[0];
+
+                    $shouldRetry = $this->shouldRetryMozartRequest($errorCode);
+
+                    if ($shouldRetry === true)
+                    {
+                        if ($statementRetry < $statementRetryLimit)
+                        {
+                            $this->trace->info(
+                                TraceCode::MOZART_SERVICE_RETRY,
+                                [
+                                    'message'              => $ex->getMessage(),
+                                    'data'                 => $ex->getData(),
+                                    Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                                    Entity::CHANNEL        => $this->channel
+                                ]);
+
+                            $statementRetry++;
+
+                            $fetchMore = true;
+
+                            $isRetry = true;
+
+                            continue;
+                        }
+                    }
+                }
+
+                if ($ex instanceof BadRequestValidationFailureException)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::BANKING_ACCOUNT_STATEMENT_INVALID_MOZART_RESPONSE,
+                        [
+                            Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                            Entity::CHANNEL        => $this->channel,
+                            'response'             => $bankResponse ?? [],
+                        ]);
+                }
+
+                throw $ex;
+            }
+
+            $isRetry = false;
+
+            $previousLasttrid = $this->getLasttridFromBankResponse($bankResponse, $previousLasttrid);
+
+            $formattedResponse = $this->getFormattedResponse($bankResponse['data'], $recordNumber);
+
+            $finalFormattedResponse = array_merge($finalFormattedResponse, $formattedResponse);
+
+            $attemptCount++;
+
+            $fetchMore = (($this->hasMoreData($bankResponse) === true) and
+                          ($this->allowRecordsToSave === true));
+
+        } while (($fetchMore === true) and ($attemptCount < $attemptLimit));
+
+        $paginationKey = $this->getLasttrid(last($finalFormattedResponse));
+
+        return [$finalFormattedResponse, $fetchMore, $paginationKey];
+    }
+
     // Account Credentials are stored in Banking Account Service.
     // Credentials are fetched by making request to the service.
     protected function getCredentialsFromBAS()
@@ -392,6 +545,68 @@ class Gateway extends BaseProcessor
         else
         {
             $lasttrid = $previousLasttrid;
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PAGINATION_DETAILS,
+                           [
+                               Entity::CHANNEL                  => Channel::ICICI,
+                               RequestResponseFields::LASTTRID  => $lasttrid,
+                               'is_previous_lasttrid'           => $previousLasttrid != null,
+                               RequestResponseFields::FROM_DATE => $from_date,
+                               RequestResponseFields::TO_DATE   => $to_date,
+                           ]);
+
+        if ($lasttrid !== '')
+        {
+            $data[Fields::LAST_TRANSACTION][Fields::LASTTRID] = $lasttrid;
+
+            $data[Fields::ATTEMPT][Fields::CONFLG] = 'Y';
+        }
+
+        return $data;
+    }
+
+    protected function modifyRequestForFetchingStatement(array $lastTransaction, $previousLasttrid, array $credentials)
+    {
+        $from_date = $this->getDateTimeStringFromTimestamp($this->fromDate, self::DATE_FORMAT);
+
+        $to_date = $this->getDateTimeStringFromTimestamp($this->toDate, self::DATE_FORMAT);
+
+        $data = [
+            Fields::ATTEMPT          => [
+                Fields::FROM_DATE => $from_date,
+                Fields::TO_DATE   => $to_date,
+                Fields::CONFLG    => 'N',
+            ],
+            Fields::SOURCE_ACCOUNT   => [
+                Fields::ACCOUNT_NUMBER => $this->accountNumber,
+                Fields::CREDENTIALS    => [
+                    Fields::CORP_ID                  => $credentials[Icici\Fields::CORP_ID],
+                    Fields::USER_ID                  => $credentials[Icici\Fields::CORP_USER],
+                    Fields::AGGR_ID                  => $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG],
+                    Fields::URN                      => $credentials[Icici\Fields::URN],
+                    Fields::ACCOUNT_STATEMENT_APIKEY => $this->config['banking_account']['icici'][Fields::ACCOUNT_STATEMENT_API_KEY_CONFIG],
+                ]
+            ],
+            Fields::LAST_TRANSACTION => [
+                Fields::LASTTRID => ''
+            ]
+        ];
+
+        if ($previousLasttrid === null)
+        {
+            $lasttrid = $this->getLasttrid($lastTransaction);
+        }
+        else
+        {
+            $lasttrid = $previousLasttrid;
+        }
+
+        if(isset($this->previousTrid) === true)
+        {
+            $lasttrid = $this->previousTrid;
+
+            $this->previousTrid = null;
         }
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PAGINATION_DETAILS,

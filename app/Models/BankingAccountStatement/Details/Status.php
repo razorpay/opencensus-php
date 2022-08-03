@@ -9,8 +9,19 @@ class Status
     const ACTIVE = 'active';
     const ARCHIVED = 'archived';
     const INACTIVE = 'inactive';
+    const UNDER_MAINTENANCE = 'under_maintenance';
 
     public static function getStatuses()
+    {
+        return [
+            self::ACTIVE,
+            self::ARCHIVED,
+            self::INACTIVE,
+            self::UNDER_MAINTENANCE,
+        ];
+    }
+
+    public static function getStatusesForProcessing()
     {
         return [
             self::ACTIVE,

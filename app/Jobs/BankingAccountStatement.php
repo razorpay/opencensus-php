@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class BankingAccountStatement extends Job
 {
@@ -57,50 +58,58 @@ class BankingAccountStatement extends Job
 
             $BASCore = new BAS\Core;
 
-            $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
+            $basDetails = $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
 
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
-                [
-                    'channel'        => $BASCore->getBasDetails()->getChannel(),
-                    'balance_id'     => $BASCore->getBasDetails()->getBalanceId(),
-                    'bas_details_id' => $BASCore->getBasDetails()->getId()
-                ]);
-
-            $workerStartTime = Carbon::now()->getTimestamp();
-
-            if ($BASCore->getBasDetails()->getAccountType() === BAS\Details\AccountType::SHARED)
+            if (isset($basDetails) === false)
             {
-                switch ($BASCore->getBasDetails()->getChannel())
-                {
-                    case 'rbl':
-                        $BasPoolCore = new BAS\Pool\Rbl\Core();
-                        break;
+                $this->trace->info(TraceCode::BAS_DETAILS_NOT_FOUND);
 
-                    case 'icici':
-                        $BasPoolCore = new BAS\Pool\Icici\Core();
-                }
-
-
-                $BasPoolCore->basDetails = $BASCore->getBasDetails();
-
-                $result = $BasPoolCore->fetchAccountStatementV2($this->params);
+                $this->delete();
             }
             else
             {
-                $result = $BASCore->processStatementForAccount($this->params);
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                    [
+                        'channel'        => $BASCore->getBasDetails()->getChannel(),
+                        'balance_id'     => $BASCore->getBasDetails()->getBalanceId(),
+                        'bas_details_id' => $BASCore->getBasDetails()->getId()
+                    ]);
+
+                $workerStartTime = Carbon::now()->getTimestamp();
+
+                if ($BASCore->getBasDetails()->getAccountType() === BAS\Details\AccountType::SHARED)
+                {
+                    switch ($BASCore->getBasDetails()->getChannel())
+                    {
+                        case 'rbl':
+                            $BasPoolCore = new BAS\Pool\Rbl\Core();
+                            break;
+
+                        case 'icici':
+                            $BasPoolCore = new BAS\Pool\Icici\Core();
+                    }
+
+                    $BasPoolCore->basDetails = $BASCore->getBasDetails();
+
+                    $result = $BasPoolCore->fetchAccountStatementV2($this->params);
+                }
+                else
+                {
+                    $result = $BASCore->processStatementForAccount($this->params);
+                }
+
+                $workerEndTime = Carbon::now()->getTimestamp();
+
+                $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
+                                   [
+                                       'result'     => $result,
+                                       'start_time' => $workerStartTime,
+                                       'end_time'   => $workerEndTime
+                                   ]);
+
+                $this->delete();
             }
-
-            $workerEndTime = Carbon::now()->getTimestamp();
-
-            $this->trace->info(TraceCode::BAS_FETCH_PROCESSED_BY_QUEUE,
-                               [
-                                   'result'     => $result,
-                                   'start_time' => $workerStartTime,
-                                   'end_time'   => $workerEndTime
-                               ]);
-
-            $this->delete();
         }
         catch (\Throwable $e)
         {

@@ -1,0 +1,194 @@
+<?php
+
+namespace RZP\Jobs;
+
+use App;
+use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
+
+use RZP\Exception;
+use RZP\Models\Admin;
+use RZP\Trace\TraceCode;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Models\BankingAccountStatement\Details as BASD;
+
+class BankingAccountStatementRecon extends Job
+{
+    const MAX_RETRY_ATTEMPT = 2;
+
+    const MAX_RETRY_DELAY = 120;
+
+    /**
+     * @var string
+     */
+    protected $queueConfigKey = 'banking_account_statement_recon';
+
+    /**
+     * @var array
+     */
+    protected $params;
+
+    /**
+     * Default timeout value for a job is 60s. Changing it to 20 mins
+     * as fetching account statements for date ranges takes 10-12 mins to complete.
+     * @var integer
+     */
+    public $timeout = 1200;
+
+    public function __construct(string $mode, array $params)
+    {
+        $this->params = $params;
+
+        parent::__construct($mode);
+    }
+
+    public function handle()
+    {
+        try
+        {
+            parent::handle();
+
+            $BASCore = new BAS\Core;
+
+            $basDetails = $BASCore->getBasDetails($this->params['account_number'], $this->params['channel']);
+
+            if (isset($basDetails) === false)
+            {
+                $this->trace->info(TraceCode::BAS_DETAILS_NOT_FOUND);
+
+                $this->delete();
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                    [
+                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                        BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
+                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                        BAS\Entity::FROM_DATE          => $this->params[BAS\Entity::FROM_DATE],
+                        BAS\Entity::TO_DATE            => $this->params[BAS\Entity::TO_DATE],
+                        'expected_attempts'            => $this->params['expected_attempts'],
+                        'pagination_key'               => $this->params['pagination_key'],
+                        BAS\Entity::SAVE_IN_REDIS      => $this->params[BAS\Entity::SAVE_IN_REDIS],
+                    ]);
+
+                $workerStartTime = Carbon::now()->getTimestamp();
+
+                [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params);
+
+                $workerEndTime = Carbon::now()->getTimestamp();
+
+                $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCHED,
+                                   [
+                                       BAS\Entity::CHANNEL            => $this->params['channel'],
+                                       BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
+                                       BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                                       BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
+                                       'start_time'                   => $workerStartTime,
+                                       'end_time'                     => $workerEndTime,
+                                       'fetch_more'                   => $fetchMore,
+                                   ]);
+
+                $this->params['expected_attempts'] = $this->params['expected_attempts'] - 1;
+
+                $this->params['pagination_key'] = $paginationKey;
+
+                $this->trace->info(
+                    TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_DISPATCH_JOB_REQUEST,
+                    $this->params);
+
+                if (($this->params['expected_attempts'] > 0) and
+                    ($this->checkIfContinueFetchForRbl() === true) and
+                    ($fetchMore === true) and
+                    (empty($paginationKey) === false))
+                {
+                    BankingAccountStatementRecon::dispatch($this->mode, $this->params);
+                }
+
+                $this->delete();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $this->params);
+
+            if ($e instanceof Exception\GatewayErrorException)
+            {
+                $traceData = $this->params;
+
+                $traceData['message'] = $operation = 'Deleting the job after configured number of tries for gateway exception';
+
+                $this->trace->error(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
+
+                (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
+
+                $this->delete();
+            }
+            else
+            {
+                $this->checkRetry();
+            }
+        }
+    }
+
+    protected function checkRetry()
+    {
+        if ($this->attempts() < self::MAX_RETRY_ATTEMPT)
+        {
+            $workerRetryDelay = self::MAX_RETRY_DELAY * pow(2, $this->attempts());
+
+            $data                           = $this->params;
+            $data[BAS\Core::DELAY]          = $workerRetryDelay;
+            $data[BAS\Core::ATTEMPT_NUMBER] = $this->attempts() + 1;
+
+            $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, $data);
+
+            $this->release($workerRetryDelay);
+        }
+        else
+        {
+            $this->delete();
+
+            $traceData                 = $this->params;
+            $traceData['job_attempts'] = $this->attempts();
+            $traceData['message']      = 'Deleting the job after configured number of tries. Still unsuccessful.';
+
+            $this->trace->error(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_DELETED, $traceData);
+
+            $operation = $this->params['channel'].' banking account statement fetch job failed';
+
+            (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
+        }
+    }
+
+    protected function checkIfContinueFetchForRbl()
+    {
+        if (($this->params['channel'] === BAS\Channel::RBL) and
+            (isset($this->params['pagination_key']) === true))
+        {
+            $values = explode("_", $this->params['pagination_key']);
+
+            if (count($values) === 2)
+            {
+                $postedDate = array_first($values);
+
+                if ($postedDate > $this->params[BAS\Entity::TO_DATE])
+                {
+                    $this->trace->info(TraceCode::PAGINATION_KEY_AHEAD_OF_TO_DATE);
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+}
