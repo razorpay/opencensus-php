@@ -808,7 +808,7 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals('#TE-00038', $response['bookingId']);
+        $this->assertEquals('#TE-00038', $response['bookingDetails']['bookingId']);
     }
 
     public function testSlotBookingForBankingAccountForMerchantWithClarityContext()
@@ -859,7 +859,7 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals('#TE-00038', $response['bookingId']);
+        $this->assertEquals('#TE-00038', $response['bookingDetails']['bookingId']);
 
         Mail::assertQueued(XProActivation::class);
     }
@@ -910,7 +910,7 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        $this->assertEquals('#TE-00038', $response['bookingId']);
+        $this->assertEquals('#TE-00038', $response['bookingDetails']['bookingId']);
     }
 
     public function testSlotRescheduleForBankingAccountIfDateAndTimeOfBookingIsSame()

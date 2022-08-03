@@ -369,22 +369,30 @@ class Service extends Base\Service
 
         $response = $this->bankingAccountService->sendRequestAndProcessResponse($path, 'POST', $bookingDetails);
 
-        $responseStatus = $response[Constants::STATUS] ?? 'Failure';
+        $responseStatus = 'Failure';
 
-        if ($channel === 'rbl' and $responseStatus !== 'Failure')
+        if (key_exists('data',$response) and key_exists(Constants::STATUS,$response['data']))
+        {
+            $responseStatus = $response['data'][Constants::STATUS];
+        }
+
+        if ($channel === 'rbl')
         {
             $clarityContextCollection = (new Merchant\Attribute\Service())->getPreferencesByGroupAndType(
                 Group::X_MERCHANT_CURRENT_ACCOUNTS, MerchantAttributeType::CLARITY_CONTEXT)->first();
 
-            if (!empty($clarityContextCollection) and $clarityContextCollection->getValue() === 'enabled')
-            {
-                $this->trace->info(
-                    TraceCode::BANKING_ACCOUNT_CLARITY_CONTEXT_ENABLED,
-                    [
-                        'bank_account_id'               => $bankingAccount->getId(),
-                        'clarity_context_enabled'   => true,
-                    ]);
+            $clarityContextEnabled = !empty($clarityContextCollection) and $clarityContextCollection->getValue() === 'enabled';
 
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_CLARITY_CONTEXT_ENABLED,
+                [
+                    'bank_account_id'               => $bankingAccount->getId(),
+                    'clarity_context_enabled'       => $clarityContextEnabled,
+                    'slot_booking_response'         => $responseStatus
+                ]);
+
+            if ($responseStatus !== 'Failure' and $clarityContextEnabled === true)
+            {
                 (new \RZP\Models\BankingAccount\Core())->notifyOpsAboutProActivation($bankingAccount);
             }
         }

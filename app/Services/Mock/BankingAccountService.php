@@ -266,15 +266,34 @@ class BankingAccountService
         else if($path == 'booking/slot/book' ||  $path == 'booking/slot/reschedule' and $method == 'POST')
         {
             $result = [
-                'status' => 'Success',
                 'data' => [
-                    'id' => '20000000000000',
-                    'bookingStartTime' => '',
-                    'bookingEndTime' => '',
-                    'assignedStaffEmailID' => 'TEST@RAZORPAY.COM',
-                    'bookingId' => '#TE-00038'
+                    'status' => 'Success',
+                    'bookingDetails' => [
+                        'bookingId'        => '#TE-00038',
+                        'bookingStartTime' => '03-Aug-2022 11:30:00',
+                        'bookingEndTime'   => '03-Aug-2022 11:45:00',
+                        'assignedStaffName'=> 'Sanjana Aithal',
+                        'merchantEmail'    => 'TEST@RAZORPAY.COM',
+                    ],
+                    'ErrorDetail' => [
+                        'errorReason'   => ''
+                    ]
                 ]
             ];
+//            Adding negative case for future reference
+//            'data' => [
+//                'status' => 'Failure',
+//                'bookingDetails' => [
+//                    'bookingId'        => '',
+//                    'bookingStartTime' => '',
+//                    'bookingEndTime'   => '',
+//                    'assignedStaffName'=> '',
+//                    'merchantEmail'    => '',
+//                ],
+//                'ErrorDetail' => [
+//                    'errorReason'   => 'Invalid booking time'
+//                ]
+//            ]
         }
 
         else if($path == 'booking/slot/availableSlots' and $method == 'GET')
