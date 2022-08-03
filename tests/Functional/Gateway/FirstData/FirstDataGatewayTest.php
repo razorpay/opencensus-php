@@ -952,6 +952,6 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals('GATEWAY_ERROR_COMMUNICATION_ERROR', $payment['internal_error_code']);
 
-        $this->assertEquals('Gateway experienced a communication error.', $payment['error_description']);
+        $this->assertEquals('Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.', $payment['error_description']);
     }
 }

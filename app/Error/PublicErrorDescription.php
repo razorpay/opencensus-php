@@ -37,8 +37,8 @@ class PublicErrorDescription
 
     const GATEWAY_ERROR_TERMINAL_DISABLE_FAILED                                 = 'Terminal disable failed on gateway';
     const GATEWAY_ERROR_TERMINAL_ENABLE_FAILED                                  = 'Terminal enable failed on gateway';
-    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your card has not been activated for online payments. Please reach out to your bank to get it activated or re-try the payment with another card/method.';
-    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = 'Payment failed as card issuing bank is not available for 3DS authentication. Please use another card or reach out to card issuing bank.';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                       = 'Your payment could not be completed as this card is not enabled for online payments. Try another payment method or contact your bank for details.';
+    const GATEWAY_ERROR_AUTHENTICATION_STATUS_ATTEMPTED                         = 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.';
     const GATEWAY_ERROR_AUTHENTICATION_STATUS_FAILED                            = '3D Secure authentication failed';
     const BAD_REQUEST_CARD_DISABLED_FOR_ONLINE_PAYMENTS                         = 'Your card has been disabled for online payments by your issuing bank. Please reach out to your bank or re-try the payment with another card/method.';
     const BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST                           = 'Different request body sent for the same Idempotency Header';
@@ -139,7 +139,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED                             = 'Payment Exception: Card cvv not provided';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'Payment failed due to incorrect card CVV';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_PIN                                  = 'Payment failed';
-    const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                 = 'Payment failed because cardholder couldn\'t be authenticated';
+    const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                 = 'Your payment could not be completed due to incorrect OTP or verification details. Try another payment method or contact your bank for details.';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                 = 'Payment failed because cardholder couldn\'t be authenticated';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                           = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                              = 'Wallet is not supported';
@@ -178,26 +178,26 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_NOT_SUPPORTED                        = 'Corporate card is not allowed for this payment';
     const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_CONSUMER_NOT_SUPPORTED               = 'Your payment was unsuccessful. Try using another card/method.';
     const BAD_REQUEST_PAYMENT_CARD_SUBTYPE_BUSINESS_NOT_SUPPORTED               = 'Your payment was unsuccessful. Try using another card/method.';
-    const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Payment processing failed due to insufficient balance';
+    const BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE                         = 'Your payment could not be completed due to insufficient account balance. Try another card or payment method.';
     const BAD_REQUEST_PAYMENT_CARD_DECLINED                                     = 'Card declined by bank';
     const BAD_REQUEST_PAYMENT_CARD_EXPIRED                                      = 'Card is expired';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_EXPIRY_DATE                          = 'Your payment was not successful as you have an invalid expiry date.To pay successfully try adding the right details';
     const BAD_REQUEST_PAYMENT_CARD_DETAILS_INVALID                              = 'Card details entered by the user are invalid.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_PREVENTED_AUTHORIZATION         = 'Payment processing declined. The card issuing bank has prevented the payment from being authorized.';
-    const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'The card number provided is not a legitimate one.';
-    const BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID                      = 'The payment failed most probably due to an invalid card number';
+    const BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE                        = 'You\'ve entered an incorrect card number. Try again."';
+    const BAD_REQUEST_PAYMENT_CARD_NUMBER_POSSIBLY_INVALID                      = 'You\'ve entered an incorrect card number. Try again.';
     const BAD_REQUEST_PAYMENT_CARD_WITHDRAWAL_AMOUNT_LIMITS_EXCEEDED            = 'Payment processing failed because card\'s withdrawal amount limit has exceeded.';
     const BAD_REQUEST_PAYMENT_CARD_DAILY_WITHDRAWAL_FREQUENCY_LIMITS_EXCEEDED   = 'Payment processing failed because card\'s withdrawal frequency limit has exceeded.';
     const BAD_REQUEST_PAYMENT_CARD_ISSUING_BANK_NOT_PERMITTING_PAYMENT          = 'The bank has declined the payment as this card cannot be used for this type of payment. Please use an alternate credit card for the purpose.';
     const BAD_REQUEST_PAYMENT_CARD_CVV_LENGTH_MUST_BE_THREE                     = 'The card cvv length should only be 3 digits';
     const BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR                 = 'The American Express card cvv length must be 4 digits';
-    const BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED                    = 'International card is not allowed.';
+    const BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED                    = 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID                       = 'Card authentication failed due to invalid response from gateway. Please retry or use another payment method';
     const BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED                      = 'Your payment was not successful as the seller does not support recurring payments.We suggest contacting the seller for more details.';
     const BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this bank';
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT              = 'Payment amount exceeds the maximum amount allowed.';
-    const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
-    const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
+    const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Your payment didn\'t go through as it was declined by the bank. Try another payment method or contact your bank.';
+    const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Your payment could not be completed on time. Try again later.';
     const BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED      = 'The feature force_terminal_id is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT                = 'Payment debit notification failed to deliver to customer';
     const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED           = 'Payment debit notification failed to verify';
@@ -256,9 +256,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_AMOUNT_MORE_THAN_ORDER_AMOUNT_DUE                 = 'Payment amount is greater than the amount due for order';
     const BAD_REQUEST_PAYMENT_UPI_MULTIPLE_ACCOUNTS_LINKED                      = 'Payment failed since account linked with multiple names';
     const BAD_REQUEST_UPI_INVALID_ATM_PIN                                       = 'Invalid PIN entered.';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY        = 'International cards are not allowed for this merchant on payment gateway';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS          = 'International cards are not allowed for this merchant on payment links';
-    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES          = 'International cards are not allowed for this merchant on payment pages';
+    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_GATEWAY        = 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.';
+    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_LINKS          = 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.';
+    const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_PAYMENT_PAGES          = 'Your payment could not be completed as this business accepts domestic (Indian) card payments only. Try another payment method.';
     const BAD_REQUEST_CARD_INTERNATIONAL_NOT_ALLOWED_FOR_INVOICES               = 'International cards are not allowed for this merchant on invoices';
 
     const BAD_REQUEST_MANDATE_EXECUTION_ATTEMPT_BEFORE_START_TIME               = 'Mandate execution attempted before the start time';
@@ -512,19 +512,19 @@ class PublicErrorDescription
     const BAD_REQUEST_CASHBACK_EXCEEDS_ISSUER_LIMIT                             = 'Cashback request exceeds issuer limit';
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                               = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
-    const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                               = 'Payment declined';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                               = 'Your payment didn\'t go through as it was declined by the bank. Try another payment method or contact your bank.';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK                                  = 'Payment declined by bank';
-    const BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK                    = 'Payment declined due to not receiving timely response from bank';
+    const BAD_REQUEST_PAYMENT_NO_RESPONSE_RECEIVED_FROM_BANK                    = 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.';
     const BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR                                 = 'Payment failed due to error in the bank system';
     const BAD_REQUEST_PAYMENT_FAILED_MAYBE_DUE_TO_INVALID_INPUT                 = 'Payment processing failed most probably due to invalid card input';
     const BAD_REQUEST_PAYMENT_FAILED_MISSING_ORDER_ID                           = 'Payment processing failed due to missing order id';
-    const BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN                         = 'Payment processing failed most probably due to invalid card input';
+    const BAD_REQUEST_PAYMENT_FAILED_DUE_TO_INVALID_BIN                         = 'Your payment didn\'t go through due to invalid card details. Try another payment method or contact your bank for details.';
     const BAD_REQUEST_PAYMENT_CANCELLED                                         = 'Payment processing cancelled';
-    const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Payment processing declined by card issuing bank. Please contact issuing bank to determine reason.';
+    const BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK                     = 'Your payment didn\'t go through as it was declined by the bank. Try another payment method or contact your bank.';
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
-    const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
+    const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Your payment could not be completed due to incorrect OTP or verification details. Try another payment method or contact your bank for details.';
     const BAD_REQUEST_PAYMENT_AMEX_3DSECURE_AUTH_FAILED                         = 'The card is not enrolled for American Express SafeKey program. Please try another card.';
-    const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment processing failed because cardholder\'s card was blocked';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because cardholder is not enrolled for the required 3dsecure authentication';
@@ -656,8 +656,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined because it didn\'t pass all risk checks';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD_WEBSITE_MISMATCH                   = 'Payment blocked as website does not match registered website(s)';
     const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
-    const BAD_REQUEST_CARD_STOLEN_OR_LOST                                       = 'Payment failed because stolen or lost card is used';
-    const BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE                             = 'Payment failed because issuing bank is unavailable';
+    const BAD_REQUEST_CARD_STOLEN_OR_LOST                                       = 'Your payment could not be completed as your card is blocked. Try another payment method or contact your bank for details. ';
+    const BAD_REQUEST_CARD_ISSUING_BANK_UNAVAILABLE                             = 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.';
     const BAD_REQUEST_CARD_INACTIVE                                             = 'Payment failed because given card is inactive';
     const BAD_REQUEST_CARD_CREDIT_LIMIT_REACHED                                 = 'Payment failed because card has reached it\'s limit';
     const BAD_REQUEST_CARD_FROZEN                                               = 'Payment failed because given card is inactive';
@@ -1059,7 +1059,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
-    const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Card issuer is invalid';
+    const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Your payment could not be completed due to incorrect card details. Try another payment method or contact your bank for details. ';
     const BAD_REQUEST_CARD_NOT_SUPPORTED_FOR_FUND_ACCOUNT                       = 'Card not supported for fund account creation';
     const BAD_REQUEST_PARTNER_SUBMERCHANT_NOT_ACTIVATED                         = 'The sub-merchant accessed has not been activated. Please use test credentials for testing.';
     const BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS                 = 'Another payout operation for merchant is in progress. Please try again later.';
@@ -1253,7 +1253,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_CREDIT_FAILED                                               = 'Credit request is failed';
     const GATEWAY_ERROR_CREDIT_REVERSAL_TIMEOUT                                     = 'Credit reversal is timed out';
     const GATEWAY_ERROR_VALIDATION_ERROR                                            = 'Payment failed due to validation failure at bank or wallet gateway';
-    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Transaction to this account is not permitted';
+    const GATEWAY_ERROR_TRANSACTION_NOT_PERMITTED                                   = 'Your payment didn\'t go through as it was declined by the bank. Try another payment method or contact your bank.';
     const GATEWAY_ERROR_INSUFFICIENT_FUNDS_REMITTER_ACCOUNT                         = 'Transaction failed due to insufficient funds.';
     const GATEWAY_ERROR_DO_NOT_HONOUR_BENEFICIARY                                   = 'Transaction processing declined on beneficiary side';
     const GATEWAY_ERROR_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK_REMITTER               = 'Suspected fraud or transaction is declined based on risk score by bank';
@@ -1263,7 +1263,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_ISSUER_ACS_NOT_AVAILABLE                                    = 'Payment failed because cardholder couldn\'t be authenticated';
     const GATEWAY_ERROR_DEBIT_FAILED                                                = 'Payment failed. Please try again with another bank account.';
     const GATEWAY_ERROR_REVERSAL_ALREADY_SENT                                       = 'Payment failed. Reversal has already been sent';
-    const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'Payment failed as card issuing bank is not available for 3DS authentication. Please use another card or reach out to card issuing bank.';
+    const GATEWAY_ERROR_ISSUER_ACS_SYSTEM_FAILURE                                   = 'Your payment didn\'t go through due to a temporary issue. Any debited amount will be refunded in 4-5 business days.';
 
     // cardless emi error codes
     const BAD_REQUEST_PAYMENT_CARDLESS_EMI_CONTACT_MISMATCH                         = 'Contact given is invalid';

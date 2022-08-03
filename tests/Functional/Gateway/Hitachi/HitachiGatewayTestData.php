@@ -476,7 +476,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::SERVER_ERROR,
-                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                    'description'   => 'Your payment didn\'t go through as it was declined by the bank. Try another payment method or contact your bank.',
                 ],
             ],
             'status_code' => 500,

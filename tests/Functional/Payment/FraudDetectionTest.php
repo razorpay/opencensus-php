@@ -453,7 +453,7 @@ class FraudDetectionTest extends TestCase
                             "block"   => [
                                 [
                                     "rule_id"     => $ruleID,
-                                    "rule_code"   => "Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction."
+                                    "rule_code"   => "This business is not allowed to accept payments on this website. We suggest not going ahead with the payment."
                                 ],
                             ],
                         ],
@@ -528,7 +528,7 @@ class FraudDetectionTest extends TestCase
             $this->doAuthPayment($testPayment);
         });
 
-        $this->assertEquals("Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction.", $response['error']['description']);
+        $this->assertEquals("This business is not allowed to accept payments on this website. We suggest not going ahead with the payment.", $response['error']['description']);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -574,7 +574,7 @@ class FraudDetectionTest extends TestCase
             $this->doAuthPayment($testPayment);
         });
 
-        $this->assertEquals("Your payment was not successful as this Seller is not allowed to accept payments. We suggest not going ahead with this transaction.", $response['error']['description']);
+        $this->assertEquals("This business is not allowed to accept payments on this website. We suggest not going ahead with the payment.", $response['error']['description']);
 
         $payment = $this->getLastEntity('payment', true);
 
