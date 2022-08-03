@@ -160,10 +160,10 @@ class WhatsNew extends Component {
     });
   };
 
-  showGSModal = (id) => {
+  showGSModal = (id, tracking_id) => {
     const { openModal } = this.props;
     openModal({
-      component: <GrowthServiceModal template_id={id} />,
+      component: <GrowthServiceModal template_id={id} tracking_id={tracking_id} />,
       className: 'gs-modal',
     });
   };
@@ -242,14 +242,14 @@ class WhatsNew extends Component {
     this.props.setActivePageName('Connected Banking');
   };
 
-  handleCTA = ({ id, url, type, variant, handler, history }) => {
+  handleCTA = ({ id, url, type, variant, handler, history, tracking_id }) => {
     const isMWeb = isMobileAndTablet();
     if (!isMWeb && type.length && variant.length) {
       switch (type) {
         case 'MODAL':
           switch (variant) {
             case 'default':
-              this.showGSModal(id);
+              this.showGSModal(id, tracking_id);
               break;
             case 'center-cta':
               this.showGSCenterCTAModal(id);
@@ -266,7 +266,7 @@ class WhatsNew extends Component {
       return;
     }
     if (handler) {
-      growthServiceCTAHandler(handler, history);
+      growthServiceCTAHandler(handler, history, tracking_id);
     }
     switch (id) {
       case 'announcement-projectNitro-cta1':
@@ -591,7 +591,7 @@ const NotificationCard = ({
     } else addOwnRef(ref, index + 1);
   }, []);
 
-  const handleCTAClick = (e, btn, urlPath, isExternal) => {
+  const handleCTAClick = (e, btn, urlPath, isExternal, id) => {
     analyticsTrack({
       objectName: 'announcements',
       actionName: 'clicked',
@@ -640,6 +640,7 @@ const NotificationCard = ({
         variant: btn?.sub_asset?.variant,
         handler: btn?.handler,
         history,
+        tracking_id: id,
       });
     }
   };
@@ -730,7 +731,7 @@ const NotificationCard = ({
               <a
                 key={idx}
                 class={classList('btn', getButtonClass(btn.type))}
-                onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal)}
+                onClick={(e) => handleCTAClick(e, btn, urlPath, isExternal, id)}
                 href={urlPath}
                 target={isExternal ? '_blank' : ''}
                 rel="noreferrer noopener"

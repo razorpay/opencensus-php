@@ -27,7 +27,7 @@ const DashboardBanner = ({
 
   if (!loading && banners?.length) {
     contentToShow = (banners as any[]).map((banner) => {
-      const ctaArray = getCTAArray(banner.buttons, history);
+      const ctaArray = getCTAArray(banner.buttons, history, banner?.id);
       return (
         <BannerComponent key={banner.id} ctaArray={ctaArray} {...banner} fromWhere={routeName} />
       );

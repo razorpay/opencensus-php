@@ -51,14 +51,15 @@ const gSSalesforceEvent = (properties) => {
 
 /**
  * Open default variant modal
- * @param {string} id - template id
+ * @param {*} id - template id
+ * @param {*} tracking_id Tracking_id passed from Parent Asset
  * @returns {*} - returns default variant modal
  */
-const showGSModal = (id) => {
+const showGSModal = (id, tracking_id) => {
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const isMWeb = isMobileAndTablet();
   return openModal({
-    component: <GrowthServiceModal template_id={id} />,
+    component: <GrowthServiceModal template_id={id} tracking_id={tracking_id} />,
     className: !isMWeb ? 'gs-modal' : '',
   });
 };
@@ -96,8 +97,9 @@ const showThankYouModal = (id) => {
  * Handle CTA click from Growth Service Assets
  * @param {*} data - Array of cta click events
  * @param {*} history - history object
+ * @param {*} tracking_id - Tracking_id passed from Parent Asset
  */
-const growthServiceCTAHandler = (data, history) => {
+const growthServiceCTAHandler = (data, history, tracking_id) => {
   // iterate over data in handler
   data.forEach((item) => {
     if (item?.type === EVENT_TYPE.URL) {
@@ -108,7 +110,7 @@ const growthServiceCTAHandler = (data, history) => {
       // open modal
       if (item?.sub_asset?.type === 'MODAL') {
         if (item?.sub_asset?.variant == MODAL_TYPE.DEFAULT) {
-          showGSModal(item?.sub_asset?.id);
+          showGSModal(item?.sub_asset?.id, tracking_id);
         } else if (item?.sub_asset?.variant == MODAL_TYPE.CENTERCTA) {
           showGSCenterCTAModal(item?.sub_asset?.id);
         }

@@ -18,12 +18,15 @@ import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
-const getClickHandler = (id = '', type = '', variant = '', handler, history) => {
+const getClickHandler = (params) => {
+  // destructuring params
+  const { id = '', type = '', variant = '', handler, history, tracking_id } = params || {};
   const user = getUser();
   const openModal = (payload) => store.dispatch(openModalProp(payload));
   const closeModal = (payload) => store.dispatch(closeModalProp(payload));
   const setActivePageName = (payload) => store.dispatch(fnSetActivePageName(payload));
   const setBaseLocation = (payload) => store.dispatch(fnSetBaseLocation(payload));
+  // variant of Modals
   const MODAL = {
     DEFAULT: 'default',
     THANKYOU: 'thank-you',
@@ -57,7 +60,7 @@ const getClickHandler = (id = '', type = '', variant = '', handler, history) => 
 
   const showGSModal = () => {
     openModal({
-      component: <GrowthServiceModal template_id={id} />,
+      component: <GrowthServiceModal template_id={id} tracking_id={tracking_id} />,
       className: 'gs-modal',
     });
   };
@@ -78,7 +81,7 @@ const getClickHandler = (id = '', type = '', variant = '', handler, history) => 
 
   const showGSModalMobile = () => {
     return openModal({
-      component: <GrowthServiceModal template_id={id} />,
+      component: <GrowthServiceModal template_id={id} tracking_id={tracking_id} />,
     });
   };
 
@@ -124,7 +127,7 @@ const getClickHandler = (id = '', type = '', variant = '', handler, history) => 
   }
 
   if (handler) {
-    return () => growthServiceCTAHandler(handler, history);
+    return () => growthServiceCTAHandler(handler, history, tracking_id);
   }
 
   switch (id) {

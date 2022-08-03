@@ -18,6 +18,7 @@ const GrowthServiceModal = ({
   fetchGSModal,
   template_id,
   history,
+  tracking_id,
 }) => {
   useEffect(() => {
     fetchGSModal({ template_id });
@@ -47,9 +48,10 @@ const GrowthServiceModal = ({
   };
 
   const buttonHandler = () => {
-    growthServiceCTAHandler(gs_modals?.offer_cta?.handler, history);
+    growthServiceCTAHandler(gs_modals?.offer_cta?.handler, history, tracking_id);
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+        id: gs_modals?.id ? gs_modals?.id : tracking_id,
         cta_text: gs_modals?.footer_data?.label,
         pageUrl: window.location.href,
       }),
