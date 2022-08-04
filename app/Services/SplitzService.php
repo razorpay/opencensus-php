@@ -159,6 +159,14 @@ class SplitzService extends Base\Service
             throw new Exception\RuntimeException('Malformed json response');
         }
 
+        if ($code >= 400)
+        {
+            $this->trace->error(TraceCode::SPLITZ_REQUEST_FAILED, [
+                'status_code' => $code,
+                'response' => $res
+            ]);
+        }
+
         $splitzResponse = ['status_code' => $code, 'response' => $res];
 
         return $splitzResponse;

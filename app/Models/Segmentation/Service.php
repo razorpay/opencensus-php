@@ -23,6 +23,8 @@ class Service extends Base\Service{
                 return [];
             }
 
+            $this->trace->info(TraceCode::SPLITZ_SEGMENT_LAMBDA_REQUEST, ['input' => $input]);
+
             $segmentName = $this->getSegmentFromPath($filePath);
 
             return $this->core()->addSegment($filePath, $segmentName);

@@ -3310,6 +3310,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_BULK_REQUEST_EXCEPTION                         = 'RAZORX_BULK_REQUEST_EXCEPTION';
 
     const SPLITZ_REQUEST                                        = 'SPLITZ_REQUEST';
+    const SPLITZ_REQUEST_FAILED                                 = 'SPLITZ_REQUEST_FAILED';
+    const SPLITZ_SEGMENT_LAMBDA_REQUEST                         = 'SPLITZ_SEGMENT_LAMBDA_REQUEST';
     const GROWTH_REQUEST                                        = 'GROWTH_REQUEST';
     const GROWTH_ADMIN_REQUEST                                  = 'GROWTH_ADMIN_REQUEST';
     const COMMISSION_SERVICE_REQUEST                            = 'COMMISSION_SERVICE_REQUEST';
