@@ -392,7 +392,7 @@ export default class LoanApplicationOverview extends React.Component {
 
   getApplicationOverview = () => {
     const { loanApplicationDetails } = this.props;
-    const isProductCashAdvance = isCashAdvanceProduct(loanApplicationDetails?.meta?.product);
+    const isProductCashAdvance = window.location.pathname.includes('cash-advance');
 
     const productDetails = this.getProductDetails();
 
