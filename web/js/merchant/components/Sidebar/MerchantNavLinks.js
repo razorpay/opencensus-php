@@ -6,7 +6,11 @@ import * as LocalStorageService from 'common/utils/localStorage';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { getIsBankingEnabled, trackSidebarLinkRendered } from './helpers';
+import {
+  getIsBankingEnabled,
+  trackCashAdvanceSidebarLinkClicked,
+  trackCashAdvanceSidebarLinkRendered,
+} from './helpers';
 import { trackViewedBankingNavBar } from './ga';
 
 const RECOMMANDED_PRODUCT_LIST = [
@@ -33,6 +37,12 @@ function MerchantNavLinks(props) {
 
   // checks if the splitz experiment 'cash_advance_sidebar_position' variant is 'top'
   const isCashAdvanceSidebarPosTopExp = !!user.isCashAdvanceSidebarPosTopExp;
+  const handleCashAdvanceClick = () => {
+    trackCashAdvanceSidebarLinkClicked({
+      user,
+      position: isCashAdvanceSidebarPosTopExp ? 'top' : 'bottom',
+    });
+  };
   const cashAdvanceMainNavLink = (
     <MainNavLink
       label="Loans (Cash Advance)"
@@ -46,6 +56,7 @@ function MerchantNavLinks(props) {
           currentUser.isWithdrawFeatureEnabled ||
           currentUser.isCashOnCardEnabled)
       }
+      onClick={handleCashAdvanceClick}
     />
   );
 
@@ -67,7 +78,7 @@ function MerchantNavLinks(props) {
       trackViewedBankingNavBar();
     }
 
-    trackSidebarLinkRendered({
+    trackCashAdvanceSidebarLinkRendered({
       user,
       position: isCashAdvanceSidebarPosTopExp ? 'top' : 'bottom',
     });

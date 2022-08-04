@@ -4,11 +4,11 @@ export const getIsBankingEnabled = (currentUser = {}) => {
   return currentUser.isShowRazorpayXWidgetEnabled && currentUser.isOrgRZP;
 };
 
-export const trackSidebarLinkRendered = ({ user = {}, position = '' }) => {
+const trackCashAdvance = ({ user, position, actionName }) => {
   try {
     analyticsService.track({
       objectName: 'Cash Advance Sidebar Link',
-      actionName: 'Rendered',
+      actionName,
       screen: location.pathname,
       properties: {
         position,
@@ -19,4 +19,20 @@ export const trackSidebarLinkRendered = ({ user = {}, position = '' }) => {
   } catch (e) {
     // handle error
   }
+};
+
+export const trackCashAdvanceSidebarLinkRendered = ({ user = {}, position = '' }) => {
+  trackCashAdvance({
+    user,
+    position,
+    actionName: 'Rendered',
+  });
+};
+
+export const trackCashAdvanceSidebarLinkClicked = ({ user = {}, position = '' }) => {
+  trackCashAdvance({
+    user,
+    position,
+    actionName: 'Clicked',
+  });
 };
