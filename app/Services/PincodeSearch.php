@@ -195,6 +195,8 @@ class PincodeSearch
 
         if ($response = Cache::get($key))
         {
+            $this->replaceSpecialCharsInCity($response);
+
             return $response;
         }
 
@@ -221,9 +223,19 @@ class PincodeSearch
             'state_code'    => IndianStates::getStateCode($response['statename'], $useGstCodes),
         ];
 
+        $this->replaceSpecialCharsInCity($response);
+
         $this->cache->put($key, $response, static::CACHE_TTL);
 
         return $response;
+    }
+
+    private function replaceSpecialCharsInCity(&$address)
+    {
+        if (empty($address['city']) === false)
+        {
+            $address['city'] = trim(preg_replace("/[^A-Za-z]/", ' ', $address['city']));
+        }
     }
 
     protected function getParams(int $pincode)
