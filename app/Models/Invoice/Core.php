@@ -6,6 +6,7 @@ use Config;
 use Carbon\Carbon;
 
 use App;
+use RZP\Base\JitValidator;
 use RZP\Constants\Environment;
 use RZP\Mail\System\Trace;
 use RZP\Models\Base;
@@ -1632,7 +1633,7 @@ class Core extends Base\Core
             'entity'         => 'payment_link',
             'entity_id'      => $response['id'],
             'merchant_id'    => $merchant->getId(),
-            'merchant_label' => $merchant->getBillingLabel(),
+            'merchant_label' => strip_tags($merchant->getBillingLabel()),
             'merchant_logo'  => $merchant->getFullLogoUrlWithSize(Merchant\Logo::LARGE_SIZE),
             'subject'        => $this->getMailSubjectForGrievance($type, $merchant, $currency, $formattedAmount),
         ];
