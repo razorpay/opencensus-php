@@ -83,7 +83,7 @@ class Service extends Base\Service
         LedgerProcessor\Payout::DA_EXT_FEE_PAYOUT_REVERSED        => E::REVERSAL,
         LedgerProcessor\FundLoading::FUND_LOADING_PROCESSED       => E::BANK_TRANSFER,
         LedgerProcessor\FundAccountValidation::FAV_INITIATED      => E::FUND_ACCOUNT_VALIDATION,
-        LedgerProcessor\FundAccountValidation::FAV_REVERSED       => E::REVERSAL,
+        LedgerProcessor\FundAccountValidation::FAV_FAILED         => E::REVERSAL,
         LedgerProcessor\Adjustment::POSITIVE_ADJUSTMENT_PROCESSED => E::ADJUSTMENT,
         LedgerProcessor\Adjustment::NEGATIVE_ADJUSTMENT_PROCESSED => E::ADJUSTMENT,
         LedgerProcessor\CreditTransfer::VA_TO_VA_CREDIT_PROCESSED => E::CREDIT_TRANSFER,

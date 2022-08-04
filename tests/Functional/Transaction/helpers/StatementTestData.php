@@ -496,6 +496,31 @@ return [
         ],
     ],
 
+    'testFetchStatementForFailedFavFromLedger' => [
+        'request'  => [
+            'url'    => '/transactions/txn_00000000000001',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity'         => 'transaction',
+                'account_number' => '2224440041626905',
+                'amount'         => 354,
+                'currency'       => 'INR',
+                'credit'         => 354,
+                'debit'          => 0,
+                'balance'        => 98410,
+                'source'         => [
+                    'entity'   => 'reversal',
+                    'amount'   => 0,
+                    'fee'      => 354,
+                    'tax'      => 54,
+                    'currency' => 'INR',
+                ],
+            ],
+        ],
+    ],
+
     'testFetchMultipleStatementsWithIncorrectAccountNumberParameter' => [
         'request' => [
             'url'    => '/transactions',

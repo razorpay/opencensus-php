@@ -91,7 +91,7 @@ class Service extends Transaction\Service
 
         // In case feature flag is added to the merchant, only in that case ledger service will be called.
         // Since here depending on the transaction, we cannot find whether this transaction is for VA or CA,
-        // without depending on the transaction table, so only merchant feature flag is check is enough.
+        // without depending on the transaction table, so only merchant feature flag check is enough.
         if ($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true)
         {
             $ledgerTransaction = $this->ledgerStatementService->fetchByIdFromLedger($id);

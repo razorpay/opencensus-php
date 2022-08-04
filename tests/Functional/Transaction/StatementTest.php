@@ -380,6 +380,155 @@ class StatementTest extends TestCase
         $this->assertEquals($response['source']['id'], $payoutCreated->getPublicId());
     }
 
+    public function testFetchStatementForFailedFavFromLedger()
+    {
+        // use ledger mock to create journal for FAV
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->create('banking_account', [
+            'id'                    => 'JLcwWU3SsZ7byJ',
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'yesbank',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        // Create an FAV first
+        $fundAccountResponse = $this->createFundAccountBankAccount();
+
+        $request = [
+            'url'     => '/fund_accounts/validations',
+            'method'  => 'post',
+            'content' => [
+                'fund_account' => [
+                    'id' => $fundAccountResponse['id'],
+                ],
+                'currency'     => 'INR',
+                'notes'        => [],
+                'receipt'      => '12345667',
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $favResponse = $this->makeRequestAndGetContent($request);
+
+        // Fail the FAV
+        $this->triggerFlowToUpdateFavWithNewState($favResponse['id']);
+
+        $reversal = $this->getDbLastEntity('reversal');
+
+        // now do custom mocking for journal fetchById route
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockJournalId = 'IWx1NL90G02vxr';
+
+        $mockLedgerResponse = [
+            'id'               => $mockJournalId,
+            'created_at'       => '1634027277',
+            'updated_at'       => '1634027277',
+            'amount'           => '354.000000',
+            'base_amount'      => '354.000000',
+            'currency'         => 'INR',
+            'tenant'           => 'X',
+            'transactor_id'    => $reversal->getPublicId(),
+            'transactor_event' => 'fav_failed',
+            'transaction_date' => '1611132045',
+            'ledger_entry'     => [
+                [
+                    'id'               => 'I8MJlgVttAs4KQ',
+                    'created_at'       => '1634027277',
+                    'updated_at'       => '1634027277',
+                    'merchant_id'      => '10000000000000',
+                    'journal_id'       => $mockJournalId,
+                    'account_id'       => 'GoRNyEuu9Hl0OZ',
+                    'amount'           => '354.000000',
+                    'base_amount'      => '354.000000',
+                    'type'             => 'debit',
+                    'currency'         => 'INR',
+                    'balance'          => '98410.000000',
+                    'balance_updated'  => true,
+                    'account_entities' => [
+                        'account_type'       => ['cash',],
+                        'banking_account_id' => ['bacc_JLcwWU3SsZ7byJ',],
+                        'fund_account_type'  => ['merchant_va',],
+                        'transactor'         => ['X',],
+                    ],
+                ],
+                [
+                    'id'               => 'I8MJlgVttAs4KR',
+                    'created_at'       => '1634027277',
+                    'updated_at'       => '1634027277',
+                    'merchant_id'      => '10000000000000',
+                    'journal_id'       => $mockJournalId,
+                    'account_id'       => 'IwwUK4yc0R4avZ',
+                    'amount'           => '354.000000',
+                    'base_amount'      => '354.000000',
+                    'type'             => 'credit',
+                    'currency'         => 'INR',
+                    'balance'          => '98410.000000',
+                    'balance_updated'  => true,
+                    'account_entities' => [
+                        'account_type'       => ['payable',],
+                        'banking_account_id' => ['bacc_JLcwWU3SsZ7byJ',],
+                        'fund_account_type'  => ['merchant_va',],
+                        'transactor'         => ['X',],
+                    ],
+                ],
+                [
+                    'id'               => 'K0Rf8eRaOhG5nN',
+                    'created_at'       => '1634027277',
+                    'updated_at'       => '1634027277',
+                    'merchant_id'      => '10000000000000',
+                    'journal_id'       => $mockJournalId,
+                    'account_id'       => 'IwwUK6KYrdHY2m',
+                    'amount'           => '54.000000',
+                    'base_amount'      => '54.000000',
+                    'type'             => 'debit',
+                    'currency'         => 'INR',
+                    'balance'          => '88236.000000',
+                    'balance_updated'  => true,
+                    'account_entities' => [
+                        'account_type'       => ['payable',],
+                        'banking_account_id' => ['bacc_JLcwWU3SsZ7byJ',],
+                        'fund_account_type'  => ['va_gst',],
+                        'transactor'         => ['X',],
+                    ],
+                ],
+            ],
+        ];
+
+        $mockLedger->shouldReceive('fetchById')
+            ->times(1)
+            ->andReturn(
+                [
+                    'code' => 200,
+                    'body' => $mockLedgerResponse,
+                ]
+            );
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transactions/txn_IWx1NL90G02vxr';
+
+        $this->ba->privateAuth();
+        $response = $this->startTest();
+
+        // Asserts other keys existence in response.
+        $this->assertNotEmpty($response['id']);
+        $this->assertNotEmpty($response['created_at']);
+        $this->assertNotEmpty($response['source']['id']);
+        $this->assertNotEmpty($response['source']['entity']);
+        $this->assertEquals($response['source']['id'], $reversal->getPublicId());
+    }
+
     public function testFetchMultipleStatementsWithIncorrectAccountNumberParameter()
     {
         $this->ba->privateAuth();
