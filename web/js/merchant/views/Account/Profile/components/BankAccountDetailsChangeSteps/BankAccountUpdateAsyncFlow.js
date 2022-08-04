@@ -18,6 +18,7 @@ const BankAccountUpdateAsyncFlow = ({
   closeModal,
   showNotification,
   saveBankAccountChangesAutomate,
+  newBankAccountDetails,
 }) => {
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,11 +41,12 @@ const BankAccountUpdateAsyncFlow = ({
 
   const handleSubmit = () => {
     const formdata = new FormData();
+    const { account_number, ifsc_code } = newBankAccountDetails;
     const body = {
       address_proof_url: file,
       //required fields for api
-      account_number: user.bank_account_number,
-      ifsc_code: user.bank_branch_ifsc,
+      account_number,
+      ifsc_code,
       beneficiary_email: user.email,
       beneficiary_mobile: user.contact_mobile,
       beneficiary_name: user.bank_account_name,

@@ -50,7 +50,14 @@ const getBankName = (bank) => {
 };
 
 const BankAccountUpdateForm = (props) => {
-  const { handleSubmit, settlementConfig, ifsc_code, setStep, setVerificationError } = props;
+  const {
+    handleSubmit,
+    settlementConfig,
+    ifsc_code,
+    setStep,
+    setVerificationError,
+    setNewBankAccountDetails,
+  } = props;
   const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
   const temporaryHoldReason = settlementConfig.data?.config?.features?.hold?.reason;
   const [showBranch, setShowBranch] = useState(false);
@@ -88,7 +95,8 @@ const BankAccountUpdateForm = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ifsc_code]);
 
-  const handleSubmitCallback = ({ state, error }) => {
+  const handleSubmitCallback = (body) => ({ state, error }) => {
+    setNewBankAccountDetails(body);
     setStep(state);
     if (error) {
       setVerificationError(error);
@@ -97,7 +105,8 @@ const BankAccountUpdateForm = (props) => {
 
   const handleSubmission = (body) => {
     const { onSave } = props;
-    return onSave(body, handleSubmitCallback);
+    const newBody = { ...body };
+    return onSave(newBody, handleSubmitCallback(newBody));
   };
 
   const getBankAccountBannerContent = () => {

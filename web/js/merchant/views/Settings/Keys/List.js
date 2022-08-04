@@ -21,10 +21,6 @@ import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDeta
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 class KeysListContainer extends ListContainer {
-  state = {
-    isWebsiteComplianceModalShown: false,
-  };
-
   fetchEntityList() {
     return this.props.fetchKeys(
       { mode: this.props.session.mode },
@@ -113,10 +109,7 @@ class KeysListContainer extends ListContainer {
         websiteComplianceModalVisibility,
       );
 
-      if (shouldShowModal && this.state.isWebsiteComplianceModalShown === false) {
-        this.setState({
-          isWebsiteComplianceModalShown: true,
-        });
+      if (shouldShowModal) {
         if (isMobileDevice()) {
           this.props.openModal({
             component: <WebsiteComplianceMobilePrompt />,

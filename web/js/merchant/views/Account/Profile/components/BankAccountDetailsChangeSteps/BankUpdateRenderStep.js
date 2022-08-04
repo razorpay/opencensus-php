@@ -10,6 +10,7 @@ import {
 
 const BankUpdateRenderStep = ({ onSave, closeModal }) => {
   const [step, setStep] = useState('init');
+  const [newBankAccountDetails, setNewBankAccountDetails] = useState();
   const [verificationError, setVerificationError] = useState();
 
   const renderBankAccountUpdateForm = () => {
@@ -37,13 +38,14 @@ const BankUpdateRenderStep = ({ onSave, closeModal }) => {
         />
       );
     case 'sync-failed-async-started':
-      return <BankAccountUpdateAsyncFlow />;
+      return <BankAccountUpdateAsyncFlow newBankAccountDetails={newBankAccountDetails} />;
     default:
       return (
         <BankAccountUpdateForm
           onSave={onSave}
           setVerificationError={setVerificationError}
           setStep={setStep}
+          setNewBankAccountDetails={setNewBankAccountDetails}
         />
       );
   }
