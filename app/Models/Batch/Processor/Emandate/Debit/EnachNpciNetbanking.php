@@ -82,12 +82,6 @@ class EnachNpciNetbanking extends Base
 
     public function shouldSendToBatchService(): bool
     {
-        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION;
-
-        $variant = $this->getVariant($razorxTreatment);
-
-        $result = (strtolower($variant) === 'on');
-
-        return $result;
+        return true;
     }
 }

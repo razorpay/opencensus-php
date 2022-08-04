@@ -197,6 +197,8 @@ class Type
 
     const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';
 
+    const ENACH_NPCI_NETBANKING       = 'enach_npci_netbanking';
+
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
     //

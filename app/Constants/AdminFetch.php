@@ -654,6 +654,7 @@ class AdminFetch
                         'partner_referral_fetch',
                         'ed_merchant_search',
                         'collect_local_consents_to_create_tokens',
+                        'enach_npci_netbanking',
                     ],
                 ],
             ],

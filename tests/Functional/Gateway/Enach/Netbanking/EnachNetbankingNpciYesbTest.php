@@ -264,8 +264,8 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -301,8 +301,8 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -333,8 +333,8 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -365,8 +365,8 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -390,7 +390,7 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals('CREATED', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -444,8 +444,8 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
+        $this->assertEquals('emandate', $batch['batch_type_id']);
+        $this->assertEquals('CREATED', $batch['status']);
 
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
@@ -476,6 +476,8 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
     public function testCancelEmandateTokenWithMutipleUtilityCode()
     {
+        $this->markTestSkipped('Scope of the test changed to be updated by recurring team');
+
         $this->makeDebitPayment();
 
         $payment1 = $this->getDbLastEntity('payment');
@@ -496,11 +498,11 @@ class EnachNetbankingNpciYesbTest extends TestCase
         $batch1 = $this->makeBatchDebitPayment($payment1, $fileStatuses);
         $batch2 = $this->makeBatchDebitPayment($payment2, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch1['type']);
-        $this->assertEquals('processed', $batch1['status']);
+        $this->assertEquals('emandate', $batch1['batch_type_id']);
+        $this->assertEquals('CREATED', $batch1['status']);
 
-        $this->assertEquals('emandate', $batch2['type']);
-        $this->assertEquals('processed', $batch2['status']);
+        $this->assertEquals('emandate', $batch2['batch_type_id']);
+        $this->assertEquals('CREATED', $batch2['status']);
 
         $payment1 = $this->getDbEntityById('payment', $payment1['id']);
         $payment2 = $this->getDbEntityById('payment', $payment2['id']);
@@ -706,7 +708,25 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeRequestWithGivenUrlAndFile($url, $file, 'debit');
 
-        return $this->getDbEntityById('batch', $batch['id']);
+        $batchEntity = $this->fixtures->create('batch',
+            [
+                'id'          => $batch['id'],
+                'type'        => 'emandate',
+                'sub_type'    => 'debit',
+                'gateway'     => 'enach_npci_netbanking',
+                'total_count' => '1',
+            ]);
+
+        $entries = [
+            "data"        => $data[0],
+            'type'        => 'emandate',
+            'sub_type'    => 'debit',
+            'gateway'     => 'enach_npci_netbanking',
+        ];
+
+        $this->runWithData($entries, $batchEntity['id']);
+
+        return $batch;
     }
 
     protected function makeRequestWithGivenUrlAndFile($url, $file, $type = 'register')
@@ -763,7 +783,7 @@ class EnachNetbankingNpciYesbTest extends TestCase
     {
         $this->makeDebitPayment();
 
-        $payment = $this->getDbLastPayment();
+        $payment = $this->getDbLastEntity('payment');
 
         $this->assertEquals('confirmed', $payment->localToken->getRecurringStatus());
 
@@ -777,12 +797,9 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $batch = $this->makeBatchDebitPayment($payment, $fileStatuses);
 
-        $this->assertEquals('emandate', $batch['type']);
-        $this->assertEquals('processed', $batch['status']);
-
         $payment = $this->getDbEntityById('payment', $payment['id']);
 
-        $this->assertTrue($payment->isCaptured());
+        $this->assertEquals('captured', $payment['status']);
 
         $response = $this->deleteCustomerToken(
             'token_' . $payment['token_id'], 'cust_' . $payment['customer_id']);
@@ -799,7 +816,7 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $token = $this->getTrashedDbEntityById('token', $payment->getTokenId());
 
-        $this->assertEquals('cancelled', $token['recurring_status']);
+        $this->assertNotNull($token['deleted_at']);
     }
 
     protected function getBatchFileToUploadForMandateCancelRes(Payment\Entity $payment): TestingFile
@@ -818,6 +835,19 @@ class EnachNetbankingNpciYesbTest extends TestCase
     }
 
     // ----------- utilities ---------
+
+    public function runWithData($entries, $batchId)
+    {
+        $this->ba->batchAppAuth();
+
+        $testData = $this->testData['process_via_batch_service'];
+
+        $testData['request']['server']['HTTP_X_Batch_Id'] = $batchId;
+
+        $testData['request']['content'] = $entries;
+
+        $this->runRequestResponseFlow($testData);
+    }
 
     protected function makeDebitPayment($amount = 300000)
     {
@@ -861,6 +891,7 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         return $this->doS2SRecurringPayment($payment);
     }
+
 
     protected function mockVerifyResponse()
     {

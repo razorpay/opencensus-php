@@ -2004,6 +2004,7 @@ class Constants
         self::RAZORPAY_SECURE_MERCHANT        => true,
         self::RBL_BANK_LMS_DASHBOARD          => true,
         self::FK_NEW_ERROR_RESPONSE           => true,
+        self::NO_CUSTOM_CHECKOUT_RECURRING_CONSENT => true,
         self::CROSS_ORG_LOGIN                 => true,
     ];
 
