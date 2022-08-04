@@ -338,10 +338,6 @@ class GetsimplGatewayTest extends TestCase
         }
         catch (BadRequestValidationFailureException $e)
         {
-            $payment = $this->getLastEntity('payment', true);
-
-            $this->assertequals($payment['status'], 'created');
-
             self::assertNotNull($e->getError());
         }
 
