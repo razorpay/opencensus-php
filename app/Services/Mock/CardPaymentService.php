@@ -42,29 +42,33 @@ class CardPaymentService extends BaseCardPaymentService
 
     public function fetchAuthorizationData(array $input)
     {
-        $paymentId = $input['payment_ids'][0];
+//        $paymentId = $input['payment_ids'][0];
 
-        $fields = $input['fields'];
+        $return = [];
 
-        $dummyData = [
-            Constants::RRN                       => '123412341234',
-            Constants::STATUS                    => 'failed',
-            Constants::AUTH_CODE                 => '',
-            Constants::GATEWAY_TRANSACTION_ID    => '1234456789',
-            Constants::NETWORK_TRANSACTION_ID    => '0392166726767771',
-        ];
-
-        $response = [];
-
-        // Add the asked fields in response
-        foreach ($fields as $field)
+        foreach ($input['payment_ids'] as $paymentId)
         {
-            $response[$field] = $dummyData[$field] ?? null;
-        }
+            $fields = $input['fields'];
 
-        $return = [
-            $paymentId => $response
-        ];
+            $dummyData = [
+                Constants::RRN                       => '123412341234',
+                Constants::STATUS                    => 'failed',
+                Constants::AUTH_CODE                 => '',
+                Constants::GATEWAY_TRANSACTION_ID    => '1234456789',
+                Constants::NETWORK_TRANSACTION_ID    => '0392166726767771',
+                Constants::GATEWAY_REFERENCE_ID2     => '6584842357886332606090',
+            ];
+
+            $response = [];
+
+            // Add the asked fields in response
+            foreach ($fields as $field)
+            {
+                $response[$field] = $dummyData[$field] ?? null;
+            }
+
+                $return[$paymentId] = $response;
+        }
 
         $this->content($return, 'fetchAuthorizationData');
 

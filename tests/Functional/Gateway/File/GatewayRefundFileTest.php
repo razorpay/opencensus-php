@@ -145,6 +145,16 @@ class GatewayRefundFileTest extends TestCase
             ],
         ])->getId();
 
+        $paymentId8 = $this->fixtures->create('payment:captured', [
+            'gateway' => 'cybersource',
+            'captured_at'=>Carbon::today(Timezone::IST)->addHours(14)->getTimestamp(),
+            'notes' => [
+                'GST' => 'GST8 1',
+                'CorporateName' => 'Corp 8',
+                'MTR' => 'paymentRefId_8'
+            ],
+        ])->getId();
+
         $paymentId5 = $this->fixtures->create('payment:captured', [
             'gateway' => 'cybersource',
             'captured_at'=>Carbon::today(Timezone::IST)->addHours(17)->getTimestamp()+1,
@@ -165,9 +175,17 @@ class GatewayRefundFileTest extends TestCase
 
         $this->fixtures->edit('payment',$paymentId5,['reference_2'=>'abcdefgh']);
 
+        $this->fixtures->edit('payment',$paymentId8,['reference_2'=>'abcdefg8']);
+
         $pay = $this->getLastEntity('payment', true);
 
         $this->refundPayment($pay['id']);
+
+        $refund = $this->refundPayment('pay_'.$paymentId8);
+
+        $this->fixtures->edit('refund', $refund['id'], [
+            'created_at' => Carbon::today(Timezone::IST)->addHours(14)->getTimestamp()+1,
+        ]);
 
         $this->ba->adminAuth();
     }

@@ -169,20 +169,38 @@ class Base extends BaseProcessor
         return $cardToken;
     }
 
-    protected function fetchRrnDetails($data)
+    protected function fetchAuthorizationDetails($data)
     {
         $paymentIds = array_key_exists('payments',$data) === true ? array_pluck($data['payments'], 'id'): [];
 
         $refundPaymentIds = array_key_exists('refunds',$data) === true ? array_pluck($data['refunds'], 'payment_id'): [];
 
-        $ids = array_merge($paymentIds, $refundPaymentIds);
+        $ids = array_unique(array_merge($paymentIds, $refundPaymentIds));
 
         $request = [
-            'fields'      => [CardPaymentService::RRN],
+            'fields'      => [
+                'gateway_reference_id2',
+
+            ],
             'payment_ids' => $ids,
         ];
 
-        return $this->app['card.payments']->fetchAuthorizationData($request);
+        $authData = $this->app['card.payments']->fetchAuthorizationData($request);
+
+        if(count($ids) !== count($authData))
+        {
+            throw new GatewayFileException
+            (
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'            => $this->gatewayFile->getId(),
+                    'message'       => 'Discrepancy in authorization data fetch from CPS',
+                    'Payment IDs'   => $ids,
+                ]
+            );
+        }
+
+        return $authData;
     }
 
     protected function getAuthCode(Payment\Entity $payment)

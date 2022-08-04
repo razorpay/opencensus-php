@@ -6,6 +6,7 @@ namespace RZP\Models\Gateway\File\Processor\Cardsettlement;
 
 use Mail;
 use Config;
+use Request;
 use Carbon\Carbon;
 
 use RZP\Encryption;
@@ -51,12 +52,30 @@ class Axis extends Base
 
     protected $iv;
 
+    protected $paymentsLastTimestamp;
+
+    protected $paymentsFirstTimestamp;
+
+    protected $refundsLastTimestamp;
+
+    protected $refundsFirstTimestamp;
+
+    protected $isExplicitTimestampPassed;
+
     /**
      * Implements \RZP\Models\Gateway\File\Processor\Base::fetchEntities().
      */
     public function fetchEntities(): PublicCollection
     {
         list($begin, $end) = $this->calculateBeginEndForFile(Carbon::now()->timestamp);
+
+        $this->isExplicitTimestampPassed = false;
+
+        if( ($this->gatewayFile->getBegin() !== 946684800) or
+            ($this->gatewayFile->getEnd() !== 946684801))
+        {
+            $this->isExplicitTimestampPassed = true;
+        }
 
         $begin = $this->gatewayFile->getBegin() > 946684800 ? $this->gatewayFile->getBegin() : $begin;
 
@@ -87,6 +106,21 @@ class Axis extends Base
                                                                $end,
                                                                $merchantIds);
 
+        $this->gatewayFile->setAttribute(Entity::BEGIN,
+            min($this->paymentsFirstTimestamp, $this->refundsFirstTimestamp) );
+
+        $pids  = $paymentSettlementsForBank->pluck(Payment\Entity::ID)->toArray();
+        $rids  = $paymentSettlementsForBank->pluck(Payment\Refund\Entity::PAYMENT_ID)->toArray();
+
+        $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
+            'location'  => 'After DB fetch',
+            'MIDs'      => $merchantIds,
+            'payments'  => $pids,
+            'refunds'   => $rids,
+            'begin'     => $begin,
+            'end'       => $end,
+        ]);
+
         $settlementsForBank->put('payments', $paymentSettlementsForBank);
 
         $settlementsForBank->put('refunds', $refundSettlementsForBank);
@@ -105,6 +139,18 @@ class Axis extends Base
 
     public function fetchPaymentsSettlementsForBank($begin, $end, $merchantIds)
     {
+        if( $this->isExplicitTimestampPassed === false)
+        {
+            $beginFromCache = (new AdminService)->getConfigKey([
+                    'key' => ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
+                ]) + 1;
+
+            if($beginFromCache < $begin)
+            {
+                $begin = $beginFromCache;
+            }
+        }
+
         $this->trace->info(TraceCode::CARD_SETTLEMENT_PAYMENTS_FILE_TIMESTAMP,
             [
                 'begin'       => $begin,
@@ -118,11 +164,35 @@ class Axis extends Base
                                                                          $end,
                                                                          $merchantIds);
 
+        $this->paymentsLastTimestamp = $begin;
+
+        $this->paymentsFirstTimestamp = $begin;
+
+        if(count($payments) > 0)
+        {
+            $this->paymentsLastTimestamp = $payments[0]['captured_at'];
+
+            $this->paymentsFirstTimestamp = $payments[count($payments)-1]['captured_at'];
+        }
+
         return $payments;
     }
 
     public function fetchRefundsForBank($begin, $end, $merchantIds)
     {
+
+        if($this->isExplicitTimestampPassed === false)
+        {
+            $beginFromCache = (new AdminService)->getConfigKey([
+                    'key' => ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
+                ]) + 1;
+
+            if($beginFromCache < $begin)
+            {
+                $begin = $beginFromCache;
+            }
+        }
+
         $this->trace->info(TraceCode::CARD_SETTLEMENT_REFUNDS_FILE_TIMESTAMP,
             [
                 'begin'       => $begin,
@@ -135,6 +205,17 @@ class Axis extends Base
                         ->fetchCardRefundsForMerchantAndGatewayBetween($begin,
                                                                        $end,
                                                                        $merchantIds);
+
+        $this->refundsLastTimestamp = $begin;
+
+        $this->refundsFirstTimestamp = $begin;
+
+        if(count($refunds) > 0)
+        {
+            $this->refundsLastTimestamp = $refunds[0]['processed_at'];
+
+            $this->refundsFirstTimestamp = $refunds[count($refunds)-1]['processed_at'];
+        }
 
         return $refunds;
     }
@@ -214,6 +295,18 @@ class Axis extends Base
 //                    ->metadata($metadata)
 //                    ->save();
 
+            if ( ($this->isExplicitTimestampPassed === false) and
+                 ($this->isDarkRequest() === false))
+            {
+                (new AdminService)->setConfigKeys(
+                    [ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $this->paymentsLastTimestamp]
+                );
+
+                (new AdminService)->setConfigKeys(
+                    [ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $this->refundsLastTimestamp]
+                );
+            }
+
         }
         catch (\Throwable $e)
         {
@@ -235,7 +328,10 @@ class Axis extends Base
 
         $totalTransactions = 0;
 
-        $rrns = $this->fetchRrnDetails($data);
+        $cpsAuthData = $this->fetchAuthorizationDetails($data);
+
+        $paymentIds = [];
+        $refundIds = [];
 
         /**
          * @var $settlementPayment Payment\Entity
@@ -249,7 +345,7 @@ class Axis extends Base
                 {
                     $totalTransactions++;
 
-                    $rrn = $rrns[$settlementPayment->getId()]['rrn'] ?? '';
+                    $gatewayRequestID = $cpsAuthData[$settlementPayment->getId()]['gateway_reference_id2'] ?? '';
 
                     list($notesGST, $notesCorpName, $notesMTR) = $this->parseNotes($settlementPayment->getNotes());
 
@@ -264,7 +360,7 @@ class Axis extends Base
                         $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementPayment->getAmount()) . self::PIPE_SEPARATOR .
-                        $rrn . self::PIPE_SEPARATOR .
+                        $gatewayRequestID . self::PIPE_SEPARATOR .
                         $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementPayment->getAmount() . self::PIPE_SEPARATOR .
                         Carbon::createFromTimestamp($settlementPayment['captured_at'])
@@ -275,6 +371,8 @@ class Axis extends Base
                         '5' . self::PIPE_SEPARATOR .
                         $notesMTR . self::PIPE_SEPARATOR .
                         $notesGST . ' ' . $notesCorpName;
+
+                    $paymentIds[] = $settlementPayment->getId();
                 }
                 catch (\Throwable $ex)
                 {
@@ -324,6 +422,8 @@ class Axis extends Base
                         $notesMTR . self::PIPE_SEPARATOR .
                         $notesGST . ' ' . $notesCorpName;
 
+                    $refundIds[] = $settlementRefunds->payment->getId();
+
                 }
                 catch(\Throwable $ex)
                 {
@@ -355,6 +455,13 @@ class Axis extends Base
         ];
 
         $textRows = array_merge($header, $content,$trailer);
+
+        $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
+            'location' => 'After format for file',
+            'payments' => $paymentIds,
+            'refunds'  => $refundIds,
+            'totalTxn' => $totalTransactions,
+        ]);
 
         return implode("\r\n", $textRows);
     }
@@ -440,7 +547,7 @@ class Axis extends Base
                 'channel'   => 'settlements',
                 'filetype'  => 'axis_card_settlement_file',
                 'subject'   => 'File Send failure',
-                'recipient' => Constants::MAIL_ADDRESSES[Constants::DEVELOPERS]
+                'recipient' => Constants::MAIL_ADDRESSES[Constants::BANKING_POD_TECH]
             ];
 
             $this->app['beam']->beamPush($data, $timelines, $mailInfo);
@@ -507,6 +614,13 @@ class Axis extends Base
                 'timestamp $now' => $now,
             ]
         );
+    }
+
+    public function isDarkRequest(): bool
+    {
+        $url = Request::url();
+
+        return starts_with($url, 'https://api-dark.razorpay.com');
     }
 
     protected function getBucketConfig()
