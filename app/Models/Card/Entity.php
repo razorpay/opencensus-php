@@ -983,9 +983,7 @@ class Entity extends Base\PublicEntity
 
     public function isNetworkTokenisedCard()
     {
-        $vault = $this->getVault();
-
-        return (($vault === 'rupay') or ($vault === 'visa') or ($vault === 'mastercard'));
+        return ($this->isRzpTokenisedCard() === false and empty($this->getVault()) === false);
     }
 
     public function isGlobalTokenCreationSupportedOnCard(): bool
