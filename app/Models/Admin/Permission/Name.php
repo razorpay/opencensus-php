@@ -498,6 +498,12 @@ class Name
     // Permission to access capital-cards service
     const CAPITAL_CARDS                       = 'capital_cards';
 
+    // Permission to access capital-cards service rewards related read APIs
+    const CAPITAL_CARDS_REWARDS_READ          = 'capital_cards_rewards_read';
+
+    // Permission to access capital-cards service rewards related write APIs
+    const CAPITAL_CARDS_REWARDS_EDIT          = 'capital_cards_rewards_edit';
+
     // This will give all required accesses to capital risk developers
     const CAPITAL_RISK_DEVELOPER              = 'capital_risk_developer';
 

@@ -1519,6 +1519,16 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::CAPITAL_CARDS_REWARDS_READ => [
+                'description' => 'Allow access to capital-cards service reward related read APIs from dashboard',
+                'assignable'  => true,
+            ],
+
+            Permission::CAPITAL_CARDS_REWARDS_EDIT => [
+                'description' => 'Allow access to capital-cards service reward related write APIs from dashboard',
+                'assignable'  => true,
+            ],
+
             Permission::CAPITAL_RISK_DEVELOPER => [
                 'description' => 'Allow all required accesses to capital risk developers',
                 'assignable'  => true,
