@@ -168,6 +168,13 @@ class WhatsNew extends Component {
     });
   };
 
+  showGSModalMobile = (id, tracking_id) => {
+    const { openModal } = this.props;
+    openModal({
+      component: <GrowthServiceModal template_id={id} tracking_id={tracking_id} />,
+    });
+  };
+
   showGSCenterCTAModal = (id) => {
     const { openModal } = this.props;
     openModal({
@@ -244,24 +251,42 @@ class WhatsNew extends Component {
 
   handleCTA = ({ id, url, type, variant, handler, history, tracking_id }) => {
     const isMWeb = isMobileAndTablet();
-    if (!isMWeb && type.length && variant.length) {
-      switch (type) {
-        case 'MODAL':
-          switch (variant) {
-            case 'default':
-              this.showGSModal(id, tracking_id);
-              break;
-            case 'center-cta':
-              this.showGSCenterCTAModal(id);
-              break;
-            case 'thank-you':
-              this.showGSThankYouModal(id);
-              break;
-            default:
-              break;
-          }
-          break;
-        default:
+    if (type?.length && variant?.length) {
+      if (isMWeb) {
+        switch (type) {
+          case 'MODAL':
+            switch (variant) {
+              case 'default':
+                this.showGSModalMobile(id, tracking_id);
+                break;
+              case 'thank-you':
+                this.showGSThankYouModal(id);
+                break;
+              default:
+                break;
+            }
+            break;
+          default:
+        }
+      } else {
+        switch (type) {
+          case 'MODAL':
+            switch (variant) {
+              case 'default':
+                this.showGSModal(id, tracking_id);
+                break;
+              case 'center-cta':
+                this.showGSCenterCTAModal(id);
+                break;
+              case 'thank-you':
+                this.showGSThankYouModal(id);
+                break;
+              default:
+                break;
+            }
+            break;
+          default:
+        }
       }
       return;
     }
