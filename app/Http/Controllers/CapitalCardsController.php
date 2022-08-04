@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Config;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
 use Illuminate\Support\Facades\Mail;
@@ -14,6 +15,7 @@ use RZP\Exception;
 use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
 use RZP\Mail\CapitalCards\Base;
+use RZP\Models\Admin\Permission\Category as PermissionCategory;
 use RZP\Models\D2cBureauReport\Provider;
 use RZP\Services\Mozart;
 use RZP\Services\Mozart as MozartBase;
@@ -99,7 +101,8 @@ class CapitalCardsController extends Controller
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
-            'X-Auth-Type'   => 'admin'
+            'X-Auth-Type'   => 'admin',
+            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
         ];
 
         if (isset($body['merchant_id']) === true)
@@ -248,4 +251,19 @@ RequestInterface
         return ApiResponse::json(['success' => true]);
 
     }
+
+    protected function getCapitalPermissionsStringForAdmin()
+    {
+        $permissions = $this->ba->getAdmin()->getPermissionsList();
+        $permissionsString = "";
+        $permissionCategories = Config::get('heimdall.permissions');
+        $capitalPermissions = $permissionCategories[PermissionCategory::RAZORPAY_CAPITAL];
+        foreach ($permissions as $permission) {
+            if (isset($capitalPermissions[$permission])) {
+                $permissionsString .= $permission . ":";
+            }
+        }
+        return substr($permissionsString, 0, -1);
+    }
 }
+
