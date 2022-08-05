@@ -110,6 +110,9 @@ class Constants
     const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE        = 'direct_refund_fetch_by_payment_from_scrooge';
     const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE = 'direct_refund_fetch_by_id_and_payment_from_scrooge';
 
+    const RAZORX_KEY_REFUND_PENDING_STATUS_FIX       = 'refund_pending_status_fix';
+    const RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX        = 'refund_public_status_fix';
+
     // Experiment to set up FTA status update flow
     const REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP = 'refunds_0_loc_fta_status_update_flow_ramp_up';
     // Setting cache key ttl for 2 minutes since it's sync flow

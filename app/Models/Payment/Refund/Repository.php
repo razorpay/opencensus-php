@@ -8,12 +8,14 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 
 use RZP\Models\Payment\Status;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
+use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
@@ -228,14 +230,35 @@ class Repository extends Base\Repository
     {
         // We are disabling filtering for merchants like flipkart for which we are
         // modifying public status based on some buisness logics and is not stored in API DB
-        $disableStatusFilter = Refund\Core::fetchPublicStatusFromScrooge($this->merchant->getId());
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+            Refund\Constants::RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX, Mode::LIVE);
+
+        if (strtolower($variant) === 'on')
+        {
+            $disableStatusFilter =  $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+        }
+        else
+        {
+            $disableStatusFilter = Refund\Core::fetchPublicStatusFromScrooge($this->merchant->getId());
+        }
 
         if ($disableStatusFilter === true)
         {
             return;
         }
 
-        $showApiRefundStatus = Refund\Core::fetchPublicStatusFromApi($this->merchant->getId());
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+            Refund\Constants::RAZORX_KEY_REFUND_PENDING_STATUS_FIX, Mode::LIVE);
+
+        if (strtolower($variant) === 'on')
+        {
+            $showApiRefundStatus = $this->merchant->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS);;
+        }
+        else
+        {
+            $showApiRefundStatus = Refund\Core::fetchPublicStatusFromApi($this->merchant->getId());
+        }
 
         switch($params[Entity::PUBLIC_STATUS])
         {
@@ -247,7 +270,7 @@ class Repository extends Base\Repository
 
             case Refund\Status::PROCESSING:
                 ($showApiRefundStatus === true) ?
-                    $query->where(Entity::STATUS, '!=', Refund\Status::PROCESSED) : $query->whereNull(Entity::SPEED_PROCESSED);
+                    $query->whereIn(Entity::STATUS, [Refund\Status::CREATED, Refund\Status::INITIATED]) : $query->whereNull(Entity::SPEED_PROCESSED);
 
                 break;
 

@@ -1374,6 +1374,28 @@ class Service extends Base\Service
         return $array;
     }
 
+    /**
+     * @param Entity $refund
+     * @return bool
+     */
+    public function refundsPublicStatusMerchant(Entity $refund): bool
+    {
+        $pendingStatusVariant = $this->app->razorx->getTreatment($refund->merchant->getId(),
+            Refund\Constants::RAZORX_KEY_REFUND_PENDING_STATUS_FIX, $this->mode);
+
+        $publicStatusVariant = $this->app->razorx->getTreatment($refund->merchant->getId(),
+            Refund\Constants::RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX, $this->mode);
+
+        if ($pendingStatusVariant === "on" && $publicStatusVariant === "on") {
+            $refundPublicStatusFeature = $refund->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+            $refundPendingStatusFeature = $refund->merchant->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS);
+            $isRefundsPublicStatusMerchant = $refundPublicStatusFeature || $refundPendingStatusFeature;
+        } else {
+            $isRefundsPublicStatusMerchant = RefundCore::isRefundsPublicStatusMerchant($this->merchant->getId());
+        }
+        return $isRefundsPublicStatusMerchant;
+    }
+
     protected function getExtraDataIfscCode(Entity $refund)
     {
         $bank = (empty($refund->payment->getBank()) === false) ? $refund->payment->getBank() : '';
@@ -3803,8 +3825,10 @@ class Service extends Base\Service
                 {
                     $speedChangeTime = $refundArray[RefundConstants::SPEED_CHANGE_TIME] ?? NULL;
 
+                    $isRefundsPublicStatusMerchant = $this->refundsPublicStatusMerchant($refund);
+
                     $refundArray[Entity::PROCESSED_AT] =
-                        (RefundCore::isRefundsPublicStatusMerchant($this->merchant->getId()) === true) ?
+                        ($isRefundsPublicStatusMerchant === true) ?
                             $this->getProcessedAtForPublicStatusMerchant($refund) :
                             $speedChangeTime;
                 }
@@ -3826,8 +3850,9 @@ class Service extends Base\Service
             //  public Status Merchants : processed_at is actual processed_at value
             //  Other Merchants : processed_at is created_at
             case Speed::NORMAL :
+                $isRefundsPublicStatusMerchant = $this->refundsPublicStatusMerchant($refund);
                 $refundArray[Entity::PROCESSED_AT] =
-                    (RefundCore::isRefundsPublicStatusMerchant($this->merchant->getId()) === true) ?
+                    ($isRefundsPublicStatusMerchant === true) ?
                         $this->getProcessedAtForPublicStatusMerchant($refund) :
                         $refund->getCreatedAt();
 
@@ -3839,7 +3864,19 @@ class Service extends Base\Service
     {
         $processedAt = $refund->getProcessedAt();
 
-        if (RefundCore::fetchPublicStatusFromScrooge($this->merchant->getId()) === true)
+        $variant = $this->app->razorx->getTreatment($refund->merchant->getId(),
+            Refund\Constants::RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX, $this->mode);
+
+        if (strtolower($variant) === 'on')
+        {
+            $fetchPublicStatusFromScrooge =  $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+        }
+        else
+        {
+            $fetchPublicStatusFromScrooge = RefundCore::fetchPublicStatusFromScrooge($this->merchant->getId());
+        }
+
+        if ($fetchPublicStatusFromScrooge === true)
         {
             $publicProcessedAt = $refund->getCreatedAt() + RefundConstants::SCROOGE_PUBLIC_STATUS_TO_PROCESSED_TIME;
 
