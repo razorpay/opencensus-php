@@ -18,7 +18,7 @@ import Invitation from 'merchant/models/Invitation';
 import RegistrationLink from 'merchant/models/RegistrationLink';
 
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import { getCommonSegmentProperties, decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 const TRACK_NAMESPACES = ['PAYMENTS', 'REFUNDS', 'SETTLEMENTS'];
 
@@ -144,7 +144,9 @@ export const makeActionCollectionReducer = (
 
 // TODO: Below things should be moved to individual files
 
-export const fetchPayments = (params) => fetchAll(params, Payment, 'PAYMENTS');
+export const fetchPayments = (params) => {
+  return fetchAll(decodeSensitiveFields(params), Payment, 'PAYMENTS');
+};
 export const paymentsReducer = makeActionCollectionReducer(
   'PAYMENTS',
   {},
@@ -163,7 +165,7 @@ export const reversalsReducer = makeCollectionReducer('REVERSALS');
 
 export const fetchMarketplacePayments = (params) => {
   params.transferred = 1;
-  return fetchAll(params, Payment, 'MP_PAYMENTS');
+  return fetchAll(decodeSensitiveFields(params), Payment, 'MP_PAYMENTS');
 };
 export const mpPaymentsReducer = makeCollectionReducer('MP_PAYMENTS');
 
@@ -226,13 +228,13 @@ export const invitationsReducer = makeActionCollectionReducer('INVITATIONS');
 // Smart Collect
 export const fetchSmartCollectPayments = (params) => {
   params.virtual_account = 1;
-  return fetchAll(params, Payment, 'SC_PAYMENTS');
+  return fetchAll(decodeSensitiveFields(params), Payment, 'SC_PAYMENTS');
 };
 export const smartCollectPaymentsReducer = makeCollectionReducer('SC_PAYMENTS');
 
 // QR codes
 export const fetchQRCodesPayments = (params) => {
-  return fetchAll(params, QRPayment, 'QR_CODE_PAYMENTS');
+  return fetchAll(decodeSensitiveFields(params), QRPayment, 'QR_CODE_PAYMENTS');
 };
 
 export const updateItemInPayments = (item) => {

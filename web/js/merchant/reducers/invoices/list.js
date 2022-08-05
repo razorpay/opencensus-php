@@ -1,5 +1,6 @@
 import { set, merge, unshift, remove } from 'common/utils/immutable';
 import Invoice from 'merchant/models/Invoice';
+import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 export const INVOICES_FETCH = 'INVOICES_FETCH';
 export const INVOICE_CREATE = 'INVOICE_CREATE';
@@ -7,15 +8,15 @@ export const INVOICE_EDIT = 'INVOICE_EDIT';
 export const INVOICE_DELETED = 'INVOICE_DELETED';
 
 export const fetchInvoices = (params) => {
-  let invoice = new Invoice();
+  const invoice = new Invoice();
   return {
     type: INVOICES_FETCH,
-    payload: invoice.fetchAll(params),
+    payload: invoice.fetchAll(decodeSensitiveFields(params)),
   };
 };
 
 export const saveInvoice = (params, headers = {}, isIntentDuplicate) => {
-  let invoice = new Invoice(params);
+  const invoice = new Invoice(params);
 
   return {
     type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
@@ -46,21 +47,21 @@ export const populateRPLReduxList = (newLinksList) => {
 };
 
 export const deleteInvoice = (params) => {
-  let invoice = new Invoice(params);
+  const invoice = new Invoice(params);
   return {
     type: INVOICE_DELETED,
     payload: invoice.delete(),
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   invoices: [],
   paymentPages: [],
   count: 0,
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${INVOICES_FETCH}::PENDING`:
       return merge(state, {
@@ -88,8 +89,11 @@ export default function (state = initialState, action) {
       return set(state, 'paymentPages', unshift(state.paymentPages, action.payload));
 
     case 'PP_EDIT':
-      let entityIndex = state.paymentPages.findIndex((entity) => entity.id === action.payload.id);
-      return set(state, `paymentPages.${entityIndex}`, action.payload);
+      return set(
+        state,
+        `paymentPages.${state.paymentPages.findIndex((entity) => entity.id === action.payload.id)}`,
+        action.payload,
+      );
 
     case 'PP_FETCH':
       return merge(state, {
@@ -98,14 +102,20 @@ export default function (state = initialState, action) {
       });
 
     case `${INVOICE_EDIT}::SUCCESS`:
-      let invoiceIndex = state.invoices.findIndex((invoice) => invoice.id === action.payload.id);
-      return set(state, `invoices.${invoiceIndex}`, action.payload);
+      return set(
+        state,
+        `invoices.${state.invoices.findIndex((invoice) => invoice.id === action.payload.id)}`,
+        action.payload,
+      );
 
     case INVOICE_DELETED:
-      var invoicesList = remove(state.invoices, (invoice) => invoice.id === action.payload.id);
-      return set(state, 'invoices', invoicesList);
+      return set(
+        state,
+        'invoices',
+        remove(state.invoices, (invoice) => invoice.id === action.payload.id),
+      );
 
     default:
       return state;
   }
-}
+};

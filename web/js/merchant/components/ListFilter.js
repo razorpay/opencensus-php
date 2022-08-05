@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import { stringifyQueryParams, getURLQueryParams } from 'common/utils/rzp-utils';
+import {
+  stringifyQueryParams,
+  getURLQueryParams,
+  encodeSensitiveFields,
+  decodeSensitiveFields,
+} from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { withRouter } from 'react-router-dom';
 
@@ -60,12 +65,13 @@ class ListFilter extends Component {
       }
     }
 
-    this.props.initialize(params);
+    this.props.initialize(decodeSensitiveFields(params));
   }
 
   // update query params in url before search
   handleOnSubmit = (props) => {
     const { date, provider } = this.props;
+    props = encodeSensitiveFields(props);
     if (date) {
       props.from = date.from;
       props.to = date.to;

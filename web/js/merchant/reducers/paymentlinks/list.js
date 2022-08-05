@@ -1,4 +1,4 @@
-import { set, merge, unshift, remove } from 'common/utils/immutable';
+import { set, merge, unshift } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
 import store from 'merchant/store';
@@ -7,6 +7,7 @@ import {
   transformPLListFilters_NewToOld,
 } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
 import Invoice from 'merchant/models/Invoice';
+import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 import { PL_UPDATE } from './details';
 
@@ -21,11 +22,11 @@ export const fetchPaymentLinks = (params) => {
   if (user.isPaymentlinksV2Enabled) {
     url = 'payment_links';
 
-    queryParams = transformPLListFilters_NewToOld(params);
+    queryParams = transformPLListFilters_NewToOld(decodeSensitiveFields(params));
   } else {
     url = 'invoices';
 
-    const { id, ...restParams } = params;
+    const { id, ...restParams } = decodeSensitiveFields(params);
     queryParams = restParams;
 
     if (id) {
@@ -91,13 +92,13 @@ export const updatePLInReduxList = (respPayload, isNew) => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   paymentlinks: [],
   count: 0,
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${PAYMENTLINKS_FETCH}::PENDING`:
       return merge(state, {
@@ -124,13 +125,15 @@ export default function (state = initialState, action) {
       return set(state, 'paymentlinks', unshift(state.paymentlinks, action.payload));
 
     case `${PL_EDIT_UPDATE_LIST}::SUCCESS`:
-      let paymentlinkIndex = state.paymentlinks.findIndex(
-        (paymentlink) => paymentlink.id === action.payload.id,
+      return set(
+        state,
+        `paymentlinks.${state.paymentlinks.findIndex(
+          (paymentlink) => paymentlink.id === action.payload.id,
+        )}`,
+        action.payload,
       );
-
-      return set(state, `paymentlinks.${paymentlinkIndex}`, action.payload);
 
     default:
       return state;
   }
-}
+};

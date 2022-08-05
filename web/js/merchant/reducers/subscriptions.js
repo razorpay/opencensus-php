@@ -9,6 +9,7 @@ import {
   listFetchErrorState,
 } from 'merchant/reducers/collection';
 import { makeEntityReducer, updateEntity } from 'merchant_common/reducers/entity';
+import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 import { PLAN_FETCH } from 'merchant/reducers/plans';
 import { CUSTOMER_FETCH } from 'merchant/reducers/customers';
@@ -30,7 +31,6 @@ const CHECKOUT_INFO = 'CHECKOUT_INFO';
 
 export const fetchSubscriptionItems = (params) => {
   const item = new SubscriptionItem();
-
   return {
     type: ITEMS_FETCH,
     payload: item.fetchAll(params),
@@ -73,7 +73,9 @@ export const fetchSubscriptionCreditNotes = (id) => {
   );
 };
 
-export const fetchSubscriptions = (params) => fetchAll(params, Subscription, 'SUBSCRIPTIONS');
+export const fetchSubscriptions = (params) => {
+  return fetchAll(decodeSensitiveFields(params), Subscription, 'SUBSCRIPTIONS');
+};
 
 export const fetchSubscription = (id) => {
   const subscription = new Subscription();

@@ -1,6 +1,7 @@
 import { set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 import VirtualAccount from 'merchant/models/VirtualAccount';
+import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 import { makeActionCollectionReducer, fetchAll } from 'merchant/reducers/collection';
 import { makeEntityReducer, updateEntity } from 'merchant_common/reducers/entity';
 
@@ -24,7 +25,7 @@ export const fetchVirtualAccounts = (params) => {
   if (!params.notes) {
     params.receiver_type = 'bank_account,vpa';
   }
-  return fetchAll(params, VirtualAccount, 'VIRTUAL_ACCOUNTS');
+  return fetchAll(decodeSensitiveFields(params), VirtualAccount, 'VIRTUAL_ACCOUNTS');
 };
 
 export const fetchItem = (id) => {

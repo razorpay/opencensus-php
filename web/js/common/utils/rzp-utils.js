@@ -16,6 +16,7 @@
 /* eslint-disable prefer-const */
 import moment from 'moment';
 import axios from 'axios';
+import { SENSITIVE_FIELDS } from '../constant';
 import { acronyms, shortenText } from './acronyms';
 
 moment.updateLocale('en', {
@@ -1419,6 +1420,34 @@ export const resolvePath = (obj, path, defaultValue) => {
 };
 
 /**
+ * get a object with encoded sensitive fields
+ * @param {Object} object
+ */
+export const encodeSensitiveFields = (params) => {
+  let parameter = { ...params };
+  for (let param in parameter) {
+    if (SENSITIVE_FIELDS.includes(param)) {
+      parameter[param] = window?.btoa(parameter[param]);
+    }
+  }
+  return parameter;
+};
+
+/**
+ * get a object with decoded sensitive fields
+ * @param {Object} object
+ */
+export const decodeSensitiveFields = (params) => {
+  let parameter = { ...params };
+  for (let param in parameter) {
+    if (SENSITIVE_FIELDS.includes(param)) {
+      parameter[param] = window?.atob(parameter[param]);
+    }
+  }
+  return parameter;
+};
+
+/*
  * @param {Number} diff
  * @param {Moment} endDate
  *

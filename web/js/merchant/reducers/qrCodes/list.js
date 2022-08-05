@@ -1,19 +1,19 @@
-import { set, merge, unshift, remove } from 'common/utils/immutable';
+import { merge } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { makeActionCollectionReducer, fetchAll } from 'merchant/reducers/collection';
 import { RZPFeatures } from 'merchant/helpers/data';
 import QRCode from 'merchant/models/QRCode';
+import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 import { setOnBoardingDataInLocalState } from 'merchant/components/OnBoarding';
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
-import store from 'merchant/store';
 export const QR_CODE_CREATE = 'QR_CODE_CREATE';
 export const QR_CODE_UPDATE = 'QR_CODE_UPDATE';
 
 export const fetchQRCodes = (params) => {
-  const { type, payload } = fetchAll(params, QRCode, 'QR_CODES');
+  const { type, payload } = fetchAll(decodeSensitiveFields(params), QRCode, 'QR_CODES');
   return {
-    type: type,
+    type,
     payload: payload.then((resp) => {
       if (resp.data.items.length) {
         setOnBoardingDataInLocalState({
@@ -54,7 +54,7 @@ export const closeQR = (id) => {
   };
 };
 
-export default  makeActionCollectionReducer('QR_CODES', {
+export default makeActionCollectionReducer('QR_CODES', {
   [`${QR_CODE_CREATE}::SUCCESS`]: (state, action) => {
     return merge(state, {
       ...state,
@@ -72,6 +72,6 @@ export default  makeActionCollectionReducer('QR_CODES', {
 
         return item;
       }),
-    })
-  }
+    });
+  },
 });
