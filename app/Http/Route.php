@@ -291,6 +291,7 @@ class Route
         'scrooge_refund_back_write'                => ['post',     'scrooge/back_write_refund',                      'RefundController@scroogeBackWriteRefund'                           ],
         'refund_create_gateway_record'             => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
+        'scrooge_fetch_refund_email_data'          => ['post',     'scrooge/fetch_refund_email_data',                'RefundController@scroogeFetchRefundEmailData'                      ],
         'raw_address_create_batch_service'         => ['post',     'raw_address/batch_service',                      'RawAddressController@postCreateBatch'                              ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
 
@@ -4531,6 +4532,7 @@ class Route
         'emerchantpay_apm_onboard_maf',
         'scrooge_entities',
         'scrooge_entities_fetch',
+        'scrooge_fetch_refund_email_data',
         'scrooge_public_entities_fetch',
         'scrooge_refund_back_write',
         'fund_transfer_attempt_modes',
@@ -13057,6 +13059,7 @@ class Route
             'refund_fetch_status',
             'scrooge_entities',
             'scrooge_entities_fetch',
+            'scrooge_fetch_refund_email_data',
             'feature_get_multiple_internal',
             'scrooge_public_entities_fetch',
             'fund_transfer_attempt_modes',

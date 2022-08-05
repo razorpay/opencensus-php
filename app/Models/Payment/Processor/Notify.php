@@ -109,6 +109,18 @@ class Notify
     }
 
     /**
+     * Returns email data required for refund emails
+     *
+     * @param Payment\Refund\Entity $refund Refund entity
+     */
+    public function getEmailDataForRefund(Payment\Refund\Entity $refund)
+    {
+        $this->refund = $refund;
+
+        return $this->templateData();
+    }
+
+    /**
      * Sends out mails for a particular event trigger
      *
      * @param string $event

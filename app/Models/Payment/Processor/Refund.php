@@ -4244,4 +4244,11 @@ trait Refund
         }
         return $queryParams;
     }
+
+    public function getRefundEmailData(RefundEntity $refund)
+    {
+        $notifier = new Notify($refund->payment);
+
+        return $notifier->getEmailDataForRefund($refund);
+    }
 }

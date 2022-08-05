@@ -29,6 +29,7 @@ use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Jobs\ScroogeRefundUpdate;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
@@ -4181,5 +4182,47 @@ class Service extends Base\Service
         }
 
         return $responseArray;
+    }
+
+    public function getRefundEmailData($input)
+    {
+        (new Validator)->validateInput('refund_email_data', $input);
+
+        $response = [];
+
+        $payment = $this->repo->payment->findOrFail($input[RefundConstants::PAYMENT_ID]);
+
+        $merchant = $payment->merchant;
+
+        $orgData = OrgWiseConfig::getOrgDataForEmail($merchant);
+
+        $orgData['refunded_mail_enabled'] = OrgWiseConfig::getEmailEnabledForOrg($merchant->org->getCustomCode(), 'RZP\Mail\Payment\Refunded', $merchant);
+
+        $response['org_data'] = $orgData;
+
+        $virtualRefund = $this->buildVirtualRefundEntity($payment, $input[RefundConstants::REFUND]);
+
+        $viewData = (new PaymentProcessor($merchant))->getRefundEmailData($virtualRefund);
+
+        $viewData['payment']['method']  = [
+            'first'   => $viewData['payment']['method'][0],
+            'second'  => $viewData['payment']['method'][1],
+        ];
+
+        $viewData['payment']['amount_spread']  = [
+            'symbol'     => $viewData['payment']['amount_spread'][0],
+            'units'      => $viewData['payment']['amount_spread'][1],
+            'subunits'   => $viewData['payment']['amount_spread'][2],
+        ];
+
+        $viewData['refund']['amount_components']  = [
+            'symbol'     => $viewData['refund']['amount_components'][0],
+            'units'      => $viewData['refund']['amount_components'][1],
+            'subunits'   => $viewData['refund']['amount_components'][2],
+        ];
+
+        $response['view_entities_data'] = $viewData;
+
+        return $response;
     }
 }

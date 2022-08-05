@@ -184,6 +184,11 @@ class Validator extends Base\Validator
         'mode'             => 'sometimes|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',  // instant refunds mode
     ];
 
+    protected static $refundEmailDataRules = [
+        'payment_id'    => 'required|unsigned_id',
+        'refund'        => 'required|array',
+    ];
+
     protected static $setUnprocessedRefundsConfigRules = [
         'refund_ids'   => 'required|sequential_array|max:5000',
         'refund_ids.*' => 'required|filled|unsigned_id|size:14',
