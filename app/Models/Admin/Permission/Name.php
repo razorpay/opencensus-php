@@ -450,7 +450,9 @@ class Name
     // RazorpayX/Business banking permissions
     const BANKING_UPDATE_ACCOUNT              = 'banking_update_account';
     const ASSIGN_BANKING_ACCOUNT_REVIEWER     = 'assign_banking_account_reviewer';
-    const RBL_BANK_MID_OFFICE                 = 'rbl_bank_mid_office';
+    const RBL_BANK_MID_OFFICE_VIEW_LEAD       = 'rbl_bank_mid_office_view_lead';
+    const RBL_BANK_MID_OFFICE_MANAGE_LEAD     = 'rbl_bank_mid_office_manage_lead';
+    const RBL_BANK_MID_OFFICE_EDIT_LEAD       = 'rbl_bank_mid_office_edit_lead';
 
     //Permissions for enabling maker/checker for payouts
     const CREATE_PAYOUT                       = 'create_payout';

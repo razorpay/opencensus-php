@@ -1421,7 +1421,7 @@ return [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
             'method'  => 'GET',
             'server' => [
-                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Request-Origin'    => config('applications.bank_lms_banking_service_url'),
             ],
             'content' => [],
         ],
@@ -1441,7 +1441,7 @@ return [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
             'method'  => 'GET',
             'server' => [
-                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Request-Origin'    => config('applications.bank_lms_banking_service_url'),
             ],
             'content' => [],
         ],
@@ -1461,7 +1461,7 @@ return [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
             'method'  => 'GET',
             'server' => [
-                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Request-Origin'    => config('applications.bank_lms_banking_service_url'),
             ],
             'content' => [],
         ],

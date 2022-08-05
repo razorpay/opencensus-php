@@ -172,13 +172,6 @@ class UserRolePermissionsMap
                  Permission::CREATE_LOW_BALANCE_ALERTS,
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
-                 Permission::RBL_BANK_MID_OFFICE,
-                 Permission::VIEW_ROLE,
-                 Permission::CREATE_ROLE,
-                 Permission::DELETE_ROLE,
-                 Permission::EDIT_ROLE,
-                 Permission::VIEW_PRIVILEGES,
-                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::ADMIN => [
@@ -588,14 +581,6 @@ class UserRolePermissionsMap
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES
              ],
-
-            // BankingRole::BANK_MID_OFFICE_POC => [
-            //     Permission::RBL_BANK_MID_OFFICE
-            // ],
-            //
-            // BankingRole::BANK_MID_OFFICE_MANAGER => [
-            //    Permission::RBL_BANK_MID_OFFICE
-            //]
         ];
 
         $rolePermissions[BankingRole::FINANCE_L2] = $rolePermissions[BankingRole::FINANCE_L1];

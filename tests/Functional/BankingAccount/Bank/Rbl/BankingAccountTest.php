@@ -7923,47 +7923,47 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-    public function testBankLmsEndToEndAfterDetachingSubMerchant()
-    {
-        // Make merchant as Bank CA Onboarding Partner
-        $response = $this->makeMerchantAsBankCAOnboardingPartner();
-
-        // Add Feature to the Merchant
-        $response = $this->addBankLmsFeatureToTheMerchant();
-
-        // Invite new user to join RBL merchant
-        //$this->inviteNewUserToJoinRBLMerchant();
-
-        // Accept invitation
-        //$response = $this->acceptInvitation();
-
-        // New Merchant Apply for Current Account
-        $response = $this->MerchantApplyForCurrentAccount();
-
-        // Attach Submerchant to RBl Merchant
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::PICKED, Status::INITIATED,
-            null, null,
-            null, null,
-            $response);
-
-        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
-
-        // Detach Submerchant to RBl Merchant
-        $bankingAccount = $this->getDbLastEntity('banking_account');
-
-        $this->activateBankingAccount($bankingAccount);
-
-        //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
-
-        $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
-
-        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
-
-        $this->ba->addXBankLMSOriginHeader();
-
-        $this->startTest();
-    }
+    //public function testBankLmsEndToEndAfterDetachingSubMerchant()
+    //{
+    //    // Make merchant as Bank CA Onboarding Partner
+    //    $response = $this->makeMerchantAsBankCAOnboardingPartner();
+    //
+    //    // Add Feature to the Merchant
+    //    $response = $this->addBankLmsFeatureToTheMerchant();
+    //
+    //    // Invite new user to join RBL merchant
+    //    //$this->inviteNewUserToJoinRBLMerchant();
+    //
+    //    // Accept invitation
+    //    //$response = $this->acceptInvitation();
+    //
+    //    // New Merchant Apply for Current Account
+    //    $response = $this->MerchantApplyForCurrentAccount();
+    //
+    //    // Attach Submerchant to RBl Merchant
+    //    $this->assertUpdateBankingAccountStatusFromTo(
+    //        Status::PICKED, Status::INITIATED,
+    //        null, null,
+    //        null, null,
+    //        $response);
+    //
+    //    $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+    //
+    //    // Detach Submerchant to RBl Merchant
+    //    $bankingAccount = $this->getDbLastEntity('banking_account');
+    //
+    //    $this->activateBankingAccount($bankingAccount);
+    //
+    //    //$this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+    //
+    //    $partnerOwnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DefaultPartnerMerchantId);
+    //
+    //    $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $partnerOwnerUser->getId());
+    //
+    //    $this->ba->addXBankLMSOriginHeader();
+    //
+    //    $this->startTest();
+    //}
 
     /**
      * @param string $merchantId

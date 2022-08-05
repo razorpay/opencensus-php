@@ -72,6 +72,8 @@ class ProductIdentifier
             $product = $this->getRequestOriginProductFromRequest($request);
 
             $this->ba->setRequestOriginProduct($product);
+
+            $this->setIfBankLmsRequest($request);
         }
 
         // Set product for the request, this is used to tag
@@ -86,6 +88,24 @@ class ProductIdentifier
         (new Throttle)->pushHttpMetrics($request, $response, $duration);
 
         return $response;
+    }
+
+    public function setIfBankLmsRequest(Request $request): void
+    {
+        $originDomain = $request->headers->get(RequestHeader::X_REQUEST_ORIGIN);
+
+        $bankLmsBankingOriginHost = parse_url(config('applications.bank_lms_banking_service_url'), PHP_URL_HOST);
+
+        $requestOriginHost = parse_url($originDomain, PHP_URL_HOST);
+
+        if (empty($requestOriginHost) === false and ($bankLmsBankingOriginHost === $requestOriginHost))
+        {
+            $this->ba->setBankLms(true);
+
+            return;
+        }
+
+        $this->ba->setBankLms(false);
     }
 
     public function getRequestOriginProductFromRequest(Request $request)

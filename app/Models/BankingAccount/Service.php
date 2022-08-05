@@ -469,20 +469,6 @@ class Service extends Base\Service
             $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
         }
 
-        // Detach Ca Application from Partner Merchant
-        try
-        {
-            (new BankLms\Service())->detachCaApplicationMerchantFromBankPartner([Entity::BANKING_ACCOUNT_ID => $id]);
-        }
-        catch (BadRequestException $e)
-        {
-            $this->trace->error(TraceCode::BANKING_ACCOUNT_BANK_LMS_FAILED_TO_DETACH_APPLICATION,
-                                [
-                                    'id'    => $bankingAccount->getId(),
-                                    'error' => $e,
-                                ]);
-        }
-
         return $bankingAccount->toArrayPublic();
     }
 

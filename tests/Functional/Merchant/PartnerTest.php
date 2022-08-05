@@ -1517,6 +1517,8 @@ class PartnerTest extends OAuthTestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
+        $this->ba->addXBankLMSOriginHeader();
+
         $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID, $partnerUser2->getId());
 
         $this->startTest();
@@ -1598,6 +1600,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
 
+        $this->ba->addXBankLMSOriginHeader();
+
         $this->startTest();
     }
 
@@ -1637,6 +1641,8 @@ class PartnerTest extends OAuthTestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->ba->proxyAuth();
+
+        $this->ba->addXBankLMSOriginHeader();
 
         $feature = $this->fixtures->on('live')->create('feature', [
             'entity_id'   => self::DEFAULT_MERCHANT_ID,

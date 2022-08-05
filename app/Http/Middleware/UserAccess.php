@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Http\AxisCardsUser;
 use RZP\Http\Route;
+use RZP\Http\LmsUserRolePermissionsMap;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\User\Entity;
@@ -183,8 +184,19 @@ class UserAccess
 
     private function validateUserAccess(string $route)
     {
-        $userAccessResponse = $this->ba->isProductBanking() ? $this->validateBankingUserAccess($route) :
-                                                              $this->validateRouteUserRolesPolicy($route);
+        if ($this->ba->isBankLms())
+        {
+            $userAccessResponse = $this->validateBankLmsUserAccess($route);
+        }
+        else if ($this->ba->getRequestOriginProduct() === Product::BANKING)
+        {
+            $userAccessResponse = $this->validateBankingUserAccess($route);
+        }
+        else
+        {
+            $userAccessResponse = $this->validateRouteUserRolesPolicy($route);
+        }
+
         return $userAccessResponse;
     }
 
@@ -240,6 +252,19 @@ class UserAccess
             MODE::LIVE);
 
         return $isCACExperimentEnabled === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
+    private function validateBankLmsUserAccess(string $route)
+    {
+        try
+        {
+            $this->validateBankLmsUserRoutePolicy($route);
+        }
+        catch (\Throwable $e)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
     }
 
     private function validateBankingUserAccess(string $route)
@@ -360,6 +385,34 @@ class UserAccess
         }
     }
 
+    /**
+     * @throws BadRequestException
+     */
+    private function validateBankLmsUserRoutePolicy($route)
+    {
+        $userRole = $this->getUserRole();
+
+        $routePermission = $this->getBankLmsRoutePermission($route);
+
+        // Allow route to all roles having wildcard permission
+        if ($routePermission === self::WILDCARD_PERMISSION)
+        {
+            return;
+        }
+
+        $isRoleAllowedAccess = true;
+
+        if (LmsUserRolePermissionsMap::isInvalidLmsRolePermission($userRole, $routePermission))
+        {
+            $isRoleAllowedAccess = false;
+        }
+
+        if ($isRoleAllowedAccess !== true)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+    }
+
     private function validateBankingUserRoutePolicy($route)
     {
         $userRole = $this->getUserRole();
@@ -451,6 +504,24 @@ class UserAccess
      * @return mixed
      * @throws BadRequestException
      */
+    private function getBankLmsRoutePermission(string $routeName)
+    {
+        $routePermissionList = Route::$bankLmsRoutePermissions;
+
+        if (isset($routePermissionList[$routeName]) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BANKING_ROUTE_PERMISSION_MISSING);
+        }
+
+        return $routePermissionList[$routeName];
+    }
+
+    /**
+     * @param string $routeName
+     *
+     * @return mixed
+     * @throws BadRequestException
+     */
     private function getRoutePermission(string $routeName)
     {
         $routePermissionList = Route::$bankingRoutePermissions;
@@ -468,10 +539,6 @@ class UserAccess
     {
         //add routes to this array to allow merchant control access policies
         $routesWithMerchantRules = [
-            'banking_account_bank_lms_fetch_multiple',
-            'banking_account_bank_lms_fetch_by_id',
-            'banking_account_bank_lms_comments_list',
-            'banking_account_bank_lms_assign_bank_poc',
             'transaction_statement_fetch',
             'transaction_statement_fetch_multiple',
             'transaction_statement_fetch_multiple_for_banking',

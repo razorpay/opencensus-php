@@ -442,6 +442,13 @@ class BasicAuth
      */
     protected $passportFromJob;
 
+    /**
+     * Used to recognise Bank Lms Requests
+     *
+     * @var bool
+     */
+    protected $isBankLms = false;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -2732,6 +2739,21 @@ class BasicAuth
         $this->requestOriginProduct = $requestOriginProduct;
 
         return $this;
+    }
+
+    /**
+     * @param bool $isBankLms
+     *
+     * @return void
+     */
+    public function setBankLms(bool $isBankLms)
+    {
+        $this->isBankLms = $isBankLms;
+    }
+
+    public function isBankLms(): bool
+    {
+        return $this->isBankLms;
     }
 
     public function getRequestOriginProduct(): string

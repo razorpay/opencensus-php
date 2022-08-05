@@ -1446,8 +1446,16 @@ return [
         ],
 
         PermissionCategory::RBL_MID_OFFICE => [
-            Permission::RBL_BANK_MID_OFFICE => [
-                'description' => 'RBL Bank MID Office to view CA applications',
+            Permission::RBL_BANK_MID_OFFICE_EDIT_LEAD => [
+                'description' => 'RBL Bank MID Office to edit CA Lead',
+                'assignable'  => true,
+            ],
+            Permission::RBL_BANK_MID_OFFICE_MANAGE_LEAD => [
+                'description' => 'RBL Bank MID Office to manage CA Lead',
+                'assignable'  => true,
+            ],
+            Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD => [
+                'description' => 'RBL Bank MID Office to view CA Lead',
                 'assignable'  => true,
             ],
         ],

@@ -69,6 +69,11 @@ class Service extends BankingAccount\Service
      */
     public function attachCaApplicationMerchantToBankPartner(array $input): array
     {
+        if ($this->partnerBankMerchant === null)
+        {
+            return ['success' => false];
+        }
+
         $this->validator->validateInput(Validator::ATTACH_CA_MERCHANT_TO_BANK_PARTNER, $input);
 
         $bankingAccount = $this->repo->banking_account->findByPublicId($input[BankingAccount\Entity::BANKING_ACCOUNT_ID]);
@@ -84,6 +89,11 @@ class Service extends BankingAccount\Service
      */
     public function detachCaApplicationMerchantFromBankPartner(array $input)
     {
+        if ($this->partnerBankMerchant === null)
+        {
+            return;
+        }
+
         $this->validator->validateInput(Validator::DETACH_CA_MERCHANT_FROM_BANK_PARTNER, $input);
 
         $bankingAccount = $this->repo->banking_account->findByPublicId($input[BankingAccount\Entity::BANKING_ACCOUNT_ID]);

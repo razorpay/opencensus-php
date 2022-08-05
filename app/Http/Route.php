@@ -7138,10 +7138,6 @@ class Route
     ];
 
     public static $routePermission = [
-        'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
-        'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
-        'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
-        'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE,
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
@@ -8423,6 +8419,13 @@ class Route
         'get_non_3ds_details'                        => Permission::VIEW_ALL_WORKFLOW,
     ];
 
+    public static $bankLmsRoutePermissions = [
+        'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+        'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+        'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+        'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE_MANAGE_LEAD,
+    ];
+
     public static $bankingRoutePermissions = [
         'user_check_has_set_password'                  => '*',
         'mob_fetch_multiple_intents'                   => '*',
@@ -8679,10 +8682,6 @@ class Route
         'user_opt_in_whatsapp'                         => '*',
         'banking_account_create'                       => '*',
         'banking_account_create_dashboard'             => '*',
-        'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
-        'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
-        'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
-        'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE,
         'get_banking_account_slot_booking_details'     => '*',
         'rbl_current_account_serviceability_get'       => '*',
         'merchant_activation_upload_file'              => '*',
