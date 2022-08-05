@@ -497,9 +497,9 @@ class Repository extends Base\Repository
         });
     }
 
-    public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false)
+    public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false, $mode = null)
     {
-        $query =  $this->newQueryWithConnection($this->getSlaveConnection())
+        $query =  $this->newQueryWithConnection($this->getSlaveConnection($mode))
                        ->where(Entity::GATEWAY, '=', $gateway);
 
         foreach ($terminalData as $key => $value)

@@ -3291,7 +3291,7 @@ class Gateway extends Base\Gateway
             }
 
             $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData(Payment\Gateway::UPI_AIRTEL,
-                $terminalData);
+                $terminalData, false, $mode);
 
             if (empty($terminal) === true)
             {

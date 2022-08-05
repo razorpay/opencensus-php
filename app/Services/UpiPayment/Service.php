@@ -166,7 +166,7 @@ class Service
         $terminalData = $this->getTerminalDataFromServerCallback($gateway, $input);
 
         $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gateway,
-        $terminalData);
+        $terminalData, false, Mode::LIVE);
 
         if (empty($terminal) === true)
         {

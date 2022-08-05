@@ -159,7 +159,7 @@ class GatewayController extends Controller
             {
                 $data = $gateway->getTerminalDetailsFromCallback($input);
 
-                $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data);
+                $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data, false, Mode::LIVE);
 
                 if (empty($terminal) === true)
                 {
