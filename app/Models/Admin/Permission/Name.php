@@ -1012,6 +1012,8 @@ class Name
 
     const SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS  = 'set_merchant_sla_for_on_hold_payouts';
 
+    const SET_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS  = 'set_blacklisted_vpa_regexes_for_merchants';
+
     //cmma admin permission
     const CMMA_PROCESS_VIEW                    = 'cmma_process_view';
     const CMMA_PROCESS_EDIT                    = 'cmma_process_edit';

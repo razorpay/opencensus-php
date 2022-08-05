@@ -155,6 +155,7 @@ class Validator extends Base\Validator
         ConfigKey::RX_QUEUED_PAYOUTS_CRON_LAST_RUN_AT => 'filled|integer',
         ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA => 'array',
         ConfigKey::RX_ON_HOLD_PAYOUTS_DEFAULT_SLA => 'filled|integer',
+        ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS => 'array',
         ConfigKey::RX_CA_MISSING_STATEMENTS_RBL              => 'array',
         ConfigKey::RX_CA_MISSING_STATEMENTS_ICICI            => 'array',
         ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS   => 'filled|integer',

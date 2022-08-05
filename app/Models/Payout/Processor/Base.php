@@ -49,6 +49,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Transaction\CreditType;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Settlement\SlackNotification;
@@ -1933,6 +1934,8 @@ class Base extends BaseCore
             $this->blockVaToVaPayouts($payout, $fundAccount, $input);
         }
 
+        $this->checkAndBlockPayoutIfMerchantHasBlacklistedVpa($input, $fundAccount);
+
         $this->validateFundAccountContact($fundAccount);
 
         $payout->fundAccount()->associate($fundAccount);
@@ -3631,5 +3634,113 @@ class Base extends BaseCore
         }
 
         return null;
+    }
+
+    /**
+     * Check if the payout needs to be blocked if the merchant has a blacklisted VPA configured
+     *
+     * @throws BadRequestException if the payout needs to be blocked
+     */
+    protected function checkAndBlockPayoutIfMerchantHasBlacklistedVpa(array $input, FundAccount\Entity $fundAccount)
+    {
+        $payoutMode = $input[Entity::MODE] ?? null;
+
+        if ($payoutMode !== PayoutMode::UPI)
+        {
+            return null;
+        }
+
+        if ($fundAccount->getAccountType() !== FundAccount\Type::VPA)
+        {
+            return null;
+        }
+
+        $vpa = $fundAccount->account;
+
+        $vpaId = $vpa->getAddress();
+
+        try
+        {
+            $blacklistedVpaRegexesForMerchants = (new AdminService)->getConfigKey(
+                [
+                    'key' => ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS
+                ]);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::ERROR_FETCHING_BLACKLISTED_VPA_REGEXES_FROM_REDIS,
+                [
+                    'merchant_id' => $this->merchant->getMerchantId(),
+                    'config_key'  => ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS,
+                ]);
+
+            // Fail-safe here and continue processing
+            return null;
+        }
+
+        if (array_key_exists($this->merchant->getMerchantId(), $blacklistedVpaRegexesForMerchants) === false)
+        {
+            return null;
+        }
+
+        $blacklistedVpaRegexes = $blacklistedVpaRegexesForMerchants[$this->merchant->getMerchantId()];
+
+        foreach ($blacklistedVpaRegexes as $blacklistedVpaRegex)
+        {
+            try
+            {
+                $shouldBlock = $this->checkIfVpaIdMatchesRegexToBlock($vpaId, $blacklistedVpaRegex);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::ERROR_CHECKING_VPA_AGAINST_REGEX,
+                    [
+                        'merchant_id' => $this->merchant->getMerchantId(),
+                        'vpa_regex'   => $blacklistedVpaRegex,
+                        'vpa_id'      => $vpaId,
+                    ]);
+
+                // Fail-safe here and continue as this could be due to a misconfigured regex
+                continue;
+            }
+
+            if ($shouldBlock === true)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_TO_VPA_IS_BLOCKED,
+                    [
+                        'merchant_id'           => $this->merchant->getMerchantId(),
+                        'vpa_id'                => $vpaId,
+                        'blacklisted_vpa_regex' => $blacklistedVpaRegex,
+                        'fund_account_id'       => $fundAccount->getPublicId(),
+                    ]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    'Payouts to this VPA ID are not allowed');
+            }
+        }
+
+        return null;
+    }
+
+    protected function checkIfVpaIdMatchesRegexToBlock(string $vpaId, string $vpaRegex): bool
+    {
+        $isMatched = preg_match($vpaRegex, strtolower($vpaId));
+
+        if ($isMatched === 1)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

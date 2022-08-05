@@ -13822,6 +13822,131 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutToBlacklistedVpasForMerchants()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->create('fund_account:vpa', [
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
+        ]);
+
+        $blockedVpas = [
+            ['username' => 'paytmqrabde',       'handle' => 'paytm'],
+            ['username' => 'paytmqrab-de',      'handle' => 'paytm'],
+            ['username' => 'PayTMQRab-de.ghi',  'handle' => 'PAYtm'],
+            ['username' => 'paytmqr',           'handle' => 'paytm'],
+            ['username' => 'payTMqra.b.c',      'handle' => 'PAYTM'],
+            ['username' => 'blockthisab-de',    'handle' => 'UPI'],
+            ['username' => 'blockthis.a.b-d.e', 'handle' => 'upi'],
+            ['username' => 'blockthis',         'handle' => 'upi'],
+            ['username' => 'blockthisabde.014', 'handle' => 'UpI'],
+        ];
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS => [
+                    $this->bankingBalance->getMerchantId() => ['', '/^paytmqr[a-z0-9\.-]*@paytm$/', '/blockthis[a-z0-9\.-]*@upi$/'],
+                    'abcde' => ['/^junk$/'],
+                ],
+            ]);
+
+        foreach ($blockedVpas as $blockedVpa)
+        {
+            $vpa = $this->fixtures->create('vpa', [
+                'username'    => $blockedVpa['username'],
+                'handle'      => $blockedVpa['handle'],
+            ]);
+
+            $fundAccount->account()->associate($vpa);
+            $fundAccount->save();
+
+            $this->startTest();
+        }
+    }
+
+        public function testCreatePayoutToVpaCheckPayoutNotBlocked(bool $isUpi=true, bool $blacklistMid=true)
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $testData = $this->testData['testCreatePayoutToVpaCheckPayoutNotBlocked'];
+
+        if ($isUpi === true)
+        {
+            $fundAccount = $this->fixtures->create('fund_account:vpa', [
+                'id'          => '100000000003fa',
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ]);
+
+            $vpa = $this->fixtures->create('vpa', [
+                'username'    => $testData['vpa']['username'],
+                'handle'      => $testData['vpa']['handle'],
+            ]);
+
+            $fundAccount->account()->associate($vpa);
+            $fundAccount->save();
+        }
+        else
+        {
+            $this->fixtures->create('fund_account:bank_account', [
+                'id'          => '100000000003fa',
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ]);
+        }
+
+        if ($blacklistMid === true)
+        {
+            (new Admin\Service)->setConfigKeys(
+                [
+                    Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS => [
+                        $this->bankingBalance->getMerchantId() => ['', '/^paytmqr[a-z0-9\.-]*@paytm$/', '/blockthis[a-z0-9\.-]*@upi$/'],
+                        'abcde' => ['/^junk$/'],
+                    ],
+                ]);
+        }
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutToVpaNoBlockWhenNotUpi()
+    {
+        $testData = &$this->testData['testCreatePayoutToVpaCheckPayoutNotBlocked'];
+        $testData['request']['content']['mode'] = 'NEFT';
+        $testData['response']['content']['mode'] = 'NEFT';
+
+        $this->testCreatePayoutToVpaCheckPayoutNotBlocked(false);
+    }
+
+    public function testCreatePayoutToVpaNoBlockWhenMerchantHasNoBlackistedRegex()
+    {
+        $this->testCreatePayoutToVpaCheckPayoutNotBlocked(true, false);
+    }
+
+    public function testCreatePayoutToVpaNoBlockWhenVpaDoesNotMatchBlacklistedRegex()
+    {
+        $allowedVpas = [
+            ['username' => 'paytm-abc',  'handle' => 'paytm'],
+            ['username' => 'abcde',      'handle' => 'PAYtm'],
+            ['username' => 'qrpaytm',    'handle' => 'payTM'],
+            ['username' => 'paytmupi',   'handle' => 'PAYTM'],
+            ['username' => 'upi',        'handle' => 'paytm'],
+            ['username' => 'donotblock', 'handle' => 'upi'],
+            ['username' => 'abcde',      'handle' => 'UPI'],
+        ];
+
+        foreach ($allowedVpas as $vpa)
+        {
+            $testData = &$this->testData['testCreatePayoutToPaytmQrSuccess'];
+            $testData['vpa']['username'] = $vpa['username'];
+            $testData['vpa']['handle'] = $vpa['handle'];
+        }
+
+        $this->testCreatePayoutToVpaCheckPayoutNotBlocked(true, true);
+    }
+
     public function testCreatePayoutViaAmazonPay()
     {
         $ledgerSnsPayloadArray = [];
