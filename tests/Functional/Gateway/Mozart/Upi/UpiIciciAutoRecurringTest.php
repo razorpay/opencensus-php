@@ -1066,6 +1066,9 @@ class UpiIciciAutoRecurringTest extends TestCase
         // Gateway request will be sent in next step
         $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
         {
+            $this->assertSame($content['merchant']['category'], '5399');
+            $this->assertSame($content['merchant']['billing_label'], 'Test Merchant');
+
             if ($action === 'notify')
             {
                 $requestAsserted['notify'] = true;

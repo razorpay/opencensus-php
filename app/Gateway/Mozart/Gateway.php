@@ -2722,6 +2722,8 @@ class Gateway extends Base\Gateway
             ($this->isUpiRecurringPayment($input['payment']) === true))
         {
             $content['entities']['merchant'] = [
+                'category'      =>  $input['merchant']->getCategory(),
+                'billing_label' =>  $input['merchant']->getBillingLabel(),
                 'feature' => [
                     'tpv' => $input['merchant']->isTPVRequired()
                 ]
