@@ -2862,7 +2862,20 @@ class BasicAuth
             $this->setUserRole($userId);
 
             $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_USER, $userId, true);
-            $this->setPassportRoles([$this->userRole]);
+
+            $userRoles = [];
+
+            // $this->userRole can be string|null
+            if (empty($this->userRole) === false)
+            {
+                $userRoles = [$this->userRole];
+
+                $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($this->userRole);
+
+                $userRoles = array_merge($userRoles, $authzRoles);
+            }
+
+            $this->setPassportRoles($userRoles);
         }
     }
 

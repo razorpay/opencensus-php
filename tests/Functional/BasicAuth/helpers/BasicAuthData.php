@@ -573,7 +573,14 @@ return [
                 ],
             ],
             'roles' => [
-                'owner',
+                "owner", "statement_balance_view_access", "misc_all_roles", "banking_info_view_access", "payout_create_view",
+                "fundaccount_create_view", "contact_create_view", "workflow_view_access", "payout_link_create_view", "tds_categories_view",
+                "tax_payment_settings_view", "accounting_view_access", "payout_attachment_create_view", "payout_link_settings_view",
+                "payout_view_access", "fundaccount_view_access", "contact_view_access", "payout_link_view_access", "invoice_create_view",
+                "invoice_view_access", "tax_create_view", "tax_view_access", "reporting_config", "merchant_analytics",
+                "merchant_user_invite_create_view", "merchant_role_create_view", "merchant_user_view_access", "merchant_role_view_access",
+                "dev_controls_create_view", "dev_controls_view_access", "accounting_create_view", "billing_invoices", "va_config",
+                "business_info_config", "feature_controls", "merchant_misc_config", "merchant_preference_create", "workflow_create_view"
             ],
             'credential' => [],
         ],
@@ -623,7 +630,45 @@ return [
                 ],
             ],
             'roles' => [
-                'owner',
+                "owner", "statement_balance_view_access", "misc_all_roles", "banking_info_view_access", "payout_create_view",
+                "fundaccount_create_view", "contact_create_view", "workflow_view_access", "payout_link_create_view", "tds_categories_view",
+                "tax_payment_settings_view", "accounting_view_access", "payout_attachment_create_view", "payout_link_settings_view",
+                "payout_view_access", "fundaccount_view_access", "contact_view_access", "payout_link_view_access", "invoice_create_view",
+                "invoice_view_access", "tax_create_view", "tax_view_access", "reporting_config", "merchant_analytics",
+                "merchant_user_invite_create_view", "merchant_role_create_view", "merchant_user_view_access", "merchant_role_view_access",
+                "dev_controls_create_view", "dev_controls_view_access", "accounting_create_view", "billing_invoices", "va_config",
+                "business_info_config", "feature_controls", "merchant_misc_config", "merchant_preference_create", "workflow_create_view"
+            ],
+            'credential' => [],
+        ],
+    ],
+
+    'testProxyAuthWithoutAuthzRoles' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/webhooks/events/all',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'expected_passport' => [
+            'mode'          => 'test',
+            'identified'    => true,
+            'authenticated' => true,
+            'domain'        => 'razorpay',
+            'consumer'      => [
+                'type' => 'user',
+                'id'   => 'MerchantUser01',
+            ],
+            'impersonation' => [
+                'type'     => 'user_merchant',
+                'consumer' => [
+                    'type' => 'merchant',
+                    'id'   => '10000000000000',
+                ],
+            ],
+            'roles' => [
+                'manager'
             ],
             'credential' => [],
         ],

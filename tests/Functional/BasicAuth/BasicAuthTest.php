@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Product;
 use Razorpay\OAuth\Client;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -242,6 +243,20 @@ class BasicAuthTest extends TestCase
     public function testProxyAuth()
     {
         $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->assertPassport();
+    }
+
+    public function testProxyAuthWithoutAuthzRoles()
+    {
+        $adminRoleUser = $this->fixtures->user->createUserForMerchant('10000000000000', [], Role::MANAGER);
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['expected_passport']['consumer']['id'] = $adminRoleUser->getId();
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $adminRoleUser->getId());
 
         $this->startTest();
 
