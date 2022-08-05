@@ -13,10 +13,11 @@ class Constants
     const INPUT_KEY_TYPE                    = 'type';
     const INPUT_KEY_ARN                     = 'arn';
 
-    const CYBERCELL_SOURCES = ['CyberSafe', 'CyberCell'];
-    const BANK_SOURCES      = ['Visa', 'MasterCard', 'Issuer', 'Network'];
-    const SOURCE_BANK       = 'Bank';
-    const SOURCE_CYBERCELL  = 'CyberCell';
+    const CYBERCELL_SOURCES     = ['CyberSafe', 'CyberCell'];
+    const BANK_SOURCES          = ['Visa', 'MasterCard', 'Issuer', 'Network'];
+    const CARD_NETWORK_SOURCES  = ['Visa', 'MasterCard'];
+    const SOURCE_BANK           = 'Bank';
+    const SOURCE_CYBERCELL      = 'CyberCell';
 
     const FILE_SOURCE_VISA       = 'visa';
     const FILE_SOURCE_MASTERCARD = 'mastercard';

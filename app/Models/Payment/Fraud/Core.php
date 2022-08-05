@@ -17,7 +17,7 @@ class Core extends Base\Core
 
         $fraudRowResult = BulkNotification\Processor::getFraudNotificationRowData($payment, $fraudEntity);
 
-        if ($fraudRowResult[Constants::MERCHANT_DATA_KEY_SOURCE_OF_NOTIFICATION] === Constants::SOURCE_BANK)
+        if (in_array($fraudEntity->getReportedBy(), Constants::CARD_NETWORK_SOURCES, true) === true)
         {
             $isCardNetworkRequest = true;
         }
