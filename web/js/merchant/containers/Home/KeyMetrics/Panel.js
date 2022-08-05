@@ -29,6 +29,7 @@ import Tooltip from 'merchant/components/Home/Tooltip';
 
 import { trackGoToLinks } from './ga';
 import customToolTip, { positioner } from './customTooltip';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 Chart.Tooltip.positioners.custom = positioner;
 
@@ -87,6 +88,7 @@ const _getChartData = (data, selectedGrouping, canvas) => {
  * component.
  */
 
+// eslint-disable-next-line react/no-unsafe
 class Panel extends Component {
   constructor(props) {
     super(props);
@@ -150,11 +152,21 @@ class Panel extends Component {
     return this.handleBreakdownChange(value);
   }
 
+  trackDownload = ({ success }) => () => {
+    const selfServeTrack = success ? selfServeTrackSuccess : selfServeTrackInitiate;
+    selfServeTrack({
+      selfServeAction: 'Payment Details Downloaded',
+      page: 'Home',
+      screen: 'Home',
+    });
+  };
+
   handleImageExportClick(e) {
     const a = e.target;
 
     const { tabName, data } = this.props;
     const { png } = data;
+    const trackDownloadSuccess = this.trackDownload({ success: true });
 
     if (!png.url) {
       e.preventDefault();
@@ -163,9 +175,12 @@ class Panel extends Component {
         takeScreenshot(this.panelBody).then((url) => {
           this.props.onScreenshot(tabName, url, () => {
             a.click();
+            trackDownloadSuccess();
           });
         });
       });
+    } else {
+      trackDownloadSuccess();
     }
   }
 
@@ -379,7 +394,8 @@ class Panel extends Component {
                 sectionTitle={sectionTitle}
                 tabName={this.meta.title}
                 handleImageDownload={this.handleImageExportClick}
-                handleClick={this.props.handleDownloadClick}
+                handleClick={this.trackDownload({ success: false })}
+                handleCSVDownload={this.trackDownload({ success: true })}
               />
             </div>
           </div>

@@ -1,4 +1,4 @@
-import React, { Component, Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { connect } from 'react-redux';
 import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
@@ -12,7 +12,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { luminateRow } from 'merchant/reducers/app';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import lazy from 'merchant/routes/LazyLoader';
 
 const CustomerCreation = lazy(() =>
@@ -27,10 +27,20 @@ const CustomerCreation = lazy(() =>
 })
 export default class CustomersListContainer extends ListContainer {
   fetchEntityList(params) {
+    selfServeTrackInitiate({
+      selfServeAction: 'Customer Details Fetched',
+      page: 'Customers',
+      screen: 'Customers',
+    });
     return this.props.fetchCustomers(params);
   }
 
   showCustomerModal = (customer = null) => {
+    selfServeTrackInitiate({
+      selfServeAction: 'New Customer Created',
+      page: 'Customers',
+      screen: 'Customers',
+    });
     this.props.openModal({
       size: 'small',
       component: (
@@ -79,8 +89,8 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, items, mode } = this.props;
-    let status = this.state.status;
+    const { loading, items, mode } = this.props;
+    const { status } = this.state;
 
     return (
       <div class="content-wrapper">

@@ -41,6 +41,7 @@ function getLevels(hierarchy, levels = []) {
 const csvDateFormat = 'DD-MM-YYYY';
 const mobileAggKey = 'method';
 
+// eslint-disable-next-line react/no-unsafe
 @connect(null, { ...ModalActions, showNotification })
 class PaymentMethods extends Component {
   constructor(props) {
@@ -219,6 +220,15 @@ class PaymentMethods extends Component {
     });
   }
 
+  trackDownload = ({ success }) => () => {
+    const selfServeTrack = success ? selfServeTrackSuccess : selfServeTrackInitiate;
+    selfServeTrack({
+      selfServeAction: 'Payment Insight Downloaded',
+      page: 'Home',
+      screen: 'Home',
+    });
+  };
+
   render() {
     const { data, error, levels, csvData, isLoading, selectedAgg } = this.state;
     const { startDate, endDate, sectionTitle, isMobile } = this.props;
@@ -281,13 +291,9 @@ class PaymentMethods extends Component {
               <MoreOptionsButton
                 csvData={csvData}
                 sectionTitle={sectionTitle}
-                handleClick={() => {
-                  selfServeTrackInitiate({
-                    selfServeAction: 'Payment Insight Downloaded',
-                    page: 'Home',
-                    screen: 'Home',
-                  });
-                }}
+                handleClick={this.trackDownload({ success: false })}
+                handleCSVDownload={this.trackDownload({ success: true })}
+                handleImageDownload={this.trackDownload({ success: true })}
               />
             </div>
           </div>

@@ -23,7 +23,9 @@ import {
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
+// eslint-disable-next-line react/no-unsafe
 @connect(
   (state) => {
     return {
@@ -42,6 +44,11 @@ export default class OfferIndex extends Component {
     if (window.rzpQ && window.rzpQ.merchantActions) {
       this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Offer_rendered'));
     }
+    selfServeTrackInitiate({
+      selfServeAction: 'Offer Details Fetched',
+      page: 'Offers',
+      screen: 'Offers',
+    });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -123,6 +130,11 @@ export default class OfferIndex extends Component {
                                 this.props.tracking.trackEvent(
                                   window.rzpQ.merchantActions().initiated('Offer_create'),
                                 );
+                                selfServeTrackInitiate({
+                                  selfServeAction: 'New Offer Created',
+                                  page: 'Offers',
+                                  screen: 'Offers',
+                                });
                               }}
                             >
                               Create New Offer
@@ -139,6 +151,11 @@ export default class OfferIndex extends Component {
                                 this.props.tracking.trackEvent(
                                   window.rzpQ.merchantActions().initiated('nocostemi_create'),
                                 );
+                                selfServeTrackInitiate({
+                                  selfServeAction: 'New No Cost EMI Offer Created',
+                                  page: 'Offers',
+                                  screen: 'Offers',
+                                });
                               }}
                             >
                               Create No Cost EMI

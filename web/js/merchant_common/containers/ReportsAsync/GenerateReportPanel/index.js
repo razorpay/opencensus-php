@@ -15,6 +15,7 @@ import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const marketplaceConfigTypes = ['transactions', 'payments', 'refunds', 'settlements'];
 @RTracking(() => window.rzpQ.component('GenerateReportPanel'))
@@ -53,6 +54,11 @@ export default class GenerateReportPanel extends React.PureComponent {
           reportType: selectedConfig.name,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
+      });
+      selfServeTrackInitiate({
+        selfServeAction: 'Report Generated',
+        page: 'Reports',
+        screen: 'Reports',
       });
       this.setState({ selectedConfig });
     }
@@ -101,6 +107,12 @@ export default class GenerateReportPanel extends React.PureComponent {
   })
   onGenerateReport = () => {
     const { selectedConfig, selectedAccount = {} } = this.state;
+    selfServeTrackInitiate({
+      selfServeAction: 'Report Downloaded',
+      page: 'Reports',
+      screen: 'Reports',
+    });
+
     if (selectedConfig.type === 'custom') {
       return this.generateCustomConfigReport();
     }

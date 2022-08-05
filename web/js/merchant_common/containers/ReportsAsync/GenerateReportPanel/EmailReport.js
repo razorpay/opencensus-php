@@ -12,6 +12,7 @@ import {
 import { classList, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { compose } from 'redux';
 import ChooseEmail from './ChooseEmail';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class EmailReport extends React.Component {
   state = {
@@ -36,6 +37,11 @@ class EmailReport extends React.Component {
     let newSelectedEmails;
     if (checked) {
       newSelectedEmails = [...selectedEmails, clickedEmail];
+      selfServeTrackInitiate({
+        selfServeAction: 'Report Downloaded',
+        page: 'Reports',
+        screen: 'Reports',
+      });
     } else {
       newSelectedEmails = selectedEmails.filter((email) => email !== clickedEmail);
     }

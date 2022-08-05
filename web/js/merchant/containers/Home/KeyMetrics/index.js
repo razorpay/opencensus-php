@@ -134,6 +134,7 @@ const TabContent = ({
   );
 };
 
+// eslint-disable-next-line react/no-unsafe
 @connect(
   (state) => {
     return {
@@ -1039,13 +1040,6 @@ class KeyMetricsContainer extends Component {
                   externalUrl={`/#/app/${tabsMeta[tabName].index}`}
                   showGroupingByPtfm={showGroupingByPtfm}
                   sectionTitle={sectionTitle}
-                  handleDownloadClick={() => {
-                    selfServeTrackInitiate({
-                      selfServeAction: 'Payment Details Downloaded',
-                      page: 'Home',
-                      screen: 'Home',
-                    });
-                  }}
                 />
               </TabPane>
             );

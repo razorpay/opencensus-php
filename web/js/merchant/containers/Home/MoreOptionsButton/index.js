@@ -18,7 +18,9 @@ class MoreOptionsButtonContainer extends Component {
   }
 
   handleCSVDownload() {
-    trackExportCSV(this.props.sectionTitle, this.props.tabName);
+    const { sectionTitle, tabName, handleCSVDownload: handleCSVDownloadProp } = this.props;
+    trackExportCSV(sectionTitle, tabName);
+    handleCSVDownloadProp?.();
   }
 
   handleImageDownload(e) {
