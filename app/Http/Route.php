@@ -9110,6 +9110,7 @@ class Route
 
         'accounts_receivable' => [
             'contact_get_internal',
+            'contact_list_internal',
             'account_receivables_merchant_details_fetch',
             'payment_links_create',
             'settings_fetch_internal',
