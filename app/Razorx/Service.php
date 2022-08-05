@@ -67,6 +67,7 @@ class Service extends Base\Service
             'ticket_creation_flow_revamp_dashboard',
             'razorpay_chat_bot',
             'frontend_care_active',
+            'new_categories_enable',
             'care_ticket_ui_revamp',
             'capital_ticket_enable',
             'click_to_call_active',
