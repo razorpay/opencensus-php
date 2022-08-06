@@ -80,7 +80,7 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
 
     protected function getArn($row)
     {
-        return $row[Constants::HOST_REF_NO] ?? null;
+        return $this->getReferenceNumber($row);
     }
 
     protected function getInputForForceAuthorize($row)
