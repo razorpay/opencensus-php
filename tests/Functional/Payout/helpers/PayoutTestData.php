@@ -6383,6 +6383,18 @@ return [
         ],
     ],
 
+    'testEmailNotificationForPendingPayoutLinksForApproval' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending-payouts-approval-email',
+        ],
+        'response' => [
+            'content' => [
+                'Queued email count' => 7
+            ],
+        ],
+    ],
+
     'testReminderNotificationForPayoutPendingOnApproval' => [
         'request'  => [
             'method'  => 'POST',

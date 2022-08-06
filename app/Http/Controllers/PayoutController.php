@@ -216,7 +216,7 @@ class PayoutController extends Controller
     {
         try
         {
-            $response = $this->service()->sendPendingPayoutApprovalEmails();
+            $response = $this->service()->sendPendingPayoutAndPayoutLinkApprovalEmails();
 
             return ApiResponse::json($response);
         }

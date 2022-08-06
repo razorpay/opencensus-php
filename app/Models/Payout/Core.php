@@ -47,6 +47,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Models\Currency\Currency;
+use RZP\Mail\PayoutLink\Approval;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
@@ -5285,69 +5286,62 @@ class Core extends Base\Core
         ];
     }
 
-    public function prepareTemplateAndDispatchEmail($approverList)
+    public function prepareTemplateAndDispatchEmail($approverList, $payoutLinksApproverList, $pendingLinksMeta)
     {
         $count = 0;
 
-        if(empty($approverList) === false)
+        if (($approverList->isEmpty() === false) or ($payoutLinksApproverList->isEmpty() === false))
         {
-            //User wise grouping the merchant - user information.
-            // We will be sending separate emails to a user for different merchants on whom user has payouts awaiting their approval.
-            $dataGroupedByUserId = $approverList->groupBy(Merchant\MerchantUser\Entity::USER_ID);
+            //User wise grouping the merchant - user information
+            //We will be sending separate emails to a user for different merchants on whom user has payouts awaiting their approval
+            $payoutsDataGroupedByUserId = ($approverList->isEmpty() === false) ?
+                $approverList->groupBy(Merchant\MerchantUser\Entity::USER_ID) : new Base\PublicCollection();
 
-            //picking a user one by one
-            foreach ($dataGroupedByUserId as $userData)
+            $payoutLinksDataGroupedByUserId = ($payoutLinksApproverList->isEmpty() === false) ?
+                $payoutLinksApproverList->groupBy(Merchant\MerchantUser\Entity::USER_ID) : new Base\PublicCollection();
+
+            $uniqueUserIds = $this->getUniqueIdsForPendingEmails($payoutsDataGroupedByUserId, $payoutLinksDataGroupedByUserId);
+
+            foreach ($uniqueUserIds as $userId)
             {
-                //Merchant wise grouping the information for the picked up user.
-                $dataGroupedByMerchantId = $userData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID);
+                $pendingPayoutsData = $payoutsDataGroupedByUserId->get($userId);
 
-                //Picking information specific to the selected merchant-user combination.
-                foreach ($dataGroupedByMerchantId as $merchantId => $data) {
-                    $input = [
-                        'user_id'       => $data->first()['user_id'],
-                        'merchant_id'   => $data->first()['merchant_id'],
-                        'email'         => $data->first()['email'],
-                        'name'          => $data->first()['name'],
-                        'business_name' => $data->first()['business_name'],
-                        'role'          => $data->first()['role'],
-                        'amount_total'  => $data->first()['payout_total'],
-                        'total_count'   => $data->first()['payout_count'],
-                        'data'          => []
-                    ];
+                $pendingPayoutLinksData = $payoutLinksDataGroupedByUserId->get($userId);
 
-                    $startAt = millitime();
+                $pendingPayoutsGroupedByMerchantId = ($pendingPayoutsData !== null) ?
+                    $pendingPayoutsData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID) : new Base\PublicCollection();
 
-                    //Fetching top 5 pending payouts in chronological order for selected merchant-user combination
-                    $payouts = $this->repo->payout->fetchNPendingPayoutsToDisplay($merchantId, $input['role'], 5);
+                $pendingPayoutLinksGroupedByMerchantId = ($pendingPayoutLinksData !== null) ?
+                    $pendingPayoutLinksData->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID) : new Base\PublicCollection();
 
-                    $this->trace->info(TraceCode::PENDING_APPROVAL_EMAILS_PAYOUTS_QUERY_DURATION, [
-                                                        'query_execution_time' => millitime() - $startAt,
-                                                        'merchant_user_data'   => $input,
-                                                        'payouts_data'         => $payouts
-                            ]);
+                $uniqueMerchantIds = $this->getUniqueIdsForPendingEmails($pendingPayoutsGroupedByMerchantId, $pendingPayoutLinksGroupedByMerchantId);
 
-                    $payouts = $payouts->sortByDesc(Entity::CREATED_AT, 1);
-                    $payoutsGroupedByPurpose = $payouts->groupBy(Entity::PURPOSE);
+                foreach ($uniqueMerchantIds as $merchantId)
+                {
+                    $payoutsMailData = array();
 
-                    $data = $payoutsGroupedByPurpose->toArray();
+                    $payoutLinksMailData = array();
 
-                    foreach ($payoutsGroupedByPurpose as $purpose => $payout)
+                    $pendingPayoutsUserMerchantData = $pendingPayoutsGroupedByMerchantId->get($merchantId);
+
+                    if ($pendingPayoutsUserMerchantData !== null)
                     {
-                        foreach ($payoutsGroupedByPurpose[$purpose] as $index => $p)
-                        {
-                            $data[$purpose][$index]['contact_name'] = $p['contact_name'];
-                            $data[$purpose][$index]['created_at']   = Carbon::createFromTimestamp($data[$purpose][$index]['created_at'], Timezone::IST)->format('d M\'y . g:i A');
-                            $data[$purpose][$index]['amount']       = $data[$purpose][$index]['amount'];
-                        }
+                        $payoutsMailData = $this->preparePendingPayoutMailData($merchantId, $pendingPayoutsUserMerchantData);
                     }
 
-                    $input['data'] = $data;
+                    $pendingPayoutLinksUserMerchantData = $pendingPayoutLinksGroupedByMerchantId->get($merchantId);
 
-                    $mailable = new PendingApprovals($input);
+                    if ($pendingPayoutLinksUserMerchantData !== null)
+                    {
+                        $payoutLinksMailData = $this->preparePendingPayoutLinkMailData($merchantId, $pendingPayoutLinksUserMerchantData, $pendingLinksMeta);
+                    }
 
-                    Mail::queue($mailable);
+                    $this->triggerPendingEmail(array_merge($payoutsMailData, $payoutLinksMailData));
 
-                    $this->trace->info(TraceCode::EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS, [$input]);
+                    $this->trace->info(TraceCode::EMAIL_DISPATCHED_FOR_PENDING_PAYOUTS, [
+                        'pending_payouts_data'      => $payoutsMailData,
+                        'pending_payout_links_data' => $payoutLinksMailData,
+                    ]);
 
                     $count = $count + 1;
                 }
@@ -5978,5 +5972,164 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    private function getUniqueIdsForPendingEmails($payoutsGroupedData, $payoutLinksGroupedData): array
+    {
+        $uniqueIds = array();
+
+        foreach ($payoutsGroupedData as $id => $idData)
+        {
+            array_push($uniqueIds, $id);
+        }
+
+        foreach ($payoutLinksGroupedData as $id => $idData)
+        {
+            array_push($uniqueIds, $id);
+        }
+
+        return array_unique($uniqueIds);
+    }
+
+    private function preparePendingPayoutMailData($merchantId, $data): array
+    {
+        $input = [
+            'user_id'       => $data->first()['user_id'],
+            'merchant_id'   => $data->first()['merchant_id'],
+            'email'         => $data->first()['email'],
+            'name'          => $data->first()['name'],
+            'business_name' => $data->first()['business_name'],
+            'role'          => $data->first()['role'],
+            'amount_total'  => $data->first()['payout_total'],
+            'total_count'   => $data->first()['payout_count']
+        ];
+
+        $startAt = millitime();
+
+        //Fetching top 5 pending payouts in chronological order for selected merchant-user combination
+        $payouts = $this->repo->payout->fetchNPendingPayoutsToDisplay($merchantId, $input['role'], 5);
+
+        $this->trace->info(TraceCode::PENDING_APPROVAL_EMAILS_PAYOUTS_QUERY_DURATION, [
+            'query_execution_time' => millitime() - $startAt,
+            'merchant_user_data'   => $input,
+            'payouts_data'         => $payouts
+        ]);
+
+        $payouts = $payouts->sortByDesc(Entity::CREATED_AT, 1);
+
+        $payoutsGroupedByPurpose = $payouts->groupBy(Entity::PURPOSE);
+
+        $data = $payoutsGroupedByPurpose->toArray();
+
+        foreach ($payoutsGroupedByPurpose as $purpose => $payout)
+        {
+            foreach ($payoutsGroupedByPurpose[$purpose] as $index => $p)
+            {
+                $data[$purpose][$index]['contact_name'] = $p['contact_name'];
+                $data[$purpose][$index]['created_at']   = Carbon::createFromTimestamp($data[$purpose][$index]['created_at'], Timezone::IST)->format('d M\'y . g:i A');
+                $data[$purpose][$index]['amount']       = $data[$purpose][$index]['amount'];
+            }
+        }
+
+        $input['data'] = $data;
+
+        return $input;
+    }
+
+    private function preparePendingPayoutLinkMailData($merchantId, $userDataCollection, $pendingLinksData): array
+    {
+        $userData = $userDataCollection->first();
+
+        $mailData = [
+            'user_id'                   => $userData['user_id'],
+            'merchant_id'               => $userData['merchant_id'],
+            'email'                     => $userData['email'],
+            'name'                      => $userData['name'],
+            'business_name'             => $userData['business_name'],
+            'role'                      => $userData['role'],
+            'payout_links_count'        => $pendingLinksData[$merchantId][$userData['role']]['payout_link_count'],
+            'payout_links_amount_total' => $pendingLinksData[$merchantId][$userData['role']]['payout_link_amount'],
+        ];
+
+        $data = array();
+
+        $payoutLinksCollection = $this->app['payout-links']->fetchTopFivePendingLinksForApprovalEmail($merchantId, $userData['role']);
+
+        if (array_key_exists('count', $payoutLinksCollection) === true && ($payoutLinksCollection['count'] > 0))
+        {
+            foreach ($payoutLinksCollection['items'] as $payoutLink)
+            {
+                array_push($data, [
+                    'contact_name' => $payoutLink['contact']['name'],
+                    'amount'       => $payoutLink['amount'],
+                    'created_at'   => Carbon::createFromTimestamp($payoutLink['created_at'], Timezone::IST)->format('d M\'y . g:i A'),
+                ]);
+            }
+        }
+
+        $mailData['payoutLinksData'] = $data;
+
+        return $mailData;
+    }
+
+    private function triggerPendingEmail(array $mailData)
+    {
+        if(array_key_exists('payout_links_count', $mailData) === true)
+        {
+            $this->transformPendingPayoutsMailData($mailData);
+
+            $mailable = new Approval($mailData);
+
+            Mail::queue($mailable);
+        }
+        else
+        {
+            $mailable = new PendingApprovals($mailData);
+
+            Mail::queue($mailable);
+        }
+    }
+
+    private function transformPendingPayoutsMailData(array &$mailData)
+    {
+        $payoutsCount = array_pull($mailData, 'total_count', 0);
+
+        if ($payoutsCount > 0)
+        {
+            $mailData['payouts_count'] = $payoutsCount;
+        }
+
+        $payoutsAmount = array_pull($mailData, 'amount_total', 0);
+
+        if ($payoutsAmount > 0)
+        {
+            $mailData['payouts_amount_total'] = $payoutsAmount;
+        }
+
+        $payoutsData = array_pull($mailData, 'data', []);
+
+        if (empty($payoutsData) === false)
+        {
+            $mailData['payoutsData'] = $this->transformPendingPayoutsDataToPayoutLinksFormat($payoutsData);
+        }
+    }
+
+    private function transformPendingPayoutsDataToPayoutLinksFormat(array $payoutsByPurpose)
+    {
+        $transformedData = array();
+
+        foreach ($payoutsByPurpose as $purpose => $payouts)
+        {
+            foreach ($payouts as $payout)
+            {
+                array_push($transformedData, [
+                    'contact_name' => $payout['contact_name'],
+                    'amount'       => $payout['amount'],
+                    'created_at'   => $payout['created_at'],
+                ]);
+            }
+        }
+
+        return $transformedData;
     }
 }

@@ -14,6 +14,7 @@ use Requests_Response;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Mail\PayoutLink\Approval;
 use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Services\DiagClient;
 use RZP\Services\Raven;
@@ -1833,11 +1834,146 @@ class PayoutTest extends OAuthTestCase
         return $completeSummary;
     }
 
+    protected function preparePendingEmailUsersData()
+    {
+        $merchant01 = $this->fixtures->create('merchant', ['id' => 'LiveMerchant01']);
+
+        $merchant02 = $this->fixtures->create('merchant', ['id' => 'LiveMerchant02']);
+
+        $merchant03 = $this->fixtures->create('merchant', ['id' => 'LiveMerchant03']);
+
+        // first user
+        $user1 = $this->fixtures->user->createBankingUserForMerchant('LiveMerchant01',
+                                                                                ['id' => 'FirstUser00000', 'email' => 'first.user@gmail.com'],
+                                                                                'owner',
+                                                                                'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => 'LiveMerchant02',
+                                                             'user_id'     => 'FirstUser00000',
+                                                             'role'        => 'admin',
+                                                             'product'     => 'banking'
+                                                         ], 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'merchant_id' => 'LiveMerchant03',
+                                                             'user_id'     => 'FirstUser00000',
+                                                             'role'        => 'admin',
+                                                             'product'     => 'banking'
+                                                         ], 'live');
+
+
+        //second user
+        $user2 = $this->fixtures->user->createBankingUserForMerchant('LiveMerchant01',
+                                                                     ['id' => 'SecondUser0000', 'email' => 'second.user@gmail.com'],
+                                                                     'admin',
+                                                                     'live');
+
+        //third user
+        $user3 = $this->fixtures->user->createBankingUserForMerchant('LiveMerchant01',
+                                                                     ['id' => 'ThirdUser00000', 'email' => 'third.user@gmail.com'],
+                                                                     'admin',
+                                                                     'live');
+
+        //fourth user
+        $user4 = $this->fixtures->user->createBankingUserForMerchant('LiveMerchant02',
+                                                                     ['id' => 'FourthUser0000', 'email' => 'fourth.user@gmail.com'],
+                                                                     'owner',
+                                                                     'live');
+
+        //fifth user
+        $user5 = $this->fixtures->user->createBankingUserForMerchant('LiveMerchant03',
+                                                                     ['id' => 'FifthUser00000', 'email' => 'fifth.user@gmail.com'],
+                                                                     'owner',
+                                                                     'live');
+    }
+
+    protected function mockPayoutLinksForPendingPayoutLinksEmail()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $pendingLinksMetaResponse = [
+            'LiveMerchant01' => [
+                'owner' => [
+                    'payout_link_amount' => 50,
+                    'payout_link_count' => 5,
+                ],
+                'admin' => [
+                    'payout_link_amount' => 20,
+                    'payout_link_count' => 2,
+                ]
+            ],
+            'LiveMerchant02' => [
+                'owner' => [
+                    'payout_link_amount' => 70,
+                    'payout_link_count' => 7,
+                ],
+                'admin' => [
+                    'payout_link_amount' => 10,
+                    'payout_link_count' => 1,
+                ]
+            ],
+            'LiveMerchant03' => [
+                'owner' => [
+                    'payout_link_amount' => 100,
+                    'payout_link_count' => 10,
+                ],
+                'admin' => [
+                    'payout_link_amount' => 120,
+                    'payout_link_count' => 12,
+                ]
+            ]
+        ];
+
+        $topPendingLinksResponse = [
+            'entity' => 'collection',
+            'count'  => 2,
+            'items'  => [
+                [
+                    'id'    => 'poutlk_4ed51xkBa7pbmu',
+                    'entity'=> 'payout_link',
+                    'contact'=> [
+                        'name'=> 'Harshit New Sidhwa',
+                        'contact'=> '7565033339',
+                        'email'=> 'harshitsidhwa.7565@gmail.com'
+                    ],
+                    'amount'=> 100000,
+                    'created_at'=> 1648071906,
+                    'merchant_id'=> 'DkvsA9RAxHqfaS'
+                ],
+                [
+                    'id'    => 'poutlk_4eRh1xkBa7mWTc',
+                    'entity'=> 'payout_link',
+                    'contact'=> [
+                        'name'=> 'Harshit New Sidhwa',
+                        'contact'=> '7565033339',
+                        'email'=> 'harshitsidhwa.7565@gmail.com'
+                    ],
+                    'amount'=> 200000,
+                    'created_at'=> 1648071906,
+                    'merchant_id'=> 'DkvsA9RAxHqfaS'
+                ]
+            ]
+        ];
+
+        $plMock->shouldReceive('getPendingPayoutLinksMetaForEmail')->andReturn($pendingLinksMetaResponse);
+
+        $plMock->shouldReceive('fetchTopFivePendingLinksForApprovalEmail')->andReturn($topPendingLinksResponse);
+
+        $this->app->instance('payout-links', $plMock);
+    }
+
     public function testEmailNotificationForPayoutPendingOnApproval()
     {
         Mail::fake();
 
         $this->liveSetUp();
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('getPendingPayoutLinksMetaForEmail')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $bankingAccountAttributes = [
             'id'             => 'ABCde1234ABCde',
@@ -1882,6 +2018,96 @@ class PayoutTest extends OAuthTestCase
             return true;
         });
 
+    }
+
+    private function assertPayoutLinksApprovalMailData($mailData)
+    {
+        $this->assertArrayHasKey('user_id', $mailData);
+
+        $this->assertArrayHasKey('merchant_id', $mailData);
+
+        $this->assertArrayHasKey('email', $mailData);
+
+        $this->assertArrayHasKey('payoutLinksData', $mailData);
+
+        $this->assertArrayHasKey('role', $mailData);
+
+        $this->assertArrayHasKey('business_name', $mailData);
+
+        $this->assertArrayHasKey('payout_links_count', $mailData);
+
+        $this->assertArrayHasKey('payout_links_amount_total', $mailData);
+    }
+
+    public function testEmailNotificationForPendingPayoutLinksForApproval()
+    {
+        Mail::fake();
+
+        $this->liveSetUp();
+
+        $this->preparePendingEmailUsersData();
+
+        $this->mockPayoutLinksForPendingPayoutLinksEmail();
+
+        $bankingAccountAttributes = [
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        Mail::assertQueued(Approval::class, 7);
+
+        Mail::assertQueued(Approval::class, function($mail) {
+
+            $this->assertPayoutLinksApprovalMailData($mail->viewData);
+
+            $mail->hasTo('first.user@gmail.com');
+
+            return true;
+        });
+
+        Mail::assertQueued(Approval::class, function($mail) {
+
+            $this->assertPayoutLinksApprovalMailData($mail->viewData);
+
+            $mail->hasTo('second.user@gmail.com');
+
+            return true;
+        });
+
+        Mail::assertQueued(Approval::class, function($mail) {
+
+            $this->assertPayoutLinksApprovalMailData($mail->viewData);
+
+            $mail->hasTo('third.user@gmail.com');
+
+            return true;
+        });
+
+        Mail::assertQueued(Approval::class, function($mail) {
+
+            $this->assertPayoutLinksApprovalMailData($mail->viewData);
+
+            $mail->hasTo('fourth.user@gmail.com');
+
+            return true;
+        });
+
+        Mail::assertQueued(Approval::class, function($mail) {
+
+            $this->assertPayoutLinksApprovalMailData($mail->viewData);
+
+            $mail->hasTo('fifth.user@gmail.com');
+
+            return true;
+        });
     }
 
     public function testReminderNotificationForPayoutPendingOnApproval()

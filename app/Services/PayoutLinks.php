@@ -63,6 +63,7 @@ class PayoutLinks
     const EXPIRED_AT                               = 'expired_at';
     const USER_DETAILS                             = 'user_details';
     const INTEGRATION_INFO                         = 'integration_info';
+    const PENDING_ON_ROLES                         = 'pending_on_roles';
     const SOURCE_IDENTIFIER                        = 'source_identifier';
     const IS_EXPIRY_ENABLED                        = 'is_expiry_enabled';
     const REMINDER_ENTITY_ID                       = 'reminder_entity_id';
@@ -84,6 +85,7 @@ class PayoutLinks
     const UPDATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/UpdatePayoutLink';
     const SEND_REMINDER_CALLBACK_PATH              = 'twirp/payoutlinks.Payoutlinks/SendReminderCallback';
     const SHOPIFY_INSTALL_PATH                     = 'twirp/payoutlinks.Payoutlinks/GetShopifyAppInstallRedirectURI';
+    const GET_PENDING_LINKS_META_FOR_EMAIL         = 'twirp/payoutlinks.Payoutlinks/GetPendingLinksMetaForEmail';
     const SHOPIFY_UNINSTALL_PATH                   = 'twirp/payoutlinks.Payoutlinks/UninstallShopifyApp';
     const SHOPIFY_GET_ORDER_DETAILS_PATH           = 'twirp/payoutlinks.Payoutlinks/GetShopifyOrderDetails';
     const CREATE_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CreatePayoutLink';
@@ -1160,6 +1162,13 @@ class PayoutLinks
         $this->makeRequest($url, []);
     }
 
+    public function getPendingPayoutLinksMetaForEmail()
+    {
+        $url = $this->getConstructedUrl(self::GET_PENDING_LINKS_META_FOR_EMAIL);
+
+        return $this->makeRequest($url, []);
+    }
+
     protected function reminderResponseHandler($httpResponseBody)
     {
         $finalStatusCode = 200;
@@ -1971,6 +1980,20 @@ class PayoutLinks
         $hostedData = $this->getDemoHostedPageData($payoutLinkId);
 
         return $this->formatHostedData($hostedData);
+    }
+
+    public function fetchTopFivePendingLinksForApprovalEmail(string $merchantId, string $role)
+    {
+        $input = [
+            self::MERCHANT_ID       => $merchantId,
+            self::PENDING_ON_ROLES  => [$role],
+            self::STATUS            => 'pending',
+            self::COUNT             => 5,
+        ];
+
+        $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINK_MULTIPLE_PATH);
+
+        return $this->makeRequest($url, $input, [], self::POST, $this->getMode());
     }
 
     private function formatHostedData(array $hostedData)

@@ -4,8 +4,11 @@ namespace RZP\Models\Merchant\MerchantUser;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\User\Role;
+use RZP\Models\User\Entity as UserEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class Repository extends Base\Repository
 {
@@ -214,5 +217,66 @@ class Repository extends Base\Repository
             ->whereIn(Entity::ROLE, $roleIds)
             ->where(Entity::PRODUCT, 'banking')
             ->get()->count();
+    }
+
+    public function getBankingUsersForMerchantRoles(array $merchantIdToRolesMapping): Base\PublicCollection
+    {
+        /*
+         * select
+         *      `merchant_users`.`user_id`,
+         *      `users`.`name`,
+         *      `users`.`email`,
+         *      `merchants`.`name` as `business_name`,
+         *      `merchants`.`id`,
+         *      `merchant_users`.`role`
+         * from `merchant_users`
+         *      inner join `users` on `merchant_users`.`user_id` = `users`.`id`
+         *      inner join `merchants` on `merchant_users`.`merchant_id` = `merchants`.`id`
+         * where (
+         *      (`product` = ? and `merchant_id` = ? and `role` in (?, ?))
+         *      or (`product` = ? and `merchant_id` = ? and `role` in (?, ?))
+         *      or (`product` = ? and `merchant_id` = ? and `role` in (?, ?))
+         *      or (`product` = ? and `merchant_id` = ? and `role` in (?, ?))
+         * )
+         */
+
+        $userIdColumn               = $this->repo->user->dbColumn(UserEntity::ID);
+        $userNameColumn             = $this->repo->user->dbColumn(UserEntity::NAME);
+        $userEmailColumn            = $this->repo->user->dbColumn(UserEntity::EMAIL);
+
+        $merchantIdColumn           = $this->repo->merchant->dbColumn(MerchantEntity::ID);
+        $merchantNameColumn         = $this->repo->merchant->dbColumn(MerchantEntity::NAME);
+
+        $muRoleColumn               = $this->repo->merchant_user->dbColumn(Entity::ROLE);
+        $muUserIdColumn             = $this->repo->merchant_user->dbColumn(Entity::USER_ID);
+        $muMerchantIdColumn         = $this->repo->merchant_user->dbColumn(Entity::MERCHANT_ID);
+
+        $userAttrs = [
+            $muUserIdColumn,
+            $userNameColumn,
+            $userEmailColumn,
+            $merchantNameColumn.' AS business_name',
+            $muMerchantIdColumn,
+            $muRoleColumn
+        ];
+
+        $query = $this->newQuery()
+                      ->select($userAttrs)
+                      ->join(Table::USER, $muUserIdColumn, '=', $userIdColumn)
+                      ->join(Table::MERCHANT, $muMerchantIdColumn, '=', $merchantIdColumn)
+                      ->where(function($query) use ($merchantIdToRolesMapping)
+                      {
+                          foreach ($merchantIdToRolesMapping as $mid => $roles)
+                          {
+                              $query->orWhere(function($query) use ($mid, $roles)
+                              {
+                                  $query->where(Entity::PRODUCT, ProductType::BANKING)
+                                        ->where(Entity::MERCHANT_ID, $mid)
+                                        ->whereIn(Entity::ROLE, $roles);
+                              });
+                          }
+                      });
+
+        return $query->get();
     }
 }

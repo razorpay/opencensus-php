@@ -98,6 +98,8 @@ class Service extends Base\Service
 
     protected $workflowConfigService;
 
+    protected $userCore;
+
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
 
     protected const PAYOUTS_ON_HOLD_SLA_SETTINGS_KEY = "payouts_on_hold_sla";
@@ -150,6 +152,8 @@ class Service extends Base\Service
         $this->payoutStatusReasonMapApiServiceClient = $this->app[PayoutService\StatusReasonMap::PAYOUT_SERVICE_STATUS_REASON_MAP];
 
         $this->payoutDetailsCore = new PayoutDetails\Core();
+
+        $this->userCore = new User\Core();
     }
 
     public function fetchPayoutsDetailsForDcc($input) : array
@@ -509,7 +513,7 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
-    public function sendPendingPayoutApprovalEmails()
+    public function sendPendingPayoutAndPayoutLinkApprovalEmails()
     {
         $startAt = millitime();
 
@@ -520,7 +524,46 @@ class Service extends Base\Service
             'approver_list'         => $approverList
         ]);
 
-        return $this->core->prepareTemplateAndDispatchEmail($approverList);
+        $payoutLinksDataFetchStartAt = millitime();
+
+        /*
+         {
+            "mid1": {
+                "owner": {
+                    "payout_links_count": 5,
+                    "payout_links_amount": 50,
+                },
+                "admin": {
+                    "payout_links_count": 2,
+                    "payout_links_amount": 20,
+                }
+            },
+            "mid2": {
+                "owner": {
+                    "payout_links_count": 5,
+                    "payout_links_amount": 50,
+                },
+                "admin": {
+                    "payout_links_count": 2,
+                    "payout_links_amount": 20,
+                }
+            }
+        }
+        */
+        $merchantPendingPayoutLinksMeta = $this->app['payout-links']->getPendingPayoutLinksMetaForEmail();
+
+        $payoutLinksApproverList = (empty($merchantPendingPayoutLinksMeta) === false) ?
+            $this->getUsersDataForPendingPayoutLinks($merchantPendingPayoutLinksMeta) : new PublicCollection();
+
+        $this->trace->info(
+            TraceCode::PENDING_APPROVAL_EMAILS_MERCHANT_QUERY_DURATION,
+            [
+                'data_fetch_time'           => millitime() - $payoutLinksDataFetchStartAt,
+                'pending_payout_links_data' => $merchantPendingPayoutLinksMeta,
+                'approver_list'             => $payoutLinksApproverList
+            ]);
+
+        return $this->core->prepareTemplateAndDispatchEmail($approverList, $payoutLinksApproverList, $merchantPendingPayoutLinksMeta);
     }
 
     public function sendPendingPayoutApprovalReminder()
@@ -3565,5 +3608,17 @@ class Service extends Base\Service
         ];
 
         return $response;
+    }
+
+    protected function getUsersDataForPendingPayoutLinks(array $merchantPendingPayoutLinksMeta): Base\PublicCollection
+    {
+        $merchantIdToRolesMapping = array(); // [M1 => [Role1, Role2], M2 => [Role1, Role2], M3 => [Role1, Role2]]
+
+        foreach ($merchantPendingPayoutLinksMeta as $merchantId => $rolesPendingLinksData)
+        {
+            $merchantIdToRolesMapping[$merchantId] = array_keys($rolesPendingLinksData);
+        }
+
+        return $this->userCore->getBankingUsersForMerchantRoles($merchantIdToRolesMapping);
     }
 }

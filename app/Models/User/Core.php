@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use DB;
 use Mail;
 use Hash;
 use Cache;
@@ -5315,5 +5316,10 @@ class Core extends Base\Core
         $smsPayload['templateNamespace'] = 'razorpayx_payouts_core';
 
         $smsPayload['templateName'] = $templateName;
+    }
+
+    public function getBankingUsersForMerchantRoles(array $merchantIdToRolesMapping): Base\PublicCollection
+    {
+        return $this->repo->merchant_user->getBankingUsersForMerchantRoles($merchantIdToRolesMapping);
     }
 }
