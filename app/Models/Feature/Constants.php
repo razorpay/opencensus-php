@@ -1459,11 +1459,18 @@ class Constants
     const CART_API_AMOUNT_CHECK  =  "cart_api_amount_check";
 
     const FK_NEW_ERROR_RESPONSE  = "fk_new_error_response";
+   
 
     /**
      * Feature flag to allow creation of inter account test payouts
      */
     const INTER_ACCOUNT_TEST_PAYOUT = 'inter_account_test_payout';
+    
+      /**
+     * Feature flag to configure report for KFIN
+     */
+    const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
+    
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2009,6 +2016,7 @@ class Constants
         self::FK_NEW_ERROR_RESPONSE           => true,
         self::NO_CUSTOM_CHECKOUT_RECURRING_CONSENT => true,
         self::CROSS_ORG_LOGIN                 => true,
+        self::KFIN_MERCHANT_REPORT            => true,
     ];
 
     // Entity type constants
