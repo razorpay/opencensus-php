@@ -256,7 +256,7 @@ class Gateway extends Base\Gateway
 
             $this->createGatewayPaymentEntity($content);
 
-            $request = $this->getStandardRequestArray([],"get");
+            $request = $this->getStandardRequestArrayForEarlysalary([],"get");
 
             return $this->getRedirectRequestData($input, $request);
         }
@@ -916,6 +916,22 @@ class Gateway extends Base\Gateway
         {
                 $content = json_encode($content);
         }
+
+        $request = parent::getStandardRequestArray($content, $method, $type);
+
+        $request['headers'] = $this->getRequestHeaders();
+
+        $replacePairs = [
+            '{id}' => $this->input['payment']['id'] ?? null,
+        ];
+
+        $request['url'] = strtr($request['url'], $replacePairs);
+
+        return $request;
+    }
+
+    protected function getStandardRequestArrayForEarlysalary($content = [], $method = 'post', $type = null)
+    {
 
         $request = parent::getStandardRequestArray($content, $method, $type);
 

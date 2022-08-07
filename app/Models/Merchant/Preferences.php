@@ -217,6 +217,16 @@ class Preferences
         '90xVmQJTCEJ6GH'
     ];
 
+    const MID_IXIGO = [
+        'GtG3WLjGVjzx2n',
+        'IZfauLUI88K21W',
+        'GtFwVSbNTDTM9C',
+        'HZ7EjkfJ8atulh',
+        'GCwhxngAcMtWC8',
+        '8RerE9oY0d7rbC',
+        'GDJYY4pJqT0cQ5',
+    ];
+
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
     const MID_APARTMENTADDA    = '9NVPPQuTqF4cYx';
     const MID_INVEZTA          = '8YQygO7pzP3Gut';

@@ -9,7 +9,9 @@ use Request;
 use App;
 use RZP\Http\CheckoutView;
 use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\Merchant;
+use RZP\Models\Merchant\Preferences;
 use View;
 use Crypt;
 
@@ -974,6 +976,12 @@ class PaymentCreateController extends Controller
                         if (Payment\Gateway::isGatewayPhonepeSwitch($gateway) === true)
                         {
                             return $this->redirectToPhonepeSwitchGetUrl($data);
+                        }
+
+                        if((in_array($merchant->getId(), Preferences::MID_IXIGO, true) === true)
+                            && ($gateway === Gateway::CARDLESS_EMI))
+                        {
+                            return $this->redirectToGatewayGetForm($data);
                         }
 
                         if (Payment\Gateway::isGatewaySupportingGetRedirectForm($gateway) === true)
