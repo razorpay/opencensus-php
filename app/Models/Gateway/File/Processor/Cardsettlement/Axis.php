@@ -119,6 +119,7 @@ class Axis extends Base
             'refunds'   => $rids,
             'begin'     => $begin,
             'end'       => $end,
+            'exp time'  => $this->isExplicitTimestampPassed,
         ]);
 
         $settlementsForBank->put('payments', $paymentSettlementsForBank);

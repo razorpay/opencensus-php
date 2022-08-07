@@ -177,6 +177,15 @@ class Base extends BaseProcessor
 
         $ids = array_unique(array_merge($paymentIds, $refundPaymentIds));
 
+        if(count($ids) === 0)
+        {
+            $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
+                'location' => 'fetchAuthorizationDetails',
+                'authData' => 'empty ids',
+            ]);
+            return [];
+        }
+
         $request = [
             'fields'      => [
                 'gateway_reference_id2',
@@ -196,6 +205,8 @@ class Base extends BaseProcessor
                     'id'            => $this->gatewayFile->getId(),
                     'message'       => 'Discrepancy in authorization data fetch from CPS',
                     'Payment IDs'   => $ids,
+                    'Payment count' => count($ids),
+                    'CPS count'     => count($authData),
                 ]
             );
         }
