@@ -2590,6 +2590,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function checkIfIdExists(string $id)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, $id)
+                    ->exists();
+    }
+
     public function fetchFirstTransactionDetails(
         string $merchantId): array
     {

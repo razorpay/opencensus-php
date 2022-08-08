@@ -458,6 +458,11 @@ return [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_LIVE_QUEUE'),
     ],
 
+    'banking_account_statement_update' => [
+        'test'       => env('AWS_BANKING_ACCOUNT_STATEMENT_UPDATE_TEST_QUEUE'),
+        'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_UPDATE_LIVE_QUEUE'),
+    ],
+
     'trusted_badge' => [
         'test'       => env('AWS_TRUSTED_BADGE_TEST_QUEUE'),
         'live'       => env('AWS_TRUSTED_BADGE_LIVE_QUEUE'),

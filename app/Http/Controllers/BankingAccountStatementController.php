@@ -80,6 +80,15 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function insertMissingStatements()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->insertMissingStatements($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateSourceLinking()
     {
         $input = Request::all();

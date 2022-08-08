@@ -144,6 +144,46 @@ class Repository extends Base\Repository
                     ->get($columns);
     }
 
+    public function fetchPreviousBasEntityToInsertMissingRecord(string $merchantId, string $accountNumber, string $channel, $postedDate)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::POSTED_DATE,'<=', $postedDate)
+                    ->orderBy(Entity::ID, 'desc')
+                    ->limit(1)
+                    ->first();
+    }
+
+    public function checkIfIdExists(string $id)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::ID, $id)
+                    ->exists();
+    }
+
+    public function fetchBASRecordsToCorrect($limit, $accountNumber, $createdAt, $updatedAt, $channel, $latestCorrectedBasId)
+    {
+        $channelColumn = $this->dbColumn(Entity::CHANNEL);
+
+        $accountNumberCol = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+
+        $updatedAtCol = $this->dbColumn(Entity::UPDATED_AT);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where($channelColumn, '=', $channel)
+                    ->where($accountNumberCol, '=', $accountNumber)
+                    ->where($updatedAtCol, '<' , $updatedAt)
+                    ->where($createdAtCol, '>=' , $createdAt)
+                    ->where(Entity::ID, '>', $latestCorrectedBasId)
+                    ->orderBy(Entity::ID)
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function fetchUnlinkedBasRecords(string $accountNumber, string $channel, $limit)
     {
         return $this->newQuery()

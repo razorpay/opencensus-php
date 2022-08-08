@@ -26,6 +26,7 @@ use RZP\Jobs\RblBankingAccountStatement;
 use RZP\Jobs\IciciBankingAccountStatement;
 use RZP\Jobs\BankingAccountStatementRecon;
 use RZP\Mail\BankingAccount\StatementMail;
+use RZP\Jobs\BankingAccountStatementUpdate;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -67,6 +68,10 @@ class Core extends Base\Core
 
     const ACCOUNT_STATEMENT_RECORDS_TO_FETCH_MISSING_STATEMENTS_FOR_RBL = 25000;
 
+    const ACCOUNT_STATEMENT_BAS_ENTITIES_TO_UPDATE = 5000;
+
+    const RETRY_COUNT_FOR_ID_GENERATION = 100;
+
     // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
     // gateway ref no while recon.
     // ex: SAMPLE NARRATION RZPTESTIFT123
@@ -88,6 +93,20 @@ class Core extends Base\Core
      * @var bool
      */
     protected $isRBLSinglePaymentsApiEnabled = false;
+
+    /**
+     * This is used to check if the current process is running for statement fix or not
+     *
+     * @var bool
+     */
+    protected $isStatementUnderFix = false;
+
+    /**
+     * This array helps in setting the transaction_id and created_at for missing statement transactions
+     *
+     * @var array
+     */
+    protected $previousBasTransactionDetails = null;
 
     protected $creditBeforeDebitUtrs = [];
 
@@ -258,6 +277,27 @@ class Core extends Base\Core
                 {
                     $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
 
+                    if (empty($basDetailEntity) === true)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
+                            'account_number' => $accountNumber,
+                            'channel'        => $channel,
+                        ]);
+                    }
+
+                    $basDetailEntity->reload();
+
+                    if (($basDetailEntity->getStatus() !== Details\Status::ACTIVE) or
+                        ($basDetailEntity->getStatus() === Details\Status::UNDER_MAINTENANCE))
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
+                            'account_number'     => $accountNumber,
+                            'channel'            => $channel,
+                            'bas_details_id'     => $basDetailEntity->getId(),
+                            'bas_details_status' => $basDetailEntity->getStatus(),
+                        ]);
+                    }
+
                     $basDetailEntity->setLastStatementAttemptAt();
 
                     $this->repo->saveOrFail($basDetailEntity);
@@ -395,6 +435,769 @@ class Core extends Base\Core
         }
 
         return [$fetchMore, $paginationKey];
+    }
+
+    public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements)
+    {
+        [$response, $params] = $this->mutex->acquireAndRelease(
+            'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
+            function () use ($channel, $accountNumber, $missingStatements)
+            {
+                // setting the variable to true to customize the later flow (linking the statement to source entity)
+                $this->isStatementUnderFix = true;
+
+                $this->setBasDetailsForStatementFix($accountNumber, $channel);
+
+                $insertedBasEntities = $this->saveMissingAccountStatements($accountNumber, $channel, $missingStatements);
+
+                $this->pushMissingStatementsLinkingEventsToLedger($accountNumber, $channel, $insertedBasEntities);
+
+                $basIdToAmountMap = [];
+
+                $createdAt = $insertedBasEntities[0]->getCreatedAt();
+
+                $latestCorrectedId = $insertedBasEntities[0]->getId();
+
+                foreach ($insertedBasEntities as $basEntity)
+                {
+                    $basIdToAmountMap[$basEntity->getId()] = $basEntity->getNetAmountBasedOnTransactionType();
+
+                    $createdAt = min($createdAt, $basEntity->getCreatedAt());
+
+                    $latestCorrectedId = min($latestCorrectedId, $basEntity->getId());
+                }
+
+                $params = [
+                    'channel'              => $channel,
+                    'account_number'       => $accountNumber,
+                    'bas_id_to_amount_map' => $basIdToAmountMap,
+                    'created_at'           => $createdAt,
+                    'update_before'        => Carbon::now()->getTimestamp(),
+                    'latest_corrected_id'  => $latestCorrectedId,
+                    'batch_number'         => 0
+                ];
+
+                $response =  [
+                    'message'            => 'Missing statements got inserted and linked successfully.
+                                             Dispatched for updating BAS entities.',
+                    'insertedStatements' => json_encode($missingStatements),
+                ];
+
+                return [$response, $params];
+            },
+            1800,
+            ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+        );
+
+
+        try
+        {
+            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_INIT,
+                [
+                    'account_number' => $accountNumber,
+                    'params'         => $params
+                ]);
+
+            BankingAccountStatementUpdate::dispatch($this->mode, $params);
+
+            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
+                [
+                    'account_number' => $accountNumber,
+                    'params'         => $params
+                ]);
+        }
+        catch(\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::BAS_UPDATE_QUEUE_DISPATCH_FAILURE,
+                [
+                    'account_number' => $accountNumber,
+                    'channel'        => $channel
+                ]
+            );
+
+            $response['message'] = 'Missing statements got inserted and linked successfully.
+                                    Dispatch for updating BAS entities got FAILED.';
+        }
+
+        try
+        {
+            $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatements);
+        }
+        catch(\Exception $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_FAILURE,
+                [
+                    'account_number' => $accountNumber,
+                    'channel'        => $channel
+                ]
+            );
+
+            $response['message'] = 'Missing statements got inserted and linked successfully.
+                                    Dispatched for updating BAS entities.
+                                    Removal of inserted missing statements from redis got failed.';
+        }
+
+        return $response;
+    }
+
+    // finds the insertion point and then saves it accordingly
+    protected function saveMissingAccountStatements(string $accountNumber, string $channel, array & $missingStatements)
+    {
+        return $this->repo->transaction(function() use ($accountNumber, $channel, & $missingStatements)
+        {
+            $basDetailEntity = $this->getBasDetails($accountNumber, $channel, [Details\Status::UNDER_MAINTENANCE]);
+
+            $merchant = $basDetailEntity->merchant;
+
+            $merchantId = $merchant->getId();
+
+            $accountStatementApiVersion = $this->getAccountStatementApiVersion($basDetailEntity);
+
+            $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity, $accountStatementApiVersion);
+
+            $missingStatementsCollection = new Base\Collection($missingStatements);
+
+            $groupedMissingStatements = $missingStatementsCollection->groupBy('posted_date');
+
+            $insertedBasEntities = [];
+
+            $insertedStatements = [];
+
+            foreach ($groupedMissingStatements as $postedDate => $groupOfStatements)
+            {
+                $insertionDetails = $this->getInsertionDetailsForMissingStatement($merchantId, $accountNumber, $channel, $groupOfStatements[0]);
+
+                $previousBasId = $insertionDetails[Entity::ID];
+
+                foreach ($groupOfStatements as $statement)
+                {
+                    $statementAfterDedupe = $processor->checkForDuplicateTransactions([$statement], $channel, $accountNumber, $merchant);
+
+                    if (empty($statementAfterDedupe) === true)
+                    {
+                        $this->trace->info(TraceCode::BAS_MISSING_RECORD_ALREADY_EXISTS,
+                            [
+                                'account_number' => $accountNumber,
+                                'channel'        => $channel,
+                                'statement'      => $statement,
+                            ]);
+
+                        continue;
+                    }
+
+                    $nextId = $this->generateNextUnUsedIdForEntity($previousBasId, Constants\Entity::BANKING_ACCOUNT_STATEMENT);
+
+                    $basEntity = (new Entity)->build($statement);
+
+                    $basEntity->setId($nextId);
+
+                    if (empty($basEntity->getUtr()) === true)
+                    {
+                        $utr = $processor->getUtrForChannel($basEntity);
+
+                        $basEntity->setUtr($utr);
+                    }
+
+                    $basEntity->merchant()->associate($merchant);
+
+                    $basEntity->setCreatedAt($insertionDetails[Entity::CREATED_AT]);
+
+                    $basEntity->setUpdatedAt($insertionDetails[Entity::UPDATED_AT]);
+
+                    $balanceChange = $basEntity->getNetAmountBasedOnTransactionType();
+
+                    $basEntity->setBalance($insertionDetails[Entity::BALANCE] + $balanceChange);
+
+                    $this->repo->saveOrFail($basEntity);
+
+                    $this->trace->info(TraceCode::BAS_INSERTED_ENTITY,
+                        [
+                            'bank_txn_id'           => $statement[Entity::BANK_TRANSACTION_ID],
+                            'bank_txn_posted_date'  => $statement[Entity::POSTED_DATE],
+                            'bank_txn_channel'      => $statement[Entity::CHANNEL],
+                            'bas_id'                => $basEntity->getId(),
+                            'account_no'            => $basEntity->getAccountNumber(),
+                            'utr'                   => $basEntity->getUtr(),
+                            'previous_bas_id'       => $insertionDetails[Entity::ID],
+                        ]);
+
+                    $insertedBasEntities[] = $basEntity;
+
+                    $insertedStatements[] = $statement;
+
+                    $previousBasId = $nextId;
+
+                    $this->previousBasTransactionDetails = [
+                        Transaction\Entity::ID         => $insertionDetails[Entity::TRANSACTION_ID],
+                        Transaction\Entity::CREATED_AT => $insertionDetails['transaction_created_at'],
+                    ];
+
+                    try
+                    {
+                        // the balance gets updated when we link a statement to the source entity and
+                        // as a result, the actual statement entities linking gets stopped
+                        // that is our desired behaviour while fixing statement
+                        $insertedBasEntity = new Base\PublicCollection([$basEntity]);
+
+                        $this->saveAccountStatementV2($insertedBasEntity, $merchant);
+                    }
+                    catch (\Exception $exception)
+                    {
+                        $this->trace->traceException(
+                            $exception,
+                            null,
+                            TraceCode::BAS_MISSING_STATEMENT_LINKING_FAILED,
+                            [
+                                'bas_id' => $basEntity->getId(),
+                                'utr'    => $basEntity->getUtr(),
+                            ]
+                        );
+
+                        throw $exception;
+                    }
+                }
+            }
+
+            $missingStatements = $insertedStatements;
+
+            return $insertedBasEntities;
+        });
+    }
+
+    public function getInsertionDetailsForMissingStatement(string $merchantId, string $accountNumber, string $channel, array $statement)
+    {
+        $postedDate = $statement[Entity::POSTED_DATE];
+
+        $previousBasEntity = $this->repo
+                                  ->banking_account_statement
+                                  ->fetchPreviousBasEntityToInsertMissingRecord($merchantId, $accountNumber, $channel, $postedDate);
+
+        if (empty($previousBasEntity) === false)
+        {
+            return [
+                Entity::ID               => $previousBasEntity->getId(),
+                Entity::CREATED_AT       => $previousBasEntity->getCreatedAt(),
+                Entity::UPDATED_AT       => $previousBasEntity->getUpdatedAt(),
+                Entity::BALANCE          => $previousBasEntity->getBalance(),
+                Entity::TRANSACTION_ID   => $previousBasEntity->getTransactionId(),
+                'transaction_created_at' => $previousBasEntity->transaction->getCreatedAt(),
+            ];
+        }
+        else
+        {
+            // If there is no previous entity, then we are inserting the statement at the start for the account number
+            // so we decided to generate bas_id from posted date of the statement and
+            // transaction_id from 1 second after posted date
+            return [
+                Entity::ID               => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE]),
+                Entity::CREATED_AT       => $statement[Entity::POSTED_DATE],
+                Entity::UPDATED_AT       => $statement[Entity::POSTED_DATE],
+                Entity::BALANCE          => 0,
+                Entity::TRANSACTION_ID   => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE] + 1),
+                'transaction_created_at' => $statement[Entity::POSTED_DATE] + 1,
+            ];
+        }
+    }
+
+    protected function generateNextUnUsedIdForEntity(string $id, string $entityName)
+    {
+        $attempts = self::RETRY_COUNT_FOR_ID_GENERATION;
+
+        do
+        {
+            $id = $this->generateNextId($id);
+
+            switch ($entityName)
+            {
+                case Constants\Entity::BANKING_ACCOUNT_STATEMENT :
+                    $idExists = $this->repo->banking_account_statement->checkIfIdExists($id);
+                    break;
+
+                case Constants\Entity::TRANSACTION :
+                    $idExists = $this->repo->transaction->checkIfIdExists($id);
+                    break;
+            }
+
+            $attempts -= 1;
+
+            if ($attempts < 0)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_ERROR,
+                    null,
+                    null,
+                    'cannot generate new Id for '.$entityName);
+            }
+        }
+        while($idExists === true);
+
+        return $id;
+    }
+
+    protected function generateNextId(string $id)
+    {
+        $length = strlen($id);
+
+        if ($length === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'cannot generate new Id');
+        }
+
+        $lastChar = $id[$length-1];
+
+        switch (true)
+        {
+            case (ord($lastChar) < ord('9')) :
+                return substr($id,0,$length-1).chr(ord($lastChar)+1);
+
+            case (ord($lastChar) === ord('9')) :
+                return substr($id,0,$length-1).'A' ;
+
+            case (ord($lastChar) < ord('Z')) :
+                return substr($id,0,$length-1).chr(ord($lastChar)+1);
+
+            case (ord($lastChar) === ord('Z')) :
+                return substr($id,0,$length-1).'a' ;
+
+            case (ord($lastChar) < ord('z')) :
+                return substr($id,0,$length-1).chr(ord($lastChar)+1);
+
+            case (ord($lastChar) === ord('z')) :
+                return $this->generateNextId(substr($id,0,$length-1)).'0';
+        }
+    }
+
+    protected function modifyTransactionEntityForMissingStatement(Entity $basEntity, Base\PublicEntity $sourceEntity)
+    {
+        $previousTransactionId = $this->previousBasTransactionDetails[Transaction\Entity::ID];
+
+        $transactionId = $this->generateNextUnUsedIdForEntity($previousTransactionId, Constants\Entity::TRANSACTION);
+
+        $previousTransactionCreatedAt = $this->previousBasTransactionDetails[Transaction\Entity::CREATED_AT];
+
+        $transaction = $sourceEntity->transaction;
+
+        $transaction->setBalance($basEntity->getBalance());
+
+        $transaction->setCreatedAt($previousTransactionCreatedAt);
+
+        $transaction->setId($transactionId);
+
+        $this->repo->saveOrFail($transaction);
+
+        $sourceEntity->transaction()->associate($transaction);
+
+        $this->repo->saveOrFail($sourceEntity);
+
+        $this->previousBasTransactionDetails[Transaction\Entity::ID] = $transactionId;
+    }
+
+    public function correctBalanceForStatementsEffectedByMissingStatements(array $input)
+    {
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
+
+        $channel = $input[Entity::CHANNEL];
+
+        [$hasMore, $params] = $this->mutex->acquireAndRelease(
+            'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
+            function () use ($channel, $accountNumber, $input)
+            {
+                $limitNumberOfEntitiesToUpdate = (new Admin\Service)->getConfigKey(
+                    [
+                        'key' => Admin\ConfigKey::RX_LIMIT_STATEMENT_FIX_ENTITIES_UPDATE
+                    ]);
+
+                if (empty($limitNumberOfEntitiesToUpdate) === true)
+                {
+                    $limitNumberOfEntitiesToUpdate = self::ACCOUNT_STATEMENT_BAS_ENTITIES_TO_UPDATE;
+                }
+
+                $createdAt = $input[Entity::CREATED_AT];
+
+                $updatedAt = $input['update_before'];
+
+                $basIdToAmountMap = $input['bas_id_to_amount_map'];
+
+                $latestCorrectedBasId = $input['latest_corrected_id'];
+
+                $batchNumber = $input['batch_number'];
+
+                $basEntities = $this->repo->banking_account_statement
+                                          ->fetchBASRecordsToCorrect($limitNumberOfEntitiesToUpdate,
+                                                                     $accountNumber,
+                                                                     $createdAt,
+                                                                     $updatedAt,
+                                                                     $channel,
+                                                                     $latestCorrectedBasId);
+
+                $countOfRecordsToUpdate = count($basEntities);
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BALANCE_FIX_INIT,
+                    [
+                        'bas_id_to_amount_map'       => $basIdToAmountMap,
+                        'account_number'             => $accountNumber,
+                        'limit'                      => $limitNumberOfEntitiesToUpdate,
+                        'update_before'              => $updatedAt,
+                        'created_at'                 => $createdAt,
+                        'latest_corrected_id'        => $latestCorrectedBasId,
+                        'batch_number'               => $batchNumber,
+                        'count_of_records_to_update' => $countOfRecordsToUpdate,
+                    ]);
+
+                if ($countOfRecordsToUpdate === 0)
+                {
+                    $this->trace->info(TraceCode::BAS_ENTITIES_BALANCE_UPDATE_COMPLETED,
+                        [
+                            'account_number'             => $accountNumber,
+                            'update_before'              => $updatedAt,
+                            'created_at'                 => $createdAt,
+                            'latest_corrected_id'        => $latestCorrectedBasId,
+                            'batch_number'               => $batchNumber,
+                            'count_of_records_to_update' => $countOfRecordsToUpdate,
+                        ]);
+
+                    $this->updateBasDetailsEntityConsideringMissingStatements($accountNumber, $channel, $basIdToAmountMap);
+
+                    $this->releaseBasDetailsFromStatementFix($accountNumber, $channel);
+
+                    return [false, []];
+                }
+                else
+                {
+                    $this->updateBasRecordsConsideringMissingStatements($basEntities, $basIdToAmountMap, $latestCorrectedBasId, $createdAt);
+
+                    $this->trace->info(TraceCode::BAS_ENTITIES_BALANCE_UPDATE_SUCCESS,
+                        [
+                            'account_number'             => $accountNumber,
+                            'update_before'              => $updatedAt,
+                            'created_at'                 => $createdAt,
+                            'latest_corrected_id'        => $latestCorrectedBasId,
+                            'batch_number'               => $batchNumber,
+                            'count_of_records_to_update' => $countOfRecordsToUpdate,
+                        ]);
+
+                    $params = [
+                        'channel'              => $channel,
+                        'account_number'       => $accountNumber,
+                        'bas_id_to_amount_map' => $basIdToAmountMap,
+                        'created_at'           => $createdAt,
+                        'update_before'        => $updatedAt,
+                        'latest_corrected_id'  => $latestCorrectedBasId,
+                        'batch_number'         => $batchNumber + 1,
+                    ];
+
+                    return [true, $params];
+                }
+            },
+            1800,
+            ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+        );
+
+        if ($hasMore === true)
+        {
+            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_INIT,
+                [
+                    'account_number' => $accountNumber,
+                    'params'         => $params
+                ]);
+
+            BankingAccountStatementUpdate::dispatch($this->mode, $params)->delay(10);
+
+            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
+                [
+                    'account_number' => $accountNumber,
+                    'params'         => $params
+                ]);
+        }
+    }
+
+    protected function updateBasRecordsConsideringMissingStatements(Base\PublicCollection $basEntities, array $basIdToAmountMap, string & $latestCorrectedBasId, int & $createdAt)
+    {
+        $this->repo->transaction(function() use ($basEntities, $basIdToAmountMap, & $latestCorrectedBasId, & $createdAt)
+        {
+            foreach ($basEntities as $basEntity)
+            {
+                $id = $basEntity->getId();
+
+                $txn = (isset($basEntity->transaction) === false) ? null: $basEntity->transaction;
+
+                $previousBalance = $basEntity->getBalance();
+
+                $correctionAmount = 0;
+
+                foreach ($basIdToAmountMap as $missingId => $missingAmount)
+                {
+                    if ($missingId < $id)
+                    {
+                        $correctionAmount += $missingAmount;
+                    }
+                }
+
+                $correctBalance = $previousBalance + $correctionAmount;
+
+                $basEntity->setBalance($correctBalance);
+
+                $this->repo->saveOrFail($basEntity);
+
+                $traceData = [
+                    'bas_id'            => $id,
+                    'previous_balance'  => $previousBalance,
+                    'correct_balance'   => $correctBalance,
+                    'correction_amount' => $correctionAmount,
+                ];
+
+                if($txn !== null)
+                {
+                    $txn->setBalance($correctBalance, 0, false);
+
+                    $this->repo->saveOrFail($txn);
+
+                    $traceData = $traceData + [
+                            'txn_id'    => $txn->getId()
+                        ];
+                }
+
+                $createdAt = max($createdAt, $basEntity->getCreatedAt());
+
+                $latestCorrectedBasId = max($id, $latestCorrectedBasId);
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BALANCE_FIX, $traceData);
+            }
+        });
+    }
+
+    public function setBasDetailsForStatementFix(string $accountNumber, string $channel)
+    {
+        $basDetailEntity = $this->getBasDetails($accountNumber, $channel, BASDetails\Status::getStatuses());
+
+        $this->mutex->acquireAndRelease('banking_account_statement_details_' . $basDetailEntity->getId(),
+            function () use ($accountNumber, $channel, $basDetailEntity)
+            {
+                $basDetailEntity->reload();
+
+                $this->trace->info(TraceCode::LOCK_BAS_DETAILS_FOR_STATEMENT_FIX_INIT,
+                    [
+                        'account_number'     => $accountNumber,
+                        'channel'            => $channel,
+                        'bas_details_status' => $basDetailEntity->getStatus(),
+                    ]);
+
+                if (($basDetailEntity->getStatus() !== Details\Status::ACTIVE) or
+                    ($basDetailEntity->getStatus() === Details\Status::UNDER_MAINTENANCE))
+                {
+                    throw new Exception\BadRequestException(ErrorCode::LOCK_BAS_DETAILS_FOR_STATEMENT_FIX_FAILURE, null, null);
+                }
+
+                $basDetailEntity->setStatus(Details\Status::UNDER_MAINTENANCE);
+
+                $this->repo->saveOrFail($basDetailEntity);
+
+                $this->trace->info(TraceCode::LOCK_BAS_DETAILS_FOR_STATEMENT_FIX_SUCCESS,
+                    [
+                        'account_number'     => $accountNumber,
+                        'channel'            => $channel,
+                        'bas_details_status' => $basDetailEntity->getStatus(),
+                    ]);
+            },
+            30,
+            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS
+        );
+    }
+
+    public function releaseBasDetailsFromStatementFix(string $accountNumber, string $channel)
+    {
+        $basDetailEntity = $this->getBasDetails($accountNumber, $channel, BASDetails\Status::getStatuses());
+
+        $this->mutex->acquireAndRelease('banking_account_statement_details_' . $basDetailEntity->getId(),
+            function () use ($accountNumber, $channel, $basDetailEntity)
+            {
+                $basDetailEntity->reload();
+
+                $this->trace->info(TraceCode::RELEASE_BAS_DETAILS_FROM_STATEMENT_FIX_INIT,
+                    [
+                        'account_number'     => $accountNumber,
+                        'channel'            => $channel,
+                        'bas_details_status' => $basDetailEntity->getStatus(),
+                    ]);
+
+                if ($basDetailEntity->getStatus() !== Details\Status::UNDER_MAINTENANCE)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::RELEASE_BAS_DETAILS_FROM_STATEMENT_FIX_FAILURE, null, null);
+                }
+
+                $basDetailEntity->setStatus(Details\Status::ACTIVE);
+
+                $this->repo->saveOrFail($basDetailEntity);
+
+                $this->trace->info(TraceCode::RELEASE_BAS_DETAILS_FROM_STATEMENT_FIX_SUCCESS,
+                    [
+                        'account_number'     => $accountNumber,
+                        'channel'            => $channel,
+                        'bas_details_status' => $basDetailEntity->getStatus(),
+                    ]);
+            },
+            30,
+            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS
+        );
+    }
+
+    protected function updateBasDetailsEntityConsideringMissingStatements(string $accountNumber, string $channel, array $basIdToAmountMap)
+    {
+        $basDetailEntity = $this->getBasDetails($accountNumber, $channel, [Details\Status::UNDER_MAINTENANCE]);
+
+        $this->mutex->acquireAndRelease('banking_account_statement_details_' . $basDetailEntity->getId(),
+            function () use ($accountNumber, $channel, $basIdToAmountMap, $basDetailEntity)
+            {
+                $basDetailEntity->reload();
+
+                $netBalanceChange = 0;
+
+                foreach ($basIdToAmountMap as $missingId => $missingAmount)
+                {
+                    $netBalanceChange += $missingAmount;
+                }
+
+                $initialStatementClosingBalance = $basDetailEntity->getStatementClosingBalance();
+
+                $basDetailEntity->setStatementClosingBalance($initialStatementClosingBalance + $netBalanceChange);
+
+                $this->repo->saveOrFail($basDetailEntity);
+            },
+            30,
+            ErrorCode::BAD_REQUEST_ANOTHER_BAS_DETAILS_UPDATE_IN_PROGRESS
+        );
+    }
+
+    public function getMissingRecordsFromRedisForAccount(string $accountNumber, string $channel)
+    {
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel
+            ]);
+
+        if ((array_key_exists($accountNumber, $merchantMissingStatementList) === true) and
+            (empty($merchantMissingStatementList[$accountNumber]) === false))
+        {
+            $missingStatements = $merchantMissingStatementList[$accountNumber];
+
+            $this->trace->info(TraceCode::BAS_MISSING_RECORDS_TO_INSERT,
+                [
+                    'account_number'         => $accountNumber,
+                    'channel'                => $channel,
+                    'count'                  => count($missingStatements),
+                    'missing_statements'     => $missingStatements,
+                ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::BAS_NO_MISSING_RECORDS_TO_INSERT,
+                [
+                    'account_number'         => $accountNumber,
+                    'channel'                => $channel,
+                ]);
+
+            $missingStatements = [];
+        }
+
+        return $missingStatements;
+    }
+
+    public function removeInsertedMissingRecordsForAccountFromRedis(string $accountNumber, string $channel, array $insertedStatements)
+    {
+        $retryCount = 2;
+
+        $this->mutex->acquireAndRelease('update_redis_missing_statements_recon_' . $channel,
+            function () use ($accountNumber, $channel, $insertedStatements)
+            {
+                $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+                    [
+                        'key' => Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel
+                    ]);
+
+                if (array_key_exists($accountNumber, $merchantMissingStatementList) === true)
+                {
+                    $missingStatementsFromRedis = $merchantMissingStatementList[$accountNumber];
+
+                    $this->trace->info(TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_INIT,
+                        [
+                            'account_number'             => $accountNumber,
+                            'inserted_statements'        => $insertedStatements,
+                            'missing_statement_in_redis' => $missingStatementsFromRedis
+                         ]);
+
+                    // array_diff did not work as expected for nested arrays, so statements are converted to json and then compared
+                    $diff = array_diff(array_map('json_encode', $missingStatementsFromRedis), array_map('json_encode', $insertedStatements));
+
+                    $missingStatementsAfterInsertion = array_map('json_decode', $diff);
+
+                    $merchantMissingStatementList[$accountNumber] = $missingStatementsAfterInsertion;
+
+                    (new Admin\Service)->setConfigKeys([
+                        Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel => $merchantMissingStatementList
+                    ]);
+
+                    $this->trace->info(TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_SUCCESS,
+                        [
+                            'account_number'                     => $accountNumber,
+                            'missing_statements_after_insertion' => $missingStatementsAfterInsertion
+                        ]);
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::BAS_MISSING_RECORDS_EXTERNALLY_DELETED,
+                        [
+                            'account_number'         => $accountNumber,
+                            'channel'                => $channel,
+                            'inserted_statements'    => $insertedStatements
+                        ]);
+                }
+            },
+            300,
+            ErrorCode::BAD_REQUEST_CANNOT_EDIT_MISSING_RECORDS_ON_REDIS,
+            $retryCount
+        );
+    }
+
+    protected function pushMissingStatementsLinkingEventsToLedger(string $accountNumber, string $channel, array $insertedBasEntities)
+    {
+        $basDetailEntity = $this->getBasDetails($accountNumber, $channel, [BASDetails\Status::UNDER_MAINTENANCE]);
+
+        $merchant = $basDetailEntity->merchant;
+
+        foreach ($insertedBasEntities as $basEntity)
+        {
+            $sourceEntity = $basEntity->source();
+
+            try
+            {
+                $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
+            }
+            catch (\Exception $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::BAS_LINKING_LEDGER_CALL_FAILURE,
+                    [
+                        'account_number' => $accountNumber,
+                        'channel'        => $channel,
+                        'bas_details_id' => $basDetailEntity->getId(),
+                        'bas_id'         => $basEntity->getId(),
+                        'source_id'      => $sourceEntity->getId(),
+                    ]
+                );
+            }
+        }
     }
 
     public function processStatementForAccountV2(array $input)
@@ -1110,8 +1913,12 @@ class Core extends Base\Core
             {
                 list($sourceEntity, $isSourceAlreadyCreated) = $this->linkAccountStatementRecord($basEntity, $merchant);
 
-                // send event to ledger in shadow mode
-                $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
+                // for statement under fix we send event to ledger after inserting all the missing statements outside the transaction
+                if ($this->isStatementUnderFix === false)
+                {
+                    // send event to ledger in shadow mode
+                    $this->sendToLedgerPostSourceEntityProcessing($merchant, $sourceEntity, $basEntity);
+                }
             }
             catch (\Throwable $e)
             {
@@ -1355,6 +2162,11 @@ class Core extends Base\Core
                        'account_no'  => $basEntity->getAccountNumber(),
                        'remarks'     => $remarks
                    ]);
+
+        if ($this->isStatementUnderFix === true)
+        {
+            $this->modifyTransactionEntityForMissingStatement($basEntity, $sourceEntity);
+        }
 
         $this->validateBalance($basEntity, $sourceEntity);
 

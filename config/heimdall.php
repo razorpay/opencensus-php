@@ -1258,6 +1258,9 @@ return [
         ],
 
         PermissionCategory::BANKING_ACCOUNT_STATEMENT  => [
+            Permission::INSERT_AND_UPDATE_BAS => [
+                'description' => 'Insert missing banking account statements and update relevant entities',
+            ],
             Permission::FETCH_MISSING_BAS => [
                 'description' => 'Fetch missing banking account statements',
             ],

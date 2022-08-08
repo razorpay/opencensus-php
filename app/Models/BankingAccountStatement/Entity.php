@@ -428,6 +428,18 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function getNetAmountBasedOnTransactionType()
+    {
+        if ($this->getType() === Type::CREDIT)
+        {
+            return $this->getAmount();
+        }
+        else
+        {
+            return (-1 * $this->getAmount());
+        }
+    }
+
     /**
      * @param BuilderEx $query
      * @param array $columns

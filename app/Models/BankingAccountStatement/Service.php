@@ -4,8 +4,8 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Cache;
 use RZP\Models\Base;
+use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -104,5 +104,54 @@ class Service extends Base\Service
             ]);
 
         return $response;
+    }
+
+    public function insertMissingStatements(array $input): array
+    {
+        (new Validator())->validateInput('insert_statement', $input);
+
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
+
+        $channel = $input[Entity::CHANNEL];
+
+        $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel);
+
+        if ($input['action'] === 'fetch')
+        {
+            return [
+                'number_of_missing_statements' => count($missingStatements),
+                'missing_statements'           => json_encode($missingStatements),
+            ];
+        }
+
+        if (count($missingStatements) === 0)
+        {
+            return [
+                'message' => 'No missing BAS statements to insert for the given account number'
+            ];
+        }
+
+        try
+        {
+            $response = $this->core()->insertMissingStatements($accountNumber, $channel, $missingStatements);
+
+            return $response;
+        }
+        catch(\Exception $exception)
+        {
+            $this->core()->releaseBasDetailsFromStatementFix($accountNumber, $channel);
+
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::INSERT_AND_UPDATE_BAS_FAILURE,
+                [
+                    'account_number' => $accountNumber,
+                    'channel'        => $channel
+                ]
+            );
+
+            throw $exception;
+        }
     }
 }

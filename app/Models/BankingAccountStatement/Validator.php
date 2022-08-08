@@ -70,6 +70,12 @@ class Validator extends Base\Validator
         'end_status'    => 'required|in:processed,reversed'
     ];
 
+    protected static $insertStatementRules = [
+        Entity::CHANNEL             => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
+        'action'                    => 'required|in:insert,fetch'
+    ];
+
     public function validateCreditBas($current_status, array $input)
     {
         // note current_status is status of payout currently

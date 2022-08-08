@@ -760,6 +760,8 @@ class Name
 
     const BANKING_ACCOUNT_STATEMENT_RUN_MANUALLY = 'banking_account_statement_run_manually';
 
+    const INSERT_AND_UPDATE_BAS               = 'insert_and_update_bas';
+
     // Update Free Payout Permission
     const UPDATE_FREE_PAYOUTS_ATTRIBUTES      = 'update_free_payouts_attributes';
 

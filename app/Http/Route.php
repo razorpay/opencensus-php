@@ -2965,10 +2965,12 @@ class Route
         'banking_account_statement_process_cron'        => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
         'banking_account_statement_process_pool'        => ['post',     'banking_account_statement/pool/process',                    'BankingAccountStatementController@fetchStatementForPoolAccount'              ],
         'banking_account_statement_channel_fetch'       => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'         ],
+        'banking_account_statement_insert_missing'      => ['post',     'banking_account_statement/insert_missing',                  'BankingAccountStatementController@insertMissingStatements'                   ],
+        'banking_account_statement_insert_missing_cron' => ['post',     'banking_account_statement/cron/insert_missing',             'BankingAccountStatementController@insertMissingStatements'                   ],
         'banking_account_statement_fetch_missing'       => ['post',     'banking_account_statement/fetch_missing/{channel}',         'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
         'banking_account_statement_fetch_missing_cron'  => ['post',     'banking_account_statement/cron/fetch_missing/{channel}',    'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
         'banking_account_statement_details_create'      => ['post',     'banking_account_statement/details',                         'BankingAccountStatementController@createBankingAccountStatementDetails'      ],
-        
+
         'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
         'banking_account_activation_detail'
         .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
@@ -4340,6 +4342,8 @@ class Route
         'check_status_of_test_payouts',
         'add_balance_to_source_for_test_payouts',
         'mob_to_bas_routes',
+        'banking_account_statement_insert_missing',
+        'banking_account_statement_insert_missing_cron',
         'bas_internal_admin_routes',
         'coupon_expiry_alert',
         'upi_transfer_process_internal',
@@ -6055,6 +6059,7 @@ class Route
         'setl_ondemand_transfer_trigger',
         'setl_ondemand_transfer_payout_update',
         'banking_account_statement_process_admin',
+        'banking_account_statement_insert_missing',
         'correct_merchant_owners_products',
         'paper_nach_fetch_failure',
         'paper_nach_approve_failure',
@@ -7513,6 +7518,8 @@ class Route
         'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_enable_disable'       => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
+
+        'banking_account_statement_insert_missing' => Permission::INSERT_AND_UPDATE_BAS,
 
         'process_pending_bank_transfer'            => Permission::ADMIN_PROCESS_PENDING_BANK_TRANSFER,
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
@@ -10415,8 +10422,8 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'banking_account_statement_insert_missing',
             'role_self_get',
-
             'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',
@@ -12615,6 +12622,7 @@ class Route
         ],
 
         'cron' => [
+            'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',
             'create_test_payouts_for_downtime_detection_icici',
             'create_test_payouts_for_downtime_detection_yesb',
