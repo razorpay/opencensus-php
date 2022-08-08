@@ -737,6 +737,13 @@ class Service extends Base\Service
         $address['state'] = $response['state'];
 
         $address['state_code'] = $response['state_code'];
+
+        $this->trace->debug(TraceCode::FETCH_CITY_STATE_RESULT, ['pincode' => $address['zipcode'],
+            'country' => $address['country'],
+            'city' => $response['city'],
+            'state' => $response['state'],
+            'state_code' => $response['state_code']]);
+
         return $address;
     }
 

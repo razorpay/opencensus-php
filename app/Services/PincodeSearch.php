@@ -210,8 +210,8 @@ class PincodeSearch
 
         if (count($response['records']) === 0)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND);
+            //fetch details from google api
+            return $this->fetchCityAndStateFromPincodeAndCountry($pincode, $country);
         }
 
         $response = $response['records'][0];
