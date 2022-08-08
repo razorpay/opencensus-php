@@ -592,6 +592,19 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function fetchTotalAmountByTransactionTypeBelowThreshold(
+        array $merchantIdList, string $type, int $threshold): array
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->where($this->dbColumn(Entity::TYPE), '=', $type)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
+            ->groupBy(Entity::MERCHANT_ID)
+            ->selectRaw('SUM(' . Entity::AMOUNT . ') as total,' . Entity::MERCHANT_ID)
+            ->having('total', '<' , $threshold)
+            ->get()
+            ->toArray();
+    }
+
     public function fetchTotalAmountByTransactionTypeWithThresholdInRange(
         array $merchantIdList, string $type, int $threshold): array
     {

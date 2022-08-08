@@ -406,6 +406,8 @@ return array(
     'capital_migration_experiment_id' => env('CAPITAL_MIGRATION_EXPERIMENT_ID'),
 
     'cmma_soft_limit_breach_trigger_experiment_id' => env('CMMA_SOFT_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
+    
+    'cmma_amp_trigger_experiment_id' => env('CMMA_AMP_TRIGGER_EXPERIMENT_ID'),
 
     'cmma_escalation_new_process_id' => env('CMMA_ESCALATION_NEW_PROCESS_ID'),
 

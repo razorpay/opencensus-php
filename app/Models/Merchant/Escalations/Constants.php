@@ -80,6 +80,7 @@ class Constants
     const CMMA_NEW_PROCESS_ID_KEY = 'app.cmma_escalation_new_process_id';
     const CMMA_EXPERIMENT_ID_KEY = 'app.cmma_limit_breach_trigger_experiment_id';
     const CMMA_SOFT_LIMIT_EXPERIMENT_ID = 'app.cmma_soft_limit_breach_trigger_experiment_id';
+    const CMMA_AMP_EXPERIMENT_ID = 'app.cmma_amp_trigger_experiment_id';
     const CMMA_NEW_EXPERIMENT_ID_KEY = 'app.cmma_limit_breach_trigger_new_experiment_id';
 
     const PAYMENTS_ESCALATION_MATRIX = [

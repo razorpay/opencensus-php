@@ -8247,6 +8247,10 @@ class Service extends Base\Service
 
     public function handleSoftLimitBreachOnAutoKYC()
     {
+
+        // since a number of queries are fired ensure enough time is provided to complete them.
+        $this->increaseAllowedSystemLimits();
+
         try
         {
             (new Merchant\Escalations\Core())->pushWebAttributionDetailsToSegmentCron();

@@ -100,6 +100,10 @@ class Core extends Base\Core
             $merchantsGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeAboveThreshold(
                 $merchantIdList, MConstants::PAYMENT, env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
 
+            // filter merchants who are yet to cross settlements less than SOFT LIMIT THRESHOLD
+            $merchantNotBreachedGmvList = $this->repo->transaction->fetchTotalAmountByTransactionTypeBelowThreshold(
+                $merchantIdList, MConstants::PAYMENT, env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD));
+
             $merchantIdList = array_map(function($element) {
                 return $element[Entity::MERCHANT_ID];
             }, $merchantsGmvList);
@@ -115,10 +119,41 @@ class Core extends Base\Core
 
             $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
 
-            // finally raise escalations
+            // finally, raise escalations
             (new Handler)->handleEscalations($merchants, $merchantsGmvList, Constants::SOFT_LIMIT, 1);
-            // trigger CMMA escalations; this will be uncommented based on product requirements.
-             (new CmmaEscalation)->triggerCMMAEscalation($merchants, Constants::SOFT_LIMIT, 1);
+
+            // CMMA triggers should not affect the usual flow
+            try {
+
+                // trigger CMMA escalations for merchants who breached soft limit
+                (new CmmaEscalation)->triggerCMMAEscalation($merchants, Constants::SOFT_LIMIT, 1);
+
+                $merchantNotBreachedList = array_map(function($element) {
+                    return $element[Entity::MERCHANT_ID];
+                }, $merchantNotBreachedGmvList);
+
+                if (empty($merchantNotBreachedList) === true)
+                {
+                    $this->trace->info(TraceCode::CMMA_ESCALATION_NO_MERCHANTS, [
+                        'type'   => Constants::AMP,
+                        'reason' => 'no merchants to run the cron'
+                    ]);
+
+                    continue;
+                }
+
+                $merchantNotBreachedIdList = $this->repo->merchant->findManyByPublicIds($merchantNotBreachedList);
+
+                // trigger CMMA escalations for merchants who are in activated mcc pending state but haven't breached the transactions
+                (new CmmaEscalation)->triggerCMMAEscalation($merchantNotBreachedIdList, Constants::AMP, 1);
+            }
+            catch (\Throwable $err) { // Exception in this flow should not affect the primary escalation flow
+
+                $this->trace->error(TraceCode::CMMA_ESCALATION_ATTEMPT_FAILURE, [
+                    'error'   => $err
+                ]);
+
+            }
         }
     }
 

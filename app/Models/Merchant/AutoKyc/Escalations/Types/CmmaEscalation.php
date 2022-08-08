@@ -112,6 +112,20 @@ class CmmaEscalation
                         // call CMMA with a hard-limit payload
                         $escalationPayload['variables']['triggeredOn'] = Constants::CMMA_HARD_LIMIT_BREACH;
                         $cmmaProxyController->handleInternalCronProxyRequests(Constants::CMMA_ROUTE, $escalationPayload);
+                    } elseif ($type === AutoKycConstants::AMP)
+                    {
+                        // hide AMP breaches behind an experiment
+                        $ampExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId,
+                            Constants::CMMA_AMP_EXPERIMENT_ID);
+
+                        if ($ampExperimentEnabled === true) {
+
+                            // call CMMA with an AMP payload
+                            $escalationPayload['variables']['triggeredOn'] = AutoKycConstants::AMP;
+
+                            $cmmaProxyController->handleInternalCronProxyRequests(Constants::CMMA_ROUTE, $escalationPayload);
+                        }
+
                     }
                 }
             } catch (\Throwable $err) // Exception in this flow should not affect the primary escalation flow
