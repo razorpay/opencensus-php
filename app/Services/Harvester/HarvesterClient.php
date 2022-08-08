@@ -11,6 +11,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Services\AbstractEventClient;
 use RZP\Exception\IntegrationException;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class HarvesterClient extends AbstractEventClient
 {
@@ -138,23 +139,26 @@ class HarvesterClient extends AbstractEventClient
 
     public function query($data = '', $timeout = self::REQUEST_TIMEOUT)
     {
-        $config = $this->config;
+        $config    = $this->config;
         $queryPath = self::QUERY_API_PATH;
 
         $merchantId = $this->merchant->getId();
 
-        if(empty($merchantId) === false) {
+        if (empty($merchantId) === false)
+        {
 
-            $v2ExperimentEnabled = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                RazorxTreatment::HARVESTER_V2_MIGRATION,
-                $this->app['basicauth']->getMode() ?? "live"
-            );
+            $v2ExperimentEnabled = (new MerchantCore)->isRazorxExperimentEnable($merchantId,
+                                                                        RazorxTreatment::HARVESTER_V2_MIGRATION);
+            $this->trace->info(
+                TraceCode::RAZORX_EXPERIMENT_RESULT,
+                [
+                    'v2ExperimentEnabled' => $v2ExperimentEnabled,
+                ]);
 
-            if($v2ExperimentEnabled === true)
+            if ($v2ExperimentEnabled === true)
             {
                 $queryPath = self::QUERY_API_PATH_V2;
-                $config = $this->app['config']->get('applications.harvester_v2');
+                $config    = $this->app['config']->get('applications.harvester_v2');
             }
         }
 
