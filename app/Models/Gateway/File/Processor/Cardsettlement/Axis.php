@@ -110,7 +110,7 @@ class Axis extends Base
             min($this->paymentsFirstTimestamp, $this->refundsFirstTimestamp) );
 
         $pids  = $paymentSettlementsForBank->pluck(Payment\Entity::ID)->toArray();
-        $rids  = $paymentSettlementsForBank->pluck(Payment\Refund\Entity::PAYMENT_ID)->toArray();
+        $rids  = $refundSettlementsForBank->pluck(Payment\Refund\Entity::PAYMENT_ID)->toArray();
 
         $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
             'location'  => 'After DB fetch',
@@ -396,7 +396,7 @@ class Axis extends Base
                 {
                     $totalTransactions++;
 
-                    $rrn = $rrns[$settlementRefunds->payment->getId()]['rrn'] ?? '';
+                    $gatewayRequestID = $cpsAuthData[$settlementPayment->getId()]['gateway_reference_id2'] ?? '';
 
                     list($notesGST, $notesCorpName, $notesMTR) = $this->parseNotes($settlementRefunds->payment->getNotes());
 
@@ -411,7 +411,7 @@ class Axis extends Base
                         $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementRefunds->getBaseAmount()) . self::PIPE_SEPARATOR .
-                        $rrn . self::PIPE_SEPARATOR .
+                        $gatewayRequestID . self::PIPE_SEPARATOR .
                         $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementRefunds->getBaseAmount() . self::PIPE_SEPARATOR .
                         Carbon::createFromTimestamp($settlementRefunds['processed_at'])
