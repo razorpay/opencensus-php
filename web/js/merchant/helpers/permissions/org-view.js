@@ -5,9 +5,7 @@
  * */
 const HDFC_restrictedModules = [
   'subscriptions',
-  'invoices',
   'virtual_accounts',
-  'payment_pages',
   'configuration',
   'add_funds',
   'profile_gst',
