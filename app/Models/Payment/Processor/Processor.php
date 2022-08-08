@@ -599,7 +599,7 @@ class Processor
 
             if ($merchant->isFeatureEnabled('raas') === true)
             {
-                $raasResult = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::RAAS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
