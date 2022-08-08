@@ -3,7 +3,8 @@
 namespace RZP\Tests\P2p\Service\Base;
 
 use Carbon\Carbon;
-use RZP\Gateway\P2p\Upi\Sharp\Fields;
+use RZP\Gateway\P2p\Upi\Sharp\Fields as SharpFields;
+use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Gateway\P2p\Upi\Sharp\Actions\UpiAction;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
@@ -12,25 +13,70 @@ class MandateHelper extends P2pHelper
 
     public function createMandate($gateway)
     {
-        $request = [
-            Fields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
-            Fields::AMOUNT                  => 100,
-            Fields::AMOUNT_RULE             => 'MAX',
-            Fields::PAYER_VPA               => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
-            Fields::PAYEE_VPA               => 'username@randompsp',
-            Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
-            Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
-            Fields::TRANSACTION_NOTE        => 'UPI',
-            Fields::RECUR                   => 'DAILY',
-        ];
+        return $this->getCreateMandatePayload($gateway);
+    }
 
-        $content = [
-            'content' => json_encode($request)
-        ];
 
-        $response = $this->callback($gateway, $content);
+    public function getCreateMandatePayload($gateway)
+    {
+        switch($gateway)
+        {
+            case 'p2p_upi_sharp':
+                $request = [
+                    SharpFields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
+                    SharpFields::AMOUNT                  => 100,
+                    SharpFields::AMOUNT_RULE             => 'MAX',
+                    SharpFields::PAYER_VPA               => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
+                    SharpFields::PAYEE_VPA               => 'username@randompsp',
+                    SharpFields::VALIDITY_START          => Carbon::now()->getTimestamp(),
+                    SharpFields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
+                    SharpFields::TRANSACTION_NOTE        => 'UPI',
+                    SharpFields::RECUR                   => 'DAILY',
+                ];
 
-        return $response;
+               return $request;
+
+            case 'p2p_upi_axis':
+                $gatewayMandateId = str_random(35);
+
+                $callback = [
+                    Fields::AMOUNT                  => '1.00',
+                    Fields::AMOUNT_RULE             => 'EXACT',
+                    Fields::MANDATE_TYPE            => 'CREATE',
+                    Fields::PAYER_VPA               => $this->fixtures->vpa->getAddress(),
+                    Fields::GATEWAY_MANDATE_ID      => $gatewayMandateId,
+                    Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(Fixtures::DEVICE_1)
+                                                                      ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID],
+                    Fields::BLOCK_FUND              => true,
+                    Fields::GATEWAY_REFERENCE_ID    => '809323430413',
+                    Fields::IS_MARKED_SPAM          => 'false',
+                    Fields::IS_VERIFIED_PAYEE       => 'true',
+                    Fields::INITIATED_BY            => 'PAYEE',
+                    Fields::MANDATE_NAME            => 'merchant mandate',
+                    Fields::MANDATE_TIMESTAMP       => '2020-06-01T15:40:42+05:30',
+                    Fields::MERCHANT_CHANNEL_ID     => 'BANK',
+                    Fields::MERCHANT_ID             => 'BANK',
+                    Fields::ORG_MANDATE_ID          => 'BJJMsleiuryufhuhsoisdjfadb48003sdaa0',
+                    Fields::PAYEE_MCC               => '4121',
+                    Fields::PAYEE_NAME              => 'BANKTEST',
+                    Fields::PAYEE_VPA               => 'test@bank',
+                    Fields::PAYER_REVOCABLE         => 'true',
+                    Fields::RECURRENCE_PATTERN      => 'MONTHLY',
+                    Fields::RECURRENCE_RULE         => 'ON',
+                    Fields::RECURRENCE_VALUE        => '5',
+                    Fields::REF_URL                 => 'https://www.abcxyz.com/',
+                    Fields::REMARKS                 => 'Sample Remarks',
+                    Fields::ROLE                    => 'PAYER',
+                    Fields::SHARE_TO_PAYEE          => 'true',
+                    Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
+                    Fields::TYPE                    => 'CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED',
+                    Fields::UMN                     => 'uniqueMandateNumber@bank',
+                    Fields::VALIDITY_END            => '2020/06/05',
+                    Fields::VALIDITY_START          => '2020/06/04',
+                ];
+
+                return $callback;
+        }
     }
 
     public function fetchAll(array $content = [])

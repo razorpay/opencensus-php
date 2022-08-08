@@ -5,15 +5,13 @@ namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Mandate;
+use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Action;
 use RZP\Exception\RuntimeException;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Mandate\UpiMandate;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
-
-use RZP\Models\P2p\Transaction\Status;
 use RZP\Gateway\P2p\Upi\Axis\Actions\MandateAction;
-use RZP\Models\P2p\Transaction\UpiTransaction\Entity;
 
 class UpiMandateTransformer extends Transformer
 {
@@ -25,6 +23,8 @@ class UpiMandateTransformer extends Transformer
      */
     public function transform(): array
     {
+        $output = [];
+
         switch ($this->action)
         {
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
@@ -36,29 +36,35 @@ class UpiMandateTransformer extends Transformer
 
                 $this->input[Fields::GATEWAY_RESPONSE_CODE]     = '00';
                 $this->input[Fields::GATEWAY_RESPONSE_MESSAGE]  = 'Incoming mandate collect request';
-
                 break;
-        }
 
-        if(isset($this->input[Fields::GATEWAY_RESPONSE_STATUS]))
-        {
-            switch($this->input[Fields::GATEWAY_RESPONSE_STATUS])
-            {
-                case MandateAction::SUCCESS:
-                    $output = [
-                        UpiMandate\Entity::ACTION    => Action::INITIATE_AUTHORIZE,
-                        UpiMandate\Entity::STATUS    => Mandate\Status::APPROVED,
-                    ];
+            case MandateAction::PAUSED:
+                $output = [
+                    UpiMandate\Entity::ACTION   => Action::INITIATE_PAUSE,
+                    UpiMandate\Entity::STATUS   => Status::PAUSED,
+                ];
+                break;
 
-                    break;
-                case MandateAction::DECLINED:
-                    $output = [
-                        UpiMandate\Entity::ACTION    => Action::INITIATE_REJECT,
-                        UpiMandate\Entity::STATUS    => Mandate\Status::REJECTED,
-                    ];
+            case MandateAction::UNPAUSED:
+                $output = [
+                    UpiMandate\Entity::ACTION   => Action::INITIATE_UNPAUSE,
+                    UpiMandate\Entity::STATUS   => Status::UNPAUSED,
+                ];
+                break;
 
-                    break;;
-            }
+            case MandateAction::SUCCESS:
+                $output = [
+                    UpiMandate\Entity::ACTION    => Action::INITIATE_AUTHORIZE,
+                    UpiMandate\Entity::STATUS    => Mandate\Status::APPROVED,
+                ];
+                break;
+
+            case MandateAction::DECLINED:
+                $output = [
+                    UpiMandate\Entity::ACTION    => Action::INITIATE_REJECT,
+                    UpiMandate\Entity::STATUS    => Mandate\Status::REJECTED,
+                ];
+                break;
         }
 
         return $output;

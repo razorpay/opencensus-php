@@ -96,7 +96,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -116,7 +118,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -138,7 +142,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -162,7 +168,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -189,7 +197,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -212,7 +222,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
@@ -234,7 +246,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
@@ -266,7 +280,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -289,7 +305,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -315,7 +333,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $helper->createMandate($this->gateway);
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper ,$this->gateway, $request);
 
         $response = $helper->fetchAll();
 
@@ -328,5 +348,16 @@ class MandateTest extends TestCase
         $this->assertArraySubset([
             'status'    => 'revoked',
          ], $response);
+    }
+
+    private function createMandateOnMock($helper , $gateway, $request)
+    {
+        $content = [
+            'content' => json_encode($request)
+        ];
+
+        $response = $helper->callback($gateway, $content);
+
+        return $response;
     }
 }

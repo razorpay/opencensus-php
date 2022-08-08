@@ -22,6 +22,7 @@ class MandateRequestTransformer extends Transformer
      */
     public function transform(): array
     {
+        $output = [];
 
         switch ($this->input[Fields::REQUEST_TYPE])
         {
@@ -48,6 +49,39 @@ class MandateRequestTransformer extends Transformer
                 $output[Fields::REQUEST_TYPE]          = MandateAction::DECLINE;
                 $output[Fields::TIME_STAMP]            = $this->getTimestamp();
                 break;
+
+            case MandateAction::PAUSE:
+                $output[Fields::ACCOUNT_REFERENCE_ID]  = $this->getAccountReferenceId();
+                $output[Fields::AMOUNT]                = $this->getFormattedAmount();
+                $output[Fields::CUSTOMER_VPA]          =  $this->getPayerVpa();
+                $output[Fields::MERCHANT_CUSTOMER_ID]  = $this->getMerchantCustomerId();
+                $output[Fields::MERCHANT_REQUEST_ID]   = $this->getMerchantRequestId();
+                $output[Fields::ORG_MANDATE_ID]        = $this->getOrgMandateId();
+                $output[Fields::PAUSE_END]             = $this->getPauseEnd();
+                $output[Fields::PAUSE_START]           = $this->getPauseStart();
+                $output[Fields::PAYEE_NAME]            = $this->getPayeeName();
+                $output[Fields::PAYEE_VPA]             = $this->getPayeeVpa();
+                $output[Fields::REMARKS]               = $this->getDescription();
+                $output[Fields::REQUEST_TYPE]          = MandateAction::PAUSE;
+                $output[Fields::TIME_STAMP]            = $this->getTimestamp();
+                $output[Fields::UPI_REQUEST_ID]        = $this->getUpiRequestId();
+                break;
+
+            case MandateAction::UNPAUSE:
+                $output[Fields::ACCOUNT_REFERENCE_ID]  = $this->getAccountReferenceId();
+                $output[Fields::AMOUNT]                = $this->getFormattedAmount();
+                $output[Fields::CUSTOMER_VPA]          =  $this->getPayerVpa();
+                $output[Fields::MERCHANT_CUSTOMER_ID]  = $this->getMerchantCustomerId();
+                $output[Fields::MERCHANT_REQUEST_ID]   = $this->getMerchantRequestId();
+                $output[Fields::ORG_MANDATE_ID]        = $this->getOrgMandateId();
+                $output[Fields::PAYEE_NAME]            = $this->getPayeeName();
+                $output[Fields::PAYEE_VPA]             = $this->getPayeeVpa();
+                $output[Fields::REMARKS]               = $this->getDescription();
+                $output[Fields::REQUEST_TYPE]          = MandateAction::UNPAUSE;
+                $output[Fields::TIME_STAMP]            = $this->getTimestamp();
+                $output[Fields::UPI_REQUEST_ID]        = $this->getUpiRequestId();
+                break;
+
         }
 
         return $output;
@@ -187,12 +221,11 @@ class MandateRequestTransformer extends Transformer
     }
 
     /**
-     * This is the method to get upi request id
-     * @return mixed
+     * Get upi request id
      */
     public function getUpiRequestId()
     {
-        return $this->input[Fields::UPI_REQUEST_ID].$this->input[Entity::MANDATE][Entity::ID];
+        return 'RZP' . $this->input[Entity::MANDATE][Entity::ID] . str_random(18);
     }
 
     /**
@@ -215,13 +248,13 @@ class MandateRequestTransformer extends Transformer
      */
     public function getPauseStart()
     {
-        return  date('Y/m/d', $this->input[Entity::MANDATE][Entity::PAUSE_START]);
+        return date('Y/m/d' ,substr($this->input[Entity::MANDATE][Entity::PAUSE_START], 0, 10));
     }
     /**
      * This is the method to get pause end date
      */
     public function getPauseEnd()
     {
-        return  date('Y/m/d', $this->input[Entity::MANDATE][Entity::PAUSE_END]);
+        return date('Y/m/d' ,substr($this->input[Entity::MANDATE][Entity::PAUSE_END], 0, 10));
     }
 }

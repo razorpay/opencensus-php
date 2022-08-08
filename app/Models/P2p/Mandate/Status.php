@@ -14,6 +14,7 @@ class Status
     const FAILED     = 'failed';
     const APPROVED   = 'approved';
     const PAUSED     = 'paused';
+    const UNPAUSED   = 'unpaused';
     const REVOKED    = 'revoked';
 
     // Internal Status

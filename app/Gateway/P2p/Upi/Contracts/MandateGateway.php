@@ -19,4 +19,12 @@ interface MandateGateway extends GatewayInterface
     public function authorizeMandate(Response $response);
 
     public function initiateReject(Response $response);
+
+    public function initiatePause(Response $response);
+
+    public function pause(Response $response);
+
+    public function initiateUnPause(Response $response);
+
+    public function unpause(Response $response);
 }

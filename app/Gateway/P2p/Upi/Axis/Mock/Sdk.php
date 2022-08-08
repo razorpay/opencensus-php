@@ -254,6 +254,17 @@ class Sdk
         }
     }
 
+    public function sdkPauseUnpauseMandate()
+    {
+        switch($this->input[Fields::REQUEST_TYPE])
+        {
+            case MandateAction::PAUSE:
+                return $this->sdkPauseMandate();
+            case MandateAction::UNPAUSE:
+                return $this->sdkUnpauseMandate();
+        }
+    }
+
     public function sdkAuthorizeMandate()
     {
         $response = [
@@ -372,7 +383,7 @@ class Sdk
             Fields::INITIATED_BY                => 'payer',
             Fields::MANDATE_NAME                => 'Sample mandate test',
             Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
-            Fields::MANDATA_TYPE                => $this->input[Fields::REQUEST_TYPE],
+            Fields::MANDATE_TYPE                => $this->input[Fields::REQUEST_TYPE],
             Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
             Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
             Fields::ORG_MANDATE_ID              => $this->input[Fields::ORG_MANDATE_ID],
@@ -425,7 +436,7 @@ class Sdk
             Fields::INITIATED_BY                => 'payer',
             Fields::MANDATE_NAME                => 'Sample mandate test',
             Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
-            Fields::MANDATA_TYPE                => $this->input[Fields::REQUEST_TYPE],
+            Fields::MANDATE_TYPE                => $this->input[Fields::REQUEST_TYPE],
             Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
             Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
             Fields::ORG_MANDATE_ID              => $this->input[Fields::ORG_MANDATE_ID],

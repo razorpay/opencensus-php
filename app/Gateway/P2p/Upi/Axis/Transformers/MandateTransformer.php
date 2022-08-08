@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Axis\Transformers;
 
+
 use RZP\Models\P2p\Mandate\Flow;
 use RZP\Models\P2p\Mandate\Type;
 use RZP\Models\P2p\Mandate\Entity;
@@ -26,6 +27,7 @@ class MandateTransformer extends TransactionTransformer
      */
     public function transform(): array
     {
+        $output = [];
         switch ($this->action)
         {
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
@@ -37,29 +39,52 @@ class MandateTransformer extends TransactionTransformer
                 break;
         }
 
-
         // switch in case of mandate status
-        switch ($this->input[Fields::STATUS])
-        {
-            case Status::APPROVED:
-                $output = [
-                    Entity::TYPE                             => Type::COLLECT,
-                    Entity::FLOW                             => Flow::DEBIT,
-                    Entity::ACTION                           => MandateAction::APPROVE_DECLINE_MANDATE,
-                    Entity::STATUS                           => Status::APPROVED,
-                    Entity::INTERNAL_STATUS                  => Status::APPROVED,
-                ];
-                break;
 
-            case Status::REJECTED:
-                $output = [
-                    Entity::TYPE                             => Type::COLLECT,
-                    Entity::FLOW                             => Flow::DEBIT,
-                    Entity::ACTION                           => MandateAction::APPROVE_DECLINE_MANDATE,
-                    Entity::STATUS                           => Status::REJECTED,
-                    Entity::INTERNAL_STATUS                  => Status::REJECTED,
-                ];
-                break;
+        if(isset($this->input[Fields::STATUS]))
+        {
+            switch ($this->input[Fields::STATUS])
+            {
+                case Status::APPROVED:
+                    $output = [
+                        Entity::TYPE                             => Type::COLLECT,
+                        Entity::FLOW                             => Flow::DEBIT,
+                        Entity::ACTION                           => MandateAction::APPROVE_DECLINE_MANDATE,
+                        Entity::STATUS                           => Status::APPROVED,
+                        Entity::INTERNAL_STATUS                  => Status::APPROVED,
+                    ];
+                    break;
+
+                case Status::REJECTED:
+                    $output = [
+                        Entity::TYPE                             => Type::COLLECT,
+                        Entity::FLOW                             => Flow::DEBIT,
+                        Entity::ACTION                           => MandateAction::APPROVE_DECLINE_MANDATE,
+                        Entity::STATUS                           => Status::REJECTED,
+                        Entity::INTERNAL_STATUS                  => Status::REJECTED,
+                    ];
+                    break;
+
+                case Status::PAUSED:
+                    $output = [
+                        Entity::TYPE                            => Type::COLLECT,
+                        Entity::FLOW                            => Flow::DEBIT,
+                        Entity::ACTION                          => MandateAction::PAUSE_UNPAUSE_MANDATE,
+                        Entity::STATUS                          => Status::PAUSED,
+                        Entity::INTERNAL_STATUS                 => Status::PAUSED,
+                    ];
+                    break;
+
+                case Status::UNPAUSED:
+                    $output = [
+                        Entity::TYPE                            => Type::COLLECT,
+                        Entity::FLOW                            => Flow::DEBIT,
+                        Entity::ACTION                          => MandateAction::PAUSE_UNPAUSE_MANDATE,
+                        Entity::STATUS                          => Status::APPROVED,
+                        Entity::INTERNAL_STATUS                 => Status::APPROVED,
+                    ];
+                    break;
+            }
         }
 
         return $output;

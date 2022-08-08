@@ -104,7 +104,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->testIncomingCollect();
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
@@ -118,7 +120,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->testIncomingCollect();
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
@@ -137,7 +141,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->testIncomingCollect();
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
@@ -150,7 +156,9 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
-        $this->testIncomingCollect();
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
@@ -163,5 +171,118 @@ class MandateTest extends TestCase
         $this->assertArraySubset([
                 Entity::STATUS => Status::REJECTED,
          ], $response);
+    }
+
+    public function testInitiatePause()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
+        $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
+
+        $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
+    }
+
+    public function testPauseMandate()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
+        $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
+
+        $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->pauseMandate($request['callback'], $content);
+
+        $this->assertArraySubset([
+                Entity::STATUS    => Status::PAUSED,
+         ], $response);
+    }
+
+    public function testInitiateUnpause()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
+        $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
+
+        $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->pauseMandate($request['callback'], $content);
+
+        $this->assertArraySubset([
+                Entity::STATUS => Status::PAUSED,
+         ], $response);
+
+        $request = $helper->initiateUnPause($lastMandate[Entity::ID], $lastMandate);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
+    }
+
+    public function testUnpause()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
+        $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
+
+        $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->pauseMandate($request['callback'], $content);
+
+        $this->assertArraySubset([
+                Entity::STATUS    => Status::PAUSED,
+         ], $response);
+
+        $request = $helper->initiateUnPause($lastMandate[Entity::ID], $lastMandate);
+
+        $response = $helper->unpauseMandate($request['callback'], $content);
+
+        $this->assertArraySubset([
+                Entity::STATUS   => Status::APPROVED,
+         ], $response);
+    }
+
+    private function createMandateOnMock($helper, $callback)
+    {
+        $this->mockSdk()->setCallback('CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED', $callback);
+
+        $request = $this->mockSdk()->callback();
+
+        $response = $helper->callback($this->gateway, $request);
+
+        $this->assertTrue($response['success']);
     }
 }

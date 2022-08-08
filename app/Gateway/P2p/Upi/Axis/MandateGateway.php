@@ -69,7 +69,7 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
 
         $mandate = $this->input->get(Entity::MANDATE);
 
-        $transformer = new UpiMandateTransformer($sdk->toArray(), $callback->get(Fields::ACTION));
+        $transformer = new UpiMandateTransformer($sdk->toArray(), $sdk->get(Fields::GATEWAY_RESPONSE_STATUS));
 
         $transformer->put(Fields::MERCHANT_REQUEST_ID, $this->getMerchantRequestId($mandate));
 
@@ -89,6 +89,7 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
         $response->setData([
                Entity::MANDATE => $mandate
            ]);
+
     }
 
     /**
@@ -117,6 +118,125 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
         $request->mergeUdf($transformer->transformUdf());
 
         $response->setRequest($request);
+    }
+
+    /**
+     * This is the method to initiate pause response
+     * @param Response $response
+     */
+    public function initiatePause(Response $response)
+    {
+        $transformer = new MandateRequestTransformer($this->input->toArray());
+
+        $transformer->put('context', [
+            'handle_code'   => $this->getContextHandleCode()
+        ]);
+
+        $action = MandateAction::PAUSE_UNPAUSE_MANDATE;
+
+        $transformer->put(Fields::ACTION, $action);
+        $transformer->put(Fields::REQUEST_TYPE, MandateAction::PAUSE);
+        $transformer->put(Fields::MERCHANT_CUSTOMER_ID, $this->getMerchantCustomerId());
+        $transformer->put(Fields::TIMESTAMP, $this->getTimeStamp());
+
+        $request = $this->initiateSdkRequest($action);
+
+        $request->merge($transformer->transform());
+
+        $response->setRequest($request);
+    }
+
+    /**
+     * This is the function to pause the mandate
+     */
+    public function pause(Response $response)
+    {
+        $sdk = $this->handleInputSdk();
+
+        $callback = $this->handleSdkCallback(false);
+
+        $mandate = $this->input->get(Entity::MANDATE);
+
+        $transformer = new UpiMandateTransformer($sdk->toArray(), MandateAction::PAUSED);
+
+        $transformer->put(Fields::MERCHANT_REQUEST_ID, $this->getMerchantRequestId($mandate));
+
+        $upi = $transformer->transformSdk();
+
+        $transformer = new MandateTransformer($upi, $callback->get(Fields::ACTION));
+
+        $mandate = $transformer->transformSdk();
+
+        if(isset($upi[Entity::MANDATE]))
+        {
+            unset($upi[Entity::MANDATE]);
+        }
+
+        $mandate[Entity::UPI] = $upi;
+
+        $response->setData([
+           Entity::MANDATE => $mandate
+        ]);
+
+    }
+
+    /**
+     * This is the method to initiate unpause response
+     * @param Response $response
+     */
+    public function initiateUnPause(Response $response)
+    {
+        $transformer = new MandateRequestTransformer($this->input->toArray());
+
+        $transformer->put('context', [
+            'handle_code'   => $this->getContextHandleCode()
+        ]);
+
+        $action = MandateAction::PAUSE_UNPAUSE_MANDATE;
+
+        $transformer->put(Fields::ACTION, $action);
+        $transformer->put(Fields::REQUEST_TYPE, MandateAction::UNPAUSE);
+        $transformer->put(Fields::MERCHANT_CUSTOMER_ID, $this->getMerchantCustomerId());
+        $transformer->put(Fields::TIMESTAMP, $this->getTimeStamp());
+
+        $request = $this->initiateSdkRequest($action);
+
+        $request->merge($transformer->transform());
+        $response->setRequest($request);
+    }
+
+    /**
+     * This is the function to unpause the mandate
+     */
+    public function unpause(Response $response)
+    {
+        $sdk = $this->handleInputSdk();
+
+        $callback = $this->handleSdkCallback(false);
+
+        $mandate = $this->input->get(Entity::MANDATE);
+
+        $transformer = new UpiMandateTransformer($sdk->toArray(), MandateAction::UNPAUSED);
+
+        $transformer->put(Fields::MERCHANT_REQUEST_ID, $this->getMerchantRequestId($mandate));
+
+        $upi = $transformer->transformSdk();
+
+        $transformer = new MandateTransformer($upi, $callback->get(Fields::ACTION));
+
+        $mandate = $transformer->transformSdk();
+
+        if(isset($upi[Entity::MANDATE]))
+        {
+            unset($upi[Entity::MANDATE]);
+        }
+
+        $mandate[Entity::UPI] = $upi;
+
+        $response->setData([
+           Entity::MANDATE => $mandate
+        ]);
+
     }
 
     protected function getMerchantRequestId($mandate)
