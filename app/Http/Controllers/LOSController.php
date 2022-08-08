@@ -55,11 +55,13 @@ class LOSController extends Controller
         ]);
 
 
+        $rolesAndPermissionList = $this->getCapitalRolesAndPermissionsForAdmin();
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
             'X-Auth-Type'   => 'admin',
-            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
+            'X-Admin-Permissions' => $rolesAndPermissionList['permissions'],
+            'X-Admin-Roles' => $rolesAndPermissionList['roles'],
         ];
 
         return $this->sendRequestAndParseResponse($url, $body, $headers);
@@ -75,11 +77,13 @@ class LOSController extends Controller
             'request' => $url,
         ]);
 
+        $rolesAndPermissionList = $this->getCapitalRolesAndPermissionsForAdmin();
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
             'X-Auth-Type'   => 'admin',
-            'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
+            'X-Admin-Permissions' => $rolesAndPermissionList['permissions'],
+            'X-Admin-Roles' => $rolesAndPermissionList['roles'],
         ];
 
 
@@ -227,24 +231,32 @@ class LOSController extends Controller
         return ApiResponse::json(['success' => true]);
     }
 
-    protected function getCapitalPermissionsStringForAdmin() {
-        $permissions = $this->ba->getAdmin()->getPermissionsList();
-        $permissionsString = "";
-        $permissionCategories = Config::get('heimdall.permissions');
-        $capitalPermissions = $permissionCategories[PermissionCategory::RAZORPAY_CAPITAL];
-        foreach ($permissions as $permission) {
-            if (isset($capitalPermissions[$permission]) || str_starts_with($permission, "capital_los_")) {
-                $permissionsString .= $permission.":";
-            }
-        }
-        return substr($permissionsString, 0, -1);
-    }
-
     protected function startWorkflow($body)
     {
         $this->app['workflow']
             ->setEntityAndId('loan_origination_system', $body['disbursal']['application_id'])
             ->handle([], ['status' => 'loan_origination_system_workflow_started']);
+    }
+
+    protected function getCapitalRolesAndPermissionsForAdmin() : array{
+      $adminRolesPermissions = $this->ba->getAdmin()->getRolesAndPermissionsList();
+      $adminRoles = $adminRolesPermissions['roles'];
+      $adminPermissions = $adminRolesPermissions['permissions'];
+      $permissionCategories = Config::get('heimdall.permissions');
+      $capitalPermissions = $permissionCategories[PermissionCategory::RAZORPAY_CAPITAL];
+      $permissionsString = "";
+      foreach ($adminPermissions as $adminPermission) {
+          if (isset($capitalPermissions[$adminPermission]) || str_starts_with($adminPermission, "capital_los_")) {
+              $permissionsString .= $adminPermission.":";
+          }
+      }
+      $rolesString = "";
+      foreach ($adminRoles as $adminRole) {
+          if (str_starts_with($adminRole, "Capital LOS")) {
+              $rolesString .= $adminRole.":";
+          }
+      }
+      return array('permissions' => $permissionsString, 'roles' => $rolesString);
     }
 }
 
