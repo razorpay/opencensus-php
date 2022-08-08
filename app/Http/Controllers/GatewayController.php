@@ -36,6 +36,7 @@ use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
+use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction as p2pUpiAxisActions;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
 
 class GatewayController extends Controller
@@ -451,6 +452,13 @@ class GatewayController extends Controller
                 break;
 
             case Gateway::UPI_JUSPAY:
+
+                if ($this->shouldProcessThroughPspxService($input) === true)
+                {
+                    Request::getFacadeRoot()->route()->setParameter('gateway', 'p2p_upi_axis');
+
+                    return (new P2p\UpiController)->gatewayCallback();
+                }
 
                 $input = [
                     'headers' => [
@@ -1709,5 +1717,24 @@ class GatewayController extends Controller
         return ((str_ends_with($payerVpa, '@' . ProviderCode::MAIRTEL) === true) and
             (str_ends_with($payeeVpa, '@' . ProviderCode::MAIRTEL) === false) and
             (strlen($inputArray['hdnOrderID'] ?? '') === 14));
+    }
+
+    protected function shouldProcessThroughPspxService($input): bool
+    {
+        if (isset($input['type']) === false)
+        {
+            return false;
+        }
+
+        $p2pAxisActions = new \ReflectionClass(p2pUpiAxisActions::class);
+
+        $callbackTypes = array_values($p2pAxisActions->getConstants());
+
+        if (in_array($input['type'], $callbackTypes))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

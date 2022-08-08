@@ -10,8 +10,10 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\P2p\Upi\Axis\Mock;
 use RZP\Exception\RuntimeException;
 use RZP\Gateway\Upi\Base as UpiBase;
+use RZP\Tests\P2p\Service\Base\Fixtures;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -87,6 +89,49 @@ class UpiJuspayGatewayTest extends TestCase
         ], $upi->toArray());
 
         return $payment;
+    }
+
+    public function testP2pCallbackOnJuspay()
+    {
+        $deviceSetMap = [
+            Fixtures\Fixtures::DEVICE_1 => [
+                'merchant'      => Fixtures\Fixtures::TEST_MERCHANT,
+                'customer'      => Fixtures\Fixtures::RZP_LOCAL_CUSTOMER_1,
+                'device'        => Fixtures\Fixtures::CUSTOMER_1_DEVICE_1,
+                'handle'        => Fixtures\Fixtures::RAZOR_AXIS,
+                'bank_account'  => Fixtures\Fixtures::CUSTOMER_1_BANK_ACCOUNT_1_AXIS,
+                'vpa'           => Fixtures\Fixtures::CUSTOMER_1_VPA_1_AXIS,
+            ]
+        ];
+
+        $fix = new Fixtures\Fixtures($deviceSetMap);
+
+        $vpa = $fix->vpa(Fixtures\Fixtures::DEVICE_1);
+
+        $sdk = new Mock\Sdk();
+        $sdk->setCallback('CUSTOMER_CREDITED_VIA_PAY', [
+            'amount' => '100.00',
+            'payerVpa' => 'customer@razoraxis',
+            'payeeVpa' => $vpa->getAddress(),
+            'merchantCustomerId' => 'DEMO-CUST-1234',
+        ]);
+
+        $callbackBody = $sdk->callback();
+
+        $callbackBodyArray = json_decode($callbackBody['content'], $options = 'JSON_OBJECT_AS_ARRAY');
+
+        $request = $this->mockServer('upi_juspay')->getCallback([
+            'amount' => 1,
+            'id' => '',
+            'vpa' => ''
+        ],
+            $callbackBodyArray);
+
+        $request['server'] = array_merge($request['server'], $callbackBody['server']);
+
+        $request['raw'] = $callbackBody['content'];
+
+        $this->makeRequestAndGetContent($request);
     }
 
     public function testFailedCallbackResponse()

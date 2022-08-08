@@ -4,6 +4,13 @@ namespace RZP\Gateway\P2p\Upi\Axis\Actions;
 
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 
+/**
+ * Class UpiAction
+ * @package RZP\Gateway\P2p\Upi\Axis\Actions
+ *
+ * Constants of this class are used in RZP\Http\Controllers\GatewayController for redirecting p2p callbacks to correct
+ * controller based on callback types
+ */
 class UpiAction extends Action
 {
     const COLLECT_REQUEST_RECEIVED                  = 'COLLECT_REQUEST_RECEIVED';
