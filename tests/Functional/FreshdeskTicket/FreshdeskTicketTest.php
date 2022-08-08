@@ -498,4 +498,15 @@ class FreshdeskTicketTest extends TestCase
 
         $this->assertEquals($testData['response']['content']['description_text'], $response['description_text']);
     }
+
+    public function testFreshDeskInternalAddNote()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->cmmaAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['description'] = 'some description';
+
+        $this->startTest();
+    }
 }

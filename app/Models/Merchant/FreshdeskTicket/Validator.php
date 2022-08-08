@@ -69,7 +69,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $addNoteRules = [
-        'description'                         => 'required|string|max:1000',
+        'description'                         => 'required|string|max:4000',
         'private'                             => 'sometimes|boolean'
     ];
 

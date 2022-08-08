@@ -604,4 +604,20 @@ return [
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+
+    'testFreshDeskInternalAddNote' => [
+        'request' => [
+            'url' => '/internal/fd/ticket/3331/note',
+            'method' => 'POST',
+            'content' => [
+                'description' => 'Description',
+                'private' => false
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+            ]
+        ]
+    ]
 ];

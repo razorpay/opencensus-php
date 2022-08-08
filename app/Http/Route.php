@@ -4863,6 +4863,7 @@ class Route
         'internal_payment_authorize_refund',
         'freshdesk_update_ticket_internal',
         'internal_fd_create_ticket',
+        'internal_fd_add_note',
         'internal_fd_fetch_agent_detail_for_ticket',
         'dispute_automation',
         'care_service_cron_proxy',
@@ -12624,7 +12625,6 @@ class Route
             'merchant_bulk_update_pricing_cron',
             // crons for autoKYC'd merchants who have not been verified manually yet
             'merchant_autokyc_soft_limit',
-            'internal_fd_add_note',
             'merchant_autokyc_hard_limit',
             'merchant_autokyc_escalation',
             'partner_send_weekly_activation_summary_emails',
