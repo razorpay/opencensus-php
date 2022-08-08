@@ -14426,16 +14426,17 @@ class PayoutTest extends OAuthTestCase
         (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
             'fta_status'       => 'failed',
             'failure_reason'   => '',
-            'bank_status_code' => 'TXN_REJECTED_BENE_BANK'
+            'bank_status_code' => 'CARD_NUMBER_UNAVAILABLE'
         ]);
 
         $statusDetails = $this->getDbLastEntity('payouts_status_details', 'live');
 
-        $this->assertEquals('beneficiary_bank_rejected', $statusDetails['reason']);
-        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.', $statusDetails['description']);
+        $this->assertEquals('card_number_unavailable', $statusDetails['reason']);
+        $this->assertEquals('Payout failed as the card number is not available. Please retry', $statusDetails['description']);
 
         $payoutResponse = $payout->toArrayPublic();
-        $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);
+
+        $this->assertEquals('internal', $payoutResponse['status_details']['source']);
 
         $payoutReversedEventData = $this->testData[__FUNCTION__];
 

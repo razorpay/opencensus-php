@@ -14067,11 +14067,11 @@ return [
                 'entity' => [
                     'entity' => 'payout',
                     'status' => 'reversed',
-                    'failure_reason' => 'Transaction not permitted to beneficiary account.',
+                    'failure_reason' => 'Payout failed as the card number is not available. Please retry.',
                     'error'  => [
-                        'source' => 'beneficiary_bank',
-                        'reason' =>  'beneficiary_bank_rejected',
-                        'description' => 'Payout rejected by beneficiary bank. Please contact beneficiary bank.'
+                        'source' => 'internal',
+                        'reason' =>  'card_number_unavailable',
+                        'description' => 'Payout failed as the card number is not available. Please retry'
                     ]
                 ],
             ],

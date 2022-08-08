@@ -3010,13 +3010,10 @@ class Entity extends Base\PublicEntity
 
     public function getSourceForStatusDetails(PayoutsStatusDetails\Entity $statusDetails)
     {
-        $status = $statusDetails['status'];
+        $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason']] ?? null;
 
-        if($status!== Status::REVERSED  or $status!== Status::FAILED)
-        {
-                $source = PayoutsStatusDetails\ReasonSourceMap::$statusDetailsReasonToSourceMap[$statusDetails['reason']] ?? null;
-        }
-        else
+        // if source mapping is not present . then use the json file to get source .
+        if($source === null)
         {
             $error        = new PayoutError($this);
 
