@@ -1457,18 +1457,18 @@ class Constants
     const CART_API_AMOUNT_CHECK  =  "cart_api_amount_check";
 
     const FK_NEW_ERROR_RESPONSE  = "fk_new_error_response";
-   
+
 
     /**
      * Feature flag to allow creation of inter account test payouts
      */
     const INTER_ACCOUNT_TEST_PAYOUT = 'inter_account_test_payout';
-    
+
       /**
      * Feature flag to configure report for KFIN
      */
     const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
-    
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1931,7 +1931,6 @@ class Constants
         self::BENE_EMAIL_NOTIFICATION         => true,
         self::BENE_SMS_NOTIFICATION           => true,
         self::ALLOW_NETWORK_TOKENS            => true,
-        self::MISSED_ORDERS_PLINK             => true,
         self::DISABLE_PAYPAL_AS_BACKUP        => true,
         self::PAYOUT_ASYNC_INGRESS            => true,
         self::ONE_CLICK_CHECKOUT              => true,
@@ -2013,6 +2012,7 @@ class Constants
         self::FK_NEW_ERROR_RESPONSE           => true,
         self::NO_CUSTOM_CHECKOUT_RECURRING_CONSENT => true,
         self::CROSS_ORG_LOGIN                 => true,
+        self::MISSED_ORDERS_PLINK             => true,
         self::KFIN_MERCHANT_REPORT            => true,
     ];
 
@@ -2061,6 +2061,11 @@ class Constants
      * @var array
      */
     public static $visibleFeaturesMap = [
+        self::MISSED_ORDERS_PLINK => [
+            'feature' => self::MISSED_ORDERS_PLINK,
+            'display_name' => "Enable missed orders payment-links feature from the dashboard",
+            'documentation' => "",
+        ],
         self::NOFLASHCHECKOUT  => [
             'feature'       => self::NOFLASHCHECKOUT,
             'display_name'  => 'No Flash Checkout',

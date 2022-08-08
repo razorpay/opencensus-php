@@ -468,6 +468,11 @@ return [
             'content' => [
                 'features' => [
                     [
+                        'feature'      => 'missed_orders_plink',
+                        'value'        => false,
+                        'display_name' => "Enable missed orders payment-links feature from the dashboard",
+                    ],
+                    [
                         'feature'      => 'noflashcheckout',
                         'value'        => false,
                         'display_name' => 'No Flash Checkout'
@@ -492,17 +497,17 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    143 => array (
+                    144 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    144 => array (
+                    145 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    145 => array (
+                    146 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
@@ -656,6 +661,7 @@ return [
                 'features' => [
                     'marketplace' => '1',
                     'cred_merchant_consent' => '1',
+                    'missed_orders_plink' => '1',
                 ]
             ],
             'url' => '/merchants/me/features',
@@ -668,6 +674,12 @@ return [
         'response' => [
             'content' => [
                 'features' => [
+
+                    [
+                        'feature'      => 'missed_orders_plink',
+                        'value'        => true,
+                        'display_name' => "Enable missed orders payment-links feature from the dashboard",
+                    ],
                     [
                         'feature'      => 'noflashcheckout',
                         'value'        => false,
@@ -713,6 +725,11 @@ return [
         'response' => [
             'content' => [
                 'features' => [
+                    [
+                        'feature'      => 'missed_orders_plink',
+                        'value'        => false,
+                        'display_name' => "Enable missed orders payment-links feature from the dashboard"
+                    ],
                     [
                         'feature'      => 'noflashcheckout',
                         'value'        => false,
@@ -1479,7 +1496,7 @@ return [
                     'bepg_disable',
                     'first_data_s2s_flow',
                     'bin_issuer_validator',
-                    'offer_private_auth'
+                    'offer_private_auth',
                 ],
             ],
         ],
