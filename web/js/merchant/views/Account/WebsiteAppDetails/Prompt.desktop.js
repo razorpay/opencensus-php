@@ -12,6 +12,7 @@ function PromptDesktop({
   websiteComplianceModalVisibility,
   updateBannerAndModalVisibility,
   closeModal,
+  user,
 }) {
   const onUpdateClick = () => {
     const analyticsObj = {
@@ -66,9 +67,11 @@ function PromptDesktop({
     <div className="website-app-details-container">
       <div className="prompt-container">
         <ModalHeader title={title} />
-        <span className="prompt-modal-close">
-          <i class="i i-close" onClick={onCloseClick} />
-        </span>
+        {user.isWebsiteComplianceModalDismissible ? (
+          <span className="prompt-modal-close">
+            <i class="i i-close" onClick={onCloseClick} />
+          </span>
+        ) : null}
         <div className="prompt-description">
           According to RBI guidelines, we require the following pages on your website/app:
         </div>
@@ -89,6 +92,7 @@ function PromptDesktop({
 }
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
   websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,

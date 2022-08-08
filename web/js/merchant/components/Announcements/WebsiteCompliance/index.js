@@ -11,12 +11,17 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
 /* Renders only on dWeb */
-function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, user }) {
+function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, user, screen }) {
   const shouldShowBanner =
     isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
     isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
 
-  const nudgeType = isNudgeSoftForWebsiteCompliance() ? 'soft' : 'hard';
+  const nudgeType = isNudgeSoftForWebsiteCompliance(
+    activationData.data,
+    websiteSectionDetailsData.data,
+  )
+    ? 'soft'
+    : 'hard';
   const bannerColor = nudgeType === 'soft' ? 'warning' : 'danger';
   const bannerTitle = websiteComplianceEntryPointsData[nudgeType].title;
 
@@ -26,7 +31,7 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
       const analyticsObj = {
         objectName: 'Website wizard banner',
         actionName: 'Loaded',
-        screen: 'Home page',
+        screen,
         properties: {
           bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
           ...getCommonAnalyticsProperties(window.rzp_user),

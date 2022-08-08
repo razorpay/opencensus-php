@@ -17,17 +17,32 @@ import DashboardBanner from '../../../common/ui/DashboardBanner';
 import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
 
 const MyAccount = (props) => {
   const [isWebView, setWebView] = useState(false);
+
   const isTrustedBadge = props?.user?.isOrgAxis
     ? false
     : !isOrgFeatureExist('hide_razorpay_text_link');
+
   useEffect(() => {
     if (getMobileDetect().isWebView()) {
       setWebView(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (
+      !Object.keys(props.websiteSectionDetailsData.data).length &&
+      !props.websiteSectionDetailsData.error
+    ) {
+      props.fetchMerchantWebsiteDetails();
+    }
+  }, []);
+
+  const { websiteSectionDetailsData } = props;
+
   return (
     <>
       <div className="banner-container">
@@ -41,7 +56,12 @@ const MyAccount = (props) => {
               <NavLink to="/profile">Profile</NavLink>
             </ShowWhen>
 
-            <ShowWhen additionalCondition={(_) => false}>
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.isWebsiteComplianceFlowEnabled &&
+                websiteSectionDetailsData.data.isWebsiteSectionsApplicable
+              }
+            >
               <NavLink to="/website-app-details">Website/App details</NavLink>
             </ShowWhen>
             <ShowWhen additionalCondition={() => isTrustedBadge}>
@@ -120,4 +140,10 @@ const MyAccount = (props) => {
   );
 };
 
-export default connect((state) => ({ user: state.session.user }))(MyAccount);
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+  }),
+  { fetchMerchantWebsiteDetails },
+)(MyAccount);

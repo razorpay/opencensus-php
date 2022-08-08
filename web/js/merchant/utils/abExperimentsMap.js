@@ -393,13 +393,19 @@ export default {
     // prod experiment ids
     'Jhk9i7jzGtL2OT',
   ],
-  website_compliance_modal_exp: [
-    // beta experiment ids
-    'JylGhh8kdwbZqj',
-  ],
   website_compliance_flow_exp: [
-    // beta experiment ids
-    'JypZv2PFYYWJPg',
+    // stage
+    'K2hFpyVAkZomaH',
+
+    // prod
+    'K1WjJlJZLj3du1',
+  ],
+  website_compliance_modal_exp: [
+    // stage
+    'JylGhh8kdwbZqj',
+
+    // prod
+    'K32Ky74FqJfpT8',
   ],
   cash_advance_sidebar_position: [
     // beta

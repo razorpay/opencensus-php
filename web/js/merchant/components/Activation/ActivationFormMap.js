@@ -520,7 +520,11 @@ const businessModel = [
       },
     },
     {
-      label: '',
+      getLabel: (activation) => {
+        return (
+          activation.isNeedsClarificationMode() && activation.isOnKYCTab() && 'Business Website'
+        );
+      },
       name: 'business_website',
       placeholder: 'Enter URL',
       type: 'url',

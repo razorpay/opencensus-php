@@ -16,9 +16,8 @@ import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner
 import DashboardBanner from '../../../../common/ui/DashboardBanner';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
-import WebsiteComplianceDesktopPrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
 import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
-import { isMobileDevice } from 'merchant/components/Home/data';
+import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
 
 class KeysListContainer extends ListContainer {
   fetchEntityList() {
@@ -92,11 +91,11 @@ class KeysListContainer extends ListContainer {
       });
   };
 
-  renderPrompt = () => {
-    // Have split de-structing into multiple lines as lint was throwing prettier errors
+  componentDidUpdate() {
     const { activationData } = this.props;
     const { websiteSectionDetailsData } = this.props;
     const { websiteComplianceModalVisibility } = this.props;
+    const { user } = this.props;
 
     if (
       activationData.data &&
@@ -109,21 +108,14 @@ class KeysListContainer extends ListContainer {
         websiteComplianceModalVisibility,
       );
 
-      if (shouldShowModal) {
-        if (isMobileDevice()) {
-          this.props.openModal({
-            component: <WebsiteComplianceMobilePrompt />,
-            size: 'small',
-          });
-        } else {
-          this.props.openModal({
-            component: <WebsiteComplianceDesktopPrompt />,
-            size: 'small',
-          });
-        }
+      if (shouldShowModal && user.isWebsiteComplianceFlowEnabled) {
+        this.props.openModal({
+          component: <WebsiteComplianceMobilePrompt />,
+          size: 'small',
+        });
       }
     }
-  };
+  }
 
   render() {
     const { loading, keys } = this.props.keys;
@@ -131,13 +123,14 @@ class KeysListContainer extends ListContainer {
     const status = this.state.status;
     const hasKeyAccess = this.props.session.user.has_key_access;
     const businessWebsite = this.props.session.user.business_website;
-    const { isWebsiteInWorkflow, onWebsiteAdd, user } = this.props;
+    const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
 
     return (
       <>
         <WebsiteComplianceNudge screen="API Keys" />
         <div className="banner-container">
           <DashboardBanner />
+          <WebsiteComplianceBanner screen="API Keys" />
           <CSATSurveyBanner user={this.props.session.user} />
         </div>
         <div class="content-wrapper">
@@ -155,7 +148,6 @@ class KeysListContainer extends ListContainer {
             onWebsiteAdd={onWebsiteAdd}
           />
         </div>
-        {user.isWebsiteComplianceFlowEnabled && this.renderPrompt()}
       </>
     );
   }

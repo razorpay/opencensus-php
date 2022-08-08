@@ -11,6 +11,7 @@ function PromptMobile({
   websiteComplianceModalVisibility,
   updateBannerAndModalVisibility,
   closeModal,
+  user,
 }) {
   const onUpdateClick = () => {
     const analyticsObj = {
@@ -79,9 +80,11 @@ function PromptMobile({
           <button className="btn btn-primary" onClick={onUpdateClick}>
             Update or create page
           </button>
-          <span className="btn btn-link" onClick={onCloseClick}>
-            I'll do it later
-          </span>
+          {user.isWebsiteComplianceModalDismissible ? (
+            <span className="btn btn-link" onClick={onCloseClick}>
+              I'll do it later
+            </span>
+          ) : null}
         </div>
       </div>
     </div>
@@ -89,6 +92,7 @@ function PromptMobile({
 }
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
   websiteComplianceModalVisibility: state.websiteCompliance.bannerAndModalVisibility,

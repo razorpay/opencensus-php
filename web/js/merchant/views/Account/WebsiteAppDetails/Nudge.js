@@ -12,11 +12,13 @@ import { websiteComplianceEntryPointsData } from 'merchant/views/Account/Website
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
 
 /* renders only on mobile devices/resolutions */
 function WebsiteAppDetailsNudge({
   activationData,
   websiteSectionDetailsData,
+  fetchMerchantWebsiteDetails,
   showNotification,
   screen,
   user,
@@ -26,7 +28,12 @@ function WebsiteAppDetailsNudge({
     isNudgeSoftForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data) ||
     isNudgeHardForWebsiteCompliance(activationData.data, websiteSectionDetailsData.data);
 
-  const nudgeType = isNudgeSoftForWebsiteCompliance() ? 'soft' : 'hard';
+  const nudgeType = isNudgeSoftForWebsiteCompliance(
+    activationData.data,
+    websiteSectionDetailsData.data,
+  )
+    ? 'soft'
+    : 'hard';
 
   useEffect(() => {
     const { error } = websiteSectionDetailsData;
@@ -53,6 +60,12 @@ function WebsiteAppDetailsNudge({
       analyticsTrack({
         analyticsObj,
       });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
+      fetchMerchantWebsiteDetails();
     }
   }, []);
 
@@ -127,6 +140,7 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
       showNotification: fnShowNotification,
+      fetchMerchantWebsiteDetails,
     },
     dispatch,
   );

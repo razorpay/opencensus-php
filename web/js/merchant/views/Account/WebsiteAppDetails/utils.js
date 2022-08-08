@@ -82,15 +82,22 @@ export function getLatestNeedsClarificationComment(clarificationReasons) {
 export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianceData) {
   if (!activationData || !websiteComplianceData) return false;
 
-  let hasUrl = false;
-  // atleast one url has been received
-  if (
-    activationData.business_website ||
-    activationData.appstore_url ||
-    activationData.playstore_url
-  ) {
-    hasUrl = true;
-  }
+  const isActivated = activationData?.activated === 1;
+
+  let areSectionUrlsReceived = true;
+  if (websiteComplianceData?.status === null || Array.isArray(websiteComplianceData))
+    areSectionUrlsReceived = false;
+
+  return (
+    websiteComplianceData.isWebsiteSectionsApplicable &&
+    (!isActivated || activationData.activation_status !== 'needs_clarification') &&
+    !areSectionUrlsReceived &&
+    activationData?.isTransacted
+  );
+}
+
+export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianceData) {
+  if (!activationData || !websiteComplianceData) return false;
 
   const isActivated = activationData?.activated === 1;
 
@@ -98,14 +105,10 @@ export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianc
   if (websiteComplianceData?.status === null || Array.isArray(websiteComplianceData))
     areSectionUrlsReceived = false;
 
-  return hasUrl && !isActivated && !areSectionUrlsReceived && activationData?.isTransacted;
-}
-
-export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianceData) {
-  if (!activationData || !websiteComplianceData) return false;
-
   return (
-    activationData.live && isNudgeHardForWebsiteCompliance(activationData, websiteComplianceData)
+    websiteComplianceData.isWebsiteSectionsApplicable &&
+    (!isActivated || activationData.activation_status !== 'needs_clarification') &&
+    !areSectionUrlsReceived
   );
 }
 

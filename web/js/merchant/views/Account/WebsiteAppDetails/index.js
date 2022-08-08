@@ -16,12 +16,15 @@ import {
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
+import LoaderDots from 'common/ui/LoaderDots';
 
 function WebsiteAppDetails({
   activationData,
   websiteSectionDetailsData,
   showNotification,
   openModal,
+  fetchActivationDetails,
+  fetchMerchantWebsiteDetails,
 }) {
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -49,6 +52,20 @@ function WebsiteAppDetails({
     }
   }, [activationData, from]);
 
+  // fetch details if not present already
+  useEffect(() => {
+    if (!Object.keys(activationData.data).length && !activationData.error) {
+      fetchActivationDetails();
+    }
+  }, []);
+
+  // fetch details if not present already
+  useEffect(() => {
+    if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
+      fetchMerchantWebsiteDetails();
+    }
+  }, []);
+
   useEffect(() => {
     const { error } = websiteSectionDetailsData;
     if (error) {
@@ -68,9 +85,9 @@ function WebsiteAppDetails({
 
   if (activationData.error) return null;
 
-  const businessWebsiteUrl = activationData.business_website || '--';
-  const appStoreUrl = activationData.appstore_url || '--';
-  const playStoreUrl = activationData.playstore_url || '--';
+  const businessWebsiteUrl = activationData.data.business_website || '--';
+  const appStoreUrl = activationData.data.appstore_url || '--';
+  const playStoreUrl = activationData.data.playstore_url || '--';
 
   const getCTAText = () => {
     const { data, error } = websiteSectionDetailsData;
@@ -148,11 +165,11 @@ function WebsiteAppDetails({
   };
 
   const latestNeedsClarificationComments = getLatestNeedsClarificationComment(
-    activationData.kyc_clarification_reasons,
+    activationData.data.kyc_clarification_reasons,
   );
 
   const showShouldNeedsClatificationComments = () => {
-    if (activationData.kyc_clarification_reasons) {
+    if (activationData.data.kyc_clarification_reasons) {
       if (latestNeedsClarificationComments.length > 0) return true;
       else return false;
     } else {
@@ -170,7 +187,7 @@ function WebsiteAppDetails({
     <div className="website-app-details-container">
       <div className="section-content">
         <div className="section-header">
-          {renderStatus()}
+          {websiteSectionDetailsData.loading ? <LoaderDots /> : renderStatus()}
           <p className="text">
             Update your business information now as per RBI guidelines to avoid settlements being
             put on-hold.
@@ -178,26 +195,32 @@ function WebsiteAppDetails({
           {showShouldNeedsClatificationComments() ? (
             <div className="comment">
               {latestNeedsClarificationComments[0].reason_code}{' '}
-              <p onClick={onViewClick}>View more</p>
+              <p onClick={onViewClick} style={{ cursor: 'pointer' }}>
+                View more
+              </p>
             </div>
           ) : null}
         </div>
         <div className="section-body">
           <div>
             <span>Website</span>
-            <p>{businessWebsiteUrl}</p>
+            <p>{activationData.loading ? <LoaderDots /> : businessWebsiteUrl}</p>
           </div>
           <div>
             <span>Android app</span>
-            <p>{playStoreUrl}</p>
+            <p>{activationData.loading ? <LoaderDots /> : playStoreUrl}</p>
           </div>
           <div>
             <span>iOS app</span>
-            <p>{appStoreUrl}</p>
+            <p>{activationData.loading ? <LoaderDots /> : appStoreUrl}</p>
           </div>
         </div>
         <div className="section-footer">
-          {ctaText ? <button onClick={onButtonClick}>{ctaText}</button> : null}
+          {ctaText ? (
+            <button onClick={onButtonClick}>
+              {websiteSectionDetailsData.loading ? <LoaderDots /> : ctaText}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

@@ -890,6 +890,13 @@ export default class User {
     );
   }
 
+  get isWebsiteComplianceModalDismissible() {
+    return (
+      this.isOrgRZP &&
+      getSplitzExperimentVariant('website_compliance_modal_exp')?.variables?.result === 'on'
+    );
+  }
+
   get isWhatsNewSectionEnabled() {
     return this.getExpStatus('whats-new-dec-2020');
   }
