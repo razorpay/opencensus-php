@@ -4,8 +4,10 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Constants\Entity;
+use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity;
+use RZP\Constants\HyperTrace;
 
 class SubscriptionRegistrationController extends Controller
 {
@@ -96,7 +98,9 @@ class SubscriptionRegistrationController extends Controller
     {
         $input = Request::all();
 
-        $invoice = $this->service()->chargeToken($id, $input);
+        $invoice = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_SERVICE], function () use ($id, $input){
+            return $this->service()->chargeToken($id, $input);
+        });
 
         return ApiResponse::json($invoice);
     }

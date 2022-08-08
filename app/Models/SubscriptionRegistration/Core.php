@@ -9,6 +9,7 @@ use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
+use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -20,6 +21,7 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\CardMandate;
 use RZP\Models\PaperMandate;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
 use RZP\Models\Customer\Token;
 use RZP\Exception\LogicException;
@@ -588,7 +590,9 @@ class Core extends Base\Core
     {
         $token = null;
 
-        $idemPotentResponse = $this->checkAndProcessForIdempotencyKeyForTokenCharge($idemPotentKey);
+        $idemPotentResponse = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CHECK_IDEMPOTENCY], function () use ($idemPotentKey){
+            return $this->checkAndProcessForIdempotencyKeyForTokenCharge($idemPotentKey);
+        });
 
         if ($idemPotentResponse !== null)
         {
@@ -597,16 +601,22 @@ class Core extends Base\Core
 
         if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
         {
-            $token = $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
-                                                                                                    $this->mode);
+            $token = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant){
+                return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
+                    $this->mode);
+            });
         }
 
         if (empty($token) === true)
         {
-            $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+            $token = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN], function () use ($id, $merchant){
+                return $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
+            });
         }
 
-        $customer = $token->customer;
+        $customer = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_CUSTOMER], function () use ($token){
+            return $token->customer;
+        });
 
         $orderCurrency = 'INR';
 
@@ -638,7 +648,9 @@ class Core extends Base\Core
         );
 
         $orderCore = new Order\Core();
-        $order = $orderCore->create($orderInput, $this->merchant);
+        $order = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput){
+            return $orderCore->create($orderInput, $this->merchant);
+        });
 
         if (empty($idemPotentKey) === false)
         {
@@ -670,7 +682,9 @@ class Core extends Base\Core
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
-        $paymentData =  $paymentProcessor->process($paymentInput);
+        $paymentData = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT], function () use ($paymentProcessor, $paymentInput){
+            return $paymentProcessor->process($paymentInput);
+        });
 
         if(empty($batchId) === false)
         {

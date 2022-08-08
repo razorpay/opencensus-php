@@ -8,6 +8,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Http\BasicAuth;
 use RZP\Models\Invoice;
@@ -15,6 +16,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Customer\Token;
 use RZP\Error\PublicErrorDescription;
 use RZP\Jobs\TokenRegistrationAutoCharge;
@@ -326,7 +328,11 @@ class Service extends Base\Service
                 ]);
         }
 
-        $response =  $this->core->chargeToken($id, $input, $this->merchant, $batchId, $rowIdempotentId);
+        $response = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE], function () use ($id,
+            $input, $batchId, $rowIdempotentId)
+        {
+            return $this->core->chargeToken($id, $input, $this->merchant, $batchId, $rowIdempotentId);
+        });
 
         if($this->auth->getInternalApp() === "batch")
         {

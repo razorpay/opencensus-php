@@ -413,6 +413,10 @@ class Tracing
             'qr_payments_fetch_multiple',
             'qr_payment_fetch_for_qr_code',
             'qr_code_payment_fetch_by_id',
+
+            // recurring
+            'subscription_registration_create_links',
+            'subscription_registration_charge_token',
         ]);
     }
 
