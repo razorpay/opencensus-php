@@ -21,6 +21,8 @@ abstract class Base extends BaseCore
 
     protected $input;
 
+    protected $entity;
+
     public function __construct(array $input)
     {
         $this->app = App::getFacadeRoot();

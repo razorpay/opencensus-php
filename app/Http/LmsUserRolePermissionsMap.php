@@ -18,13 +18,16 @@ class LmsUserRolePermissionsMap
                 Permission::RBL_BANK_MID_OFFICE_MANAGE_LEAD
             ],
 
-            // BankingRole::BANK_MID_OFFICE_POC => [
-            //     Permission::RBL_BANK_MID_OFFICE
-            // ],
-            //
-            // BankingRole::BANK_MID_OFFICE_MANAGER => [
-            //    Permission::RBL_BANK_MID_OFFICE
-            //]
+            BankingRole::BANK_MID_OFFICE_POC => [
+                Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+                Permission::RBL_BANK_MID_OFFICE_EDIT_LEAD,
+            ],
+
+            BankingRole::BANK_MID_OFFICE_MANAGER => [
+                Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+                Permission::RBL_BANK_MID_OFFICE_EDIT_LEAD,
+                Permission::RBL_BANK_MID_OFFICE_MANAGE_LEAD
+            ]
         ];
 
         self::$lmsRolePermissions = $lmsRolePermissions;

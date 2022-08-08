@@ -28,6 +28,8 @@ class Event
     const PERSONAL_DETAILS_FILLED = 'personal_details_filled';
     const PROCESSING_DISCREPANCY_IN_DOCS = 'processing_discrepancy_in_doc';
     const RM_ASSIGNED = 'rm_assigned';
+    const BANK_PARTNER_ASSIGNED = 'bank_partner_assigned';
+    const BANK_PARTNER_POC_ASSIGNED = 'bank_partner_poc_assigned';
 
     public function __construct(string $name, string $type, array $properties)
     {

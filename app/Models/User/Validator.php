@@ -536,7 +536,8 @@ class Validator extends Base\Validator
         $bankingRole = (new Roles\Repository())->fetchRole($role);
 
         if ((Role::exists($role) === false) and
-            (empty($bankingRole) === true))
+            (empty($bankingRole) === true) and
+            (BankingRole::existsBankingLMSRole($role) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_USER_ROLE_INVALID,

@@ -98,6 +98,15 @@ class BankingAccountController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function downloadActivationMisForBank()
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->downloadActivationMis($input);
+
+        return ApiResponse::json($data);
+    }
+
     // End Of Bank LMS
 
     public function updateDashboard(string $id)

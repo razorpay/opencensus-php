@@ -7593,57 +7593,57 @@ class UserTest extends TestCase
         $this->assertEquals('vendor', $merchants->role);
     }
 
-    //public function testUserRegisterFoBankPocRole()
-    //{
-    //    Mail::fake();
-    //
-    //    $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
-    //
-    //    $invitation = $this->fixtures->create('invitation', [
-    //        'email'       => 'random@rbl.com',
-    //        'merchant_id' => '1DummyMerchant',
-    //        'role'        => BankingRole::BANK_MID_OFFICE_POC,
-    //        'product'     => 'banking',
-    //    ]);
-    //
-    //    $merchant = $this->getDbEntityById('merchant', '1DummyMerchant');
-    //
-    //    (new MerchantCore())->appendTag($merchant, \RZP\Models\Merchant\Constants::ENABLE_RBL_LMS_DASHBOARD);
-    //
-    //    $testData = & $this->testData[__FUNCTION__];
-    //
-    //    $testData['request']['content']['invitation'] = $invitation['token'];
-    //
-    //
-    //    $this->ba->dashboardGuestAppAuth();
-    //
-    //    $this->mockHubSpotClient('trackSignupEvent');
-    //
-    //    $this->startTest();
-    //
-    //    // Validate that invitation is accepted and deleted
-    //    $invite = \DB::table('invitations')
-    //                 ->where('id', '=', $invitation['id'])
-    //                 ->whereNull('deleted_at')
-    //                 ->first();
-    //
-    //    $this->assertNull($invite);
-    //
-    //    // User is created for given email
-    //    $user = \DB::table('users')
-    //               ->where('email', '=', 'random@rbl.com')
-    //               ->first();
-    //
-    //    $this->assertNotNull($user);
-    //
-    //    // User is attached to given merchant on given role
-    //    $merchants = DB::table('merchant_users')
-    //                   ->where('user_id', '=', $user->id)
-    //                   ->where('merchant_id', '1DummyMerchant')
-    //                   ->first();
-    //
-    //    $this->assertEquals(BankingRole::BANK_MID_OFFICE_POC, $merchants->role);
-    //}
+    public function testUserRegisterFoBankPocRole()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant',[ 'id' => '1DummyMerchant' ]);
+
+        $invitation = $this->fixtures->create('invitation', [
+            'email'       => 'random@rbl.com',
+            'merchant_id' => '1DummyMerchant',
+            'role'        => BankingRole::BANK_MID_OFFICE_POC,
+            'product'     => 'banking',
+        ]);
+
+        $merchant = $this->getDbEntityById('merchant', '1DummyMerchant');
+
+        (new MerchantCore())->appendTag($merchant, \RZP\Models\Merchant\Constants::ENABLE_RBL_LMS_DASHBOARD);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invitation'] = $invitation['token'];
+
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        // Validate that invitation is accepted and deleted
+        $invite = \DB::table('invitations')
+                     ->where('id', '=', $invitation['id'])
+                     ->whereNull('deleted_at')
+                     ->first();
+
+        $this->assertNull($invite);
+
+        // User is created for given email
+        $user = \DB::table('users')
+                   ->where('email', '=', 'random@rbl.com')
+                   ->first();
+
+        $this->assertNotNull($user);
+
+        // User is attached to given merchant on given role
+        $merchants = DB::table('merchant_users')
+                       ->where('user_id', '=', $user->id)
+                       ->where('merchant_id', '1DummyMerchant')
+                       ->first();
+
+        $this->assertEquals(BankingRole::BANK_MID_OFFICE_POC, $merchants->role);
+    }
 
     public function testUserRegisterSendSignupOtpViaEmailEmailExists()
     {

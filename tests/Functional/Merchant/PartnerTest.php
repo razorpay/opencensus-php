@@ -1532,7 +1532,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);
 
-        //$partnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_MERCHANT_ID, [], BankingRole::BANK_MID_OFFICE_POC);
+        $partnerUser = $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_MERCHANT_ID, [], BankingRole::BANK_MID_OFFICE_POC);
 
         $this->createSubmerchantAndUser();
 
@@ -1596,9 +1596,9 @@ class PartnerTest extends OAuthTestCase
             'entity_type' => 'merchant',
         ]);
 
-        //$this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID, $partnerUser->getId());
+        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID, $partnerUser->getId());
 
-        $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);
+        $this->ba->addXBankLMSOriginHeader();
 
         $this->ba->addXBankLMSOriginHeader();
 

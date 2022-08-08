@@ -8,6 +8,11 @@ use RZP\Http\BasicAuth\Type as AuthType;
 
 class Fetch extends BankingAccount\Fetch
 {
+
+    const LEAD_RECEIVED_TO_DATE         = 'lead_received_to_date';
+    const LEAD_RECEIVED_FROM_DATE       = 'lead_received_from_date';
+    const ACTIVATION_ACCOUNT_TYPE       = 'activation_account_type';
+
     const RULES = [
         self::DEFAULTS           => [
             PublicEntity::MERCHANT_ID                    => 'sometimes|unsigned_id',
@@ -27,7 +32,11 @@ class Fetch extends BankingAccount\Fetch
             BankingAccount\Entity::ACCOUNT_TYPE => 'sometimes|string',
             BankingAccount\Entity::CHANNEL      => 'sometimes|string|custom',
             Entity::FILTER_MERCHANTS            => 'sometimes|array',
-            Entity::BANK_POC_USER_ID            => 'sometimes|string|size:14'
+            Entity::BANK_POC_USER_ID            => 'sometimes|string|size:14',
+            Entity::BUSINESS_CATEGORY           => 'sometimes|string',
+            self::LEAD_RECEIVED_FROM_DATE       => 'sometimes|integer',
+            self::LEAD_RECEIVED_TO_DATE         => 'sometimes|integer',
+            self::ACTIVATION_ACCOUNT_TYPE       => 'sometimes|string',
         ],
         AuthType::PRIVILEGE_AUTH => [
             self::EXPAND_EACH                                        => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments',
@@ -95,7 +104,11 @@ class Fetch extends BankingAccount\Fetch
             BankingAccount\Entity::CHANNEL,
             Entity::FILTER_MERCHANTS,
             Entity::BANK_POC_USER_ID,
+            Entity::BUSINESS_CATEGORY,
+            self::LEAD_RECEIVED_FROM_DATE,
+            self::LEAD_RECEIVED_TO_DATE,
             self::EXPAND_EACH,
+            self::ACTIVATION_ACCOUNT_TYPE,
         ],
     ];
 

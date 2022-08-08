@@ -135,6 +135,10 @@ class Role
 
             case Product::BANKING:
 
+                if (BankingRole::existsBankingLMSRole($role)) {
+                    return true;
+                }
+
                 $roleEntity = (new Roles\Repository())->fetchRole($role);
 
                 if(empty($roleEntity))

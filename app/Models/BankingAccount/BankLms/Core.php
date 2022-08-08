@@ -10,6 +10,8 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankAccount\Fetch;
+use RZP\Models\BankingAccount\Activation\Notification\Event;
 
 class Core extends BankingAccount\Core
 {
@@ -29,7 +31,7 @@ class Core extends BankingAccount\Core
      */
     public function fetchMultipleBankingAccountEntity(array $input, merchant\Entity $partnerBankMerchant): PublicCollection
     {
-        $input = $this->AddMandatoryFilters($partnerBankMerchant, $input);
+        $input = $this->addMandatoryFilters($partnerBankMerchant, $input);
 
         return $this->repository->fetchMultipleEntityForBank($input);
     }
@@ -66,17 +68,21 @@ class Core extends BankingAccount\Core
 
 
     /**
-     * @param Merchant\Entity $partnerBank
-     * @param Merchant\Entity $subMerchant
+     * @param Merchant\Entity       $partnerBank
+     * @param BankingAccount\Entity $bankingAccount
      *
      * @return array
-     * @throws LogicException
      * @throws BadRequestException
      * @throws BadRequestValidationFailureException
+     * @throws LogicException
      */
-    public function attachCaApplicationMerchantToBankPartner(Merchant\Entity $partnerBank, Merchant\Entity $subMerchant): array
+    public function attachCaApplicationMerchantToBankPartner(Merchant\Entity $partnerBank, BankingAccount\Entity $bankingAccount): array
     {
-        return (new Merchant\Core())->attachSubMerchantToBankCaPartner($partnerBank, $subMerchant);
+        $response =  (new Merchant\Core())->attachSubMerchantToBankCaPartner($partnerBank, $bankingAccount->merchant);
+
+        $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_ASSIGNED, Event::INFO, [Constants::PARTNER_MERCHANT_ID => $partnerBank->getId()]);
+
+        return $response;
     }
 
     /**
@@ -94,7 +100,7 @@ class Core extends BankingAccount\Core
      * @return array
      * @throws BadRequestException
      */
-    private function AddMandatoryFilters(Merchant\Entity $partnerBank, array $params): array
+    private function addMandatoryFilters(Merchant\Entity $partnerBank, array $params): array
     {
         $subMerchantIds = $this->repository->fetchSubMerchantIdsForPartnerBank($partnerBank);
 
@@ -107,9 +113,32 @@ class Core extends BankingAccount\Core
         return $params;
     }
 
+    /**
+     * @param Merchant\Entity $partnerBank
+     * @param array           $input
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     */
+    public function downloadActivationMis(Merchant\Entity $partnerBank, array $input): array
+    {
+        $input =  $this->addMandatoryFilters($partnerBank, $input);
+
+        $input[Fetch::COUNT] = 100;
+
+        $misType = array_pull($input, 'mis_type');
+
+        $misProcessor = BankingAccount\Activation\MIS\Factory::getProcessor($misType, $input, 'banking_account_bank_lms');
+
+        return $misProcessor->generate();
+    }
+
     public function assignBankPartnerPocToApplication($bankingAccount, $bankPocUserId)
     {
         (new BankingAccount\Activation\Detail\Core())->assignBankPartnerPocToApplication($bankingAccount->bankingAccountActivationDetails, $bankPocUserId);
+
+        $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_POC_ASSIGNED);
 
         return $bankingAccount->reload();
     }

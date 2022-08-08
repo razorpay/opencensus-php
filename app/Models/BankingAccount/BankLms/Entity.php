@@ -150,7 +150,7 @@ class Entity extends BankingAccount\Entity
 
     public function setPublicBankPocNameAttribute(array & $array)
     {
-        $bankPocUser = $this->bankingAccountActivationDetails->first()->getBankPOCUser();
+        $bankPocUser = $this->bankingAccountActivationDetails->getBankPOCUser();
 
         if(empty($bankPocUser))
         {

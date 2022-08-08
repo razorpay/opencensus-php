@@ -16,6 +16,7 @@ use RZP\Exception;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Feature;
 use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Models\User\AxisUserRole;
@@ -26,6 +27,7 @@ use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
+use RZP\Mail\Invitation\Razorpayx\BankLmsInvite as BankLmsInvite;
 use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
 use RZP\Trace\Tracer;
 use RZP\Tests\P2p\Service\Base\Traits;
@@ -478,7 +480,12 @@ class Core extends Base\Core
         }
         elseif ($product === Product::BANKING)
         {
-            $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $invitation->getRole());
+            $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::RBL_BANK_LMS_DASHBOARD]);
+
+            if (empty($merchantIds) === false && $this->merchant->getId() === $merchantIds[0])
+                $inviteMailer = new BankLmsInvite($invitation->getId(), $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $invitation->getRole());
+            else
+                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $invitation->getRole());
 
             Mail::queue($inviteMailer);
         }

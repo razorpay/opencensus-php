@@ -103,10 +103,7 @@ class Validator extends Base\Validator
 
             $roleEntity = (new Roles\Repository())->fetchRole($role);
 
-            $dashboardRoles = ( empty($roleEntity) === false) ? [ $role ] : [];
-
-            //Todo: BANK_LMS
-            //$dashboardRoles = ( empty($roleEntity) === false and !in_array($role, User\BankingRole::$rblBankCaManagementRoles)) ? [ $role ] : [];
+            $dashboardRoles = ( empty($roleEntity) === false and !in_array($role, User\BankingRole::$rblBankCaManagementRoles)) ? [ $role ] : [];
         }
         else
         {
@@ -118,11 +115,10 @@ class Validator extends Base\Validator
             $dashboardRoles = array_merge($dashboardRoles, User\Role::RBL_ROLES);
         }
 
-        // Todo: BANK_LMS
-        //if ($merchant->isTagAdded(Merchant\Constants::ENABLE_RBL_LMS_DASHBOARD) === true)
-        //{
-        //    $dashboardRoles = User\BankingRole::$rblBankCaManagementRoles;
-        //}
+        if ($merchant->isTagAdded(Merchant\Constants::ENABLE_RBL_LMS_DASHBOARD) === true)
+        {
+            $dashboardRoles = User\BankingRole::$rblBankCaManagementRoles;
+        }
 
         $vendorPortalMerchantId = app('config')->get('applications.vendor_payments.vendor_portal_merchant_id');
 

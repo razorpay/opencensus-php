@@ -6,6 +6,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\BankLms\Fetch;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
@@ -72,11 +73,11 @@ class Repository extends BankingAccount\Repository
     /**
      * @throws BadRequestException
      */
-    public function fetchSubMerchantForPartnerBank(Merchant\Entity $partnerBank): PublicCollection
+    public function fetchSubMerchantForPartnerBank(Merchant\Entity $partnerBank, array $params = []): PublicCollection
     {
         $appIds = (new Merchant\Core())->getPartnerApplicationIds($partnerBank);
 
-        return $this->repo->merchant->fetchSubmerchantsByAppIds($appIds);
+        return $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
     }
 
     /**
@@ -86,7 +87,15 @@ class Repository extends BankingAccount\Repository
     {
         $subMerchants = $this->fetchSubMerchantForPartnerBank($partnerBank);
 
-        return $subMerchants->pluck(BankingAccount\Entity::ID)->toArray();
+        return $subMerchants->pluck(Merchant\Entity::ID)->toArray();
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function fetchSubMerchantForPartnerAndSubMerchantId(Merchant\Entity $partnerBank, Merchant\Entity $subMerchant): PublicCollection
+    {
+        return $this->fetchSubMerchantForPartnerBank($partnerBank, [PublicEntity::MERCHANT_ID => [$subMerchant->getId()]]);
     }
 
     public function addQueryParamFilterMerchants($query, $params)
@@ -113,5 +122,54 @@ class Repository extends BankingAccount\Repository
         $filterBankPocUserId = $params[Entity::BANK_POC_USER_ID];
 
         $query->where($bankPocUserId, $filterBankPocUserId);
+    }
+
+    public function addQueryParamLeadReceivedFromDate($query, $params)
+    {
+        return $query->whereExists(function ($q) use ($params) {
+
+            $filterFromDate = $params[Fetch::LEAD_RECEIVED_FROM_DATE];
+            $bankingAccountStateTable = $this->repo->banking_account_state->getTableName();
+            $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(BankingAccount\State\Entity::BANKING_ACCOUNT_ID);
+            $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+            $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(BankingAccount\State\Entity::STATUS);
+            $bankingAccountStateCreatedAtColumn = $this->repo->banking_account_state->dbColumn(BankingAccount\State\Entity::CREATED_AT);
+
+            $q->select('*')
+                ->from($bankingAccountStateTable)
+                ->where($bankingAccountStateStatusColumn, '=', BankingAccount\Status::INITIATED)
+                ->where($bankingAccountStateCreatedAtColumn, '>=', $filterFromDate)
+                ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn);
+        });
+    }
+
+    public function addQueryParamLeadReceivedToDate($query, $params)
+    {
+        return $query->whereExists(function ($q) use ($params) {
+
+            $filterToDate = $params[Fetch::LEAD_RECEIVED_TO_DATE];
+            $bankingAccountStateTable = $this->repo->banking_account_state->getTableName();
+            $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(BankingAccount\State\Entity::BANKING_ACCOUNT_ID);
+            $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+            $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(BankingAccount\State\Entity::STATUS);
+            $bankingAccountStateCreatedAtColumn = $this->repo->banking_account_state->dbColumn(BankingAccount\State\Entity::CREATED_AT);
+
+            $q->select('*')
+                ->from($bankingAccountStateTable)
+                ->where($bankingAccountStateStatusColumn, '=', BankingAccount\Status::INITIATED)
+                ->where($bankingAccountStateCreatedAtColumn, '<=', $filterToDate)
+                ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn);
+        });
+    }
+
+    public function addQueryParamActivationAccountType($query, $params)
+    {
+        $bankingAccountStateStatusColumn = $this->repo->banking_account_activation_detail->dbColumn(BankingAccount\Activation\Detail\Entity::ACCOUNT_TYPE);
+        $filterActivationAccountType = $params[Fetch::ACTIVATION_ACCOUNT_TYPE];
+        
+        $this->joinQueryActivationDetail($query);
+        $query->select($this->dbColumn('*'));
+
+        return $query->where($bankingAccountStateStatusColumn, $filterActivationAccountType);
     }
 }

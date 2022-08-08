@@ -27,6 +27,8 @@ class Validator extends Base\Validator
 
     const ASSIGN_BANK_PARTNER_POC_TO_APPLICATION = 'assign_bank_partner_poc_to_application';
 
+    const DOWNLOAD_MIS_FROM_PARTNER_BANK = 'download_mis_from_partner_bank';
+
     protected static $createBankCaOnboardingPartnerTypeRules = [
         PublicEntity::MERCHANT_ID                 => 'required|alpha_num|size:14',
         \RZP\Models\Merchant\Entity::PARTNER_TYPE => 'required|string|in:bank_ca_onboarding_partner',
@@ -41,7 +43,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $assignBankPartnerPocToApplicationRules = [
-        BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'required|string|size:14'
+        BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'required|alpha_num|size:14'
+    ];
+
+    protected static $downloadMisFromPartnerBankRules = [
+        Constants::MIS_TYPE => 'required|string|in:leads',
+        BankingAccount\Entity::STATUS => 'sometimes|string|in:initiated,processing,processed,cancelled,unserviceable,rejected,archived',
+        BankingAccount\Entity::SUB_STATUS => 'sometimes|string',
+        BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'sometimes|alpha_num|size:14'
     ];
 
     /**
@@ -65,9 +74,9 @@ class Validator extends Base\Validator
      */
     public function validateMerchantIsAttachedToPartner(Merchant\Entity $merchant, Merchant\Entity $partnerBank)
     {
-        $subMerchantIds = (new Repository())->fetchSubMerchantIdsForPartnerBank($partnerBank);
+        $subMerchantIds = (new Repository())->fetchSubMerchantForPartnerAndSubMerchantId($partnerBank, $merchant);
 
-        if (!in_array($merchant->getId(), $subMerchantIds))
+        if (count($subMerchantIds) === 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR, null, null, "Merchant is Not attached to CA Bank Partner Merchant");

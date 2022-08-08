@@ -4068,6 +4068,44 @@ return [
         ],
     ],
 
+    'testBankLmsEndToEndForBusinessCategory' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLmsEndToEndForLeadReceivedDateFilters' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBankLmsEndToEndForFetchById' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
@@ -4134,6 +4172,22 @@ return [
                 'items'  => [],
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testBankingAccountLeadsMISDownloadByBank' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/activation/mis/download',
+            'method'  => 'GET',
+            'content' => [
+                'mis_type' => 'leads',
+                'assignee_team' => 'bank'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
         ],
     ],
 

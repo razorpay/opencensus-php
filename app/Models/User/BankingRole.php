@@ -138,10 +138,7 @@ class BankingRole
 
     public static function getAllRoles(): array
     {
-        //Todo: BANK_LMS
-        //$bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles, self::$rblBankCaManagementRoles);
-
-        $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles);
+        $bankingRoles = array_merge(self::$defaultRoles, self::$workflowRoles, self::$axisRoles, self::$rblBankCaManagementRoles);
 
         return $bankingRoles;
     }
@@ -154,5 +151,10 @@ class BankingRole
     public static function getDefaultRoles(): array
     {
         return self::$defaultRoles;
+    }
+
+    public static function existsBankingLMSRole($role): bool
+    {
+        return in_array($role, self::$rblBankCaManagementRoles, true);
     }
 }

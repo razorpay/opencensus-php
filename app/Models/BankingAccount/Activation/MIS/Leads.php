@@ -129,13 +129,15 @@ class Leads extends Base
     }
 
 
-    public function __construct(array $input)
+    public function __construct(array $input, string $entity = 'banking_account')
     {
         $timestamp = Carbon::createFromTimestamp(time(), Timezone::IST)->format('Y-m-d--H-i');
 
         $this->fileName = "CA-Leads-MIS-" . $timestamp;
 
         $this->fileType = 'banking_account_leads';
+
+        $this->entity = $entity;
 
         parent::__construct($input);
 
@@ -149,12 +151,19 @@ class Leads extends Base
 
     public function getFileInput()
     {
-        $bankingAccounts = $this->repo->banking_account->fetch($this->input);
+        $entity = $this->entity;
+
+        $bankingAccounts = $this->repo->$entity->fetch($this->input);
 
         $fileInput = [];
 
         foreach ($bankingAccounts as $bankingAccount)
         {
+            if (get_parent_class($bankingAccount) === BankingAccount\Entity::Class)
+            {
+                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
+            }
+
             $bankAccountType = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE];
 
             $zeroAmb = ($bankAccountType === ActivationDetail\Validator::ZERO_BALANCE) ? 'Yes' : 'No';

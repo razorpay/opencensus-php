@@ -5,13 +5,15 @@ namespace RZP\Models\BankingAccount\Activation\Notification;
 
 use Mail;
 
-use Razorpay\Trace\Logger as Trace;
+use Monolog\Logger;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\OpsSubscriber;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\SpocSubscriber;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\HubspotSubscriber;
+use RZP\Models\BankingAccount\Activation\Notification\Subscriber\MidOfficeManagerSubscriber;
+use RZP\Models\BankingAccount\Activation\Notification\Subscriber\MidOfficePocSubscriber;
 use RZP\Models\BankingAccount\Activation\Notification\Subscriber\SalesforceSubscriber;
 
 class Notifier extends Base\Core
@@ -33,6 +35,8 @@ class Notifier extends Base\Core
         $spocSubscriber = new SpocSubscriber();
         $opsSubscriber = new OpsSubscriber();
         $hubspotSubscriber = new HubspotSubscriber();
+        $bankMidOfficeManagerSubscriber = new MidOfficeManagerSubscriber();
+        $bankMidOfficePocSubscriber = new MidOfficePocSubscriber();
         $salesforceSubscriber = new SalesforceSubscriber();
 
         return [
@@ -64,6 +68,12 @@ class Notifier extends Base\Core
             ],
             Event::RM_ASSIGNED => [
                 $hubspotSubscriber
+            ],
+            Event::BANK_PARTNER_ASSIGNED => [
+                $bankMidOfficeManagerSubscriber
+            ],
+            Event::BANK_PARTNER_POC_ASSIGNED => [
+                $bankMidOfficePocSubscriber
             ]
         ];
     }
@@ -146,7 +156,7 @@ class Notifier extends Base\Core
         {
             $this->trace->traceException(
                 $ex,
-                Trace::ERROR,
+                Logger::ERROR,
                 TraceCode::BANKING_ACCOUNT_EVENT_NOTIFY_FAILED,
                 [
                     'banking_account_id' => $bankingAccount->getId(),

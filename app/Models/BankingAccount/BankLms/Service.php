@@ -52,6 +52,7 @@ class Service extends BankingAccount\Service
      * @throws BadRequestValidationFailureException
      * @throws LogicException
      * @throws BadRequestException
+     * To be used by Admin
      */
     public function attachCaApplicationMerchantToBankPartnerBulk(array $input): array
     {
@@ -78,7 +79,7 @@ class Service extends BankingAccount\Service
 
         $bankingAccount = $this->repo->banking_account->findByPublicId($input[BankingAccount\Entity::BANKING_ACCOUNT_ID]);
 
-        return $this->core->attachCaApplicationMerchantToBankPartner($this->partnerBankMerchant, $bankingAccount->merchant);
+        return $this->core->attachCaApplicationMerchantToBankPartner($this->partnerBankMerchant, $bankingAccount);
     }
 
     /**
@@ -173,4 +174,18 @@ class Service extends BankingAccount\Service
 
         return $entities->toArrayCaPartnerBankPoc();
     }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException|BadRequestValidationFailureException
+     */
+    public function downloadActivationMis(array $input): array
+    {
+        $this->validator->validateInput(Validator::DOWNLOAD_MIS_FROM_PARTNER_BANK, $input);
+
+        return $this->core->downloadActivationMis($this->partnerBankMerchant, $input);
+    }
+
 }
