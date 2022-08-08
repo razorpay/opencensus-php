@@ -24333,7 +24333,7 @@ class PayoutTest extends OAuthTestCase
             $createdAt = Carbon::createFromTimestamp(
                     $currentTime,
                     Timezone::IST)
-                    ->subSeconds(900 - $interval)
+                    ->subSeconds(2700 - $interval)
                     ->getTimestamp();
 
             $interval = $interval + 10 ;
@@ -24348,7 +24348,13 @@ class PayoutTest extends OAuthTestCase
         for ($i = 0; $i < 7; $i++)
         {
             $id = random_alphanum_string(14);
-            $this->fixtures->on('live')->create('bank_transfer', ['id' => $id, 'utr' => $utr[$i]]);
+            $this->fixtures->on('live')->create('bank_transfer',
+                [
+                    'id'            => $id,
+                    'utr'           => $utr[$i],
+                    'amount'        => 1,
+                    'payee_account' => 3434957265741928,
+                ]);
         }
 
         $this->ba->cronAuth('live');
@@ -24396,7 +24402,7 @@ class PayoutTest extends OAuthTestCase
             $createdAt = Carbon::createFromTimestamp(
                 $currentTime,
                 Timezone::IST)
-                ->subSeconds(900 - $interval)
+                ->subSeconds(2700 - $interval)
                 ->getTimestamp();
 
             $interval = $interval + 10 ;
@@ -24410,7 +24416,13 @@ class PayoutTest extends OAuthTestCase
         for ($i = 0; $i < 8; $i++)
         {
             $id = random_alphanum_string(14);
-            $this->fixtures->on('live')->create('bank_transfer', ['id' => $id, 'utr' => $utr[$i]]);
+            $this->fixtures->on('live')->create('bank_transfer',
+                [
+                    'id'            => $id,
+                    'utr'           => $utr[$i],
+                    'amount'        => 1,
+                    'payee_account' => 3434957265741928,
+                ]);
         }
 
         $this->ba->cronAuth('live');

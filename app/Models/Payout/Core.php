@@ -129,6 +129,7 @@ class Core extends Base\Core
     const UNSUCCESSFUL_ICICI_TEST_PAYOUTS    = 'unsuccessful_ICICI_test_payouts';
     const NARRATION_ICICI                    = 'ICICI Test Payout';
     const NARRATION_YESB                     = 'YESB Test Payout';
+    const PAYEE_ACCOUNT_NUMBER               = 3434957265741928;
 
     /**
      * @var Mutex
@@ -5875,14 +5876,16 @@ class Core extends Base\Core
         $countOfDelayedFundLoading      = 0;
 
         // threshold time is in minutes
-        $thresholdForReceivingCallback  = 10;
+        $thresholdForReceivingCallback  = 40;
+
+        $payeeAccountNumber = self::PAYEE_ACCOUNT_NUMBER;
 
         foreach ($testPayouts as $testPayout)
         {
             $utr          = $testPayout->getUtr();
             $processedAt  = $testPayout->getProcessedAt();
 
-            $bankTransfer = $this->repo->bank_transfer->findByUtr($utr);
+            $bankTransfer = $this->repo->bank_transfer->findByUtrAndPayeeAccountAndAmount($utr,$payeeAccountNumber,100);
 
             if ($bankTransfer !== null)
             {

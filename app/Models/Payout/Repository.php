@@ -2443,12 +2443,12 @@ class Repository extends Base\Repository
         $startTime = Carbon::createFromTimestamp(
             $currentTime,
             Timezone::IST)
-            ->subMinutes(15)
+            ->subMinutes(45)
             ->getTimestamp();
         $endTime = Carbon::createFromTimestamp(
             $currentTime,
             Timezone::IST)
-            ->subMinutes(10)
+            ->subMinutes(40)
             ->getTimestamp();
 
 
