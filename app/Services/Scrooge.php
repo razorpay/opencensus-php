@@ -983,7 +983,16 @@ class Scrooge
         switch ($publicErrorCode)
         {
             case ErrorCode::BAD_REQUEST_ERROR:
-                $args = [constant(ErrorCode::class . '::' . $internalErrorCode)];
+                switch ($internalErrorCode)
+                {
+                    case ErrorCode::BAD_REQUEST_ONLY_INSTANT_REFUND_SUPPORTED:
+                    case ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK:
+                        $args = [constant(ErrorCode::class . '::' . $internalErrorCode), null, null, $publicErrorMessage];
+                        break;
+                    default:
+                        $args = [constant(ErrorCode::class . '::' . $internalErrorCode)];
+                        break;
+                }
                 break;
 
             case ErrorCode::SERVER_ERROR:
