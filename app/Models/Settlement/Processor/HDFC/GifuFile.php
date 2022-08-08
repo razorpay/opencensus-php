@@ -142,7 +142,7 @@ class GifuFile extends Base\BaseGifuFile
             $dataAdd = [
                 'A/C No'        =>  $accountNumber,
                 'D/C'           =>  'C',
-                'AMT'           =>  number_format($amount,2),
+                'AMT'           =>  number_format($amount,2,'.',''),
                 'NARRATION'     =>  substr($narration,0,40),
                 'BR CODE'       =>  $brCode,
                 'Currency'      =>  $currency,
@@ -176,7 +176,7 @@ class GifuFile extends Base\BaseGifuFile
         $dataDebit = [
             'A/C No'        => $poolAcNo,
             'D/C'           => 'D',
-            'AMT'           => number_format($this->totalAmount,2),
+            'AMT'           => number_format($this->totalAmount,2,'.',''),
             'NARRATION'     => 'GIB Settlement_'.$narrationDate,
             'BR CODE'       => $brCodeForPool,
             'Currency'      => 1,

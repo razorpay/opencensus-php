@@ -2730,7 +2730,7 @@ class SettlementTest extends TestCase
                 'suspended_at' => null
             ]);
 
-            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId]);
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId, 'balance' => 5000]);
 
             $this->fixtures->create(
                 'bank_account',
@@ -2760,7 +2760,7 @@ class SettlementTest extends TestCase
                     'captured_at' => $capturedAt,
                     'method'      => 'card',
                     'merchant_id' => $merchantId,
-                    'amount'      => 10000,
+                    'amount'      => 100000,
                     'created_at'  => $createdAt,
                     'updated_at'  => $createdAt + 10
                 ]
