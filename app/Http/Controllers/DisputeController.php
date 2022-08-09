@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Models\Dispute\Chargeback\Service as DisputeChargebackService;
 
 class DisputeController extends Controller
@@ -22,6 +23,21 @@ class DisputeController extends Controller
     public function get(string $id)
     {
         $response = $this->service()->fetch($id, $this->input);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingDisputeDetailsFromDisputeId();
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::DISPUTE_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($response);
     }
@@ -58,6 +74,21 @@ class DisputeController extends Controller
         $input = Request::all();
 
         $disputes = $this->service()->fetchMultiple($input);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingDisputeDetails($input);
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::DISPUTE_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($disputes);
     }

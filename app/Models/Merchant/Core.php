@@ -66,6 +66,7 @@ use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\Attribute;
 use RZP\Models\Order;
 use RZP\Models\Adjustment;
+use RZP\Models\Payment\Refund;
 use RZP\Jobs\MerchantHoldFundsSync;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Base\PublicCollection;
@@ -2232,6 +2233,8 @@ class Core extends Base\Core
         $this->saveAndNotify($merchant);
 
         $this->pushSelfServeActionForAnalyticsForMerchantConfigUpdate($input, $merchant);
+
+        $this->pushSelfServeActionForAnalyticsForEnablingInstantRefund($input, $merchant);
 
         return $merchant;
     }
@@ -8402,6 +8405,21 @@ class Core extends Base\Core
 
         if (isset($segmentProperties[SegmentConstants::SELF_SERVE_ACTION]) === true)
         {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $segmentProperties, $segmentEventName
+            );
+        }
+    }
+
+    private function pushSelfServeActionForAnalyticsForEnablingInstantRefund($input, $merchant)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        if ((isset($input[Entity::DEFAULT_REFUND_SPEED]) === true) and
+            ($input[Entity::DEFAULT_REFUND_SPEED] === Refund\Constants::OPTIMUM))
+        {
+            $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Enable Instant Refund';
+
             $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, $segmentEventName
             );

@@ -25,6 +25,21 @@ class OrderController extends Controller
 
         $data = $this->service()->fetchMultiple($input);
 
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingOrderDetails($input);
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::ORDER_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
+
         return ApiResponse::json($data);
     }
 
@@ -42,6 +57,21 @@ class OrderController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fetch($id, $input);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingOrderDetailsFromOrderId();
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::ORDER_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($data);
     }

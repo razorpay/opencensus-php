@@ -1921,6 +1921,11 @@ class BasicAuth
         return ($this->internalApp === 'reminders');
     }
 
+    public function isMerchantDashboardApp(): bool
+    {
+        return ($this->getInternalApp() === 'merchant_dashboard');
+    }
+
 // --------------------- Getters Ends ------------------------------------------
 
 // --------------------- Setters -----------------------------------------------
@@ -2771,6 +2776,11 @@ class BasicAuth
     public function getProduct(): string
     {
         return $this->product;
+    }
+
+    public function isProductPrimary(): bool
+    {
+        return ($this->getRequestOriginProduct() === Product::PRIMARY);
     }
 
     /**

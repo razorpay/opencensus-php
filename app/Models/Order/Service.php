@@ -25,6 +25,8 @@ use RZP\Models\Offer;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 
 class Service extends Base\Service
 {
@@ -885,5 +887,59 @@ class Service extends Base\Service
         }
 
        return (new Core)->internalCreateOrderRelations($input);
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingOrderDetails($input)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = $this->getSelfServeActionForFetchingOrderDetail($input);
+
+        if (isset($segmentProperties[SegmentConstants::SELF_SERVE_ACTION]) === true)
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $this->merchant, $segmentProperties, $segmentEventName
+            );
+        }
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingOrderDetailsFromOrderId()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Order Details Searched';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function getSelfServeActionForFetchingOrderDetail($input)
+    {
+        if ((isset($input[Entity::RECEIPT]) === true) or
+            (isset($input[Entity::NOTES]) === true))
+        {
+            return 'Order Details Searched';
+        }
+
+        if (isset($input[Entity::STATUS]) === true)
+        {
+            return 'Order Details Filtered';
+        }
     }
 }

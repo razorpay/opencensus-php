@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use View;
 use ApiResponse;
 use Request as Req;
+use RZP\Trace\TraceCode;
 use Illuminate\Http\Request;
 
 use RZP\Exception\BadRequestException;
@@ -14,6 +15,21 @@ class BatchController extends Controller
     public function createBatch()
     {
         $result = $this->service()->createBatch($this->input);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForBatchUpload();
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::BATCH_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($result);
     }
@@ -28,6 +44,21 @@ class BatchController extends Controller
     public function getBatchById($id)
     {
         $result = $this->service()->getBatchById($id);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingBatchDetailsFromBatchId();
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::BATCH_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($result);
     }

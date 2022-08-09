@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
@@ -19,7 +20,9 @@ use RZP\Base\RuntimeManager;
 use RZP\Models\Dispute\Reason;
 use RZP\Models\{Base, Payment};
 use RZP\Error\PublicErrorDescription;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Services\Segment\Constants as SegmentConstants;
 
 class Service extends Base\Service
 {
@@ -996,4 +999,74 @@ class Service extends Base\Service
 
     }
 
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingDisputeDetails($input)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = $this->getSelfServeActionForFetchingDisputeDetail($input);
+
+        if (isset($segmentProperties[SegmentConstants::SELF_SERVE_ACTION]) === true)
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $this->merchant, $segmentProperties, $segmentEventName
+            );
+        }
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingDisputeDetailsFromDisputeId()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Dispute Details Searched';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function getSelfServeActionForFetchingDisputeDetail($input)
+    {
+        if (isset($input[Entity::PAYMENT_ID]) === true)
+        {
+            return 'Dispute Details Searched';
+        }
+
+        if ((isset($input[Entity::PHASE]) === true) or
+            (isset($input[Entity::STATUS]) === true) or
+            ((isset($input[Merchant\Constants::FROM]) === true) and
+            (isset($input[Merchant\Constants::TO]) === true) and
+            ($this->checkDurationInterval($input[Merchant\Constants::FROM], $input[Merchant\Constants::TO]) === true)))
+        {
+            return 'Dispute Details Filtered';
+        }
+    }
+
+    private function checkDurationInterval($from, $to)
+    {
+        //By default duration is set as Past 90 days for Disputes in the Transactions Tab in PG Merchant Dashboard
+        //Timestamp difference for this duration is 7862399.
+        //We have to trigger the event whenever the duration is changed by the merchant.
+        if (($to - $from == '7862399') and
+            ($to == Carbon::today(Timezone::IST)->endOfDay()->getTimestamp()))
+        {
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Exception\ServerNotFoundException;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Request\Service as MerchantRequestService;
 
 class Service extends Base\Service
@@ -303,5 +305,42 @@ class Service extends Base\Service
         }
 
         $this->app->batchService->cancelBatchInBatchService($batchId);
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingBatchDetailsFromBatchId()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Batch Refund Details Searched';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForBatchUpload()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Batch refund File Uploaded';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
     }
 }

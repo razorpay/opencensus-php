@@ -58,8 +58,10 @@ use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Payment\Processor\Constants as PaymentConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -5473,5 +5475,77 @@ class Service extends Base\Service
         ];
 
         return $this->getNewProcessor($merchant)->capture($payment, $input);
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingPaymentDetails($input)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = $this->getSelfServeActionForFetchingPaymentDetail($input);
+
+        if (isset($segmentProperties[SegmentConstants::SELF_SERVE_ACTION]) === true)
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $this->merchant, $segmentProperties, $segmentEventName
+            );
+        }
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingPaymentDetailsFromPaymentId()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Payment Details Searched';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function getSelfServeActionForFetchingPaymentDetail($input)
+    {
+        if ((isset($input[Entity::EMAIL]) === true) or
+            (isset($input[Entity::NOTES]) === true) or
+            (isset($input[Entity::VA_TRANSACTION_ID]) === true))
+        {
+            return 'Payment Details Searched';
+        }
+
+        if ((isset($input[Entity::STATUS]) === true) or
+            ((isset($input[Merchant\Constants::FROM]) === true) and
+            (isset($input[Merchant\Constants::TO]) === true) and
+            ($this->checkDurationInterval($input[Merchant\Constants::FROM], $input[Merchant\Constants::TO]) === true)))
+        {
+            return 'Payment Details Filtered';
+        }
+    }
+
+    private function checkDurationInterval($from, $to)
+    {
+        //By default duration is set as Past 7 days for Payments in the Transactions Tab in PG Merchant Dashboard
+        //Timestamp difference for this duration is 691199.
+        //We have to trigger the event whenever the duration is changed by the merchant.
+        if (($to - $from == '691199') and
+            ($to == Carbon::today(Timezone::IST)->endOfDay()->getTimestamp()))
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Trace\TraceCode;
 
 class RefundController extends Controller
 {
@@ -33,6 +34,21 @@ class RefundController extends Controller
 
         $refunds = $this->service()->fetch($id, $input);
 
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingRefundDetailsFromRefundId();
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::REFUND_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
+
         return ApiResponse::json($refunds);
     }
 
@@ -41,6 +57,21 @@ class RefundController extends Controller
         $input = Request::all();
 
         $refunds = $this->service()->fetchMultiple($input);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingRefundDetails($input);
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::REFUND_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($refunds);
     }

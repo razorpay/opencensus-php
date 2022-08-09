@@ -44,9 +44,11 @@ use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\FundTransfer\Mode as TransferMode;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Payment\Refund\Core as RefundCore;
+use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Payment\Refund\Speed as RefundSpeed;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Payment\Refund\Helpers as RefundHelpers;
+use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Email\Type as MerchantEmailType;
 use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
@@ -4270,5 +4272,59 @@ class Service extends Base\Service
         $response['view_entities_data'] = $viewData;
 
         return $response;
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingRefundDetails($input)
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = $this->getSelfServeActionForFetchingRefundDetail($input);
+
+        if (isset($segmentProperties[SegmentConstants::SELF_SERVE_ACTION]) === true)
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $this->merchant, $segmentProperties, $segmentEventName
+            );
+        }
+    }
+
+    public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingRefundDetailsFromRefundId()
+    {
+        [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
+
+        $segmentProperties[SegmentConstants::SELF_SERVE_ACTION] = 'Refund Details Searched';
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+            $this->merchant, $segmentProperties, $segmentEventName
+        );
+    }
+
+    private function pushSelfServeSuccessEventsToSegment()
+    {
+        $segmentProperties = [];
+
+        $segmentEventName = SegmentEvent::SELF_SERVE_SUCCESS;
+
+        $segmentProperties[SegmentConstants::OBJECT] = SegmentConstants::SELF_SERVE;
+
+        $segmentProperties[SegmentConstants::ACTION] = SegmentConstants::SUCCESS;
+
+        $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
+
+        return [$segmentEventName, $segmentProperties];
+    }
+
+    private function getSelfServeActionForFetchingRefundDetail($input)
+    {
+        if ((isset($input[Entity::PAYMENT_ID]) === true) or
+            (isset($input[Entity::NOTES]) === true))
+        {
+            return 'Refund Details Searched';
+        }
+
+        if (isset($input[Entity::PUBLIC_STATUS]) === true)
+        {
+            return 'Refund Details Filtered';
+        }
     }
 }

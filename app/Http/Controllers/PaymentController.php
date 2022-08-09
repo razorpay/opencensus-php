@@ -29,6 +29,21 @@ class PaymentController extends Controller
 
         $payment = $this->service()->fetch($id, $input);
 
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingPaymentDetailsFromPaymentId();
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::PAYMENT_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
+
         return ApiResponse::json($payment);
     }
 
@@ -74,6 +89,21 @@ class PaymentController extends Controller
         $input = Request::all();
 
         $payments = $this->service()->fetchMultiple($input);
+
+        try
+        {
+            //Event to be triggered only for PG Merchant Dashboard
+            if (($this->ba->isMerchantDashboardApp() === true) and
+                ($this->ba->isProductPrimary() === true))
+            {
+                $this->service()->sendSelfServeSuccessAnalyticsEventToSegmentForFetchingPaymentDetails($input);
+            }
+        }
+
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::PAYMENT_SEGMENT_EVENT_PUSH_FAILED, []);
+        }
 
         return ApiResponse::json($payments);
     }

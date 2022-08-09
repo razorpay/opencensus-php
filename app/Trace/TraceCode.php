@@ -7298,6 +7298,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MTU_COUPON_APPLY_FAILURE                              = 'MTU_COUPON_APPLY_FAILURE';
 
+    //Segment Event Push Failure
+
+    const PAYMENT_SEGMENT_EVENT_PUSH_FAILED                  = 'PAYMENT_SEGMENT_EVENT_PUSH_FAILED';
+    const ORDER_SEGMENT_EVENT_PUSH_FAILED                    = 'ORDER_SEGMENT_EVENT_PUSH_FAILED';
+    const REFUND_SEGMENT_EVENT_PUSH_FAILED                   = 'REFUND_SEGMENT_EVENT_PUSH_FAILED';
+    const BATCH_SEGMENT_EVENT_PUSH_FAILED                    = 'BATCH_SEGMENT_EVENT_PUSH_FAILED';
+    const DISPUTE_SEGMENT_EVENT_PUSH_FAILED                  = 'DISPUTE_SEGMENT_EVENT_PUSH_FAILED';
+
+
     //Relay traces
     const RELAY_REQUEST         = "RELAY_REQUEST";
     const RELAY_RESPONSE        = "RELAY_RESPONSE";
