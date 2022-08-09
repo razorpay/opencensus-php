@@ -3109,6 +3109,7 @@ class Gateway
         Gateway::NETBANKING_KVB,
         Gateway::NETBANKING_SVC,
         Gateway::NETBANKING_FSB,
+        Gateway::WALLET_AMAZONPAY,
     ];
 
     /**
