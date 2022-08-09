@@ -13,6 +13,22 @@ use RZP\Models\PaymentLink as PaymentLinkModel;
 
 trait PaymentLinkTestTrait
 {
+    protected function createNocodeCustomUrl(array $data, PaymentLinkModel\Entity $pl)
+    {
+        $ncu = new PaymentLinkModel\NocodeCustomUrl\Core();
+
+        $repo = new PaymentLinkModel\Repository();
+
+        $repo->transaction(function () use ($ncu, $data, $pl) {
+            $ncu->upsert([
+                PaymentLinkModel\NocodeCustomUrl\Entity::SLUG       => $data[PaymentLinkModel\NocodeCustomUrl\Entity::SLUG],
+                PaymentLinkModel\NocodeCustomUrl\Entity::DOMAIN     => $data[PaymentLinkModel\NocodeCustomUrl\Entity::DOMAIN],
+                PaymentLinkModel\NocodeCustomUrl\Entity::PRODUCT    => PaymentLinkModel\ViewType::PAGE,
+                PaymentLinkModel\NocodeCustomUrl\Entity::META_DATA  => [],
+            ], $pl->merchant, $pl);
+        });
+    }
+
     protected function createPaymentLink(string $id = self::TEST_PL_ID, array $attributes = []): PaymentLinkModel\Entity
     {
         $attributes[PaymentLinkModel\Entity::ID]      = $id;

@@ -14,6 +14,7 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
 use RZP\Models\Order;
+use Illuminate\Support\Facades\Config;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Trace\Tracer;
 use RZP\Models\Invoice;
@@ -1911,6 +1912,35 @@ class Core extends Base\Core
 
             throw $e;
         }
+    }
+
+    private function getDefaultRiskCheckUrl(string $publicPageId): string
+    {
+        return Config::get('app.payment_link_hosted_base_url')
+            . "/"
+            .  $publicPageId
+            . "/view";
+    }
+
+    /**
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function getRiskCheckUrl(string $pageId, string $merchantId): ?string
+    {
+        $page = new Entity();
+
+        $page->setId($pageId);
+
+        $nocodeCore = new NocodeCustomUrl\Core;
+
+        $nocodeEntity = $nocodeCore->getExistingLinkedEntity($page->getId(), $merchantId);
+
+        if ($nocodeEntity === null)
+        {
+            return $this->getDefaultRiskCheckUrl($page->getPublicId());
+        }
+
+        return "https://" . $nocodeEntity->getDomain() . "/" . $nocodeEntity->getSlug();
     }
 
     public function getShortenUrlRequestParams(Entity $paymentLink, ?string $slug = null, ?string $customDomain = null): array

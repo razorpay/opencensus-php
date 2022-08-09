@@ -3712,20 +3712,4 @@ class PaymentLinkTest extends TestCase
 
         $this->app->instance('elfin', $elfin);
     }
-
-    private function createNocodeCustomUrl(array $data, PaymentLink\Entity $pl)
-    {
-        $ncu = new PaymentLink\NocodeCustomUrl\Core();
-
-        $repo = new PaymentLink\Repository();
-
-        $repo->transaction(function () use ($ncu, $data, $pl) {
-            $ncu->upsert([
-                PaymentLink\NocodeCustomUrl\Entity::SLUG        => $data[PaymentLink\NocodeCustomUrl\Entity::SLUG],
-                PaymentLink\NocodeCustomUrl\Entity::DOMAIN      => $data[PaymentLink\NocodeCustomUrl\Entity::DOMAIN],
-                PaymentLink\NocodeCustomUrl\Entity::PRODUCT     => PaymentLink\ViewType::PAGE,
-                PaymentLink\NocodeCustomUrl\Entity::META_DATA   => [],
-            ], $pl->merchant, $pl);
-        });
-    }
 }

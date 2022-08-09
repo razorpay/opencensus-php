@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\PaymentLink;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use RZP\Models\VirtualAccount;
@@ -161,11 +162,16 @@ class AppsRiskCheck extends Job
         return $dataFields;
     }
 
+    /**
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
     private function getPaymentPageUrl(): string
     {
-        return Config::get('app.payment_link_hosted_base_url')
-            . "/"
-            .  $this->params['payment_page_id']
-            . "/view";
+        $pageId     = $this->params['entity_id'];
+        $merchantId = $this->params['merchant_id'];
+
+        $pageCore   = new PaymentLink\Core;
+
+        return $pageCore->getRiskCheckUrl($pageId, $merchantId);
     }
 }
