@@ -388,7 +388,7 @@ class Axis extends Base
             }
         }
 
-        if(array_key_exists('refunds',$data))
+        if(array_key_exists('refunds',$data)) 
         {
             foreach ($data['refunds'] as $settlementRefunds)
             {
@@ -396,7 +396,7 @@ class Axis extends Base
                 {
                     $totalTransactions++;
 
-                    $gatewayRequestID = $cpsAuthData[$settlementPayment->getId()]['gateway_reference_id2'] ?? '';
+                    $gatewayRequestID = $cpsAuthData[$settlementRefunds->payment->getId()]['gateway_reference_id2'] ?? '';
 
                     list($notesGST, $notesCorpName, $notesMTR) = $this->parseNotes($settlementRefunds->payment->getNotes());
 
