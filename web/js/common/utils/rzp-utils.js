@@ -1419,6 +1419,11 @@ export const resolvePath = (obj, path, defaultValue) => {
   return returnValue;
 };
 
+const isBase64 = (str) => {
+  const base64regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+  return base64regex.test(str);
+};
+
 /**
  * get a object with encoded sensitive fields
  * @param {Object} object
@@ -1427,7 +1432,7 @@ export const encodeSensitiveFields = (params) => {
   let parameter = { ...params };
   for (let param in parameter) {
     if (SENSITIVE_FIELDS.includes(param)) {
-      parameter[param] = window?.btoa(parameter[param]);
+      parameter[param] = window?.btoa(decodeURIComponent(parameter[param]));
     }
   }
   return parameter;
@@ -1438,10 +1443,15 @@ export const encodeSensitiveFields = (params) => {
  * @param {Object} object
  */
 export const decodeSensitiveFields = (params) => {
+  const getURLFields = new URLSearchParams(window.location.search);
   let parameter = { ...params };
   for (let param in parameter) {
-    if (SENSITIVE_FIELDS.includes(param)) {
-      parameter[param] = window?.atob(parameter[param]);
+    if (
+      SENSITIVE_FIELDS.includes(param) &&
+      getURLFields?.get?.(param) !== undefined &&
+      isBase64(getURLFields.get(param))
+    ) {
+      parameter[param] = window?.atob(getURLFields.get(param));
     }
   }
   return parameter;
