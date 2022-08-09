@@ -54,7 +54,8 @@ class ConfigKey
     const NAMESPACE_KEY_CONFIG = [
         self::ONBOARDING_NAMESPACE => [
             self::MTU_COUPON_POPUP_COUNT          => [
-                Constants::STORE => Constants::REDIS
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::MTU_POPUP_TTL_IN_SECONDS
             ],
             self::ENABLE_MTU_CONGRATULATORY_POPUP => [
                 Constants::STORE => Constants::REDIS
