@@ -640,6 +640,7 @@ class UserRolesScope
             'fetch_payments_resolved_downtimes'                    => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'fetch_payments_scheduled_downtimes'                   => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'fetch_payout_downtimes_enabled'                       => [Role::OWNER, Role::ADMIN],
+            'fetch_merchant_sr'                                    => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             'file_get_signed_url'                                  => [Role::OWNER, Role::ADMIN],
             'firs_document_fetch'                                  => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'emerchantpay_get_request_data'                        => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],

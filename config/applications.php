@@ -1358,6 +1358,13 @@ return [
         'password' => env('DOWNTIME_MANAGER_PASSWORD')
     ],
 
+    'success_rate' => [
+        'host' => env('SUCCESS_RATE_HOST'),
+        'basePath' => env('SUCCESS_RATE_BASE_PATH'),
+        'user' => env('SUCCESS_RATE_USER'),
+        'password' => env('SUCCESS_RATE_PASSWORD')
+    ],
+
     'tls_config' => [
         'offline_challan_validate' => env('OFFLINE_CHALLAN_VALIDATE_DOMAINS'),
         'offline_payment_credit'   => env('OFFLINE_PAYMENT_CREDIT_DOMAINS')

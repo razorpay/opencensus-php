@@ -15,6 +15,10 @@ class DowntimeManagerService
     const REQUEST_TIMEOUT = 30;
     const JSON_METHOD = ['POST', 'PUT', 'PATCH'];
 
+    private $srConfig;
+    private $srBasePath;
+    private $srHost;
+
     public function __construct($app)
     {
         $this->config = $app['config']->get('applications.downtime_manager');
@@ -22,6 +26,11 @@ class DowntimeManagerService
         $this->trace = $app['trace'];
 
         $this->baseUrl =  $this->config['url'];
+
+        $this->srConfig = $app['config']->get('applications.success_rate');
+        $this->srHost = $this->srConfig['host'];
+        $this->srBasePath = $this->srConfig['basePath'];
+        $this->app = $app;
     }
 
     public function notifyDowntime(DowntimeEntity $downtime, String $status)
@@ -76,20 +85,26 @@ class DowntimeManagerService
         return $this->sendRequest($url, $method, $data);
     }
 
-    public function sendRequest($url, $method, $data = null)
+    public function sendRequest($url, $method, $data = null, $service = null)
     {
-        $url = $this->baseUrl . '/' . $url;
+        $baseUrl = $this->getBaseUrl($service);
+        $url = $baseUrl . '/' . $url;
 
         if ($data === null)
         {
             $data = '';
         }
 
+        if ($service === 'SR') {
+            $merchant   = $this->app['basicauth']->getMerchant();
+            $headers['merchant_id'] = $merchant->getMerchantId();
+        }
+
         $headers['Content-Type'] = 'application/json';
 
         $options = array(
             'timeout' => self::REQUEST_TIMEOUT,
-            'auth'    => $this->getRequestAuth(),
+            'auth'    => $this->getRequestAuth($service),
         );
 
         $request = array(
@@ -198,8 +213,19 @@ class DowntimeManagerService
             ]]);
     }
 
-    private function getRequestAuth()
+    private function getBaseUrl($service = null)
     {
+        if ($service == 'SR') {
+            return $this->srHost . $this->srBasePath;
+        }
+        return $this->baseUrl;
+    }
+
+    private function getRequestAuth($service = null)
+    {
+        if ($service == 'SR') {
+            return [$this->srConfig['user'], $this->srConfig['password']];
+        }
         return [$this->config['user'], $this->config['password']];
     }
 

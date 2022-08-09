@@ -6,9 +6,11 @@ use Request;
 use ApiResponse;
 
 use App\Http\AppResponse;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Downtime\DowntimeManagerService;
+use RZP\Trace\TraceCode;
 
 class DowntimeManagerController extends Controller
 {
@@ -51,6 +53,14 @@ class DowntimeManagerController extends Controller
         ]
     ];
 
+    const WHITELIST_MERCHANT_ROUTES_REGEX = [
+        self::POST => [
+            '^sr$',
+            '^error$',
+        ],
+    ];
+
+
     public function downtimeManagerAdmin($path = '')
     {
         $method = Request::method();
@@ -71,6 +81,44 @@ class DowntimeManagerController extends Controller
         $data = Request::all();
 
         $response = (new DowntimeManagerService($this->app))->sendAnyRequest($path, $method, $data);
+
+        $statusCode = $response['status_code'];
+
+        unset($response['status_code']);
+
+        return ApiResponse::json($response, $statusCode);
+    }
+
+    public function FetchSRForMerchant($path = '')
+    {
+        $method = Request::method();
+
+        if(array_key_exists($method, self::WHITELIST_MERCHANT_ROUTES_REGEX) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        $whiteListedMerchantRoutesRegex = implode('|', self::WHITELIST_MERCHANT_ROUTES_REGEX[$method]);
+
+        if (preg_match('/' . $whiteListedMerchantRoutesRegex . '/', $path, $pathMatches) == false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        if ($this->app['rzp.mode'] !== Mode::LIVE) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+
+        $method = Request::method();
+        $data = Request::all();
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_REQUEST, [
+            'path' => $path,
+            'data' => $data
+        ]);
+
+        $response = (new DowntimeManagerService($this->app))->sendRequest($path, $method, $data, 'SR');
 
         $statusCode = $response['status_code'];
 
