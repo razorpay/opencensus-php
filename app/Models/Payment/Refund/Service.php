@@ -2677,8 +2677,10 @@ class Service extends Base\Service
 
                                 $refund->setGatewayRefunded(true);
 
-                                if (($refund->merchant->isFeatureRefundPublicStatusOrPendingStatusEnabled() === true) or
-                                    ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL))
+                                $skipMerchantWebhooks = $input['skip_merchant_webhooks'] ?? false;
+
+                                if ((($refund->merchant->isFeatureRefundPublicStatusOrPendingStatusEnabled() === true) or
+                                    ($refund->getSpeedProcessed() !== RefundSpeed::NORMAL)) and $skipMerchantWebhooks === false)
                                 {
                                     $processor->eventRefundProcessed($refund);
                                 }
@@ -2714,6 +2716,13 @@ class Service extends Base\Service
                                     {
                                         $processor->revertPaymentToRefundableState($refund);
                                     }
+                                }
+
+                                $skipMerchantWebhooks = $input['skip_merchant_webhooks'] ?? false;
+
+                                if ($skipMerchantWebhooks === true)
+                                {
+                                    break;
                                 }
 
                                 $processor->eventRefundFailed($refund);
