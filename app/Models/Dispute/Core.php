@@ -844,6 +844,8 @@ class Core extends Base\Core
                             'merchant_id' => $merchantId,
                             'phase'       => $disputePhase,
                         ]);
+
+                    $this->trace->count(Metrics::DISPUTE_SUCCESS_TOTAL);
                 }
                 catch (\Throwable $e)
                 {
@@ -894,7 +896,7 @@ class Core extends Base\Core
     {
         try
         {
-           $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true
+           $viewTemplate = $merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === false
                 ? 'emails.dispute.bulk_creation_dispute_presentment_enabled'
                 : 'emails.dispute.bulk_creation';
 
@@ -1057,7 +1059,9 @@ class Core extends Base\Core
 
                 $result['success'] = true;
 
-                $this->trace->info(TraceCode::DISPUTE_BULK_MAIL_CRON_END);
+                $this->trace->info(TraceCode::DISPUTE_BULK_MAIL_CRON_END, [
+                    'time_taken' => $result['time_taken'],
+                ]);
 
                 return $result;
             },

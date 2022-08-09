@@ -874,7 +874,7 @@ class Entity extends Base\PublicEntity
         {
             return false;
         }
-        return $this->merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true;
+        return ($this->merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === false);
     }
 
     public function isCustomerDispute() : bool

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Base\RuntimeManager;
 use RZP\Exception;
 use RZP\Models\Dispute\Chargeback\Service as DisputeChargebackService;
 
@@ -15,6 +16,9 @@ class DisputeController extends Controller
      * {@inheritDoc}
      * Overridden as it passes around $input to service method
      */
+
+    public $disputeBulkCronTimeout = 600;
+
     public function get(string $id)
     {
         $response = $this->service()->fetch($id, $this->input);
@@ -123,6 +127,10 @@ class DisputeController extends Controller
 
     public function initiateMerchantEmails()
     {
+        RuntimeManager::setTimeLimit($this->disputeBulkCronTimeout);
+
+        RuntimeManager::setMaxExecTime($this->disputeBulkCronTimeout);
+
         return $this->service()->initiateMerchantEmails();
     }
 

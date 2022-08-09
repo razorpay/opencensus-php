@@ -139,7 +139,7 @@ class BulkCreation extends Base
 
             $merchant = (new Merchant\Repository)->findOrFailPublic($merchantId);
 
-            if ($merchant->isFeatureEnabled(Feature\Constants::DISPUTE_PRESENTMENT) === true)
+            if ($merchant->isFeatureEnabled(Feature\Constants::EXCLUDE_DISPUTE_PRESENTMENT) === false)
             {
                 return 'emails.dispute.bulk_creation_dispute_presentment_enabled';
             }
