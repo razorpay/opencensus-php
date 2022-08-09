@@ -69,13 +69,13 @@ class Service extends Base\Service
         {
             $item=$item['node'];
             $cartLineItems[] = [
-                'variant_id'        => substr(strval($item['variant']['id']),0,128),
+                'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, "UTF-8"),
                 'tax_amount'        => 0,
-                'sku'               => substr(strval($item['variant']['sku']),0,128),
+                'sku'               => mb_substr(strval($item['variant']['sku']), 0, 128, "UTF-8"),
                 'price'             => (int)(floatval($item['variant']['price']) * 100),
                 'quantity'          => (int)floatval($item['quantity']),
-                'name'              => substr(strval($item['title']),0,128),
-                'description'       => substr($item['variant']['product']['description'],0,256),
+                'name'              => mb_substr(strval($item['title']), 0, 128, "UTF-8"),
+                'description'       => mb_substr($item['variant']['product']['description'], 0, 256, "UTF-8"),
                 'weight'            => (int)floatval($item['variant']['weight']),
                 'image_url'         => $item['variant']['image']['src'] ?? ""
             ];
