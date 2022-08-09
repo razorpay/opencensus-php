@@ -8,6 +8,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
@@ -17,6 +18,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiPaymentServiceTest extends TestCase
@@ -1374,5 +1376,120 @@ class UpiPaymentServiceTest extends TestCase
         );
 
         return $payment->getId();
+    }
+
+    public function testUpiSbiUpdatePostReconSuccess()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->gateway = 'upi_sbi';
+
+        $this->makeUpiSbiPaymentsSince($createdAt, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $payment->getId();
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotEmpty($transactionEntity['reconciled_at']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testUpiSbiUpdatePostReconFailure(){
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->gateway = 'upi_sbi';
+
+        $this->makeUpiSbiPaymentsSince($createdAt, 1);
+
+        $payment = $this->getDbLastPayment();
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $payment->getId();
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->mockServerContentFunction(
+            function (&$content)
+            {
+                $content['entity_fetch_failure'] = true;
+            }
+        );
+
+        $this->makeRequestAndCatchException
+        (
+            function() use ($content)
+            {
+                $this->makeUpdatePostReconRequestAndGetContent($content);
+            },
+            Exception\BadRequestException::class,
+            'received wrong entity from Upi Payment Service'
+        );
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transactionEntity['reconciled_at']);
+
+    }
+
+    private function makeUpiSbiPaymentsSince(int $createdAt, int $count = 3)
+    {
+        for ($i = 0; $i < $count; $i++)
+        {
+            $payments[] = $this->doUpiSbiPayment();
+        }
+
+        foreach ($payments as $payment)
+        {
+            $this->fixtures->edit('payment', $payment, ['created_at' => $createdAt]);
+        }
+
+        return $payments;
+    }
+
+    private function doUpiSbiPayment()
+    {
+        $attributes = [
+            'terminal_id'       => $this->terminal->getId(),
+            'method'            => 'upi',
+            'amount'            => $this->payment['amount'],
+            'base_amount'       => $this->payment['amount'],
+            'amount_authorized' => $this->payment['amount'],
+            'status'            => 'captured',
+            'gateway'           => $this->gateway,
+            'authorized_at'     => time(),
+            'cps_route'         => Entity::UPI_PAYMENT_SERVICE,
+        ];
+
+        $payment = $this->fixtures->create('payment', $attributes);
+
+        $transaction = $this->fixtures->create('transaction',
+            ['entity_id' => $payment->getId(), 'merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('payment', $payment->getId(), ['transaction_id' => $transaction->getId()]);
+
+        return $payment->getId();
+    }
+
+    private function makeUpdatePostReconRequestAndGetContent(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

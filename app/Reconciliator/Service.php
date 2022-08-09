@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
+use RZP\Metro\MetroHandler;
 use RZP\Models\Payment\Refund;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
@@ -20,6 +21,7 @@ use RZP\Reconciliator\RequestProcessor;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 
 class Service extends Base\Service
 {
@@ -767,9 +769,9 @@ class Service extends Base\Service
         {
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
-                $this->updateGatewayData($input);
-
                 $this->updateTransactionData($input, $payment);
+
+                $this->updateGatewayData($input, $payment);
             });
 
             $this->core->pushSuccessPaymentReconMetrics($payment,"art");
@@ -795,12 +797,154 @@ class Service extends Base\Service
         }
     }
 
-    /** Persist/update gateway data post recon
+    /**
+     * publish message to metro topic
+     *
+     * @param array $dataToUpdate
+     * @param Payment\Entity $payment
+     * @return void
+     */
+    protected function publishToMetro(array $dataToUpdate, Payment\Entity $payment)
+    {
+        $metroHandler = (new MetroHandler());
+
+        $topic = UpsConstants::ART_RECON_ENTITY_UPDATE . '-'. $this->mode;
+
+        $data = [
+            UpsConstants::PAYMENT_ID   => $payment->getId(),
+            UpsConstants::GATEWAY_DATA => $dataToUpdate,
+            UpsConstants::GATEWAY      => $payment->getGateway(),
+            UpsConstants::MODEL        => UpsConstants::AUTHORIZE
+        ];
+
+        $publishData['data'] = json_encode($data);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PUBLISH_TO_METRO, $data);
+
+        try
+        {
+            $response = $metroHandler->publish($topic, $publishData);
+
+            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISHED,
+                [
+                    'topic'    => $topic,
+                    'response' => $response,
+                    'payment_id' => $payment->getId()
+                ]);
+
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISH_ERROR,
+                [
+                    'topic'    => $topic,
+                    'payment_id' => $payment->getId()
+                ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Retrive required field of UPS gateway entity
+     * @param Payment\Entity $payment
+     * @return array
+     */
+    protected function getUpsGatewayEntity(Payment\Entity $payment): array
+    {
+        $action = UpsConstants::ENTITY_FETCH;
+
+        $gateway = $payment->getGateway();
+
+        $input = [
+            UpsConstants::MODEL            => UpsConstants::AUTHORIZE,
+            UpsConstants::REQUIRED_FIELDS  => [
+                UpsConstants::CUSTOMER_REFERENCE,
+                UpsConstants::GATEWAY_REFERENCE,
+                UpsConstants::NPCI_TXN_ID,
+                UpsConstants::RECONCILED_AT,
+            ],
+            UpsConstants::COLUMN_NAME      => UpsConstants::PAYMENT_ID,
+            UpsConstants::VALUE            => $payment->getId(),
+            UpsConstants::GATEWAY          => $gateway
+        ];
+
+        $gatewayEntity = $this->app['upi.payments']->action($action, $input, $gateway);
+
+        if ((isset($gatewayEntity[UpsConstants::CUSTOMER_REFERENCE]) === false) or
+            (isset($gatewayEntity[UpsConstants::GATEWAY_REFERENCE]) === false) or
+            (isset($gatewayEntity[UpsConstants::NPCI_TXN_ID]) === false) or
+            (isset($gatewayEntity[UpsConstants::RECONCILED_AT]) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_UPI_PAYMENT_SERVICE_ENTITY_FETCH_ERROR,
+                [
+                    'input'     => $input,
+                    'entity'    => $gatewayEntity
+                ],
+                null,
+                'received wrong entity from Upi Payment Service');
+        }
+
+        return $gatewayEntity;
+    }
+
+    /** Persist/update gateway data post recon and pushes to metro
      * @param array $input
+     * @param Payment\Entity $payment
      * @throws Exception\BadRequestException
      */
-    protected function updateGatewayData(array $input)
+    protected function updateUpsGatewayData(array $input, Payment\Entity $payment)
     {
+        $gatewayEntity = $this->getUpsGatewayEntity($payment);
+
+        //payment is already reconciled
+        if(empty($gatewayEntity[UpsConstants::RECONCILED_AT]) === false)
+        {
+            return;
+        }
+
+        $dataToUpdate = [];
+
+        if ((empty($input['upi']['gateway_payment_id']) === false) and
+             ($input['upi']['gateway_payment_id'] !== $gatewayEntity[UpsConstants::GATEWAY_REFERENCE]))
+        {
+            $dataToUpdate[UpsConstants::GATEWAY_REFERENCE] = $input['upi']['gateway_payment_id'];
+        }
+
+        if ((empty($input['upi']['npci_txn_id']) === false) and
+             ($input['upi']['npci_txn_id'] !== $gatewayEntity[UpsConstants::NPCI_TXN_ID]))
+        {
+            $dataToUpdate[UpsConstants::NPCI_TXN_ID] = $input['upi']['npci_txn_id'];
+        }
+
+        if ((empty($input['upi']['npci_reference_id']) === false) and
+             ($input['upi']['npci_reference_id'] !== $gatewayEntity[UpsConstants::CUSTOMER_REFERENCE]))
+        {
+            $dataToUpdate[UpsConstants::CUSTOMER_REFERENCE] = $input['upi']['npci_reference_id'];
+        }
+
+        $dataToUpdate[UpsConstants::RECONCILED_AT] = $input[UpsConstants::RECONCILED_AT];
+
+        $this->publishToMetro($dataToUpdate, $payment);
+    }
+
+    /** Persist/update gateway data post recon
+     * @param array $input
+     * @param Payment\Entity $payment
+     * @throws Exception\BadRequestException
+     */
+    protected function updateGatewayData(array $input, Payment\Entity $payment)
+    {
+        if($payment->isRoutedThroughUpiPaymentService())
+        {
+            $this->updateUpsGatewayData($input, $payment);
+            return;
+        }
+
         $paymentId = $input['payment_id'];
 
         $gatewayPayment = $this->repo->upi->findByPaymentIdAndAction($paymentId, 'authorize');

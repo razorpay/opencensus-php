@@ -7,6 +7,7 @@ final class Constants
 {
     // Metro topic names
     const RECON_ENTITY_UPDATE = 'recon-entity-update';
+    const ART_RECON_ENTITY_UPDATE = 'art-recon-entity-update';
 
     // Metro push request parameters
     const GATEWAY_DATA = 'gateway_data';

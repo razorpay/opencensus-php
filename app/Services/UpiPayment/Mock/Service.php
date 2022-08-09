@@ -278,6 +278,13 @@ class Service extends UpiPaymentService
 
         $this->content($content);
 
+        //mock ups entity to return only one field
+        if((isset($content['entity_fetch_failure']) === true)
+            and ($content['entity_fetch_failure'] === true)){
+            $response['entity']['customer_reference'] = '227121351902';
+            return [$response, 200];
+        }
+
         // mock ups entity to empty ,as this is to identity the request is from api payment
         if ($content['column_name'] === 'customer_reference')
         {
