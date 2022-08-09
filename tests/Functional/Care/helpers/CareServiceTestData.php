@@ -42,6 +42,18 @@ return [
         ],
     ],
 
+    'testInternalMerchantGetFirstSubmissionDateWithDifferentStatus' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/internal/merchants/10000000000000/submission_date',
+        ],
+        'response' => [
+            'content' => [
+                'first_l2_submission_timestamp' => 1539543929
+            ],
+        ],
+    ],
+
     'testDashboardProxyInvalidRoute' => [
         'request'   => [
             'method' => 'POST',

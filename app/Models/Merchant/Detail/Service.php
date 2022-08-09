@@ -2864,7 +2864,8 @@ class Service extends Base\Service
 
         $activationStatusChangeLogs = array_values(array_filter($activationStatusChangeLogs, function ($activationStatusChangeLog)
         {
-            return ($activationStatusChangeLog[StateChangeEntity::NAME] === Status::UNDER_REVIEW);
+            return ($activationStatusChangeLog[StateChangeEntity::NAME] === Status::UNDER_REVIEW or
+                $activationStatusChangeLog[StateChangeEntity::NAME] === Status::ACTIVATED_MCC_PENDING);
         }));
 
         $this->trace->info(
@@ -2873,7 +2874,17 @@ class Service extends Base\Service
                 'action_state_logs after filter' => $activationStatusChangeLogs,
             ]);
 
-        return empty($activationStatusChangeLogs) === false ? $activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT] : 0;
+        if (empty($activationStatusChangeLogs) === false)
+        {
+            if (count($activationStatusChangeLogs) == 1)
+            {
+                return $activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT];
+            }
+
+            return min($activationStatusChangeLogs[0][StateChangeEntity::CREATED_AT], $activationStatusChangeLogs[1][StateChangeEntity::CREATED_AT]);
+        }
+
+        return 0;
     }
 
     /**
