@@ -5,10 +5,13 @@ import {
   CASH_ADVANCE_CAROUSEL_SLIDES,
   CASH_ADVANCE_CAROUSEL_VIEW_RULES,
   COLLECTIONS_BALANCE_TYPE,
+  REPAYMENT_FREQUENCY_TYPES,
   SLIDE_COLORS,
 } from './constants';
 import WithdrawalConfig from './WithdrawalConfigModel';
 import Amount from 'common/ui/Amount';
+import { getItem, setItem } from 'common/utils/localStorage';
+import store from 'merchant/store';
 import { getNextRepayBreakup } from './OverviewFooter/utils/index';
 
 export const getSlideByRule = (rule) => {
@@ -209,3 +212,24 @@ export function computePrincipalAndInterest(repaymentBreakups, key = 'breakup_am
 
   return response;
 }
+
+const LOC_FIRST_TIME_REPAYMENT_PREFERENCE_SET = 'LOC_FIRST_TIME_REPAYMENT_PREFERENCE_SET';
+
+export const getFirstTimeRepaymentPreferenceKey = () => {
+  const merchantId = store.getState()?.session?.user?.current;
+  return `${LOC_FIRST_TIME_REPAYMENT_PREFERENCE_SET}--${merchantId}`;
+};
+
+export const setFirstTimeRepaymentPreference = () => {
+  setItem(getFirstTimeRepaymentPreferenceKey(), 'true');
+};
+
+export const getFirstTimeRepaymentPreference = () => {
+  return getItem(getFirstTimeRepaymentPreferenceKey());
+};
+
+export const showSettings = (user, repaymentFrequency) => {
+  return Boolean(
+    !user?.isCashOnCardEnabled && repaymentFrequency === REPAYMENT_FREQUENCY_TYPES.CUSTOM,
+  );
+};

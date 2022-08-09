@@ -1,0 +1,47 @@
+import './style.styl';
+import React, { useEffect } from 'react';
+import { connect } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from '../../constants';
+import { setFirstTimeRepaymentPreference, getFirstTimeRepaymentPreference } from '../../utils';
+
+const RepaymentPreferenceBanner = (props) => {
+  const { withdrawalConfiguration } = props;
+  const hideSuccessBanner = getFirstTimeRepaymentPreference();
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFirstTimeRepaymentPreference();
+    }, 100);
+  }, []);
+
+  if (hideSuccessBanner) return null;
+
+  return (
+    <div className="banner-container">
+      <img className="banner-icon" src="/dist/css/assets/check-round.svg" alt="Tick icon" />
+      <p className="banner-text">
+        Your repayment preference for all future withdrawals is set to{' '}
+        <strong>
+          {withdrawalConfiguration?.data?.configuration?.auto_collection
+            ? 'automatic daily deductions'
+            : 'manual'}
+        </strong>
+      </p>
+
+      <NavLink
+        className="change-preference-link"
+        exact
+        to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}
+      >
+        Change Preference
+      </NavLink>
+    </div>
+  );
+};
+
+const mapStateToProps = (state) => ({
+  withdrawalConfiguration: state.withdrawals.withdrawalConfiguration,
+});
+
+export default connect(mapStateToProps)(RepaymentPreferenceBanner);

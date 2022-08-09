@@ -118,4 +118,11 @@ export default class LoanOriginationEntity extends GenericEntity {
       data,
     );
   }
+
+  setMerchantPreferences(data) {
+    return this.request(
+      this.resourceUrlPrefix('withdrawal', 'WithdrawalConfigAPI', 'SetMerchantPreferences'),
+      data,
+    );
+  }
 }

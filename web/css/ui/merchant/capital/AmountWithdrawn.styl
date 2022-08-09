@@ -369,22 +369,27 @@
 
           .withdrawal__amount,
           .withdrawal__repayable
-          .withdrawal__limit
+          .withdrawal__limit,
+          .withdrawal__repayment-preference,
+          .withdrawal__change-preferenece
             span
               font-weight: 600;
 
           .withdrawal__amount,
           .withdrawal__date,
           .withdrawal__repayable
-          .withdrawal__limit
+          .withdrawal__limit,
+          .withdrawal__repayment-preference,
+          .withdrawal__change-preferenece
             p
               font-weight: 600;
               color: #162f568a
 
           .withdrawal__date,
           .withdrawal__repayable
-          .withdrawal__limit
-            margin-left: 30px;
+          .withdrawal__limit,
+          .withdrawal__repayment-preference
+            margin-left: 24px;
 
           .fungible_date
             margin-left: 0
@@ -753,3 +758,26 @@
   padding: 10px 14px
   border-radius: 2px
   margin: 10px 0 -20px
+
+.success-heading-container-settings
+  display: flex
+  align-items: center  
+  gap: 24px
+  justify-content: space-between
+
+  .withdrawal__ctas
+    margin-bottom: 24px;
+    display: flex;
+    gap: 12px;
+    margin-right: 32px;
+
+    .Button--secondary
+      border: 1px solid #528ff0;
+
+.change-preference-link
+  font-weight: 700
+  font-size: 14px
+  line-height: 20px
+  color: #2A86F3
+  margin-left: 10px
+  align-self: flex-end

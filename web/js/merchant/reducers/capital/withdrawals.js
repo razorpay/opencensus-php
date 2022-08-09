@@ -1,6 +1,7 @@
 import { merge, set } from 'common/utils/immutable';
 import Withdrawal from 'merchant/models/Capital/Withdrawals';
 
+const SET_WITHDRAWAL_CONFIG = 'SET_WITHDRAWAL_CONFIG';
 const FETCH_WITHDRAWAL_CONFIG = 'FETCH_WITHDRAWAL_CONFIG';
 const FETCH_SEED_DATA = 'FETCH_SEED_DATA';
 const FETCH_WITHDRAWALS = 'FETCH_WITHDRAWALS';
@@ -33,6 +34,13 @@ export const fetchFunctionalWithdrawalConfigByMerchantID = (data) => {
   return {
     type: FETCH_WITHDRAWAL_CONFIG,
     payload: withdrawal.fetchFunctionalWithdrawalConfigByMerchantID(data),
+  };
+};
+
+export const setWithdrawalConfig = (payload) => {
+  return {
+    type: SET_WITHDRAWAL_CONFIG,
+    payload,
   };
 };
 
@@ -168,6 +176,14 @@ export default function withdrawalFunction(state = initialState, action) {
           error: action.payload.errors,
         },
       });
+
+    case `${SET_WITHDRAWAL_CONFIG}`:
+      return merge(state, {
+        withdrawalConfiguration: {
+          data: action.payload.data.withdrawal_config,
+        },
+      });
+
     case `${FETCH_WITHDRAWAL_CONFIG}::PENDING`:
       return merge(state, {
         withdrawalConfiguration: {

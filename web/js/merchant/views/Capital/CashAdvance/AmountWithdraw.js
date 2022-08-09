@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 import moment from 'moment';
 
 import Input from 'common/new-ui/Input';
@@ -32,6 +32,8 @@ import {
   ONHOLD_REASONS,
   REPAYMENT_TYPES,
   CASH_ADVANCE_PRODUCT_TYPES,
+  CASH_ADVANCE_BASE_URL,
+  CASH_ADVANCE_SECTIONS,
 } from './constants';
 import CreditSummary from './CreditSummary';
 import FungibleCreditSummary from './components/FungibleCreditSummary';
@@ -58,6 +60,7 @@ import Spinner from 'common/ui/Spinner';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import GromorAgreementModal from 'merchant/views/Capital/components/Modals/GromorAgreementModal';
 import {
+  trackCloseButton,
   trackHideBreakup,
   trackRepayDateClicked,
   trackRepayDateUpdated,
@@ -70,8 +73,11 @@ import {
 } from './TrackEvents/trackEvents';
 import { getItem, setItem } from 'common/utils/localStorage';
 import ReducingRepaymentTooltip from './components/ReducingRepaymentTooltip';
+import FirstWithdrawalView from './components/FirstWithdrawal/FirstWithdrawalView';
 import CardsDashboardRedirectionModal from './components/CardsDashboardRedirectionModal';
 import { getCurrentOutstandingBreakup } from './OverviewFooter/utils';
+import { getFirstTimeRepaymentPreference, showSettings } from './utils';
+import RepaymentPreferenceBanner from './components/RepaymentPreferenceBanner';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -524,6 +530,14 @@ export default class AmountWithdraw extends React.Component {
     return !!withdrawalAmount && !!selectedDueDate && withdraw_errors.length === 0;
   };
 
+  showFirstTimeRepaymentPreference = () => {
+    return !getFirstTimeRepaymentPreference();
+  };
+
+  showSettings = () => {
+    return showSettings(this.props.user, this.getRepaymentFrequency());
+  };
+
   confirmWithdraw = () => {
     const { withdrawalAmount, selectedDueDate } = this.state;
     trackWithdrawNow({
@@ -536,9 +550,18 @@ export default class AmountWithdraw extends React.Component {
       eventLabel: 'Withdraw | Withdraw Now',
     });
 
-    this.setState({
-      isConfirmingWithdraw: true,
-    });
+    const showFirstTimeRepaymentPref =
+      this.showSettings() && this.showFirstTimeRepaymentPreference();
+
+    if (showFirstTimeRepaymentPref) {
+      this.setState({
+        currentView: VIEWS.WITHDRAW_FIRST_TIME,
+      });
+    } else {
+      this.setState({
+        isConfirmingWithdraw: true,
+      });
+    }
   };
 
   handleDisableAutomatedWithdrawalsClick = () => {
@@ -1210,16 +1233,46 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getRepaymentHelperText = () => {
+    const {
+      withdrawalConfigurationDetails: {
+        data: { configuration },
+      },
+    } = this.props;
+    const showFirstTimeRepaymentPreference = this.showFirstTimeRepaymentPreference();
+    const showSettings = this.showSettings();
+    const collectionMethod = showSettings && (
+      <>
+        in{' '}
+        <strong>
+          {configuration?.auto_collection ? 'automatic daily deductions.' : 'manual repayment.'}
+        </strong>
+        ,
+      </>
+    );
+    const setPreferenceLink = showSettings && !showFirstTimeRepaymentPreference && (
+      <NavLink
+        className="change-preference-link"
+        exact
+        to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}
+      >
+        Change Preference
+      </NavLink>
+    );
+
     if (this.isInterestTypeReducing()) {
       return (
         <span>
-          {' '}
-          is the repayable amount at reducing interest. <ReducingRepaymentTooltip />
+          is the repayable amount at reducing interest {collectionMethod}
+          <ReducingRepaymentTooltip />
+          {setPreferenceLink}
         </span>
       );
     }
-
-    return ' will be the repayable amount';
+    return (
+      <span>
+        will be the repayable amount {collectionMethod} {setPreferenceLink}
+      </span>
+    );
   };
 
   getRepaymentTooltipBody = () => {
@@ -1433,7 +1486,7 @@ export default class AmountWithdraw extends React.Component {
                 <div className="repayable-amount-hint">
                   {!this.isFungibleLimitProductType() ? (
                     <>
-                      <strong>{repayableAmount}</strong>
+                      <strong>{repayableAmount}</strong>{' '}
                       <span className="repayable-helper-text">{this.getRepaymentHelperText()}</span>
                     </>
                   ) : (
@@ -1753,7 +1806,7 @@ export default class AmountWithdraw extends React.Component {
     const { withdrawalAmount } = this.state;
     const {
       user,
-      withdrawalConfigurationDetails: { data: { automated_loc } } = {
+      withdrawalConfigurationDetails: { data: { automated_loc, configuration } } = {
         data: { automated_loc: false },
       },
       fungibleData,
@@ -1762,36 +1815,50 @@ export default class AmountWithdraw extends React.Component {
     const repayableAmount = parseFloat((interest + principle) * 100).toFixed(2);
     const updatedCardLimit = fungibleData?.cards?.available_balance || 0;
     const selectedDueDate = this.getDueDate();
+    const showSettings = this.showSettings();
+    const showRepaymentPreferences = showSettings && !this.showFirstTimeRepaymentPreference();
+
+    const handleCloseBtn = () => {
+      trackCloseButton();
+      this.refreshWithdrawView('close');
+    };
 
     return (
       <div className="withdrawals__action-container card">
         <div className="close-cta">
-          <Button.Transparent onClick={() => this.refreshWithdrawView('close')}>
-            <i class="i i-close" />
+          <Button.Transparent onClick={handleCloseBtn}>
+            <i className="i i-close" />
           </Button.Transparent>
         </div>
-        <div className="title-container">
-          <img height={16} src="/dist/css/assets/success-tick-green.svg" alt="Loading icon" />
-          <h3 className="text--secondary">
-            <strong>Withdrawal Request Successful!</strong>
-          </h3>
+        <div
+          className={`success-heading-container${
+            showSettings ? ' success-heading-container-settings' : ''
+          }`}
+        >
+          <div>
+            <div className="title-container">
+              <img height={16} src="/dist/css/assets/success-tick-green.svg" alt="Loading icon" />
+              <h3 className="text--secondary">
+                <strong>Withdrawal Request Successful!</strong>
+              </h3>
+            </div>
+            <p className="disbursal-details text--secondary">
+              The money will be transferred to your bank account in a few hours.
+            </p>
+          </div>
+          {showSettings && (
+            <div className="withdrawal__ctas">
+              <Button.Secondary onClick={() => this.refreshWithdrawView('Done')}>
+                Done
+              </Button.Secondary>
+              {!this.isFungibleLimitProductType() && (
+                <Button.Transparent onClick={() => this.refreshWithdrawView('Another Withdrawal')}>
+                  Another Withdrawal
+                </Button.Transparent>
+              )}
+            </div>
+          )}
         </div>
-        {this.isFungibleLimitProductType() ? (
-          <p className="disbursal-details text--secondary">
-            <strong>
-              <Amount
-                value={`${withdrawalAmount}00`}
-                parentQuerySelector=".withdrawals__top-summary"
-              />
-            </strong>{' '}
-            will be credited to your bank account within a minute
-          </p>
-        ) : (
-          <p className="disbursal-details text--secondary">
-            The money will be transferred to your bank account in a few hours. <br />
-            The withdrawal request has been successfully sent to bank.
-          </p>
-        )}
         <div
           className={`flex withdrawal-info${
             !this.isFungibleLimitProductType() ? ' top-border' : ''
@@ -1828,6 +1895,31 @@ export default class AmountWithdraw extends React.Component {
               </strong>
             </span>
           </div>
+          {showRepaymentPreferences && (
+            <div className="withdrawal__repayment-preference">
+              <p className="text--secondary no-margin">Repayment Preference</p>
+              <strong className="text--secondary">
+                {configuration?.auto_collection ? 'Automatic Daily Deductions' : 'Manual Repayment'}
+              </strong>
+              <NavLink
+                className="change-preference-link"
+                exact
+                to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}
+              >
+                Change Preference
+              </NavLink>
+            </div>
+          )}
+          {!showSettings && (
+            <div className="withdrawal__ctas">
+              <Button.Primary onClick={() => this.refreshWithdrawView('Done')}>Done</Button.Primary>
+              {!this.isFungibleLimitProductType() && (
+                <Button.Transparent onClick={() => this.refreshWithdrawView('Another Withdrawal')}>
+                  Another Withdrawal
+                </Button.Transparent>
+              )}
+            </div>
+          )}
           {this.isFungibleLimitProductType() && (
             <div className="flex">
               <div className="vertical-splitter" />
@@ -1873,14 +1965,6 @@ export default class AmountWithdraw extends React.Component {
               </div>
             </div>
           )}
-          <div class="withdrawal__ctas">
-            <Button.Primary onClick={() => this.refreshWithdrawView('Done')}>Done</Button.Primary>
-            {!this.isFungibleLimitProductType() && (
-              <Button.Transparent onClick={() => this.refreshWithdrawView('Another Withdrawal')}>
-                Another Withdrawal
-              </Button.Transparent>
-            )}
-          </div>
         </div>
         {user.isAutomatedLOCEligible && (
           <div className="automated-withdrawal-enable-text">
@@ -1903,6 +1987,7 @@ export default class AmountWithdraw extends React.Component {
             )}
           </div>
         )}
+        {showSettings && <RepaymentPreferenceBanner />}
       </div>
     );
   };
@@ -1970,7 +2055,22 @@ export default class AmountWithdraw extends React.Component {
     );
   };
 
+  changeView = (view) => {
+    if (view !== this.currentView) {
+      this.setState({
+        currentView: view,
+      });
+    }
+  };
+
   getTopSection = (currentView) => {
+    const { selectedDueDate, withdrawalAmount } = this.state;
+    const hasDueDateAndWithdrawnAmount = selectedDueDate && withdrawalAmount;
+    const { principle = 0, interest = 0 } = hasDueDateAndWithdrawnAmount
+      ? this.getRepayableAmount()
+      : {};
+    const repayableAmount = (principle + interest) * 100;
+
     switch (currentView) {
       case VIEWS.WITHDRAW:
         return this.withdrawableSection();
@@ -1978,6 +2078,17 @@ export default class AmountWithdraw extends React.Component {
         return this.withdrawalSuccessView();
       case VIEWS.WITHDRAW_FAIL:
         return this.withdrawalFailedView();
+      case VIEWS.WITHDRAW_FIRST_TIME:
+        return (
+          <FirstWithdrawalView
+            withdrawalAmount={this.state.withdrawalAmount * 100}
+            changeView={this.changeView}
+            withdraw={this.withdraw}
+            repaybleAmount={repayableAmount}
+            selectedDueDate={selectedDueDate}
+            isInterestTypeReducing={this.isInterestTypeReducing()}
+          />
+        );
       default:
         return null;
     }
@@ -2002,6 +2113,7 @@ export default class AmountWithdraw extends React.Component {
     switch (currentView) {
       case VIEWS.WITHDRAW:
       case VIEWS.WITHDRAW_FAIL:
+      case VIEWS.WITHDRAW_FIRST_TIME:
         if (!withdrawalConfigurationDetails || withdrawConfigLoading || seedData.loading)
           return (
             <CreditSummary

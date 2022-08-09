@@ -6,6 +6,7 @@ export const VIEWS = {
   WITHDRAW: 'WITHDRAW',
   WITHDRAW_SUCCESS: 'WITHDRAW_SUCCESS',
   WITHDRAW_FAIL: 'WITHDRAW_FAIL',
+  WITHDRAW_FIRST_TIME: 'WITHDRAW_FIRST_TIME',
 };
 
 export const REPAYMENT_VIEWS = {
@@ -145,6 +146,7 @@ export const CASH_ADVANCE_SECTIONS = {
   WITHDRAWALS: 'withdrawals',
   REPAYMENTS: 'repayments',
   REPAYMENTS_SCHEDULE: 'repayments-schedule',
+  SETTINGS: 'settings',
 };
 
 export const WITHDRAW_ERROR_TYPES = {
@@ -316,15 +318,20 @@ export const REPAYMENT_TYPES = {
 
 export const RZP_MERCHANT_OWNER_TYPE = 'RZP_MERCHANT';
 export const MERCHANT_OWNER_TYPE = 'MERCHANT';
+export const LOC_PRODUCT_TYPE = 'LOC';
 
 export const HOTJAR_TRIGGER = {
   CASH_ADVANCE_LIVE: 'Cash_Advance_Live',
   CASH_ADVANCE_FIRST_WITHDRAWAL: 'Cash_Advance_Withdrawal',
   CASH_ADVANCE_FIRST_REPAYMENT: 'Cash_Advance_Repayment',
 };
-
 export const CASH_ADVANCE_PRODUCT_TYPES = {
   CASH_ON_CARD: 'CASH_ON_CARD',
 };
 
 export const CASH_ON_CARD_RENDER_DATE_KEY = 'CASH_ON_CARD_DATE_KEY';
+
+export const REPAYMENT_PREFERENCES = {
+  AUTOMATIC_DAILY_DEDUCTION: 'AUTOMATIC_DAILY_DEDUCTION',
+  MANUAL_REPAYMENT: 'MANUAL_REPAYMENT',
+};

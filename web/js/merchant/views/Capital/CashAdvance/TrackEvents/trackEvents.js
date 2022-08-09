@@ -108,6 +108,48 @@ export const trackWithdrawNow = ({ amount, date }) =>
     },
   });
 
+export const trackConfirmPreferenceCTA = () =>
+  trackEvent({
+    objectName: 'Confirm Preference CTA',
+    actionName: 'Clicked',
+    screen: 'PG Dashboard | Loans (Cash Advance) | Overview',
+    properties: {},
+  });
+
+export const trackAutomaticDailyDeductionsRadio = () =>
+  trackEvent({
+    objectName: 'Automatic Daily Deductions radio option',
+    actionName: 'Clicked',
+    screen: 'PG Dashboard | Loans (Cash Advance) | Overview',
+    properties: {
+      automatic_daily_deductions_flag: true,
+    },
+  });
+
+export const trackRepayManuallyRadio = () =>
+  trackEvent({
+    objectName: 'I will repay manually radio option',
+    actionName: 'Clicked',
+    screen: 'PG Dashboard | Loans (Cash Advance) | Overview',
+    properties: {
+      manual_repay_flag: true,
+    },
+  });
+
+export const trackEditButton = () =>
+  trackEvent({
+    objectName: 'Edit button',
+    actionName: 'Clicked',
+    screen: 'PG Dashboard | Loans (Cash Advance) | Overview',
+  });
+
+export const trackCloseButton = () =>
+  trackEvent({
+    objectName: 'Close Button',
+    actionName: 'Clicked',
+    screen: 'PG Dashboard | Loans (Cash Advance) | Overview',
+  });
+
 export const trackWithdrawNowConfirm = ({ amount, date }) =>
   trackEvent({
     objectName: 'Withdraw Confirm',
