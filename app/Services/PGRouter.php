@@ -145,6 +145,8 @@ class PGRouter
 
     public function validateAndCreatePaymentCheckout(array $input, bool $throwExceptionOnFailure = false): array
     {
+        $this->updateIpandUserAgent($input);
+
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentCheckout, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
