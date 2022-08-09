@@ -238,6 +238,11 @@ class Processor
     const NETBANKING_PAYMENTS_VIA_PGROUTER = 'netbanking_payments_via_pg_router';
 
     /**
+     * Razorx flag to decide if payments should go via pg-router to UPS.
+     */
+    const UPS_PAYMENTS_VIA_PGROUTER = 'ups_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate if a payment should go via PG Router and CPS or just via API service for headless or Rupay, during Payment creation
      */
     const HEADLESS_CARD_PAYMENTS_VIA_PGROUTER = 'headless_card_payments_via_pg_router_v2';
@@ -747,6 +752,136 @@ class Processor
         return ($result === 'on');
     }
 
+    private function canRouteThroughUpsRearchFlow($input): bool
+    {
+        try
+        {
+            $currentRouteName = $this->route->getCurrentRouteName();
+            $merchant = $this->app['basicauth']->getMerchant();
+
+            // Do not enable in prod env
+            if (app()->isEnvironmentProduction() === true)
+            {
+                return false;
+            }
+
+            /*
+             * Rearch criteria
+             * 1. Route should be payment/create/ajax
+             * 2. Method should be upi
+             * 3. Non recurring payment
+             * 4. Non TPV payment
+             * 5. Merchant shouldn't be fee bearer
+             * 6. Capture queue should be implemented in the second ramp
+             * 7. Non BQR / UPIQR / OTM / GPayCard / International
+             */
+
+            // test mode payments are not supported
+            if ((app()->isEnvironmentProduction() === true) and
+                ($this->mode === Mode::TEST))
+            {
+                return false;
+            }
+
+            if ((app()->isEnvironmentQA() === true) and
+                ($this->mode === Mode::LIVE))
+            {
+                return false;
+            }
+
+            if ($this->isRearchBVTRequest() === true)
+            {
+                return true;
+            }
+
+            if (($this->route->isRearchRoute($currentRouteName) == false) or
+                (empty($input[Payment\Entity::METHOD]) === true) or
+                ($input[Payment\Entity::METHOD] !== Payment\METHOD::UPI) or
+                (empty($input[Payment\Entity::RECURRING]) === false) or
+                (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
+                (empty($input[Payment\Entity::INVOICE_ID]) === false) or
+                (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false) or
+                (empty($input[Payment\Entity::TOKEN_ID]) === false) or
+                (empty($input[Payment\Entity::TOKEN]) === false) or
+                (empty($input[Payment\Entity::SAVE]) === false) or
+                (empty($input[Payment\Entity::OFFER_ID]) === false) or
+                (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
+                (empty($input['reward_ids']) === false) or
+                ($merchant->isFeeBearerPlatform() === false) or
+                ($merchant->isRazorpayOrgId() === false) or
+                ($merchant->isTPVRequired() === true) or
+                ($this->isOtmPayment($input) === true) or
+                (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === true) or
+                (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::PROVIDER]) === true) or
+                ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE]) === true) and
+                ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE] !== Payment\UpiMetadata\Type::DEFAULT)) or
+                (isset($input[Payment\Entity::RECEIVER]) === true) or
+                (isset($input[Payment\Entity::UPI_PROVIDER]) === true) or
+                (isset($input[Payment\Entity::CHARGE_ACCOUNT]) === true) or
+                (isset($input['application']) === true) or
+                (isset($input[Payment\Entity::BILLING_ADDRESS]) === true))
+            {
+                return false;
+            }
+
+            if (empty($input[Payment\Entity::ORDER_ID]) === false)
+            {
+                $order = $this->fetchOrderFromInput($input);
+
+                $orderMeta =  (new Order\Core)->getFormattedOrderMeta($order);
+
+                // offers are not supported in initial ramp
+                if ((empty($order) === false) and
+                    (($order->hasOffers() === true) or
+                     ($order->isDiscountApplicable() === true) or
+                     ($order->getProductId() !== null) or
+                     ($order->getFeeConfigId() !== null) or
+                     ($order->invoice !== null) or
+                     (isset($orderMeta[Order\OrderMeta\Type::TAX_INVOICE]) === true))
+                    )
+                {
+                    return false;
+                }
+
+                $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER,
+                $order->getId(), $this->merchant);
+
+                if ((empty($orderTransfers) === false) and
+                    (count($orderTransfers) > 0))
+                {
+                    return false;
+                }
+            }
+
+            if ((empty($input['currency']) === false) and
+                ($input['currency'] !== Currency\Currency::INR))
+            {
+                return false;
+            }
+
+            if ((app()->runningUnitTests() === true) and
+                ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
+            {
+                return false;
+            }
+
+            $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+                self::UPS_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+            return ($result === 'ups');
+        }
+        catch(\Throwable $e)
+        {
+             $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::REARCH_CRITIERIA_CHECK_FAILED,
+                    []);
+        }
+
+        return false;
+    }
+
     private function processPaymentViaPGRouter(array $input, $startTime)
     {
         (new Payment\Metric)->pushCreateMetricsViaPGRouter($input);
@@ -922,7 +1057,8 @@ class Processor
             $this->validateAndDecryptEncryptedCardInput($input);
 
             if (($this->canRouteThroughRearchFlow($input) === true) or
-                ($this->canRouteThroughNbPlusRearchFlow($input) === true))
+                ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
+                ($this->canRouteThroughUpsRearchFlow($input) === true))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 
