@@ -84,10 +84,15 @@ class Service extends Base\Service
             }
         }
 
-        $result = $this->repo->subscription_registration->fetchRecurringTokensByMerchant(
+       /* $result = $this->repo->subscription_registration->fetchRecurringTokensByMerchant(
             $this->merchant,
-            $input);
+            $input);*/
 
+        $result= $this->repo->useSlave(function() use ($input) {
+            return $this->repo->subscription_registration->fetchRecurringTokensByMerchant(
+                $this->merchant,
+                $input);
+            });
         return $result->toArrayPublic();
     }
 

@@ -178,6 +178,8 @@ class CreateTokens extends Migration
                   ->on(Table::TERMINAL)
                   ->on_delete('restrict');
 
+            $table->index(Token::MERCHANT_ID);
+
         });
 
         Schema::table(Table::PAYMENT, function($table)

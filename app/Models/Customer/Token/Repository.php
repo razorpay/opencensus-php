@@ -303,7 +303,10 @@ class Repository extends Base\Repository
 
     public function fetchRecurringTokensByMerchant(array $input, string $merchantId) : Base\PublicCollection
     {
+        $index = Token\Entity::TOKENS_MERCHANT_ID_INDEX;
+
         $query = $this->newQuery()
+                      ->from(\DB::raw("`tokens` FORCE INDEX ($index)"))
                       ->where(Token\Entity::MERCHANT_ID, '=', $merchantId)
                       ->whereIn(
                           Token\Entity::RECURRING_STATUS,
@@ -320,6 +323,8 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+
 
     /**
      * @throws ServerErrorException
