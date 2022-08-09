@@ -37,7 +37,7 @@ const MyAccount = (props) => {
       !Object.keys(props.websiteSectionDetailsData.data).length &&
       !props.websiteSectionDetailsData.error
     ) {
-      props.fetchMerchantWebsiteDetails();
+      if (props.user.isWebsiteComplianceFlowEnabled) props.fetchMerchantWebsiteDetails();
     }
   }, []);
 

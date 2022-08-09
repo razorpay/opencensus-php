@@ -167,8 +167,10 @@ class AnalyticsDesktop extends Component {
 
     // website compliance flow
     fetchActivationDetails(user.id);
-    fetchMerchantWebsiteDetails();
-    getBannerAndModalVisibility();
+    if (user.isWebsiteComplianceFlowEnabled) {
+      fetchMerchantWebsiteDetails();
+      getBannerAndModalVisibility();
+    }
 
     this.checkIfFirstEverSettlement();
 

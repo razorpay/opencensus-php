@@ -98,8 +98,10 @@ class AnalyticsMobile extends Component {
 
     // website compliance flow
     this.props.fetchActivationDetails();
-    this.props.fetchMerchantWebsiteDetails();
-    this.props.getBannerAndModalVisibility();
+    if (this.props.user.isWebsiteComplianceFlowEnabled) {
+      this.props.fetchMerchantWebsiteDetails();
+      this.props.getBannerAndModalVisibility();
+    }
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
