@@ -684,7 +684,7 @@ abstract class Base extends BaseModel\Core
             if($payment->hasOrder() === true and
                 $payment->order->getFeeConfigId() !== null )
             {
-                $customerFee = (new Payment\Processor\Processor($this->merchant))->calculateCustomerFee($payment, $payment->order, $fee);
+                $customerFee = (new Payment\Processor\Processor($payment->merchant))->calculateCustomerFee($payment, $payment->order, $fee);
 
                 if($customerFee !== null)
                 {
