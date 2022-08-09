@@ -818,12 +818,7 @@ trait Refund
                 'input'         => $input,
             ]);
 
-        $variant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
-                $this->mode);
-
-        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
         {
             $this->trace->info(
             TraceCode::REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE,
@@ -2904,12 +2899,7 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
-        $variant = $this->app->razorx->getTreatment(
-                $this->merchant->getId(),
-                Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
-                $this->mode);
-
-        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
         {
             $this->trace->info(
             TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
@@ -4250,5 +4240,25 @@ trait Refund
         $notifier = new Notify($refund->payment);
 
         return $notifier->getEmailDataForRefund($refund);
+    }
+
+    public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
+    {
+        if (($payment->getCurrency() !== Currency\Currency::INR) or
+            ($payment->isDCC() === true) or
+            ($payment->isUpiAndAmountMismatched() === true) or
+            ($payment->isAppCred() === true) or
+            ($payment->isHdfcVasDSCustomerFeeBearerSurcharge() === true))
+        {
+            return false;
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $merchantId,
+            Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+            $this->mode
+        );
+
+        return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
     }
 }
