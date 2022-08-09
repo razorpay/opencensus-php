@@ -275,6 +275,42 @@ class MandateTest extends TestCase
          ], $response);
     }
 
+    public function testInitiateRevoke()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $request = $helper->initiateRevoke($lastMandate[Entity::ID], []);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
+    }
+
+    public function testRevokeMandate()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $coproto = $helper->initiateRevoke($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($coproto);
+
+        $response = $helper->revokeMandate($coproto['callback'], $content);
+
+        $this->assertArraySubset([
+                 Entity::STATUS   => Status::REVOKED,
+             ], $response);
+    }
+
     private function createMandateOnMock($helper, $callback)
     {
         $this->mockSdk()->setCallback('CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED', $callback);

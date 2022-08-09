@@ -37,10 +37,18 @@ class MandateTransformer extends TransactionTransformer
                     Entity::INTERNAL_STATUS     => Status::REQUESTED,
                 ];
                 break;
+
+            case MandateAction::UPDATE_OR_REVOKE_MANDATE:
+                $output = [
+                    Entity::TYPE                            => Type::COLLECT,
+                    Entity::FLOW                            => Flow::DEBIT,
+                    Entity::ACTION                          => MandateAction::UPDATE_OR_REVOKE_MANDATE,
+                    Entity::STATUS                          => Status::REVOKED,
+                    Entity::INTERNAL_STATUS                 => Status::REVOKED,
+                ];
         }
 
         // switch in case of mandate status
-
         if(isset($this->input[Fields::STATUS]))
         {
             switch ($this->input[Fields::STATUS])

@@ -353,6 +353,10 @@ class Processor extends Base\Processor
                 $this->setMandateRevoked($mandate, $input);
                 break;
 
+            case Status::FAILED:
+                $this->setMandateFailed($mandate, $input);
+                break;
+
             default:
                 throw $this->logicException('Invalid internal status for mandate', [
                     Entity::MANDATE         => $input,
@@ -492,4 +496,30 @@ class Processor extends Base\Processor
 
         $mandate->markRevoked();
     }
+
+    /**
+     * This is the function to set mandate status as failed
+     * @param Entity   $mandate
+     * @param ArrayBag $input
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function setMandateFailed(Entity $mandate, ArrayBag $input)
+    {
+        if ($mandate->isCompleted() === true)
+        {
+            throw $this->logicException('Transaction can not be marked failed', [
+                Entity::MANDATE         => $input,
+                Entity::ID              => $mandate->getId(),
+            ]);
+        }
+
+        $mandate->setInternalStatus($input[Entity::INTERNAL_STATUS]);
+
+        $error = new Error($input[Entity::INTERNAL_ERROR_CODE]);
+
+        $mandate->setErrorCode($error->getPublicErrorCode());
+        $mandate->setErrorDescription($error->getDescription());
+    }
+
 }

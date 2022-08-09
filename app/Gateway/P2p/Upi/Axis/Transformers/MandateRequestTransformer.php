@@ -82,6 +82,21 @@ class MandateRequestTransformer extends Transformer
                 $output[Fields::UPI_REQUEST_ID]        = $this->getUpiRequestId();
                 break;
 
+            case MandateAction::REVOKE:
+                $output[Fields::ACCOUNT_REFERENCE_ID]  = $this->getAccountReferenceId();
+                $output[Fields::AMOUNT]                = $this->getFormattedAmount();
+                $output[Fields::CUSTOMER_VPA]          = $this->getPayerVpa();
+                $output[Fields::INITIATED_BY]          = 'PAYER';
+                $output[Fields::MERCHANT_CUSTOMER_ID]  = $this->getMerchantCustomerId();
+                $output[Fields::MERCHANT_REQUEST_ID]   = $this->getMerchantRequestId();
+                $output[Fields::ORG_MANDATE_ID]        = $this->getOrgMandateId();
+                $output[Fields::PAYEE_NAME]            = $this->getPayeeName();
+                $output[Fields::PAYEE_VPA]             = $this->getPayeeVpa();
+                $output[Fields::REMARKS]               = $this->getDescription();
+                $output[Fields::REQUEST_TYPE]          = MandateAction::REVOKE;
+                $output[Fields::TIME_STAMP]            = $this->getTimestamp();
+                $output[Fields::UPI_REQUEST_ID]        = $this->getUpiRequestId();
+                break;
         }
 
         return $output;

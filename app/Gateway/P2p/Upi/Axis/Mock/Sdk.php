@@ -265,6 +265,15 @@ class Sdk
         }
     }
 
+    public function sdkUpdateOrRevokeMandate()
+    {
+        switch($this->input[Fields::REQUEST_TYPE])
+        {
+            case MandateAction::REVOKE:
+                return $this->sdkRevokeMandate();
+        }
+    }
+
     public function sdkAuthorizeMandate()
     {
         $response = [
@@ -482,12 +491,12 @@ class Sdk
             Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
             Fields::GATEWAY_REFERENCE_ID        => '911416196085',
             Fields::GATEWAY_RESPONSE_CODE       => '00',
-            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is successfully approved',
+            Fields::GATEWAY_RESPONSE_MESSAGE    => 'Mandate is successfully revoked',
             Fields::GATEWAY_RESPONSE_STATUS     => 'SUCCESS',
             Fields::INITIATED_BY                => 'payer',
             Fields::MANDATE_NAME                => 'Sample mandate test',
             Fields::MANDATE_TIMESTAMP           => Carbon::now()->toIso8601String(),
-            Fields::MANDATA_TYPE                => $this->input[Fields::REQUEST_TYPE],
+            Fields::MANDATE_TYPE                => $this->input[Fields::REQUEST_TYPE],
             Fields::MERCHANT_CUSTOMER_ID        => $this->input[Fields::MERCHANT_CUSTOMER_ID],
             Fields::MERCHANT_REQUEST_ID         => $this->input[Fields::MERCHANT_REQUEST_ID],
             Fields::ORG_MANDATE_ID              => str_random(35),

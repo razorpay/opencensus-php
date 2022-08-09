@@ -27,4 +27,8 @@ interface MandateGateway extends GatewayInterface
     public function initiateUnPause(Response $response);
 
     public function unpause(Response $response);
+
+    public function initiateRevoke(Response $response);
+
+    public function revoke(Response $response);
 }

@@ -65,6 +65,13 @@ class UpiMandateTransformer extends Transformer
                     UpiMandate\Entity::STATUS    => Mandate\Status::REJECTED,
                 ];
                 break;
+
+            case MandateAction::FAILURE:
+                $output = [
+                    UpiMandate\Entity::ACTION    => $this->action,
+                    UpiMandate\Entity::STATUS    => Mandate\Status::FAILED,
+                ];
+                break;
         }
 
         return $output;

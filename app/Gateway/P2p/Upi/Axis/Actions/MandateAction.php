@@ -12,18 +12,22 @@ use RZP\Gateway\P2p\Upi\Axis\Fields;
  */
 class MandateAction extends Action
 {
-    const APPROVE_DECLINE_MANDATE = 'APPROVE_DECLINE_MANDATE';
-    const PAUSE_UNPAUSE_MANDATE   = 'PAUSE_UNPAUSE_MANDATE';
+    const APPROVE_DECLINE_MANDATE  = 'APPROVE_DECLINE_MANDATE';
+    const PAUSE_UNPAUSE_MANDATE    = 'PAUSE_UNPAUSE_MANDATE';
+    const UPDATE_OR_REVOKE_MANDATE = 'UPDATE_OR_REVOKE_MANDATE';
 
     const CREATE            = 'CREATE';
     const APPROVE           = 'APPROVE';
     const DECLINE           = 'DECLINE';
+    const REVOKE            = 'REVOKE';
+    const REVOKED           = 'REVOKED';
     const SUCCESS           = 'SUCCESS';
     const DECLINED          = 'DECLINED';
     const PAUSE             = 'PAUSE';
     const UNPAUSE           = 'UNPAUSE';
     const PAUSED            = 'PAUSED';
     const UNPAUSED          = 'UNPAUSED';
+    const FAILURE           = 'FAILURE';
 
     const MAP = [
         self::APPROVE_DECLINE_MANDATE => [
@@ -169,6 +173,83 @@ class MandateAction extends Action
                     Fields::UMN,
                     Fields::VALIDITY_START,
                     Fields::VALIDITY_END
+                ],
+            ],
+        ],
+        self::UPDATE_OR_REVOKE_MANDATE => [
+            self::VALIDATOR => [
+                Fields::ACCOUNT_REFERENCE_ID        => 'required',
+                Fields::AMOUNT                      => 'required',
+                Fields::CUSTOMER_VPA                => 'required',
+                Fields::INITIATED_BY                => 'sometimes',
+                Fields::EXPIRY                      => 'sometimes',
+                Fields::MERCHANT_CUSTOMER_ID        => 'required',
+                Fields::MERCHANT_REQUEST_ID         => 'required',
+                Fields::ORG_MANDATE_ID              => 'required',
+                Fields::PAYEE_NAME                  => 'sometimes',
+                Fields::PAYEE_VPA                   => 'sometimes',
+                Fields::REMARKS                     => 'sometimes',
+                Fields::REQUEST_TYPE                => 'required',
+                Fields::TIME_STAMP                  => 'required',
+                Fields::UPI_REQUEST_ID              => 'required',
+                Fields::VALIDITY_END                => 'sometimes',
+            ],
+
+            self::SIGNATURE => [
+                Fields::ACCOUNT_REFERENCE_ID,
+                Fields::AMOUNT,
+                Fields::CUSTOMER_VPA,
+                Fields::EXPIRY,
+                Fields::INITIATED_BY,
+                Fields::MERCHANT_CUSTOMER_ID,
+                Fields::MERCHANT_REQUEST_ID,
+                Fields::ORG_MANDATE_ID,
+                Fields::PAYEE_VPA,
+                Fields::REMARKS,
+                Fields::REQUEST_TYPE,
+                Fields::TIME_STAMP,
+                Fields::UDF_PARAMETERS,
+                Fields::UPI_REQUEST_ID,
+                Fields::VALIDITY_END
+            ],
+
+            self::RESPONSE => [
+                self::SIGNATURE => [
+                    Fields::ACCOUNT_REFERENCE_ID,
+                    Fields::AMOUNT,
+                    Fields::AMOUNT_RULE,
+                    Fields::BLOCK_FUND,
+                    Fields::EXPIRY,
+                    Fields::GATEWAY_MANDATE_ID,
+                    Fields::GATEWAY_REFERENCE_ID,
+                    Fields::GATEWAY_RESPONSE_CODE,
+                    Fields::GATEWAY_RESPONSE_MESSAGE,
+                    Fields::GATEWAY_RESPONSE_STATUS,
+                    Fields::INITIATED_BY,
+                    Fields::MANDATE_NAME,
+                    Fields::MANDATE_TIMESTAMP,
+                    Fields::MANDATE_TYPE,
+                    Fields::MERCHANT_CUSTOMER_ID,
+                    Fields::MERCHANT_REQUEST_ID,
+                    Fields::ORG_MANDATE_ID,
+                    Fields::PAYEE_MCC,
+                    Fields::PAYEE_NAME,
+                    Fields::PAYEE_VPA,
+                    Fields::PAYER_NAME,
+                    Fields::PAYER_REVOCABLE,
+                    Fields::PAYER_VPA,
+                    Fields::RECURRENCE_PATTERN,
+                    Fields::RECURRENCE_RULE,
+                    Fields::RECURRENCE_VALUE,
+                    Fields::REF_URL,
+                    Fields::REMARKS,
+                    Fields::ROLE,
+                    Fields::SHARE_TO_PAYEE,
+                    Fields::TRANSACTION_TYPE,
+                    Fields::UDF_PARAMETERS,
+                    Fields::UMN,
+                    Fields::VALIDITY_END,
+                    Fields::VALIDITY_START,
                 ],
             ],
         ],
