@@ -1,8 +1,8 @@
-import { getFixedINRAmount } from 'common/utils/rzp-utils';
+import { getFixedINRAmount, getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import store from '../../../../store';
 import analyticsService from '@razorpay/commander-services/analytics';
 
-const trackEvent = (obj) => {
+export const trackEvent = (obj) => {
   const {
     session: { user },
   } = store.getState();
@@ -11,6 +11,7 @@ const trackEvent = (obj) => {
     analyticsService.track({
       ...obj,
       properties: {
+        ...getCommonSegmentProperties(),
         ...obj.properties,
         loc_flag: user.isLOCEnabled,
         withdraw_flag: user.isWithdrawFeatureEnabled,

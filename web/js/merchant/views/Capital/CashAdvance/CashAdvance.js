@@ -7,6 +7,7 @@ import {
   HOTJAR_TRIGGER,
   NOOP,
   COLLECTIONS_PRODUCT_TYPES,
+  REPAYMENT_FREQUENCY_TYPES,
 } from './constants';
 import Withdrawals from './withdrawals';
 import Overview from './Overview';
@@ -29,6 +30,7 @@ import { getItem, removeItem } from 'common/utils/localStorage';
 import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import moment from 'moment';
+import Settings from './views/Settings';
 
 const Loader = () => {
   return (
@@ -265,6 +267,18 @@ class CashAdvance extends React.Component {
     return false;
   };
 
+  getRepaymentFrequency = () => {
+    return this.props?.withdrawalConfiguration?.data?.repayment_frequency;
+  };
+
+  isRepaymentFrequencyCustom = () => {
+    return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.CUSTOM;
+  };
+
+  showSettings = () => {
+    return Boolean(!this.props?.user?.isCashOnCardEnabled && this.isRepaymentFrequencyCustom());
+  };
+
   renderSection() {
     //Hotjar Events
     if (this.getIsMerchantNew() && this.getIsNWithdrawalsCompleted(0)) {
@@ -293,6 +307,12 @@ class CashAdvance extends React.Component {
       }
       case CASH_ADVANCE_SECTIONS.REPAYMENTS: {
         return <Repayments />;
+      }
+      case CASH_ADVANCE_SECTIONS.SETTINGS: {
+        if (this.showSettings()) {
+          return <Settings />;
+        }
+        return null;
       }
     }
   }
@@ -352,6 +372,11 @@ class CashAdvance extends React.Component {
             {withdrawalsData && (
               <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.REPAYMENTS}`}>
                 Repayments
+              </NavLink>
+            )}
+            {this.showSettings() && (
+              <NavLink exact to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.SETTINGS}`}>
+                Settings
               </NavLink>
             )}
           </header>
