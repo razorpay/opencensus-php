@@ -1246,7 +1246,6 @@ export default class AmountWithdraw extends React.Component {
         <strong>
           {configuration?.auto_collection ? 'automatic daily deductions.' : 'manual repayment.'}
         </strong>
-        ,
       </>
     );
     const setPreferenceLink = showSettings && !showFirstTimeRepaymentPreference && (
