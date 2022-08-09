@@ -223,7 +223,15 @@ class TypeformParser extends Base implements DataParserInterface
                     else if($answerType === 'choice')
                     {
                         $question = $formData[$answer['field']['id']]['question'];
-                        $questionToAnswer[$question] = $answer['choice']['label'];
+
+                        if($answer['choice']['id'] === 'other')
+                        {
+                            $questionToAnswer[$question] = $answer['choice']['other'];
+                        }
+                        else
+                        {
+                            $questionToAnswer[$question] = $answer['choice']['label'];
+                        }
                     }
                     else
                     {
