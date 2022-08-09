@@ -209,9 +209,9 @@ trait ExternalRepo
             {
                 $entity->setExternal(true);
 
-                $relations = $this->getExpandsForQueryFromInput($input);
-
                 $this->handleOrderExpands($input,$this->entity, $entity, $id, $class, $merchantId);
+
+                $relations = $this->getExpandsForQueryFromInput($input);
 
                 $entity->loadMissing($relations);
 
@@ -240,14 +240,14 @@ trait ExternalRepo
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
-    protected function handleOrderExpands($expands, $entityType, $entity, $id, $class, $merchantId)
+    protected function handleOrderExpands(array & $expands, $entityType, $entity, $id, $class, $merchantId)
     {
-        if (($entityType === Entity::ORDER) and (array_key_exists("expands",$expands) === true))
+        if (($entityType === Entity::ORDER) and (array_key_exists("expand",$expands) === true))
         {
             $id = Order\Entity::verifyIdAndSilentlyStripSign($id);
-            
+
             //relations --> payments,payments.card
-            if (in_array("payments.card",  $expands['expands']) === true)
+            if (in_array("payments.card",  $expands['expand']) === true)
             {
                 $apiPayments = $this->repo->payment->fetchPaymentsWithCardForOrderId($id);
 
@@ -256,8 +256,14 @@ trait ExternalRepo
                 $res = $apiPayments->merge($rearchPayments);
 
                 $entity->payments = $res->toArrayPublic();
+
+                // in case payments.card it is not a relation so while loading the relations its failing,
+                // so we need to unset that key
+                $key = array_search("payments.card", $expands[self::EXPAND]);
+
+                unset($expands[self::EXPAND][$key]);
             }
-            else if (in_array("payments", $expands['expands']) === true)
+            else if (in_array("payments", $expands['expand']) === true)
             {
                 $apiPayments = $this->repo->payment->fetchPaymentsForOrderId($id);
 
@@ -266,6 +272,10 @@ trait ExternalRepo
                 $res = $apiPayments->merge($rearchPayments);
 
                 $entity->payments = $res->toArrayPublic();
+
+                $key = array_search("payments", $expands[self::EXPAND]);
+
+                unset($expands[self::EXPAND][$key]);
             }
         }
     }
