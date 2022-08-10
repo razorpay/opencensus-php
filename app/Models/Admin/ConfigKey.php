@@ -242,6 +242,8 @@ class ConfigKey
 
     const RX_LIMIT_STATEMENT_FIX_ENTITIES_UPDATE = self::PREFIX . 'rx_limit_statement_fix_entities_update';
 
+    const RX_POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH = self::PREFIX . 'rx_posted_date_window_for_previous_bas_search';
+
     const RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING = self::PREFIX . 'rx_globally_whitelisted_payer_accounts_for_fund_loading';
 
     // This will be used to get the number of records to save at once in bulk
@@ -405,6 +407,7 @@ class ConfigKey
         self::RX_WEBHOOK_URL_FOR_MFN,
         self::RX_WEBHOOK_URL_FOR_MFN_TEST_MODE,
         self::RX_LIMIT_STATEMENT_FIX_ENTITIES_UPDATE,
+        self::RX_POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH,
         self::RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS_FOR_FUND_LOADING,
         self::RBL_STATEMENT_FETCH_RATE_LIMIT,
         self::RBL_STATEMENT_FETCH_WINDOW_LENGTH,

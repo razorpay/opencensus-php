@@ -144,16 +144,20 @@ class Repository extends Base\Repository
                     ->get($columns);
     }
 
-    public function fetchPreviousBasEntityToInsertMissingRecord(string $merchantId, string $accountNumber, string $channel, $postedDate)
+    public function fetchPreviousBasIdToInsertMissingRecord(string $merchantId,
+                                                            string $accountNumber,
+                                                            string $channel,
+                                                            $postedDate,
+                                                            $previousPostedDate)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->selectRaw('MAX(id) as previous_id')
                     ->where(Entity::MERCHANT_ID, $merchantId)
                     ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
                     ->where(Entity::CHANNEL, $channel)
                     ->where(Entity::POSTED_DATE,'<=', $postedDate)
-                    ->orderBy(Entity::ID, 'desc')
-                    ->limit(1)
-                    ->first();
+                    ->where(Entity::POSTED_DATE,'>=', $previousPostedDate)
+                    ->value('previous_id');
     }
 
     public function checkIfIdExists(string $id)

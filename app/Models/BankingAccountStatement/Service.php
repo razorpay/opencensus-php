@@ -131,9 +131,16 @@ class Service extends Base\Service
             ];
         }
 
+        $dryRunMode = false;
+
+        if ($input['action'] === 'dry_run')
+        {
+            $dryRunMode = true;
+        }
+
         try
         {
-            $response = $this->core()->insertMissingStatements($accountNumber, $channel, $missingStatements);
+            $response = $this->core()->insertMissingStatements($accountNumber, $channel, $missingStatements, $dryRunMode);
 
             return $response;
         }

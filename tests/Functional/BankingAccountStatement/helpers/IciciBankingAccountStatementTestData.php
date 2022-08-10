@@ -187,6 +187,21 @@ return [
         ],
     ],
 
+    'testDryRunInsertMissingAccountStatement' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/insert_missing',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel' => 'icici',
+                'action'  => 'dry_run',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testFetchIciciMissingAccountStatement' => [
         'request'  => [
             'method'  => 'POST',

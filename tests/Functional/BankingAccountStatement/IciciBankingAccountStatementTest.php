@@ -2767,4 +2767,79 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(json_encode([$statement]), $response['missing_statements']);
     }
+
+    public function testDryRunInsertMissingAccountStatement()
+    {
+        $this->testIciciAccountStatementCase1();
+
+        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
+            '2224440041626905' => [
+                [
+                    'type'                      => 'credit',
+                    'amount'                    => '100',
+                    'currency'                  => 'INR',
+                    'channel'                   => 'icici',
+                    'account_number'            => '2224440041626905',
+                    'bank_transaction_id'       => 'S71034964',
+                    'balance'                   => 1000100,
+                    'transaction_date'          => 1613586600,
+                    'posted_date'               => 1613627140,
+                    'bank_serial_number'        => 'S71034964',
+                    'description'               => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
+                    'balance_currency'          => 'INR',
+                ]
+            ],
+        ]]);
+
+        $initialBasEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $initialCount = count($initialBasEntries);
+
+        $initialGroupedBasEntities = $initialBasEntries->groupBy('bank_transaction_id')->toArray();
+
+        $initialBasDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $initialStatementClosingBalance = $initialBasDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $initialStatement1 = $initialGroupedBasEntities['S71034864'];
+
+        $initialStatement2 = $initialGroupedBasEntities['S74203578'];
+
+        $initialStatement3 = $initialGroupedBasEntities['S86758818'];
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantMissingStatementList = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici'
+            ]);
+
+        $this->assertCount(1, $merchantMissingStatementList['2224440041626905']);
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $groupedBasEntities = $basEntries->groupBy('bank_transaction_id')->toArray();
+
+        $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $finalStatementClosingBalance = $basDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $this->assertCount($initialCount , $basEntries);
+
+        $this->assertEquals($initialStatementClosingBalance, $finalStatementClosingBalance);
+
+        $finalStatement1 = $groupedBasEntities['S71034864'];
+
+        $finalStatement2 = $groupedBasEntities['S74203578'];
+
+        $finalStatement3 = $groupedBasEntities['S86758818'];
+
+        $this->assertEquals($initialStatement1[0][BasEntity::BALANCE], $finalStatement1[0][BasEntity::BALANCE]);
+
+        $this->assertEquals($initialStatement2[0][BasEntity::BALANCE], $finalStatement2[0][BasEntity::BALANCE]);
+
+        $this->assertEquals($initialStatement3[0][BasEntity::BALANCE], $finalStatement3[0][BasEntity::BALANCE]);
+    }
 }

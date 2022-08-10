@@ -70,6 +70,9 @@ class Core extends Base\Core
 
     const ACCOUNT_STATEMENT_BAS_ENTITIES_TO_UPDATE = 5000;
 
+    // a default window of 3 days
+    const POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH = 259200;
+
     const RETRY_COUNT_FOR_ID_GENERATION = 100;
 
     // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
@@ -107,6 +110,13 @@ class Core extends Base\Core
      * @var array
      */
     protected $previousBasTransactionDetails = null;
+
+     /**
+      * This is used to check if the current process is just dry run or not
+      *
+      * @var bool
+      */
+    protected $isDryRunModeActiveForStatementFix = false;
 
     protected $creditBeforeDebitUtrs = [];
 
@@ -437,14 +447,19 @@ class Core extends Base\Core
         return [$fetchMore, $paginationKey];
     }
 
-    public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements)
+    public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
     {
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements)
+            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode)
             {
                 // setting the variable to true to customize the later flow (linking the statement to source entity)
                 $this->isStatementUnderFix = true;
+
+                if ($dryRunMode === true)
+                {
+                    $this->isDryRunModeActiveForStatementFix = true;
+                }
 
                 $this->setBasDetailsForStatementFix($accountNumber, $channel);
 
@@ -489,15 +504,23 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
         );
 
+        $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_INIT,
+            [
+                'account_number' => $accountNumber,
+                'params'         => $params
+            ]);
+
+        if ($this->isDryRunModeActiveForStatementFix === true)
+        {
+            $this->releaseBasDetailsFromStatementFix($accountNumber, $channel);
+
+            $response['dry_run'] = true;
+
+            return $response;
+        }
 
         try
         {
-            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_INIT,
-                [
-                    'account_number' => $accountNumber,
-                    'params'         => $params
-                ]);
-
             BankingAccountStatementUpdate::dispatch($this->mode, $params);
 
             $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
@@ -573,6 +596,15 @@ class Core extends Base\Core
             {
                 $insertionDetails = $this->getInsertionDetailsForMissingStatement($merchantId, $accountNumber, $channel, $groupOfStatements[0]);
 
+                $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_INSERTION_DETAILS,
+                    [
+                        'account_number'    => $accountNumber,
+                        'channel'           => $channel,
+                        'posted_date'       => $postedDate,
+                        'insertion_details' => $insertionDetails,
+                        'dry_run_mode'      => $this->isDryRunModeActiveForStatementFix,
+                    ]);
+
                 $previousBasId = $insertionDetails[Entity::ID];
 
                 foreach ($groupOfStatements as $statement)
@@ -614,7 +646,10 @@ class Core extends Base\Core
 
                     $basEntity->setBalance($insertionDetails[Entity::BALANCE] + $balanceChange);
 
-                    $this->repo->saveOrFail($basEntity);
+                    if ($this->isDryRunModeActiveForStatementFix === false)
+                    {
+                        $this->repo->saveOrFail($basEntity);
+                    }
 
                     $this->trace->info(TraceCode::BAS_INSERTED_ENTITY,
                         [
@@ -625,6 +660,8 @@ class Core extends Base\Core
                             'account_no'            => $basEntity->getAccountNumber(),
                             'utr'                   => $basEntity->getUtr(),
                             'previous_bas_id'       => $insertionDetails[Entity::ID],
+                            'dry_run_mode'          => $this->isDryRunModeActiveForStatementFix,
+                            'inserted_bas_entity'   => $basEntity->toArray(),
                         ]);
 
                     $insertedBasEntities[] = $basEntity;
@@ -640,12 +677,23 @@ class Core extends Base\Core
 
                     try
                     {
-                        // the balance gets updated when we link a statement to the source entity and
-                        // as a result, the actual statement entities linking gets stopped
-                        // that is our desired behaviour while fixing statement
-                        $insertedBasEntity = new Base\PublicCollection([$basEntity]);
+                        if ($this->isDryRunModeActiveForStatementFix === false)
+                        {
+                            // the balance gets updated when we link a statement to the source entity and
+                            // as a result, the actual statement entities linking gets stopped
+                            // that is our desired behaviour while fixing statement
+                            $insertedBasEntity = new Base\PublicCollection([$basEntity]);
 
-                        $this->saveAccountStatementV2($insertedBasEntity, $merchant);
+                            $this->saveAccountStatementV2($insertedBasEntity, $merchant);
+                        }
+
+                        $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_PREVIOUS_TRANSACTION_DETAILS,
+                            [
+                                'account_number'                   => $accountNumber,
+                                'channel'                          => $channel,
+                                'previous_bas_transaction_details' => $this->previousBasTransactionDetails,
+                                'dry_run_mode'                     => $this->isDryRunModeActiveForStatementFix,
+                            ]);
                     }
                     catch (\Exception $exception)
                     {
@@ -674,12 +722,26 @@ class Core extends Base\Core
     {
         $postedDate = $statement[Entity::POSTED_DATE];
 
-        $previousBasEntity = $this->repo
-                                  ->banking_account_statement
-                                  ->fetchPreviousBasEntityToInsertMissingRecord($merchantId, $accountNumber, $channel, $postedDate);
+        $postedDateWindow = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH
+            ]);
 
-        if (empty($previousBasEntity) === false)
+        if (empty($postedDateWindow) === true)
         {
+            $postedDateWindow = self::POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH;
+        }
+
+        $previousPostedDate = $postedDate - $postedDateWindow;
+
+        $previousBasId = $this->repo
+                              ->banking_account_statement
+                              ->fetchPreviousBasIdToInsertMissingRecord($merchantId, $accountNumber, $channel, $postedDate, $previousPostedDate);
+
+        if (empty($previousBasId) === false)
+        {
+            $previousBasEntity = $this->repo->banking_account_statement->findOrFail($previousBasId);
+
             return [
                 Entity::ID               => $previousBasEntity->getId(),
                 Entity::CREATED_AT       => $previousBasEntity->getCreatedAt(),
@@ -691,17 +753,29 @@ class Core extends Base\Core
         }
         else
         {
-            // If there is no previous entity, then we are inserting the statement at the start for the account number
-            // so we decided to generate bas_id from posted date of the statement and
-            // transaction_id from 1 second after posted date
-            return [
-                Entity::ID               => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE]),
-                Entity::CREATED_AT       => $statement[Entity::POSTED_DATE],
-                Entity::UPDATED_AT       => $statement[Entity::POSTED_DATE],
-                Entity::BALANCE          => 0,
-                Entity::TRANSACTION_ID   => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE] + 1),
-                'transaction_created_at' => $statement[Entity::POSTED_DATE] + 1,
-            ];
+            // Work In Progress
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                [
+                    'merchant_id'    => $merchantId,
+                    'account_number' => $accountNumber,
+                    'channel'        => $channel,
+                ],
+                'cannot generate previous bas entity for posted_date' . $postedDate);
+
+//            // If there is no previous entity, then we are inserting the statement at the start for the account number
+//            // so we decided to generate bas_id from posted date of the statement and
+//            // transaction_id from 1 second after posted date
+//            return [
+//                Entity::ID               => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE]),
+//                Entity::CREATED_AT       => $statement[Entity::POSTED_DATE],
+//                Entity::UPDATED_AT       => $statement[Entity::POSTED_DATE],
+//                Entity::BALANCE          => 0,
+//                Entity::TRANSACTION_ID   => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE] + 1),
+//                'transaction_created_at' => $statement[Entity::POSTED_DATE] + 1,
+//            ];
         }
     }
 
@@ -1170,6 +1244,11 @@ class Core extends Base\Core
 
     protected function pushMissingStatementsLinkingEventsToLedger(string $accountNumber, string $channel, array $insertedBasEntities)
     {
+        if ($this->isDryRunModeActiveForStatementFix === true)
+        {
+            return;
+        }
+
         $basDetailEntity = $this->getBasDetails($accountNumber, $channel, [BASDetails\Status::UNDER_MAINTENANCE]);
 
         $merchant = $basDetailEntity->merchant;

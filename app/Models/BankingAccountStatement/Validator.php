@@ -73,7 +73,7 @@ class Validator extends Base\Validator
     protected static $insertStatementRules = [
         Entity::CHANNEL             => 'required|string|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
-        'action'                    => 'required|in:insert,fetch'
+        'action'                    => 'required|in:insert,fetch,dry_run',
     ];
 
     public function validateCreditBas($current_status, array $input)
