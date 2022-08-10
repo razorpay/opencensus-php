@@ -40,10 +40,17 @@ class Service extends BankingAccount\Service
      * @param $input
      *
      * @return array
+     * @throws BadRequestException
      */
     public function transformNormalMerchantToBankPartner($input): array
     {
         $this->validator->validateInput(Validator::CREATE_BANK_CA_ONBOARDING_PARTNER_TYPE, $input);
+
+        $partnerBankMerchantId = $this->validator->validateOnlyOneCaBankPartnerAndReturn();
+
+        if ($partnerBankMerchantId !== null) {
+            return ['success' => false, 'reason' => 'One CA Bank Partner Merchant is Already There'];
+        }
 
         return $this->core->transformNormalMerchantToBankPartner($input);
     }

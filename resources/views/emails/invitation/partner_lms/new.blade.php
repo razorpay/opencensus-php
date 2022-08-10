@@ -249,10 +249,10 @@
                               <tr>
                                 <td class="pad" style="padding-bottom: 30px; padding-left: 10px; padding-right: 10px; padding-top: 30px; text-align: center;">
                                   <div class="alignment" align="center">
-                                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{$inviteLink}}" style="height:44px;width:186px;v-text-anchor:middle;" arcsize="10%" stroke="false" fillcolor="#3281ff"><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center style="color:#ffffff; font-family:Tahoma, sans-serif; font-size:14px"><![endif]-->
+                                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{$invite_Link}}" style="height:44px;width:186px;v-text-anchor:middle;" arcsize="10%" stroke="false" fillcolor="#3281ff"><w:anchorlock/><v:textbox inset="0px,0px,0px,0px"><center style="color:#ffffff; font-family:Tahoma, sans-serif; font-size:14px"><![endif]-->
                                     <!-- href="http://partner-lms.razorpay.com" -->
                                     <a
-                                      href="{{$inviteLink}}"
+                                      href="{{$invite_Link}}"
                                       target="_blank"
                                       style="
                                         text-decoration: none;
