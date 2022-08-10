@@ -6,7 +6,6 @@ namespace Unit\Models\Merchant\Activation;
 use DB;
 use Illuminate\Support\Facades\Mail;
 use RZP\Constants\Mode;
-use RZP\Mail\Merchant\SubMerchantNCStatusChanged;
 use RZP\Mail\Merchant\NeedsClarificationEmail;
 
 use RZP\Models\Admin\Permission;
@@ -20,8 +19,10 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\AccessMap as MerchantAccessMap;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Mail\Merchant\SubMerchantNCStatusChanged as SubMerchantNCStatusChangedEmail;
 
 class ActivationStatusTest extends OAuthTestCase
 {
@@ -118,30 +119,69 @@ class ActivationStatusTest extends OAuthTestCase
         $this->assertEquals($action->getState(), 'closed');
     }
 
-    public function testMailsOnNeedsClarification()
+    public function testMailsOnNeedsClarificationNoPartner()
     {
+
         Mail::fake();
 
-        $fixtures = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
         $merchantDetail = $fixtures['merchantDetail'];
-        $merchant = $merchantDetail->merchant;
-        $admin = $fixtures['admin'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
 
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
-        $this->fixtures->merchant->createDummyPartnerApp( ['partner_type' => 'aggregator'], true);
-        $referralApp = $this->fixtures->merchant->createDummyReferredAppForManaged( ['partner_type' => 'reseller'], true);
-        
-        $this->fixtures->create('merchant_access_map', [
-            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
-            'merchant_id'     => $merchant->getId(),
-            'entity_type'     => 'application',
-            'entity_id'       => $referralApp->getId()
-        ]);
+
+        $splitzMock  = $this->getSplitzMock();
+        $splitzInput = [
+            "experiment_id" => "JbkwT9fC4Jn7it",
+            "id"            => "10000000000000",
+        ];
+        $splitzMock->shouldReceive('evaluateRequest')->atMost()->times(0)->with($splitzInput);
 
         $this->app->instance("rzp.mode", Mode::LIVE);
         $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
         $this->app['workflow']->setWorkflowMaker($admin);
 
+        // Change to NC
+        $input = [
+            'activation_status' => Detail\Status::NEEDS_CLARIFICATION
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        // check status changed successfully
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals($merchantDetail->getActivationStatus(), Detail\Status::NEEDS_CLARIFICATION);
+
+        // check email sent to merchant
+        Mail::assertQueued(NeedsClarificationEmail::class);
+
+        // check email not sent as no partner
+        Mail::assertNotQueued(SubMerchantNCStatusChangedEmail::class);
+    }
+
+    public function testMailsOnNeedsClarificationForAggregator()
+    {
+        Mail::fake();
+
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+
+        $this->fixtures->create('merchant_access_map', [
+            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+            'merchant_id'     => $merchant->getId(),
+            'entity_type'     => 'application',
+            'entity_id'       => $managedApp->getId()
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
 
         $splitzInput = [
             "experiment_id" => "JbkwT9fC4Jn7it",
@@ -158,6 +198,7 @@ class ActivationStatusTest extends OAuthTestCase
 
         $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
+        // Change to NC
         $input = [
             'activation_status' => Detail\Status::NEEDS_CLARIFICATION
         ];
@@ -167,11 +208,58 @@ class ActivationStatusTest extends OAuthTestCase
         $merchantDetail = $this->getDbLastEntity('merchant_detail');
         $this->assertEquals($merchantDetail->getActivationStatus(), Detail\Status::NEEDS_CLARIFICATION);
 
-        // check email sent to submerchant
+        // check email sent to merchant
         Mail::assertQueued(NeedsClarificationEmail::class);
 
         // check email sent to partner
-        Mail::assertQueued(SubMerchantNCStatusChanged::class);
+        Mail::assertQueued(SubMerchantNCStatusChangedEmail::class);
+    }
+
+    public function testMailsOnNeedsClarificationForReseller()
+    {
+        Mail::fake();
+
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $referredApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller'], true);
+
+        $this->fixtures->create('merchant_access_map', [
+            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+            'merchant_id'     => $merchant->getId(),
+            'entity_type'     => 'application',
+            'entity_id'       => $referredApp->getId()
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $splitzMock  = $this->getSplitzMock();
+        $splitzInput = [
+            "experiment_id" => "JbkwT9fC4Jn7it",
+            "id"            => "10000000000000",
+        ];
+        $splitzMock->shouldReceive('evaluateRequest')->atMost()->times(0)->with($splitzInput);
+
+        // Change to NC
+        $input = [
+            'activation_status' => Detail\Status::NEEDS_CLARIFICATION
+        ];
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        // check status changed successfully
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals($merchantDetail->getActivationStatus(), Detail\Status::NEEDS_CLARIFICATION);
+
+        // check email sent statuses
+        Mail::assertQueued(NeedsClarificationEmail::class);
+
+        Mail::assertNotQueued(SubMerchantNCStatusChangedEmail::class);
     }
 
     public function testAutoKycHUF()

@@ -2991,25 +2991,9 @@ class Core extends Base\Core
 
                     $merchantDetails->setLocked(false);
 
-                    $accessMaps = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId());
-
-                    $partnerMerchant = $accessMaps->filter(function ($value, $key) {
-                        return ($value->entityOwner->isAggregatorPartner() === true);
-                    })->first();
-
                     $this->sendNeedsClarificationEmail($merchant);
 
-                    // $partnerMerchant can be null in case of linked accounts
-                    if(!is_null($partnerMerchant)){
-                        $properties = [
-                            'id' => $partnerMerchant->entityOwner->getId(),
-                            'experiment_id' => $this->app['config']->get('app.merchant_kyc_update_to_partner_exp_id')
-                        ];
-
-                        $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-                        if($isExpEnabled === true)
-                            $this->sendSubMerchantNCStatusChangedEmail($merchant, $partnerMerchant->entityOwner);
-                    }
+                    $this->sendSubMerchantNCStatusChangedEmail($merchant);
 
                     $this->trace->info(TraceCode::NC_EMAIL_SENT, [
                         'merchant_id'                   => $merchantId,
@@ -3246,11 +3230,30 @@ class Core extends Base\Core
         Mail::queue($email);
     }
 
+    public function sendSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant)
+    {
+        $partnerMerchant = (new AccessMapCore)->getAggregatorPartnerFromSubmerchant($merchant);
+        // $partnerMerchant can be null in case of linked accounts
+        if (!is_null($partnerMerchant))
+        {
+            $properties = [
+                'id'            => $partnerMerchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.merchant_kyc_update_to_partner_exp_id')
+            ];
+
+            $isExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+            if ($isExpEnabled === true)
+            {
+                $this->sendSubMerchantNCStatusChangedEmailToPartner($merchant, $partnerMerchant);
+            }
+        }
+    }
+
     /**
      * @param $merchant
      * @param $partnerMerchant
      */
-    public function sendSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant, Merchant\Entity $partnerMerchant)
+    public function sendSubMerchantNCStatusChangedEmailToPartner(Merchant\Entity $merchant, Merchant\Entity $partnerMerchant)
     {
         if ($partnerMerchant->getEmail() == null)
         {

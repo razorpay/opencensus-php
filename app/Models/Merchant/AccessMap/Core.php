@@ -355,6 +355,26 @@ class Core extends Base\Core
     }
 
     /**
+     * Returns the first aggregator partner associated with the submerchant.
+     *
+     * @param Merchant\Entity $subMerchant
+     *
+     * @return Merchant\Entity|null
+     */
+    public function getAggregatorPartnerFromSubmerchant(Merchant\Entity $subMerchant)
+    {
+        $accessMaps = $this->repo
+            ->merchant_access_map
+            ->getMappingByApplicationType($subMerchant->getId(), MerchantApplications\Entity::MANAGED);
+
+        $aggregatorPartnerMap = $accessMaps->filter(function($value, $key) {
+            return ($value->entityOwner->isAggregatorPartner() === true);
+        })->first();
+
+        return optional($aggregatorPartnerMap)->entityOwner;
+    }
+
+    /**
      * @param Merchant\Entity    $merchant
      * @param Application\Entity $app
      *
