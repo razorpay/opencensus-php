@@ -2778,6 +2778,8 @@ class MerchantTest extends TestCase
 
     public function testGetMerchantDataForSegment()
     {
+        $this->enableRazorXTreatmentForFeature(RazorxTreatment::DRUID_MIGRATION);
+
         config(['services.druid.mock' => true]);
 
         $this->fixtures->create('merchant_detail', [
@@ -2807,14 +2809,14 @@ class MerchantTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId, $userID);
 
-        $druidService = $this->getMockBuilder(MockDruidService::class)
+        $harvesterService = $this->getMockBuilder(Mock\HarvesterClient::class)
             ->setConstructorArgs([$this->app])
-            ->setMethods([ 'getDataFromDruid'])
+            ->setMethods([ 'getDataFromPinot'])
             ->getMock();
 
-        $this->app->instance('druid.service', $druidService);
+        $this->app->instance('eventManager', $harvesterService);
 
-        $dataFromDruid = [
+        $dataFromHarvester = [
             'user_days_till_last_transaction' => 30,
             'merchant_lifetime_gmv'           => 100.0,
             'average_monthly_gmv'             => 10,
@@ -2827,8 +2829,8 @@ class MerchantTest extends TestCase
             'pp_only'                         => false,
         ];
 
-        $druidService->method( 'getDataFromDruid')
-            ->willReturn([null, [$dataFromDruid]]);
+        $harvesterService->method( 'getDataFromPinot')
+            ->willReturn([$dataFromHarvester]);
 
         $this->startTest();
     }

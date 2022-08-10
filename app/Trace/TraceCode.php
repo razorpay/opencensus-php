@@ -2312,6 +2312,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HARVESTER_RESPONSE_TIME                               = 'HARVESTER_RESPONSE_TIME';
     const HARVESTER_REQUEST_DETAILS                             = 'HARVESTER_REQUEST_DETAILS';
 
+    const HARVESTER_REQUEST_FAILURE                             = 'HARVESTER_REQUEST_FAILURE';
+
     const SHIELD_INTEGRATION_ERROR                              = 'SHIELD_INTEGRATION_ERROR';
     const SHIELD_SLACK_REQUEST_INITIATED                        = 'SHIELD_SLACK_REQUEST_INITIATED';
     const SHIELD_SLACK_REQUEST_COMPLETE                         = 'SHIELD_SLACK_REQUEST_COMPLETE';

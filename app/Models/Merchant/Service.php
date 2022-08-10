@@ -180,6 +180,7 @@ class Service extends Base\Service
     ];
 
     const MERCHANT_DATA_NOT_FOUND_ON_DRUID              = 'merchant data not found on druid';
+    const MERCHANT_DATA_NOT_FOUND_ON_PINOT              = 'merchant data not found on pinot';
     const SEGMENT_DATA_USER_BUSINESS_CATEGORY           = 'user_business_category';
     const SEGMENT_DATA_ACTIVATION_STATUS                = 'activation_status';
     const SEGMENT_DATA_MCC                              = 'mcc';
@@ -2736,7 +2737,17 @@ class Service extends Base\Service
 
         $firstTransactionTimeStamp = null;
 
-        $data = $this->getDataFromDruid($merchant->getId());
+        $isDruidMigrationEnabled = (new Core())->isRazorxExperimentEnable($merchant->getId(),
+            RazorxTreatment::DRUID_MIGRATION);
+
+        if($isDruidMigrationEnabled === true)
+        {
+            $data = $this->getDataFromPinot($merchant->getId());
+        }
+        else
+        {
+            $data = $this->getDataFromDruid($merchant->getId());
+        }
 
         return [
             self::SEGMENT_DATA_USER_BUSINESS_CATEGORY          => $merchantDetails->getBusinessCategory(),
@@ -2811,6 +2822,32 @@ class Service extends Base\Service
         }
 
         return $data[0];
+    }
+
+    public function getDataFromPinot($merchantId)
+    {
+        $query = 'select * from piont.segment_fact where segment_fact.merchant_details_merchant_id = \'%s\'';
+
+        $query = sprintf($query, $merchantId);
+
+        $content = [
+            'query' => $query
+        ];
+
+        $pinotService = $this->app['eventManager'];
+
+        $data = $pinotService->getDataFromPinot($content, self::REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT);
+
+        if (empty($data) === true)
+        {
+            $this->trace->info(TraceCode::HARVESTER_REQUEST_FAILURE, [
+                'message' => self::MERCHANT_DATA_NOT_FOUND_ON_PINOT
+            ]);
+
+            return null;
+        }
+
+        return $pinotService->parsePinotDefaultType($data[0], 'segment_fact');
     }
 
     public function getPaymentMethods()

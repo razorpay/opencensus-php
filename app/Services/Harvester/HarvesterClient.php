@@ -3,11 +3,13 @@
 namespace RZP\Services\Harvester;
 
 use RZP\Http\Request\Requests;
+use RZP\Exception;
 use Carbon\Carbon;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\Harvester\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Services\AbstractEventClient;
 use RZP\Exception\IntegrationException;
@@ -31,8 +33,9 @@ class HarvesterClient extends AbstractEventClient
 
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
 
-    const QUERY_API_PATH = 'analytics/pokedex';
-    const QUERY_API_PATH_V2 = 'pql/analytics';
+    const QUERY_API_PATH        = 'analytics/pokedex';
+    const QUERY_API_PATH_V2     = 'pql/analytics';
+    const PINOT_QUERY_API_PATH  = 'twirp/rzp.harvester.v1.PqlService/SqlQuery';
 
     const RETRY = true;
 
@@ -165,12 +168,64 @@ class HarvesterClient extends AbstractEventClient
         return $this->sendRequest($queryPath, $data, $config, self::RETRY, self::RETRY_TIMES, $timeout);
     }
 
-    protected function sendRequest(string $urlPath, $data, $config, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT)
+    public function getDataFromPinot($content, $timeout = self::REQUEST_TIMEOUT)
     {
-        $startTime = microtime(true);
+        $queryPath  = self::PINOT_QUERY_API_PATH;
 
-        $hostUrl = $config['url'];
-        $accessToken = $config['analytics_token'];
+        $config     = $this->app['config']->get('applications.harvester_v2');
+
+        $headers    = [ 'content-type'  => 'application/json' ];
+
+        $result     =  $this->sendRequest($queryPath, $content, $config, self::RETRY, self::RETRY_TIMES, $timeout, $headers);
+
+        return $result['result'];
+    }
+
+    public function parsePinotDefaultType(array $results, string $tableName)
+    {
+        if (empty(Constants::PINOT_TABLE_SCHEMA_MAP[$tableName]) === true)
+        {
+            throw new Exception\LogicException('Table schema not defined for table : ' . $tableName);
+        }
+
+        $parsedResults = [];
+
+        $tableSchema   = Constants::PINOT_TABLE_SCHEMA_MAP[$tableName];
+
+        foreach ($results as $columnName => $value)
+        {
+            $parsedResults[$columnName] = $this->getParsedValueOfColumnForPinotTable($tableSchema, $columnName, $value);
+        }
+
+        return $parsedResults;
+    }
+
+    protected function getParsedValueOfColumnForPinotTable(array $tableSchema, string $columnName, $value)
+    {
+        $columnType     =  $tableSchema[$columnName];
+
+        $defaultValue   = Constants::PINOT_DATA_TYPE_DEFAULT_MAPPING[$columnType];
+
+        if ( ($columnType == Constants::PINOT_DATA_TYPE_LONG) and
+             (in_array($value, $defaultValue) === true))
+        {
+            return null;
+        }
+        elseif (($columnType != Constants::PINOT_DATA_TYPE_LONG) and $value === $defaultValue )
+        {
+            return null;
+        }
+
+        return $value;
+    }
+
+    protected function sendRequest(string $urlPath, $data, $config, bool $retry = false, int $maxRetryTimes = 0, $timeout = self::REQUEST_TIMEOUT, $customHeaders = [])
+    {
+        $startTime       = microtime(true);
+
+        $hostUrl         = $config['url'];
+
+        $accessToken     = $config['analytics_token'];
 
         $request = [
             'url'           => $hostUrl . $urlPath,
@@ -178,6 +233,7 @@ class HarvesterClient extends AbstractEventClient
             'content'       => json_encode($data),
             'content-type'  => 'application/json',
         ];
+
 
         // The location of the trace is very critical here.
         // Be careful moving this code. Don't trace headers containing signature
@@ -192,8 +248,10 @@ class HarvesterClient extends AbstractEventClient
 
         $headers = [
             'x-signature'   => $accessToken,
-            'Accept'        => 'application/json'
+            'Accept'        => 'application/json',
         ];
+
+        $headers = array_merge($headers, $customHeaders);
 
         $options['timeout'] = $timeout;
 
@@ -210,7 +268,6 @@ class HarvesterClient extends AbstractEventClient
             try
             {
                 $response = $this->getResponse($request);
-
             }
             catch(\Requests_Exception $e)
             {
