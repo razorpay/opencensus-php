@@ -225,6 +225,7 @@ class Preferences
         'GCwhxngAcMtWC8',
         '8RerE9oY0d7rbC',
         'GDJYY4pJqT0cQ5',
+        'EOQRaXICwJIuoy', // internal MID
     ];
 
     const MID_CLEARTAX         = 'AGQJfLbWcmjxDX';
