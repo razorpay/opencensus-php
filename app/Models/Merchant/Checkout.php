@@ -273,7 +273,7 @@ class Checkout
         try
         {
             $properties = [
-                'id'            => $merchant->getId(),
+                'id'            => UniqueIdEntity::generateUniqueId(),
                 'experiment_id' => $this->app['config']->get('app.1cc_cart_items_splitz_experiment_id'),
             ];
 
