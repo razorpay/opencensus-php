@@ -57,6 +57,8 @@ jobs:
           QUERY_CACHE_REDIS_PORT: 6379
           MUTEX_REDIS_HOST: redis
           MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch

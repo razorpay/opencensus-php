@@ -74,7 +74,7 @@ return array(
 	|
 	*/
 
-	'connection' => 'query_cache_redis',
+	'connection' => 'session_redis',
 
     /*
     |--------------------------------------------------------------------------
