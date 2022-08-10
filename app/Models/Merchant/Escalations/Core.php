@@ -918,21 +918,25 @@ class Core extends Base\Core
 
                 $amount = $merchantsGmvMap[$merchantId][0];
 
-                //checking if escalation entry exist for the merchant with the respective milestone & threshold, so that we do not re-trigger same escalation again
-                $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchant->getId(), $milestone, $threshold);
-
-                if (empty($escalations) === false)
+                //skip escalation for a merchant for milestones where webhook is already triggered before
+                if(($milestone === Constants::NO_DOC_P90_GMV) or ($milestone === Constants::NO_DOC_P91_GMV))
                 {
-                    $this->trace->info(
-                        TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
-                        [
-                            'merchant'  => $merchant->getId(),
-                            'threshold' => $threshold,
-                            'milestone' => $milestone,
-                            'reason'    => 'Escalation skipped since merchant has already been escalated before with given threshold and milestone',
-                        ]
-                    );
-                    continue;
+                    //checking if escalation entry exist for the merchant with the respective milestone & threshold, so that we do not re-trigger same escalation again
+                    $escalations = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone($merchant->getId(), $milestone, $threshold);
+
+                    if (empty($escalations) === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                            [
+                                'merchant'  => $merchant->getId(),
+                                'threshold' => $threshold,
+                                'milestone' => $milestone,
+                                'reason'    => 'Escalation skipped since merchant has already been escalated before with given threshold and milestone',
+                            ]
+                        );
+                        continue;
+                    }
                 }
 
                 if ($merchant->isNoDocOnboardingEnabled() === false)

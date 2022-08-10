@@ -36,6 +36,7 @@ class AccountV2Test extends TestCase
     const RZP_ORG = '100000razorpay';
 
     const OPTIONAL_REGISTERED_NO_DOC_FIELDS = [
+        Detail\Entity::CONTACT_MOBILE,
         Detail\Entity::CONTACT_NAME,
         Detail\Entity::PROMOTER_PAN_NAME,
         Detail\Entity::BUSINESS_DBA,

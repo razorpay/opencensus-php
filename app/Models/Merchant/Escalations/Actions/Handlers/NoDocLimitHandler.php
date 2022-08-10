@@ -31,6 +31,8 @@ class NoDocLimitHandler extends Handler
 
                 $merchant->setHoldFundsReason(Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
 
+                $merchant->deactivate();
+
                 $this->trace->info(
                     TraceCode::DISABLE_PAYMENTS_AND_HOLD_FUNDS_DUE_TO_ESCALATION,
                     [
@@ -74,9 +76,10 @@ class NoDocLimitHandler extends Handler
                 $this->trace->info(
                     TraceCode::NO_DOC_ONBOARDING_ESCALATION_SUCCESS,
                     [
-                        'merchant_id'   => $merchantId,
-                        'milestone'     => $params['milestone'] ?? null,
-                        'threshold'     => $params['threshold'] ?? null
+                        'merchant_id'           => $merchantId,
+                        'milestone'             => $params['milestone'] ?? null,
+                        'threshold'             => $params['threshold'] ?? null,
+                        'new_activation_status' => $merchantDetails->getActivationStatus()
                     ]
                 );
             });

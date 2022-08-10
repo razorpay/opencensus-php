@@ -288,7 +288,9 @@ class CoreTest extends TestCase
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY, MerchantDetail\Status::NEEDS_CLARIFICATION);
 
-        $this->assertFundHoldsForNoDoc($merchant, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+        $this->assertFundHoldsForNoDoc($merchant, true, true,Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+
+        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
     }
 
     public function testHardLimitNoDocEscalationWithCompleteKYC()
@@ -310,8 +312,9 @@ class CoreTest extends TestCase
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_3_WAY, MerchantDetail\Status::UNDER_REVIEW);
 
-        $this->assertFundHoldsForNoDoc($merchant, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
-    }
+        $this->assertFundHoldsForNoDoc($merchant, true, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+
+        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);    }
 
     public function testNoDocEscalationWithPartnerConfigGmvValue()
     {
@@ -353,7 +356,9 @@ class CoreTest extends TestCase
         $this->performAssertionsForNoDocTests($merchant, Escalations\Constants::HARD_LIMIT_NO_DOC,
             10100000, MerchantDetail\Status::UNDER_REVIEW);
 
-        $this->assertFundHoldsForNoDoc($merchant, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+        $this->assertFundHoldsForNoDoc($merchant, true, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
+
+        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
     }
 
     public function testNinetyPercentileGmvWarningForNoDoc()
@@ -374,7 +379,7 @@ class CoreTest extends TestCase
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
             MerchantDetail\Status::ACTIVATED_KYC_PENDING);
 
-        $this->assertFundHoldsForNoDoc($merchant, false);
+        $this->assertFundHoldsForNoDoc($merchant, false, false);
     }
 
     public function testNinetyOnePercentileGmvWarningForNoDoc()
@@ -395,7 +400,7 @@ class CoreTest extends TestCase
             Escalations\Constants::HARD_LIMIT_KYC_PENDING_THRESHOLD_2_WAY,
             MerchantDetail\Status::ACTIVATED_KYC_PENDING);
 
-        $this->assertFundHoldsForNoDoc($merchant, false);
+        $this->assertFundHoldsForNoDoc($merchant, false, false);
     }
 
     public function testNoDocEscalationWithGmvLessThanNinetyPercentOfThreshold()
@@ -437,12 +442,26 @@ class CoreTest extends TestCase
         self::assertEquals($expectedActivationStatus, $merchantDetail->getAttribute('activation_status'));
     }
 
-    private function assertFundHoldsForNoDoc(MerchantEntity $merchant, bool $expHoldFunds, string $expHoldFundsReason = null)
+    private function assertFundHoldsForNoDoc(MerchantEntity $merchant, bool $expHoldFunds, bool $expStopPayments, string $expHoldFundsReason = null)
     {
         $merchant = $this->getDbEntityById('merchant', $merchant->id);
 
+        self::assertEquals($expStopPayments, !$merchant->getAttribute('live'));
         self::assertEquals($expHoldFunds, $merchant->getAttribute('hold_funds'));
         self::assertEquals($expHoldFundsReason, $merchant->getAttribute('hold_funds_reason'));
+    }
+
+    private function assertFeatureAbsence(string $featureName, string $merchantId)
+    {
+        $feature = $this->getDbEntity(
+            'feature',
+            [
+                'entity_id'   => $merchantId,
+                'entity_type' => 'merchant',
+                'name'        => $featureName
+            ]);
+
+        $this->assertNull($feature);
     }
 
     private function createPrerequisiteForNoDocEscalation()

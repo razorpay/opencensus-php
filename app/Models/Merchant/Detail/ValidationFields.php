@@ -208,7 +208,6 @@ class ValidationFields
 
 
     const DEFAULT_REGISTERED_NO_DOC_FIELDS = [
-        Entity::PROMOTER_PAN_NAME,
         Entity::BUSINESS_NAME,
         Entity::CONTACT_MOBILE,
         Entity::COMPANY_PAN,

@@ -965,12 +965,6 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'required',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
@@ -999,6 +993,12 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
                     ],
                     [
                         'field_reference' => 'kyc.pan',
@@ -1062,12 +1062,6 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'required',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
@@ -1096,6 +1090,12 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
                     ],
                     [
                         'field_reference' => 'kyc.pan',
@@ -1146,12 +1146,6 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'required',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
@@ -1180,6 +1174,12 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
                     ],
                     [
                         'field_reference' => 'kyc.pan',
@@ -2150,12 +2150,6 @@ return [
                 ],
                 'requirements'         => [
                     [
-                        'field_reference' => 'name',
-                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
-                        'status'          => 'required',
-                        'reason_code'     => 'field_missing'
-                    ],
-                    [
                         'field_reference' => 'legal_info.pan',
                         'resolution_url'  => '/accounts/{accountId}',
                         'status'          => 'required',
@@ -2184,6 +2178,12 @@ return [
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'optional',
                         'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'name',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
                     ],
                     [
                         'field_reference' => 'kyc.pan',
