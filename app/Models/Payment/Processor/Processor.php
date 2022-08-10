@@ -5759,13 +5759,10 @@ class Processor
         }
         elseif ($captureValue === 'manual')
         {
-            if ($difference > $manualTimeoutDuration)
-            {
-                return [false, $lateAuthConfig];
-            }
+            return [false, $lateAuthConfig];
         }
 
-        return [false, $lateAuthConfig];
+        return [null, $lateAuthConfig];
     }
 
     private function setPaymentRefundAtForConfig($payment, $manualTimeoutDuration)
