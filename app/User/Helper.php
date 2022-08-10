@@ -63,20 +63,29 @@ class Helper
 
         if ($currentMerchant === null)
         {
-            // Check if user is associated to a merchant on given product
+            // Select owner if it exists on given product
             $currentMerchant = $user->merchants->filter(function ($item) use ($productRole)
                                                  {
-                                                     return ($item->$productRole !== null);
+                                                     return ($item->$productRole === 'owner');
                                                  })
                                                ->first();
 
-            // If current merchant is still null, that means that the user is not linked to a merchant on given product
-            // We'll allow only owner on switch product to login
+            // If owner doesn't existing on product, check switch prioduct, if it exists we'll allow switch-product
             if ($currentMerchant === null)
             {
                 $currentMerchant = $user->merchants->filter(function ($item) use ($switchProductRole)
                                                      {
                                                          return ($item->$switchProductRole === 'owner');
+                                                     })
+                                                   ->first();
+            }
+
+            // If owner doesn't exist, check if user is associated to any merchant on given product
+            if ($currentMerchant === null)
+            {
+                $currentMerchant = $user->merchants->filter(function ($item) use ($productRole)
+                                                     {
+                                                         return ($item->$productRole !== null);
                                                      })
                                                    ->first();
             }
