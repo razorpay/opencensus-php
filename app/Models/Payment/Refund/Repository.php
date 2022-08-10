@@ -145,7 +145,6 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getDataWarehouseConnection())
             ->join($pTableName, $paymentId, '=', Refund\Entity::PAYMENT_ID)
             ->whereBetween($refundProcessedAt, [$from, $to])
-            ->where($paymentStatus, '=', Payment\Status::REFUNDED)
             ->whereIn( $paymentMerchantId , $merchantIds)
             ->where($paymentMethod, '=', Payment\Method::CARD)
             ->where($paymentGateway, '=', 'cybersource')

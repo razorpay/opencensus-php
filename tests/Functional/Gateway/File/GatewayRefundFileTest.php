@@ -181,7 +181,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->refundPayment($pay['id']);
 
-        $refund = $this->refundPayment('pay_'.$paymentId8);
+        $refund = $this->refundPayment('pay_'.$paymentId8, 100);
 
         $this->fixtures->edit('refund', $refund['id'], [
             'created_at' => Carbon::today(Timezone::IST)->addHours(14)->getTimestamp()+1,

@@ -11,6 +11,7 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Encryption\Type;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Status;
@@ -179,9 +180,9 @@ class Base extends BaseProcessor
 
         if(count($ids) === 0)
         {
-            $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
+            $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_EMPTY_DATA, [
                 'location' => 'fetchAuthorizationDetails',
-                'authData' => 'empty ids',
+                'authData' => 'No payment IDs, skipping CPS request',
             ]);
             return [];
         }
