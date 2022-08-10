@@ -2660,6 +2660,25 @@ class Core extends Base\Core
         ];
     }
 
+    public function buildCardInputForPar($number, $card): array
+    {
+        $result = [];
+        if(isset($number) === true)
+        {
+            $result = [
+                "number" => $number
+            ];
+        }
+        else {
+            $result = [
+                "vault"   => $card->getGlobalOrLocalVaultToken(),
+                "network" => $card->getNetwork()
+            ];
+        }
+
+        return $result;
+    }
+
     public function fetchTokenDetailsForCustomer(Customer\Entity $customer) : array
     {
         $cardsList = [];

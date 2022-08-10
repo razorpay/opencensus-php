@@ -732,7 +732,6 @@ class Service extends Base\Service
         }
     }
 
-    // To do : We need to add the logic to get provider_name on the basis of provider_type
     public function fetchParValue($input, $internalServiceRequest = false)
     {
         $startTime = microtime(true);
