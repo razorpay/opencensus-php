@@ -203,15 +203,15 @@ export const submerchantsReducer = makeActionCollectionReducer(
 );
 
 export const fetchRegistrationLinks = (params) =>
-  fetchAll(params, RegistrationLink, 'REGISTRATION_LINKS');
+  fetchAll(decodeSensitiveFields(params), RegistrationLink, 'REGISTRATION_LINKS');
 export const registrationLinksReducer = makeActionCollectionReducer('REGISTRATION_LINKS');
 
-export const fetchTokens = (params) => fetchAll(params, Token, 'TOKENS');
+export const fetchTokens = (params) => fetchAll(decodeSensitiveFields(params), Token, 'TOKENS');
 export const tokensReducer = makeActionCollectionReducer('TOKENS');
 
 export const fetchEmandatePayments = (params) => {
   params.recurring = 1;
-  return fetchAll(params, Payment, 'PAYMENTS');
+  return fetchAll(decodeSensitiveFields(params), Payment, 'PAYMENTS');
 };
 
 const fetchCommissions = (params) => fetchAll(params, Commission, 'COMMISSIONS');

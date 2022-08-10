@@ -1432,7 +1432,7 @@ export const encodeSensitiveFields = (params) => {
   let parameter = { ...params };
   for (let param in parameter) {
     if (SENSITIVE_FIELDS.includes(param)) {
-      parameter[param] = window?.btoa(decodeURIComponent(parameter[param]));
+      parameter[param] = window?.btoa(parameter[param]);
     }
   }
   return parameter;
@@ -1446,12 +1446,12 @@ export const decodeSensitiveFields = (params) => {
   const getURLFields = new URLSearchParams(window.location.search);
   let parameter = { ...params };
   for (let param in parameter) {
-    if (
-      SENSITIVE_FIELDS.includes(param) &&
-      getURLFields?.get?.(param) !== undefined &&
-      isBase64(getURLFields.get(param))
-    ) {
-      parameter[param] = window?.atob(getURLFields.get(param));
+    if (SENSITIVE_FIELDS.includes(param) && getURLFields?.get?.(param) !== undefined) {
+      if (isBase64(getURLFields.get(param))) {
+        parameter[param] = window?.atob(getURLFields.get(param));
+      } else {
+        parameter[param] = decodeURI(parameter[param]);
+      }
     }
   }
   return parameter;
