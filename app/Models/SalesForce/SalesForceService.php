@@ -14,7 +14,9 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Attribute\Repository;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
 use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
+use RZP\Models\Merchant\Attribute\Repository as MerchantAttributeRepository;
 use RZP\Models\BankingAccountService\Constants as BankingAccountServiceConstants;
 
 class SalesForceService {
@@ -37,9 +39,20 @@ class SalesForceService {
             return;
         }
 
-        $merchantAttribute = (new Repository())->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, ['x_signup_platform'])->first();
+        $repo = new MerchantAttributeRepository();
+
+        $merchantAttribute = $repo->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, ['x_signup_platform'])->first();
 
         $eventPayload[BankingAccountServiceConstants::SOURCE_DETAIL] = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? BankingAccountServiceConstants::X_DASHBOARD;
+
+        $merchantAttributeOnboardingFlow = $repo->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_CURRENT_ACCOUNTS, [MerchantAttributeType::CA_ONBOARDING_FLOW])->first();
+
+        $caOnboardingFlow = $merchantAttributeOnboardingFlow[MerchantAttributeEntity::VALUE] ?? null;
+
+        if ($caOnboardingFlow != null)
+        {
+            $eventPayload[MerchantAttributeType::CA_ONBOARDING_FLOW] = $caOnboardingFlow;
+        }
 
         $this->salesForceClient->sendEventToSalesForce($eventPayload);
     }
