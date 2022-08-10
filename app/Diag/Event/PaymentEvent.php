@@ -28,6 +28,8 @@ class PaymentEvent extends Event
                 'method'        => $input['payment']['method'],
                 'gateway'       => $input['payment']['gateway'],
                 'international' => $input['payment']['international'],
+                'contact'       => $input['payment']['contact'] ?? '',
+                'email'         => $input['payment']['email'] ?? '',
             ],
             'merchant'  => [
                 'id'        => $input['merchant']['id'],
@@ -99,6 +101,8 @@ class PaymentEvent extends Event
                 'gateway'        => $payment->getGateway(),
                 'recurring'      => $payment->isRecurring(),
                 'recurring_type' => $payment->getRecurringType(),
+                'contact'      => $payment->getContact(),
+                'email'        => $payment->getEmail(),
         ];
 
         // upi properties
