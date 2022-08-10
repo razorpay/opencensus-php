@@ -182,7 +182,7 @@ class Notify
         $this->trace->info(
             TraceCode::REWARD_GETTING_RAVEN_REQUEST);
 
-        $template = "sms.m2m_reward";
+        $template = "sms.m2m_reward_v3";
 
         $this->elfin = $this->app['elfin'];
 
@@ -217,7 +217,6 @@ class Notify
             'params'   => [
                 'offer_name_1' => $offer_name_1,
                 'offer_name_2' => $offer_name_2,
-                'offer_name_3' => "",
                 'coupon' => $this->template['rewards'][0]['coupon_code'],
                 'url' =>  $shortenedUrl,
                 'merchant_name' =>  $this->template['merchant']['billing_label'],
