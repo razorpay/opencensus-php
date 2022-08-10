@@ -6702,6 +6702,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const HEALTH_CHECKER_RISK_SCORE_CRON_STARTED           = 'HEALTH_CHECKER_RISK_SCORE_CRON_STARTED';
     const HEALTH_CHECKER_RISK_SCORE_CRON_ENDED             = 'HEALTH_CHECKER_RISK_SCORE_CRON_ENDED';
     const HEALTH_CHECKER_DRUID_ERROR                       = 'HEALTH_CHECKER_DRUID_ERROR';
+    const HEALTH_CHECKER_DATALAKE_ERROR                    = 'HEALTH_CHECKER_DATALAKE_ERROR';
 
     // Merchant Bulk Fraud Email
     const MERCHANT_BULK_FRAUD_NOTIFICATION_STARTED                  = 'MERCHANT_BULK_FRAUD_NOTIFICATION_STARTED';
@@ -6861,6 +6862,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BALANCE_DATA                                 = 'MERCHANT_BALANCE_DATA';
 
     const GET_MERCHANT_RISK_DATA_DRUID_ERROR                    = 'GET_MERCHANT_RISK_DATA_DRUID_ERROR';
+
+    const MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME          = 'MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME';
+
+    const RISK_QUERY_MIGRATION_ERROR                            = 'RISK_QUERY_MIGRATION_ERROR';
+
+    const RISK_QUERY_MIGRATION_SUCCESS                          = 'RISK_QUERY_MIGRATION_SUCCESS';
+
+    const RISK_QUERY_MIGRATION_COMPLETE                          = 'RISK_QUERY_MIGRATION_COMPLETE';
 
     const RECON_SERVICE_RESPONSE                                = 'RECON_SERVICE_RESPONSE';
     const RECON_ERROR_RESPONSE                                  = 'RECON_ERROR_RESPONSE';

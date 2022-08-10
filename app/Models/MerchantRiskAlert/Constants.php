@@ -26,7 +26,9 @@ class Constants
         self::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT => 'merchant_fact_authorized_payment_count_ltd',
     ];
 
-    const DRUID_RAS_QUERY = 'SELECT * FROM druid.merchant_risk_fact WHERE merchants_id = \'%s\'';
+    const DATALAKE_RAS_QUERY = 'SELECT * FROM hive.warehouse.merchant_risk WHERE merchants_id = \'%s\'';
+
+    const DRUID_RAS_QUERY    = 'SELECT * FROM druid.merchant_risk_fact WHERE merchants_id = \'%s\'';
 
     const ACTION_MANUAL_FOH      = 'manual';
     const ACTION_AUTO_FOH        = 'auto';
@@ -188,4 +190,6 @@ class Constants
     const DELETE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Delete';
 
     const RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG = 'merchants_risk_trigger_sign_up_checker_post_actions';
+
+    const QUERY_EXECUTION_TIME                         = 'query_execution_time';
 }

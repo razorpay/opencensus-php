@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant\Fraud\HealthChecker;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -175,7 +177,7 @@ class Core extends Base\Core
             Constants::CHECKER_TYPE  => $checkerType,
         ]);
 
-        $this->getDataFromDruidAndRunCron(
+        $this->getDataAndRunCron(
             Constants::MILESTONE_CHECKER_EVENT,
             $checkerType
         );
@@ -194,7 +196,7 @@ class Core extends Base\Core
             Constants::CHECKER_TYPE  => $checkerType,
         ]);
 
-        $this->getDataFromDruidAndRunCron(
+        $this->getDataAndRunCron(
             Constants::RISK_SCORE_CHECKER_EVENT,
             $checkerType
         );
@@ -206,11 +208,28 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function getDataFromDruidAndRunCron(string $eventType, $checkerType)
+    public function getDataAndRunCron(string $eventType, $checkerType)
     {
-        $query = Constants::EVENT_TYPE_DRUID_QUERY_MAP[$eventType];
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            Merchant\RazorxTreatment::MERCHANT_RISK_FACT_MIGRATION,
+            Mode::LIVE);
 
-        $merchantIdList = $this->getMerchantListFromDruid($query);
+        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        $merchantIdList          = [];
+
+        if($eventType === Constants::MILESTONE_CHECKER_EVENT and  $isDruidMigrationEnabled === true)
+        {
+            $dataLakeQuery              = Constants::EVENT_TYPE_QUERY_MAP[$eventType];
+
+            $merchantIdList             = $this->getMerchantListFromDataLake($dataLakeQuery);
+        }
+        else
+        {
+            $query          = Constants::EVENT_TYPE_DRUID_QUERY_MAP[$eventType];
+
+            $merchantIdList = $this->getMerchantListFromDruid($query);
+        }
 
         $this->trace->info(
             TraceCode::HEALTH_CHECKER_DEBUG, [
@@ -224,8 +243,8 @@ class Core extends Base\Core
         foreach ($merchantIdList as $merchantId)
         {
             /**
- * @var Merchant\Entity $merchant
-*/
+             * @var Merchant\Entity $merchant
+            */
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
             if ($this->isMerchantEligibleForRiskCheck($merchant, $eventType, $checkerType) === false) {
@@ -361,12 +380,38 @@ class Core extends Base\Core
                 new \Exception($error),
                 Trace::ERROR,
                 TraceCode::HEALTH_CHECKER_DRUID_ERROR
+
             );
 
             return [];
         }
 
         return array_pluck($res, 'merchants_id');
+    }
+
+    private function getMerchantListFromDataLake(string $query): array
+    {
+        try{
+            $startTime = microtime(true);
+
+            $res = $this->app['datalake.presto']->getDataFromDataLake($query);
+
+            $this->trace->info(TraceCode::MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME, [
+                Merchant\Constants::QUERY_EXECUTION_TIME => microtime(true) - $startTime
+            ]);
+
+            return array_pluck($res, 'merchants_id');
+
+        }
+        catch(\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::HEALTH_CHECKER_DATALAKE_ERROR
+            );
+
+            return [];
+        }
     }
 
     private function dispatchInQueueOnCheckerType(array $params, string $checkerType)

@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Merchant\Fraud\Checker;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Jobs\NotifyRas;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -77,13 +79,49 @@ class Core extends Base\Core
 
     private function getMerchantIdsToProcess(string $category, string $eventType): array
     {
-        $queryToExecute = Constants::getDruidQuery($category, $eventType);
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            Merchant\RazorxTreatment::MERCHANT_RISK_FACT_MIGRATION,
+            Mode::LIVE);
 
-        return $this->getMerchantListFromDruid($queryToExecute);
+        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        if ($isDruidMigrationEnabled === true)
+        {
+            return $this->getMerchantIdsToProcessFromDataLake($category, $eventType);
+        }
+        else
+        {
+            return $this->getMerchantIdsToProcessFromDruid($category, $eventType);
+        }
     }
 
-    private function getMerchantListFromDruid(string $query): array
+    private function getMerchantIdsToProcessFromDataLake(string $category, string $eventType): array
     {
+        $query = Constants::getDatalakeQuery($category, $eventType);
+
+        try{
+
+            $startTime = microtime(true);
+
+            $res = $this->app['datalake.presto']->getDataFromDataLake($query);
+
+            $this->trace->info(TraceCode::MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME, [
+                Merchant\Constants::QUERY_EXECUTION_TIME => microtime(true) - $startTime
+            ]);
+
+            return [array_pluck($res, 'merchants_id'), false];
+        }
+        catch (\Throwable $e)
+        {
+            // No need to log anything as druid take care of that
+            return [null, true];
+        }
+    }
+
+    private function getMerchantIdsToProcessFromDruid(string $category, string $eventType): array
+    {
+        $query = Constants::getDruidQuery($category, $eventType);
+
         list($error, $res) = $this->app['druid.service']->getDataFromDruid(['query' => $query]);
 
         if (isset($error) === true)

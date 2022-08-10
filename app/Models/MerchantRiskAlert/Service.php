@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Comment;
+use RZP\Constants\Mode;
 use RZP\Services\Stork;
 use RZP\Models\Dispute;
 use RZP\Models\Merchant;
@@ -21,6 +22,7 @@ use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Org;
 use RZP\Models\Dispute\Phase;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Merchant\FreshdeskTicket\Processor\WebsiteCheckerReply as WebsiteCheckerReply;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
@@ -155,7 +157,7 @@ class Service extends Base\Service
             $details[Constants::MERCHANT_MAX_AOV] = $merchantAov->getMaxAov();
         }
 
-        $druidData = $this->getRasLifetimePaymentDataFromDruid($merchantId);
+        $druidData = $this->getRasLifetimePaymentData($merchantId);
 
         $details[Constants::MERCHANT_AUTHORIZED_LIFETIME_GMV]            = $druidData[Constants::MERCHANT_AUTHORIZED_LIFETIME_GMV] ?? 0;
         $details[Constants::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT] = $druidData[Constants::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT] ?? 0;
@@ -163,10 +165,46 @@ class Service extends Base\Service
         return $details;
     }
 
+    private function getRasLifetimePaymentData($merchantId)
+    {
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            Merchant\RazorxTreatment::MERCHANT_RISK_FACT_MIGRATION,
+            Mode::LIVE);
+
+        $druidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        $rasLifeTimeData     = [];
+
+        $res                 = [];
+
+        if ($druidMigrationEnabled === true)
+        {
+            $res             = $this->getRasLifetimePaymentDataFromDatalake($merchantId);
+        }
+        else
+        {
+            $res             = $this->getRasLifetimePaymentDataFromDruid($merchantId);
+        }
+
+        if (is_null($res) === true || count($res) === 0)
+        {
+            return $rasLifeTimeData;
+        }
+
+        foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $returnKey => $datalakeKey)
+        {
+            if (array_key_exists($datalakeKey, $res[0]) === true)
+            {
+                $val = $res[0][$datalakeKey];
+                array_set($rasLifeTimeData, $returnKey, $val);
+            }
+        }
+
+        return $rasLifeTimeData;
+    }
+
     private function getRasLifetimePaymentDataFromDruid($merchantId)
     {
-        $druidData = [];
-
         $query = sprintf(Constants::DRUID_RAS_QUERY, $merchantId);
 
         [$error, $res] = $this->app['druid.service']->getDataFromDruid(['query' => $query]);
@@ -175,23 +213,33 @@ class Service extends Base\Service
         {
             $this->trace->info(TraceCode::GET_MERCHANT_RISK_DATA_DRUID_ERROR, ['error' => $error]);
 
-            return $druidData;
+            return [];
         }
 
-        if (is_null($res) === true || count($res) === 0)
+        return $res;
+    }
+
+    private function getRasLifetimePaymentDataFromDatalake($merchantId)
+    {
+        $query = sprintf(Constants::DATALAKE_RAS_QUERY, $merchantId);
+
+        $startTime = microtime(true);
+
+        try{
+
+            $res = $this->app['datalake.presto']->getDataFromDataLake($query);
+        }
+        catch (\Throwable $e)
         {
-            return $druidData;
+            // No need to log exeception as datalake takes care of that.
+            return [];
         }
 
-        foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $returnKey => $druidKey)
-        {
-            if (array_key_exists($druidKey, $res[0]) === true)
-            {
-                $val = $res[0][$druidKey];
-                array_set($druidData, $returnKey, $val);
-            }
-        }
-        return $druidData;
+        $this->trace->info(TraceCode::MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME, [
+            Constants::QUERY_EXECUTION_TIME => microtime(true) - $startTime
+        ]);
+
+        return $res;
     }
 
     private function handleManualFOH(Merchant\Entity $merchant, array $input)

@@ -581,4 +581,7 @@ final class RazorxTreatment
     // Experiment to migrate yes bank debit file batch processing
     public const BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION = "batch_service_enach_npci_netbanking_migration";
 
+    // Experiment to migrate merchant_risk_fact to datalake
+    public const MERCHANT_RISK_FACT_MIGRATION = "merchant_risk_fact_migration";
+
 }

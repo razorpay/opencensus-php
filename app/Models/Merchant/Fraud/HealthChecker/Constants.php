@@ -106,6 +106,12 @@ class Constants
     const GMV_MILESTONE_AMOUNT                = 15000;
     const GMV_MILESTONE_AMOUNT2               = 100000;
     const TRANSACTION_MILESTONE_COUNT         = 50;
+    const MILESTONE_MERCHANT_LIST_DATALAKE_QUERY =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+        'WHERE (merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT .') OR ' .
+        '(merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT2 .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT2 .') OR ' .
+        '(merchant_fact_txn_count_lt_yesterday < ' . self::TRANSACTION_MILESTONE_COUNT . ' AND merchant_fact_txn_count_ltd >= ' . self::TRANSACTION_MILESTONE_COUNT . ')';
+
     const MILESTONE_MERCHANT_LIST_DRUID_QUERY =
         'SELECT merchants_id FROM druid.merchant_risk_fact ' .
         'WHERE (merchant_fact_overall_gmv_lt_yesterday < '. self::GMV_MILESTONE_AMOUNT .' AND merchant_fact_overall_gmv_ltd >= '. self::GMV_MILESTONE_AMOUNT .') OR ' .
@@ -121,6 +127,12 @@ class Constants
         self::MILESTONE_CHECKER_EVENT  => self::MILESTONE_MERCHANT_LIST_DRUID_QUERY,
         self::RISK_SCORE_CHECKER_EVENT => self::RISK_SCORE_MERCHANT_LIST_DRUID_QUERY,
     ];
+
+    const EVENT_TYPE_QUERY_MAP = [
+        self::MILESTONE_CHECKER_EVENT  => self::MILESTONE_MERCHANT_LIST_DATALAKE_QUERY,
+        self::RISK_SCORE_CHECKER_EVENT => self::RISK_SCORE_MERCHANT_LIST_DRUID_QUERY,
+    ];
+
 
     const APP_CHECKER_QUEUE_DELAY_LIMIT = 600;
 

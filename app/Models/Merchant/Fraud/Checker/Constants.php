@@ -47,7 +47,7 @@ class Constants
         'AND aov_table_aov_reported = \'1\'';
 
     const DRUID_QUERY_HIGH_GMV =
-        'SELECT merchants_id FROM druid.merchant_risk_fact ' . 
+        'SELECT merchants_id FROM druid.merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 10000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 10000000';
 
@@ -84,6 +84,53 @@ class Constants
         'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
         'AND merchant_details_gst_present = TRUE';
 
+    // Data lake queries
+
+    const DATALAKE_QUERY_AOV =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+        'WHERE merchant_fact_txn_count_ltd >= 20 ' .
+        'AND merchant_fact_txn_count_lt_yesterday < 20 ' .
+        'AND aov_table_cov > 1.0 ' .
+        'AND aov_table_aov_reported = \'1\'';
+
+    const DATALAKE_QUERY_HIGH_GMV =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+        'WHERE merchant_fact_overall_gmv_ltd >= 10000000 ' .
+        'AND merchant_fact_overall_gmv_lt_yesterday < 10000000';
+
+    const DATALAKE_QUERY_MYSTERY_SHOPPING =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+        'WHERE ' .
+        '( ' .
+        'merchant_fact_overall_gmv_ltd >= 200000 ' .
+        'AND merchant_fact_overall_gmv_lt_yesterday < 200000 ' .
+        'AND merchant_details_apps_exempt_risk_check = 0 ' .
+        ') ' .
+        'OR ' .
+        '( ' .
+        'merchant_fact_overall_gmv_ltd >= 1000000 ' .
+        'AND merchant_fact_overall_gmv_lt_yesterday < 1000000 ' .
+        'AND merchant_details_apps_exempt_risk_check = 1 ' .
+        ')';
+
+    const DATALAKE_QUERY_GSTIN_SOFT_BLOCK =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk  ' .
+        'WHERE merchant_fact_overall_gmv_ltd >= 3000000 ' .
+        'AND merchant_fact_overall_gmv_lt_yesterday < 3000000 ' .
+        'AND merchant_details_gst_present = 0';
+
+    const DATALAKE_QUERY_GSTIN_HARD_BLOCK =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+        'WHERE merchant_fact_overall_gmv_ltd >= 4000000 ' .
+        'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
+        'AND merchant_details_gst_present = 0';
+
+    const DATALAKE_QUERY_GSTIN_OFFLINE_VERIFICATION =
+        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+        'WHERE merchant_fact_overall_gmv_ltd >= 4000000 ' .
+        'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
+        'AND merchant_details_gst_present = 1';
+
     const DRUID_QUERY_GROUPED_BY_EVENT_CATEGORY = [
         self::RAS_EVENT_TYPE_MILESTONE_CHECKER => [
             self::RAS_CATEGORY_AOV                        => self::DRUID_QUERY_AOV,
@@ -92,6 +139,17 @@ class Constants
             self::RAS_CATEGORY_GSTIN_SOFT_BLOCK           => self::DRUID_QUERY_GSTIN_SOFT_BLOCK,
             self::RAS_CATEGORY_GSTIN_HARD_BLOCK           => self::DRUID_QUERY_GSTIN_HARD_BLOCK,
             self::RAS_CATEGORY_GSTIN_OFFLINE_VERIFICATION => self::DRUID_QUERY_GSTIN_OFFLINE_VERIFICATION,
+        ],
+    ];
+
+    const DATALAKE_QUERY_GROUPED_BY_EVENT_CATEGORY = [
+        self::RAS_EVENT_TYPE_MILESTONE_CHECKER => [
+            self::RAS_CATEGORY_AOV                        => self::DATALAKE_QUERY_AOV,
+            self::RAS_CATEGORY_HIGH_GMV                   => self::DATALAKE_QUERY_HIGH_GMV,
+            self::RAS_CATEGORY_MYSTERY_SHOPPING           => self::DATALAKE_QUERY_MYSTERY_SHOPPING,
+            self::RAS_CATEGORY_GSTIN_SOFT_BLOCK           => self::DATALAKE_QUERY_GSTIN_SOFT_BLOCK,
+            self::RAS_CATEGORY_GSTIN_HARD_BLOCK           => self::DATALAKE_QUERY_GSTIN_HARD_BLOCK,
+            self::RAS_CATEGORY_GSTIN_OFFLINE_VERIFICATION => self::DATALAKE_QUERY_GSTIN_OFFLINE_VERIFICATION,
         ],
     ];
 
@@ -107,6 +165,11 @@ class Constants
     public static function getDruidQuery(string $category, string $eventType)
     {
         return self::DRUID_QUERY_GROUPED_BY_EVENT_CATEGORY[$eventType][$category];
+    }
+
+    public static function getDatalakeQuery(string $category, string $eventType)
+    {
+        return self::DATALAKE_QUERY_GROUPED_BY_EVENT_CATEGORY[$eventType][$category];
     }
 
     public static function isValidCategory(string $category, string $eventType)
