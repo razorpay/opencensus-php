@@ -2330,7 +2330,7 @@ class Service extends Base\Service
         $segmentProperties[SegmentConstants::IS_WORKFLOW] = 'false';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $this->merchant, $segmentProperties, $segmentEventName
+            $detail->merchant, $segmentProperties, $segmentEventName
         );
 
         // if any previous rejected workflow of gstin exist : do not show rejection reason for any old rejected workflow
@@ -2546,7 +2546,7 @@ class Service extends Base\Service
         $segmentProperties[SegmentConstants::IS_WORKFLOW] = 'true';
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $this->merchant, $segmentProperties, $segmentEventName
+            $merchant, $segmentProperties, $segmentEventName
         );
 
         $traceCode = ($isAddOperation) ? TraceCode::GSTIN_ADD_WORKFLOW_APPROVED : TraceCode::GSTIN_UPDATE_WORKFLOW_APPROVED;
