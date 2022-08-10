@@ -687,6 +687,13 @@ class Validator extends Base\Validator
 
         if ($input[Entity::TYPE] === Type::BUY_PRICING and isset($input[Entity::PAYMENT_NETWORK]))
         {
+            if($input[Entity::PAYMENT_NETWORK] === Network::UNKNOWN){
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment Network sent is wrong. Please check the case ' .
+                    '(lower/upper) of the payment network you are sending. If you are sending UNKNOWN explicitly then its not a valid network'
+                );
+            }
+
             if (in_array($input[Entity::PAYMENT_METHOD],
                 [
                     Payment\Method::UPI,
@@ -749,6 +756,8 @@ class Validator extends Base\Validator
             return;
         }
 
+        $isBuyPricingRule = (isset($input[Entity::TYPE]) and $input[Entity::TYPE] === Type::BUY_PRICING);
+
         $attrs = array(
             Entity::PAYMENT_NETWORK,
             Entity::PAYMENT_ISSUER,
@@ -757,8 +766,7 @@ class Validator extends Base\Validator
 
         foreach ($attrs as $attr)
         {
-            if ((isset($input[$attr])) and
-                ($input[$attr] !== null))
+            if ((isset($input[$attr])) and ($input[$attr] !== null) and !$isBuyPricingRule)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "For international pricing rule, attribute $attr should not be set");
@@ -1133,7 +1141,8 @@ class Validator extends Base\Validator
 
         array_walk($groupedRules, function ($rules)
         {
-            $validParams = [Entity::AMOUNT_RANGE_MIN, Entity::AMOUNT_RANGE_MAX, Entity::AMOUNT_RANGE_ACTIVE, Entity::FIXED_RATE, Entity::PERCENT_RATE];
+            $validParams = [Entity::AMOUNT_RANGE_MIN, Entity::AMOUNT_RANGE_MAX, Entity::AMOUNT_RANGE_ACTIVE, Entity::FIXED_RATE,
+                Entity::PERCENT_RATE, Entity::MAX_FEE, Entity::MIN_FEE];
 
             $validParams = array_merge(Entity::$buyPricingMethods, $validParams);
 

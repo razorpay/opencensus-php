@@ -954,6 +954,9 @@ class Header
     const PRICING_RULE_AMOUNT_RANGE_MIN         = 'amount_range_min';
     const PRICING_RULE_AMOUNT_RANGE_MAX         = 'amount_range_max';
     const PRICING_RULE_FIXED_RATE               = 'fixed_rate';
+    const PRICING_RULE_MIN_FEE                  = 'min_fee';
+    const PRICING_RULE_MAX_FEE                  = 'max_fee';
+    const PRICING_RULE_PROCURER                  = 'procurer';
     const PRICING_RULE_UPDATE                   = 'update';
 
     // Loc withdrawals
@@ -3595,6 +3598,9 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
                 self::PRICING_RULE_PERCENT_RATE,
                 self::PRICING_RULE_FIXED_RATE,
+                self::PRICING_RULE_MIN_FEE,
+                self::PRICING_RULE_MAX_FEE,
+                self::PRICING_RULE_PROCURER
             ],
             self::OUTPUT => [
                 self::PRICING_RULE_PLAN_NAME,
@@ -3611,6 +3617,9 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
                 self::PRICING_RULE_PERCENT_RATE,
                 self::PRICING_RULE_FIXED_RATE,
+                self::PRICING_RULE_MIN_FEE,
+                self::PRICING_RULE_MAX_FEE,
+                self::PRICING_RULE_PROCURER
             ]
         ],
         Type::BUY_PRICING_ASSIGN => [

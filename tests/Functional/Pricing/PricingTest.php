@@ -1756,6 +1756,9 @@ class PricingTest extends TestCase
                 'amount_range_min'      => '0',
                 'amount_range_max'      => '',
                 'fixed_rate'            => '5',
+                'min_fee'               => '2',
+                'max_fee'               => '20',
+                'procurer'              => 'razorpay',
             ],
         ];
     }

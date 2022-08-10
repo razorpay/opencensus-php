@@ -627,7 +627,7 @@ return [
                     'receiver_type'         => '',
                     'gateway'               => 'hitachi',
                     'payment_issuer'        => '',
-                    'payment_network'       => 'MC',
+                    'payment_network'       => 'MasterCard',
                     'percent_rate'          => '10',
                     'international'         => '0',
                     'emi_duration'          => '',
@@ -636,6 +636,43 @@ return [
                     'fixed_rate'            => '5',
                     'idempotency_key'       => 'batch_DZtFGiJXmcdLaQ',
                 ],
+                [
+                    'plan_name'             => 'testName3',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'prepaid',
+                    'payment_method_subtype'=> '',
+                    'receiver_type'         => '',
+                    'gateway'               => 'hitachi',
+                    'payment_issuer'        => '',
+                    'payment_network'       => 'MC',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'emi_duration'          => '',
+                    'amount_range_min'      => '0',
+                    'amount_range_max'      => '',
+                    'fixed_rate'            => '5',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaZ',
+                ],
+                [
+                    'plan_name'             => 'testName4',
+                    'payment_method'        => 'card',
+                    'payment_method_type'   => 'prepaid',
+                    'payment_method_subtype'=> '',
+                    'receiver_type'         => '',
+                    'gateway'               => 'hitachi',
+                    'payment_issuer'        => '',
+                    'payment_network'       => 'MasterCard',
+                    'percent_rate'          => '10',
+                    'international'         => '0',
+                    'emi_duration'          => '',
+                    'amount_range_min'      => '0',
+                    'amount_range_max'      => '',
+                    'fixed_rate'            => '5',
+                    'min_fee'               => '0',
+                    'max_fee'               => '10',
+                    'procurer'              => 'razorpay',
+                    'idempotency_key'       => 'batch_DZtFGiJXmcdLaX',
+                ],
             ],
             'url'       => '/buy_pricing/rules/bulk',
             'method'    => 'POST',
@@ -643,7 +680,7 @@ return [
         'response' => [
             'content'   => [
                 'entity'    => 'collection',
-                'count'     => 6,
+                'count'     => 8,
                 'items'     => [
                     [
                         'idempotency_key'   => 'batch_DZtFGiJXmcdLaM',
@@ -667,6 +704,19 @@ return [
                     ],
                     [
                         'idempotency_key'   => 'batch_DZtFGiJXmcdLaQ',
+                        'success'           => true,
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaZ',
+                        'success'           => false,
+                        'error'             => [
+                            'description'   => 'Payment Network sent is wrong. Please check the case (lower/upper) of the payment network you are sending.'.
+                            ' If you are sending UNKNOWN explicitly then its not a valid network',
+                            'code'  => 'BAD_REQUEST_VALIDATION_FAILURE'
+                        ]
+                    ],
+                    [
+                        'idempotency_key'   => 'batch_DZtFGiJXmcdLaX',
                         'success'           => true,
                     ],
                 ]

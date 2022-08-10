@@ -220,6 +220,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ISSUER,
         self::PAYMENT_NETWORK,
         self::GATEWAY,
+        self::PROCURER,
     ];
 
     const ZERO_PRICING = '10ZeroPricingP';
