@@ -656,6 +656,9 @@ class Sdk
 
                 break;
 
+            case UpiAction::INCOMING_MANDATE_PAUSE:
+                return $this->sdkPauseMandate();
+
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
             case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
                 $callback = [

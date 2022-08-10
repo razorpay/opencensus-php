@@ -46,6 +46,10 @@ class Action extends Base\Action
     const REVOKE                                    = 'revoke';
     const REVOKE_SUCCESS                            = 'revokeSuccess';
 
+
+    const INCOMING_UPDATE                           = 'incomingUpdate';
+    const INCOMING_PAUSE                            = 'incomingPause';
+
     protected $actionToRoute = [
         self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
         self::INITIATE_PAUSE            => Requests::P2P_CUSTOMER_MANDATE_PAUSE,

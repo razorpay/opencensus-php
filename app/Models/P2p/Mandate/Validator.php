@@ -24,6 +24,9 @@ class Validator extends Base\Validator
         $amountRules    = $this->getAllowedAmountRules();
         $recurringRules = $this->getAllowedRecurringRules();
         $expireAt       = $this->getExpireAtRule();
+        $endDate        = $this->getEndDateRule();
+        $pauseStartRule = $this->getPauseStartRule();
+        $pauseEndRule   = $this->getPauseEndRule();
 
         $rules = [
             Entity::NAME                            => 'string',
@@ -47,7 +50,9 @@ class Validator extends Base\Validator
             Entity::STATUS                          => 'string',
             Entity::INTERNAL_STATUS                 => 'string',
             Entity::START_DATE                      => 'epoch',
-            Entity::END_DATE                        => 'epoch',
+            Entity::END_DATE                        => 'epoch|' . $endDate,
+            Entity::PAUSE_START                     => 'epoch|' . $pauseStartRule,
+            Entity::PAUSE_END                       => 'epoch|' . $pauseEndRule,
             Entity::DESCRIPTION                     => 'string',
             Entity::ACTION                          => 'string',
             Entity::GATEWAY                         => 'string',
@@ -112,6 +117,36 @@ class Validator extends Base\Validator
             'max:' . Carbon::now()->addDays(45)->getTimestamp();
 
         return $expireAtRule;
+    }
+
+    /**
+     * @return string
+     */
+    private function getEndDateRule()
+    {
+        $validityEndRule = 'min:' . Carbon::today()->getTimestamp();
+
+        return $validityEndRule;
+    }
+
+    /**
+     * @return string
+     */
+    private function getPauseStartRule()
+    {
+        $pauseStartRule = 'min:' . Carbon::today()->getTimestamp();
+
+        return $pauseStartRule;
+    }
+
+    /**
+     * @return string
+     */
+    private function getPauseEndRule()
+    {
+        $pauseEndRule = 'min:' . Carbon::today()->getTimestamp() ;
+        
+        return $pauseEndRule;
     }
 
     public function makeCreateRules()

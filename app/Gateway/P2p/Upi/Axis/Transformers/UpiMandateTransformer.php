@@ -38,6 +38,28 @@ class UpiMandateTransformer extends Transformer
                 $this->input[Fields::GATEWAY_RESPONSE_MESSAGE]  = 'Incoming mandate collect request';
                 break;
 
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
+                $output = [
+                    UpiMandate\Entity::ACTION    => Action::INCOMING_UPDATE,
+                    UpiMandate\Entity::STATUS    => Status::UPDATED,
+                    UpiMandate\Entity::HANDLE    => $this->getVpaHandle($this->input[Fields::PAYER_VPA]),
+                ];
+
+                $this->input[Fields::GATEWAY_RESPONSE_CODE]     = '00';
+                $this->input[Fields::GATEWAY_RESPONSE_MESSAGE]  = 'Incoming mandate update request';
+                break;
+
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
+                $output = [
+                    UpiMandate\Entity::ACTION    => Action::INCOMING_PAUSE,
+                    UpiMandate\Entity::STATUS    => Status::PAUSED,
+                    UpiMandate\Entity::HANDLE    => $this->getVpaHandle($this->input[Fields::PAYER_VPA]),
+                ];
+
+                $this->input[Fields::GATEWAY_RESPONSE_CODE]     = '00';
+                $this->input[Fields::GATEWAY_RESPONSE_MESSAGE]  = 'Incoming mandate pause request';
+                break;
+
             case MandateAction::PAUSED:
                 $output = [
                     UpiMandate\Entity::ACTION   => Action::INITIATE_PAUSE,
@@ -120,6 +142,8 @@ class UpiMandateTransformer extends Transformer
         switch ($this->action)
         {
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
                 $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
 
                 $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
@@ -161,6 +185,16 @@ class UpiMandateTransformer extends Transformer
             $output[Mandate\Entity::RECURRING_VALUE] = $this->toInteger($this->input[Fields::RECURRENCE_VALUE]);
         }
 
+        if (isset($this->input[Fields::PAUSE_START]) === true)
+        {
+            $output[Mandate\Entity::PAUSE_START]   = Carbon::parse($this->input[Fields::PAUSE_START])->getTimestamp();
+        }
+
+        if (isset($this->input[Fields::PAUSE_END]) === true)
+        {
+            $output[Mandate\Entity::PAUSE_END]   = Carbon::parse($this->input[Fields::PAUSE_END])->getTimestamp();
+        }
+
         return $output;
     }
 
@@ -180,6 +214,7 @@ class UpiMandateTransformer extends Transformer
         switch ($this->action)
         {
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
                 return Carbon::parse($this->input[Fields::EXPIRY])->getTimestamp();
         }
     }

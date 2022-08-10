@@ -34,6 +34,8 @@ class UpiAction extends Action
 
     const CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED             = 'CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED';
 
+    const CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED              = 'CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED';
+
     const CUSTOMER_INCOMING_MANDATE_UPDATED                             = 'CUSTOMER_INCOMING_MANDATE_UPDATED';
 
     const AUTHORIZE_MANDATE                                             = 'AUTHORIZE_MANDATE';
@@ -45,4 +47,8 @@ class UpiAction extends Action
     const CUSTOMER_OUTGOING_MANDATE_PAUSED                              = 'CUSTOMER_OUTGOING_MANDATE_PAUSED';
 
     const MANDATE_STATUS_UPDATE                                         = 'MANDATE_STATUS_UPDATE';
+
+    const INCOMING_MANDATE_UPDATE                                       = 'incoming_mandate_update';
+
+    const INCOMING_MANDATE_PAUSE                                        = 'incoming_mandate_pause';
 }

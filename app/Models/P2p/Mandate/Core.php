@@ -128,6 +128,44 @@ class Core extends Base\Core
         return $mandate;
     }
 
+
+    /**
+     * @param string $umn
+     * @param false  $withTrashed
+     * This is the method to fetch mandates from the system by Umn
+     *
+     * @return Entity
+     * @throws RuntimeException
+     */
+    public function fetchByUMN(string $umn, $withTrashed = false): Base\Entity
+    {
+
+        // construct a payload id to fetch mandate for
+        $content = [Entity::UMN => $umn];
+
+        // fetch mandate by id
+        $mandateData = $this->pspxMandate->fetchByUMN($this->context(), $content);
+
+        if (sizeof($mandateData) === 0)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $umn);
+        }
+
+        // type cast to entity object
+        try
+        {
+            $mandate = new Entity($mandateData);
+
+            $this->fillProperties($mandate, $mandateData);
+        }
+        catch (\Exception $e)
+        {
+            throw new RuntimeException('Invalid mandate data ' . $mandate);
+        }
+
+        return $mandate;
+    }
+
     /**
      * @param array $input
      * This is the method to fetch all the mandates data that are stored

@@ -107,6 +107,27 @@ class Mandate extends Service
         return $response;
     }
 
+
+    /**
+     * Fetch call by umn to PSPx
+     *
+     * @param $context
+     *
+     * @return mixed|null
+     *
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\RuntimeException
+     * @throws \RZP\Exception\ServerErrorException
+     */
+    public function fetchByUMN($context, array $input)
+    {
+        $payload = $this->getPayloadArray($context, $input);
+
+        $response = $this->sendRequest('POST', Routes::FETCH_MANDATE_BY_UMN, $payload);
+
+        return $response;
+    }
+
     /**
      * Get payload from contexr and input
      *

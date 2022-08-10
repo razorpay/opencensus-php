@@ -141,6 +141,7 @@ class Fields
     const VALIDITY_END                  = 'validityEnd';
     const PAUSE_START                   = 'pauseStart';
     const PAUSE_END                     = 'pauseEnd';
+    const MANDATE_ID                    = 'mandate_id';
 
     // ------------- OPTIONAL VALUES IN TRANSACTION FLOW ---------//
     const REF_URL                       = 'refUrl';

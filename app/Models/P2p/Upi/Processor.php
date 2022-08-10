@@ -173,6 +173,8 @@ class Processor extends Base\Processor
         switch ($context[Base\Entity::ACTION])
         {
             case Mandate\Action::INCOMING_COLLECT:
+            case Mandate\Action::INCOMING_UPDATE:
+            case Mandate\Action::INCOMING_PAUSE:
 
                 $payer = $this->input->get(Mandate\Entity::MANDATE)[Mandate\Entity::PAYER];
 

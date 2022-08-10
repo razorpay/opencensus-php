@@ -89,6 +89,10 @@ class Mandate extends BaseMandate
                 $this->response = $this->mockFetchAllMandate($payload);
                 break;
 
+            case Routes::FETCH_MANDATE_BY_UMN:
+                $this->response = $this->mockFetchMandateByUMN($payload);
+                break;
+
             case Routes::UPDATE_MANDATE:
                 $this->response = $this->mockUpdateMandate($payload);
                 break;
@@ -257,6 +261,30 @@ class Mandate extends BaseMandate
         }
 
         return $deletedRecord;
+    }
+
+    /**
+     * This is the method to fetch mandate data from cache by umn
+     * @param array $input
+     *
+     * @return array
+     */
+    private function mockFetchMandateByUMN(array $input): array
+    {
+        $mandates = $this->getContainer();
+
+        if (count($mandates) > 0)
+        {
+            foreach ($mandates as $mandate)
+            {
+                if($input[MandateEntity::UMN] === $mandate[MandateEntity::UMN])
+                {
+                    return $mandate;
+                }
+            }
+        }
+
+        return [];
     }
 
     /**

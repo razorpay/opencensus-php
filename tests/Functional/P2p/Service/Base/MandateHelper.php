@@ -71,8 +71,8 @@ class MandateHelper extends P2pHelper
                     Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
                     Fields::TYPE                    => 'CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED',
                     Fields::UMN                     => 'uniqueMandateNumber@bank',
-                    Fields::VALIDITY_END            => '2020/06/05',
-                    Fields::VALIDITY_START          => '2020/06/04',
+                    Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
+                    Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
                 ];
 
                 return $callback;

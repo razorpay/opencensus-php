@@ -2,6 +2,7 @@
 
 namespace RZP\Models\P2p\Mandate;
 
+use Carbon\Carbon;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\Error;
 use RZP\Error\P2p\ErrorCode;
@@ -9,6 +10,7 @@ use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Actions;
 use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  *   * @property Core $core
@@ -32,6 +34,58 @@ class Processor extends Base\Processor
         $mandate = $this->core->create($mandateInput->toArray(), $upiInput->toArray());
 
         return $mandate->toArrayPublic();
+    }
+
+    /**
+    * @param array $input
+    * This is the method to update the incoming mandate
+    *
+    * @return array
+    */
+    public function incomingUpdate(array $input): array
+    {
+        // TODO :- avoid direct state update - use patch to store data
+        $this->initialize(Action::INCOMING_UPDATE, $input);
+
+        // get the existing mandate
+        $mandate = $this->core->fetchByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
+
+        // update only specific fields (not all the fields are allowed to override)
+        $mandate[Entity::AMOUNT]     = $this->input->bag(Entity::MANDATE)->get(Entity::AMOUNT);
+        $mandate[Entity::END_DATE]   = $this->input->bag(Entity::MANDATE)->get(Entity::END_DATE);
+        $mandate[Entity::UPDATED_AT] = Carbon::now()->getTimestamp();
+
+        return $this->core->update($mandate, $mandate->toArray())->toArrayPublic();
+    }
+
+
+    /**
+     * @param array $input
+     * This is the method to update the incoming mandate
+     *
+     * @return array
+     */
+    public function incomingPause(array $input): array
+    {
+        // TODO :- avoid direct state update - use patch to store data
+        $this->initialize(Action::INCOMING_UPDATE, $input);
+
+        // get the existing mandate
+        $mandate = $this->core->fetchByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
+
+        $pauseStart = $this->input->bag(Entity::MANDATE)->get(Entity::PAUSE_START);
+        $pauseEnd = $this->input->bag(Entity::MANDATE)->get(Entity::PAUSE_END);
+
+        // if pause start is greater than pause end throw exception
+        if($pauseStart > $pauseEnd)
+        {
+            throw new BadRequestValidationFailureException("Pause Start  Date cannot be greater than Pause End Date");
+        }
+
+        $mandate[Entity::PAUSE_START]     = $pauseStart;
+        $mandate[Entity::PAUSE_END]       = $pauseEnd;
+
+        return $this->core->update($mandate,$mandate->toArray())->toArrayPublic();
     }
 
     /**
@@ -128,6 +182,12 @@ class Processor extends Base\Processor
             isset($input[Entity::PAUSE_END]) === false)
         {
             throw new BadRequestException("Pause start and pause end are required");
+        }
+
+        // if pause start is greater than pause end throw exception
+        if($input[Entity::PAUSE_START] > $input[Entity::PAUSE_END])
+        {
+            throw new BadRequestValidationFailureException("Pause Start  Date cannot be greater than Pause End Date");
         }
 
         $this->initialize(Action::INITIATE_PAUSE, $input);

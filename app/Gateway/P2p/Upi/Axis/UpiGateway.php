@@ -21,6 +21,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
     {
         $content = $this->input->get(Fields::CONTENT);
         $type    = $content[Fields::TYPE] ?? null;
+
         switch ($type)
         {
             case UpiAction::COLLECT_REQUEST_RECEIVED:
@@ -93,6 +94,52 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
 
                 return;
 
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
+
+                $upiMandateTransformer = new UpiMandateTransformer($content, $type);
+                $upi                   = $upiMandateTransformer->transformIncoming();
+
+                $mandateTransformer = new MandateTransformer($upi, $type);
+                $mandate            = $mandateTransformer->transformIncoming();
+
+                unset($upi[Mandate\Entity::MANDATE]);
+
+                $context = [
+                    Mandate\Entity::ENTITY  => Mandate\Entity::MANDATE,
+                    Mandate\Entity::ACTION  => Mandate\Action::INCOMING_UPDATE,
+                ];
+
+                $response->setData([
+                       Mandate\Entity::MANDATE => $mandate,
+                       Mandate\Entity::UPI     => $upi,
+                       Mandate\Entity::CONTEXT => $context,
+                ]);
+
+                return;
+
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
+
+                $upiMandateTransformer = new UpiMandateTransformer($content, $type);
+                $upi                   = $upiMandateTransformer->transformIncoming();
+
+                $mandateTransformer = new MandateTransformer($upi, $type);
+                $mandate            = $mandateTransformer->transformIncoming();
+
+                unset($upi[Mandate\Entity::MANDATE]);
+
+                $context = [
+                    Mandate\Entity::ENTITY  => Mandate\Entity::MANDATE,
+                    Mandate\Entity::ACTION  => Mandate\Action::INCOMING_PAUSE,
+                ];
+
+                $response->setData([
+                   Mandate\Entity::MANDATE => $mandate,
+                   Mandate\Entity::UPI     => $upi,
+                   Mandate\Entity::CONTEXT => $context,
+                ]);
+
+                return;
+
             default:
                 // In if axis does not send the type, which is for queries
                 if (is_array(array_get($content, Fields::QUERIES)) === true)
@@ -142,6 +189,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_PAY:
             case UpiAction::CUSTOMER_DEBITED_FOR_MERCHANT_VIA_COLLECT:
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
             case null:
 
                 $signature = $this->getpayloadSignature();
