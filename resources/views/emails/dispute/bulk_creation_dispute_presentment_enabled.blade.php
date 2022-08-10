@@ -9,9 +9,7 @@
     @php
         $brand_color = '#6A75ED';
         $brand_text_color = '#FFFFFF';
-
         $disputesTable = '';
-
         $headerColumnStyle = '<th class="content" style="word-break: break-word; -webkit-hyphens: auto;
         -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top;
         font-family: -apple-system, ' .
@@ -22,7 +20,6 @@
          <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; font-weight: bold;
          line-height: 20px; color: #212121;"> <br style="font-family: -apple-system, BlinkMacSystemFont, Arial,
          sans-serif; line-height: 20px; color: #212121;">';
-
         $rowColumnStyle = '<td class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto;
         hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,' .
         "'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande' " .
@@ -30,7 +27,6 @@
         background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000;
         padding-bottom: 24px; padding-top: 0px;">
         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">';
-
         $headerRow = '
             ' . $headerColumnStyle . 'DISPUTE ID</th>
             ' . $headerColumnStyle . 'PAYMENT ID</th>
@@ -39,11 +35,14 @@
             ' . $headerColumnStyle . 'PHASE</th>
             ' . $headerColumnStyle . 'RESPOND BY</th>';
 
+        if ($phase === 'chargeback') {
+            $headerRow .= '' . $headerColumnStyle . 'CHARGEBACK REASON</th>';
+        }
+
         foreach ($disputesDataTable as $key => $dispute)
         {
             $paymentLink = 'https://dashboard.razorpay.com/#/app/payments/' . $dispute['payment_id'];
             $disputeLink = 'https://dashboard.razorpay.com/#/app/disputes/' . $dispute['dispute_id'];
-
             $disputesTable .= '
                   <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
                     ' . $rowColumnStyle . '
@@ -57,10 +56,14 @@
                     ' . $rowColumnStyle . $dispute['amount'] . '</td>
                     ' . $rowColumnStyle . $dispute['case_id'] . '</td>
                     ' . $rowColumnStyle . $dispute['phase'] . '</td>
-                    ' . $rowColumnStyle . $dispute['respond_by'] . '</td>
-                  </tr>';
-        }
+                    ' . $rowColumnStyle . $dispute['respond_by'] . '</td>';
 
+            if ($phase === 'chargeback') {
+                $disputesTable .= '' . $rowColumnStyle . $dispute['gateway_description'] . '</td';
+            }
+
+            $disputesTable .= '</tr>';
+        }
     @endphp
 </p>
 <center style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; width: 100%; min-width: 580px; background-color: #fafafa;">
@@ -85,24 +88,23 @@
             @endphp
         </tr>
         @php
-        echo $disputesTable;
+            echo $disputesTable;
         @endphp
         </tbody></table>
-        <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; height: 100%; max-width: 800px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-            <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
+    <table class="table" border="0" cellpadding="0" cellspacing="0" style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; width: 100%; background-color: #fafafa; height: 100%; max-width: 800px; margin: 0 auto; font-size: 12px;"><tbody style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+        <tr style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121; padding: 0; vertical-align: top; text-align: left;">
             <td class="content" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid #f2f2f2; border-right: 1px solid #f2f2f2; color: #000000; border-top: dashed 1px rgba(0,0,0,0.1); border-bottom: solid 1px rgba(0,0,0,0.05); padding-top: 0px;">
                 <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #000000;">
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                    Hi Team,
+                    Hi Team {{ $merchant['name'] }}
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                     @switch($phase)
                         @case('chargeback')
+                            @if ($mobileSignup === true)
                             We have received chargeback(s) against {{ $totalPayments }} payment(s) mentioned above.  Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
                             The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-                            @if($hasDeductAtOnset === true)
-                            As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
-                            @endif
-                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+
+                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
                             Henceforth, responses received via email will not be considered.
 
@@ -110,71 +112,104 @@
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                             <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
                             <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                        @break
+                            @elseif ($isFraud === false)
+                            We have received chargeback(s) from banking partners against {{ $totalPayments }} payment(s) mentioned above. You are requested to immediately stop the delivery of the goods / services for the given transactions and let us know once you do so. In the event that the products / services are already rendered, kindly upload all the documentary evidence of the transaction, including :
+                            <ol>
+                                <li>Transaction invoices</li>
+                                <li>Proof of delivery of product/service</li>
+                                <li>Any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.</li>
+                            </ol>
+                            The failure to do so can lead to the corresponding amount being debited to you permanently. As per guidelines, the temporary debits, if any will be reversed once the aforementioned chargebacks are concluded in your favour.
+                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                            To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
+                            Henceforth, responses received via email will not be considered.
+
+                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                            <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
+                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+
+                            @elseif($isFraud === true)
+                                We have received chargeback(s) from banking partners against {{ $totalPayments }} payment(s) mentioned above. i.e “The cardholder did not authorize or participate in a transaction conducted in a Card Not Present environment” You are requested to immediately stop the delivery of the goods / services for the given transactions and let us know once you do so. In the event that the products / services are already rendered, kindly upload all the documentary evidence of the transaction, including :
+                                <ol>
+                                    <li>Transaction invoices</li>
+                                    <li>Proof of delivery of product/service</li>
+                                    <li>Any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.</li>
+                                </ol>
+                                The failure to do so can lead to the corresponding amount being debited to you permanently. As per the card network guidelines, it is highly likely that the disputes under fraud reason codes are concluded against the merchant (in favour of the cardholder), therefore, it is also requested that you contact the respective cardholders to provide them the redressal of the dispute and requesting them to withdraw these chargebacks. We will be happy to provide you with the final conclusions (as received from the card networks) within 45 days from the latest re-contestation date of the chargeback. In order to avoid exposure to fraud chargebacks, we insist that you make a judicious decision at your discretion on whether to accept the unauthenticated cross border transactions on your business.
+                                <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                                To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
+                                Henceforth, responses received via email will not be considered.
+
+                                <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                                <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
+                                <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+
+                            @endif
+                            @break
                         @case('retrieval')
-                            We have received dispute(s) against {{ $totalPayments }} payment(s) mentioned above.  Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
-                            The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-                            @if($hasDeductAtOnset === true)
-                                As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
-                            @endif
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
-                            Henceforth, responses received via email will not be considered.
+                        We have received dispute(s) against {{ $totalPayments }} payment(s) mentioned above.  Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
+                        The failure to do so can lead to  the corresponding amount getting debited from the current balance.
+                        @if($hasDeductAtOnset === true)
+                            As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                        @endif
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
+                        Henceforth, responses received via email will not be considered.
 
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         @break
                         @case('pre_arbitration')
-                            We have received Pre-Arbitration Chargeback(s) (2nd level escalation) for the payment(s) mentioned above. The payment(s) have been disputed by cardholder(s) for the second time under the same chargeback reason.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            You may contact the cardholder to resolve this issue. In case the cardholder confirms that the issue has been resolved, please request an email confirmation which can be represented to defend this case. The email confirmation from the cardholder would be the best resolution to these cases. Alternatively, you could share any other proof apart from the ones shared before which clearly show that the services have been provided to the cardholder.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            We request you to update us within the deadline. Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
+                        We have received Pre-Arbitration Chargeback(s) (2nd level escalation) for the payment(s) mentioned above. The payment(s) have been disputed by cardholder(s) for the second time under the same chargeback reason.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        You may contact the cardholder to resolve this issue. In case the cardholder confirms that the issue has been resolved, please request an email confirmation which can be represented to defend this case. The email confirmation from the cardholder would be the best resolution to these cases. Alternatively, you could share any other proof apart from the ones shared before which clearly show that the services have been provided to the cardholder.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        We request you to update us within the deadline. Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
 
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
-                            Henceforth, responses received via email will not be considered.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
+                        Henceforth, responses received via email will not be considered.
 
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            Note: If the documents are rejected in Pre-Arbitration as well and Arbitration Chargeback is received, the complete liability of the payment/transaction and Arbitration fee that may be imposed by the card networks (Visa/Mastercard) will be passed on to you and an immediate debit will be made to your account.
-                            @if( $hasDeductAtOnset === true )
-                                Alternatively, if a debit has already been made at the time of the dispute creation, no further debits will be allowed. In this case, the corresponding amount would be reversed if our banking partner resolves dispute in your favour.
-                            @endif
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        Note: If the documents are rejected in Pre-Arbitration as well and Arbitration Chargeback is received, the complete liability of the payment/transaction and Arbitration fee that may be imposed by the card networks (Visa/Mastercard) will be passed on to you and an immediate debit will be made to your account.
+                        @if( $hasDeductAtOnset === true )
+                            Alternatively, if a debit has already been made at the time of the dispute creation, no further debits will be allowed. In this case, the corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                        @endif
                         @break
                         @case('arbitration')
-                            We have received arbitration chargeback(s) for the above mentioned payments, that is, the cardholder has disputed the transaction for the third time under the same chargeback reason.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            Arbitration chargeback requests are exceptions/chargeable & decided by the card network’s committee. We recommend you to accept the chargeback on the same email thread as additional fees will be levied to represent Arbitration Chargebacks.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            We request you to update us within the deadline. Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
-                            The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-                            @if($hasDeductAtOnset === true)
-                                As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
-                            @endif
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
-                            Henceforth, responses received via email will not be considered.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
-                         @break
-                         @case('fraud')
-                            We have received fraud chargeback(s) for the payment(s) mentioned above. These payments have been reported as never authorised / fraud by the cardholder.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
-                            The failure to do so can lead to  the corresponding amount getting debited from the current balance.
-                            @if($hasDeductAtOnset === true)
-                                As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
-                            @endif
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
-                            Henceforth, responses received via email will not be considered.
+                        We have received arbitration chargeback(s) for the above mentioned payments, that is, the cardholder has disputed the transaction for the third time under the same chargeback reason.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        Arbitration chargeback requests are exceptions/chargeable & decided by the card network’s committee. We recommend you to accept the chargeback on the same email thread as additional fees will be levied to represent Arbitration Chargebacks.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        We request you to update us within the deadline. Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
+                        The failure to do so can lead to  the corresponding amount getting debited from the current balance.
+                        @if($hasDeductAtOnset === true)
+                            As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                        @endif
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
+                        Henceforth, responses received via email will not be considered.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
+                        @break
+                        @case('fraud')
+                        We have received fraud chargeback(s) for the payment(s) mentioned above. These payments have been reported as never authorised / fraud by the cardholder.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        Kindly upload all proofs like invoices, proof of delivery of product/service and any relevant screenshots pertaining to each dispute by visiting your <a href="https://dashboard.razorpay.com/"> Razorpay dashboard</a>.
+                        The failure to do so can lead to  the corresponding amount getting debited from the current balance.
+                        @if($hasDeductAtOnset === true)
+                            As per guidelines from our banking partner, one or more of the above payments have been debited from your current balance. The corresponding amount would be reversed if our banking partner resolves dispute in your favour.
+                        @endif
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        To provide you a seamless experience of sharing the required information,  we have moved all dispute management correspondence to the Razorpay dashboard.
+                        Henceforth, responses received via email will not be considered.
 
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
-                            <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
-                            <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
+                        <a href="https://razorpay.com/docs/payments/disputes/presentments/dashboard/">Click here</a> to know  how to respond to chargebacks on the Razorpay Dashboard.
+                        <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">
                         @break
                     @endswitch
                     <br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;"><br style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #212121;">

@@ -18,6 +18,8 @@ class Constants
 
     const GATEWAY_DISPUTE_SOURCE_NETWORK = 'network';
 
+    const GATEWAY_DISPUTE_CODE = 'gateway_code';
+
     const DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS = (24 * 60 * 60) * 45;
 
     const CHARGEBACK_SMS_TEMPLATE_NAME      = 'sms.risk.chargeback_notification_mobile_signup';
@@ -32,4 +34,17 @@ class Constants
         Category::GOVERNMENT,
         Category::GOVT_EDUCATION
     ];
+
+    const FRAUD_CHARGEBACK_MAPPING = [
+        '10.1'  =>  'Visa',
+        '10.2'  =>  'Visa',
+        '10.3'  =>  'Visa',
+        '10.4'  =>  'Visa',
+        '4837'  =>  'Mastercard',
+        '4840'  =>  'Mastercard',
+        '4849'  =>  'Mastercard',
+        '4863'  =>  'Mastercard',
+    ];
+
+    const FRAUD_CHARGEBACK = 'fraud_chargeback';
 }

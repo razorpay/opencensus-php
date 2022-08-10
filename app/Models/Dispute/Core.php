@@ -788,8 +788,19 @@ class Core extends Base\Core
                 $bulkMailData[Constants::DISPUTES] = [];
 
                 $disputeIds = [];
-                foreach ($publicDisputeIds as $publicDisputeId)
+
+                if ($disputePhase === 'chargeback')
                 {
+                    $bulkMailDataFraud = $bulkMailData;
+                    $bulkMailDataNonFraud = $bulkMailData;
+                    $bulkMailDataFraud['isFraud'] = true;
+                    $bulkMailDataNonFraud['isFraud'] = false;
+                    $bulkMailDataFraud['mobileSignup'] = false;
+                    $bulkMailDataNonFraud['mobileSignup'] = false;
+                }
+
+                foreach ($publicDisputeIds as $publicDisputeId) {
+
                     $dispute = $disputeData[$publicDisputeId];
 
                     if ((isset($dispute[Entity::DEDUCT_AT_ONSET]) === true) and
@@ -801,66 +812,97 @@ class Core extends Base\Core
                     $bulkMailData[Constants::DISPUTES][] = $dispute;
 
                     $disputeIds[] = Entity::stripDefaultSign($publicDisputeId);
+
+                    if ($disputePhase === Phase::CHARGEBACK)
+                    {
+                        ($dispute[DisputeConstants::FRAUD_CHARGEBACK] === true) ?
+                            $bulkMailDataFraud[Constants::DISPUTES][] = $dispute :
+                            $bulkMailDataNonFraud[Constants::DISPUTES][] = $dispute;
+                    }
                 }
+
+                if ($disputePhase === Phase::CHARGEBACK)
+                {
+                    $bulkMailDataFraud['totalPayments'] = count($bulkMailDataFraud[Constants::DISPUTES]);
+                    $bulkMailDataNonFraud['totalPayments'] = count($bulkMailDataNonFraud[Constants::DISPUTES]);
+                    if ($bulkMailDataFraud['totalPayments'] > 0) {
+                        $this->bulkMailQueue($bulkMailDataFraud, $merchantId, $disputeIds, $disputePhase); }
+                    if ($bulkMailDataNonFraud['totalPayments'] > 0) {
+                        $this->bulkMailQueue($bulkMailDataNonFraud, $merchantId, $disputeIds, $disputePhase); }
+                }
+
 
                 $bulkMailData['totalPayments'] = count($publicDisputeIds);
 
-                try
+                $this->bulkMailQueue($bulkMailData, $merchantId, $disputeIds, $disputePhase);
+
+            }
+        }
+    }
+
+    protected function bulkMailQueue($bulkMailData, $merchantId, $disputeIds, $disputePhase)
+    {
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK
+                and Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
+            {
+                if (isset($bulkMailData['isFraud']) === false) {
+                    $bulkMailData['mobileSignup'] = true;
+                    $this->sendChargebackNotifMobileSignUp($merchant, $bulkMailData);
+                }
+            }
+            else
+            {
+                if (($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK and isset($bulkMailData['isFraud']) === true)
+                    or $bulkMailData[Entity::PHASE] !== Phase::CHARGEBACK)
                 {
-                    $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-                    if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK
-                        and Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === true)
-                    {
-                        $this->sendChargebackNotifMobileSignUp($merchant, $bulkMailData);
-                    }
-                    else
-                    {
-                        Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
-
-                        $this->trace->info(
-                            TraceCode::DISPUTE_BULK_MAIL_QUEUED,
-                            [
-                                'dispute_ids' => $disputeIds,
-                                'merchant_id' => $merchantId,
-                                'phase'       => $disputePhase,
-                            ]);
-                    }
-
-                    $this->repo->transaction(function() use ($disputeIds)
-                    {
-                        $listOfDisputeIdList = array_chunk($disputeIds, self::DISPUTE_BULK_UPDATE_LIMIT);
-
-                        foreach ($listOfDisputeIdList as $disputeIdList)
-                        {
-                            $this->repo->dispute->markOpenDisputesAsNotified($disputeIdList);
-                        }
-                    });
+                    Mail::queue(new DisputeMailer\BulkCreation($bulkMailData));
 
                     $this->trace->info(
-                        TraceCode::DISPUTE_BULK_NOTIFICATION_STATUS_UPDATED,
+                        TraceCode::DISPUTE_BULK_MAIL_QUEUED,
                         [
                             'dispute_ids' => $disputeIds,
                             'merchant_id' => $merchantId,
-                            'phase'       => $disputePhase,
+                            'phase' => $disputePhase,
                         ]);
 
                     $this->trace->count(Metrics::DISPUTE_SUCCESS_TOTAL);
                 }
-                catch (\Throwable $e)
-                {
-                    $this->trace->traceException(
-                        $e,
-                        Trace::ERROR,
-                        TraceCode::DISPUTE_BULK_MAIL_PROCESSING_ERROR,
-                        [
-                            'merchant_id' => $merchantId,
-                            'phase'       => $disputePhase,
-                            'dispute_ids' => $disputeIds,
-                        ]
-                    );
-                }
             }
+
+            $this->repo->transaction(function() use ($disputeIds)
+            {
+                $listOfDisputeIdList = array_chunk($disputeIds, self::DISPUTE_BULK_UPDATE_LIMIT);
+
+                foreach ($listOfDisputeIdList as $disputeIdList)
+                {
+                    $this->repo->dispute->markOpenDisputesAsNotified($disputeIdList);
+                }
+            });
+
+            $this->trace->info(
+                TraceCode::DISPUTE_BULK_NOTIFICATION_STATUS_UPDATED,
+                [
+                    'dispute_ids' => $disputeIds,
+                    'merchant_id' => $merchantId,
+                    'phase'       => $disputePhase,
+                ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DISPUTE_BULK_MAIL_PROCESSING_ERROR,
+                [
+                    'merchant_id' => $merchantId,
+                    'phase'       => $disputePhase,
+                    'dispute_ids' => $disputeIds,
+                ]
+            );
         }
     }
 
@@ -902,7 +944,7 @@ class Core extends Base\Core
 
             $currentDate = Carbon::now(Timezone::IST)->format('d/m/Y');
 
-            $subject = sprintf('Razorpay | Chargeback Alert - %s [%s] | %s', $merchant->getName(), $merchant->getId(), $currentDate);
+            $subject = sprintf('Razorpay | Service Chargeback Alert - %s [%s] | %s', $merchant->getName(), $merchant->getId(), $currentDate);
 
             $requestParams = [
                 'type'          =>  'Question',
@@ -1117,7 +1159,26 @@ class Core extends Base\Core
             $disputeData[$key] = $reason[$key];
         }
 
+        if ($dispute[Entity::PHASE] === Phase::CHARGEBACK)
+        {
+            ($this->checkFraudChargeback($reason) === true) ?
+                $disputeData[DisputeConstants::FRAUD_CHARGEBACK] = true :
+                $disputeData[DisputeConstants::FRAUD_CHARGEBACK] = false;
+        }
+
         return $disputeData;
+    }
+
+    private function checkFraudChargeback(array $reason)
+    {
+        foreach (DisputeConstants::FRAUD_CHARGEBACK_MAPPING as $reasonCode => $network)
+        {
+            if ($reason[DisputeConstants::GATEWAY_DISPUTE_CODE] === $reasonCode and $reason[DisputeConstants::GATEWAY_DISPUTE_SOURCE_NETWORK] === $network)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function updateCustomerTicketIfApplicable(Entity $dispute)

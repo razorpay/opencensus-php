@@ -1849,7 +1849,7 @@ class DisputeTest extends TestCase
 
             $currentDate = Carbon::now(Timezone::IST)->format('d/m/Y');
 
-            $expectedMailSubject = sprintf('Razorpay | Chargeback Alert - %s [%s] | %s',
+            $expectedMailSubject = sprintf('Razorpay | Service Chargeback Alert - %s [%s] | %s',
                 $merchantName, $merchantId, $currentDate);
 
             $this->assertEquals($expectedMailSubject, $mail->subject);
@@ -3206,6 +3206,12 @@ class DisputeTest extends TestCase
     {
         $phase = $mail->viewData['phase'];
 
+        $isFraud = false;
+
+        if (isset($mail->viewData['isFraud'])) {
+            $isFraud = $mail->viewData['isFraud'];
+        }
+
         $merchantId = $mail->viewData['merchant']['id'];
 
         $merchantName = $mail->viewData['merchant']['name'];
@@ -3215,7 +3221,10 @@ class DisputeTest extends TestCase
         switch($phase)
         {
             case Phase::CHARGEBACK:
-                return sprintf('Razorpay | Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+                if ($isFraud === false) {
+                    return sprintf('Razorpay | Service Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+                }
+                return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::RETRIEVAL:
                 return sprintf('Razorpay | Retrieval Request Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::PRE_ARBITRATION:

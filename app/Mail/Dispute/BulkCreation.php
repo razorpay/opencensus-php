@@ -110,6 +110,8 @@ class BulkCreation extends Base
     {
         $phase = $this->data['phase'];
 
+        $isFraud = $this->data['isFraud'] ?? false;
+
         $merchantId = $this->data['merchant']['id'];
 
         $merchantName = $this->data['merchant']['name'];
@@ -119,7 +121,10 @@ class BulkCreation extends Base
         switch($phase)
         {
             case Phase::CHARGEBACK:
-                return sprintf('Razorpay | Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+                if ($isFraud === false) {
+                    return sprintf('Razorpay | Service Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
+                }
+                return sprintf('Razorpay | Fraud Chargeback Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::RETRIEVAL:
                 return sprintf('Razorpay | Retrieval Request Alert - %s [%s] | %s', $merchantName, $merchantId, $currentDate);
             case Phase::PRE_ARBITRATION:
