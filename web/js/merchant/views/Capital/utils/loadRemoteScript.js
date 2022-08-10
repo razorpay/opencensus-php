@@ -1,15 +1,18 @@
 const isProd = window.location.hostname.endsWith('razorpay.com');
 
 const getStageBranch = () => {
+  if (isProd) return '';
   const branchFromQueryParam = new URLSearchParams(location.search).get('branch');
-  if (isProd || !branchFromQueryParam) return 'master';
-  return branchFromQueryParam;
+  if (!branchFromQueryParam) {
+    return 'master/';
+  }
+  return `${branchFromQueryParam}/`;
 };
 
 const getScriptSrc = (project) => {
   const parentScriptHost = isProd ? 'cdn.razorpay.com' : 'betacdn.np.razorpay.in';
   const stageBranch = getStageBranch();
-  return `//${parentScriptHost}/capital/${stageBranch}/${project}/main.js`;
+  return `//${parentScriptHost}/capital/${stageBranch}${project}/main.js`;
 };
 
 const random = (length) =>
