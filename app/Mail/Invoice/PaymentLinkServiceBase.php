@@ -72,6 +72,7 @@ class PaymentLinkServiceBase extends Mailable
         $merchantId = $this->data['merchant']['id'];
         switch ($merchantId) {
             case Preferences::MID_BAGIC_2:
+            case Preferences::MID_BAGIC:
                 $this->view('emails.invoice.customer.custom.bagic_email');
                 break;
         }
