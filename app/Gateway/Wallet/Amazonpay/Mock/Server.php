@@ -36,7 +36,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($request, 'decryptedAuthSign');
 
-        $response = $this->getAuthorizeResponse($request, $input);
+        $response = $this->getAuthorizeResponse($request);
 
         $this->content($input, 'amazonpay_change_callback');
 
@@ -117,7 +117,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    private function getAuthorizeResponse(array $request, array $input)
+    private function getAuthorizeResponse(array $request)
     {
         $response = [
             ResponseFields::AMAZON_ORDER_ID  => 'S04-3441699-5326071',
@@ -128,10 +128,6 @@ class Server extends Base\Mock\Server
             ResponseFields::SELLER_ORDER_ID  => $request[RequestFields::ORDER_ID],
             ResponseFields::STATUS           => 'SUCCESS',
             ResponseFields::TRANSACTION_DATE => Carbon::now(Timezone::IST)->getTimestamp(),
-            'payload' => $input['payload'],
-            'iv' => $input['iv'],
-            'key' => $input['key'],
-            'redirectUrl' => $input['redirectUrl'],
         ];
 
         $this->content($response, $this->action);
