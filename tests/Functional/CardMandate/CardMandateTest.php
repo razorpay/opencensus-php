@@ -1938,8 +1938,8 @@ class CardMandateTest extends TestCase
 
         $payment = $this->getDbLastEntity('payment');
         $this->assertEquals('failed', $payment->getStatus());
-        $this->assertEquals('BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED', $payment->internal_error_code);
-        $this->assertEquals('Payment debit notification failed to verify', $payment->error_description);
+        $this->assertEquals('BAD_REQUEST_VALIDATION_FAILURE', $payment->internal_error_code);
+        $this->assertEquals('Something went wrong, please try again after sometime.', $payment->error_description);
     }
 
     public function testCreateCardMandateAutoPaymentNotificationFailed()

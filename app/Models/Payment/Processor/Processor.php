@@ -3685,15 +3685,11 @@ class Processor
         return $returnData;
     }
 
-    public function failNotificationVerifyFailedCardAutoRecurringPayment(Payment\Entity $payment)
+    public function failNotificationVerifyFailedCardAutoRecurringPayment(Payment\Entity $payment, $exception)
     {
         $this->payment = $payment;
 
         $traceCode = TraceCode::PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED;
-
-        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED;
-
-        $exception = new Exception\BadRequestException($errorCode);
 
         $this->updatePaymentFailed($exception, $traceCode);
     }

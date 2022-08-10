@@ -33,7 +33,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
                 TraceCode::CARD_MANDATE_NOTIFICATION_PAYMENT_VERIFY_FAILED,
                 ["payment_id" => $id]);
 
-            $processor->failNotificationVerifyFailedCardAutoRecurringPayment($payment);
+            $processor->failNotificationVerifyFailedCardAutoRecurringPayment($payment, $e);
         }
 
         if ($verified === false)
