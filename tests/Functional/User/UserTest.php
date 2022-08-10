@@ -5051,6 +5051,24 @@ class UserTest extends TestCase
         });
     }
 
+    public function testSendOtpForCreatePayoutWithoutMobileNumberInReceiver()
+    {
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit('user', $user->getId(), ['contact_mobile' => null]);
+
+        $this->createContact();
+        $this->createFundAccount();
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testSendOtpWithReplaceKeyAction()
     {
         $this->ba->proxyAuth();

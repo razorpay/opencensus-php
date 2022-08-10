@@ -7619,6 +7619,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BANK_ACCOUNT_RETRY_STATUS                                   = 'BANK_ACCOUNT_RETRY_STATUS';
 
+    const SKIPPING_SENDING_OTP_VIA_SMS_FOR_EMPTY_RECEIVER             = 'SKIPPING_SENDING_OTP_VIA_SMS_FOR_EMPTY_RECEIVER';
+
     const LEDGER_STATEMENT_BALANCE_ENTITY   = 'LEDGER_STATEMENT_BALANCE_ENTITY';
     const LEDGER_STATEMENT_CREATED_AT_ERROR = 'LEDGER_STATEMENT_CREATED_AT_ERROR';
 
@@ -7811,6 +7813,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYOUT_INVALID_UPDATE                                 => 'Invalid Update operation on Payout',
         self::BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE                => 'Invalid source type on payout',
         self::UPDATE_PAYOUT_ATTACHMENTS_INPUT                       => 'Update Payout Attachments request',
+        self::SKIPPING_SENDING_OTP_VIA_SMS_FOR_EMPTY_RECEIVER       => 'Not sending via OTP via SMS as receiver is empty',
         self::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST => 'request for creating test payouts for detecting fund loading downtime created',
         self::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED        => 'test payouts for detecting fund loading downtime created',
         self::STATUS_OF_TEST_PAYOUTS                                         => 'status of test payouts in last five minutes',

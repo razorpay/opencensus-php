@@ -3790,6 +3790,21 @@ class Core extends Base\Core
             return [];
         }
 
+        if ((in_array($input[Entity::ACTION], ['create_payout'], true) === true) and
+            ((empty($user->getContactMobile()) === true) or
+                ($user->isContactMobileVerified() === false)))
+        {
+            $this->trace->info(
+                TraceCode::SKIPPING_SENDING_OTP_VIA_SMS_FOR_EMPTY_RECEIVER,
+                [
+                    'user_id' => $user->getId(),
+                    'action' => $input[Entity::ACTION],
+                ]
+            );
+
+            return [];
+        }
+
         // Optimization: Do just one call to raven when input.medium = sms.
         $otp = $otp ?: $this->generateOtpFromRaven($input, $merchant, $user);
 

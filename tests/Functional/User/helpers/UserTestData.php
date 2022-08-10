@@ -3359,6 +3359,26 @@ return [
         ],
     ],
 
+    'testSendOtpForCreatePayoutWithoutMobileNumberInReceiver' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'action'          => 'create_payout',
+                'amount'          => 10000,
+                'account_number'  => '1234567890',
+                // Filled from test method.
+                // 'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
     'testSendOtpWithReplaceKeyAction' => [
         'request' => [
             'url'     => '/users/otp/send',
