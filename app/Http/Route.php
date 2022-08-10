@@ -1560,6 +1560,7 @@ class Route
         'workflow_update'                          => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                          => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_action_get_multiple'             => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
+        'internal_workflow_action_get_multiple'    => ['get',      'internal/merchant/{id}/w-actions',               'WorkflowController@getActionMultipleInternal'                      ],
         'workflow_action_update'                   => ['put',      'w-actions/{id}',                                 'WorkflowController@updateWorkflowAction'                           ],
         'action_checker_create'                    => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
         'workflow_action_details'                  => ['get',      'w-actions/{id}/details',                         'WorkflowController@getActionDetails'                               ],
@@ -4891,6 +4892,7 @@ class Route
         'internal_order_update',
 
         // care
+        'internal_workflow_action_get_multiple',
         'myoperator_v1_proxy_get',
         'myoperator_v2_proxy_post',
         'care_service_myoperator_webhook_proxy',
@@ -13488,6 +13490,7 @@ class Route
         ],
 
         'care' => [
+            'internal_workflow_action_get_multiple',
             'payment_fetch_multiple',
             'internal_merchant_fetch',
             'internal_merchant_submission_date',

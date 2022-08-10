@@ -58,6 +58,8 @@ class Constants
     const STATUS                                         = 'status';
     const NEEDS_CLARIFICATION                            = 'needs_clarification';
 
+    const REJECTED_REASON = 'rejection_reason';
+
     public static function getActionRejectHandlerByPermissionName(string $permissionName): ?string
     {
         if (isset(self::ACTION_REJECT_CALLBACK_HANDLERS[$permissionName]) === false)

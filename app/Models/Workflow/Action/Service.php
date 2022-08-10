@@ -6,9 +6,12 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Role;
 use RZP\Models\Workflow\Constants;
+use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Workflow\Action\Constants as WorkflowActionConstants;
+use RZP\Models\Workflow\Action\State\Entity as WorkflowActionStateEntity;
 
 class Service extends Base\Service
 {
@@ -293,6 +296,39 @@ class Service extends Base\Service
         $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
+    }
+
+    public function getActionsByMakerInternal(string $makerId, $input): array
+    {
+        $expands = ['workflow'];
+
+        $actions = $this->repo->workflow_action->fetchActionsByMakerId($makerId, $expands, $input);
+
+        $resp = $actions->toArrayPublic();
+
+        foreach ($resp['items'] as $key => $value)
+        {
+            if ($value[Entity::STATE] == WorkflowActionStateEntity::REJECTED)
+            {
+                try
+                {
+                    [$merchant, $merchantDetails] = (new Merchant\Detail\Core())->getMerchantAndSetBasicAuth($value[Entity::MAKER_ID]);
+
+                    $observerData = (new WorkflowService())->getWorkflowObserverData($value[Entity::ID]);
+
+                    if (array_key_exists(WorkflowActionConstants::REJECTED_REASON, $observerData))
+                    {
+                        $resp['items'][$key][WorkflowActionConstants::REJECTED_REASON] = $observerData[WorkflowActionConstants::REJECTED_REASON];
+                    }
+                }
+                catch (Exception\BadRequestException $e)
+                {
+                    $this->trace->traceException($e);
+                }
+            }
+        }
+
+        return $resp;
     }
 
     /**

@@ -226,7 +226,7 @@ class FreshdeskTicketV2Test extends TestCase
     {
         $expectedRequestResponse    =   $this->getExpectedRequestResponse(self::RZP_FETCH_TICKET);
 
-        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27%22&page=1', 'get',
+        $this->expectFreshdeskRequestAndRespondWith('search/tickets?query=%22custom_string%3Amerchant_dashboard_10000000000000+AND+custom_string%3A%27Merchant%27+AND+custom_string%3A%27Activation%27+AND+custom_string%3A%27w_action_1234%27%22&page=1', 'get',
             $expectedRequestResponse['request'], $expectedRequestResponse['response'], 2);
 
         $this->createTicketsToFetch();
@@ -624,6 +624,8 @@ class FreshdeskTicketV2Test extends TestCase
         $this->assertNotEquals('99', $response['id']);
 
         $this->assertEquals($response['id'], $ticket['id']);
+
+        $this->assertEquals('w_action_1234', $response['custom_fields']['cf_workflow_id']);
 
         // in this test case, we didnt have average FR response time for category+priority. so we proxied the FR time given by Freshdesk
 
@@ -2141,11 +2143,13 @@ class FreshdeskTicketV2Test extends TestCase
                     'custom_fields' => [
                         'cf_requester_category'         => 'Merchant',
                         'cf_requestor_subcategory'      => 'Activation',
+                        'cf_workflow_id'                => 'w_action_1234',
                         'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
                         'cf_merchant_id'                => '10000000000000',
                         'cf_merchant_activation_status' => 'undefined',
                         'cf_category'                   => 'New Ticket',
                     ],
+                    'tags'          => ['workflow_ticket'],
                     'phone'         => '9876543210',
                     'priority'      => 1,
                 ],
@@ -2157,10 +2161,12 @@ class FreshdeskTicketV2Test extends TestCase
                         'custom_fields' => [
                             'cf_requester_category'         => 'Merchant',
                             'cf_requestor_subcategory'      => 'Activation',
+                            'cf_workflow_id'                => 'w_action_1234',
                             'cf_merchant_id_dashboard'      => 'merchant_dashboard_10000000000000',
                             'cf_merchant_id'                => '10000000000000',
                             'cf_merchant_activation_status' => 'undefined',
                         ],
+                        'tags'          => ['workflow_ticket'],
                         'priority' =>  1,
                     ]
             ];
@@ -2391,6 +2397,7 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_workflow_id"            => "w_action_1234",
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2401,6 +2408,7 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_workflow_id"            => "w_action_1234",
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
 
@@ -2412,6 +2420,7 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_workflow_id"            => "w_action_1234",
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],
@@ -2422,6 +2431,7 @@ class FreshdeskTicketV2Test extends TestCase
                             'custom_fields' =>  [
                                 "cf_requestor_subcategory"  => "Activation",
                                 "cf_requester_category"     => "Merchant",
+                                "cf_workflow_id"            => "w_action_1234",
                             ],
                             'fr_due_by' => '2020-12-08T16:04:20Z',
                         ],

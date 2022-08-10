@@ -112,6 +112,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
         'custom_fields.cf_created_by'                            => 'sometimes|string',
         'custom_fields.cf_creation_source'                       => 'sometimes|string|custom:custom_field_creation_source',
+        'custom_fields.cf_workflow_id'                           => 'sometimes|string',
         'custom_fields.cf_merchant_activation_status'            => 'sometimes|string',
         'tags'                                                   => 'sometimes|array',
         'status'                                                 => 'sometimes',
@@ -139,6 +140,7 @@ class Validator extends Base\Validator
         'custom_fields.cf_product'                               => 'sometimes|string|custom:custom_field_product',
         'custom_fields.cf_ticket_queue'                          => 'sometimes|string|custom:custom_field_ticket_queue',
         'custom_fields.cf_created_by'                            => 'sometimes|string',
+        'custom_fields.cf_workflow_id'                           => 'sometimes|string',
         'custom_fields.cf_creation_source'                       => 'sometimes|string|custom:custom_field_creation_source',
         'custom_fields.cf_merchant_activation_status'            => 'sometimes|string',
         'tags'                                                   => 'sometimes|array',
@@ -198,6 +200,7 @@ class Validator extends Base\Validator
         Constants::CF_REQUESTOR_SUBCATEGORY => 'sometimes',
         Constants::CF_REQUESTOR_ITEM        => 'sometimes',
         Constants::CF_CREATED_BY            => 'sometimes',
+        Constants::CF_WORKFLOW_ID           => 'sometimes',
         Constants::TICKET_TAGS              => 'sometimes|array',
     ];
 

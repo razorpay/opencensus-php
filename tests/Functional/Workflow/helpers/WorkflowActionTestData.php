@@ -65,6 +65,29 @@ return [
             ]
         ]
     ],
+    'testGetActionsByMakerInternal' => [
+        'request' => [
+            'method' => 'GET',
+            'url'    => '/internal/merchant/RzrpySprAdmnId/w-actions'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'workflow_id'   => 'workflow_workflowId1000',
+                        'workflow'      => [
+                            'id' => 'workflow_workflowId1000',
+                        ],
+                        'state'         => 'open',
+                        'maker_type'    => 'admin',
+                    ],
+                ]
+            ]
+        ]
+    ],
+
     'testUpdateWorkflowAction' => [
         'request' => [
             'method'  => 'PUT',

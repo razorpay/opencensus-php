@@ -151,6 +151,25 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchActionsByMakerId($makerId, $expands, $input)
+    {
+        $query = $this->newQuery()
+                      ->with($expands);
+
+        if (array_key_exists('state', $input))
+        {
+            $query = $query->where(Entity::STATE, '=', $input[Entity::STATE]);
+        }
+
+        if (array_key_exists(Entity::ID, $input))
+        {
+            $query = $query->where(Entity::ID, '=', $input[Entity::ID]);
+        }
+
+        return $query->where(Entity::MAKER_ID, '=', $makerId)
+                    ->get();
+    }
+
     public function getOpenActionOnEntityOperation(
         string $entityId,
         string $entityName,

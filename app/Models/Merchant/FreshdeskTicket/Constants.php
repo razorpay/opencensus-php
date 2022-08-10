@@ -40,6 +40,7 @@ class Constants
     const CF_CREATED_BY                 = 'cf_created_by';
     const CF_CREATION_SOURCE        = 'cf_creation_source';
     const CF_MERCHANT_ACTIVATION_STATUS = 'cf_merchant_activation_status';
+    const CF_WORKFLOW_ID                = 'cf_workflow_id';
 
     const AGENT      = 'agent';
     const AGENT_ID   = 'agent_id';
@@ -133,7 +134,7 @@ class Constants
     // workflow constant
     const AUTOMATED_WORKFLOW_RESOLVE_TAGS   = ['automated_workflow_response'];
     // All custom fields allowed to be queried
-    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY];
+    const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY, self::CF_WORKFLOW_ID];
     // Fd instances to find ticket details
     const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZPIND];
 

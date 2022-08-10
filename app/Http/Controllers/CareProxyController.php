@@ -34,6 +34,9 @@ class CareProxyController extends Controller
     const UPSERT_OPERATOR = 'twirp/rzp.care.callback.v1.CallbackService/UpsertOperator';
 
 
+    //workflow
+    const FETCH_WORKFLOWS = 'twirp/rzp.care.workflow.v1.WorkflowService/FetchWorkflows';
+
     //chat
     const CHAT_GET_MERCHANT   = 'twirp/rzp.care.chat.v1.ChatService/GetMerchant';
     const CHAT_FETCH_TICKETS  = 'twirp/rzp.care.chat.v1.ChatService/FetchTickets';
@@ -140,6 +143,7 @@ class CareProxyController extends Controller
         self::CHAT_INIT,
         self::TICKET_CONFIG_FETCH_SUBCATEGORY_ITEM_MERCHANT,
         self::CHAT_CHECK_AVAILABILITY,
+        self::FETCH_WORKFLOWS,
     ];
 
     const CRON_ROUTES = [

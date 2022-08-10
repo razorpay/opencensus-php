@@ -27,6 +27,15 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getActionMultipleInternal(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::WORKFLOW_ACTION)->getActionsByMakerInternal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getActionDetails(string $id)
     {
         $data = $this->service(E::WORKFLOW_ACTION)->getActionDetails($id);

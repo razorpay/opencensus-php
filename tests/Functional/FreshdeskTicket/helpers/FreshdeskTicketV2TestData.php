@@ -69,7 +69,8 @@ return [
             'content' => [
                 'cf_requester_category'    => 'Merchant',
                 'cf_requestor_subcategory' => 'Activation',
-                'cf_requester_item'        => ''
+                'cf_requester_item'        => '',
+                'cf_workflow_id'           => 'w_action_1234',
             ]
         ],
         'response' => [
@@ -424,8 +425,10 @@ return [
                 'subject'       => 'ticket subject',
                 'custom_fields' => [
                     'cf_requester_category'       => 'Merchant',
-                    'cf_requestor_subcategory'    => 'Activation'
+                    'cf_requestor_subcategory'    => 'Activation',
+                    'cf_workflow_id'              => 'w_action_1234',
                 ],
+                'tags' => ['workflow_ticket'],
             ],
         ],
         'response' => [

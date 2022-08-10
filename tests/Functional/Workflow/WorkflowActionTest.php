@@ -123,6 +123,13 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetActionsByMakerInternal()
+    {
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+    }
+
     /**
      * Updating default workflow action(wfActionId1000) with title and description
      */
