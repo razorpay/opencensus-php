@@ -233,6 +233,18 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
 
         return true;
     }
+    /**
+     * Validate that an attribute does not exist.
+     *
+     * @param  string  $attribute
+     * @param  mixed  $value
+     * @param  mixed  $parameters
+     * @return bool
+     */
+    public function validateProhibited($attribute, $value)
+    {
+        return false;
+    }
 
     /**
      * Validates notes input for fetch requests. We expect a string value

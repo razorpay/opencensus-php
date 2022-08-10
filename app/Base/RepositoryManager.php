@@ -61,7 +61,6 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Detail\Repository                   $merchant_detail
  * @property Models\Merchant\Stakeholder\Repository              $stakeholder
  * @property Models\Merchant\AvgOrderValue\Repository            $merchant_avg_order_value
- * @property Models\Merchant\Tnc\Repository                      $merchant_tnc
  * @property Models\Merchant\VerificationDetail\Repository       $merchant_verification_detail
  * @property Models\Base\Audit\Repository                        $audit_info
  * @property Models\Merchant\CheckoutDetail\Repository           $merchant_checkout_detail
@@ -208,15 +207,18 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Transaction\Statement\Ledger\AccountDetail\Repository   $account_detail
  * @property Models\Transaction\Statement\Ledger\Statement\Repository       $ledger_statement
  * @property Models\Internal\Repository                               $internal
- * @property Models\Address\AddressConsent1ccAudits\Repository              $address_consent_1cc_audits
- * @property Models\Address\AddressConsent1cc\Repository                    $address_consent_1cc
+ * @property Models\Address\AddressConsent1ccAudits\Repository               $address_consent_1cc_audits
+ * @property Models\Address\AddressConsent1cc\Repository                     $address_consent_1cc
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
- * @property Models\Roles\Repository    $roles
- * @property Models\Merchant\InternationalIntegration\Repository      $merchant_international_integrations
- * @property Models\Merchant\OwnerDetail\Repository                   $merchant_owner_details
- * @property Models\PartnerBankHealth\Repository                      $partner_bank_health
- * @property Models\Merchant\Product\Otp\Repository                   $merchant_otp_verification_logs
- * @property Models\FileStore\Repository                              $file_store
+ * @property Models\Roles\Repository                                         $roles
+ * @property Models\Merchant\InternationalIntegration\Repository             $merchant_international_integrations
+ * @property Models\Merchant\OwnerDetail\Repository                          $merchant_owner_details
+ * @property Models\PartnerBankHealth\Repository                             $partner_bank_health
+ * @property Models\Merchant\Product\Otp\Repository                          $merchant_otp_verification_logs
+ * @property Models\FileStore\Repository                                     $file_store
+ * @property Models\Merchant\Website\Repository                              $merchant_website
+ * @property Models\Merchant\Consent\Details\Repository                      $merchant_consent_details
+ * @property Models\Merchant\Consent\Repository                              $merchant_consents
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

@@ -22,11 +22,21 @@ abstract class BaseHandler
     * @var Trace
     */
     protected $trace;
-    public function __construct(array $args)
+
+    /**
+     * @var array
+     */
+    protected $files;
+
+    public function __construct(array $args,$files=null)
     {
         $this->args = $args;
+
         $this->app = App::getFacadeRoot();
+
         $this->trace = $this->app['trace'];
+
+        $this->files=$files;
 
     }
 
@@ -44,7 +54,7 @@ abstract class BaseHandler
 
         foreach ($channels as $channel)
         {
-            $serviceInstance = Factory::getInstance($channel, $event, $this->getNamespace(), $this->args);
+            $serviceInstance = Factory::getInstance($channel, $event, $this->getNamespace(), $this->args,$this->files);
 
             $serviceInstance->send();
 

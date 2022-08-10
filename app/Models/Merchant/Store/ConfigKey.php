@@ -30,6 +30,9 @@ class ConfigKey
     const REFERRAL_AMOUNT_CURRENCY     = 'referral_amount_currency';
     const IS_SIGNED_UP_REFEREE         = 'is_signed_up_referee';
 
+    const WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT = 'website_incomplete_soft_nudge_count';
+    const WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP = 'website_incomplete_soft_nudge_timestamp';
+
     //Payment Handle
     const IS_PAYMENT_HANDLE_ONBOARDING_INITIATED  = 'is_payment_handle_onboarding_initiated';
 
@@ -58,7 +61,16 @@ class ConfigKey
                 Constants::TTL   => Constants::MTU_POPUP_TTL_IN_SECONDS
             ],
             self::ENABLE_MTU_CONGRATULATORY_POPUP => [
-                Constants::STORE => Constants::REDIS
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::VISIBILITY_TTL_IN_SECONDS
+            ],
+            self::WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT          => [
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::VISIBILITY_TTL_IN_SECONDS
+            ],
+            self::WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP => [
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::VISIBILITY_TTL_IN_SECONDS
             ],
             self::REFERRAL_CODE                   => [
                 Constants::STORE => Constants::REDIS,

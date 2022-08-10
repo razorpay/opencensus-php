@@ -743,9 +743,23 @@ class Route
         'merchant_activation_status_change_log'    => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
+
         'merchant_tnc_details'                     => ['get',      'merchant/tnc/{id}',                              'MerchantController@getMerchantTnc'                                 ],
-        'merchant_tnc_details_by_mid'              => ['get',      'merchant/{mid}/tnc',                             'MerchantController@getMerchantTncByMerchantId'                                 ],
+        'merchant_tnc_details_by_mid'              => ['get',      'merchant/{mid}/tnc',                             'MerchantController@getMerchantTncByMerchantId'                     ],
         'merchant_tnc_save'                        => ['post',     'merchant/tnc',                                   'MerchantController@postMerchantTnc'                                ],
+
+        'merchant_website_section_download'        => ['get',      'merchant/{id}/website/{section_name}/download', 'MerchantController@getWebsiteSectionDownload'                                ],
+        'merchant_website_section_action'          => ['post',     'merchant/website/section/action',               'MerchantController@postWebsiteSectionAction'                                ],
+        'merchant_website_section_save'            => ['post',     'merchant/website/section',                      'MerchantController@saveMerchantWebsiteSection'                                ],
+        'merchant_website_section_fetch'           => ['get',      'merchant/website/section',                      'MerchantController@getMerchantWebsiteSection'                                ],
+        'merchant_website_section_page_load'       => ['get',      'merchant/policy/{section_name}',                'MerchantController@getMerchantWebsiteSectionPage'                                ],
+        'public_merchant_website_section_page_load'=> ['get',      'merchant/policy/{section_name}/{id}',           'MerchantController@getPublicWebsiteSectionPage'                                ],
+        'public_merchant_website_section_pages'    => ['get',      'merchant/policies/{id}',                          'MerchantController@getPublicWebsiteSectionPageLinks'                                ],
+
+        'admin_website_section_action'             => ['post',     'merchant/{id}/website/section/action',          'MerchantController@postAdminSectionAction'                                ],
+        'admin_website_section_save'               => ['post',     'merchant/{id}/website/section',                 'MerchantController@saveAdminWebsiteSection'                                ],
+        'admin_website_section_fetch'              => ['get',      'merchant/{id}/website/section',                 'MerchantController@getAdminWebsiteSection'                                ],
+
         'appsflyer_attribution_details'            => ['post',     'appsflyer/attribution-details',                  'MerchantController@postAppsflyerAttributionDetails'],
         'merchant_checkout_details_save'           => ['post',     'merchant/checkout_details',                      'MerchantController@postMerchantCheckoutDetail'                     ],
         'merchant_checkout_details'                => ['get',      'merchant/checkout_details',                      'MerchantController@getMerchantCheckoutDetail'                      ],
@@ -4332,6 +4346,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_onboarding_crons',
         'setl_adj_add',
         'merchant_la_fetch',
         'collect_info_merchant_details_internal',
@@ -4390,7 +4405,6 @@ class Route
         'merchant_report',
         'merchant_onboarding_escalations',
         'merchant_onboarding_cron_jobs',
-        'merchant_onboarding_crons',
         'settlement_ondemand_process',
         'settlement_ondemand_full_enable',
         'settlement_ondemand_restricted_enable',
@@ -5403,6 +5417,10 @@ class Route
         'merchant_activation_save',
         'merchant_tnc_save',
         'merchant_tnc_details_by_mid',
+        'merchant_website_section_action',
+        'merchant_website_section_save',
+        'merchant_website_section_fetch',
+        'merchant_website_section_page_load',
         'merchant_checkout_details_save',
         'merchant_checkout_details',
         'merchant_business_detail_save',
@@ -6006,6 +6024,9 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_website_section_action',
+        'admin_website_section_save',
+        'admin_website_section_fetch',
         'admin_collect_info_merchant_details_patch',
         'nocode_debugging_route',
         'merchant_enhanced_activation_details',
@@ -7148,6 +7169,19 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_website_section_action'                 => Permission::EDIT_MERCHANT,
+        'merchant_website_section_save'                   => Permission::EDIT_MERCHANT,
+        'merchant_website_section_fetch'                  => Permission::EDIT_MERCHANT,
+        'merchant_website_section_page_load'              => Permission::EDIT_MERCHANT,
+        'admin_website_section_action'                    => Permission::EDIT_MERCHANT,
+        'admin_website_section_save'                      => Permission::EDIT_MERCHANT,
+        'admin_website_section_fetch'                     => Permission::EDIT_MERCHANT,
+        'public_merchant_website_section_page_load'       => Permission::VIEW_MERCHANT,
+        'public_merchant_website_section_pages'           => Permission::VIEW_MERCHANT,
+        //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
+        //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
+        //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
+        //'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE,
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
@@ -8849,6 +8883,9 @@ class Route
     ];
 
     public static $direct = [
+        'merchant_website_section_download',
+        'public_merchant_website_section_page_load',
+        'public_merchant_website_section_pages',
         'fund_addition_webhook',
         'friend_buy_reward_validation',
         'mailmodo_l1_form_submission',
@@ -9617,6 +9654,10 @@ class Route
             'merchant_tnc_save',
             'merchant_tnc_details_by_mid',
             'merchant_tnc_details',
+            'merchant_website_section_action',
+            'merchant_website_section_save',
+            'merchant_website_section_fetch',
+            'merchant_website_section_page_load',
             'merchant_checkout_details_save',
             'merchant_checkout_details',
             'merchant_activation_status_partner',
@@ -10425,6 +10466,13 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_website_section_action',
+            'merchant_website_section_save',
+            'merchant_website_section_fetch',
+            'merchant_website_section_page_load',
+            'admin_website_section_action',
+            'admin_website_section_save',
+            'admin_website_section_fetch',
             'banking_account_statement_insert_missing',
             'role_self_get',
             'admin_collect_info_merchant_details_patch',
@@ -12625,6 +12673,7 @@ class Route
         ],
 
         'cron' => [
+            'merchant_onboarding_crons',
             'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',
             'create_test_payouts_for_downtime_detection_icici',
@@ -12656,7 +12705,6 @@ class Route
 
             'merchant_onboarding_escalations',
             'merchant_onboarding_cron_jobs',
-            'merchant_onboarding_crons',
             'setcronjob_webhook',
             // The rest are crons
             'entity_tax_update',

@@ -17,30 +17,34 @@ use RZP\Models\DeviceDetail\Constants as DDConstants;
 class Handler extends BaseHandler
 {
     const SUPPORTED_CHANNELS_FOR_EVENTS = [
-        Events::NEEDS_CLARIFICATION                         => [Channel::SMS, Channel::WHATSAPP],
-        Events::UNREGISTERED_SETTLEMENTS_ENABLED            => [Channel::SMS, Channel::WHATSAPP],
-        Events::REGISTERED_SETTLEMENTS_ENABLED              => [Channel::SMS, Channel::WHATSAPP],
-        Events::REGISTERED_PAYMENTS_ENABLED                 => [Channel::SMS, Channel::WHATSAPP],
-        Events::UNREGISTERED_PAYMENTS_ENABLED               => [Channel::SMS, Channel::WHATSAPP],
-        Events::PENNY_TESTING_FAILURE                       => [Channel::SMS, Channel::WHATSAPP],
-        Events::ACTIVATED_MCC_PENDING                       => [Channel::WHATSAPP],
-        Events::ACTIVATED_MCC_PENDING_SUCCESS               => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED       => [Channel::EMAIL],
-        Events::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::FUNDS_ON_HOLD                               => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::FUNDS_ON_HOLD_REMINDER                      => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::L1_NOT_SUBMITTED_IN_1_DAY                   => [Channel::SMS, Channel::WHATSAPP],
-        Events::L1_NOT_SUBMITTED_IN_1_HOUR                  => [Channel::SMS, Channel::WHATSAPP],
-        Events::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     => [Channel::SMS, Channel::WHATSAPP],
-        Events::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => [Channel::SMS, Channel::WHATSAPP],
-        Events::PAYMENTS_ENABLED                            => [Channel::SMS, Channel::WHATSAPP],
-        Events::ONBOARDING_VERIFY_EMAIL                     => [Channel::SMS, Channel::WHATSAPP],
-        Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::FIRST_PAYMENT_OFFER                         => [Channel::SMS, Channel::WHATSAPP],
-        Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => [Channel::SMS, Channel::WHATSAPP],
-        Events::SIGNUP_STARTED_NOTIFY                       => [Channel::SMS, Channel::WHATSAPP],
+        Events::NEEDS_CLARIFICATION                                  => [Channel::SMS, Channel::WHATSAPP],
+        Events::UNREGISTERED_SETTLEMENTS_ENABLED                     => [Channel::SMS, Channel::WHATSAPP],
+        Events::REGISTERED_SETTLEMENTS_ENABLED                       => [Channel::SMS, Channel::WHATSAPP],
+        Events::REGISTERED_PAYMENTS_ENABLED                          => [Channel::SMS, Channel::WHATSAPP],
+        Events::UNREGISTERED_PAYMENTS_ENABLED                        => [Channel::SMS, Channel::WHATSAPP],
+        Events::PENNY_TESTING_FAILURE                                => [Channel::SMS, Channel::WHATSAPP],
+        Events::ACTIVATED_MCC_PENDING                                => [Channel::WHATSAPP],
+        Events::ACTIVATED_MCC_PENDING_SUCCESS                        => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED                => [Channel::EMAIL],
+        Events::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH              => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH              => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::FUNDS_ON_HOLD                                        => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::FUNDS_ON_HOLD_REMINDER                               => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION                    => [Channel::EMAIL,Channel::WHATSAPP ],
+        Events::WEBSITE_SECTION_PUBLISHED                            => [Channel::EMAIL, Channel::WHATSAPP ],
+        Events::WEBSITE_ADHERENCE_SOFT_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP ],
+        Events::WEBSITE_ADHERENCE_HARD_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP, Channel::SMS ],
+        Events::L1_NOT_SUBMITTED_IN_1_DAY                            => [Channel::SMS, Channel::WHATSAPP],
+        Events::L1_NOT_SUBMITTED_IN_1_HOUR                           => [Channel::SMS, Channel::WHATSAPP],
+        Events::L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR              => [Channel::SMS, Channel::WHATSAPP],
+        Events::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR            => [Channel::SMS, Channel::WHATSAPP],
+        Events::PAYMENTS_ENABLED                                     => [Channel::SMS, Channel::WHATSAPP],
+        Events::ONBOARDING_VERIFY_EMAIL                              => [Channel::SMS, Channel::WHATSAPP],
+        Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION            => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED          => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::FIRST_PAYMENT_OFFER                                  => [Channel::SMS, Channel::WHATSAPP],
+        Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED               => [Channel::SMS, Channel::WHATSAPP],
+        Events::SIGNUP_STARTED_NOTIFY                                => [Channel::SMS, Channel::WHATSAPP],
 
         // partner submerchant email events
         Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => [Channel::EMAIL],
@@ -54,9 +58,10 @@ class Handler extends BaseHandler
 
     private $merchant;
 
-    public function __construct(array $args)
+    public function __construct(array $args, array $files = null)
     {
-        parent::__construct($args);
+        parent::__construct($args, $files);
+
         $this->merchant = $args['merchant'];
 
         if (isset($args['activationStatus']) === true)
@@ -70,6 +75,7 @@ class Handler extends BaseHandler
         $events = $this->getEventForActivationStatus($this->activationStatus, $this->merchant);
 
         $notificationBlocked = (new PartnerCore())->isSubMerchantNotificationBlocked($this->merchant->id);
+
         foreach ($events as $event)
         {
             if (empty($event) === false and $notificationBlocked === false)

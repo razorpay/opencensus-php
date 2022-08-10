@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Services\Mock\ApachePinotClient;
+use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Escalations;
@@ -1029,7 +1030,7 @@ class CoreTest extends TestCase
         $pinotService->method('getDataFromPinot')
                      ->willReturn([$dataFromPinot]);
     }
-    
+
 
     public function testMtuCouponApplicationOnFirstTransactionExistingPromotion()
     {
@@ -1882,7 +1883,7 @@ class CoreTest extends TestCase
 
         $this->mockRazorxTreatment();
 
-        $isMerchantTncApplicable = $core->isMerchantTncApplicable($merchant);
+        $isMerchantTncApplicable = (new WebsiteService)->isMerchantTncApplicable($merchant);
 
         $this->assertEquals(true, $isMerchantTncApplicable);
     }
@@ -2121,7 +2122,7 @@ class CoreTest extends TestCase
             'activation_form_milestone' => 'L2',
         ]);
 
-        $this->fixtures->create('merchant_tnc', [
+        $this->fixtures->create('merchant_website', [
             'merchant_id'           => $merchantDetails->getId(),
             'deliverable_type'      => 'services',
             'shipping_period'       => '2 hours',

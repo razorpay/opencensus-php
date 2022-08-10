@@ -444,6 +444,17 @@ class Repository extends Base\Repository
                     ->whereNull(Entity::SUSPENDED_AT);
     }
 
+    public function filterLiveMerchants(array $merchantIdList)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+                    ->where(Entity::LIVE, '=', 1)
+                    ->whereIn(Entity::ID, $merchantIdList)
+                    ->whereNull(Entity::SUSPENDED_AT)
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
     public function fetchAllLiveAndActivatedRzpOrgMerchants(int $from, int $to)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))

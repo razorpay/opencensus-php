@@ -12,6 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 abstract class BaseNotificationService
 {
     protected $args;
+
     protected $event;
 
     /**
@@ -23,17 +24,24 @@ abstract class BaseNotificationService
 
     /**
      * Trace instance used for tracing
+     *
      * @var Trace
      */
     protected $trace;
 
     protected $mode;
 
-    public function __construct(string $event, array $args)
+    /**
+     * @var array
+     */
+    protected $files;
+
+    public function __construct(string $event, array $args, $files=null)
     {
-        $this->args = $args;
-        $this->app = App::getFacadeRoot();
+        $this->args  = $args;
+        $this->app   = App::getFacadeRoot();
         $this->event = $event;
+        $this->files = $files;
 
         if (isset($this->app['rzp.mode']))
         {

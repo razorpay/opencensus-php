@@ -6914,6 +6914,54 @@ CREATE TABLE IF NOT EXISTS  merchant_1cc_comments (
 ALTER TABLE merchant_business_details
    ADD COLUMN plugin_details json DEFAULT NULL;
 
+
+CREATE TABLE merchant_website(
+  id char(14) COLLATE utf8mb4_bin primary key,
+  merchant_id char(14) COLLATE utf8mb4_bin not null,
+  deliverable_type varchar(255) default null,
+  shipping_period varchar(255) default null,
+  refund_request_period varchar(255) default null,
+  refund_process_period varchar(255) default null,
+  warranty_period varchar(255) default null,
+  status char(50) DEFAULT NULL,
+  grace_period BOOLEAN DEFAULT false,
+  send_communication BOOLEAN DEFAULT true,
+  merchant_website_details json DEFAULT NULL,
+  admin_website_details json DEFAULT NULL,
+  additional_data json DEFAULT NULL,
+  audit_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+  created_at int not null,
+  updated_at int not null,
+  KEY merchant_website_merchant_id_index (merchant_id)
+);
+
+
+CREATE TABLE merchant_consents
+  (
+     id		 CHAR(14) COLLATE utf8mb4_bin  PRIMARY KEY,
+     merchant_id  CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+     user_id      CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+     details_id   CHAR(14) COLLATE utf8mb4_bin DEFAULT NULL,
+     metadata     JSON DEFAULT NULL,
+     status       char(50) DEFAULT NULL,
+     request_id   char(14) COLLATE utf8mb4_bin DEFAULT NULL,
+     consent_for	 VARCHAR(300) DEFAULT NULL,
+     created_at	 INT NOT NULL,
+     updated_at	 INT NOT NULL,
+     audit_id 	 char(14) COLLATE utf8mb4_bin DEFAULT NULL,
+     KEY merchant_consents_status_index (status),
+     KEY merchant_consents_request_id_index (request_id)
+  );
+
+CREATE TABLE merchant_consent_details
+  (
+     id	      CHAR(14) COLLATE utf8mb4_bin  PRIMARY KEY,
+     url         varchar(255) NOT NULL,
+     created_at  INT NOT NULL,
+     updated_at	 INT NOT NULL,
+     KEY merchant_consent_details_url_index (url)
+  );
+
 ALTER TABLE orgs
     ADD COLUMN `external_redirect_url` varchar(255) DEFAULT NULL,
     ADD COLUMN `external_redirect_url_text` text;

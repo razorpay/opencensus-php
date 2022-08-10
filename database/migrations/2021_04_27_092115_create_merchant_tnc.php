@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Tnc\Entity;
+use RZP\Models\Merchant\Website\Entity;
 
 class CreateMerchantTnc extends Migration
 {
@@ -17,7 +17,7 @@ class CreateMerchantTnc extends Migration
      */
     public function up()
     {
-        Schema::create(Table::MERCHANT_TNC, function(Blueprint $table)
+        Schema::create('merchant_tnc', function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -57,6 +57,7 @@ class CreateMerchantTnc extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::MERCHANT_TNC);
+        Schema::dropIfExists('merchant_tnc');
+
     }
 }

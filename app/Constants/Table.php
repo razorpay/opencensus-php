@@ -194,7 +194,9 @@ class Table
 
     const MERCHANT_AUTO_KYC_ESCALATIONS = 'merchant_auto_kyc_escalations';
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
-    const MERCHANT_TNC                  = 'merchant_tnc';
+    const MERCHANT_WEBSITE              = 'merchant_website';
+    const MERCHANT_CONSENTS             = 'merchant_consents';
+    const MERCHANT_CONSENT_DETAILS      = 'merchant_consent_details';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_details';
     const MERCHANT_CHECKOUT_DETAIL      = 'merchant_checkout_details';
     const AUDIT_INFO                    = 'audit_info';

@@ -3606,7 +3606,7 @@ class Core extends Base\Core
 
             $merchantDetails->load('avgOrderValue');
 
-            $merchantDetails->load('tnc');
+            $merchantDetails->load('merchantWebsite');
 
             $merchantDetails->load('verificationDetail');
 
@@ -3737,18 +3737,22 @@ class Core extends Base\Core
                 $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';
             }
 
+            $mtuTransacted = $this->isMtuTransacted($merchant);
+
+            $response['isTransacted'] = $mtuTransacted;
+
             $isMtuCouponExperimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
                 $merchant->getId(),
                 Merchant\RazorxTreatment::MTU_COUPON_CODE);
 
             if ($isMtuCouponExperimentEnabled === true)
             {
-                $response['showMtuPopup'] = $this->isMerchantEligibleForMtuPopup($merchant);
+                $response['showMtuPopup'] = $this->isMerchantEligibleForMtuPopup($merchant,$mtuTransacted);
             }
 
-            if ($this->isMerchantTncApplicable($merchant) === true)
+            if ((new Merchant\Website\Service())->isMerchantTncApplicable($merchant) === true)
             {
-                $response[Entity::MERCHANT_TNC] = (new Merchant\Tnc\Core)->getTncDetails($merchantDetails->tnc);
+                $response['merchant_tnc'] = (new Merchant\Website\Core)->getWebsiteDetails($merchantDetails->merchantWebsite);
             }
 
             $response['isSubMerchant'] = (new AccessMapCore)->isSubMerchant($merchant->getMerchantId());
@@ -3790,8 +3794,35 @@ class Core extends Base\Core
         return array_column($statusChangeLogs->toArray(), 'name');
     }
 
-    private function isMerchantEligibleForMtuPopup(Merchant\Entity $merchant): bool
+    private function isMtuTransacted(Merchant\Entity $merchant)
     {
+        $query = "select count(merchant_id) as transacted from payments_v1 where created_at between %s and %s and base_amount>%s and merchant_id='%s'";
+
+        $query = sprintf($query, $merchant->getCreatedAt(), Carbon::now()->getTimestamp(), 0, $merchant->getId());
+
+        // fetch if transactions are done
+        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+
+        $this->trace->info(TraceCode::APACHE_PINOT_RESPONSE, [
+            'response'    => $queryResponse,
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        if (empty($queryResponse) === false)
+        {
+            $resultCount = $queryResponse[0]["transacted"];
+
+            if ($resultCount > 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    private function isMerchantEligibleForMtuPopup(Merchant\Entity $merchant,bool $mtu): bool
+    {
+        if($mtu === true) return false;
+
         if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
             return false;
@@ -3811,28 +3842,6 @@ class Core extends Base\Core
         if ((new Merchant\M2MReferral\Service())->isReferralMerchant($merchant) === true)
         {
             return false;
-        }
-
-        $query = "select count(merchant_id) as transacted from payments_v1 where created_at between %s and %s and base_amount>%s and merchant_id='%s'";
-
-        $query = sprintf($query, $merchant->getCreatedAt(), Carbon::now()->getTimestamp(),0,$merchant->getId());
-
-        // fetch if transactions are done
-        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
-
-        $this->trace->info(TraceCode::APACHE_PINOT_RESPONSE, [
-            'response' => $queryResponse,
-            'merchant_id' => $merchant->getId()
-        ]);
-
-        if (empty($queryResponse) === false)
-        {
-            $resultCount = $queryResponse[0]["transacted"];
-
-            if ($resultCount > 0)
-            {
-                return false;
-            }
         }
 
         if (Carbon::now()->subDays(2)->getTimestamp() < $merchant->getActivatedAt())
@@ -5320,7 +5329,7 @@ class Core extends Base\Core
             $activationProgress = 90;
         }
 
-        if ($merchantDetails->tnc !== null)
+        if ($merchantDetails->merchantWebsite !== null)
         {
             $activationProgress += 5;
         }
@@ -6459,37 +6468,7 @@ class Core extends Base\Core
         $this->mcore = $mcore;
     }
 
-    public function isMerchantTncApplicable(Merchant\Entity $merchant)
-    {
-        $org = $merchant->getOrgId() ?: $this->app['basicauth']->getOrgId();
 
-        if (array_key_exists($org, DetailConstants::TNC_ORG_ID_EXP_MAP) === false)
-        {
-            return false;
-        }
-
-        if (empty($merchant->merchantDetail->getAttribute(
-                Entity::BUSINESS_WEBSITE)) === false)
-        {
-            return false;
-        }
-
-        if ($merchant->isBusinessBankingEnabled() === true)
-        {
-            return false;
-        }
-
-        $experimentName = DetailConstants::TNC_ORG_ID_EXP_MAP[$org];
-
-        if ((new Merchant\Core())->isRazorxExperimentEnable(
-                $merchant->getId(),
-                $experimentName) === false)
-        {
-            return false;
-        }
-
-        return true;
-    }
 
     /**
      * Fetch common fields to be locked in the partner/merchant activation form (based on the entity passed)

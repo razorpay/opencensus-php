@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Cron\Jobs\BankDetailsNotSubmittedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BvsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EmailNotVerfiedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstTouchProductCronJob;
+use RZP\Models\Merchant\Cron\Jobs\WebsiteCompliancePaymentsEnabledCronJob;
 use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1DayCronJob;
 use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1HourCronJob;
@@ -41,11 +42,13 @@ class Factory
     {
         $input[Constants::CRON_NAME] = $cronType;
 
-        switch ($cronType) {
+        switch ($cronType)
+        {
             case "mtu-transacted":
                 return (new MtuTransactedCronJob($input));
             case "month-first-mtu-transacted":
                 RuntimeManager::setMaxExecTime(1200);
+
                 return (new MonthFirstMtuCronJob($input));
             case "mtu-transacted-recon":
                 return (new MtuTransactedEventReconJob($input));
@@ -55,6 +58,7 @@ class Factory
                 return (new WebAttributionCronJob($input));
             case "transaction-details":
                 RuntimeManager::setMaxExecTime(900);
+
                 return (new TransactionDetailsCronJob($input));
             case "l1-pending-hourly-notification":
                 return (new L1NotSubmittedIn1HourCronJob($input));
@@ -74,6 +78,7 @@ class Factory
                 return (new BvsCronJob($input));
             case "signup_attributed_cron":
                 RuntimeManager::setMaxExecTime(900);
+
                 return (new SignupAttributedCronJob($input));
             case Constants::FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME:
                 return (new FriendBuySendPurchaseEventsCronJob($input));
@@ -84,6 +89,7 @@ class Factory
             case Constants::BVS_PARTLY_EXECUTED_VALIDATION_CRON_JOB:
                 // since a number of queries are fired ensure enough time is provided to complete them.
                 RuntimeManager::setMaxExecTime(900);
+
                 return (new BVSPartlyExecutedValidationCronJob($input));
             case Constants::MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME:
                 return (new SaveMerchantTransactionCountForSegmentType($input));
@@ -99,6 +105,8 @@ class Factory
                 return (new L1FormEmailTriggerCronJob($input));
             case "appsflyer-uninstall-segment-event-push":
                 return (new AppsflyerUninstallCronJob($input));
+            case Constants::MERCHANT_WEBSITE_INCOMPLETE_PAYMENTS_ENABLED_CRON_JOB_NAME:
+                return (new WebsiteCompliancePaymentsEnabledCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

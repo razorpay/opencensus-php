@@ -31,7 +31,9 @@ class Validator extends Base\Validator
         ConfigKey::GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT  => 'filled|integer',
         ConfigKey::PROMOTER_PAN_NAME_SUGGESTED                      => 'sometimes|string',
         ConfigKey::BUSINESS_NAME_SUGGESTED                          => 'sometimes|string',
-        ConfigKey::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED           => 'filled|bool'
+        ConfigKey::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED           => 'filled|bool',
+        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP          => 'filled|integer',
+        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT              => 'filled|integer|min:0|max:5'
     ];
 
     protected static $fetchRules  = [

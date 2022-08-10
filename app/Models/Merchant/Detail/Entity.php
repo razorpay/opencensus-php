@@ -18,13 +18,13 @@ use RZP\Models\Merchant\Document\OcrVerificationStatus;
 /**
  * Class Entity
  *
- * @property Merchant\Entity $merchant
- * @property Merchant\Stakeholder\Entity $stakeholder
- * @property Merchant\AvgOrderValue\Entity $avgOrderValue
- * @property Merchant\Tnc\Entity $tnc
- * @property Merchant\BusinessDetail\Entity $businessDetail
+ * @property Merchant\Entity                    $merchant
+ * @property Merchant\Stakeholder\Entity        $stakeholder
+ * @property Merchant\AvgOrderValue\Entity      $avgOrderValue
+ * @property Merchant\Website\Entity            $merchantWebsite
+ * @property Merchant\BusinessDetail\Entity     $businessDetail
  * @property Merchant\VerificationDetail\Entity $verificationDetail
- * @property Merchant\Product\Otp\Entity $otp
+ * @property Merchant\Product\Otp\Entity        $otp
  *
  * @package RZP\Models\Merchant\Detail
  */
@@ -188,9 +188,9 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     // relation name
     const STAKEHOLDER                   = 'stakeholder';
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
-    const MERCHANT_TNC                  = 'merchant_tnc';
+    const MERCHANT_WEBSITE              = 'merchant_website';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
-    const MERCHANT_BUSINESS_DETAIL       = 'merchant_business_detail';
+    const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
     const MERCHANT_OTP_VERIFICATION_LOG = 'merchant_otp_verification_log';
     // fields_pending field is used in new Account APIs.
     const FIELDS_PENDING = 'fields_pending';
@@ -410,7 +410,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::DEPARTMENT,
         self::STAKEHOLDER,
         self::MERCHANT_AVG_ORDER_VALUE,
-        self::MERCHANT_TNC,
+        self::MERCHANT_WEBSITE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::ACTIVATION_FLOW,
@@ -545,13 +545,13 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     }
 
     /**
-     * Every detail entity will have one merchant_tnc entity to start with to store the aov details
+     * Every detail entity will have one merchant_website entity to start with to store the website section details
      *
      * @return HasOne
      */
-    public function tnc()
+    public function merchantWebsite()
     {
-        return $this->hasOne('RZP\Models\Merchant\Tnc\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
+        return $this->hasOne('RZP\Models\Merchant\Website\Entity', self::MERCHANT_ID, self::MERCHANT_ID);
     }
 
 

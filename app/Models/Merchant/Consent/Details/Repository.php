@@ -1,0 +1,26 @@
+<?php
+
+
+namespace RZP\Models\Merchant\Consent\Details;
+
+use RZP\Base\ConnectionType;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Base;
+
+class Repository extends Base\Repository
+{
+    use Base\RepositoryUpdateTestAndLive
+    {
+        saveOrFail as saveOrFailTestAndLive;
+    }
+
+    protected $entity = 'merchant_consent_details';
+
+    public function getByUrl(string $url)
+    {
+        return $this->newQueryOnSlave()
+                    ->where(Entity::URL, '=', $url)
+                    ->first();
+
+    }
+}

@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+    const WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION         = 'WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION';
+
     const EDUCATION_OTHERS_BUSINESS_TYPE = 'EDUCATION_OTHERS_BUSINESS_TYPE';
     const HUF_BUSINESS_TYPE              = 'huf_business_type';
     const MAILMODO_L1_FORM_EMAIL_TRIGGER = 'mailmodo_l1_form_email_trigger';

@@ -4,7 +4,9 @@
 namespace RZP\Notifications\Onboarding;
 
 use RZP\Services\Stork;
+use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\BaseNotificationService;
 
 class WhatsappNotificationService extends BaseNotificationService
@@ -13,12 +15,27 @@ class WhatsappNotificationService extends BaseNotificationService
 
     public function send(): void
     {
-        (new Stork)->sendWhatsappMessage(
-            $this->mode,
-            $this->getTemplateMessage(),
-            $this->getPhone(),
-            $this->getPayload()
-        );
+        $isExperimentEnabled = true;
+
+        //use the experiment if we need to block specific whatsapp templates
+        if (isset(Events::WHATSAPP_TEMPLATES_NEW_EXPERIMENTS[$this->event]) === true)
+        {
+            $experiment = Events::WHATSAPP_TEMPLATES_NEW_EXPERIMENTS[$this->event];
+
+            $merchant = $this->args[Constants::MERCHANT];
+
+            $isExperimentEnabled = (new Core)->isRazorxExperimentEnable($merchant->getMerchantId(), $experiment);
+        }
+
+        if ($isExperimentEnabled === true)
+        {
+            (new Stork)->sendWhatsappMessage(
+                $this->mode,
+                $this->getTemplateMessage(),
+                $this->getPhone(),
+                $this->getPayload()
+            );
+        }
     }
 
     protected function getPayload()
@@ -38,6 +55,13 @@ class WhatsappNotificationService extends BaseNotificationService
         ];
 
         $payload[Constants::PARAMS] = array_merge($payload[Constants::PARAMS], $this->args[Constants::PARAMS] ?? []);
+
+        if (array_key_exists($this->event, Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE) === true)
+        {
+            $args[Constants::IS_CTA_TEMPLATE] = true;
+
+            $args[Constants::BUTTON_URL_PARAM] = Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[$this->event];
+        }
 
         return $payload;
     }

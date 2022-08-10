@@ -2586,14 +2586,14 @@ class MerchantController extends Controller
 
     public function getMerchantTnc($tncId)
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantTncById($tncId);
+        $response = $this->service(E::MERCHANT_WEBSITE)->getMerchantTncById($tncId);
 
         return ApiResponse::json($response);
     }
 
     public function getMerchantTncByMerchantId($merchantId)
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->getMerchantTncByMerchantId($merchantId);
+        $response = $this->service(E::MERCHANT_WEBSITE)->getMerchantTncByMerchantId($merchantId);
 
         return ApiResponse::json($response);
     }
@@ -2602,10 +2602,119 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantTnc($input);
+        $response = $this->service(E::MERCHANT_WEBSITE)->saveMerchantTnc($input);
 
         return ApiResponse::json($response);
     }
+
+    public function postWebsiteSectionAction()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE)->postWebsiteSectionAction($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getWebsiteSectionDownload($id,$sectionName)
+    {
+        $input = Request::all();
+        $input['action']       = 'download';
+        $input['section_name'] = $sectionName;
+        $input['merchant_id']  = $id;
+
+        return $this->service(E::MERCHANT_WEBSITE)->postWebsiteSectionAction($input);
+    }
+
+    public function saveMerchantWebsiteSection()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE)->saveMerchantWebsiteSection($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantWebsiteSection()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE)->getMerchantWebsiteSection($input);
+
+        return ApiResponse::json($response);
+    }
+
+
+    public function getMerchantWebsiteSectionPage(string $sectionName)
+    {
+        $input = Request::all();
+
+        $input[\RZP\Models\Merchant\Website\Constants::SECTION_NAME] = $sectionName;
+
+        return ApiResponse::json($this->service(E::MERCHANT_WEBSITE)->getMerchantWebsiteSectionPage($input));
+    }
+
+    public function getPublicWebsiteSectionPage(string $sectionName,String $id)
+    {
+        $input = Request::all();
+
+        $input[\RZP\Models\Merchant\Website\Constants::SECTION_NAME] = $sectionName;
+
+        $input['id'] = $id;
+
+        $response= ApiResponse::json($this->service(E::MERCHANT_WEBSITE)->getPublicWebsiteSectionPage($input));
+
+        $this->addCorsHeaders($response,'GET, OPTIONS');
+
+        return $response;
+    }
+
+    public function getPublicWebsiteSectionPageLinks(String $id)
+    {
+        $response = ApiResponse::json($this->service(E::MERCHANT_WEBSITE)->getPublicWebsiteSectionPageLinks($id));
+
+        $this->addCorsHeaders($response,'GET, OPTIONS');
+
+        return $response;
+    }
+
+    protected function addCorsHeaders($response, string $methods): void
+    {
+        $response->headers->set('Access-Control-Allow-Origin', '*');
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        $response->headers->set('Access-Control-Allow-Methods', $methods);
+    }
+
+    public function postAdminSectionAction(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE)->postAdminSectionAction($merchantId,$input);
+
+        return ApiResponse::json($response);
+    }
+
+
+    public function saveAdminWebsiteSection(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE)->saveAdminWebsiteSection($merchantId,$input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getAdminWebsiteSection(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_WEBSITE)->getAdminWebsiteSection($merchantId,$input);
+
+        return ApiResponse::json($response);
+    }
+
 
     public function postAppsflyerAttributionDetails()
     {

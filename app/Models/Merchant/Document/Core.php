@@ -155,6 +155,33 @@ class Core extends Base\Core
         return $merchantDetailCore->createResponse($merchantDetails);
     }
 
+    // Upload the document to s3 bucket save the details in merchant documents table
+    public function internalUploadFile(
+        Merchant\Entity $merchant, array $input, $rule = 'uploadDocument', Base\PublicEntity $entity = null)
+    {
+        (new Validator)->validateInput($rule, $input);
+
+        $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
+
+        $documentType = $input[Entity::DOCUMENT_TYPE];
+
+        $param = [
+            $documentType => $input[Entity::FILE]
+        ];
+
+        $document = (new Entity)->generateId();
+
+        $document->merchant()->associate($merchant);
+
+        $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
+
+        $entity = $entity ?? $merchant;
+
+        $uploadedDocuments = $this->storeInMerchantDocument($merchant, $entity, $fileAttributes, $document);
+
+        return $uploadedDocuments[$documentType];
+    }
+
     /**
      * @param Merchant\Entity   $merchant
      * @param string            $documentType
@@ -238,6 +265,24 @@ class Core extends Base\Core
         foreach ($fileStoreIds as $fileStoreId)
         {
             $document = $this->repo->merchant_document->findDocumentByFileStoreId($fileStoreId);
+
+            if (isset($document) === true)
+            {
+                $this->delete($document);
+            }
+        }
+    }
+
+    /**
+     * this function takes array of document ids and delete them.
+     *
+     * @param array $ids
+     */
+    public function deleteDocumentsbyId(array $ids)
+    {
+        foreach ($ids as $id)
+        {
+            $document = $this->repo->merchant_document->findDocumentById($id);
 
             if (isset($document) === true)
             {

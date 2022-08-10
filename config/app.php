@@ -431,6 +431,7 @@ return array(
     'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
 
     'user_role_migration_for_x_exp_id' => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
+    'merchant_policies_exp_id' => env('MERCHANT_POLICIES_EXP_ID'),
 
     'merchant_kyc_update_to_partner_exp_id'            => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
     'send_weekly_activation_summary_to_partner_exp_id' => env('SEND_WEEKLY_ACTIVATION_SUMMARY_TO_PARTNER_EXP_ID'),

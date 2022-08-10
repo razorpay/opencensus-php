@@ -459,7 +459,7 @@ class Repository extends Base\Repository
         $accessMapRepo           = $this->repo->merchant_access_map;
         $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
         $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
-        
+
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
                     ->select($merchantDetailMerchantId)

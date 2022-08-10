@@ -14,14 +14,20 @@ class MerchantOnboardingEmail extends Mailable
 
     protected $template;
 
-    public function __construct(array $data, array $org, string $template, string $subject)
+    /**
+     * @var array
+     */
+    private $files;
+
+    public function __construct(array $data, array $org, string $template, string $subject, $files)
     {
         parent::__construct();
 
-        $this->data = $data;
-        $this->org = $org;
-        $this->subject = $subject;
+        $this->data     = $data;
+        $this->org      = $org;
+        $this->subject  = $subject;
         $this->template = $template;
+        $this->files    = $files;
     }
 
     public function getTemplate()
@@ -45,14 +51,14 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addSender()
     {
-        if($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
+        if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
         {
             $this->from($this->org['from_email'], $this->org['display_name']);
         }
         else
         {
             $senderEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
-            $senderName = Constants::HEADERS[Constants::NOREPLY];
+            $senderName  = Constants::HEADERS[Constants::NOREPLY];
 
             $this->from($senderEmail, $senderName);
         }
@@ -62,7 +68,7 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addBcc()
     {
-        if($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID)
+        if ($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID)
         {
             $this->cc(Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK]);
         }
@@ -79,9 +85,22 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addHeaders()
     {
-        $this->withSwiftMessage(function ($message) {
+        $this->withSwiftMessage(function($message) {
             $headers = $message->getHeaders();
         });
+
+        return $this;
+    }
+
+    protected function addAttachments()
+    {
+        if (empty($this->files) === false)
+        {
+            foreach ($this->files as $file)
+            {
+                $this->attach($file);
+            }
+        }
 
         return $this;
     }

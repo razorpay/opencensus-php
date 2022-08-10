@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Request as MerchantRequest;
 
 class Repository extends Base\Repository
@@ -54,5 +55,19 @@ class Repository extends Base\Repository
             ->skip(1)
             ->take(1)
             ->first();
+    }
+
+    public function filterPaymentsEnabledMerchants(array $merchantIdList,int $from,int $to)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+                    ->whereIn(Entity::ENTITY_ID, $merchantIdList)
+                    ->whereIn(Entity::NAME, Status::PAYMENTS_ENABLED_STATUSES)
+                    ->groupBy(Entity::ENTITY_ID)
+                    ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_enabled_at,' . Entity::ENTITY_ID)
+                    ->having('first_enabled_at', '>=', $from)
+                    ->having('first_enabled_at', '<=', $to)
+                    ->get()
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
     }
 }

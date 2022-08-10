@@ -16,6 +16,7 @@ class Constants
     const WRITE          = 'write';
 
     const TTL                                                    = 'ttl';
+    const VISIBILITY_TTL_IN_SECONDS                              = 5184000;
     const REFERRAL_TTL_IN_SECONDS                                = 7776000;
     const GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS  = 108800;
     const GET_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT_TTL_IN_SECONDS  = 108800;

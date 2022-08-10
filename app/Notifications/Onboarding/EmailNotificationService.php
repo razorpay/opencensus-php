@@ -115,7 +115,8 @@ class EmailNotificationService extends BaseNotificationService
             $emailInstance = new MerchantOnboardingEmail(
                 $payload, $org->toArray(),
                 $this->getTemplateMessage(),
-                $this->getTemplateSubject()
+                $this->getTemplateSubject(),
+                $this->files
             );
 
             Mail::queue($emailInstance);

@@ -5,12 +5,15 @@ namespace RZP\Models\Merchant\Cron\Actions;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
+use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\M2MReferral\Service as M2MService;
 use RZP\Models\Merchant\Escalations\Core as EscalationCore;
-
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
+use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
 class MtuTransactedAction extends BaseAction
 {
     public function execute($data = []): ActionDto
@@ -95,5 +98,20 @@ class MtuTransactedAction extends BaseAction
             $merchant, $properties, SegmentEvent::MTU_TRANSACTED, $merchantsTransaction['created_at']);
 
         (new EscalationCore())->applyMtuCouponIfEligible($merchant);
+
+        if ((new WebsiteService())->isWebsiteSectionsApplicable($merchant) === true)
+        {
+            $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
+
+            if (empty(optional($websiteDetail)->getStatus()) === true)
+            {
+                $args = [
+                    EscalationConstants::MERCHANT => $merchant
+                ];
+
+                $success = (new OnboardingNotificationHandler($args))
+                    ->sendEventNotificationForMerchant($merchantId, Events::WEBSITE_ADHERENCE_HARD_NUDGE);
+            }
+        }
     }
 }

@@ -79,7 +79,7 @@ class Workflow extends BaseEscalationType
             $permissionName = Permission\Name::AUTO_KYC_SOFT_LIMIT_BREACH_UNREGISTERED;
         }
 
-        if ($merchant->merchantDetail->tnc !== null)
+        if ($merchant->merchantDetail->merchantWebsite !== null)
         {
             $tags[] = 'tnc_generated';
         }

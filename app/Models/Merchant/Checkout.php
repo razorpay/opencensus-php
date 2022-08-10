@@ -188,6 +188,8 @@ class Checkout
 
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
+        (new Website\Service())->checkAndFillMerchantPolicyPage($merchant, $data);
+
         return $data;
     }
 
@@ -1456,6 +1458,7 @@ class Checkout
             $data['options']['partnership_logo'] = $partnershipUrl;
         }
     }
+
 
     protected function fillEnabledFeatures(Merchant\Entity $merchant, array & $data)
     {

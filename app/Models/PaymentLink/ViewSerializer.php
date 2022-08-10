@@ -8,7 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Tnc;
+use RZP\Models\Merchant\Website;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Currency\Currency;
@@ -160,10 +160,10 @@ class ViewSerializer extends Base\Core
 
         $merchantDetails = $this->merchant->merchantDetail ?? null;
 
-        $merchantTncDetails = $merchantDetails === null ? null : $merchantDetails->tnc;
+        $merchantTncDetails = $merchantDetails === null ? null : $merchantDetails->merchantWebsite;
 
         $merchantTncLink = $merchantTncDetails === null ? null :
-                        (new Tnc\Core)->getMerchantTncLink($this->merchant, $merchantTncDetails['id']);
+                        (new Website\Core)->getMerchantTncLink($this->merchant, $merchantTncDetails['id']);
 
         return [
             'id'               => $this->merchant->getId(),

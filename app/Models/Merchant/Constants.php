@@ -34,6 +34,8 @@ final class Constants
     const PAYMENT_TIMEOUT_WINDOW                  = 'payment_timeout_window';
     const MERCHANT                                = 'merchant';
     const PARAMS                                  = 'params';
+    const IS_CTA_TEMPLATE                         = 'is_cta_template';
+    const BUTTON_URL_PARAM                        = 'button_url_param';
     const REPO                                    = 'repo';
     const RECEIVER                                = 'receiver';
     const TEMPLATE                                = 'template';

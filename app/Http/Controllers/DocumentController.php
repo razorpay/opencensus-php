@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-
 use RZP\Models\Merchant\Document;
 use RZP\Constants\Entity as Entity;
 

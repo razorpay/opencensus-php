@@ -869,9 +869,8 @@ final class FactoryData
                                                                ]
         );
 
-        $factory(\RZP\Models\Merchant\Tnc\Entity::class, [
+        $factory(\RZP\Models\Merchant\Website\Entity::class, [
                                                            'id'            => $faker->uniqueid,
-                                                           'merchant_id'   => '10000000000000',
                                                        ]
         );
 

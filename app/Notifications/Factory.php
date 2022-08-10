@@ -7,7 +7,7 @@ use RZP\Exception;
 
 class Factory
 {
-    public static function getInstance(string $channel, string $event, string $namespace, array $args)
+    public static function getInstance(string $channel, string $event, string $namespace, array $args,$files)
     {
         switch ($channel)
         {
@@ -19,7 +19,7 @@ class Factory
                 return new $class($event, $args);
             case Channel::EMAIL:
                 $class = self::getEmailService($namespace);
-                return new $class($event, $args);
+                return new $class($event, $args,$files);
             default:
                 throw new Exception\LogicException('invalid channel for notification: '. $channel);
         }

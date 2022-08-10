@@ -7,7 +7,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
-use RZP\Models\Merchant\Tnc\Entity as TncEntity;
+use RZP\Models\Merchant\Website\Entity as WebsiteEntity;
 use RZP\Models\Merchant\Email\Entity as EmailEntity;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
@@ -382,13 +382,13 @@ class Constants
     ];
 
     const PUBLIC_TNC_DETAILS = [
-        'tnc'            => [
-            TncEntity::DELIVERABLE_TYPE,
-            TncEntity::SHIPPING_PERIOD,
-            TncEntity::REFUND_REQUEST_PERIOD,
-            TncEntity::REFUND_PROCESS_PERIOD,
-            TncEntity::WARRANTY_PERIOD,
-            TncEntity::UPDATED_AT,
+        'websiteDetail'            => [
+            WebsiteEntity::DELIVERABLE_TYPE,
+            WebsiteEntity::SHIPPING_PERIOD,
+            WebsiteEntity::REFUND_REQUEST_PERIOD,
+            WebsiteEntity::REFUND_PROCESS_PERIOD,
+            WebsiteEntity::WARRANTY_PERIOD,
+            WebsiteEntity::UPDATED_AT,
         ],
         'merchantDetail' => [
             Entity::BUSINESS_NAME,

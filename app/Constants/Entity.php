@@ -611,7 +611,9 @@ class Entity
     const ONBOARDING_ESCALATION_ACTIONS   = 'onboarding_escalation_actions';
 
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
-    const MERCHANT_TNC                  = 'merchant_tnc';
+    const MERCHANT_WEBSITE              = 'merchant_website';
+    const MERCHANT_CONSENT_DETAILS      = 'merchant_consent_details';
+    const MERCHANT_CONSENTS             = 'merchant_consents';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
     const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
 
@@ -771,7 +773,9 @@ class Entity
         self::MERCHANT_VERIFICATION_DETAIL,
         self::MERCHANT_PROMOTION,
         self::MERCHANT_DOCUMENT,
-        self::USER
+        self::USER,
+        self::MERCHANT_WEBSITE,
+        self::MERCHANT_CONSENTS
     ];
 
 
@@ -846,7 +850,7 @@ class Entity
         Entity::MERCHANT_1CC_AUTH_CONFIGS,
         Entity::MERCHANT_1CC_CONFIGS,
         Entity::MERCHANT_CHECKOUT_DETAIL,
-        Entity::MERCHANT_TNC,
+        Entity::MERCHANT_WEBSITE,
         Entity::MERCHANT_TNC_ACCEPTANCE,
         Entity::OFFER,
         Entity::OFFLINE_DEVICE,
@@ -1316,7 +1320,9 @@ class Entity
         self::APP_ATTRIBUTION_DETAIL          => \RZP\Models\DeviceDetail\Attribution::class,
         self::MERCHANT_AUTO_KYC_ESCALATIONS   => \RZP\Models\Merchant\AutoKyc\Escalations::class,
         self::MERCHANT_AVG_ORDER_VALUE        => \RZP\Models\Merchant\AvgOrderValue::class,
-        self::MERCHANT_TNC                    => \RZP\Models\Merchant\Tnc::class,
+        self::MERCHANT_WEBSITE                => \RZP\Models\Merchant\Website::class,
+        self::MERCHANT_CONSENTS               => \RZP\Models\Merchant\Consent::class,
+        self::MERCHANT_CONSENT_DETAILS        => \RZP\Models\Merchant\Consent\Details::class,
         self::MERCHANT_VERIFICATION_DETAIL    => \RZP\Models\Merchant\VerificationDetail::class,
         self::AUDIT_INFO                      => \RZP\Models\Base\Audit::class,
         self::MERCHANT_BUSINESS_DETAIL        => \RZP\Models\Merchant\BusinessDetail::class,

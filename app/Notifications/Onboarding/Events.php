@@ -4,6 +4,8 @@
 namespace RZP\Notifications\Onboarding;
 
 
+use RZP\Models\Merchant\RazorxTreatment;
+
 class Events
 {
     const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
@@ -21,6 +23,10 @@ class Events
     const ACTIVATED_MCC_PENDING                       = "ACTIVATED_MCC_PENDING";
     const FUNDS_ON_HOLD                               = 'FUNDS_ON_HOLD';
     const FUNDS_ON_HOLD_REMINDER                      = 'FUNDS_ON_HOLD_REMINDER';
+    const WEBSITE_ADHERENCE_SOFT_NUDGE                = "WEBSITE_ADHERENCE_SOFT_NUDGE";
+    const WEBSITE_ADHERENCE_HARD_NUDGE                = "WEBSITE_ADHERENCE_HARD_NUDGE";
+    const DOWNLOAD_MERCHANT_WEBSITE_SECTION           = "DOWNLOAD_MERCHANT_WEBSITE_SECTION";
+    const WEBSITE_SECTION_PUBLISHED                   = "WEBSITE_SECTION_PUBLISHED";
     const ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH';
     const ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH';
     const ACTIVATED_MCC_PENDING_SUCCESS               = 'ACTIVATED_MCC_PENDING_SUCCESS';
@@ -65,6 +71,7 @@ class Events
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
         self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.Welcome_SMS_1',
         self::FIRST_PAYMENT_OFFER                         => 'sms.onboarding.first_payment_offer',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'sms.onboarding.website_adherence_hard_nudge_1',
     ];
 
 
@@ -74,6 +81,18 @@ class Events
         self::REGISTERED_SETTLEMENTS_ENABLED   => 'Congratulations {merchantName}, your account is activated, you can now accept payments and get funds settled to your bank account. Visit your dashboard to accept payments {dashboardUrl}',
         self::PENNY_TESTING_FAILURE            => "Hi {merchantName}, we couldn't verify your Bank Account, kindly visit your Dashboard and upload scanned copy of cheque/bank statement at {dashboardUrl}",
         self::ACTIVATED_MCC_PENDING            => "Dear Customer, Congratulations! You can now start accepting payments and the payments will be settled in your bank account as per your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications. You can now visit your dashboard to accept payments at {dashboardUrl}."
+    ];
+
+    const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_SECTION_PUBLISHED                   => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+    ];
+
+    const WHATSAPP_TEMPLATES_CTA_TEMPLATE = [
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'compliance',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'compliance',
     ];
 
     // blade templates
@@ -96,6 +115,12 @@ class Events
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A',
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
         self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.first_payment_offer',
+
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => 'whatsapp.merchant.onboarding.website_section_downloaded',
+        self::WEBSITE_SECTION_PUBLISHED                   => 'whatsapp.merchant.onboarding.website_section_published',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'whatsapp.merchant.onboarding.website_adherence_hard_nudge',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'whatsapp.merchant.onboarding.website_adherence_soft_nudge',
+
     ];
 
     const EMAIL_TEMPLATES = [
@@ -107,6 +132,11 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => 'emails.merchant.onboarding.activated_mcc_pending_hard_limit_breach',
         self::FUNDS_ON_HOLD                               => 'emails.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'emails.merchant.onboarding.funds_on_hold_reminder',
+
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => 'emails.merchant.onboarding.website_section_downloaded',
+        self::WEBSITE_SECTION_PUBLISHED                   => 'emails.merchant.onboarding.website_section_published',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'emails.merchant.onboarding.website_adherence_hard_nudge',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'emails.merchant.onboarding.website_adherence_soft_nudge',
 
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'partner.submerchant.onboarding.activated_mcc_pending_success',
         self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'partner.submerchant.onboarding.needs_clarification',
@@ -124,6 +154,12 @@ class Events
         self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     => '[Urgent] Clarifications needed for continuity of your Razorpay account',
         self::FUNDS_ON_HOLD                               => '[Urgent] Settlements have been paused for your Razorpay account',
         self::FUNDS_ON_HOLD_REMINDER                      => '[Urgent] Settlements have been paused for your Razorpay account',
+
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => 'Content for your website/app pages',
+        self::WEBSITE_SECTION_PUBLISHED                   => 'Published links for your website/app pages',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'Update your website/app details',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'Reminder: Update your website/app details',
+
 
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'Your affiliate {merchantName} can now accept payments via Razorpay',
         self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'Your affiliate {merchantName}\'s KYC needs action',

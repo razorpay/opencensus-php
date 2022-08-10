@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList as ReasonList;
 use RZP\Models\Merchant\Detail\DeDupe\Constants as DedupeConstant;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessConstants;
 
 
 class NeedsClarificationMetaData
@@ -25,6 +26,8 @@ class NeedsClarificationMetaData
         Entity::CONTACT_MOBILE                  => [ReasonList::INVALID_CONTACT_NUMBER],
         Entity::BUSINESS_TYPE                   => [ReasonList::IS_COMPANY_REG],
         Entity::BUSINESS_WEBSITE                => [ReasonList::WEBSITE_NOT_LIVE],
+        BusinessConstants::PLAYSTORE_URL        => [ReasonList::WEBSITE_NOT_LIVE],
+        BusinessConstants::APPSTORE_URL         => [ReasonList::WEBSITE_NOT_LIVE],
         Entity::BUSINESS_NAME                   => [ReasonList::COMPANY_NAME_NOT_MATCHED],
         Entity::PROMOTER_PAN_NAME               => [ReasonList::SIGNATORY_NAME_NOT_MATCHED],
         Entity::GSTIN                           => [ReasonList::INVALID_GSTIN_NUMBER,
