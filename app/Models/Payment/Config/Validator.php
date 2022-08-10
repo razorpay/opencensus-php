@@ -47,6 +47,8 @@ class Validator extends Base\Validator
 
     const DCC_MARKUP_PERCENTAGE = 'dcc_markup_percentage';
 
+    const DCC_RECURRING_MARKUP_PERCENTAGE = 'dcc_recurring_markup_percentage';
+
     const SUPPORTED_LANGUAGE_CODE = [
         'hi',
         'en',
@@ -102,6 +104,10 @@ class Validator extends Base\Validator
 
     protected static $dccConfigRules = [
         self::DCC_MARKUP_PERCENTAGE   => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
+    ];
+    
+    protected static $dccRecurringConfigRules = [
+        self::DCC_RECURRING_MARKUP_PERCENTAGE   => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
     ];
 
     protected static $editValidators = [
@@ -204,6 +210,11 @@ class Validator extends Base\Validator
         if ($input['type'] === Type::DCC)
         {
             $this->validateInput('dcc_config', $input['config']);
+        }
+
+        if ($input['type'] === Type::DCC_RECURRING)
+        {
+            $this->validateInput('dcc_recurring_config', $input['config']);
         }
 
         if (($input['type'] === Type::PAYMENT_FAILED) and

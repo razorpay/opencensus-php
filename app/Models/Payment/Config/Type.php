@@ -11,9 +11,10 @@ class Type
     const DCC                    = 'dcc';
     const PAYMENT_FAILED         = 'payment_failed';
     const CONVENIENCE_FEE        = 'convenience_fee';
+    const DCC_RECURRING          = 'dcc_recurring';
 
     protected static $supportedConfigType = [
-      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::PAYMENT_FAILED
+      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::PAYMENT_FAILED, self::DCC_RECURRING
     ];
 
     public function isConfigTypeSupported($type)

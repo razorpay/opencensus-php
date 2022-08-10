@@ -97,6 +97,7 @@ use RZP\Models\Payment\PaymentMeta;
 use RZP\Jobs\OneCCShopifyCreateOrder;
 use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Currency\Currency as CurrencyCurrency;
 use RZP\Models\Payment\TokenisationExperiment;
 
 trait Authorize
@@ -169,6 +170,8 @@ trait Authorize
         $this->runPaymentInputValidations($payment, $input);
 
         $this->preProcessDCCInputs($input, $payment);
+
+        $this->preProcessDCCForRecurringAutoOnDirect($input, $payment);
 
         $this->preProcessWalletCurrencyWrapper($input, $payment);
 
@@ -3910,6 +3913,70 @@ trait Authorize
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
+    }
+
+    protected function preProcessDCCForRecurringAutoOnDirect(array $input, Payment\Entity $payment)
+    {
+        if ($this->checkDCCForRecurringAutoOnLibraryDirect($input,$payment) === false)
+        {
+            return;
+        }
+
+        $cardCountry = $payment->card->getCountry();
+
+        $dccCurrency = Currency\Currency::getCurrencyForCountry($cardCountry);
+
+        /* Edge Cases
+            1. If Payment Currency == Card Holder Currency (No DCC to be applied)
+            2. Currency not Supported by us for that given country
+        */
+
+        if($dccCurrency === null || $payment->getCurrency() === $dccCurrency)
+        {
+            return;
+        }
+        
+        if($this->evalExperimentDCCRecurringAutoOnLibraryDirect($payment) !== true)
+        {
+            return;
+        }
+
+        $dccInfo = (new Payment\Service)->getDCCInfo($payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage());
+
+        $requestedCurrencyData = $dccInfo['all_currencies'][$dccCurrency];
+
+        if (empty($requestedCurrencyData) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID,
+                [
+                    'dcc_currency'        => $dccCurrency,
+                    'payment_id'          => $payment->getId(),
+                ]);
+        }
+
+        $paymentMetaInput = [
+            'gateway_amount'            => $requestedCurrencyData['amount'],
+            'gateway_currency'          => $dccCurrency,
+            'forex_rate'                => $requestedCurrencyData['forex_rate'],
+            'dcc_offered'               => true,
+            'payment_id'                => $payment->getId(),
+            'dcc_mark_up_percent'       => $requestedCurrencyData['conversion_percentage']
+        ];
+
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($payment->getId());
+
+        if(empty($paymentMeta))
+        {
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
+        }
+        else
+        {
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->updateDccInfo($paymentMeta, $paymentMetaInput);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
     }
 
     public function checkDccMetaRecord($payment): bool
@@ -11468,4 +11535,78 @@ trait Authorize
 
         return $billingAddressFromInput;
     }
+
+    /**
+     * @param Payment\Entity $payment
+     * @param array          $input
+     *
+     * @return boolean
+     * 
+     * Following Conditions to check and if all passes return true - 
+     * 1. Payment Should be Recurring Auto on Direct Library
+     * 2. Should be a Card Payment
+     * 3. Merchant should be international & dcc enabled
+     * 4. Card Should be Supported for DCC and Card Country Shouldn't be Null
+     */
+    
+    private function checkDCCForRecurringAutoOnLibraryDirect(array $input, Payment\Entity $payment)
+    {
+        if($payment->isRecurring() === false or $payment->getRecurringType() !== Payment\RecurringType::AUTO)
+        {
+            return false;
+        }
+
+        if((new Payment\Service)->getLibraryFromPayment($payment) !== Analytics\Metadata::DIRECT)
+        {
+            return false;
+        }
+
+        if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
+        {
+            return false;
+        }
+
+        if($payment->card === null or $payment->card->getCountry() === null or (new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function evalExperimentDCCRecurringAutoOnLibraryDirect(Payment\Entity $payment): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.dcc_recurring_on_auto_direct_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::GLOBAL_CARD_PAYMENT_PROCESS_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+      }
 }

@@ -896,6 +896,20 @@ class Merchant extends Base
         $this->fixtures->create('config', $attributes);
     }
 
+    public function addDccRecurringPaymentConfig($dccRecurringMarkupPercent, string $id = '10000000000000')
+    {
+        $attributes = [
+            'merchant_id'   => $id,
+            'type'          => 'dcc_recurring',
+            'name'          => 'dcc_recurring',
+            'is_default'    => '0',
+            'config'     => '{
+                "dcc_recurring_markup_percentage": '.$dccRecurringMarkupPercent.'
+            }'
+        ];
+        $this->fixtures->create('config', $attributes);
+    }
+
     public function editAutoRefundDelay($delay, $id = '10000000000000')
     {
         return $this->edit($id, ['auto_refund_delay' => $delay]);

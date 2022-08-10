@@ -293,6 +293,10 @@ class Entity extends Base\PublicEntity
 
     const CA_ACTIVATION_STATUS      = 'ca_activation_status';
 
+    const DCC_RECURRING                     = 'dcc_recurring';
+    const DCC_RECURRING_MARKUP_PERCENTAGE   = 'dcc_recurring_markup_percentage';
+
+
     protected $entity = 'merchant';
 
     /**
@@ -607,6 +611,7 @@ class Entity extends Base\PublicEntity
     const RISK_THRESHOLD_DEFAULT                      = 8;
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 8;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS      = 6;
+    const DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT     = 4;
 
     /**
      * {@inheritDoc}
@@ -1516,6 +1521,19 @@ class Entity extends Base\PublicEntity
     public function firstDccPaymentConfig()
     {
         return $this->dccPaymentConfig()
+                     ->orderBy(PaymentConfig\Entity::CREATED_AT, 'desc')
+                     ->first();
+    }
+
+    public function dccRecurringPaymentConfig()
+    {
+        return $this->hasMany(PaymentConfig\Entity::class, PaymentConfig\Entity::MERCHANT_ID, Entity::ID)
+                     ->where(PaymentConfig\Entity::TYPE,PaymentConfig\Type::DCC_RECURRING);
+    }
+
+    public function firstDccRecurringPaymentConfig()
+    {
+        return $this->dccRecurringPaymentConfig()
                      ->orderBy(PaymentConfig\Entity::CREATED_AT, 'desc')
                      ->first();
     }
@@ -2495,6 +2513,19 @@ class Entity extends Base\PublicEntity
         $data = $dccPaymentConfigEntity->getFormattedConfig();
 
         return $data[self::DCC_MARKUP_PERCENTAGE];
+    }
+
+    public function getDccRecurringMarkupPercentage()
+    {
+        $dccPaymentConfigEntity = $this->firstDccRecurringPaymentConfig();
+
+        if($dccPaymentConfigEntity === null ) {
+            return self::DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT;
+        }
+
+        $data = $dccPaymentConfigEntity->getFormattedConfig();
+
+        return $data[self::DCC_RECURRING_MARKUP_PERCENTAGE];
     }
 
     public function getDccMarkupPercentageForApps()

@@ -439,4 +439,6 @@ return array(
     'subm_unlinking_request_to_nss_exp_id'     => env('SUBM_UNLINKING_REQUEST_TO_NSS_EXP_ID'),
 
     'checkout_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
+
+    'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID')
 );

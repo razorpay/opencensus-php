@@ -2495,7 +2495,7 @@ class Service extends Base\Service
         return false;
     }
 
-    private function getDCCInfo($baseAmount, $baseCurrency, $markupPercent)
+    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent)
     {
         $dccInfo = [];
 

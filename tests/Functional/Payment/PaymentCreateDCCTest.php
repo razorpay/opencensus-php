@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Constants\Entity;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
@@ -983,6 +985,23 @@ class PaymentCreateDCCTest extends TestCase
         return $paymentArray;
     }
 
+    private function getPaymentArrayInternationalForRecurringAutoOnDirect()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '4012010000000007';
+        $paymentArray['meta']['action_type'] = "capture";
+        $paymentArray['meta']['reference_id'] = "G3wgYct2N47hhWWqCLsLMsy";
+        $paymentArray['method'] = "card";
+        $paymentArray['recurring'] = "auto";
+
+        unset($paymentArray['bank']);
+        unset($paymentArray['description']);
+        unset($paymentArray['notes']);
+
+        return $paymentArray;
+    }
+
     public function testForceOfferPaymentCreateWithDCC()
     {
         $offer = $this->fixtures->create('offer');
@@ -1426,5 +1445,284 @@ class PaymentCreateDCCTest extends TestCase
         $content = $infoResponse->getContent();
 
         $this->assertTrue(str_contains($content, '"show_mor_tnc":false'));
+    }
+
+    public function testPaymentCreateRecurringAutoOnDirectWithDCC()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
+        $payment['card']['number'] = '4012010000000007';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+
+        $this->fixtures->merchant->addFeatures(['recurring_auto']);
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment->getStatus());
+        $this->assertEquals($payment->getPublicId(), 'pay_' . $paymentMeta['payment_id']);
+
+        $cardCurrency = "USD";
+        $cardCurrencyGatewayAmount = $payment->getAmount() * 10;
+        $cardCurrencyGatewayAmount += (int) ceil(($cardCurrencyGatewayAmount * ($payment->merchant->getDccRecurringMarkupPercentage()/100)));
+
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($cardCurrencyGatewayAmount, $paymentMeta['gateway_amount']);
+
+        $this->assertEquals("capture", $paymentMeta['action_type']);
+        $this->assertEquals("G3wgYct2N47hhWWqCLsLMsy", $paymentMeta['reference_id']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($cardCurrencyGatewayAmount, $responseContent['gateway_amount']);
+        $this->assertEquals($cardCurrency, $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount,$responseContent['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateRecurringAutoOnDirectWithDynamicMarkupDCC()
+    {
+        $dccMarkupPercent = 2;
+        $this->fixtures->merchant->addDccRecurringPaymentConfig($dccMarkupPercent);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
+        $payment['card']['number'] = '4012010000000007';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+
+        $this->fixtures->merchant->addFeatures(['recurring_auto']);
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment->getStatus());
+        $this->assertEquals($payment->getPublicId(), 'pay_' . $paymentMeta['payment_id']);
+
+        $cardCurrency = "USD";
+        $cardCurrencyGatewayAmount = $payment->getAmount() * 10;
+        $cardCurrencyGatewayAmount += (int) ceil(($cardCurrencyGatewayAmount * ($payment->merchant->getDccRecurringMarkupPercentage()/100)));
+
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+        $this->assertEquals($cardCurrencyGatewayAmount, $paymentMeta['gateway_amount']);
+
+        $this->assertEquals("capture", $paymentMeta['action_type']);
+        $this->assertEquals("G3wgYct2N47hhWWqCLsLMsy", $paymentMeta['reference_id']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['dcc']);
+        $this->assertEquals($cardCurrencyGatewayAmount, $responseContent['gateway_amount']);
+        $this->assertEquals($cardCurrency, $responseContent['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $responseContent['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $responseContent['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $responseContent['dcc_mark_up_percent']);
+
+        $dccMarkupAmount = (int) ceil(($payment['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+
+        $this->assertEquals($dccMarkupAmount,$responseContent['dcc_markup_amount']);
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
+    public function testPaymentCreateRecurringAutoOnDirectWithDCCExperimentOff()
+    {
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
+        $payment['card']['number'] = '4012010000000007';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+
+        $this->fixtures->merchant->addFeatures(['recurring_auto']);
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment->getStatus());
+        $this->assertEquals($payment->getPublicId(), 'pay_' . $paymentMeta['payment_id']);
+
+        $this->assertEquals("capture", $paymentMeta['action_type']);
+        $this->assertEquals("G3wgYct2N47hhWWqCLsLMsy", $paymentMeta['reference_id']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['dcc']);
+        $this->assertEquals(50000, $responseContent['gateway_amount']);
+        $this->assertEquals('INR', $responseContent['gateway_currency']);
+    }
+
+    public function testPaymentCreateRecurringAutoOnDirectWithDomesticCard()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
+        $payment['card']['number'] = '4012001038443335';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+
+        $this->fixtures->merchant->addFeatures(['recurring_auto']);
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment->getStatus());
+        $this->assertEquals($payment->getPublicId(), 'pay_' . $paymentMeta['payment_id']);
+
+        $this->assertEquals("capture", $paymentMeta['action_type']);
+        $this->assertEquals("G3wgYct2N47hhWWqCLsLMsy", $paymentMeta['reference_id']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['dcc']);
+        $this->assertEquals(50000, $responseContent['gateway_amount']);
+        $this->assertEquals('INR', $responseContent['gateway_currency']);
+    }
+
+    public function testPaymentCreateRecurringAutoOnDirectWithCurrencyNotSupportedByRzp()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
+
+        $this->fixtures->iin->create(['iin' => '400155', 'country' => 'KW', 'issuer' => 'UTIB', 'network' => 'Visa', 'recurring' => 1,
+            'flows'   => ['3ds' => '1']]);
+
+        $payment['card']['number'] = '4001553716254122';
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::DIRECT;
+
+        $this->fixtures->merchant->addFeatures(['recurring_auto']);
+
+        $paymentAuth = $this->doAuthPayment($payment);
+        $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
+
+        $this->assertFalse($this->redirectToDCCInfo);
+        $this->assertFalse($this->redirectToUpdateAndAuthorize);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals("captured", $payment->getStatus());
+        $this->assertEquals($payment->getPublicId(), 'pay_' . $paymentMeta['payment_id']);
+
+        $this->assertEquals("capture", $paymentMeta['action_type']);
+        $this->assertEquals("G3wgYct2N47hhWWqCLsLMsy", $paymentMeta['reference_id']);
+
+        //Payment entity fetch with Admin auth
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $paymentMeta['payment_id'],
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(false, $responseContent['dcc']);
+        $this->assertEquals(50000, $responseContent['gateway_amount']);
+        $this->assertEquals('INR', $responseContent['gateway_currency']);
     }
 }

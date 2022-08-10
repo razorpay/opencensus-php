@@ -58,7 +58,8 @@ class Core extends Base\Core
 
                 $config->build($input);
 
-                if ((isset($input['type']) === true) && ($input['type'] === Type::DCC))
+                if (((isset($input['type']) === true) && ($input['type'] === Type::DCC)) || 
+                    ((isset($input['type']) === true) && ($input['type'] === Type::DCC_RECURRING)))
                 {
                     return $this->validateAndSaveDccConfig($input, $merchant, $config);
                 }
@@ -100,7 +101,8 @@ class Core extends Base\Core
                             $this->repo->saveOrFail($defaultConfig);
                         }
 
-                        if ((isset($defaultConfig) === true) and ($input['type'] === Type::DCC))
+                        if (((isset($defaultConfig) === true) and ($input['type'] === Type::DCC)) || 
+                            ((isset($defaultConfig) === true) and ($input['type'] === Type::DCC_RECURRING)))
                         {
                             $defaultConfig->is_default = false;
                         }
@@ -298,7 +300,7 @@ class Core extends Base\Core
                             $this->sendSelfServeSuccessAnalyticsEventToSegmentForLanguageChange();
                         }
 
-                        if ($type === Type::DCC)
+                        if ($type === Type::DCC || $type === Type::DCC_RECURRING)
                         {
                             $this->updateDccConfig($config, $input);
                         }
