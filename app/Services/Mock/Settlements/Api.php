@@ -38,6 +38,7 @@ class Api extends BaseSettlementsApi
         else if ($this->mockStatus === 'settle_to_enabled')
         {
             $merchantConfig['config']['types']['aggregate']['enable'] = true;
+            $merchantConfig['config']['types']['aggregate']['settle_to'] = '10000000000000';
         }
         else if ($this->mockStatus === 'aggregate_settlement_parent')
         {

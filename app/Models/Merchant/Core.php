@@ -3982,7 +3982,8 @@ class Core extends Base\Core
 
             $response =  app('settlements_api')->merchantConfigGet($req, $this->mode);
 
-            if($response['config']['types']['aggregate']['enable'] === true)
+            if($response['config']['types']['aggregate']['enable'] === true and
+               $response['config']['types']['aggregate']['settle_to'] === $partner->getId())
             {
                 $response['config']['types']['aggregate']['enable'] = false;
                 $response['config']['types']['default']['enable'] = true;

@@ -791,11 +791,92 @@ class PartnerTest extends OAuthTestCase
         $this->assertNotNull($accessMapEntity);
     }
 
-    private function mockSplitzEvaluation()
+    public function testDeLinkSubMWithMultiplePartnersViaBatchWithNssExpEnabled()
+    {
+        $partnerId = '10000000000003';
+
+        $this->createPartnerAndLinkWithSubmerchant($partnerId, '10000000000009');
+
+        $this->mockSplitzEvaluation($partnerId);
+
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'settle_to_enabled');
+        });
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], self::DEFAULT_SUBMERCHANT_ID);
+
+        $expectedDimensions = [
+            'partner_id'     => $partnerId,
+        ];
+
+        $metricCaptured = false;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $this->mockAndCaptureCountMetric(MerchantMetric::AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_SUCCESS,
+            $metricsMock, $metricCaptured, $expectedDimensions);
+
+        $testData = $this->testData['testPartnerSubmerchantDeLinkViaBatch'];
+
+        $testData['request']['content'][0]['partner_id'] = $partnerId;
+        $testData['response']['content']['items'][0]['partner_id']= $partnerId;
+
+        $this->startTest($testData);
+
+        $this->assertFalse($metricCaptured);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000003'], 'live');
+        $this->assertNull($accessMapEntity);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000003'], 'test');
+        $this->assertNull($accessMapEntity);
+    }
+
+    protected function createPartnerAndLinkWithSubmerchant(string $partnerId, string $submerchantId)
+    {
+        $partnerType = 'reseller';
+
+        $this->fixtures->merchant->create(['id' => $partnerId]);
+
+        $this->allowAdminToAccessMerchant($partnerId);
+
+        $this->fixtures->merchant->edit($partnerId, ['partner_type' => $partnerType]);
+
+        $this->fixtures->user->createUserForMerchant($partnerId);
+
+        $defaults = [
+            'id'          => '8ckeirnw84ifle',
+            'merchant_id' => '10000000000003',
+            'name'        => 'Internal',
+            'website'     => 'https://www.razorpay.com',
+            'logo_url'    => '/logo/app_logo.png',
+            'category'    => null,
+            'type'        => 'partner',
+            'partner_type' => 'reseller'
+        ];
+
+        $this->createOAuthApplication( $defaults, $partnerId);
+
+        $this->ba->batchAppAuth();
+
+        $testData = $this->testData['testPartnerSubmerchantLinkViaBatch'];
+
+        $testData['request']['content'][0]['partner_id'] = $partnerId;
+        $testData['response']['content']['items'][0]['partner_id']= $partnerId;
+
+        $this->startTest($testData);
+    }
+
+    private function mockSplitzEvaluation(string $id = '10000000000000')
     {
         $input = [
             "experiment_id" => "JmNwFyivyRzcg3",
-            "id" => "10000000000000",
+            "id" => $id,
         ];
 
         $output = [
