@@ -653,11 +653,19 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $offer = $this->fixtures->create('offer:emi_subvention', [
-            'issuer'          => 'HDFC',
-            'payment_network' => null,
+            'issuer'              => 'HDFC',
+            'payment_network'     => null,
+            'payment_method_type' => 'credit'
         ]);
 
         $order = $this->fixtures->order->createWithOffers($offer, [
@@ -676,6 +684,13 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->fixtures->edit(
+            'methods',
+            '10000000000000',
+            [
+                'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
+            ]);
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
@@ -684,6 +699,7 @@ class CheckoutPreferencesTest extends TestCase
             'issuer'          => 'HDFC',
             'emi_durations'   => [6],
             'payment_network' => null,
+            'payment_method_type' => 'credit'
         ]);
 
         $order = $this->fixtures->order->createWithOffers($offer, [
@@ -1111,9 +1127,10 @@ class CheckoutPreferencesTest extends TestCase
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $offer = $this->fixtures->create('offer:emi_subvention', [
-            'issuer'          => 'HDFC',
-            'payment_network' => null,
-            'emi_durations'   => [
+            'issuer'              => 'HDFC',
+            'payment_network'     => null,
+            'payment_method_type' => 'credit',
+            'emi_durations'       => [
                 6,
                 9,
             ],

@@ -287,6 +287,11 @@ class Service extends Base\Service
             return false;
         }
 
+        if ($offer->getPaymentMethodType() !== $emiPlan->getType())
+        {
+            return false;
+        }
+
         $network = $offer->getPaymentNetwork();
 
         if (($network !== null) and

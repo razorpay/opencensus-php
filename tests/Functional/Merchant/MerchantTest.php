@@ -5099,7 +5099,9 @@ IFSC Code  ICIC0001206
 
         $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $offer = $this->fixtures->create('offer:emi_subvention');
+        $offer = $this->fixtures->create('offer:emi_subvention', [
+            'payment_method_type'=>'credit'
+        ]);
 
         $order = $this->fixtures->order->createWithOffers($offer, ['amount' => 400000]);
 
@@ -5123,8 +5125,14 @@ IFSC Code  ICIC0001206
 
         $this->fixtures->create('emi_plan:default_emi_plans');
 
-        $offer1 = $this->fixtures->create('offer:emi_subvention');
-        $offer2 = $this->fixtures->create('offer:emi_subvention', ['emi_durations' => [6,9]]);
+        $offer1 = $this->fixtures->create('offer:emi_subvention', [
+            'payment_method_type'=>'credit'
+        ]);
+
+        $offer2 = $this->fixtures->create('offer:emi_subvention', [
+            'payment_method_type'=>'credit',
+            'emi_durations' => [6,9]
+        ]);
 
         $order = $this->fixtures->order->createWithOffers([
             $offer1, $offer2
