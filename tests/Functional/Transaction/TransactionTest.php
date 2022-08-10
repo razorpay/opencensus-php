@@ -607,6 +607,8 @@ class TransactionTest extends TestCase
 
     public function testTransactionsBulkUpdateBalanceId()
     {
+        $this->markTestSkipped('The flakiness in the testcase needs to be fixed. Skipping as its impacting dev-productivity.');
+
         $this->ba->adminAuth();
 
         $response = $this->startTest();

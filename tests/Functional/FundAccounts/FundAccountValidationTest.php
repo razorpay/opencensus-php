@@ -792,6 +792,8 @@ class FundAccountValidationTest extends TestCase
 
     public function testFundAccValidationWithAccountNumberThatIsAlreadyProcessedButUtrNeeded()
     {
+        $this->markTestSkipped('The flakiness in the testcase needs to be fixed. Skipping as its impacting dev-productivity.');
+
         $this->fixtures->merchant->addFeatures(['expose_fa_validation_utr']);
 
         $this->createValidationWithFundAccountEntity();

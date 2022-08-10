@@ -1872,6 +1872,8 @@ class VirtualAccountTest extends TestCase
 
     public function testFetchVirtualAccountsMultiple()
     {
+        $this->markTestSkipped('The flakiness in the testcase needs to be fixed. Skipping as its impacting dev-productivity.');
+
         // Creates virtual account on primary balance.
         $this->createVirtualAccount(['description' => 'Testing VA fetch after ES sync', 'customer_id' => 'cust_100000customer']);
 
