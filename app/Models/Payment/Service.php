@@ -4969,25 +4969,25 @@ class Service extends Base\Service
      */
     public function isRazorxTreatmentForRefundsV1_1(string $merchantId = ""): bool
     {
-        // excluding this flow for initial ramp up, will be changed later
-        return false;
-
         // handling for internal routes,
         // where merchantId or merchant obj is empty, then just return true.
         //
-    //    $mid = (empty($this->merchant) === false) ? $this->merchant->getId() : $merchantId;
-    //    if (empty($mid) === true)
-    //    {
-    //        return true;
-    //    }
+        $mid = (empty($this->merchant) === false) ? $this->merchant->getId() : $merchantId;
+        if (empty($mid) === true)
+        {
+            return true;
+        }
 
-    //    $variant = $this->app->razorx->getTreatment(
-    //            $mid,
-    //            Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
-    //            $this->mode
-    //    );
+        // excluding this flow for initial ramp up, will be changed later
+        return false;
 
-    //    return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+        // $variant = $this->app->razorx->getTreatment(
+        //         $mid,
+        //         Merchant\RazorxTreatment::MERCHANTS_REFUND_CREATE_V_1_1,
+        //         $this->mode
+        // );
+
+        // return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
     }
 
     /**
