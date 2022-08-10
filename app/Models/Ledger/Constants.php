@@ -17,6 +17,9 @@ class Constants
     const POSTPAID                                          = 'postpaid';
     const DIRECT_SETTLEMENT_ACCOUNTING                      = 'direct_settlement_accounting';
     const DIRECT_SETTLEMENT                                 = 'direct_settlement';
+    const DIRECT_SETTLEMENT_TERMINAL                        = 'direct_settlement_terminal';
+    const WITH_REFUND                                       = 'with_refund';
+    const WITHOUT_REFUND                                       = 'without_refund';
 
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";
@@ -37,7 +40,10 @@ class Constants
     const MERCHANT_DEDUCTIBLE_REFUND_CREDITS                = "merchant_deductible_refund_credits";
     const GATEWAY_AMOUNT                                    = "gateway_amount";
     const GMV_AMOUNT                                        = "gmv_amount";
+    const DS_GMV_AMOUNT                                     = "ds_gmv_amount";
+    const DS_CONTROL_AMOUNT                                 = "ds_control_amount";
     const MERCHANT_BALANCE_AMOUNT                           = "merchant_balance_amount";
+    const MERCHANT_RECEIVABLE_AMOUNT                        = "merchant_receivable_amount";
     const GATEWAY_REVERSED_AMOUNT                           = "gateway_reversed_amount";
     const MERCHANT_REFUND_CREDITS_ADDITION                  = "merchant_refund_credits_addition";
     const MERCHANT_SETTLEMENT_AMOUNT                        = "merchant_settlement_amount";
@@ -46,14 +52,13 @@ class Constants
     const REFUND_PROCESSED_DIRECT_SETTLEMENT                = "refund_processed_ds";
     const DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS          = "direct_settlement_instant_refund_credits";
     const DIRECT_SETTLEMENT_INSTANT_REFUND                  = "direct_settlement_instant_refund";
-    const DIRECT_SETTLEMENT_NORMAL_REFUND_CREDITS           = "direct_settlement_rzp_normal_refund_credits";
-    const DIRECT_SETTLEMENT_NORMAL_REFUND                   = "direct_settlement_rzp_normal_refund";
-    const DIRECT_SETTLEMENT_RZP_REFUND_INSTANT_CREDITS      = "direct_settlement_rzp_instant_refund_credits";
-    const DIRECT_SETTLEMENT_RZP_REFUND_INSTANT              = "direct_settlement_rzp_instant_refund";
-    const AUTOREFUND_DS_WITH_REFUND                         = "autorefund_ds_with_refund";
-    const AUTOREFUND_DS_WITHOUT_REFUND                      = "autorefund_ds_without_refund";
-    const AUTOREFUND_DS_WITHOUT_REFUND_WITH_CREDITS         = "autorefund_ds_without_refund_with_credits";
-    const AUTOREFUND                                        = "autorefund";
+    const DIRECT_SETTLEMENT_NORMAL_REFUND_CREDITS           = "direct_settlement_normal_refund_credits";
+    const DIRECT_SETTLEMENT_NORMAL_REFUND                   = "direct_settlement_normal_refund";
+    const AUTO_REFUND_DIRECT_SETTLEMENT_NORMAL              = "auto_refund_direct_settlement_normal";
+    const AUTO_REFUND_DIRECT_SETTLEMENT_CREDITS_NORMAL      = "auto_refund_direct_settlement_credits_normal";
+    const AUTO_REFUND_DIRECT_SETTLEMENT_INSTANT             = "auto_refund_direct_settlement_instant";
+    const AUTO_REFUND_DIRECT_SETTLEMENT_CREDITS_INSTANT     = "auto_refund_direct_settlement_credits_instant";
+    const AUTOREFUND                                        = "auto_refund";
     const REVERSE_REFUND_ACCOUNTING                         = 'reverse_refund_accounting';
     const REVERSED_AMOUNT                                   = "reversed_amount";
 

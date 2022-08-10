@@ -4,17 +4,27 @@ namespace RZP\Models\Ledger;
 
 use App;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
-use RZP\Constants\Entity as EntityConstant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 
 class CaptureJournalEvents
 {
-
-    //TODO::Figure out how to handle amount credits usecase
     public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction, bool $isTransactionPresent): array
     {
-        $moneyParams = self::generateMoneyParamsForCapture($transaction);
+        if ($payment->isDirectSettlement() === true)
+        {
+            $moneyParams = self::generateMoneyParamsForCaptureDirectSettlement($transaction);
+
+            $additionalParams = self::fetchRulesForPaymentCreditsDS($transaction);
+        }
+        else
+        {
+            $moneyParams = self::generateMoneyParamsForCapture($transaction);
+
+            $additionalParams = self::fetchRulesForPaymentCredits($transaction);
+        }
+
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
         //If the transaction was already present at gateway capture stage then we don't send the same api transaction id in merchant captured stage
@@ -28,12 +38,16 @@ class CaptureJournalEvents
             Constants::TRANSACTOR_EVENT              => Constants::MERCHANT_CAPTURED,
             Constants::MONEY_PARAMS                  => $moneyParams,
         );
+
+        $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = $additionalParams;
+
         return array_merge($transactionMessage, $merchantCaptureData);
     }
 
     public static function createTransactionMessageForGatewayCapture(Payment\Entity $payment): array
     {
         $app = App::getFacadeRoot();
+
         $trace = $app['trace'];
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
@@ -89,10 +103,28 @@ class CaptureJournalEvents
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }
 
-        if(($transaction->source->getEntityName() === EntityConstant::PAYMENT) and
-            ($transaction->source->isDirectSettlement() === true))
+        return $rule;
+    }
+
+    public static function fetchRulesForPaymentCreditsDS(Transaction\Entity $transaction)
+    {
+        $rule = null;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
+
+        if($transaction->isGratis() === true)
         {
-            $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
+        }
+
+        if($transaction->isFeeCredits() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
+        }
+
+        if($transaction->isPostpaid() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
         }
 
         return $rule;
@@ -120,6 +152,14 @@ class CaptureJournalEvents
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+        }
+        else if ($transaction->isGratis() === true)
+        {
+            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
         }
         // Normal merchant captured scenario (commissions considered)
         else
@@ -128,6 +168,50 @@ class CaptureJournalEvents
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $fee - $tax);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+        }
+
+        return $moneyParams;
+    }
+
+    public static function generateMoneyParamsForCaptureDirectSettlement(Transaction\Entity  $transaction): array
+    {
+        $moneyParams = [];
+
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $moneyParams[Constants::BASE_AMOUNT] = strval($amount);
+
+        if($transaction->isFeeCredits() === true)
+        {
+            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
+            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
+        }
+        else if($transaction->isPostpaid() === true)
+        {
+            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
+            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+        }
+        else if ($transaction->isGratis() === true)
+        {
+            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
+            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
+        }
+        // Normal merchant captured scenario (commissions considered)
+        else
+        {
+            $moneyParams[Constants::DS_GMV_AMOUNT]              = strval($amount);
+            $moneyParams[Constants::DS_CONTROL_AMOUNT]          = strval($amount);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $fee + $tax);
         }
 
         return $moneyParams;

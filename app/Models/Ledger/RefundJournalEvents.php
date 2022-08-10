@@ -17,10 +17,10 @@ class RefundJournalEvents
 {
     //Based on the type of refund (direct settlement refund, auto refund, normal refund),
     //create ledger configs for ledger entries.
-    //TODO::Add required money params for direct settlement cases
     public static function createLedgerEntriesForRefunds(string $mode, RefundEntity $refund, Transaction\Entity $txn)
     {
         $app = App::getFacadeRoot();
+
         $trace = $app['trace'];
 
         try {
@@ -28,12 +28,24 @@ class RefundJournalEvents
             if (($refund->isDirectSettlementWithoutRefund() === true) or
                 ($refund->isDirectSettlementRefund() === true))
             {
-                list($rule) = self::fetchLedgerRulesForRefundsDirectSettlement($refund, $txn);
-                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, []);
+                list($rule, $moneyParams) = self::fetchMoneyParamsAndLedgerRulesForRefundsDirectSettlement($refund, $txn);
 
-                unset($transactionMessage[Constants::TRANSACTOR_EVENT]);
+                if ((isset($rule) === false) and
+                    (isset($moneyParams) === false))
+                {
+                    $trace->info(
+                        TraceCode::LEDGER_DS_REFUND_CASE_NOT_FOUND,
+                        [
+                            "transaction" => $txn,
+                            "refund"      => $refund
+                        ]
+                    );
 
-                $transactionMessage[Constants::TRANSACTOR_EVENT] = Constants::REFUND_PROCESSED_DIRECT_SETTLEMENT;
+                    return;
+                }
+
+                $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, $moneyParams);
+
                 $transactionMessage[Constants::ADDITIONAL_PARAMS] = $rule;
 
                 LedgerEntryJob::dispatchNow($mode, $transactionMessage);
@@ -41,6 +53,7 @@ class RefundJournalEvents
             else if ($refund->payment->hasBeenCaptured() === false)
             {
                 $amount = abs($txn->getAmount());
+
                 $moneyParams = [
                     Constants::AMOUNT       => strval($amount),
                     Constants::BASE_AMOUNT  => strval($amount)
@@ -57,6 +70,7 @@ class RefundJournalEvents
             else
             {
                 list($rule, $moneyParams) = self::fetchLedgerRulesAndMoneyParamsForRefunds($refund, $txn);
+
                 $transactionMessage = self::createTransactionMessageForRefund($refund, $txn, $moneyParams);
 
                 $transactionMessage[Constants::ADDITIONAL_PARAMS] = $rule;
@@ -88,79 +102,254 @@ class RefundJournalEvents
     //1. Balance is deducted from merchant balance / credits as gateway doesn't take care of refund.
     //2. Check for the speed of refund and credits usage and make appropriate ledger entries.
     //3. Check if autorefund occurred on DS settlement
-    public static function fetchLedgerRulesForRefundsDirectSettlement(RefundEntity $refund, Transaction\Entity $transaction)
+    public static function fetchMoneyParamsAndLedgerRulesForRefundsDirectSettlement(RefundEntity $refund, Transaction\Entity $transaction)
     {
-        $rule = null;
-
-        // In this case, the gateway itself handles the refund hence, money is not deducted from merchant balance account
-        if($refund->isDirectSettlementRefund() === true)
+        if (($refund->isDirectSettlementRefund() === true) and
+            ($refund->isRefundSpeedInstant() === true) and
+            ($transaction->isRefundCredits() === true))
         {
-            //Check if speed is instant
-            if ($refund->isRefundSpeedInstant() === true)
-            {
-                //The below condition is verified as speedProcessed is set to normal in case optimum refund fails.
-                //Fee and tax would've already been refunded.
-                if ($refund->getSpeedProcessed() != speed::NORMAL)
-                {
-                    if($transaction->isRefundCredits() === true)
-                    {
-                        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS;
-                    }
-                    else
-                    {
-                        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND;
-                    }
-                }
-
-                // Auto refund condition in direct settlement
-                if ($refund->payment->hasBeenCaptured() === false)
-                {
-                    $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTOREFUND_DS_WITH_REFUND;
-                }
-            }
-        }
-        //Gateway doesn't handle the refund and money needs to be deducted from merchant
-        else if ($refund->isDirectSettlementWithoutRefund() === true)
-        {
-            if(($refund->getSpeedDecisioned() === speed::NORMAL) or
-                ($refund->getSpeedProcessed() === speed::NORMAL))
-            {
-                if($transaction->isRefundCredits() === true)
-                {
-                    $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND_CREDITS;
-                }
-                else
-                {
-                    $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND;
-                }
-
-                // Auto refund condition in direct settlement without refund
-                if ($refund->payment->hasBeenCaptured() === false)
-                {
-                    if($transaction->isRefundCredits() === true)
-                    {
-                        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTOREFUND_DS_WITHOUT_REFUND_WITH_CREDITS;
-                    }
-                    else
-                    {
-                        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTOREFUND_DS_WITHOUT_REFUND;
-                    }
-                }
-            }
-            else
-            {
-                if($transaction->isRefundCredits() === true)
-                {
-                    $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_RZP_REFUND_INSTANT_CREDITS;
-                }
-                else
-                {
-                    $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_RZP_REFUND_INSTANT;
-                }
-            }
+            return self::fetchDSWithRefundTerminalInstantSpeedRefundCredits($refund, $transaction);
         }
 
-        return $rule;
+        if (($refund->isDirectSettlementRefund() === true) and
+            ($refund->isRefundSpeedInstant() === true) and
+            ($transaction->isRefundCredits() === false))
+        {
+            return self::fetchDSWithRefundTerminalInstantSpeedMerchantBalance($refund, $transaction);
+        }
+
+        if (($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === true) and
+            ($transaction->isRefundCredits() === true))
+        {
+            return self::fetchDSWithoutRefundTerminalInstantSpeedRefundCredits($refund, $transaction);
+        }
+
+        if (($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === true) and
+            ($transaction->isRefundCredits() === false))
+        {
+            return self::fetchDSWithoutRefundTerminalInstantSpeedMerchantBalance($refund, $transaction);
+        }
+
+        if (($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === false) and
+            ($transaction->isRefundCredits() === true))
+        {
+            return self::fetchDSWithoutRefundTerminalNormalSpeedRefundCredits($refund, $transaction);
+        }
+
+        if (($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === false) and
+            ($transaction->isRefundCredits() === false))
+        {
+            return self::fetchDSWithoutRefundTerminalNormalSpeedMerchantBalance($refund, $transaction);
+        }
+
+        if (($refund->payment->hasBeenCaptured() === false) and
+            ($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === true) and
+            ($transaction->isRefundCredits() === true))
+        {
+            return self::fetchAutoDSWithoutRefundTerminalInstantSpeedRefundCredits($refund, $transaction);
+        }
+
+        if (($refund->payment->hasBeenCaptured() === false) and
+            ($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === true) and
+            ($transaction->isRefundCredits() === false))
+        {
+            return self::fetchAutoDSWithoutRefundTerminalInstantSpeedMerchantBalance($refund, $transaction);
+        }
+
+        if (($refund->payment->hasBeenCaptured() === false) and
+            ($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === false) and
+            ($transaction->isRefundCredits() === false))
+        {
+            return self::fetchAutoDSWithoutRefundTerminalNormalSpeedRefundCredits($refund, $transaction);
+        }
+
+        if (($refund->payment->hasBeenCaptured() === false) and
+            ($refund->isDirectSettlementWithoutRefund() === true) and
+            ($refund->isRefundSpeedInstant() === false) and
+            ($transaction->isRefundCredits() === false))
+        {
+            return self::fetchAutoDSWithoutRefundTerminalNormalSpeedMerchantBalance($refund, $transaction);
+        }
+        return [null, null];
+    }
+
+    public static function fetchDSWithRefundTerminalInstantSpeedRefundCredits(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]        = strval($amount);
+        $moneyParams[Constants::REFUND_CREDITS]     = strval( $fee + $tax);
+        $moneyParams[Constants::COMMISSION]         = strval($fee);
+        $moneyParams[Constants::TAX]                = strval($tax);
+
+        return [$rule, $moneyParams];
+
+    }
+
+    public static function fetchDSWithRefundTerminalInstantSpeedMerchantBalance(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]                = strval($amount);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $fee + $tax);
+        $moneyParams[Constants::COMMISSION]                 = strval($fee);
+        $moneyParams[Constants::TAX]                        = strval($tax);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchDSWithoutRefundTerminalInstantSpeedRefundCredits(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND_CREDITS;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]        = strval($amount);
+        $moneyParams[Constants::REFUND_CREDITS]     = strval($amount + $fee + $tax);
+        $moneyParams[Constants::REFUND_AMOUNT]      = strval($amount);
+        $moneyParams[Constants::COMMISSION]         = strval($fee);
+        $moneyParams[Constants::TAX]                = strval($tax);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchDSWithoutRefundTerminalInstantSpeedMerchantBalance(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_INSTANT_REFUND;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]                = strval($amount);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $fee + $tax);
+        $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
+        $moneyParams[Constants::COMMISSION]                 = strval($fee);
+        $moneyParams[Constants::TAX]                        = strval($tax);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchDSWithoutRefundTerminalNormalSpeedRefundCredits (RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND_CREDITS;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::REFUND_CREDITS] = strval($amount);
+        $moneyParams[Constants::REFUND_AMOUNT]  = strval($amount);
+
+        return [$rule, $moneyParams];
+    }
+    public static function fetchDSWithoutRefundTerminalNormalSpeedMerchantBalance(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT_NORMAL_REFUND;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchAutoDSWithoutRefundTerminalInstantSpeedRefundCredits(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTO_REFUND_DIRECT_SETTLEMENT_CREDITS_INSTANT;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::REFUND_CREDITS] = strval($amount + $fee + $tax);
+        $moneyParams[Constants::REFUND_AMOUNT] = strval($amount);
+        $moneyParams[Constants::COMMISSION] = strval($fee);
+        $moneyParams[Constants::TAX] = strval($tax);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchAutoDSWithoutRefundTerminalInstantSpeedMerchantBalance(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTO_REFUND_DIRECT_SETTLEMENT_INSTANT;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($amount + $fee + $tax);
+        $moneyParams[Constants::REFUND_AMOUNT] = strval($amount);
+        $moneyParams[Constants::COMMISSION] = strval($fee);
+        $moneyParams[Constants::TAX] = strval($tax);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchAutoDSWithoutRefundTerminalNormalSpeedRefundCredits(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTO_REFUND_DIRECT_SETTLEMENT_CREDITS_NORMAL;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::REFUND_CREDITS] = strval($amount);
+        $moneyParams[Constants::REFUND_AMOUNT]  = strval($amount);
+
+        return [$rule, $moneyParams];
+
+    }
+    public static function fetchAutoDSWithoutRefundTerminalNormalSpeedMerchantBalance(RefundEntity $refund, Transaction\Entity $transaction)
+    {
+        $amount = abs($transaction->getAmount());
+        $tax = $transaction->getTax() != null ? abs($transaction->getTax()) : 0;
+        $fee = $transaction->getFee() != null ? abs($transaction->getFee()) - $tax : 0;
+
+        $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::AUTO_REFUND_DIRECT_SETTLEMENT_NORMAL;
+        $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITHOUT_REFUND;
+
+        $moneyParams[Constants::BASE_AMOUNT]    = strval($amount);
+        $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
+
+        return [$rule, $moneyParams];
+
     }
 
     //reversal entity has association with refund entity

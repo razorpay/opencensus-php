@@ -888,7 +888,6 @@ trait Capture
             if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
             {
                 $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn, $isTransactionPresent);
-                $transactionMessage[LedgerConstants::ADDITIONAL_PARAMS] = CaptureJournalEvents::fetchRulesForPaymentCredits($txn);
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
                     // Job will be dispatched only if the transaction commits.

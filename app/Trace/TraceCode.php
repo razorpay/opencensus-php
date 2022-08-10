@@ -6664,6 +6664,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const KAFKA_JOURNAL_ENTRY_PUSH_FAILED                           = "KAFKA_JOURNAL_ENTRY_PUSH_FAILED";
     const KAFKA_JOURNAL_ENTRY_QUEUE_DELETE                          = "KAFKA_JOURNAL_ENTRY_QUEUE_DELETE";
     const LEDGER_ENTRY_FAILED                                       = "LEDGER_ENTRY_FAILED";
+    const LEDGER_DS_REFUND_CASE_NOT_FOUND                           = "LEDGER_DS_REFUND_CASE_NOT_FOUND";
     const PG_LEDGER_ENTRY_FAILED                                    = "PG_LEDGER_ENTRY_FAILED";
     const PAYMENT_GATEWAY_CAPTURED                                  = "PAYMENT_GATEWAY_CAPTURED";
     const GATEWAY_CAPTURED_EVENT_TRIGGERED                          = "GATEWAY_CAPTURED_EVENT_TRIGGERED";
