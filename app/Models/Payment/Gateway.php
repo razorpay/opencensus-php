@@ -2941,7 +2941,8 @@ class Gateway
      * @var array
      */
     public static $safeRetryGateways = [
-        Payment\Gateway::FIRST_DATA
+        Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::AXIS_MIGS
     ];
 
     /**

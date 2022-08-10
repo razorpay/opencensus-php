@@ -541,11 +541,64 @@ class CardPaymentServiceTest extends TestCase
         $this->disbaleCpsConfig();
     }
 
-    public function testAuthenticationRetryNotEnrolled()
+    public function testAuthenticationRetryNotEnrolledFirstData()
     {
         $this->enableCpsConfig();
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $terminal1 = $this->fixtures->create('terminal:shared_first_data_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+        $terminal2 = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $terminal=[$terminal1,$terminal2];
+
+        $this->ba->privateAuth();
+        $this->mockCardVault();
+
+        $this->mockCps($terminal,"not_enrolled_retry_gateway");
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockCanAuthorizeViaCPS();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/redirect',
+            'content' => $payment
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s','auth_split']);
+
+        $response = $this->makeRequestParent($request);
+
+        $targetUrl =$this->getMetaRefreshUrl($response);
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($targetUrl));
+
+        $this->makeRedirectToAuthorize($targetUrl);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+        $this->assertEquals('authenticated', $payment['status']);
+        $this->assertEquals('hitachi',$payment['gateway']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+    }
+
+    public function testAuthenticationRetryNotEnrolledAxisMigs()
+    {
+        $this->enableCpsConfig();
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal1 = $this->fixtures->create('terminal:shared_axis_terminal', [
             'type' => [
                 'non_recurring' => '1',
             ]
