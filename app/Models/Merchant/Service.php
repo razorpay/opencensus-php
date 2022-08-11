@@ -2826,7 +2826,7 @@ class Service extends Base\Service
 
     public function getDataFromPinot($merchantId)
     {
-        $query = 'select * from piont.segment_fact where segment_fact.merchant_details_merchant_id = \'%s\'';
+        $query = 'select * from pinot.segment_fact where segment_fact.merchant_details_merchant_id = \'%s\'';
 
         $query = sprintf($query, $merchantId);
 

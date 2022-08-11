@@ -68,6 +68,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\PaymentMeta;
 use RZP\Models\Payment\Fraud;
 use RZP\Constants\Shield as ShieldConstants;
+use RZP\Services\Harvester\Constants as HarvesterConstants;
 use RZP\Models\Batch\Processor\Nach\ErrorCodes\RegisterErrorCodes;
 
 class Service extends Base\Service
@@ -4840,23 +4841,31 @@ class Service extends Base\Service
 
         /*
          *  For ARN
-         *  way to fetch Data from Data Lake warehouse.payments
+         *  way to fetch Data from Data Lake pinot.payments_fact
         */
-        $query1 = "select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('" . implode("','", $allArn) . "')";
+        $query1 = "select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('" . implode("','", $allArn) . "')";
+
+        $pinotService = $this->app['eventManager'];
 
         try {
-            $data1 = $this->app['datalake.presto']->getDataFromDataLake($query1);
 
-            $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_PRESTO_RESPONSE, [
+            $content = [
+                'query' => $query1
+            ];
+
+            $data1 = $pinotService->getDataFromPinot($content);
+
+            $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_PINOT_RESPONSE, [
                 'data1'      => $data1,
             ]);
+
         } catch (\Throwable $e) {
             // Not logging anything here as the datalake.presto client takes care of that
         }
 
         if (isset($data1) === false || array_key_exists(0, $data1) === false)
         {
-            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_PRESTO, [
+            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_PINOT, [
                 'arn-data' => $allArn,
                 'data'     => $data1  ?? [],
             ]);
@@ -4864,6 +4873,8 @@ class Service extends Base\Service
 
         foreach ($data1 as $item)
         {
+            $item = $pinotService->parsePinotDefaultType($item, HarvesterConstants::PINOT_TABLE_PAYMNETS_AUTH_FACT);
+
             //  data entered for payment ids array
             if (empty($item['payments_reference1']) === false and
                 $item ['payments_id'] !== null)
@@ -4899,14 +4910,18 @@ class Service extends Base\Service
 
         /*
          *  For RRN
-         *  way to fetch Data from Data Lake warehouse.payments
+         *  way to fetch Data from pinot pinot.payments_fact
         */
-        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id  from hive.warehouse.payments where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
+        $query2 = "select authorization_rrn, authorization_payment_id, payments_merchant_id from pinot.payments_auth_fact where authorization_rrn in ('" . implode("','", $requiredRrn) . "')";
 
         try {
-            $data2 = $this->app['datalake.presto']->getDataFromDataLake($query2);
+            $content = [
+                'query' => $query2
+            ];
 
-            $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_PRESTO_RESPONSE, [
+            $data2 = $pinotService->getDataFromPinot($content);
+
+            $this->trace->info(TraceCode::DISPUTE_CHARGEBACK_PINOT_RESPONSE, [
                 'data2'     => $data2,
             ]);
         } catch (\Throwable $e) {
@@ -4915,7 +4930,7 @@ class Service extends Base\Service
 
         if (isset($data2) === false || array_key_exists(0, $data2) === false)
         {
-            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_PRESTO, [
+            $this->trace->info(TraceCode::PAYMENT_DATA_NOT_FOUND_ON_PINOT, [
                 'rrn-data' => $requiredRrn,
                 'data'     => $data2 ?? [],
             ]);
@@ -4925,6 +4940,8 @@ class Service extends Base\Service
 
         foreach ($data2 as $dataItem)
         {
+            $dataItem = $pinotService->parsePinotDefaultType($dataItem, HarvesterConstants::PINOT_TABLE_PAYMNETS_AUTH_FACT);
+
             // match the rrn with the input arn
             //  data entered for payment ids array
             if (empty($dataItem['authorization_rrn']) === false and

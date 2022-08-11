@@ -30,6 +30,8 @@ class BulkFraudNotifyTest extends TestCase
 
     protected $datalakeMock;
 
+    protected $harvesterMock;
+
     public function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BulkFraudNotifyTestData.php';
@@ -41,6 +43,8 @@ class BulkFraudNotifyTest extends TestCase
         $this->setUpSalesforceMock();
 
         $this->setUpDatalakeMock();
+
+        $this->setupHarvesterMock();
     }
 
     protected function setUpDatalakeMock(): void
@@ -50,6 +54,15 @@ class BulkFraudNotifyTest extends TestCase
         $this->datalakeMock->shouldAllowMockingProtectedMethods();
 
         $this->app['datalake.presto'] = $this->datalakeMock;
+    }
+
+    protected function setupHarvesterMock(): void
+    {
+        $this->harvesterMock = Mockery::mock('RZP\Services\Mock\HarvesterClient')->makePartial();
+
+        $this->harvesterMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['eventManager'] = $this->harvesterMock;
     }
 
     protected function validateContent($actualContent, $expectedContent): bool
@@ -81,6 +94,22 @@ class BulkFraudNotifyTest extends TestCase
                             return $response;
                         });
 
+    }
+
+    protected function mockHarvesterService($expectedContent, $response, $times = 1): void
+    {
+        $expectedContent = [
+            'query' => $expectedContent
+        ];
+
+        $this->harvesterMock->shouldReceive('getDataFromPinot')
+            ->times($times)
+            ->with(Mockery::on(function($request) use ($expectedContent) {
+                return $request == $expectedContent;
+            }))
+            ->andReturnUsing(function() use ($response) {
+                return $response;
+            });
     }
 
     protected function assertGetAttributesVisa($response)
@@ -600,7 +629,7 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
-        $this->mockPrestoService("select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('74110751299033415520957','74110751299033415520957')",
+        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('74110751299033415520957','74110751299033415520957')",
                                 [
                                     [
                                         'payments_reference1' => '74110751299033415520957',
@@ -637,7 +666,7 @@ class BulkFraudNotifyTest extends TestCase
 
     public function testCreateFraudBatchVisaDatalakeQueryFails()
     {
-        $this->mockPrestoService("select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('74110751299033415520957')", []);
+        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('74110751299033415520957')", []);
 
         $this->ba->batchAppAuth();
 
@@ -954,9 +983,9 @@ class BulkFraudNotifyTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['id' => $paymentId]);
 
-        $this->mockPrestoService("select payments_reference1, payments_id, payments_merchant_id  from hive.warehouse.payments  where payments_reference1 in ('02705601344033737573894')", []);
+        $this->mockHarvesterService("select payments_reference1, payments_id, payments_merchant_id from pinot.payments_auth_fact where payments_reference1 in ('02705601344033737573894')", []);
 
-        $this->mockPrestoService("select authorization_rrn, authorization_payment_id, payments_merchant_id  from hive.warehouse.payments where authorization_rrn in ('003373757389')",
+        $this->mockHarvesterService("select authorization_rrn, authorization_payment_id, payments_merchant_id from pinot.payments_auth_fact where authorization_rrn in ('003373757389')",
             [
                     [
                         'authorization_rrn'        => '003373757389',

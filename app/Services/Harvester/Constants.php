@@ -15,7 +15,9 @@ class Constants
         self::PINOT_DATA_TYPE_STRING       => "null"
     ];
 
-    const PINOT_TABLE_SEGMENT_FACT          = "segment_fact";
+    const PINOT_TABLE_SEGMENT_FACT           = "segment_fact";
+
+    const PINOT_TABLE_PAYMNETS_AUTH_FACT     = "payments_auth_fact";
 
     const PINOT_TABLE_SEGMENT_FACT_SCHEMA   = [
         'merchant_details_created_at'                   => self::PINOT_DATA_TYPE_LONG,
@@ -44,7 +46,16 @@ class Constants
         'merchant_details_created_date'                 => self::PINOT_DATA_TYPE_STRING,
     ];
 
+    const PINOT_TABLE_PAYMENTS_AUTH_FACT_SCHEMA = [
+        'payments_merchant_id'                        => self::PINOT_DATA_TYPE_STRING,
+        'payments_reference1'                         => self::PINOT_DATA_TYPE_STRING,
+        'payments_id'                                 => self::PINOT_DATA_TYPE_STRING,
+        'authorization_payment_id'                    => self::PINOT_DATA_TYPE_STRING,
+        'authorization_rrn'                           => self::PINOT_DATA_TYPE_STRING,
+    ];
+
     const PINOT_TABLE_SCHEMA_MAP = [
-        self::PINOT_TABLE_SEGMENT_FACT                  => self::PINOT_TABLE_SEGMENT_FACT_SCHEMA
+        self::PINOT_TABLE_SEGMENT_FACT                  => self::PINOT_TABLE_SEGMENT_FACT_SCHEMA,
+        self::PINOT_TABLE_PAYMNETS_AUTH_FACT            => self::PINOT_TABLE_PAYMENTS_AUTH_FACT_SCHEMA
     ];
 }
