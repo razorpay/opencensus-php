@@ -846,7 +846,7 @@ class Gateway extends Base\Gateway
         return [
             'url'       => $this->getUrl(). '?' . $relativeUrl,
             'method'    => 'get',
-            'content'   => $content,
+            'content'   => [],
         ];
     }
 

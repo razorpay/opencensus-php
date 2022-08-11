@@ -878,8 +878,8 @@ class Gateway extends Base\Gateway
             $content['encrypt'] = '1';
         }
 
-        if (($input['payment']['method'] === 'card') and
-            ($input['card']['number'] === '4111111111111111'))
+        if ((($input['payment']['method'] === 'card') and
+            ($input['card']['number'] === '4111111111111111')) or  ( ($input['payment']['method'] === 'wallet') and ($input['payment']['wallet'] === 'amazonpay')))
         {
             $method = 'get';
             $url = $url . '&' . http_build_query($content);
