@@ -20148,5 +20148,18 @@ return [
             'content' => [
             ],
         ],
+    ],
+
+    'testDataMigrationOnHoldToProcessed' => [
+        'request' => [
+            'method' => 'POST',
+            'url'     => '/payout_service_data_migration',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'dispatch_count' => 1
+            ]
+        ]
     ]
 ];

@@ -34,6 +34,8 @@ class Connection
 
     const RX_ACCOUNT_STATEMENTS_LIVE = 'rx_account_statements_live';
 
+    const PAYOUT_SERVICE_DATABASE = 'payout_service_database';
+
     const RX_WHATSAPP_LIVE = 'rx_whatsapp_live';
 
     const RX_WHATSAPP_SLAVE_LIVE = 'rx_whatsapp_slave_live';

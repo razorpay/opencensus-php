@@ -1204,6 +1204,24 @@ class Repository extends \Razorpay\Spine\Repository
         return Connection::RX_ACCOUNT_STATEMENTS_LIVE;
     }
 
+    public function getPayoutsServiceConnection(string $mode = null)
+    {
+        // For test cases we will use one of the live and test connection (which ever is free) of api as payout service db.
+        // If test case is running on live mode then live connection will be API db and test connection will act as
+        // payout service DB and vice versa.
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            if ($this->app['rzp.mode'] === 'live')
+            {
+                return Connection::TEST;
+            }
+
+            return Connection::LIVE;
+        }
+
+        return Connection::PAYOUT_SERVICE_DATABASE;
+    }
+
     public function getWhatsappDatabaseConnection(string $mode = null)
     {
         if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)

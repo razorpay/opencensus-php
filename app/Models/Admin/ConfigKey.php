@@ -105,6 +105,10 @@ class ConfigKey
 
     CONST RX_BAS_FORCED_FETCH_TIME_IN_HOURS               = self::PREFIX . 'rx_bas_forced_fetch_time_in_hours';
 
+    const PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH = self::PREFIX . 'payout_service_data_migration_limit_per_batch';
+
+    const PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS = self::PREFIX . 'payout_service_data_migration_batch_attempts';
+
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
     // So if last fetched at was while ago greater than this value, then we will fetch balance
     // again before creating a payout
@@ -439,6 +443,8 @@ class ConfigKey
         self::BAS_CREDIT_BEFORE_DEBIT_UTRS,
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES,
         self::SCROOGE_0LOC_ENABLED,
+        self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,
+        self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
     ];
 

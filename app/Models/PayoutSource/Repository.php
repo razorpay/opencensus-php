@@ -36,4 +36,13 @@ class Repository extends Base\Repository
                     ->where($priorityColumn, $priority)
                     ->first();
     }
+
+    public function getPayoutSourcesByPayoutId(string $payoutId)
+    {
+        $payoutIdColumn = $this->repo->payout_source->dbColumn(Entity::PAYOUT_ID);
+
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->where($payoutIdColumn, $payoutId)
+                    ->get();
+    }
 }

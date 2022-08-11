@@ -59,6 +59,7 @@ use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\PartnerBankHealth\Events;
+use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Constants\Entity as EntityConstant;
@@ -72,6 +73,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
+use RZP\Models\Payout\DataMigration\Processor as DataMigrationProcessor;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\PushNotifications\Payout\PendingApprovals as PendingApprovalsPN;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
@@ -130,6 +132,11 @@ class Core extends Base\Core
     const NARRATION_ICICI                    = 'ICICI Test Payout';
     const NARRATION_YESB                     = 'YESB Test Payout';
     const PAYEE_ACCOUNT_NUMBER               = 3434957265741928;
+
+    const REDIS_KEY_PREFIX                     = 'ps_data_migration_';
+    const MAX_ATTEMPTS_FOR_DATA_MIGRATION      = 10;
+    const PS_DATA_MIGRATION_LIMIT              = 10;
+    const MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION = 180;
 
     /**
      * @var Mutex
@@ -5971,6 +5978,201 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    public function initiateDataMigration(array $input)
+    {
+        $count = 0;
+
+        foreach ($input as $data)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_DATA_MIGRATION_JOB_DISPATCH,
+                $data
+            );
+
+            PayoutServiceDataMigration::dispatch($this->mode, $data);
+
+            $count++;
+        }
+
+        return ['dispatch_count' => $count];
+    }
+
+    public function psDataMigrationRedisCleanUp(array $input)
+    {
+        $count = 0;
+
+        foreach ($input as $data)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_DATA_MIGRATION_REDIS_CLEAN_UP,
+                $data
+            );
+
+            $redisKey = $this->getPayoutServiceMigrationRedisKey($data[Entity::MERCHANT_ID], $data[Entity::BALANCE_ID]);
+
+            $this->deleteRedisKeyForPayoutServiceMigration($redisKey);
+
+            $count++;
+        }
+
+        return ['clean_up_count' => $count];
+    }
+
+    public function processDataMigration(array $input)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_SERVICE_DATA_MIGRATION_INPUT, $input);
+
+        /** @var Merchant\Balance\Entity $balance */
+        $balance = $this->repo->balance->findOrFailById($input[Entity::BALANCE_ID]);
+
+        $input[Entity::MERCHANT_ID] = $balance->getMerchantId();
+
+        $this->setLimitForDataMigration($input);
+
+        $redisKey = $this->getPayoutServiceMigrationRedisKey($input[Entity::MERCHANT_ID], $input[Entity::BALANCE_ID]);
+
+        $limit = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS]);
+
+        if (empty($limit) === true)
+        {
+            $limit = self::MAX_ATTEMPTS_FOR_DATA_MIGRATION;
+        }
+
+        return $this->mutex->acquireAndRelease(
+            $redisKey,
+            function() use ($input, $redisKey, $limit) {
+
+                list($id, $createdAt) = $this->getPreviousIdAndCreatedAt($redisKey);
+
+                $originalInput = $input;
+
+                $batch = 1;
+
+                while ($batch <= $limit)
+                {
+                    $input[DataMigrationProcessor::ID] = $id;
+
+                    $input[DataMigrationProcessor::CREATED_AT] = max($createdAt, $originalInput[DataMigrationProcessor::FROM]);
+
+                    unset($input[DataMigrationProcessor::FROM]);
+
+                    // This is to make sure that we don't query db for more than 1 day time window.
+                    $input[DataMigrationProcessor::END_TIMESTAMP] = min($input[DataMigrationProcessor::CREATED_AT] +
+                                                                        DataMigrationProcessor::SECONDS_PER_DAY,
+                                                                        $originalInput[DataMigrationProcessor::TO]);
+
+                    unset($input[DataMigrationProcessor::TO]);
+
+                    $this->trace->info(
+                        TraceCode::PAYOUTS_DATA_MIGRATION_PROCESS_INPUT,
+                        $input + ['batch_number' => $batch]
+                    );
+
+                    $result = (new DataMigrationProcessor)->processDataMigration($input);
+
+                    $this->trace->info(
+                        TraceCode::PAYOUTS_DATA_MIGRATION_PROCESS_RESPONSE,
+                        ['result' => $result]
+                    );
+
+                    // If result is empty that means there are no payouts to migrate
+                    if (empty($result) === true)
+                    {
+                        // If there are no payouts to migrate and end timestamp is equal to or greater than `to`
+                        // that means we have scanned for whole time window and job is completed.
+                        if ($input[DataMigrationProcessor::END_TIMESTAMP] >= $originalInput[DataMigrationProcessor::TO])
+                        {
+                            $this->trace->info(
+                                TraceCode::PAYOUTS_DATA_MIGRATION_JOB_DELETE, [
+                                'input'          => $input,
+                                'original_input' => $originalInput,
+                            ]);
+
+                            $this->deleteRedisKeyForPayoutServiceMigration($redisKey);
+
+                            return ['completed'];
+                        }
+
+                        $createdAt = $input[DataMigrationProcessor::END_TIMESTAMP] + 1;
+                    }
+                    else
+                    {
+                        $id        = $result[DataMigrationProcessor::ID];
+                        $createdAt = $result[DataMigrationProcessor::CREATED_AT];
+                    }
+
+                    $this->setPreviousIdAndCreatedAt($redisKey, $id, $createdAt);
+
+                    $batch++;
+                }
+
+                return ['incomplete'];
+            },
+            self::MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
+    }
+
+    protected function getPayoutServiceMigrationRedisKey(string $merchantId, string $balanceId)
+    {
+        return self::REDIS_KEY_PREFIX . $merchantId . '_' . $balanceId;
+    }
+
+    protected function setLimitForDataMigration(array & $input)
+    {
+        $limit = (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH]);
+
+        if (empty($limit) === true)
+        {
+            $limit = self::PS_DATA_MIGRATION_LIMIT;
+        }
+
+        $input['limit'] = $limit;
+    }
+
+    // Returns previously stored id and created_at of the last record migrated.
+    protected function getPreviousIdAndCreatedAt(string $redisKey)
+    {
+        $redis = $this->app['redis']->connection();
+
+        $value = $redis->get($redisKey);
+
+        // On running first time it will return id = '' and created_at = 0 as default values.
+        if ($value === null)
+        {
+            return ['', 0];
+        }
+
+        $id = substr($value, 0, Entity::ID_LENGTH);
+
+        $createdAt = intval(substr($value, Entity::ID_LENGTH + 1));
+
+        return [$id, $createdAt];
+    }
+
+    // After every job completion we will be updating the id and created_at.
+    protected function setPreviousIdAndCreatedAt(string $redisKey, string $id, int $createdAt)
+    {
+        $app = App::getFacadeRoot();
+
+        $redis = $app['redis']->connection();
+
+        $value = $id . '_' . $createdAt;
+
+        $redis->set($redisKey, $value);
+    }
+
+    protected function deleteRedisKeyForPayoutServiceMigration(string $redisKey)
+    {
+        $app = App::getFacadeRoot();
+
+        $redis = $app['redis']->connection();
+
+        $redis->del($redisKey);
     }
 
     private function getUniqueIdsForPendingEmails($payoutsGroupedData, $payoutLinksGroupedData): array

@@ -92,6 +92,8 @@ class Validator extends Base\Validator
 
     const PAYOUT_BULK_STATUS_UPDATE_MANUAL = 'payout_bulk_status_update_manual';
 
+    const PAYOUT_SERVICE_DATA_MIGRATION_INPUT = 'payout_service_data_migration_input';
+
     // Payout Service Validations
     const PAYOUT_SERVICE_CREATE                     = 'payout_service_create';
     const PAYOUT_SERVICE_TRANSACTION_CREATE         = 'payout_service_transaction_create';
@@ -164,6 +166,11 @@ class Validator extends Base\Validator
         PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer'
     ];
 
+    protected static $payoutServiceDataMigrationInputRules = [
+        Entity::BALANCE_ID  => 'required|string|size:14',
+        'from'              => 'required|epoch',
+        'to'                => 'required|epoch',
+    ];
     /**
      * @see Batch\Validator Need to change for payout rules if any changes are done here
      *

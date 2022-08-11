@@ -66,6 +66,7 @@ use RZP\Models\Merchant\Webhook\Event;
 use RZP\Models\Payout\ErrorCodeMapping;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance as Balance;
@@ -80,6 +81,7 @@ use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
+use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransferJob;
 use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
@@ -94,7 +96,9 @@ use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Mail\Payout\PayoutProcessedContactCommunication;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
+use RZP\Models\PayoutsStatusDetails\Entity as PayoutsStatusDetailsEntity;
 use RZP\Services\PayoutService\OnHoldBeneEvent as OnHoldBeneEventService;
+use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMapEntity;
 use RZP\Models\Payout\Notifications\PayoutProcessedContactCommunication as PayoutProcessedNotification;
 
 class PayoutTest extends OAuthTestCase
@@ -223,6 +227,435 @@ class PayoutTest extends OAuthTestCase
         $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
+    }
+
+    // Test data migration to PS side payouts, payout_logs, payout_details and payout_status_details tables.
+    // State transition: null -> on_hold -> created -> initiated -> processed
+    public function testDataMigrationOnHoldToProcessed()
+    {
+        $this->testOnHoldPayoutCreateAndProcess();
+
+        /** @var Payout\Entity $payout */
+        $payout = $data = $this->getDbLastEntity('payout', 'test');
+
+        $balance = $payout->balance->toArray();
+        unset($balance['last_fetched_at']);
+
+        $this->fixtures->on('live')->create('balance', $balance);
+
+        // This is done so that test connection can be used as api db and live connection as payout service db.
+        Config::set('database.default', 'test');
+
+        $attempt = $payout->fundTransferAttempts[0]->toArray();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+                                 'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+                             ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        $this->fixtures->edit('payout', $payout->getId(),[
+            PayoutEntity::USER_ID => 'random_user123',
+            PayoutEntity::IDEMPOTENCY_KEY => 'random_key',
+        ]);
+
+        $this->ba->cronAuth();
+
+        $input = [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [$input];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout->reload();
+
+        $id = $payout->getId();
+
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout->getId(), $migratedPayout->id);
+        $this->assertEquals($payout->getFees(), $migratedPayout->fees);
+        $this->assertEquals($payout->getStatus(), $migratedPayout->status);
+        $this->assertEquals($payout->getMethod(), $migratedPayout->method);
+        $this->assertEquals($payout->getAmount(), $migratedPayout->amount);
+        $this->assertEquals($payout->getUserId(), $migratedPayout->user_id);
+        $this->assertEquals($payout->getPurpose(), $migratedPayout->purpose);
+        $this->assertEquals($payout->getFeeType(), $migratedPayout->fee_type);
+        $this->assertEquals($payout->getRemarks(), $migratedPayout->remarks);
+        $this->assertEquals($payout->getNotesJson(), $migratedPayout->notes);
+        $this->assertEquals($payout->getNarration(), $migratedPayout->narration);
+        $this->assertEquals($payout->getBalanceId(), $migratedPayout->balance_id);
+        $this->assertEquals($payout->getCreatedAt(), $migratedPayout->created_at);
+        $this->assertEquals($payout->getStatusCode(), $migratedPayout->status_code);
+        $this->assertEquals($payout->getMerchantId(), $migratedPayout->merchant_id);
+        $this->assertEquals($payout->getReferenceId(), $migratedPayout->reference_id);
+        $this->assertEquals($payout->getTransactionId(), $migratedPayout->transaction_id);
+        $this->assertEquals($payout->getPricingRuleId(), $migratedPayout->pricing_rule_id);
+        $this->assertEquals($payout->getIdempotencyKey(), $migratedPayout->idempotency_key);
+        $this->assertEquals($payout->getRegisteredName(), $migratedPayout->registered_name);
+        $this->assertEquals($payout->getRawAttribute(PayoutEntity::ORIGIN), $migratedPayout->origin);
+
+        $migratedPayoutLogs = \DB::connection('live')->select("select * from ps_payout_logs where payout_id = '$id'");
+
+        $this->assertEquals( Payout\Status::CREATE_REQUEST_SUBMITTED, $migratedPayoutLogs[0]->from);
+        $this->assertEquals( Payout\Status::ON_HOLD, $migratedPayoutLogs[0]->to);
+        $this->assertEquals( Payout\Status::ON_HOLD, $migratedPayoutLogs[1]->from);
+        $this->assertEquals( Payout\Status::CREATED, $migratedPayoutLogs[1]->to);
+        $this->assertEquals( Payout\Status::CREATED, $migratedPayoutLogs[2]->from);
+        $this->assertEquals( Payout\Status::INITIATED, $migratedPayoutLogs[2]->to);
+        $this->assertEquals( Payout\Status::INITIATED, $migratedPayoutLogs[3]->from);
+        $this->assertEquals( Payout\Status::PROCESSED, $migratedPayoutLogs[3]->to);
+        $this->assertEquals($payout->getOnHoldAt(), $migratedPayoutLogs[0]->created_at);
+        $this->assertEquals($payout->getInitiatedAt(), $migratedPayoutLogs[1]->created_at);
+        $this->assertEquals($payout->getTransferredAt(), $migratedPayoutLogs[2]->created_at);
+        $this->assertEquals($payout->getProcessedAt(), $migratedPayoutLogs[3]->created_at);
+
+        foreach ($migratedPayoutLogs as $migratedPayoutLog)
+        {
+            $this->assertNotNull($migratedPayoutLog->id);
+            $this->assertEquals($migratedPayoutLog->to, $migratedPayoutLog->event);
+        }
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $payout->payoutsDetails;
+
+        $migratedPayoutDetails = \DB::connection('live')->select("select * from ps_payout_details where payout_id = '$id'");
+
+        $this->assertNotNull($migratedPayoutDetails[0]->id);
+        $this->assertEquals($payoutDetails->getPayoutId(), $migratedPayoutDetails[0]->payout_id);
+        $this->assertEquals($payoutDetails->getQueueIfLowBalanceFlag(), $migratedPayoutDetails[0]->queue_if_low_balance_flag);
+        $this->assertEquals($payoutDetails->getCreatedAt(), $migratedPayoutDetails[0]->created_at);
+        $this->assertEquals($payoutDetails->getUpdatedAt(), $migratedPayoutDetails[0]->updated_at);
+
+
+        /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
+        $payoutStatusDetails = $this->getDbEntities(Constants\Table::PAYOUTS_STATUS_DETAILS, [
+            PayoutsStatusDetailsEntity::PAYOUT_ID => $payout->getId()
+        ])[0];
+
+        $migratedPayoutStatusDetails = \DB::connection('live')->select("select * from ps_payout_status_details where payout_id = '$id'");
+
+        $this->assertEquals($payoutStatusDetails->getId(), $migratedPayoutStatusDetails[0]->id);
+        $this->assertEquals($payoutStatusDetails->getMode(), $migratedPayoutStatusDetails[0]->mode);
+        $this->assertEquals($payoutStatusDetails->getStatus(), $migratedPayoutStatusDetails[0]->status);
+        $this->assertEquals($payoutStatusDetails->getReason(), $migratedPayoutStatusDetails[0]->reason);
+        $this->assertEquals($payoutStatusDetails->getPayoutId(), $migratedPayoutStatusDetails[0]->payout_id);
+        $this->assertEquals($payoutStatusDetails->getCreatedAt(), $migratedPayoutStatusDetails[0]->created_at);
+        $this->assertEquals($payoutStatusDetails->getDescription(), $migratedPayoutStatusDetails[0]->description);
+        $this->assertEquals($payoutStatusDetails->getTriggeredBy(), $migratedPayoutStatusDetails[0]->triggered_by);
+    }
+
+    // Test data migration to PS side payouts, payout_logs, payout_sources and reversals tables.
+    // State transition: null -> created -> initiated -> reversed
+    public function testDataMigrationCreatedToReversed()
+    {
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout */
+        $payout = $data = $this->getDbLastEntity('payout', 'test');
+
+        $balance = $payout->balance->toArray();
+        unset($balance['last_fetched_at']);
+
+        $this->fixtures->on('live')->create('balance', $balance);
+
+        Config::set('database.default', 'test');
+
+        $attempt = $payout->fundTransferAttempts[0]->toArray();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+                                 'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+                             ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $ftsCreateTransfer = new FtsFundTransfer(
+            EnvMode::TEST,
+            $attempt['id']);
+
+        $ftsCreateTransfer->handle();
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::FAILED, '933815383814');
+
+        (new PayoutServiceDataMigration('test', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ]))->handle();
+
+        $payout->reload();
+
+        $id = $payout->getId();
+
+        $migratedPayoutLogs = \DB::connection('live')->select("select * from ps_payout_logs where payout_id = '$id'");
+
+        $this->assertEquals( Payout\Status::CREATE_REQUEST_SUBMITTED, $migratedPayoutLogs[0]->from);
+        $this->assertEquals( Payout\Status::CREATED, $migratedPayoutLogs[0]->to);
+        $this->assertEquals( Payout\Status::CREATED, $migratedPayoutLogs[1]->from);
+        $this->assertEquals( Payout\Status::INITIATED, $migratedPayoutLogs[1]->to);
+        $this->assertEquals( Payout\Status::INITIATED, $migratedPayoutLogs[2]->from);
+        $this->assertEquals( Payout\Status::REVERSED, $migratedPayoutLogs[2]->to);
+        $this->assertEquals($payout->getInitiatedAt(), $migratedPayoutLogs[0]->created_at);
+        $this->assertEquals($payout->getTransferredAt(), $migratedPayoutLogs[1]->created_at);
+        $this->assertEquals($payout->getReversedAt(), $migratedPayoutLogs[2]->created_at);
+
+        foreach ($migratedPayoutLogs as $migratedPayoutLog)
+        {
+            $this->assertNotNull($migratedPayoutLog->id);
+            $this->assertEquals($migratedPayoutLog->to, $migratedPayoutLog->event);
+        }
+
+        $payoutSources = $this->getDbEntities('payout_source',[
+            PayoutSourceEntity::PAYOUT_ID => $payout->getId()
+        ]);
+
+        $migratedPayoutSources = \DB::connection('live')->select("select * from ps_payout_sources where payout_id = '$id'");
+
+        $count = 0;
+
+        /** @var PayoutSourceEntity $payoutSource */
+        foreach ($payoutSources as $payoutSource)
+        {
+            $this->assertEquals($payoutSource->getId(), $migratedPayoutSources[$count]->id);
+            $this->assertEquals($payoutSource->getPriority(), $migratedPayoutSources[$count]->priority);
+            $this->assertEquals($payoutSource->getSourceId(), $migratedPayoutSources[$count]->source_id);
+            $this->assertEquals($payoutSource->getPayoutId(), $migratedPayoutSources[$count]->payout_id);
+            $this->assertEquals($payoutSource->getCreatedAt(), $migratedPayoutSources[$count]->created_at);
+            $this->assertEquals($payoutSource->getSourceType(), $migratedPayoutSources[$count]->source_type);
+
+            $count++;
+        }
+
+        /** @var ReversalEntity $reversal */
+        $reversal = $this->getDbLastEntity('reversal');
+
+        $migratedReversal = (\DB::connection('live')->select("select * from ps_reversals where payout_id = '$id'"))[0];
+
+        $this->assertEquals($reversal->getId(), $migratedReversal->id);
+        $this->assertEquals($reversal->getTax(), $migratedReversal->tax);
+        $this->assertEquals($reversal->getUtr(), $migratedReversal->utr);
+        $this->assertEquals($reversal->getFee(), $migratedReversal->fees);
+        //$this->assertEquals($reversal->getNotes(), $migratedReversal->notes);
+        $this->assertEquals($reversal->getAmount(), $migratedReversal->amount);
+        $this->assertEquals($reversal->getChannel(), $migratedReversal->channel);
+        $this->assertEquals($reversal->getCurrency(), $migratedReversal->currency);
+        $this->assertEquals($reversal->getEntityId(), $migratedReversal->payout_id);
+        $this->assertEquals($reversal->getBalanceId(), $migratedReversal->balance_id);
+        $this->assertEquals($reversal->getCreatedAt(), $migratedReversal->created_at);
+        $this->assertEquals($reversal->getMerchantId(), $migratedReversal->merchant_id);
+        $this->assertEquals($reversal->getTransactionId(), $migratedReversal->transaction_id);
+    }
+
+    // Test data migration to PS side payouts, payout_logs, workflow_entity_map tables.
+    // State transition: pending -> rejected
+    public function testDataMigrationPendingToRejected()
+    {
+        $this->testRejectPayoutCallbackFromNWFS();
+
+        /** @var Payout\Entity $payout */
+        $payout = $data = $this->getDbLastEntity('payout', 'live');
+
+        $balance = $payout->balance->toArray();
+        unset($balance['last_fetched_at']);
+
+        $this->fixtures->on('test')->create('balance', $balance);
+
+        Config::set('database.default', 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId(),
+        ]))->handle();
+
+        $id = $payout->getId();
+
+        $migratedPayoutLogs = \DB::connection('test')->select("select * from ps_payout_logs where payout_id = '$id'");
+
+        $this->assertEquals( Payout\Status::PENDING, $migratedPayoutLogs[0]->from);
+        $this->assertEquals( Payout\Status::REJECTED, $migratedPayoutLogs[0]->to);
+        $this->assertEquals($payout->getRejectedAt(), $migratedPayoutLogs[0]->created_at);
+
+        foreach ($migratedPayoutLogs as $migratedPayoutLog)
+        {
+            $this->assertNotNull($migratedPayoutLog->id);
+            $this->assertEquals($migratedPayoutLog->to, $migratedPayoutLog->event);
+        }
+
+        $workflowEntityMaps = $this->getDbEntities('workflow_entity_map');
+
+        $migratedWorkflowEntityMap = \DB::connection('test')->select("select * from ps_workflow_entity_map");
+
+        $count = 0;
+
+        /** @var WorkflowEntityMapEntity $workflowEntityMap */
+        foreach ($workflowEntityMaps as $workflowEntityMap)
+        {
+            $this->assertEquals($workflowEntityMap->getId(), $migratedWorkflowEntityMap[$count]->id);
+            $this->assertEquals($workflowEntityMap->getOrgId(), $migratedWorkflowEntityMap[$count]->org_id);
+            $this->assertEquals($workflowEntityMap->getConfigId(), $migratedWorkflowEntityMap[$count]->config_id);
+            $this->assertEquals($workflowEntityMap->getEntityId(), $migratedWorkflowEntityMap[$count]->entity_id);
+            $this->assertEquals($workflowEntityMap->getCreatedAt(), $migratedWorkflowEntityMap[$count]->created_at);
+            $this->assertEquals($workflowEntityMap->getEntityType(), $migratedWorkflowEntityMap[$count]->entity_type);
+            $this->assertEquals($workflowEntityMap->getWorkflowId(), $migratedWorkflowEntityMap[$count]->workflow_id);
+            $this->assertEquals($workflowEntityMap->getMerchantId(), $migratedWorkflowEntityMap[$count]->merchant_id);
+
+            $count++;
+        }
+    }
+
+    // Tests redis based pagination and batch migration.
+    // Route to cleanup redis keys is also tested in this test case.
+    public function testDataMigrationRedisBasedPaginationAndCleanUp()
+    {
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS  => 2,
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH => 2
+                                           ]);
+
+        $this->createPayout();
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $data = $this->getDbLastEntity('payout');
+
+        $redis = $this->app['redis']->connection();
+
+        $redisKey = 'ps_data_migration_' . $payout1->getMerchantId() . '_' . $payout1->getBalanceId();
+
+        // By adding this, payout1 should not be picked up even if it is not migrated.
+        $redis->set($redisKey, $payout1->getId() . '_' . $payout1->getCreatedAt());
+
+        $this->createPayout([], [], false);
+        $this->createPayout([], [], false);
+        $this->createPayout([], [], false);
+
+        // 4th payout created. This will be used to set redis key later.
+        /** @var Payout\Entity $payout4 */
+        $payout4 = $data = $this->getDbLastEntity('payout');
+
+        $this->createPayout([], [], false);
+
+        /** @var Payout\Entity $payout5 */
+        $payout5 = $data = $this->getDbLastEntity('payout');
+
+        $this->createPayout([], [], false);
+
+        /** @var Payout\Entity $payout6 */
+        $payout6 = $data = $this->getDbLastEntity('payout');
+
+        $balance = $payout6->balance->toArray();
+        unset($balance['last_fetched_at']);
+
+        $this->fixtures->on('live')->create('balance', $balance);
+
+        Config::set('database.default', 'test');
+
+        $this->ba->cronAuth();
+
+        $input = [
+            Payout\DataMigration\Processor::FROM => $payout1->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout6->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout6->getBalanceId(),
+        ];
+
+        (new PayoutServiceDataMigration('test', $input))->handle();
+
+        $migratedPayouts = \DB::connection('live')->select("select * from ps_payouts");
+
+        // payout number 2 to 5 got picked up.
+        // Asserting only on the last payout as each payout assertions are already there in testDataMigrationOnHoldToProcessed.
+        $this->assertCount(4, $migratedPayouts);
+        $this->assertEquals($payout5->getId(), $migratedPayouts[3]->id);
+
+        $migratedPayoutLogs = \DB::connection('live')->select("select * from ps_payout_logs");
+
+        $this->assertCount(4, $migratedPayoutLogs);
+
+        // Since Payout5 was last one migrated, it should be stored in redis.
+        $this->assertEquals($payout5->getId() . '_' . $payout5->getCreatedAt(), $redis->get($redisKey));
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS  => 1,
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH => 1
+                                           ]);
+
+        PayoutServiceDataMigration::dispatch('test', $input);
+
+        $migratedPayouts = \DB::connection('live')->select("select * from ps_payouts");
+
+        // Payout 6 is also migrated now, hence count is 5.
+        $this->assertCount(5, $migratedPayouts);
+
+        // Payout 6 was the last one to be migrated.
+        // The limits are set to migrate only one payout hence redis key won't be removed.
+        $this->assertEquals($payout6->getId() . '_' . $payout6->getCreatedAt(), $redis->get($redisKey));
+
+        PayoutServiceDataMigration::dispatch('test', $input);
+
+        $migratedPayouts = \DB::connection('live')->select("select * from ps_payouts");
+
+        $this->assertCount(5, $migratedPayouts);
+
+        // Since Payout number 2 to 6 are already migrated.
+        // Hence in this attempt we will get 0 records to migrate and redis will be cleaned up.
+        $this->assertNull($redis->get($redisKey));
+
+        $migratedPayouts = \DB::connection('live')->select("select * from ps_payouts where id = '" . $payout1->getId() . "'");
+
+        $this->assertEmpty($migratedPayouts);
+
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS  => 2,
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH => 2
+                                           ]);
+
+        // There is nothing present in redis. So, migration should start from beginning in this attempt.
+        // Only payout 1 will be migrated in this attempt, others will be removed in de-dupe check.
+        // Payout 3 being the last in this attempt will be stored in redis even if it was caught in de-dupe check.
+        (new PayoutServiceDataMigration('test', $input))->handle();
+
+        $migratedPayouts = \DB::connection('live')->select("select * from ps_payouts");
+
+        $this->assertCount(6, $migratedPayouts);
+
+        $this->assertEquals($payout4->getId() . '_' . $payout4->getCreatedAt(), $redis->get($redisKey));
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'     => '/ps_data_migration_redis_clean_up',
+            'method'  => 'POST',
+            'content' => [[
+                              PayoutEntity::MERCHANT_ID => $payout1->getMerchantId(),
+                              PayoutEntity::BALANCE_ID  => $payout1->getBalanceId(),
+                          ]]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayKeysExist($response, ['clean_up_count']);
+
+        $this->assertEquals(1, $response['clean_up_count']);
     }
 
     public function testCreatePayoutWithPayoutLimitFeatureFlagEnabled()
@@ -17978,7 +18411,7 @@ class PayoutTest extends OAuthTestCase
         // Assert that zero free payout has been consumed when payout is on_hold
         $this->assertEquals(0, $counter->getFreePayoutsConsumed());
 
-        $this->createOnHoldPayoutWhenBeneBankIsDown();
+        $this->createOnHoldPayoutWhenBeneBankIsDownWithQueueIfLowBalanceFlagTrue();
 
         $payout3 = $this->getDbLastEntity('payout')->toArray();
 
@@ -18449,6 +18882,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('on_hold', $payout['internal_status']);
         $this->assertEquals('queued', $publicResponse['status']);
         $this->assertNotNull($payout['on_hold_at']);
+
+        return $payout;
     }
 
     public function testAlternateFailureReasonForNewError()

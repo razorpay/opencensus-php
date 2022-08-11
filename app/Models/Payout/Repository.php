@@ -43,11 +43,16 @@ use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
 
 class Repository extends Base\Repository
 {
-    const QUEUED_PAYOUTS_FETCH_LIMIT = 5000;
-    const PENDING_PAYOUTS_FETCH_LIMIT = 5000;
-    const BATCH_PAYOUTS_FETCH_LIMIT = 300;
+    const  CREATED_AT              = 'created_at';
+    const  END_TIMESTAMP           = 'end_timestamp';
+    const  ID                      = 'id';
+    const  LIMIT                   = 'limit';
+
+    const QUEUED_PAYOUTS_FETCH_LIMIT    = 5000;
+    const PENDING_PAYOUTS_FETCH_LIMIT   = 5000;
+    const BATCH_PAYOUTS_FETCH_LIMIT     = 300;
     const SCHEDULED_PAYOUTS_FETCH_LIMIT = 5000;
-    const PENDING_PAYOUT_COUNT = 10;
+    const PENDING_PAYOUT_COUNT          = 10;
 
     protected $entity = 'payout';
 
@@ -2459,6 +2464,57 @@ class Repository extends Base\Repository
             ->where($narrationColumn, $narration)
             ->whereBetween($createdAtColumn, [$startTime, $endTime])
             ->get();
+    }
+
+    // Fetch data to migrate to Payout Service.
+    public function getSourceTableData(array $queryParams)
+    {
+        $id             = $queryParams[self::ID];
+        $balanceId      = $queryParams[Entity::BALANCE_ID];
+        $merchantId     = $queryParams[Entity::MERCHANT_ID];
+        $createdAtEnd   = $queryParams[self::END_TIMESTAMP];
+        $createdAtStart = $queryParams[self::CREATED_AT];
+        $limit          = $queryParams[self::LIMIT];
+
+
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+                    ->whereBetween(Entity::CREATED_AT, [$createdAtStart, $createdAtEnd])
+                    ->where(Entity::ID, '>', $id)
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::BALANCE_ID, $balanceId)
+                    ->orderBy(Entity::ID, 'asc')
+                    ->limit($limit)
+                    ->get();
+    }
+
+    public function dedupeAtPayoutService(array $ids)
+    {
+        $query = $this->newQueryWithConnection($this->getPayoutsServiceConnection());
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $query->from('ps_payouts');
+        }
+
+        return $query->select(Entity::ID)
+                     ->whereIn(Entity::ID, $ids)
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+
+    // Does a bulk insert.
+    public function insertIntoDestination(string $destinationTable, $data)
+    {
+        $this->newQueryWithConnection($this->getPayoutsServiceConnection())
+             ->from($destinationTable)
+             ->insert($data);
+    }
+
+    // Opens a DB transaction on PS DB connection.
+    public function dbTransactionOnPS(callable $callback)
+    {
+        \DB::connection($this->getPayoutsServiceConnection())
+           ->transaction($callback);
     }
 
     public function fetchCountOfProcessedPayoutsInLast24Hours(string $merchantId)

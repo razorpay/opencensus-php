@@ -104,6 +104,16 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
+    public function getTriggeredBy()
+    {
+        return $this->getAttribute(self::TRIGGERED_BY);
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================

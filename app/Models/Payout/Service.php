@@ -3610,6 +3610,20 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function initiateDataMigration(array $input): array
+    {
+        $response = $this->core->initiateDataMigration($input);
+
+        return $response;
+    }
+
+    public function payoutServiceDataMigrationRedisCleanUp(array $input): array
+    {
+        $response = $this->core->psDataMigrationRedisCleanUp($input);
+
+        return $response;
+    }
+
     protected function getUsersDataForPendingPayoutLinks(array $merchantPendingPayoutLinksMeta): Base\PublicCollection
     {
         $merchantIdToRolesMapping = array(); // [M1 => [Role1, Role2], M2 => [Role1, Role2], M3 => [Role1, Role2]]

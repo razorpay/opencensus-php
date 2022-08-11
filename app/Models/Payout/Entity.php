@@ -1098,6 +1098,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INITIATED_AT);
     }
 
+    public function getTransferredAt()
+    {
+        return $this->getAttribute(self::TRANSFERRED_AT);
+    }
+
     public function getProcessedAt()
     {
         return $this->getAttribute(self::PROCESSED_AT);
@@ -1156,6 +1161,35 @@ class Entity extends Base\PublicEntity
     public function getStatusDetailsId()
     {
         return $this->getAttribute(self::STATUS_DETAILS_ID);
+    }
+
+    public function getStatusEnterTimeStamp(string $status)
+    {
+        switch ($status)
+        {
+            case Status::CREATED:
+                $timestampKey = self::INITIATED_AT;
+                break;
+
+            case Status::INITIATED:
+                $timestampKey = self::TRANSFERRED_AT;
+                break;
+
+            default:
+                $timestampKey = $status . '_at';
+        }
+
+        return $this->getAttribute($timestampKey);
+    }
+
+    public function getWorkflowFeature()
+    {
+        return $this->getAttribute(self::WORKFLOW_FEATURE);
+    }
+
+    public function getRawAttribute($key)
+    {
+        return $this->attributes[$key];
     }
 
     public function getStatusUpdatedAt()

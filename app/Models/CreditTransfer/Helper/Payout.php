@@ -5,6 +5,7 @@ namespace RZP\Models\CreditTransfer\Helper;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payout\Entity;
 use RZP\Models\CreditTransfer;
 use RZP\Models\VirtualAccount;
 
@@ -45,6 +46,7 @@ class Payout extends Base
 
     public function getCreditTransferInputFromSourceEntity()
     {
+        /** @var Entity $payout */
         $payout = $this->source;
 
         $creditTransferInput = [

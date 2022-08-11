@@ -218,9 +218,12 @@ trait TestsBusinessBanking
             ]);
     }
 
-    protected function createPayout(array $extraPayoutParams = [], array $contact = [])
+    protected function createPayout(array $extraPayoutParams = [], array $contact = [], bool $createContact = true)
     {
-        $this->createContact($contact);
+        if ($createContact === true)
+        {
+            $this->createContact($contact);
+        }
 
         $this->createFundAccount();
 

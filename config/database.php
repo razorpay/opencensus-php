@@ -599,6 +599,30 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
+        'payout_service_database' => [
+            'read'  => [
+                'host'     => env('PAYOUT_SERVICE_LIVE_HOST'),
+                'port'     => env('PAYOUT_SERVICE_LIVE_PORT'),
+                'username' => env('PAYOUT_SERVICE_LIVE_USERNAME'),
+                'password' => env('PAYOUT_SERVICE_LIVE_PASSWORD'),
+            ],
+            'write' => [
+                'host'     => env('PAYOUT_SERVICE_LIVE_HOST'),
+                'port'     => env('PAYOUT_SERVICE_LIVE_PORT'),
+                'username' => env('PAYOUT_SERVICE_LIVE_USERNAME'),
+                'password' => env('PAYOUT_SERVICE_LIVE_PASSWORD'),
+            ],
+            'sticky'                   => true,
+            'database'                 => env('PAYOUT_SERVICE_LIVE_DATABASE'),
+            'driver'                   => env('PAYOUT_SERVICE_LIVE_DRIVER'),
+            'charset'                  => 'utf8',
+            'collation'                => 'utf8_bin',
+            'prefix'                   => '',
+            'strict'                   => true,
+            'wait_timeout'             => env('DB_WAIT_TIMEOUT'),
+            'transaction_wait_timeout' => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+        ],
+
         'rx_whatsapp_live' => [
             'write'  => [
                 'host'     => env('RX_WHATSAPP_LIVE_HOST'),

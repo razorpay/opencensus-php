@@ -768,4 +768,22 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function initiateDataMigration()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->initiateDataMigration($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function psDataMigrationRedisCleanUp()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutServiceDataMigrationRedisCleanUp($input);
+
+        return ApiResponse::json($data);
+    }
 }
