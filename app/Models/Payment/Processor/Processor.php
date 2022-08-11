@@ -573,6 +573,12 @@ class Processor
                 return false;
             }
 
+            // blocking jaka payments from rearch
+            if ($iin->getIssuer() === 'JAKA')
+            {
+                return false;
+            }
+
             $supportedFlows = [
                 Card\IIN\Flow::_3DS,
                 Card\IIN\Flow::HEADLESS_OTP,
