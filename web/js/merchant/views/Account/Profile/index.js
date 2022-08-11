@@ -61,7 +61,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import {
-  BankVerificationErrorInDetailsMap,
+  BankVerificationErrors,
   getResponseTime,
   trackBankAccountDetailsChange,
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
@@ -585,9 +585,7 @@ class Profile extends Component {
         })
         .catch(({ errors }) => {
           const inputError =
-            errors?.[0] in BankVerificationErrorInDetailsMap
-              ? BankVerificationErrorInDetailsMap[errors[0]].title
-              : errors;
+            errors?.[0] in BankVerificationErrors ? BankVerificationErrors[errors[0]] : errors;
 
           showNotification({
             type: 'error',

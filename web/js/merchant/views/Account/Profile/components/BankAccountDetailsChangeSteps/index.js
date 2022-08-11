@@ -2,6 +2,7 @@ import PennyTestingUserDetailsError from './BankDetailsError';
 import BankAccountUpdateAsyncFlow from './BankAccountUpdateAsyncFlow';
 import {
   BankVerificationErrorInDetailsMap,
+  BankVerificationErrors,
   BANK_ACCOUNT_UPDATE_UNDER_REVIEW,
   BANK_ACCOUNT_UPDATE_FILE_UPLOAD,
   BANK_ACCOUNT_UPDATE_SUBMIT_DETAILS,
@@ -18,6 +19,7 @@ export {
   PennyTestingUserDetailsError,
   BankAccountUpdateAsyncFlow,
   BankVerificationErrorInDetailsMap,
+  BankVerificationErrors,
   BANK_ACCOUNT_UPDATE_UNDER_REVIEW,
   BANK_ACCOUNT_UPDATE_FILE_UPLOAD,
   BANK_ACCOUNT_UPDATE_SUBMIT_DETAILS,
