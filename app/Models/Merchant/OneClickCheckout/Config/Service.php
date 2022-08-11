@@ -132,7 +132,7 @@ class Service extends Base\Service
 
                 $currentCodIntelligenceEnabledFlag = $this->merchant->getCODIntelligenceConfig();
 
-                if(($reset === true ) || ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))
+                if(isset($input[Type::COD_INTELLIGENCE]) && ($currentCodIntelligenceEnabledFlag !== $updatedCodIntelligenceEnabledFlag))
                 {
                     if ($updatedCodIntelligenceEnabledFlag === true)
                     {
