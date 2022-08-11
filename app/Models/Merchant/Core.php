@@ -6813,6 +6813,16 @@ class Core extends Base\Core
         return $this->isOrgFeatureEnabled($merchant, Feature\Constants::SHOW_REFND_LATEAUTH_PARAM);
     }
 
+    public function isShowReceiverTypeFeatureEnabled(Entity $merchant) : bool
+    {
+        if ($merchant->isRazorpayOrgId() === true )
+        {
+            return false;
+        }
+
+        return $this->isOrgFeatureEnabled($merchant, Feature\Constants::SHOW_PAYMENT_RECEIVER_TYPE);
+    }
+
     protected function isOrgFeatureEnabled(Entity $merchant, string $featureName)
     {
         $org = $this->repo->org->find($merchant->getOrgId());

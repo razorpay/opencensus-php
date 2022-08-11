@@ -1458,6 +1458,7 @@ class Constants
 
     const FK_NEW_ERROR_RESPONSE  = "fk_new_error_response";
 
+    const SHOW_PAYMENT_RECEIVER_TYPE = 'show_pmt_receiver_type';
 
     /**
      * Feature flag to allow creation of inter account test payouts
@@ -2004,6 +2005,7 @@ class Constants
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,
         self::ONE_CC_REPORTING_TEST           => true,
+        self::SHOW_PAYMENT_RECEIVER_TYPE      => true,
         self::HANDLE_VA_TO_VA_PAYOUT          => true,
         self::RECURRING_CHECKOUT_DOT_COM      => true,
         self::DEDUPE_CONTACT_ON_REPLICA       => true,

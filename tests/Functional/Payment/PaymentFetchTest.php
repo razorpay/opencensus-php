@@ -1288,6 +1288,34 @@ class PaymentFetchTest extends TestCase
         $this->assertEquals('platform', $response['fee_bearer']);
     }
 
+    public function testPrivateAuthPaymentWithReceiverType()
+    {
+        $this->ba->privateAuth();
+
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->feature->create([
+            'entity_type'   => 'org',
+            'entity_id'     => $org->getId(),
+            'name'          => 'show_pmt_receiver_type',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'org_id'    => $org->getId(),
+        ]);
+
+        $payment = $this->fixtures->create('payment:authorized', []);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/pay_' . $payment['id'];
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+
+        $this->assertArrayHasKey('receiver_type', $response);
+
+    }
+
     public function testFetchPaymentFromPgRouterWithPrivateAuth()
     {
         $this->enablePgRouterConfig();

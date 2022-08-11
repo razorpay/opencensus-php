@@ -4177,7 +4177,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['invoice_id'] = $this->getInvoiceId();
         }
 
-        if ((new Merchant\Core())->isShowLateAuthAttributeFeatureEnabled($this->merchant))
+        $merchantCore = new Merchant\Core();
+
+        if ($merchantCore->isShowLateAuthAttributeFeatureEnabled($this->merchant))
         {
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
@@ -4189,6 +4191,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
 
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
+        }
+
+        if ($merchantCore->isShowReceiverTypeFeatureEnabled($this->merchant) === true)
+        {
+            $data[self::RECEIVER_TYPE] = $this->getReceiverType();
         }
 
         return $data;
@@ -5148,7 +5155,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = parent::toArrayPublic();
 
-        if ((new Merchant\Core())->isShowLateAuthAttributeFeatureEnabled($this->merchant) === true)
+        $merchantCore = new Merchant\Core();
+
+        if ($merchantCore->isShowLateAuthAttributeFeatureEnabled($this->merchant) === true)
         {
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
@@ -5160,6 +5169,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
 
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
+        }
+
+        if ($merchantCore->isShowReceiverTypeFeatureEnabled($this->merchant) === true)
+        {
+            $data[self::RECEIVER_TYPE] = $this->getReceiverType();
         }
 
         return $data;
@@ -5174,7 +5188,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = parent::toArrayPublicWithExpand();
 
-        if ((new Merchant\Core())->isShowLateAuthAttributeFeatureEnabled($this->merchant) === true)
+        $merchantCore = new Merchant\Core();
+
+        if ($merchantCore->isShowLateAuthAttributeFeatureEnabled($this->merchant) === true)
         {
             $data[self::AUTHORIZED_AT] = $this->getAuthorizeTimestamp();
             $data[self::AUTO_CAPTURED] = $this->getAutoCaptured();
@@ -5186,6 +5202,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             }
 
             $data[self::LATE_AUTHORIZED] = $this->isLateAuthorized();
+        }
+
+        if ($merchantCore->isShowReceiverTypeFeatureEnabled($this->merchant) === true)
+        {
+            $data[self::RECEIVER_TYPE] = $this->getReceiverType();
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);

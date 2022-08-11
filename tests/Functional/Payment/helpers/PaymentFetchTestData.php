@@ -885,6 +885,17 @@ return [
         ],
     ],
 
+    'testPrivateAuthPaymentWithReceiverType' => [
+        'request' => [
+            'url'     => '/payments/',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testFetchPaymentFromPgRouterWithExpandsCard' => [
         'request' => [
                 'method'  => 'get',
