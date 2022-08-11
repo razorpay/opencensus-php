@@ -84,6 +84,7 @@ import {
   isSourceRX,
   getBankTabHeader,
   isVerificationFailed,
+  showSubcategory,
 } from './ActivationUtils';
 
 import { fireL1FormSuccessEvents } from 'merchant/containers/Activation/ActivationFormMarketingEvents';
@@ -1119,6 +1120,10 @@ export default class ActivationWizard extends React.Component {
         }
         if (dynamicFieldName[field]) {
           field = dynamicFieldName[field]();
+        }
+
+        if (field === 'business_subcategory' && !showSubcategory(this)) {
+          return true;
         }
 
         return Boolean(
