@@ -124,7 +124,7 @@ class SalesForceClient
 
     /**
      * Send Lead `status` and `sub_status` update from LMS to Salesforce Current Application Dashboard
-     * 
+     *
      * $payload = [
      *       'merchant_id'      => $bankingAccount->getMerchantId(),
      *       'ca_id'            => 'bacc_'.$bankingAccount->getId(),
@@ -132,7 +132,7 @@ class SalesForceClient
      *       'ca_status'        => $status,  // valid status
      *       'ca_substatus'     => $subStatus,   // valid sub-status
      * ]
-     * 
+     *
      * @param array $payload
      * @param string $process `RBL` or `ICICI`
      */
@@ -212,6 +212,28 @@ class SalesForceClient
         $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_REQUEST,
             TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_RESPONSE,
             TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_ERROR);
+    }
+
+    public function sendUserDetailsToSalesforce($data)
+    {
+        $accessToken = $this->fetchAccessToken();
+
+        $url = $this->generateUrlForCreateUserDetails();
+
+        $request  = [
+            'url'     => $url,
+            'method'  => self::POST,
+            'content' => $data,
+            'options' => ['timeout' => 120],
+            'headers' => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::AUTHORIZATION => sprintf('%s %s',RequestHeader::BEARER, $accessToken)
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetResponse($request);
+
+        return $response;
     }
 
     public function sendLeadUpsertEventsToSalesforce(array $data)
@@ -578,7 +600,7 @@ class SalesForceClient
     {
         return $this->baseUrl . '/services/apexrest/MerchantUpsert';
     }
-    
+
     protected function generateUrlForLeadStatusupdate()
     {
         return $this->baseUrl . '/services/data/v53.0/sobjects/CX_CurrentAccount_Event__e';
@@ -586,6 +608,11 @@ class SalesForceClient
 
     protected function generateUrlForOpportunityUpsert(){
         return $this->baseUrl . '/services/apexrest/DashboardOpportunityUpsert';
+    }
+
+    protected function generateUrlForCreateUserDetails()
+    {
+        return $this->baseUrl . '/services/data/v55.0/sobjects/Lead';
     }
 
     protected function generateUrlForWebsiteLeadUpsert()
@@ -637,10 +664,9 @@ class SalesForceClient
     protected function makeRequestAndGetResponse(array $request)
     {
         $response = $this->sendRequest($request);
-        if ($response->status_code != 200){
+        if ($response->status_code != 200 and $response->status_code != 201){
             throw new Exception\IntegrationException("Salesforce Returned non 200 Response");
         }
-
         return json_decode($response->body, true);
     }
 

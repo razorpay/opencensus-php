@@ -148,6 +148,15 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function sendUserDetailsToSalesForceEvent()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->sendUserDetailsToSalesForceEvent($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSetUserPassword()
     {
         $input = Request::all();

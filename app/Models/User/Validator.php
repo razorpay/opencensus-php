@@ -140,6 +140,13 @@ class Validator extends Base\Validator
         Entity::PASSWORD_CONFIRMATION => 'required|between:8,50',
     ];
 
+    protected static $salesforceEventRules = [
+        Entity::EMAIL              => 'required|email|string',
+        Entity::NAME               => 'required|string',
+        Entity::COMPANY            => 'required|string',
+        Entity::REVENUE            => 'required|string',
+    ];
+
     protected static $actionRules = [
         Entity::ACTION                => 'required|custom',
         Entity::MERCHANT_ID           => 'required|max:14',

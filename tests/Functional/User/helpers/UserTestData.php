@@ -716,6 +716,25 @@ return [
         ],
     ],
 
+
+    'testSendUserDetailsToSalesforce' => [
+        'request' => [
+            'url'     => '/users/salesforce_event',
+            'method'  => 'POST',
+            'content' => [
+                'name'      => 'test',
+                'email'     => 'testcomapany@test.com',
+                'company'   =>  'Test Company',
+                'revenue'   =>  '10000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testMobileFailedLoginWrongPassword' => [
         'request' => [
             'url'     => '/users/login',

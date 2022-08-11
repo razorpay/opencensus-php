@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
     const SIGNUP_VIA_EMAIL              = 'signup_via_email';
     const TOKEN                         = 'token';
     const EXPIRY_TIME                   = 'expiryTime';
+    const COMPANY                       = 'company';
+    const REVENUE                       = 'revenue';
 
     // This key in request body checks if the request to register user or resend verification link
     // came from new signup flow for X.

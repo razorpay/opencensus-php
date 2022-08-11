@@ -1993,6 +1993,8 @@ class Route
         'user_set_password'                        => ['post',     'users/set/password',                             'UserController@postSetUserPassword'                                ],
         'user_patch_password'                      => ['patch',    'users/password',                                 'UserController@postPatchUserPassword'                              ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
+        'user_salesforce_event'                    => ['post',     'users/salesforce_event',                         'UserController@sendUserDetailsToSalesForceEvent'                   ],
+
         // Fetch user via OAuth (Private Auth)
         'user_fetch_self'                          => ['get',      'users_self',                                     'UserController@getUserSelf'                                            ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
@@ -4589,6 +4591,7 @@ class Route
         'user_fetch',
         'user_login',
         'user_otp_login',
+        'user_salesforce_event',
         'verify_user_otp_login',
         'send_verification_otp',
         'verify_verification_otp',
@@ -12590,6 +12593,7 @@ class Route
             'm2m_referral_link_get_public',
             'user_login',
             'user_otp_login',
+            'user_salesforce_event',
             'verify_user_otp_login',
             'send_verification_otp',
             'verify_verification_otp',

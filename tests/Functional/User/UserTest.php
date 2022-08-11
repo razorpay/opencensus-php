@@ -1288,6 +1288,24 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendUserDetailsToSalesforce()
+    {
+        $methodName = 'sendUserDetailsToSalesforce';
+
+        $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $this->app->instance('salesforce', $salesforceClientMock);
+
+        $salesforceClientMock->expects($this->exactly(1))->method($methodName);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+
     public function testMobileFailedLoginWrongPassword()
     {
         $user = $this->fixtures->create('user', ['contact_mobile' => '9012345678', 'password' => 'hello123', 'contact_mobile_verified' => true]);

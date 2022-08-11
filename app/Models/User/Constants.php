@@ -36,6 +36,8 @@ class Constants
 
     const SET_PASSWORD  = "set_password";
 
+    const SALESFORCE_EVENT  = "salesforce_event";
+
     const PERMISSIONS   = 'permissions';
 
     const BANNER_ID = 'banner_id';

@@ -1016,6 +1016,54 @@ class Service extends Base\Service
         return $this->core->patchUserPassword($user, $input);
     }
 
+    public function sendUserDetailsToSalesForceEvent(array $input) : array
+    {
+        $this->trace->info(
+            TraceCode::CREATE_LEAD_ON_SALESFORCE_REQUEST,
+            [
+                'payload'        => $input,
+            ]);
+
+        (new Entity)->getValidator()->validateInput(Constants::SALESFORCE_EVENT, $input);
+
+        try
+        {
+            $payload = $this->getSalesForcePayload($input);
+            $response = $this->app->salesforce->sendUserDetailsToSalesforce($payload);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
+        }
+
+        $this->trace->info(
+            TraceCode::CREATED_LEAD_ON_SALESFORCE,
+            [
+                'response'       => $response
+            ]);
+
+        return ['id' => $response['id']];
+    }
+
+    public function getSalesForcePayload(array $input) : array
+    {
+        $payload = [
+            "FirstName"                    => $input['name'],
+            "LastName"                     => 'NA',
+            "Email"                        => $input['email'],
+            "Company"                      => $input['company'],
+            "Average_Monthly_Revenue__c"   => $input['revenue'],
+            "Campaign_Name__c"             => 'Project Nike' ,
+        ];
+
+        return $payload;
+    }
+
     public function setUserPassword(array $input): array
     {
         $user = $this->user;

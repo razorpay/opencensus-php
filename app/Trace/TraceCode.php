@@ -1930,6 +1930,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_ORG_NOT_GIVEN                                = 'MERCHANT_ORG_NOT_GIVEN';
     const PUSHED_EVENT_TO_HUBSPOT                               = 'PUSHED_EVENT_TO_HUBSPOT';
     const CREATED_LEAD_ON_SALESFORCE                            = 'CREATED_LEAD_ON_SALESFORCE';
+    const CREATE_LEAD_ON_SALESFORCE_REQUEST                     = 'CREATE_LEAD_ON_SALESFORCE_REQUEST';
     const MERCHANT_SAVE_ACTIVATION_DETAILS                      = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
     const MERCHANT_DB_LOCK_ACQUIRE_LATENCY                      = 'MERCHANT_DB_LOCK_ACQUIRE_LATENCY';
     const MERCHANT_SAVE_ACTIVATION_DETAILS_LATENCY              = 'MERCHANT_SAVE_ACTIVATION_DETAILS_LATENCY';
