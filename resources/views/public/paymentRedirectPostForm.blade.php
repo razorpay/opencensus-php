@@ -51,10 +51,17 @@
       </div>
       <div style="display:inline-block;vertical-align:middle;height:100%"></div>
     </div>
+    @if (isset($data['show_independence_image']) && $data['show_independence_image'])
+    <div id='ftr_new'>
+      <div style="display:inline-block;">Secured by <img style="vertical-align:middle;margin-bottom:5px;" height="20px" src="https://cdn.razorpay.com/logo.svg"></div>
+      <img src="https://cdn.razorpay.com/static/assets/15aug.png" style="vertical-align:middle;margin-bottom:5px;" height="34px" />
+    </div>
+    @else
     <div id='ftr'>
       <div style="display:inline-block;">Secured by <img style="vertical-align:middle;margin-bottom:5px;" height="20px" src="https://cdn.razorpay.com/logo.svg"></div>
       <div style="display:inline-block;vertical-align:middle;height:100%"></div>
     </div>
+    @endif
   </div>
   <script>
     setTimeout(function() {

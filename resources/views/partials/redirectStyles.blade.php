@@ -59,6 +59,26 @@ body{
   @endif
 }
 
+#ftr_new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:80px;
+  background:#f5f5f5;
+  text-align:center;
+  color:#212121;
+  font-size:14px;
+  letter-spacing:-0.3px;
+  @if ($data['nobranding'])
+    display: none;
+  @endif
+}
+
 #ldr {
   width:100%;
   height:3px;
@@ -180,6 +200,11 @@ body{
   }
   #name {
     margin-left:8px;
+  }
+}
+@media (max-height:580px), (max-width:420px) {
+  #ftr_new{
+     padding: 0 16px;
   }
 }
 </style>

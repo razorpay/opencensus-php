@@ -14,6 +14,7 @@ use RZP\Models\Settlement\Merchant;
 use RZP\Models\Merchant\Preferences;
 use View;
 use Crypt;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Feature\Constants as Feature;
@@ -1550,6 +1551,7 @@ class PaymentCreateController extends Controller
         $postFormData['merchant_id'] = $merchant->getId();
         $postFormData['language_code'] = $data['language_code'];
         $postFormData += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
+        $postFormData['show_independence_image'] = $this->shouldShowIndependenceDayImage();
 
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
@@ -1569,6 +1571,7 @@ class PaymentCreateController extends Controller
         $postFormData['name'] = $merchant->getBillingLabel();
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
         $postFormData += (new CheckoutView())->addOrgInformationInResponse($merchant, true);
+        $postFormData['show_independence_image'] = $this->shouldShowIndependenceDayImage();
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [
@@ -1604,6 +1607,7 @@ class PaymentCreateController extends Controller
         $postFormData['nobranding'] = $merchant->isFeatureEnabled(Feature::PAYMENT_NOBRANDING);
         $postFormData['production'] = $this->app->environment() === Environment::PRODUCTION;
         $postFormData['merchant_id'] = $merchant->getId();
+        $postFormData['show_independence_image'] = $this->shouldShowIndependenceDayImage();
 
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [
@@ -1795,5 +1799,17 @@ class PaymentCreateController extends Controller
         }
 
         return $input;
+    }
+
+    /**
+     * show Independence day image till 20th aug 2022 , will remove after 20th aug
+     */
+    protected function shouldShowIndependenceDayImage()
+    {
+        if (Carbon::now()->getTimestamp() < 1661020200)
+        {
+            return true;
+        }
+        return false;
     }
 }
