@@ -10,6 +10,7 @@ use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Escalations\Core as EscalationCore;
+use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
 class WebsiteCompliancePaymentsEnabledAction extends BaseAction
@@ -33,7 +34,7 @@ class WebsiteCompliancePaymentsEnabledAction extends BaseAction
         foreach ($merchantIds as $merchantId)
         {
             $args = [
-                \RZP\Models\Merchant\Escalations\Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+                EscalationConstants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
             ];
 
             $success = (new OnboardingNotificationHandler($args))

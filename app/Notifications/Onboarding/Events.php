@@ -91,8 +91,8 @@ class Events
     ];
 
     const WHATSAPP_TEMPLATES_CTA_TEMPLATE = [
-        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'compliance',
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'compliance',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'website-compliance',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'website-compliance',
     ];
 
     // blade templates

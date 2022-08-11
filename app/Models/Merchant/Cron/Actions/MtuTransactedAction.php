@@ -106,7 +106,8 @@ class MtuTransactedAction extends BaseAction
             if (empty(optional($websiteDetail)->getStatus()) === true)
             {
                 $args = [
-                    EscalationConstants::MERCHANT => $merchant
+                    EscalationConstants::MERCHANT => $merchant,
+                    "complianceUrl"               => 'https://www.easy.razorpay.com/website-compliance'
                 ];
 
                 $success = (new OnboardingNotificationHandler($args))
