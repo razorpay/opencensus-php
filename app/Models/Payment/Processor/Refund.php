@@ -4009,7 +4009,8 @@ trait Refund
             ($this->isValidArn($reference1) === true) and
             (empty($this->refund->getReference1()) === true))
         {
-            $this->updateReference1AndTriggerEventArnUpdated($this->refund, $reference1);
+            // To be deprecated later
+            $this->updateReference1AndTriggerEventArnUpdated($this->refund, $reference1, false);
         }
     }
 

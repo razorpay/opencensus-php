@@ -888,7 +888,8 @@ class RefundReconciliate extends Base\Foundation\SubReconciliate
 
             if ($processor->isValidArn($reconArn) === true)
             {
-                $processor->updateReference1AndTriggerEventArnUpdated($refund, $reconArn);
+                // To be deprecated later
+                $processor->updateReference1AndTriggerEventArnUpdated($refund, $reconArn, false);
             }
 
             $refund->setStatusProcessed();

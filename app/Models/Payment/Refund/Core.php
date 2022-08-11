@@ -80,18 +80,6 @@ class Core extends Base\Core
                     (new Service)->makeScroogeEditRefundRequest($refund, $data);
                 }
 
-                $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
-
-                $processor = $this->getNewProcessor($merchant);
-
-                //
-                // Refund FTA is successful and ARN has been updated sending arn updated notification(s)
-                //
-                if ($processor->isValidArn($ftaData[Entity::UTR]) === true)
-                {
-                    $processor->eventRefundArnUpdated($refund);
-                }
-
                 break;
 
             case Attempt\Status::FAILED:

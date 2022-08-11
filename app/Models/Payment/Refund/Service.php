@@ -3410,12 +3410,21 @@ class Service extends Base\Service
     {
         $referenceNo = $input[RefundEntity::BANK_REFERENCE_NO] ?? "";
 
+        $skipArnEvent = $input['skip_arn_updated_event'] ?? false;
+
         $processor = $this->getNewProcessor($refund->merchant);
 
         if ((empty($refund->getReference1()) === true) and
             ($processor->isValidArn($referenceNo) === true))
         {
-            $processor->updateReference1AndTriggerEventArnUpdated($refund, $referenceNo);
+            if ($skipArnEvent === true)
+            {
+                $processor->updateReference1AndTriggerEventArnUpdated($refund, $referenceNo, false);
+            }
+            else
+            {
+                $processor->updateReference1AndTriggerEventArnUpdated($refund, $referenceNo);
+            }
         }
     }
 
@@ -3524,14 +3533,15 @@ class Service extends Base\Service
                     {
                         $updateFailures[] = $refund;
                     }
-                    else
-                    {
-                        // reload refund entity for webhook
-                        $refundEntity = $this->repo->refund->findOrFail($internalId);
+                    // To be deprecated later
+                    // else
+                    // {
+                    //     // reload refund entity for webhook
+                    //     $refundEntity = $this->repo->refund->findOrFail($internalId);
 
-                        // trigger arn updated webhook
-                        $this->getNewProcessor($refundEntity->merchant)->eventRefundArnUpdated($refundEntity);
-                    }
+                    //     // trigger arn updated webhook
+                    //     $this->getNewProcessor($refundEntity->merchant)->eventRefundArnUpdated($refundEntity);
+                    // }
                 }
             }
             catch (\Exception $exception)

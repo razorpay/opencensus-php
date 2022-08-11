@@ -694,6 +694,8 @@ class Service extends Base\Service
 
         $arn = $refundData[ScroogeReconciliate::ARN] ?? null;
 
+        $skipArnEvent = $refundData['skip_arn_updated_event'] ?? false;
+
         if ($refundData[Refund\Entity::STATUS] === Refund\Status::PROCESSED)
         {
             $refund->setStatusProcessed();
@@ -704,7 +706,14 @@ class Service extends Base\Service
         if (($processor->isValidArn($arn) === true) and
             ((empty($refund->getReference1()) === true) or ($forceUpdateArn === true)))
         {
-            $processor->updateReference1AndTriggerEventArnUpdated($refund, $arn);
+            if ($skipArnEvent === true)
+            {
+                $processor->updateReference1AndTriggerEventArnUpdated($refund, $arn, false);
+            }
+            else
+            {
+                $processor->updateReference1AndTriggerEventArnUpdated($refund, $arn);
+            }
         }
 
         if ((empty($refundData[Transaction\Entity::GATEWAY_SETTLED_AT]) === false) and
