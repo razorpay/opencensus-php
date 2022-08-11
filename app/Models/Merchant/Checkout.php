@@ -188,7 +188,7 @@ class Checkout
 
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
-        (new Website\Service())->checkAndFillMerchantPolicyPage($merchant, $data);
+        //(new Website\Service())->checkAndFillMerchantPolicyPage($merchant, $data);
 
         return $data;
     }
