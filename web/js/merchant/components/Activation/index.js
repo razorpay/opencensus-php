@@ -1122,10 +1122,6 @@ export default class ActivationWizard extends React.Component {
           field = dynamicFieldName[field]();
         }
 
-        if (field === 'business_subcategory' && !showSubcategory(this)) {
-          return true;
-        }
-
         return Boolean(
           state.dirty[field] ||
             (this.state.commentlist.hasOwnProperty(field) && this.state.commentlist[field] !== ''),

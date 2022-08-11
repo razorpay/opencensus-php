@@ -323,6 +323,10 @@ function showSubcategory(activation) {
   let showSubcategory = false;
   const nc_flow = props.data.activation_status === 'needs_clarification';
 
+  if (nc_flow) {
+    return true;
+  }
+
   let businessCategory =
     state.dirty.business_category != null
       ? state.dirty.business_category
