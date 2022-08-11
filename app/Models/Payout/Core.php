@@ -2321,10 +2321,6 @@ class Core extends Base\Core
                 {
                     $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
                 }
-                else if($payout->isBalanceAccountTypeShared() === true)
-                {
-                    $this->app['x-segment']->sendEventToSegment(SegmentEvent::VA_PAYOUT_PROCESSED, $merchant);
-                }
             }
         }
 

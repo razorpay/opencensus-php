@@ -166,22 +166,6 @@ class FundAccountsTest extends TestCase
         ];
     }
 
-    public function testSegmentEventFundAccount(){
-        $this->createAndFetchMocks();
-
-        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushIdentifyandTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('x-segment', $xsegmentMock);
-
-        $xsegmentMock->expects($this->exactly(0))
-            ->method('pushIdentifyandTrackEvent')
-            ->willReturn(true);
-
-        $this->testCreateFundAccountBankAccount();
-    }
-
     public function testCreateFundAccountBankAccountWithFeatureFlagEnabled()
     {
         Queue::fake();

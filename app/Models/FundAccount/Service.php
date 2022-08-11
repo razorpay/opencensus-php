@@ -335,10 +335,6 @@ class Service extends Base\Service
 
         $responseCode = ($entity->wasRecentlyCreated === true) ? Response::HTTP_CREATED : Response::HTTP_OK;
 
-        if($responseCode === Response::HTTP_CREATED){
-            $this->app['x-segment']->sendEventToSegment(SegmentEvent::FUND_ACCOUNT_ADDED);
-        }
-
         $this->trace->info(TraceCode::FUND_ACCOUNT_CREATION_RESPONSE,
             [
                 Constants\Entity::FUND_ACCOUNT => $entity->getId(),

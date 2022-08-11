@@ -319,23 +319,6 @@ class ContactsTest extends TestCase
         ];
     }
 
-    public function testSegmentEventCreateContact(){
-
-        $this->createAndFetchMocks();
-
-        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
-            ->setMethods(['pushIdentifyandTrackEvent'])
-            ->getMock();
-
-        $this->app->instance('x-segment', $xsegmentMock);
-
-        $xsegmentMock->expects($this->exactly(0))
-            ->method('pushIdentifyandTrackEvent')
-            ->willReturn(true);
-
-        $this->testCreateContact();
-    }
-
     public function testCreateContactLiveModeNonKycActivatedNonCaActivated()
     {
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
