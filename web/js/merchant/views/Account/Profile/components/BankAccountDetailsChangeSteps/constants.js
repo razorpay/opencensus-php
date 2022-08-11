@@ -7,12 +7,12 @@ const retrySameAccount = "The given bank account couldn't be verified. Check det
 
 export const BankVerificationErrorInDetailsMap = {
   'KC03: Invalid Beneficiary Account Number or IFSC': {
-    title: 'Incorrect account number',
+    title: 'Invalid Beneficiary Account Number or IFSC Code',
     subtitle: retrySameAccount,
     icon: 'account-number',
   },
   'KC40: Invalid Beneficiary IFSC Code or NBIN': {
-    title: 'Invalid IFSC code',
+    title: 'Invalid Beneficiary IFSC Code or NBIN',
     subtitle: retrySameAccount,
     icon: 'invalid-ifsc',
   },

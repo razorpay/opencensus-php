@@ -545,13 +545,16 @@ class Profile extends Component {
               requestType: data?.sync_flow ? 'sync' : 'async',
             },
           });
+          let message;
           if (data.new_bank_account && data.sync_flow === true) {
+            message = 'Bank account details updated successfully.';
             fetchBankAccount();
             setBankDetailsStepCallback({
               state: 'penny-testing-success',
             });
           } else {
-            // async workflow created for bank account update
+            // async flow created for bank account update, worflow can take upto 8 hrs for creation
+            message = 'Bank Account change request updated successfully.';
             fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
             const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${user.id}`;
             const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
@@ -574,26 +577,22 @@ class Profile extends Component {
               actionName: 'Timeout',
             });
           }
+          showNotification({
+            type: 'success',
+            message,
+          });
+          closeModal();
         })
         .catch(({ errors }) => {
           const inputError =
             errors?.[0] in BankVerificationErrorInDetailsMap
-              ? BankVerificationErrorInDetailsMap[errors[0]]
-              : null;
+              ? BankVerificationErrorInDetailsMap[errors[0]].title
+              : errors;
 
-          if (inputError) {
-            // bank verification error because of user input
-            setBankDetailsStepCallback({
-              state: 'penny-testing-details-error',
-              error: inputError,
-            });
-          } else {
-            closeModal();
-            showNotification({
-              type: 'error',
-              message: errors,
-            });
-          }
+          showNotification({
+            type: 'error',
+            message: inputError,
+          });
           trackBankAccountDetailsChange({
             objectName: 'Bank Account Update Submit',
             actionName: 'Result',
