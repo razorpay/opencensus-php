@@ -12,7 +12,7 @@ class Axis extends Base
     const EXTENSION   = FileStore\Format::CSV;
     const FILE_TYPE   = FileStore\Type::AXIS_EMI_FILE;
     const FILE_NAME   = 'Axis_Emi_File';
-    const DATE_FORMAT = 'd-M-Y';
+    const DATE_FORMAT = 'd-m-Y';
 
     protected function formatDataForFile($data)
     {
@@ -29,17 +29,17 @@ class Axis extends Base
             $txn = $emiPayment->transaction;
 
             $formattedData[] = [
-                'Card Number'                  => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
+                'Card Number'                  => str_repeat("X", 12) . $emiPayment->card->getLast4(),
                 'Transaction Amount'           => $emiPayment->getAmount() / 100,
                 'Transaction Date'             => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
                 'Settlement Date'              => $this->getFormattedDate($txn->getSettledAt()),
                 'Authorisation Id'             => $this->getAuthCode($emiPayment),
-                'Merchant Name'                => 'Razorpay Payments',
+                'Merchant Name'                => $emiPayment->merchant->getDbaName() ?: 'Razorpay Payments',
                 'MCC (Merchant Category Code)' => $merchant->getCategory(), // Non Mandatory,
                 'Tenure'                       => $emiTenure,
+                'Rate of Interest'             => number_format($rateofinterest, 2, '.', ''),
                 'Source'                       => 'Razorpay',
                 'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id
-                'Rate of Interest'             => number_format($rateofinterest, 2, '.', ''),
             ];
         }
 
