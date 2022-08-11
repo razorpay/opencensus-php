@@ -2193,7 +2193,7 @@ export default class ActivationWizard extends React.Component {
     let error = '';
     if (
       this.props.data.bank_details_verification_status &&
-      !['initiated', 'verified', 'failed'].includes(
+      ['not_matched', 'incorrect_details'].includes(
         this.props.data.bank_details_verification_status,
       ) &&
       this.props.user.isSyncBankVerificationEnabled
@@ -2407,7 +2407,7 @@ export default class ActivationWizard extends React.Component {
             isBankVerificationFailed={
               FORM_TABS[3] === 'Bank Account' &&
               this.props.data.bank_details_verification_status &&
-              !['initiated', 'verified', 'failed'].includes(
+              ['not_matched', 'incorrect_details'].includes(
                 this.props.data.bank_details_verification_status,
               ) &&
               this.props.user.isSyncBankVerificationEnabled
@@ -2671,7 +2671,7 @@ export default class ActivationWizard extends React.Component {
                   isBankVerificationFailed={
                     !this.isLinkedAccountForm &&
                     this.props.data.bank_details_verification_status &&
-                    !['initiated', 'verified', 'failed'].includes(
+                    ['not_matched', 'incorrect_details'].includes(
                       this.props.data.bank_details_verification_status,
                     ) &&
                     this.props.user.isSyncBankVerificationEnabled

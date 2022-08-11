@@ -625,7 +625,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
 
   const hasBankVerificationFailed =
     data?.bank_details_verification_status &&
-    !['initiated', 'verified', 'failed'].includes(data?.bank_details_verification_status) &&
+    ['not_matched', 'incorrect_details'].includes(data?.bank_details_verification_status) &&
     experiments.isSyncBankVerificationEnabled;
 
   const shouldShowPoiError: boolean =

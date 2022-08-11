@@ -51,7 +51,7 @@ import {
   showAadharDoc,
   isCompanyPANVerified,
   canShowCustomGstinField,
-  getBankVerificationAtteemptError,
+  getBankVerificationAttemptError,
   getAadhaarErrorMessage,
 } from './ActivationUtils';
 
@@ -1209,7 +1209,7 @@ const bankAccountFields = [
     maxLength: '120',
     minLength: '4',
     _autoRenderImpure: true,
-    checkValidityFromAPI: getBankVerificationAtteemptError,
+    checkValidityFromAPI: getBankVerificationAttemptError,
     description: (activation) =>
       isUnregisteredBusiness(activation) || activation.props.user.isRegAutoKYCEnabled
         ? 'We will deposit a small amount of money in your account to verify the account.'
@@ -1258,7 +1258,7 @@ const bankAccountFields = [
       return getDetailsForIFSC(e.target.value);
     },
     validator: validateIFSC,
-    checkValidityFromAPI: getBankVerificationAtteemptError,
+    checkValidityFromAPI: getBankVerificationAttemptError,
     onBlur: function onBlur(e, error) {
       this.sendErrorMessageToSegment(e, error);
       this.sendInputToSegment({
@@ -1300,7 +1300,7 @@ const bankAccountFields = [
       info: getAccountNumberInfo,
       autoComplete: 'new-password',
       _autoRenderImpure: true,
-      checkValidityFromAPI: getBankVerificationAtteemptError,
+      checkValidityFromAPI: getBankVerificationAttemptError,
       onBlur: function onBlur(e, error) {
         this.sendErrorMessageToSegment(e, error);
         this.sendInputToSegment({

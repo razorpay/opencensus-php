@@ -619,12 +619,10 @@ const isVerificationFailed = (status) => {
   return status === 'incorrect_details' || status === 'not_matched';
 };
 
-const getBankVerificationAtteemptError = (activation) => {
+const getBankVerificationAttemptError = (activation) => {
   if (
     activation.props.data.bank_details_verification_status &&
-    !['initiated', 'verified', 'failed'].includes(
-      activation.props.data.bank_details_verification_status,
-    ) &&
+    isVerificationFailed(activation.props.data.bank_details_verification_status) &&
     activation.props.user.isSyncBankVerificationEnabled
   ) {
     if (activation.props.bvsApiCount == 9) return BANK_LIMIT_MESSAGE;
@@ -706,7 +704,7 @@ export {
   isCompanyPANVerified,
   isVerificationFailed,
   canShowCustomGstinField,
-  getBankVerificationAtteemptError,
+  getBankVerificationAttemptError,
   getAadhaarErrorMessage,
   formatBusinessTypeOptions,
 };
