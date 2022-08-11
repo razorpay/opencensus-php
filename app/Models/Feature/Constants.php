@@ -1468,6 +1468,11 @@ class Constants
      * Feature flag to configure report for KFIN
      */
     const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
+    
+     /**
+     * Feature flag to configure report for CAMS
+     */
+    const CAMS_MERCHANT_REPORT = 'cams_merchant_report';
 
 
     public static $recurringFeatures = [
@@ -2014,6 +2019,7 @@ class Constants
         self::CROSS_ORG_LOGIN                 => true,
         self::MISSED_ORDERS_PLINK             => true,
         self::KFIN_MERCHANT_REPORT            => true,
+        self::CAMS_MERCHANT_REPORT            => true,
     ];
 
     // Entity type constants
