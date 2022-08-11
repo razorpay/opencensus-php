@@ -75,8 +75,7 @@ class Checkout extends Base\Core
     protected function getVariantName(array $item): string
     {
         $variantName = $item['variant']['title'] !== 'Default Title' ? ': ' . $item['variant']['title'] : '';
-
-        return $item['title'] . $variantName;
+        return mb_substr($item['title'] . $variantName, 0, 128, 'UTF-8');
     }
 
     // updates email for a storefront checkout
