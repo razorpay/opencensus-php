@@ -230,6 +230,8 @@ class Service extends Merchant\Service
 
         $linkedAccounts = $this->repo->account->fetch($input);
 
-        return $linkedAccounts->toArrayPublic();
+        return [
+            'linked_account_ids' => $linkedAccounts->getIds()
+        ];
     }
 }

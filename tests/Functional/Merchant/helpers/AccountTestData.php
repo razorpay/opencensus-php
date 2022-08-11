@@ -394,11 +394,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 1,
-                'items' => [
-                    [
-                        'id' => 'acc_10000000000001',
-                    ]
+                'linked_account_ids' => [
+                    '10000000000001',
                 ],
             ],
         ],
@@ -411,11 +408,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 1,
-                'items' => [
-                    [
-                        'id' => 'acc_10000000000001',
-                    ]
+                'linked_account_ids' => [
+                    '10000000000001',
                 ],
             ],
         ],
@@ -438,11 +432,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'count' => 1,
-                'items' => [
-                    [
-                        'id' => 'acc_10000000000001',
-                    ],
+                'linked_account_ids' => [
+                    '10000000000001',
                 ],
             ],
         ],

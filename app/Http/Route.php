@@ -13363,6 +13363,7 @@ class Route
 
         'settlements_service' => [
             'merchant_la_fetch',
+            'merchant_fetch_internal',
             'create_settlement_entry',
             'get_global_config',
             'setl_execution_reminder',
