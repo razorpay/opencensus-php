@@ -17,7 +17,7 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 // http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
-var params = {
+const params = {
   Bucket: ENV.AWS_CDN_BUCKET || ENV.AWS_BUCKET || ENV.AWS_S3_BUCKET,
   ACL: 'public-read',
   CacheControl: 'max-age=2700, must-revalidate',
@@ -42,7 +42,7 @@ glob(
   { nodir: true },
   (error, files) => {
     files.forEach((file) => {
-      var fileParams = {
+      const fileParams = {
         Bucket: params.Bucket,
         ACL: params.ACL,
         CacheControl: params.CacheControl,
@@ -54,7 +54,7 @@ glob(
       // TODO: remove console log before merging to master
       console.log(fileParams.Key);
 
-      var ext = path.extname(file).slice(1);
+      const ext = path.extname(file).slice(1);
 
       if (
         file.endsWith('-entry.js') ||
@@ -65,8 +65,30 @@ glob(
       ) {
         fileParams.CacheControl = 'no-store,must-revalidate';
       }
+      const type = ContentType[ext];
 
-      var type = ContentType[ext];
+      // do brotli compression for dummy TestComponentBrotli only
+      if (type && fileParams.Key?.includes('TestComponentBrotli')) {
+        const brotilFileParams = { ...fileParams };
+        brotilFileParams.ContentType = type;
+        brotilFileParams.ContentEncoding = 'br';
+        brotilFileParams.Key = `${brotilFileParams.Key}.br`;
+        brotilFileParams.Body = zlib.brotliCompressSync(brotilFileParams.Body, {
+          params: {
+            [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY,
+          },
+        });
+        s3.putObject(brotilFileParams, (err, _data) => {
+          if (err) {
+            console.error(err);
+            // eslint-disable-next-line no-process-exit
+            process.exit(1);
+          } else {
+            console.log(brotilFileParams.Key);
+          }
+        });
+      }
+
       if (type) {
         fileParams.ContentType = type;
         fileParams.ContentEncoding = 'gzip';
@@ -75,9 +97,10 @@ glob(
         });
       }
 
-      s3.putObject(fileParams, (err, data) => {
+      s3.putObject(fileParams, (err, _data) => {
         if (err) {
           console.error(err);
+          // eslint-disable-next-line no-process-exit
           process.exit(1);
         } else {
           console.log(fileParams.Key);

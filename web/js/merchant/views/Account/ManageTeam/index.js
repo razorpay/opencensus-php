@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -18,6 +18,11 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+
+const TestComponentBrotli = lazy(() =>
+  import(/* webpackChunkName: "TestComponentBrotli" */ './components/TestComponentBrotli'),
+);
 
 class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -98,6 +103,11 @@ class ManageTeamContainer extends React.Component {
 
     return (
       <div className="content-wrapper content-sm" id="settings-content">
+        <ErrorBoundary resetOnProps rank={Ranks.P0} team={Teams.PG_DASHBOARD}>
+          <Suspense fallback={null}>
+            <TestComponentBrotli />
+          </Suspense>
+        </ErrorBoundary>
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive>
           <div className="btn-toolbar pull-right">
