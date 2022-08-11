@@ -431,7 +431,7 @@ class Service extends Base\Service
                     ]
                 );
 
-                $payment = $this->repo->payment->find($paymentId);
+                $payment = $this->repo->payment->findOrFail($paymentId);
 
                 $this->core->dispatchForTransferProcessing(Constant::PAYMENT, $payment);
 
