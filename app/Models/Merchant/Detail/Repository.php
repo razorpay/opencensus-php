@@ -451,7 +451,10 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function getSubmerchantIdsByActivationStatus(string $partnerMerchantId, array $activationStatusList, int $limit): array
+    /*
+     * $limit is optional here. Used for 
+    */
+    public function getSubmerchantIdsByActivationStatus(string $partnerMerchantId, array $activationStatusList, int $limit = null): array
     {
         $merchantDetailMerchantId       = $this->dbColumn(Entity::MERCHANT_ID);
         $merchantDetailActivationStatus = $this->dbColumn(Entity::ACTIVATION_STATUS);
@@ -460,15 +463,20 @@ class Repository extends Base\Repository
         $accessMapsMerchantId    = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
         $accessMapsEntityOwnerId = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_OWNER_ID);
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
-                    ->select($merchantDetailMerchantId)
-                    ->where($accessMapsEntityOwnerId, $partnerMerchantId)
-                    ->whereIn($merchantDetailActivationStatus, $activationStatusList)
-                    ->take($limit)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->join(Table::MERCHANT_ACCESS_MAP, $merchantDetailMerchantId, $accessMapsMerchantId)
+                      ->select($merchantDetailMerchantId)
+                      ->where($accessMapsEntityOwnerId, $partnerMerchantId)
+                      ->whereIn($merchantDetailActivationStatus, $activationStatusList);
+
+        if (empty($limit) === false)
+        {
+            $query = $query->take($limit);
+        }
+
+        return $query->get()
+                     ->pluck(Entity::MERCHANT_ID)
+                     ->toArray();
     }
 
     public function getSubmerchantIdsWithKYCSubmittedUnderReviewInPastDays(string $partnerMerchantId, int $pastDays, int $limit): array

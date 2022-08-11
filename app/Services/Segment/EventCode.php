@@ -18,6 +18,7 @@ class EventCode
     const BVS_ASYNC_CALL_REQUEST        = "Async mode BVS API Call";
 
     const ACTIVATION_STATUS_CHANGE = "Activation Status changed";
+    const SUBMERCHANT_ACTIVATED = "Submerchant Activated";
 
     const BANKING_ACCOUNT_STATUS_CHANGE = "Banking Account Status Change";
     const BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS = "Banking Account Document Verification Status";

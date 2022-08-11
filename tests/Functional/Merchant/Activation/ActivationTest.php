@@ -23,6 +23,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
 use RZP\Jobs\FundAccountValidation;
+use RZP\Jobs\SendSubmerchantActivatedEvents;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
@@ -2071,6 +2072,115 @@ class ActivationTest extends OAuthTestCase
 
         $testMerchant = $this->getDbEntityById('merchant', $merchantDetail[MerchantDetails::MERCHANT_ID], 'test');
         $this->assertSame('greylist', $testMerchant->merchantdetail->getActivationFlow());
+    }
+
+    public function testSegmentEventSubmerchantActivated()
+    {
+        Queue::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data                      = $this->getKycSubmittedMerchantDetailData($merchantId);
+        $data['activation_status'] = 'under_review';
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->on('test')->create('methods:default_methods', [
+            'merchant_id' => $merchantId
+        ]);
+
+        $this->fixtures->user->createUserForMerchant($merchantId);
+        $merchant     = $this->getDbEntityById('merchant', $merchantId, 'test');
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => $merchantId,]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $testData                   = $this->testData['changeActivationStatus'];
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $currentActivationStatus = 'activated';
+        // under_review to activated
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            $currentActivationStatus);
+
+        $this->startTest($testData);
+        // ensure job was triggered 
+        Queue::assertPushed(SendSubmerchantActivatedEvents::class);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                        $this->assertNotNull($properties);
+                        $this->assertTrue(in_array($eventName, ["Submerchant Activated"], true));
+                    }));
+
+        // Test worker
+        $sendSubmerchantActivatedEvents = new SendSubmerchantActivatedEvents($merchant, $currentActivationStatus);
+        $sendSubmerchantActivatedEvents->handle();
+
+    }
+
+    public function testSkipSegmentEventSubmerchantActivated()
+    {
+        Queue::fake();
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $data                      = $this->getKycSubmittedMerchantDetailData($merchantId);
+        $data['activation_status'] = 'under_review';
+        $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->on('test')->create('methods:default_methods', [
+            'merchant_id' => $merchantId
+        ]);
+
+        $this->fixtures->user->createUserForMerchant($merchantId);
+        $merchant     = $this->getDbEntityById('merchant', $merchantId, 'test');
+
+        $this->fixtures->create('merchant_access_map', ['merchant_id' => $merchantId,]);
+
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $testData                   = $this->testData['changeActivationStatus'];
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $currentActivationStatus = 'needs_clarification';
+        // under_review to needs_clarification
+        $this->changeActivationStatus(
+            $testData['request']['content'],
+            $testData['response']['content'],
+            $currentActivationStatus);
+
+        $this->startTest($testData);
+
+        // ensure job was triggered 
+        Queue::assertPushed(SendSubmerchantActivatedEvents::class);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+                    ->method('pushIdentifyAndTrackEvent');
+
+        // Test worker
+        $sendSubmerchantActivatedEvents = new SendSubmerchantActivatedEvents($merchant, $currentActivationStatus);
+        $sendSubmerchantActivatedEvents->handle();
+
     }
 
     public function testUpdateCategoryDetails()
