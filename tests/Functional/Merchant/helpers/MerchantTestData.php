@@ -3590,6 +3590,62 @@ return [
         ],
     ],
 
+    'testGetCheckoutPreferencesWithCustomProviders' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '90001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+                'methods' =>[
+                    'custom_providers' => [
+                        'debit_emi_providers' => [
+                            'KKBK' => [
+                                'powered_by' => [
+                                    'method' => 'cardless_emi',
+                                    'provider' => 'flexmoney',
+                                ],
+                            ],
+                            'FDRL' => [
+                                'powered_by' => [
+                                    'method' => 'cardless_emi',
+                                    'provider' => 'flexmoney',
+                                ],
+                            ],
+                            'ICIC' => [
+                                'powered_by' => [
+                                    'method' => 'cardless_emi',
+                                    'provider' => 'flexmoney',
+                                ],
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithNoCustomProviders' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'INR',
+                'amount'   => '90001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'mode'  => 'test',
+            ],
+        ],
+    ],
+
     'testGetCheckoutPreferencesWithAmountGreaterForCardlessEmi' => [
         'request'  => [
             'url'    => '/preferences',

@@ -16,6 +16,7 @@ use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Payment\Processor\Upi;
+use RZP\Models\Merchant\Methods\Entity;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
@@ -3238,6 +3239,65 @@ class Gateway
             CardlessEmi::WALNUT369 => '90000',
             CardlessEmi::HCIN => '50000',
         ],
+    ];
+
+    public static $customProviderMapping = [
+        Entity::DEBIT_EMI_PROVIDERS =>[
+            IFSC::FDRL => [
+                CardlessEmi::POWERED_BY => [
+                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
+                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
+                ],
+                CardlessEmi::META => [
+                    CardlessEmi::FLOW => CardlessEmi::PAN
+                ],
+            ],
+            IFSC::KKBK => [
+                CardlessEmi::POWERED_BY => [
+                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
+                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
+                ],
+                CardlessEmi::META => [
+                    CardlessEmi::FLOW => CardlessEmi::PAN
+                ]
+            ],
+            IFSC::ICIC => [
+                CardlessEmi::POWERED_BY => [
+                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
+                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
+                ],
+                CardlessEmi::META => [
+                    CardlessEmi::FLOW => CardlessEmi::PAN
+                ]
+            ],
+            IFSC::BARB => [
+                CardlessEmi::POWERED_BY => [
+                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
+                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
+                ],
+                CardlessEmi::META => [
+                    CardlessEmi::FLOW => CardlessEmi::PAN
+                ]
+            ],
+            IFSC::HDFC => [
+                CardlessEmi::POWERED_BY => [
+                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
+                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
+                ],
+                CardlessEmi::META => [
+                    CardlessEmi::FLOW => CardlessEmi::PAN
+                ]
+            ],
+            IFSC::IDFB => [
+                CardlessEmi::POWERED_BY => [
+                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
+                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
+                ],
+                CardlessEmi::META => [
+                    CardlessEmi::FLOW => CardlessEmi::PAN
+                ]
+            ],
+        ]
     ];
 
     // in case of any changes in gateway config, please contact smart routing team

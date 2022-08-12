@@ -7,6 +7,13 @@ use RZP\Models\Bank\Name;
 
 class CardlessEmi
 {
+    const POWERED_BY = 'powered_by';
+    const META = 'meta';
+    const FLOW = 'flow';
+
+    const DEBIT_CARD = 'debit_card';
+    const PAN = 'pan';
+
     const EARLYSALARY  = 'earlysalary';
     const ZESTMONEY    = 'zestmoney';
     const FLEXMONEY    = 'flexmoney';

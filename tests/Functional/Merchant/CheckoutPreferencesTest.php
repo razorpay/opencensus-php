@@ -979,6 +979,30 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayNotHasKey('hdfc', $response['methods']['paylater']);
     }
 
+    public function testGetCheckoutPreferencesWithCustomProviders()
+    {
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetCheckoutPreferencesWithNoCustomProviders()
+    {
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayNotHasKey('custom_providers', $response['methods']);
+    }
+
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmountOnCardlessEmi()
     {
         $this->fixtures->merchant->enableCardlessEmi();

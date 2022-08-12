@@ -37,6 +37,7 @@ use RZP\Models\Payment\Config as Config;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Services\DE\PersonalisationService;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Services\Mock\DE\PersonalisationService as MockPersonalisationService;
 use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationValidator;
 use RZP\Models\Key;
@@ -144,6 +145,8 @@ class Checkout
         $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
 
         $this->filterMethodsBasedOnAmount($data, $input);
+
+        $this->checkAndAddCustomProviders($data);
 
         $this->filterMethodBasedOnRecurring($data, $input);
 
@@ -512,6 +515,42 @@ class Checkout
             }
         }
     }
+
+    protected function checkAndAddCustomProviders(array & $data)
+    {
+        if (isset($data[Entity::METHODS][Payment\Method::CARDLESS_EMI]) === false)
+        {
+            return;
+        }
+
+        foreach (Payment\Gateway::$customProviderMapping as $customMethod => $providersDetailMap)
+        {
+            switch ($customMethod) {
+                case Merchant\Methods\Entity::DEBIT_EMI_PROVIDERS:
+                    $this->addDebitCardEmiCustomProvider($providersDetailMap, $data);
+                    break;
+            }
+        }
+    }
+
+    protected function addDebitCardEmiCustomProvider($detailMap, & $data)
+    {
+        foreach ($detailMap as $ifsc => $providerDetails)
+        {
+            $method   = $providerDetails[CardlessEmi::POWERED_BY][Payment\Entity::METHOD];
+
+            if (isset($data[Entity::METHODS][$method]) === true)
+            {
+                $enabledProviders = array_keys(array_filter($data[Entity::METHODS][$method]));
+
+                if (in_array(strtolower($ifsc), $enabledProviders) === true)
+                {
+                    $data[Entity::METHODS]['custom_providers'][Merchant\Methods\Entity::DEBIT_EMI_PROVIDERS][$ifsc] = $providerDetails;
+                }
+            }
+        }
+    }
+
 
     /**
      * Disable CRED as a payment method for recurring payments.
