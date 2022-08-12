@@ -1256,6 +1256,12 @@ return [
         'sync_enabled' => env('ACS_SYNC_ENABLED', false),
         'credcase_sync_enabled' => env('CREDCASE_CONSUMER_SYNC_ENABLED', false),
         'verbose_log' => env('ACS_VERBOSE_LOG_ENABLED', false),
+        'splitz_experiment_id' =>env('ASV_SPLITZ_EXPERIMENT_ID', ''),
+        'mock' => env('ASV_MOCK', false),
+        'host' => env('ASV_HOST', 'https://acs-web.razorpay.com'),
+        'user' => env('ASV_USERNAME'),
+        'password' => env('ASV_PASSWORD'),
+        'asv_http_client_timeout' => env('ASV_HTTP_CLIENT_TIMEOUT', 5)
     ],
 
     'recon'         => [

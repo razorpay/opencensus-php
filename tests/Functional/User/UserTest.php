@@ -6236,6 +6236,10 @@ class UserTest extends TestCase
 
         $this->mockSplitzTreatment($input, $output);
 
+        $output = ["response" => ['variant' => ['name' => 'SyncDeviation Enabled', 'variables' => [['key' => 'enabled', 'value' => 'true']]]]];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K1ZaAGS9JfAUHj'))->andReturn($output);
+
         $merchant = $this->fixtures->create('merchant');
         $user1 = $this->fixtures->create('user');
         $user2 = $this->fixtures->create('user');
@@ -6286,6 +6290,10 @@ class UserTest extends TestCase
         $output = ["response" => ["variant" => ["name" => 'enabled']]];
 
         $this->mockSplitzTreatment($input, $output);
+
+        $output = ["response" => ['variant' => ['name' => 'SyncDeviation Enabled', 'variables' => [['key' => 'enabled', 'value' => 'true']]]]];
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K1ZaAGS9JfAUHj'))->andReturn($output);
 
         $merchant = $this->fixtures->create('merchant');
         $user = $this->fixtures->create('user');

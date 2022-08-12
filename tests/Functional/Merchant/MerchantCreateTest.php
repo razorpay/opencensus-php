@@ -2488,5 +2488,22 @@ class MerchantCreateTest extends TestCase
         ];
 
         $this->mockSplitzTreatment($input, $output);
+
+        $output = [
+            "response" => [
+                'variant' => [
+                    'name' => 'SyncDeviation Enabled',
+                    'variables' => [
+                        [
+                            'key' => 'enabled',
+                            'value' => 'true',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $splitzMock = $this->getSplitzMock();
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K1ZaAGS9JfAUHj'))->andReturn($output);
     }
 }

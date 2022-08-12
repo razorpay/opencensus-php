@@ -91,6 +91,7 @@ use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\XPayroll\Service as XPayrollService;
 use AuthzAdmin\Client\Configuration as AdminConfiguration;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
+Use RZP\Models\Merchant\Acs\AsvClient\Constant as AsvConstant;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
 use RZP\Models\Merchant\OneClickCheckout\FulfillmentOrder\Service as FulfillmentOrderService;
@@ -672,6 +673,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerBvsHttpClients();
 
+        $this->registerAsvHttpClient();
+
         $this->registerPayoutServiceStatus();
 
         $this->registerPayoutServiceDetail();
@@ -825,6 +828,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'splitzService',
             'bbpsService',
             'cds_http_client',
+            AsvConstant::ASV_HTTP_CLIENT,
         ];
     }
 
@@ -1919,6 +1923,27 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
             $options         = ['timeout' => 5];
+            $client          = new MultiCurl($responseFactory, $options);
+
+            return $client;
+        });
+    }
+
+    /**
+     * register asv http client
+     *
+     * @return void
+     */
+    protected function registerAsvHttpClient()
+    {
+        $this->app->singleton(AsvConstant::ASV_HTTP_CLIENT, function($app) {
+            if ($app->runningUnitTests() === true)
+            {
+                return new Psr18ClientMock;
+            }
+            $timeout = $app[AsvConstant::CONFIG][AsvConstant::ACCOUNT_SERVICE][AsvConstant::ASV_HTTP_CLIENT_TIMEOUT];
+            $responseFactory = Psr17FactoryDiscovery::findResponseFactory();
+            $options         = ['timeout' => intval($timeout)];
             $client          = new MultiCurl($responseFactory, $options);
 
             return $client;

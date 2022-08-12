@@ -12,6 +12,7 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Consumer\Service as Consumer;
 use RZP\Trace\TraceCode;
 use Razorpay\Outbox\Job\Core as Outbox;
+use RZP\Models\Merchant\Acs\AsvClient;
 
 /**
  * Class SyncEventManager
@@ -36,6 +37,11 @@ class SyncEventManager
     /** @var Outbox $outbox */
     public $outbox;
 
+    public $splitzService;
+
+    public $syncDeviationAsvClient;
+
+
     // accountIds are stored as [id => [outboxJob1, outboxJob2, ...]]
     protected $liveAccountIds = [];
     protected $testAccountIds = [];
@@ -47,6 +53,8 @@ class SyncEventManager
         $this->app = $app;
         $this->trace = $this->app['trace'];
         $this->outbox = $this->app['outbox'];
+        $this->splitzService =  $this->app['splitzService'];
+        $this->syncDeviationAsvClient = new AsvClient\SyncAccountDeviationAsvClient();
     }
 
     public function __destruct()
@@ -177,6 +185,7 @@ class SyncEventManager
     {
         $acsSyncEnabled = $this->app['config']->get('applications.acs.sync_enabled');
         $credcaseSyncEnabled = $this->app['config']->get('applications.acs.credcase_sync_enabled');
+        $asvSplitzExperimentId = $this->app['config']->get('applications.acs.splitz_experiment_id');
 
         foreach ($this->liveAccountIds as $accountId => $outboxJobs) {
             foreach ($outboxJobs as $outboxJob)  {
@@ -190,8 +199,17 @@ class SyncEventManager
                             'mock'       => false,
                             'metadata'   => $payloadMetadata,
                         ];
-                        $this->publishOutboxJob($acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME,
-                            $jobPayload, Mode::LIVE, $metadata);
+
+                        $isSynced = false;
+                        if ($this->isSplitzOn($asvSplitzExperimentId, $accountId) === true) {
+                            $isSynced = $this->syncAccountDeviation($acsSyncEnabled, $jobPayload, Mode::LIVE, $metadata);
+                        }
+
+                        if($isSynced === false){
+                            $this->publishOutboxJob($acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME,
+                                $jobPayload, Mode::LIVE, $metadata);
+                        }
+
                         break;
                     case SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME:
                         $jobPayload = [
@@ -255,7 +273,7 @@ class SyncEventManager
         $metricDimensions = array_merge([
             Metric::LABEL_RZP_MODE   => $mode,
             Metric::LABEL_OUTBOX_JOB => $jobName,
-            ], $metadata);
+        ], $metadata);
         $logDimensions = [
             'job_name'      => $jobName,
             'job_payload'   => $jobPayload
@@ -278,6 +296,81 @@ class SyncEventManager
             $this->trace->count(Metric::ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED, $metricDimensions);
         }
     }
+
+    /**
+     * @param bool $syncEnabled
+     * @param array $jobPayload
+     * @param string $mode
+     * @param array $metadata
+     * @return bool
+     */
+    public function syncAccountDeviation(bool $syncEnabled, array $jobPayload, string $mode, array $metadata): bool
+    {
+        // if sync is not enabled, do not sync data with Account Service
+        if ($syncEnabled == false) {
+            return true;
+        }
+
+        $metricDimensions = array_merge([Metric::LABEL_RZP_MODE => $mode], $metadata);
+
+        try {
+
+            $this->trace->info(TraceCode::ASV_CALL_SYNC_ACCOUNT_DEVIATION, $jobPayload);
+            $response = $this->syncDeviationAsvClient->syncAccountDeviation($jobPayload);
+            $this->trace->info(TraceCode::ASV_CALL_SYNC_ACCOUNT_DEVIATION_SUCCESS, ['response' => $response->serializeToJsonString()]);
+
+            return true;
+
+        } catch (\Throwable $e) {
+
+            // Just logging and ignoring exception here to not mess with request flow
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR);
+            $this->trace->count(Metric::ASV_SYNC_ACCOUNT_DEVIATION_FAILED, $metricDimensions);
+
+            return false;
+        }
+    }
+
+    /**
+     * @param string $experimentId
+     * @param string $id
+     * @return bool
+     */
+    public function isSplitzOn(string $experimentId, string $id): bool
+    {
+        try {
+            $input = ['id' => $id, 'experiment_id' => $experimentId];
+
+            $this->trace->info(TraceCode::ASV_SPLITZ_REQUEST, $input);
+            $response = $this->splitzService->evaluateRequest($input);
+            $this->trace->info(TraceCode::ASV_SPLITZ_RESPONSE, $response);
+
+            if ($response['status_code'] !== 200) {
+                return false;
+            }
+
+            $variant = $response['response']['variant'] ?? [];
+
+            $variables = $variant['variables'] ?? [];
+
+            foreach ($variables as $variable) {
+                $key = $variable['key'] ?? '';
+                $value = $variable['value'] ?? '';
+
+                if ($key === 'enabled' && $value === 'true') {
+                    return true;
+                }
+            }
+
+            return false;
+
+        } catch (\Exception $e) {
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ASV_SPLITZ_ERROR);
+
+            return false;
+        }
+    }
+
 
     /**
      * Context for sync event to help with debugging

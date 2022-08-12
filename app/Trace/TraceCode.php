@@ -6873,6 +6873,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST                 = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE                = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE';
     const RECORDED_ACCOUNT_ID                                   = 'RECORDED_ACCOUNT_ID';
+    const ASV_SYNC_ACCOUNT_DEVIATION_REQUEST                    = 'ASV_SYNC_ACCOUNT_DEVIATION_REQUEST';
+    const ASV_SYNC_ACCOUNT_DEVIATION_RESPONSE                   = 'ASV_SYNC_ACCOUNT_DEVIATION_RESPONSE';
+    const ASV_SYNC_ACCOUNT_DEVIATION_ERROR                      = 'ASV_SYNC_ACCOUNT_DEVIATION_ERROR';
+    const ASV_CALL_SYNC_ACCOUNT_DEVIATION                       = 'ASV_CALL_SYNC_ACCOUNT_DEVIATION';
+    const ASV_CALL_SYNC_ACCOUNT_DEVIATION_SUCCESS               = 'ASV_CALL_SYNC_ACCOUNT_DEVIATION_SUCCESS';
+    const ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR                 = 'ASV_CALL_SYNC_ACCOUNT_DEVIATION_ERROR';
+    const ASV_SPLITZ_REQUEST                                    = 'ASV_SPLITZ_REQUEST';
+    const ASV_SPLITZ_RESPONSE                                   = 'ASV_SPLITZ_RESPONSE';
+    const ASV_SPLITZ_ERROR                                      = 'ASV_SPLITZ_ERROR';
+
 
     # Onboarding APIs
     const MERCHANT_PRODUCT_CONFIG_REQUEST                       = 'MERCHANT_PRODUCT_CONFIG_REQUEST';

@@ -32,7 +32,9 @@ class Metric
     const ACS_SYNC_EVENT_PUBLISHED              = 'acs_sync_event_published';
     const ACS_SYNC_ALERT_EVENT_PUBLISH_FAILED   = 'acs_sync_alert_event_publish_failed';
     const ACS_SYNC_ALERT_UNKNOWN_TRIGGER        = 'acs_sync_alert_unknown_trigger';
+    const ASV_SYNC_ACCOUNT_DEVIATION_TOTAL      = 'asv_sync_account_deviation_total';
     const DB_REQUESTS_BEFORE_MIGRATION          = 'db_requests_before_migration';
+    const ASV_SYNC_ACCOUNT_DEVIATION_FAILED     = 'asv_sync_account_deviation_failed';
 
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
@@ -46,6 +48,8 @@ class Metric
     const HTTP_RESPONSE_SIZE                    = 'http_response_size.histogram';
 
     const TRANSACTION_DURATION_MILLISECONDS     = 'transaction_duration_milliseconds.histogram';
+    const ASV_SYNC_ACCOUNT_DEVIATION_DURATION_MS = 'asv_sync_account_deviation_duration_ms.histogram';
+
 
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';
@@ -82,6 +86,8 @@ class Metric
     const LABEL_HOST                            = 'host';
     const LABEL_TABLE_NAME                      = 'table_name';
     const LABEL_ACTION                          = 'action';
+    const LABEL_IS_SUCCESS                      = 'is_success';
+    const LABEL_ERROR_CODE                      = 'error_code';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
