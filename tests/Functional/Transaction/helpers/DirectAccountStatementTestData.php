@@ -427,6 +427,107 @@ return [
         ],
     ],
 
+    'testFetchWithDateFilter' => [
+        'request'  => [
+            'url'     => '/transactions',
+            'method'  => 'get',
+            'content' => [
+                'account_number' => '2224440041626905',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'collection',
+                'count'    => 3,
+                'has_more' => false,
+                'items'    => [
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'currency'       => 'INR',
+                        'credit'         => 1000,
+                        'debit'          => 0,
+                        'balance'        => 10001000,
+                        'source'         => [
+                            'id'     => 'ext_testExternal00',
+                            'utr'    => '211708954836',
+                            'amount' => 1000,
+                            'entity' => 'external',
+                        ],
+                    ],
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'currency'       => 'INR',
+                        'credit'         => 1000,
+                        'debit'          => 0,
+                        'balance'        => 10001000,
+                        'transaction_id' => NULL,
+                        'source'         => [
+                            'entity'   => 'reversal',
+                            'amount'   => 1000,
+                            'fee'      => 0,
+                            'tax'      => 0,
+                            'currency' => 'INR',
+                            'utr'      => NULL,
+                        ],
+                    ],
+                    [
+                        'entity'         => 'transaction',
+                        'account_number' => '2224440041626905',
+                        'amount'         => 1000,
+                        'currency'       => 'INR',
+                        'credit'         => 0,
+                        'debit'          => 1000,
+                        'balance'        => 9999000,
+                        'source'         => [
+                            'entity'       => 'payout',
+                            'fund_account' => [
+                                'entity'            => 'fund_account',
+                                'contact_id'        => 'cont_1000010contact',
+                                'contact'           => [
+                                    'entity'   => 'contact',
+                                    'name'     => 'test user',
+                                    'contact'  => '8888888888',
+                                    'email'    => 'contact@razorpay.com',
+                                    'batch_id' => NULL,
+                                    'active'   => true,
+                                    'notes'    => [
+                                    ],
+                                ],
+                                'account_type'      => 'bank_account',
+                                'merchant_disabled' => false,
+                                'bank_account'      => [
+                                    'ifsc'           => 'SBIN0007105',
+                                    'bank_name'      => 'State Bank of India',
+                                    'name'           => 'test',
+                                    'notes'          => [
+                                    ],
+                                    'account_number' => '111000',
+                                ],
+                                'batch_id'          => NULL,
+                                'active'            => true,
+                            ],
+                            'amount'       => 1000,
+                            'notes'        => [
+                                'abc' => 'xyz',
+                            ],
+                            'fees'         => 590,
+                            'tax'          => 90,
+                            'status'       => 'processing',
+                            'utr'          => NULL,
+                            'mode'         => NULL,
+                            'reversal'     => NULL,
+                            'fee_type'     => NULL,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchByContactId' => [
         'request' => [
             'method'  => 'GET',

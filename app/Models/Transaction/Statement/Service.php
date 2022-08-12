@@ -57,7 +57,8 @@ class Service extends Transaction\Service
                 ]
             );
 
-            return $this->repo->direct_account_statement->fetch($input, $this->merchant->getId())->toArrayPublic();
+            return $this->repo->direct_account_statement
+                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE)->toArrayPublic();
         }
 
         /** @var PublicCollection $transactions */
@@ -153,7 +154,8 @@ class Service extends Transaction\Service
                 ]
             );
 
-            return $this->repo->direct_account_statement->fetch($input, $this->merchant->getId())->toArrayPublic();
+            return $this->repo->direct_account_statement
+                ->fetch($input, $this->merchant->getId(), ConnectionType::SLAVE)->toArrayPublic();
         }
 
         /** @var PublicCollection $transactions */

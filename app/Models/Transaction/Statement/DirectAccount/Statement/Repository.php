@@ -232,6 +232,18 @@ class Repository extends Base\Repository
         $query->where($idColumn, $id);
     }
 
+    protected function addQueryParamFrom($query, $params)
+    {
+        $postedDate = $this->dbColumn(Entity::POSTED_DATE);
+        $query      = $query->where($postedDate, '>=', $params['from']);
+    }
+
+    protected function addQueryParamTo($query, $params)
+    {
+        $postedDate = $this->dbColumn(Entity::POSTED_DATE);
+        $query      = $query->where($postedDate, '<=', $params['to']);
+    }
+
     protected function addQueryParamBalanceId(BuilderEx $query, array $params)
     {
         $balanceId = $params[Entity::BALANCE_ID];
@@ -287,26 +299,11 @@ class Repository extends Base\Repository
 
     protected function addQueryParamUtr(BuilderEx $query, array $params)
     {
-        $utr                     = $params[Entity::UTR];
-        $payoutUtrColumn         = $this->repo->payout->dbColumn(Payout\Entity::UTR);
-        $externalUtrColumn       = $this->repo->external->dbColumn(\RZP\Models\External\Entity::UTR);
-        $reversalUtrColumn       = $this->repo->reversal->dbColumn(\RZP\Models\Reversal\Entity::UTR);
+        $utr = $params[Entity::UTR];
 
-        $query->select($this->getTableName() . '.*');
-        $this->joinQueryPayout($query, true);
-        $this->joinQueryExternal($query);
-        $this->joinQueryReversal($query);
+        $utrColumn = $this->repo->direct_account_statement->dbColumn(Entity::UTR);
 
-        $query->where(function ($query) use (
-            $utr,
-            $payoutUtrColumn,
-            $externalUtrColumn,
-            $reversalUtrColumn)
-        {
-            $query->orWhere($payoutUtrColumn, $utr)
-                ->orWhere($externalUtrColumn,$utr)
-                ->orWhere($reversalUtrColumn,$utr);
-        });
+        $query->where($utrColumn, $utr);
     }
 
     protected function addQueryParamContactName(BuilderEx $query, array $params)

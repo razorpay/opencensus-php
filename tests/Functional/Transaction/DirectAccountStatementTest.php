@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Transaction;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -311,6 +313,46 @@ class DirectAccountStatementTest extends TestCase
         ]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+    }
+
+    public function testFetchWithDateFilter()
+    {
+        // set current time to control created_at columns
+        $timestamp = Carbon::now();
+        Carbon::setTestNow($timestamp);
+
+        // take 2 days older timestamp, 1 day older timestamp and get its int value
+        $oldTimestamp = Carbon::now()->subDays(2)->timestamp;
+        $newTimestamp = Carbon::now()->subDays(1)->timestamp;
+
+        // create a dummy payout and a BAS and set the BAS posted_date to 2 days earlier.
+        $this->createDummyPayout();
+        $bas = $this->getDbLastEntity('banking_account_statement');
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+
+        // create a dummy reversal and a BAS and set the BAS posted_date to 2 days earlier.
+        $this->createDummyReversal();
+        $bas = $this->getDbLastEntity('banking_account_statement');
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+
+        // create a dummy external and a BAS and set the BAS posted_date to 2 days earlier.
+        $this->createDummyExternal();
+        $bas = $this->getDbLastEntity('banking_account_statement');
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+
+        // create a dummy BAS and set the BAS posted_date to 2 days earlier.
+        $this->createDummyBasRecordsWithoutLinkingEntity();
+        $bas = $this->getDbLastEntity('banking_account_statement');
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+
+        // we expect date filter to happen on posted_date
+        // if it doesn't happen, then we shall be missing all statements in the response
+        $this->testData[__FUNCTION__]['request']['content']['from'] = $oldTimestamp;
+        $this->testData[__FUNCTION__]['request']['content']['to']   = $newTimestamp;
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }
