@@ -25,7 +25,7 @@ export function initSentry(appName) {
           return event;
         },
         browserTracing: {
-          tracingOrigins: ['cdn.razorpay.com', 'dashboard.razorpay.com'],
+          tracingOrigins: ['dashboard.razorpay.com', /^\//],
         },
         tracesSampleRate: 0.05,
       });
