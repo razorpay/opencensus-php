@@ -1,3 +1,4 @@
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -6,7 +7,10 @@ import { fetchOrders as fetchAll } from 'merchant/reducers/collection';
 import { orderId, attempts, amount, status, receipt, createdAt } from 'common/ui/item/pair';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { bindActionCreators } from 'redux';
+import {
+  SHOPIFY_RECEIPT_PREFIX,
+  ORDER_PENDING,
+} from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 
 class OrdersListContainer extends ListContainer {
@@ -35,7 +39,20 @@ class OrdersListContainer extends ListContainer {
     });
   };
 
+  //  For shopify if receipt No. contains rcptid prefixed we need to change as Order Pending
+  getUpdatedReceipt = () => {
+    const { items } = this.props;
+    return items.map((item) => {
+      const newItem = { ...item };
+      if (item?.receipt?.includes(SHOPIFY_RECEIPT_PREFIX)) {
+        newItem.receipt = ORDER_PENDING;
+      }
+      return newItem;
+    });
+  };
+
   render() {
+    const updatedItems = this.getUpdatedReceipt();
     return (
       <div class="content-wrapper">
         <OrdersListFilter
@@ -99,6 +116,7 @@ class OrdersListContainer extends ListContainer {
           paginate={this.paginate}
           onCellClick={selfServerTrack}
           {...this.props}
+          items={updatedItems}
         />
       </div>
     );

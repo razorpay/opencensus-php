@@ -182,3 +182,7 @@ export const SHOPIFY_MAGIC_CHECKOUT = {
   description: 'Enable Magic Checkout',
   key: 'one_click_checkout',
 };
+
+export const SHOPIFY_RECEIPT_PREFIX = 'shopify_1cc_receipt';
+
+export const ORDER_PENDING = 'Order Pending';
