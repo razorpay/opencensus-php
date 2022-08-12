@@ -13,8 +13,8 @@ export const fetchAccountsApi = (data, params) => {
   return ajax(
     {
       url: '/linked_accounts',
-      data: decodeSensitiveFields(data),
-      params,
+      data: data ? decodeSensitiveFields(data) : data,
+      params: params ? decodeSensitiveFields(params) : params,
     },
     {},
     '/merchant/api',
