@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
     const AUDIT_ID                      = 'audit_id';
+    const ONBOARDING_SOURCE             = 'onboarding_source';
 
     protected $entity = 'merchant_business_detail';
 
@@ -40,7 +41,8 @@ class Entity extends Base\PublicEntity
         self::BLACKLISTED_PRODUCTS_CATEGORY,
         self::BUSINESS_PARENT_CATEGORY,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::ONBOARDING_SOURCE
     ];
 
     protected $fillable = [
@@ -52,7 +54,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::BUSINESS_PARENT_CATEGORY,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::ONBOARDING_SOURCE
     ];
 
     protected $casts = [
@@ -66,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::APP_URLS                       => null,
         self::BLACKLISTED_PRODUCTS_CATEGORY  => null,
         self::PLUGIN_DETAILS                 => null,
+        self::ONBOARDING_SOURCE              => null
     ];
 
     public function getId()
@@ -183,5 +187,15 @@ class Entity extends Base\PublicEntity
     public function getBlacklistedProductsCategory()
     {
         return $this->getAttribute(self::BLACKLISTED_PRODUCTS_CATEGORY);
+    }
+
+    public function setOnboardingSource(string $onboardingSource)
+    {
+        return $this->setAttribute(self::ONBOARDING_SOURCE, $onboardingSource);
+    }
+
+    public function getOnboardingSource()
+    {
+        return $this->getAttribute(self::ONBOARDING_SOURCE);
     }
 }

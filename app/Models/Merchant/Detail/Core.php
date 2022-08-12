@@ -248,6 +248,8 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
+        $this->storeOnboardingSourceForNoDocMerchants($merchant);
+
         $oldMerchantDetails = clone $merchantDetails;
 
         $this->convertStatesToStatesCode($input);
@@ -395,6 +397,22 @@ class Core extends Base\Core
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
+    }
+
+    private function storeOnboardingSourceForNoDocMerchants(Merchant\Entity $merchant)
+    {
+        if ($merchant->isNoDocOnboardingEnabled() == false)
+        {
+            return false;
+        }
+
+        $businessDetailService = new Service();
+
+        $businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), [
+            DetailConstants::ONBOARDING_SOURCE => DetailConstants::XPRESS_ONBOARDING
+        ]);
+
+        $this->syncNoDocOnboardedMerchantDetailsToEs($merchant->merchantDetail);
     }
 
     /**
@@ -2930,8 +2948,6 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING && $merchant->isNoDocOnboardingEnabled() === true)
             {
-                $this->storeNoDocOnboardedMerchantDetails($merchant->merchantDetail);
-
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
             }
 
@@ -3119,7 +3135,7 @@ class Core extends Base\Core
         return $merchantDetails;
     }
 
-    public function storeNoDocOnboardedMerchantDetails(Entity $merchantDetail)
+    public function syncNoDocOnboardedMerchantDetailsToEs(Entity $merchantDetail)
     {
         $esRepo = new EsRepository(DetailConstants::DEDUPE_ES_INDEX);
 

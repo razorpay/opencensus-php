@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\BusinessDetail;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -34,6 +35,7 @@ class Validator extends Base\Validator
         Entity::BLACKLISTED_PRODUCTS_CATEGORY                                 => 'sometimes|string|max:255|nullable',
         Entity::BUSINESS_PARENT_CATEGORY                                      => 'sometimes|string|nullable',
         Entity::PLUGIN_DETAILS                                                => 'sometimes|array',
+        Entity::ONBOARDING_SOURCE                                             => ['filled', 'in:xpress_onboarding'],
     ];
 
     protected static $editRules   = [
@@ -63,5 +65,6 @@ class Validator extends Base\Validator
         Entity::BLACKLISTED_PRODUCTS_CATEGORY                                 => 'sometimes|string|max:255|nullable',
         Entity::BUSINESS_PARENT_CATEGORY                                      => 'sometimes|string|nullable',
         Entity::PLUGIN_DETAILS                                                => 'sometimes|array',
+        Entity::ONBOARDING_SOURCE                                             => ['filled', 'in:xpress_onboarding'],
     ];
 }
