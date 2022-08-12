@@ -10,6 +10,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends BankingAccount\Service
 {
+    /** @var Core $core*/
     protected $core;
 
     protected $validator;

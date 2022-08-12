@@ -2,7 +2,9 @@
 
 namespace RZP\Models\BankingAccount\BankLms;
 
+use RZP\Constants\Table;
 use \RZP\Models\BankingAccount;
+use RZP\Models\Admin\Admin;
 
 /**
  * This just inheriting banking account entity not a real one
@@ -40,7 +42,9 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::STATUS_LAST_UPDATED_AT,
-        self::BANKING_ACCOUNT_CA_SPOC_DETAILS
+        self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::SPOCS,
+        self::REVIEWERS,
     ];
 
     protected $publicSetters = [
@@ -50,7 +54,9 @@ class Entity extends BankingAccount\Entity
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
-        self::BANK_POC_NAME
+        self::BANK_POC_NAME,
+        self::SPOCS,
+        self::REVIEWERS,
     ];
 
     /**
@@ -81,7 +87,9 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::STATUS_LAST_UPDATED_AT,
-        self::BANKING_ACCOUNT_CA_SPOC_DETAILS
+        self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::SPOCS,
+        self::REVIEWERS,
     ];
 
     /**
@@ -112,7 +120,9 @@ class Entity extends BankingAccount\Entity
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
         self::STATUS_LAST_UPDATED_AT,
-        self::BANKING_ACCOUNT_CA_SPOC_DETAILS
+        self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
+        self::SPOCS,
+        self::REVIEWERS,
     ];
 
     public function toArrayCaPartnerBankPoc(): array
@@ -160,5 +170,27 @@ class Entity extends BankingAccount\Entity
         }
 
         $array[self::BANK_POC_NAME] = $bankPocUser->getName();
+    }
+
+    public function setPublicSpocsAttribute(array & $array)
+    {
+        $id = $this->getPublicId();
+        $bankingAccount = (new BankingAccount\Repository())->findByPublicId($id);
+        $spocs = $bankingAccount->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+                ->withPivot(Entity::AUDITOR_TYPE)
+                ->where(Entity::AUDITOR_TYPE, '=', 'spoc');
+
+        $array[self::SPOCS] = $spocs->get()->toArrayPublic();
+    }
+
+    public function setPublicReviewersAttribute(array & $array)
+    {
+        $id = $this->getPublicId();
+        $bankingAccount = (new BankingAccount\Repository())->findByPublicId($id);
+        $reviewers = $bankingAccount->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+            ->withPivot(Entity::AUDITOR_TYPE)
+            ->where(Entity::AUDITOR_TYPE, '=', 'reviewer');
+
+        $array[self::REVIEWERS] = $reviewers->get()->toArrayPublic();
     }
 }

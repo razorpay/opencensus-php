@@ -28,7 +28,7 @@ class Fetch extends BankingAccount\Fetch
             BankingAccount\Entity::REVIEWER_ID           => 'sometimes|string',
         ],
         AuthType::PROXY_AUTH     => [
-            self::EXPAND_EACH                   => 'filled|string|in:banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog',
+            self::EXPAND_EACH                   => 'filled|string|in:banking_account_details,banking_account_activation_details,activationCallLog',
             BankingAccount\Entity::ACCOUNT_TYPE => 'sometimes|string',
             BankingAccount\Entity::CHANNEL      => 'sometimes|string|custom',
             Entity::FILTER_MERCHANTS            => 'sometimes|array',
