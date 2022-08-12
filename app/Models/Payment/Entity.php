@@ -512,6 +512,60 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::TOKEN
     ];
 
+    protected $webhook = [
+        self::ID,
+        self::ENTITY,
+        self::AMOUNT,
+        self::CURRENCY,
+        self::BASE_AMOUNT,
+        self::BASE_CURRENCY,
+        self::STATUS,
+        self::ORDER_ID,
+        self::INVOICE_ID,
+        self::TERMINAL_ID,
+        self::LATE_AUTHORIZED,
+        self::INTERNATIONAL,
+        self::METHOD,
+        self::REFUNDS,
+        self::AMOUNT_REFUNDED,
+        self::AMOUNT_TRANSFERRED,
+        self::REFUND_STATUS,
+        self::CAPTURED,
+        self::OFFERS,
+        self::DESCRIPTION,
+        self::CARD_ID,
+        self::CARD,
+        self::BANK,
+        self::WALLET,
+        self::VPA,
+        self::EMAIL,
+        self::CONTACT,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID,
+        self::NOTES,
+        self::FEE,
+        self::TAX,
+        self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
+        self::ERROR_SOURCE,
+        self::ERROR_STEP,
+        self::ERROR_REASON,
+        self::GATEWAY_DATA,
+        self::ACQUIRER_DATA,
+        self::GATEWAY_PROVIDER,
+        self::EMI,
+        self::EMI_PLAN,
+        self::DISPUTES,
+        self::CREATED_AT,
+        self::TRANSFER,
+        self::ACCOUNT_ID,
+        self::FEE_BEARER,
+        self::PROVIDER,
+        self::SETTLED_BY,
+        self::OPTIMIZER_PROVIDER,
+        self::TOKEN
+    ];
+
     protected $reconAppInternal = [
         self::ID,
         self::ENTITY,
@@ -1655,7 +1709,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return;
         }
 
-        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);    
+        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
     }
 
     public function setEmiSubvention(string $subvention)
@@ -3842,7 +3896,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if (($app['basicauth']->isProxyOrPrivilegeAuth() === false) or
             (($app['basicauth']->isProxyOrPrivilegeAuth() === true) and
-              ($app['basicauth']->isCron() === true)))
+                ($app['basicauth']->isCron() === true)))
         {
             unset($attributes[self::AMOUNT_TRANSFERRED]);
         }
@@ -5210,6 +5264,29 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);
+        return $data;
+    }
+
+    /**
+     * Get the collection of items as a plain array.
+     * @return array
+     * @throws LogicException
+     */
+    public function toArrayWebhook()
+    {
+        $data = parent::toArrayWebhook();
+
+        if (($this->getCurrency() === Currency\Currency::INR) and
+            ($this->getStatus() === Status::FAILED))
+        {
+            unset($data[self::BASE_AMOUNT]);
+        }
+
+        if ($this->getStatus() === Status::FAILED)
+        {
+            unset($data[self::AMOUNT_TRANSFERRED]);
+        }
+
         return $data;
     }
 

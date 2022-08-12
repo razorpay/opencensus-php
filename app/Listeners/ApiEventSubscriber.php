@@ -1569,7 +1569,7 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = [
             Constants\Entity::PAYMENT => [
-                'entity' => $payment->toArrayPublic(),
+                'entity' => $payment->toArrayWebhook(),
             ],
         ];
 
