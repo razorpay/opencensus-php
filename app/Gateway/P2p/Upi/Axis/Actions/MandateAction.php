@@ -28,6 +28,7 @@ class MandateAction extends Action
     const PAUSED            = 'PAUSED';
     const UNPAUSED          = 'UNPAUSED';
     const FAILURE           = 'FAILURE';
+    const COMPLETED         = 'COMPLETED';
 
     const MAP = [
         self::APPROVE_DECLINE_MANDATE => [

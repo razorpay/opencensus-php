@@ -49,6 +49,7 @@ class Action extends Base\Action
 
     const INCOMING_UPDATE                           = 'incomingUpdate';
     const INCOMING_PAUSE                            = 'incomingPause';
+    const MANDATE_STATUS_UPDATE                     = 'mandateStatusUpdate';
 
     protected $actionToRoute = [
         self::INITIATE_AUTHORIZE        => Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,

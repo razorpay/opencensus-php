@@ -203,7 +203,71 @@ class MandateTest extends TestCase
 
         $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
 
-        $this->assertEquals($lastMandate[Entity::PAUSE_START],$timeNow);
+        $this->assertEquals($lastMandate[Entity::PAUSE_START], $timeNow);
+    }
+
+    public function testMandateStatusUpdate()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $gatewayMandateId = str_random(35);
+
+        $callback = [
+            Fields::ACCOUNT_REFERENCE_ID    => $lastMandate[Entity::BANK_ACCOUNT_ID],
+            Fields::AMOUNT                  => '1.00',
+            Fields::AMOUNT_RULE             => 'EXACT',
+            Fields::PAYER_VPA               => $this->fixtures->vpa->getAddress(),
+            Fields::GATEWAY_MANDATE_ID      => $gatewayMandateId,
+            Fields::MERCHANT_CUSTOMER_ID    => $this->fixtures->deviceToken(self::DEVICE_1)
+                                                              ->getGatewayData()[Fields::MERCHANT_CUSTOMER_ID],
+            Fields::BLOCK_FUND              => true,
+            Fields::GATEWAY_REFERENCE_ID    => '809323430413',
+            Fields::IS_MARKED_SPAM          => 'false',
+            Fields::IS_VERIFIED_PAYEE       => 'true',
+            Fields::INITIATED_BY            => 'PAYEE',
+            Fields::MANDATE_NAME            => 'merchant mandate',
+            Fields::MANDATE_TYPE            => 'PAUSE',
+            Fields::MANDATE_TIMESTAMP       => '2020-06-01T15:40:42+05:30',
+            Fields::MERCHANT_CHANNEL_ID     => 'BANK',
+            Fields::MERCHANT_ID             => 'BANK',
+            Fields::ORG_MANDATE_ID          => 'BJJMsleiuryufhuhsoisdjfadb48003sdaa0',
+            Fields::PAYEE_MCC               => '4121',
+            Fields::PAYEE_NAME              => 'BANKTEST',
+            Fields::PAYEE_VPA               => 'test@bank',
+            Fields::PAYER_REVOCABLE         => 'true',
+            Fields::RECURRENCE_PATTERN      => 'MONTHLY',
+            Fields::RECURRENCE_RULE         => 'ON',
+            Fields::RECURRENCE_VALUE        => '5',
+            Fields::REF_URL                 => 'https://www.abcxyz.com/',
+            Fields::REMARKS                 => 'Sample Remarks',
+            Fields::ROLE                    => 'PAYER',
+            Fields::SHARE_TO_PAYEE          => 'true',
+            Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
+            Fields::TYPE                    => 'MANDATE_STATUS_UPDATE',
+            Fields::UMN                     => 'uniqueMandateNumber@bank',
+            Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
+            Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
+            Fields::PAUSE_START             => Carbon::now()->getTimestamp(),
+            Fields::PAUSE_END               => Carbon::now()->addDays(365)->getTimestamp(),
+        ];
+
+        $this->mockSdk()->setCallback('MANDATE_STATUS_UPDATE', $callback);
+
+        $request = $this->mockSdk()->callback();
+
+        $response = $helper->callback($this->gateway, $request);
+
+        $this->assertTrue($response['success']);
+
+        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+
+        $this->assertEquals($lastMandate[Entity::STATUS],Status::PAUSED);
     }
 
     public function testInitiateAuthorize()
@@ -218,7 +282,7 @@ class MandateTest extends TestCase
 
         $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
 
-        $this->assertStringContainsString($lastMandate[Entity::ID],$request['callback']);
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
     }
 
 

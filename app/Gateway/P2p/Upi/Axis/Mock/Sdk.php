@@ -775,6 +775,15 @@ class Sdk
                 {
                     $callback[Fields::MANDATE_APPROVAL_TIMESTAMP]  = $input[Fields::MANDATE_APPROVAL_TIMESTAMP];
                 }
+
+                if($type === UpiAction::MANDATE_STATUS_UPDATE && $input[Fields::MANDATE_TYPE] == 'PAUSE')
+                {
+                    $callback[Fields::STATUS] = 'PAUSE';
+                }
+                else if($type === UpiAction::MANDATE_STATUS_UPDATE)
+                {
+                    $callback[Fields::STATUS] = 'completed';
+                }
                 break;
 
             case UpiAction::CUSTOMER_INCOMING_PRE_PAYMENT_NOTIFICATION_MANDATE_RECEIVED:

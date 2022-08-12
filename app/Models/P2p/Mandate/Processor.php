@@ -88,6 +88,27 @@ class Processor extends Base\Processor
         return $this->core->update($mandate,$mandate->toArray())->toArrayPublic();
     }
 
+
+    /**
+     * @param array $input
+     * This is the method to update the incoming mandate
+     *
+     * @return array
+     */
+    public function mandateStatusUpdate(array $input): array
+    {
+        $this->initialize(Action::MANDATE_STATUS_UPDATE, $input);
+
+        // get the existing mandate
+        $mandate = $this->core->fetchByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
+
+
+        $mandate[Entity::STATUS]                = $this->input->bag(Entity::MANDATE)->get(Entity::STATUS);
+        $mandate[Entity::INTERNAL_STATUS]       = $this->input->bag(Entity::MANDATE)->get(Entity::INTERNAL_STATUS);
+
+        return $this->core->update($mandate, $mandate->toArray())->toArrayPublic();
+    }
+
     /**
      * @param array $input
      * This is the method to initiate authorize mandate flow

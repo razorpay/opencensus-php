@@ -133,11 +133,33 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                 ];
 
                 $response->setData([
+                           Mandate\Entity::MANDATE => $mandate,
+                           Mandate\Entity::UPI     => $upi,
+                           Mandate\Entity::CONTEXT => $context,
+                ]); 
+                
+                return;
+                
+            case UpiAction::MANDATE_STATUS_UPDATE:
+
+                $upiMandateTransformer = new UpiMandateTransformer($content, $type);
+                $upi                   = $upiMandateTransformer->transformIncoming();
+
+                $mandateTransformer = new MandateTransformer($upi, $type);
+                $mandate            = $mandateTransformer->transformIncoming();
+
+                unset($upi[Mandate\Entity::MANDATE]);
+
+                $context = [
+                    Mandate\Entity::ENTITY  => Mandate\Entity::MANDATE,
+                    Mandate\Entity::ACTION  => Mandate\Action::MANDATE_STATUS_UPDATE,
+                ];
+
+                $response->setData([
                    Mandate\Entity::MANDATE => $mandate,
                    Mandate\Entity::UPI     => $upi,
                    Mandate\Entity::CONTEXT => $context,
                 ]);
-
                 return;
 
             default:
@@ -191,6 +213,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             case UpiAction::CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED:
             case UpiAction::CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED:
             case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
+            case UpiAction::MANDATE_STATUS_UPDATE:
             case null:
 
                 $signature = $this->getpayloadSignature();

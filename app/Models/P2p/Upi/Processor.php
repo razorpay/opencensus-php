@@ -175,6 +175,7 @@ class Processor extends Base\Processor
             case Mandate\Action::INCOMING_COLLECT:
             case Mandate\Action::INCOMING_UPDATE:
             case Mandate\Action::INCOMING_PAUSE:
+            case Mandate\Action::MANDATE_STATUS_UPDATE:
 
                 $payer = $this->input->get(Mandate\Entity::MANDATE)[Mandate\Entity::PAYER];
 

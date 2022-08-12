@@ -46,6 +46,13 @@ class MandateTransformer extends TransactionTransformer
                 ];
                 break;
 
+            case UpiAction::MANDATE_STATUS_UPDATE:
+                $output = [
+                    Entity::TYPE                => Type::COLLECT,
+                    Entity::FLOW                => Flow::DEBIT,
+                ];
+                break;
+
             case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
                 $output = [
                     Entity::TYPE                => Type::COLLECT,
@@ -62,6 +69,7 @@ class MandateTransformer extends TransactionTransformer
                     Entity::STATUS                          => Status::REVOKED,
                     Entity::INTERNAL_STATUS                 => Status::REVOKED,
                 ];
+                break;
         }
 
         // switch in case of mandate status

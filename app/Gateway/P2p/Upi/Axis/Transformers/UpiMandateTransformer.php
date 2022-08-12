@@ -155,6 +155,54 @@ class UpiMandateTransformer extends Transformer
 
                 break;
 
+            case UpiAction::CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED:
+                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
+
+                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+                $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
+
+                $expiryAt        = $this->transformExpireAt();
+                $startDate       = Carbon::parse($this->input[Fields::VALIDITY_START])->getTimestamp();
+                $endDate         = Carbon::parse($this->input[Fields::VALIDITY_END])->getTimestamp();
+                $pauseStartDate  = isset($this->input[Fields::PAUSE_START]) ? Carbon::parse($this->input[Fields::PAUSE_START])->getTimestamp(): 0;
+                $pauseEndDate    = isset($this->input[Fields::PAUSE_END]) ? Carbon::parse($this->input[Fields::PAUSE_END])->getTimestamp(): 0;
+                break;
+
+            case UpiAction::MANDATE_STATUS_UPDATE:
+                $payer = $this->toUsernameHandle($this->input[Fields::PAYER_VPA]);
+
+                $payee = $this->toUsernameHandle($this->input[Fields::PAYEE_VPA]);
+                $payee[Vpa\Entity::BENEFICIARY_NAME] = $this->input[Fields::PAYEE_NAME];
+
+                $expiryAt        = $this->transformExpireAt();
+                $startDate       = Carbon::parse($this->input[Fields::VALIDITY_START])->getTimestamp();
+                $endDate         = Carbon::parse($this->input[Fields::VALIDITY_END])->getTimestamp();
+                $pauseStartDate  = isset($this->input[Fields::PAUSE_START]) ? Carbon::parse($this->input[Fields::PAUSE_START])->getTimestamp(): 0;
+                $pauseEndDate    = isset($this->input[Fields::PAUSE_END]) ? Carbon::parse($this->input[Fields::PAUSE_END])->getTimestamp(): 0;
+
+                // if the state of the mandate is in completed state mark it as completed
+                if(isset($this->input[Fields::STATUS]) === true)
+                {
+                    switch ($this->input[Fields::STATUS])
+                    {
+                        case MandateAction::COMPLETED:
+                            $this->input[Mandate\Entity::STATUS]          = Mandate\Status::COMPLETED;
+                            $this->input[Mandate\Entity::INTERNAL_STATUS] = Mandate\Status::COMPLETED;
+                            break;
+
+                        case MandateAction::SUCCESS:
+                            $this->input[Mandate\Entity::STATUS]          = Mandate\Status::APPROVED;
+                            $this->input[Mandate\Entity::INTERNAL_STATUS] = Mandate\Status::APPROVED;
+                            break;
+
+                        case MandateAction::PAUSE:
+                            $this->input[Mandate\Entity::STATUS]          = Mandate\Status::PAUSED;
+                            $this->input[Mandate\Entity::INTERNAL_STATUS] = Mandate\Status::PAUSED;
+                            break;
+                    }
+                }
+                break;
+
             default:
                 throw new RuntimeException('Action'. $this->action . 'is not known');
         }
@@ -193,6 +241,16 @@ class UpiMandateTransformer extends Transformer
         if (isset($this->input[Fields::PAUSE_END]) === true)
         {
             $output[Mandate\Entity::PAUSE_END]   = Carbon::parse($this->input[Fields::PAUSE_END])->getTimestamp();
+        }
+
+        if(isset($this->input[Fields::STATUS]) === true)
+        {
+            $output[Mandate\Entity::STATUS] = $this->input[Fields::STATUS];
+        }
+
+        if(isset($this->input[Mandate\Entity::INTERNAL_STATUS]) === true)
+        {
+            $output[Mandate\Entity::INTERNAL_STATUS] = $this->input[Mandate\Entity::INTERNAL_STATUS];
         }
 
         return $output;
