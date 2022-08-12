@@ -45,6 +45,7 @@ class CongfigurationContainer extends Component {
     isLoading: false,
     isPaypalOrg: false,
     isPaypalMid: false,
+    allowCFBInternational: false,
   };
 
   UNSAFE_componentWillMount() {
@@ -62,24 +63,10 @@ class CongfigurationContainer extends Component {
       });
 
       // check paypal MID feature
-      this.props
-        .fetchFeatureStatus(this.props.user.id, 'axis_paypal_enable')
-        .then((fetchFeatureStatusResp) => {
-          if (fetchFeatureStatusResp.data.status) {
-            this.setState({
-              isPaypalMid: true,
-            });
-          }
-        })
-        .catch((err) => {
-          if (err) {
-            this.props.showNotification({
-              type: 'error',
-              message: err.errors[0],
-            });
-          }
-        });
+      this.fetchFeatureFlagStatus('axis_paypal_enable', 'isPaypalMid');
     }
+
+    this.fetchFeatureFlagStatus('allow_cfb_international', 'allowCFBInternational');
   }
 
   is_hash_loaded_once = false;
@@ -284,6 +271,53 @@ class CongfigurationContainer extends Component {
       });
   };
 
+  fetchFeatureFlagStatus = (flag, state) => {
+    this.props
+      .fetchFeatureStatus(this.props.user?.id, flag)
+      .then((response) => {
+        if (response?.success) {
+          this.setState((prevState) => ({
+            ...prevState,
+            [state]: response?.data?.status,
+          }));
+        }
+      })
+      .catch((err) => {
+        if (err) {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors[0],
+          });
+        }
+      });
+  };
+
+  /**
+   * Check conditions to show Fee Bearer Self Serve
+   * Allow international merchants to use fee bearer self serve if they have allow_cfb_international flag set to true
+   *
+   * @param {*} user - User Object
+   * @returns {Boolean} true if conditions are met
+   */
+  shouldShowFeeBearerSelfServe = ({
+    isOrgRZP,
+    isAccepted,
+    role,
+    isFeeBearerSelfServeOn,
+    isPayPalEnabled,
+    international,
+  }) => {
+    const { allowCFBInternational } = this.state;
+    const shouldAllow =
+      isOrgRZP && isAccepted && role === 'owner' && isFeeBearerSelfServeOn && !isPayPalEnabled;
+
+    if (allowCFBInternational) {
+      return shouldAllow && international;
+    }
+
+    return shouldAllow && !international;
+  };
+
   render() {
     const {
       mode,
@@ -338,16 +372,7 @@ class CongfigurationContainer extends Component {
               <DefaultRefundSpeed org={org} />
             </IntoView>
             {user?.international && <Firc />}
-            <ShowWhen
-              additionalCondition={(usr) =>
-                usr.isOrgRZP &&
-                usr.isAccepted &&
-                usr.role === 'owner' &&
-                !usr.international &&
-                !usr.isPayPalEnabled &&
-                usr.isFeeBearerSelfServeOn
-              }
-            >
+            <ShowWhen additionalCondition={this.shouldShowFeeBearerSelfServe}>
               <FeeBearerSelfserver />
             </ShowWhen>
             {mode === 'live' && showInternationalPaymentsCard && (
@@ -394,7 +419,13 @@ export default compose(
         org: state.session.org,
       };
     },
-    { ...ConfigActions, ...NotificationActions, openModal, closeModal, fetchUser },
+    {
+      ...ConfigActions,
+      ...NotificationActions,
+      openModal,
+      closeModal,
+      fetchUser,
+    },
   ),
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('CongfigurationContainer')),
