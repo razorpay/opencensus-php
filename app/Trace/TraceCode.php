@@ -2423,6 +2423,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const IIN_METRICS_PUSH_EXCEPTION                            = 'IIN_METRICS_PUSH_EXCEPTION';
     const IIN_ERROR_LOGGING_RESPONSE_TIME_METRIC                = 'IIN_ERROR_LOGGING_RESPONSE_TIME_METRIC';
     const IIN_RECURRING_CHECK_FAILED                            = 'IIN_RECURRING_CHECK_FAILED';
+    const TOKEN_INTEROPERABILITY_FETCH_PARTNER_EXCEPTION        = 'TOKEN_INTEROPERABILITY_FETCH_PARTNER_EXCEPTION';
+    const TOKEN_INTEROPERABILITY_PARTNER_MERCHANT_USED          = 'TOKEN_INTEROPERABILITY_PARTNER_MERCHANT_USED';
     const TOKEN_IIN_DELETE_BULK                                 = 'TOKEN_IIN_DELETE_BULK';
     const TOKEN_IIN_DELETE_BULK_FAILED                          = 'TOKEN_IIN_DELETE_BULK_FAILED';
     const BIN_API                                               = 'BIN_API';

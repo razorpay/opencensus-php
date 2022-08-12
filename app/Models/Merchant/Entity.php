@@ -2775,6 +2775,10 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::HEADLESS_DISABLE) === false;
     }
 
+    public function isTokenInteroperabilityEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::TOKEN_INTEROPERABILITY);
+    }
 
     public function isIvrEnabled() : bool
     {
@@ -3401,4 +3405,35 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
+
+    public function getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant)
+    {
+        try {
+            $this->app = App::getFacadeRoot();
+            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+            $partner = $this->app['repo']->merchant->find($partnerMerchantId);
+
+            if (($partner != null) and
+                ($partner->isTokenInteroperabilityEnabled() === true) and
+                ($partner->isFullyManagedPartner() === true))
+            {
+                app('trace')->info(
+                    TraceCode::TOKEN_INTEROPERABILITY_PARTNER_MERCHANT_USED,
+                    [
+                        'partner_id'        => $partnerMerchantId,
+                        'merchant_id'       => $merchant->getId(),
+                    ]);
+
+                return $partner;
+            }
+            else {
+                return $merchant;
+            }
+        }
+        catch (\Exception $exception) {
+            app('trace')->traceException($exception, Logger::ERROR, TraceCode::TOKEN_INTEROPERABILITY_FETCH_PARTNER_EXCEPTION);
+            return $merchant;
+        }
+    }
+
 }

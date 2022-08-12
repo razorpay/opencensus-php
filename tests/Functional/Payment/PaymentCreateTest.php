@@ -1323,6 +1323,518 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($pay['status'], 'authorized');
     }
 
+    /**
+     * Tests S2S on partner auth with token_interoperability feature(S2S)
+     */
+    public function testPaymentS2SOnPartnerAuthWithTokenInteroperability()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application',
+            'entity_id'   => $client->getApplicationId(),
+            'name'        => 'token_interoperability']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->merchant->addFeatures('s2s',$sub->getId());
+        $this->fixtures->merchant->addFeatures('token_interoperability');
+
+        $this->createMerchantApplication('10000000000000', 'fully_managed', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $this->mockCardVaultWithCryptogram(null,true);
+
+        $payment = $this->getDefaultPaymentArray();
+
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'merchant_id'       =>  '10000000000000',
+                'name'              =>  'test',
+                'iin'               =>  '411140',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'HDFC',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'debit',
+                'vault'             =>  'visa',
+                'vault_token'       =>  'test_token',
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardToken',
+                'customer_id'   =>  '1000ggcustomer',
+                'method'        => 'card',
+                'card_id'       => '100000003lcard',
+                'used_at'       =>  10,
+                'merchant_id'   =>  '10000000000000',
+            ]
+        );
+        $payment['token'] = 'token_100022custcard';
+        $payment['customer_id'] = 'cust_1000ggcustomer';
+        unset($payment['card']);
+        $payment['card']['cvv']='123';
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($pay['public_id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals($pay['status'], 'authorized');
+
+        $this->assertEquals($pay['customer_id'], 'cust_1000ggcustomer');
+
+        $this->assertEquals($pay['token_id'], 'token_100022custcard');
+
+        $this->assertEquals($pay['merchant_id'], $sub->getId());
+    }
+
+    public function testSavedCardS2SPaymentOnPartnerAuthWithTokenInteroperability()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application',
+            'entity_id'   => $client->getApplicationId(),
+            'name'        => 'token_interoperability']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->merchant->addFeatures('s2s',$sub->getId());
+        $this->fixtures->merchant->addFeatures('token_interoperability');
+
+        $this->createMerchantApplication('10000000000000', 'fully_managed', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $this->mockCardVaultWithCryptogram(null,true);
+
+        $payment = $this->getDefaultPaymentArray();
+
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+        $payment['customer_id'] = 'cust_1000ggcustomer';
+        $payment['save'] = 1 ;
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($pay['public_id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals($pay['status'], 'authorized');
+
+        $this->assertEquals($pay['customer_id'], 'cust_1000ggcustomer');
+
+        $this->assertNotNull($pay['token_id']);
+
+        $this->assertEquals($pay['merchant_id'], $sub->getId());
+
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals($token['merchant_id'], '10000000000000');
+
+        $this->assertEquals($token['customer_id'], '1000ggcustomer');
+
+
+        // subsequent payments
+
+        $subsequentPayment = $this->getDefaultPaymentArray();
+        $subsequentPayment['customer_id'] = 'cust_1000ggcustomer';
+        $subsequentPayment['token'] = $token['id'];
+        unset($subsequentPayment['card']);
+        $subsequentPayment['card']['cvv']='123';
+
+        $subsequentPaymentResponse = $this->doS2SPartnerAuthPayment($subsequentPayment, $client, 'acc_' . $sub->getId());
+
+
+        $this->assertArrayHasKey('razorpay_payment_id', $subsequentPaymentResponse);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($pay['public_id'], $subsequentPaymentResponse['razorpay_payment_id']);
+
+        $this->assertEquals($pay['status'], 'authorized');
+
+        $this->assertEquals($pay['customer_id'], 'cust_1000ggcustomer');
+
+        $this->assertEquals($pay['token_id'], $subsequentPayment['token']);
+
+        $this->assertEquals($pay['merchant_id'], $sub->getId());
+
+    }
+
+    public function testPaymentS2SonAggregatorWithTokenInteroperability()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application',
+            'entity_id'   => $client->getApplicationId(),
+            'name'        => 'token_interoperability']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+        $this->fixtures->merchant->addFeatures('s2s');
+        $this->fixtures->merchant->addFeatures('s2s',$sub->getId());
+        $this->fixtures->merchant->addFeatures('token_interoperability');
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $this->mockCardVaultWithCryptogram(null,true);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'merchant_id'       =>  '10000000000000',
+                'name'              =>  'test',
+                'iin'               =>  '411140',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'HDFC',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'debit',
+                'vault'             =>  'visa',
+                'vault_token'       =>  'test_token',
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardToken',
+                'customer_id'   =>  '1000ggcustomer',
+                'method'        => 'card',
+                'card_id'       => '100000003lcard',
+                'used_at'       =>  10,
+                'merchant_id'   =>  '10000000000000',
+            ]
+        );
+        $payment['token'] = 'token_100022custcard';
+        $payment['customer_id'] = 'cust_1000ggcustomer';
+        unset($payment['card']);
+        $payment['card']['cvv']='123';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment, $client, $sub)
+            {
+                $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+            },
+            \RZP\Exception\BadRequestException::class , 'The id provided does not exist');
+
+    }
+
+    public function testPaymentS2SonPartnerAuthWhereTokenInteroperabilityIsDisabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+        $this->fixtures->merchant->addFeatures('s2s');
+        $this->fixtures->merchant->addFeatures('s2s',$sub->getId());
+        $this->fixtures->merchant->addFeatures('s2s_json',$sub->getId());
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $this->mockCardVaultWithCryptogram(null,true);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixtures->card->create(
+            [
+                'id'                =>  '100000003lcard',
+                'merchant_id'       =>  '10000000000000',
+                'name'              =>  'test',
+                'iin'               =>  '411140',
+                'expiry_month'      =>  '12',
+                'expiry_year'       =>  '2100',
+                'issuer'            =>  'HDFC',
+                'network'           =>  'Visa',
+                'last4'             =>  '1111',
+                'type'              =>  'debit',
+                'vault'             =>  'visa',
+                'vault_token'       =>  'test_token',
+            ]
+        );
+
+        $this->fixtures->token->create(
+            [
+                'id'            => '100022custcard',
+                'token'         => '10003cardToken',
+                'customer_id'   =>  '1000ggcustomer',
+                'method'        => 'card',
+                'card_id'       => '100000003lcard',
+                'used_at'       =>  10,
+                'merchant_id'   =>  '10000000000000',
+            ]
+        );
+        $payment['token'] = 'token_100022custcard';
+        $payment['customer_id'] = 'cust_1000ggcustomer';
+        unset($payment['card']);
+        $payment['card']['cvv']='123';
+
+        $this->makeRequestAndCatchException(
+            function() use ($payment, $client, $sub)
+            {
+                $this->doS2SJsonPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+            },
+            \RZP\Exception\BadRequestException::class , 'The id provided does not exist');
+
+    }
+
+
+    public function testRecurringPaymentWithTokenInteroperabilityandWithPartnerCustomerID(){
+
+         $client = $this->createPartnerApplicationAndGetClientByEnv(
+        'dev',
+        [
+            'type' => 'partner',
+            'id'   => 'AwtIC8XQqM0Wet'
+        ]);
+
+            $this->mockCardVault();
+
+            $this->fixtures->feature->create([
+                'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+            $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+            $sub = $this->fixtures->merchant->createWithBalance();
+            $this->fixtures->merchant->addFeatures('s2s');
+            $this->fixtures->merchant->addFeatures('token_interoperability');
+            $this->fixtures->merchant->addFeatures('s2s',$sub->getId());
+            $this->fixtures->merchant->addFeatures('s2s_json',$sub->getId());
+            $this->fixtures->merchant->addFeatures('charge_at_will',$sub->getId());
+            $this->createMerchantApplication('10000000000000', 'fully_managed', $client->getApplicationId());
+
+            $this->fixtures->create(
+                'merchant_access_map',
+                [
+                    'entity_id'   => $client->getApplicationId(),
+                    'merchant_id' => $sub->getId(),
+                ]
+            );
+
+            $this->mockCardVaultWithCryptogram(null,true);
+
+            $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+            $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+            );
+
+           $payment = $this->getDefaultRecurringPaymentArray();
+
+            $payment['save'] = true;
+            $payment['recurring'] = 'preferred';
+            $payment['customer_id'] = 'cust_1000ggcustomer';
+
+            $this->makeRequestAndCatchException(
+            function() use ($payment, $client, $sub)
+            {
+                $this->doS2SJsonPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+            },
+            \RZP\Exception\BadRequestException::class , 'The id provided does not exist');
+
+    }
+
+    public function testRecurringPaymentWithoutTokenInteroperabilityAndSubmerchantKaCustomer(){
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv(
+            'dev',
+            [
+                'type' => 'partner',
+                'id'   => 'AwtIC8XQqM0Wet'
+            ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'application', 'entity_id'  => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+        $this->fixtures->merchant->addFeatures('s2s');
+        $this->fixtures->merchant->addFeatures('s2s',$sub->getId());
+        $this->fixtures->merchant->addFeatures('s2s_json',$sub->getId());
+        $this->fixtures->merchant->addFeatures('charge_at_will',$sub->getId());
+        $this->createMerchantApplication('10000000000000', 'fully_managed', $client->getApplicationId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => $sub->getId(),
+            ]
+        );
+
+        $this->mockCardVaultWithCryptogram(null,true);
+
+        $this->fixtures->methods->createDefaultMethods(['merchant_id' => $sub->getId()]);
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   =>  $sub->getId()
+            ]
+        );
+
+        $payment = $this->getDefaultRecurringPaymentArray();
+
+        $payment['save'] = true;
+        $payment['recurring'] = 'preferred';
+        $payment['customer_id'] = 'cust_1000ggcustomer';
+
+        $responseContent = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+
+        $tokenEntity = $this->getEntityById('token', $paymentEntity['token_id'],true);
+
+        $this->assertEquals($sub->getId(), $tokenEntity['merchant_id']);
+    }
+
     public function testNotEnrolledCardPaymentS2SOnPrivateAuth()
     {
         $this->mockCardVault();

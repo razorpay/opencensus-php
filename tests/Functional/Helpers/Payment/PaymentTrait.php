@@ -2776,6 +2776,37 @@ trait PaymentTrait
         return $content;
     }
 
+    /**
+     * @param $payment
+     * @param $client
+     * @param $submerchantId
+     *
+     * @return bool|mixed|string
+     */
+    protected function doS2SJsonPartnerAuthPayment($payment, $client, $submerchantId)
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $submerchantId,
+        ];
+
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/json',
+            'content' => $payment,
+            'server'  => $server,
+        ];
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function mockFundAccountService($callable = null)
     {
         $fts = Mockery::mock('RZP\Services\FTS\CreateAccount', [$this->app])->makePartial();
@@ -3516,7 +3547,7 @@ trait PaymentTrait
                 }) );
     }
 
-    protected function mockCardVaultWithCryptogram($callable = null)
+    protected function mockCardVaultWithCryptogram($callable = null , $useActualCard = false)
     {
         $app = \App::getFacadeRoot();
 
@@ -3528,8 +3559,7 @@ trait PaymentTrait
 
         $this->app->instance('mpan.cardVault', $mpanVault);
 
-        $callable = $callable ?: function ($route, $method, $input)
-        {
+        $callable = $callable ?: function ($route, $method, $input) use  ($useActualCard) {
             $response = [
                 'error' => '',
                 'success' => true,
@@ -3544,6 +3574,11 @@ trait PaymentTrait
                     break;
 
                 case 'detokenize':
+                    if($useActualCard == true)
+                    {
+                        $response['value'] = '4012001038443335';
+                        break;
+                    }
                     $response['value'] = base64_decode($input['token']);
                     break;
 

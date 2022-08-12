@@ -2436,14 +2436,21 @@ class Processor
             // token. If it's local token, the token's merchant should match the
             // payment request's merchant.
             //
-            if ($token->getMerchantId() !== $this->merchant->getId())
+            $tokenMethod = $token->getMethod();
+
+            $merchant = $this->merchant;
+
+            if ($tokenMethod === Payment\Method::CARD and $token->isRecurring() === false) {
+
+                $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
+            }
+
+            if ($token->getMerchantId() !== $merchant->getId() )
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_ID,
                     'token');
             }
-
-            $tokenMethod = $token->getMethod();
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 

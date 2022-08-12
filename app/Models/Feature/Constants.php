@@ -1465,6 +1465,11 @@ class Constants
      */
     const INTER_ACCOUNT_TEST_PAYOUT = 'inter_account_test_payout';
 
+     /**
+     * Feature flag to allow token interoperabilty between partner's sub merchant for saved card
+     */
+    const TOKEN_INTEROPERABILITY = 'token_interoperability';
+
       /**
      * Feature flag to configure report for KFIN
      */
@@ -1475,7 +1480,7 @@ class Constants
      */
     const CAMS_MERCHANT_REPORT = 'cams_merchant_report';
 
-
+    
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2013,6 +2018,7 @@ class Constants
         self::CART_API_AMOUNT_CHECK           => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
+        self::TOKEN_INTEROPERABILITY          => true,
         self::ONE_CC_INPUT_ENGLISH            => true,
         self::RAZORPAY_SECURE_MERCHANT        => true,
         self::RBL_BANK_LMS_DASHBOARD          => true,

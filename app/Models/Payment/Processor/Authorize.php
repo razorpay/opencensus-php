@@ -3935,7 +3935,7 @@ trait Authorize
         {
             return;
         }
-        
+
         if($this->evalExperimentDCCRecurringAutoOnLibraryDirect($payment) !== true)
         {
             return;
@@ -4302,9 +4302,18 @@ trait Authorize
             $input['card']['cvv'] = Card\Entity::DUMMY_CVV;
         }
 
+        $merchant = $this->merchant;
+        // fetching customer id from partner merchant since customer belong to partner merchant
+        if ($this->usePartnerMerchantForTokenInteroperabilityIfApplicable($payment, $input) === true )
+        {
+            $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
+        }
+
         // First fetch the relevant customer (global or local)
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
-                                                                $input, $this->merchant, $followGlobal);
+                                                                $input, $merchant, $followGlobal);
+
+        $this->isTokenInteroperabilityAllowed($customer, $payment, $input);
 
         if (($customer === null) and
             ($payment->hasSubscription() === true) and
@@ -4525,6 +4534,35 @@ trait Authorize
 
         // Not doing inside above mentioned UPI condition because Recurring data is set after that logic
         $this->modifyRecurringForUpiIfApplicable($payment, $input, $gatewayInput);
+    }
+
+    protected function isTokenInteroperabilityAllowed($customer , $payment , $input)
+    {
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+        if ((($customer !== null) and
+                ($partnerMerchantId !== null) and
+                ($customer->getMerchantId() === $partnerMerchantId)) and
+            (($payment->isMethodCardOrEmi() === true and
+                    isset($input['recurring']) === true) or
+                $payment->isMethodCardOrEmi() === false ))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Token Interoperability is not supported on this merchant.');
+        }
+    }
+
+    protected function usePartnerMerchantForTokenInteroperabilityIfApplicable(Payment\Entity $payment, $input ):bool
+    {
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+        if (($partnerMerchantId !== null) and
+            ($payment->isMethodCardOrEmi() === true) and
+            (isset($input['recurring']) === false) and
+            (isset($input[Payment\Entity::CUSTOMER_ID]) === true))
+        {
+          return true;
+        }
+        return false;
     }
 
     protected function setChargeAccountMerchantIfApplicable($input, & $gatewayInput)
@@ -5475,6 +5513,12 @@ trait Authorize
         if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
             $merchant = ($customer === null) ? $payment->merchant : $customer->merchant;
+
+            // card id should belong to submerchant
+            if ($this->usePartnerMerchantforTokenInteroperabilityIfApplicable($payment, $input) === true)
+            {
+                $merchant = $payment->merchant;
+            }
 
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $merchant, $input);
 
@@ -8301,9 +8345,13 @@ trait Authorize
                 ]);
     }
 
-    protected function createCardForNetworkToken($card, $input)
+    protected function createCardForNetworkToken($card, $input, $merchant=null)
     {
-        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $card->merchant);
+        if ($merchant === null){
+            $merchant = $card->merchant;
+        }
+
+        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
 
         $cardCore = new Card\Core;
 
@@ -8331,7 +8379,18 @@ trait Authorize
         {
             $this->logTokenisedCardPaymentRoutingInfo($token, false);
 
-            return $this->createCardForNetworkToken($card, $input);
+            $merchant = $card->merchant;
+            // using partner merchant for cryptogram api on token_interoperabilty
+            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
+
+            if (($token->isRecurring() === false) and
+                (empty($token->getCustomerId()) === false) and
+                $partnerMerchantId !== null )
+            {
+                $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
+            }
+
+            return $this->createCardForNetworkToken($card, $input, $merchant);
         }
 
         $this->logTokenisedCardPaymentRoutingInfo($token, true);
@@ -11541,14 +11600,14 @@ trait Authorize
      * @param array          $input
      *
      * @return boolean
-     * 
-     * Following Conditions to check and if all passes return true - 
+     *
+     * Following Conditions to check and if all passes return true -
      * 1. Payment Should be Recurring Auto on Direct Library
      * 2. Should be a Card Payment
      * 3. Merchant should be international & dcc enabled
      * 4. Card Should be Supported for DCC and Card Country Shouldn't be Null
      */
-    
+
     private function checkDCCForRecurringAutoOnLibraryDirect(array $input, Payment\Entity $payment)
     {
         if($payment->isRecurring() === false or $payment->getRecurringType() !== Payment\RecurringType::AUTO)
