@@ -507,7 +507,7 @@ class Core extends Base\Core
                 'order' => [
                     'id' =>  $payment->order->getId(),
                     'product_type' => $payment->order->getProductType(),
-                    'is_invoice_order' => empty($payment->order->invoice),
+                    'is_invoice_order' => !empty($payment->order->invoice),
                     'is_partial_payment_allowed' => $payment->order->isPartialPaymentAllowed(),
                     'amount' => $payment->order->getAmount(),
                     'currency' => $payment->order->getCurrency(),

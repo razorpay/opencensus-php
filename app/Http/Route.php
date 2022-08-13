@@ -12977,6 +12977,7 @@ class Route
             'read_merchant_options',
             'order_create',
             'payment_fetch_by_id',
+            'payment_fetch_by_id_internal',
             'order_payments',
             'invoice_fetch',
             'invoice_fetch_multiple',
