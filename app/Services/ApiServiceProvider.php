@@ -683,6 +683,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceRetry();
 
+        $this->registerPayoutServiceRedis();
+
         $this->registerPayoutServiceSchedule();
 
         $this->registerPayoutServiceDashboardTimeslots();
@@ -1654,6 +1656,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Retry::PAYOUT_SERVICE_RETRY, function($app)
         {
             return new PayoutService\Retry($app);
+        });
+    }
+
+    protected function registerPayoutServiceRedis()
+    {
+        $this->app->singleton(PayoutService\Redis::PAYOUT_SERVICE_REDIS, function($app)
+        {
+            return new PayoutService\Redis($app);
         });
     }
 

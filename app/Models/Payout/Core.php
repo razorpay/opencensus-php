@@ -179,6 +179,11 @@ class Core extends Base\Core
     protected $payoutRetryServiceClient;
 
     /**
+     * @var PayoutService\Redis
+     */
+    protected $payoutServiceRedisClient;
+
+    /**
      * @var PayoutService\Get
      */
     protected $payoutGetApiServiceClient;
@@ -223,6 +228,8 @@ class Core extends Base\Core
         $this->payoutServiceBeneEventUpdateClient = $this->app[PayoutService\OnHoldBeneEvent::PAYOUT_SERVICE_BENE_EVENT_UPDATE];
 
         $this->payoutRetryServiceClient = $this->app[PayoutService\Retry::PAYOUT_SERVICE_RETRY];
+
+        $this->payoutServiceRedisClient = $this->app[PayoutService\Redis::PAYOUT_SERVICE_REDIS];
 
         $this->payoutGetApiServiceClient = $this->app[PayoutService\Get::PAYOUT_SERVICE_GET];
 
@@ -5911,6 +5918,11 @@ class Core extends Base\Core
         }
 
         return [$countOfSuccessfulFundLoading, $countOfDelayedFundLoading, $countOfUnsuccessfulFundLoading];
+    }
+
+    public function payoutServiceRedisKeySet($input)
+    {
+        return $this->payoutServiceRedisClient->payoutsMicroserviceRedisKeySet($input);
     }
 
     public function addMerchantForTestPayouts(string $merchantId)

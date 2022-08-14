@@ -3610,6 +3610,11 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function payoutServiceRedisKeySet($input)
+    {
+        return $this->core->payoutServiceRedisKeySet($input);
+    }
+
     public function initiateDataMigration(array $input): array
     {
         $response = $this->core->initiateDataMigration($input);

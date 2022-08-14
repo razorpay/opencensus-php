@@ -769,6 +769,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function payoutServiceRedisKeySet()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->payoutServiceRedisKeySet($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function initiateDataMigration()
     {
         $input = Request::all();

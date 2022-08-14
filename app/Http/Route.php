@@ -3546,6 +3546,7 @@ class Route
         'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
+        'payouts_service_redis_key_set'           => ['post',     'payouts_service_redis_key_set',                          'PayoutController@payoutServiceRedisKeySet'                    ],
 
         // Data Consistency Checker Routes
         'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
@@ -4945,6 +4946,7 @@ class Route
         'dcc_payouts_details_fetch',
         'initiate_payouts_consistency_check',
         'payout_bulk_update_attachments',
+        'payouts_service_redis_key_set',
 
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
@@ -12929,7 +12931,9 @@ class Route
             'payments_card_es_sync_cron',
             'initiate_payouts_consistency_check',
             'developer_console_maintenance',
-            'firs_collect_and_zip_cron'
+            'firs_collect_and_zip_cron',
+
+            'payouts_service_redis_key_set'
         ],
 
         'subscriptions' => [
