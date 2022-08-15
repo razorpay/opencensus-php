@@ -5,6 +5,7 @@ namespace RZP\Models\Pricing\Calculator;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Currency\Core;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
@@ -705,7 +706,12 @@ class Payment extends Base
             // 1. The first call will have the fee = 0,
             //    hence fees will be calculated on the original amount
             // 2. On validation/capture call, the fee will be set
-            $amount = $amount - $this->entity->getFee();
+            // 3. MCC payments have initial fees stored in MCC currency, needs to be converted to INR
+
+            $fee = $this->entity->getFee();
+            $currency = $this->entity->getCurrency();
+
+            $amount = $amount - (new Core)->getBaseAmount($fee, $currency);
         }
 
         if($this->entity->getEntity() === (Entity::PAYMENT))

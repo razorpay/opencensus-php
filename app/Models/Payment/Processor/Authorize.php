@@ -155,7 +155,7 @@ trait Authorize
 
         // this needs to be done after we have card entity as we need to know if
         // cards used in payment is international
-        $this->processCurrencyConversions($payment);
+        $this->processCurrencyConversions($payment, $input);
 
         $deviceId = null;
 
@@ -3276,7 +3276,7 @@ trait Authorize
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
         $this->repo->useSlave(
-            function() use ($payment, $input)
+            function() use ($payment, &$input)
             {
                 $gatewayInput = [];
 
@@ -3292,10 +3292,18 @@ trait Authorize
 
                 $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
-                $this->processCurrencyConversions($payment);
+                $this->processCurrencyConversions($payment, $input);
 
                 $this->attachEntityOrigin($payment);
             });
+
+        $data = [];
+        if(isset($input['mcc_request_id']))
+        {
+            $data['mcc_request_id'] = $input['mcc_request_id'];
+        }
+
+        return $data;
     }
 
     /**
@@ -3328,6 +3336,91 @@ trait Authorize
                     'entity_id'   => $payment->getId(),
                     'stack_trace' => $e->getTraceAsString(),
                 ]);
+        }
+    }
+
+    /**
+     * Used for applying dcc while calculating fee in customer/dynamic fee bearer model. The reason
+     * for not using existing functions is that they create and save a payment meta entity while calculating
+     * dcc which is later used for fetching gateway amount. Since the payment entity created while calculating
+     * fee is dummy, payment meta must also not be saved
+     *
+     * @param Payment\Entity $payment
+     * @param $input
+     */
+    public function dummyApplyDcc($payment, &$input)
+    {
+        /*
+         * As of today DCC is only supported on the following with their respective percentages
+         * 1. International Cards
+         * 2. Alternate Payment Apps (Trustly, Poli etc)
+         * 3. Paypal
+         */
+
+        if(($payment->merchant->isDCCEnabledInternationalMerchant() === false)  or
+            $payment->merchant->isCustomerFeeBearerAllowedOnInternational() === false)
+        {
+            return;
+        }
+
+        switch ($payment->getMethod())
+        {
+            case Method::CARD :
+                if (($payment->isCard() === false) or
+                    ($payment->card === null) or
+                    ((new Payment\Service)->isDccEnabledIIN($payment->card->iinRelation) === false))
+                {
+                    return;
+                }
+
+                $dccMarkupPerc = $payment->merchant->getDccMarkupPercentage();
+                break;
+
+            case Method::APP :
+                if(($input['method'] !== Method::APP) or
+                    (Gateway::isDCCRequiredApp($input['provider']) !== true))
+                {
+                    return;
+                }
+
+                $dccMarkupPerc = $payment->merchant->getDccMarkupPercentageForApps();
+                break;
+
+            case Method::WALLET :
+                if($payment->getWallet() !== Wallet::PAYPAL)
+                {
+                    return;
+                }
+
+                $dccMarkupPerc = Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL;
+                break;
+
+            default :
+                return;
+        }
+
+        if ((isset($input['dcc_currency']) === true) and
+            (isset($input['currency_request_id']) === true)) {
+            $dccCurrency = $input['dcc_currency'];
+            $dccCurrencyRequestId = $input['currency_request_id'];
+
+            $dccItems = ['amount', 'fee', 'tax'];
+
+            foreach ($dccItems as $item) {
+                $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $input[$item],
+                    $dccCurrency, $dccCurrencyRequestId, $dccMarkupPerc);
+
+                if (empty($requestedCurrencyData) === true) {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID, 'currency_request_id',
+                        [
+                            'currency_request_id' => $dccCurrencyRequestId,
+                            'dcc_currency' => $dccCurrency,
+                        ], 'Invalid currency_request_id');
+                }
+
+                $input['dcc_' . $item] = (int)$requestedCurrencyData['amount'];
+            }
+            $input['dcc_applied'] = true;
         }
     }
 
@@ -3376,7 +3469,7 @@ trait Authorize
 
         try
         {
-            $this->runFraudChecks($payment, $input);
+              $this->runFraudChecks($payment, $input);
         }
         catch (\Throwable $ex)
         {
@@ -4072,7 +4165,7 @@ trait Authorize
 
             // markup of 5 is hardcoded at org-level
             $requestedCurrencyData = (new Currency\DCC\Service)->getRequestedCurrencyDetails($payment->getCurrency(), $payment->getAmount(),
-                $dccCurrency, $dccCurrencyRequestId, 5);
+                $dccCurrency, $dccCurrencyRequestId, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL);
 
             if (empty($requestedCurrencyData) === true)
             {
@@ -4146,7 +4239,7 @@ trait Authorize
         }
     }
 
-    protected function processCurrencyConversions(Payment\Entity $payment)
+    protected function processCurrencyConversions(Payment\Entity $payment, &$input = null)
     {
         $currency = $payment->getCurrency();
 
@@ -4154,15 +4247,14 @@ trait Authorize
 
         // For card and App method payments, check all conditions
         // and for rest payment methods check only if currency != INR
-        if ($currency !== Currency\Currency::INR &&
+        if (($currency !== Currency\Currency::INR && !$merchant->isCustomerFeeBearerAllowedOnInternational()) &&
             ((($payment->getMethod() != Method::CARD) && ($payment->getMethod() != Method::APP)) ||
              ($merchant->isDCCEnabledInternationalMerchant() === false ||
               $payment->isInternational() === false)))
         {
             // mcc is supported only for merchants where this flag is set to true or false
             // or merchant is not fee bearer
-            if (($merchant->convertOnApi() === null) or
-                ($merchant->isFeeBearerCustomerOrDynamic() === true))
+            if (($merchant->convertOnApi() === null) or ($merchant->isFeeBearerCustomerOrDynamic()))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -4190,7 +4282,7 @@ trait Authorize
             }
 
             // gateway should do currency conversion only on international cards
-            // else api should do currency conersion and use INR terminals
+            // else api should do currency conversion and use INR terminals
             $convertCurrency = $merchant->convertOnApi();
 
             if ($payment->isInternational() === false)
@@ -4204,7 +4296,31 @@ trait Authorize
 
         $amount = $payment->getAmount();
 
-        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
+        /**
+         * Allow MCC on international merchants on CFB only if the feature flag is enabled
+         * And remove fee for the calculation of base amount, as fee calculation is done on base :-)
+         */
+
+        if ($payment->isInternational() and $merchant->isFeeBearerCustomerOrDynamic())
+        {
+            if($merchant->isCustomerFeeBearerAllowedOnInternational())
+            {
+                $amount = $amount - $payment->getFee();
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                    null,
+                    [
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
+                        'payment_id'            => $payment->getId(),
+                        'currency'              => $currency,
+                    ]);
+            }
+        }
+
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $input);
 
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use 2.0 percentage lower
@@ -4212,7 +4328,32 @@ trait Authorize
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
-            $baseAmount = (int) ceil($baseAmount * 0.98);
+            $baseAmount = (int) ceil($baseAmount * (1-(Merchant\Entity::DEFAULT_MCC_MARKDOWN_PERCENTAGE)/100));
+        }
+
+        /**
+         * Correct the base amount by adding back the removed fee in case of MCC.
+         * Strange workarounds eh? Things you have to do for NR (Ask your product manager about it)
+         */
+
+        if ($payment->isInternational() and $merchant->isFeeBearerCustomerOrDynamic())
+        {
+            if($merchant->isCustomerFeeBearerAllowedOnInternational())
+            {
+                $baseFee = (new Currency\Core)->getBaseAmount($payment->getFee(), $currency, $input);
+                $baseAmount = $baseAmount + $baseFee;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                    null,
+                    [
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomerOrDynamic(),
+                        'payment_id'            => $payment->getId(),
+                        'currency'              => $currency,
+                    ]);
+            }
         }
 
         $payment->setBaseAmount($baseAmount);

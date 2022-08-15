@@ -8,6 +8,7 @@ use Response;
 use Request;
 use App;
 use RZP\Http\CheckoutView;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\Merchant;
@@ -493,9 +494,14 @@ class PaymentCreateController extends Controller
         $merchant =  $this->app['basicauth']->getMerchant();
 
         // Converts all the amounts to rupees
+
+        $denominationFactor = Currency::DENOMINATION_FACTOR[$data['currency']];
         foreach ($data as $key => $value)
         {
-            $data[$key] = $value / 100;
+            if (is_numeric($value))
+            {
+                $data[$key] = $value / $denominationFactor;
+            }
         }
 
         if(isset($data['customer_fee']) === true)

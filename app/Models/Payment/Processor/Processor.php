@@ -2323,9 +2323,21 @@ class Processor
         }
 
         // Performing dummy set of processing for the same
-        $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+        $res = $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
+        if(isset($res['mcc_request_id']) && !isset($input['mcc_request_id']))
+        {
+            $input['mcc_request_id'] = $res['mcc_request_id'];
+        }
 
         list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+
+        (new Currency\Core)->reverseMccConversionOnFeeIfApplicable($input, $fee, $tax);
+
+        $input['fee'] = $fee;
+        $input['tax'] = $tax;
+
+        // Calculate and apply dcc
+        $this->dummyApplyDcc($payment, $input);
 
         if( $payment->hasOrder() === true and
             $payment->order->getFeeConfigId() !== null )
@@ -2364,12 +2376,13 @@ class Processor
         }
 
         $data = [
-            'originalAmount'  => $input['amount'],
-            'original_amount' => $input['amount'],
-            'fees'            => $fee,
-            'razorpay_fee'    => $fee - $tax,
-            'tax'             => $tax,
-            'amount'          => $input['amount'] + $fee,
+            'originalAmount'  => $input['dcc_amount'] ?? $input['amount'],
+            'original_amount' => $input['dcc_amount'] ?? $input['amount'],
+            'fees'            => $input['dcc_fee'] ?? $fee,
+            'razorpay_fee'    => ($input['dcc_fee'] ?? $fee) - ($input['dcc_tax'] ?? $tax),
+            'tax'             => $input['dcc_tax'] ?? $tax,
+            'amount'          => ($input['dcc_amount'] ?? $input['amount']) + ($input['dcc_fee'] ?? $fee),
+            'currency'        => (isset($input['dcc_applied']) && $input['dcc_applied']) ? $input['dcc_currency'] : $input['currency'],
         ];
 
         //Adding extra fields for response in case of
@@ -2384,6 +2397,10 @@ class Processor
 
             $input['amount'] = $input['amount'] + $customerFee + $customerFeeTax;
         }
+
+        // Unset dcc values from input
+        unset($input['dcc_amount'], $input['dcc_fee'], $input['dcc_tax'], $input['dcc_applied']);
+
         // Set new input amount and fees
         $input['amount'] = $input['amount'] + $fee;
 

@@ -195,6 +195,13 @@ class Constants
 
     const DCC_ON_OTHER_LIBRARY            = 'dcc_on_other_library';
 
+    /**
+     * Feature flag to allow customer fee bearer model on international payments
+     * Affects DCC and MCC flows
+     */
+
+    const ALLOW_CFB_INTERNATIONAL        = 'allow_cfb_international';
+
     const DIRECT_SETTLEMENT               = 'direct_settlement';
 
     const AVS                             = 'avs';
@@ -1496,6 +1503,7 @@ class Constants
         self::SAVE_VPA,
         self::REDIRECT_TO_ZESTMONEY,
         self::DISABLE_NATIVE_CURRENCY,
+        self::ALLOW_CFB_INTERNATIONAL,
         self::UPI_OTM,
         self::CHECKOUT_DISABLE_I18N,
         self::CHECKOUT_DISABLE_CARDSCAN,
@@ -1739,6 +1747,7 @@ class Constants
         self::DISPLAY_LA_PARENT_PAYMENT_ID    => true,
         self::REDIRECTION_ONHOLD              => true,
         self::DISABLE_NATIVE_CURRENCY         => true,
+        self::ALLOW_CFB_INTERNATIONAL         => true,
         self::PAYMENT_CREATED_WEBHOOK         => true,
         self::PAYMENT_CONFIG_ENABLED          => false,
         self::CYBERSOURCE_VAS                 => true,

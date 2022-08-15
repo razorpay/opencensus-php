@@ -2435,7 +2435,7 @@ class Service extends Base\Service
             $currency = $input['currency'];
 
                 // markup of 5 is hardcoded at org-level
-                $currencyInfo = $this->getDCCInfo($amount, $currency, 5);
+                $currencyInfo = $this->getDCCInfo($amount, $currency, Merchant\Entity::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL);
 
                 $currencyInfo['wallet_currency'] = Currency\Currency::USD;
 

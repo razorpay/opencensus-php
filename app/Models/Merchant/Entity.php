@@ -612,6 +612,8 @@ class Entity extends Base\PublicEntity
     const DCC_MARKUP_PERCENTAGE_DEFAULT               = 8;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS      = 6;
     const DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT     = 4;
+    const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL    = 5;
+    const DEFAULT_MCC_MARKDOWN_PERCENTAGE             = 2;
 
     /**
      * {@inheritDoc}
@@ -1031,6 +1033,11 @@ class Entity extends Base\PublicEntity
     public function isDCCEnabledInternationalMerchant(): bool
     {
         return($this->isDCCEnabled() === true && $this->isInternational() === true);
+    }
+
+    public function isCustomerFeeBearerAllowedOnInternational(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ALLOW_CFB_INTERNATIONAL) === true);
     }
 
     public function isEarlyMandatePresentmentEnabled(): bool

@@ -124,6 +124,7 @@ class Validator extends Base\Validator
         'application'                   => 'sometimes|filled|string|in:google_pay,visasafeclick',
         'device'                        => 'sometimes',
         'currency_request_id'           => 'required_with:dcc_currency|string',
+        'mcc_request_id'                => 'sometimes|string',
         'dcc_currency'                  => 'required_with:currency_request_id|string|max:3|custom',
         'charge_account'                => 'sometimes|string',
         'app_present'                   => 'sometimes_if:method,app|boolean',

@@ -2206,6 +2206,9 @@ class ErrorCode
     //DCC Error Codes
     const BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID                                = 'BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID';
 
+    //MCC Error Code
+    const BAD_REQUEST_PAYMENT_MCC_INVALID_REQUEST_ID                                = 'BAD_REQUEST_PAYMENT_MCC_INVALID_REQUEST_ID';
+
     const BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND                               = 'BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND';
 
     //FuzzyMatcher Error Codes
