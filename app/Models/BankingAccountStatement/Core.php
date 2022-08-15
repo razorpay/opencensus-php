@@ -4,7 +4,9 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Mail;
 use File;
+use Cache;
 use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -29,6 +31,7 @@ use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Jobs\BankingAccountStatementUpdate;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Admin\Validator as AdminValidator;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Processor\Source;
@@ -408,7 +411,7 @@ class Core extends Base\Core
                         $this->trace->info(TraceCode::MISSING_TRANSACTIONS_FOUND, $traceData);
 
                         // Persisting in redis
-                        $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber, $channel);
+                        $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber);
 
                         $operation = 'Missing records found while fetching the statement for '.$channel;
 
@@ -1021,6 +1024,8 @@ class Core extends Base\Core
 
                 $basEntity->setBalance($correctBalance);
 
+                $basEntity->setConnection($this->mode);
+
                 $this->repo->saveOrFail($basEntity);
 
                 $traceData = [
@@ -1033,6 +1038,8 @@ class Core extends Base\Core
                 if($txn !== null)
                 {
                     $txn->setBalance($correctBalance, 0, false);
+
+                    $txn->setConnection($this->mode);
 
                     $this->repo->saveOrFail($txn);
 
@@ -1216,7 +1223,7 @@ class Core extends Base\Core
 
                     $merchantMissingStatementList[$accountNumber] = $missingStatementsAfterInsertion;
 
-                    (new Admin\Service)->setConfigKeys([
+                    $this->setConfigKeys([
                         Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel => $merchantMissingStatementList
                     ]);
 
@@ -1255,7 +1262,16 @@ class Core extends Base\Core
 
         foreach ($insertedBasEntities as $basEntity)
         {
-            $sourceEntity = $basEntity->source();
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_LINKED_BAS_FOR_LEDGER,
+                               [
+                                   'source_entity'          => $basEntity->source,
+                                   'bas_id'                 => $basEntity->getId(),
+                                   'account_number'         => $basEntity->getAccountNumber(),
+                                   'entity_id'              => $basEntity->source->getId(),
+                                   'entity_type'            => $basEntity->getEntityType(),
+                               ]);
+
+            $sourceEntity = $basEntity->source;
 
             try
             {
@@ -3747,5 +3763,50 @@ class Core extends Base\Core
 
         (new Transaction\Processor\Ledger\Payout)
             ->pushTransactionToLedgerForDirect($event, $payout, $reversal, $external, $bas);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function setConfigKeys(array $input): array
+    {
+        (new AdminValidator)->validateInput('set_config_keys', $input);
+
+        $result = [];
+
+        foreach ($input as $key => $value)
+        {
+            $result[] = $this->setConfigKey($key, $value);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed $newValue
+     *
+     * @return array
+     */
+    public function setConfigKey(string $key, $newValue): array
+    {
+        $oldValue = Cache::get($key);
+
+        Cache::forever($key, $newValue);
+
+        $data = [
+            'key'       => $key,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+        ];
+
+        if (ConfigKey::isSensitive($key) === false)
+        {
+            $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+        }
+
+        return $data;
     }
 }

@@ -6,14 +6,15 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Admin;
-use RZP\Models\Base\PublicEntity;
 use Rzp\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\BankingAccountStatement\Pool;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Channel;
+use RZP\Models\BankingAccountStatement\Core as BasCore;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 
 abstract class Base extends BaseCore
@@ -267,8 +268,10 @@ abstract class Base extends BaseCore
         return $this->getStartOfFinancialYear($this->basDetails->getCreatedAt());
     }
 
-    public function storeMissingStatementsInRedis(array $missingStatements, $accountNumber, $channel)
+    public function storeMissingStatementsInRedis(array $missingStatements, $accountNumber)
     {
+        $channel = $this->channel;
+
         $this->app['api.mutex']->acquireAndRelease(
             'update_redis_missing_statements_recon_' . $channel,
             function() use ($accountNumber, $channel, $missingStatements)
@@ -301,7 +304,23 @@ abstract class Base extends BaseCore
                     $merchantMissingStatementList[$accountNumber] = array_values($missingStatements);
                 }
 
-                (new Admin\Service)->setConfigKeys([$redisKey => $merchantMissingStatementList]);
+                try
+                {
+                    (new BasCore)->setConfigKeys([$redisKey => $merchantMissingStatementList]);
+                }
+                catch (\Exception $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        null,
+                        TraceCode::INSERTION_OF_MISSING_STATEMENTS_INTO_REDIS_FAILURE,
+                        [
+                            'account_number' => $accountNumber,
+                            'channel'        => $channel
+                        ]
+                    );
+                }
+
             },
             60,
             TraceCode::MISSING_BAS_UPDATE_IN_PROGRESS,
