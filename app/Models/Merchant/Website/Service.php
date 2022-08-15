@@ -272,7 +272,7 @@ class Service extends Base\Service
 
         $variant = $response['response']['variant']['name'] ?? null;
 
-        $businessDetail = $merchant->merchantDetail->businessDetail;
+        $businessDetail = optional($merchant->merchantDetail->businessDetail);
 
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
                                                                "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
@@ -280,7 +280,7 @@ class Service extends Base\Service
                                                                "playstore"          => $businessDetail->getAppstoreUrl(),
                                                                "appstore"           => $businessDetail->getPlaystoreUrl(),
                                                                "variant"            => $variant,
-                                                               "response" =>         $response
+                                                               "response"           => $response
         ]);
 
         if ($variant !== 'enable')
@@ -364,7 +364,7 @@ class Service extends Base\Service
             "merchant_id" => $this->merchant->getId()
         ]);
 
-        if(array_key_exists(Entity::ADDITIONAL_DATA,$input) === true)
+        if (array_key_exists(Entity::ADDITIONAL_DATA, $input) === true)
         {
             $emailInput = [];
 
@@ -391,15 +391,17 @@ class Service extends Base\Service
 
     private function getAllMerchantWebsites($merchantDetails)
     {
-        $urls=[];
+        $urls = [];
 
-        if (empty($merchantDetails->businessDetail->getPlaystoreUrl()) === false)
+        $businessDetails = optional($merchantDetails->businessDetail);
+
+        if (empty($businessDetails->getPlaystoreUrl()) === false)
         {
-            $urls[$merchantDetails->businessDetail->getPlaystoreUrl()] = 'playstore_url';
+            $urls[$businessDetails->getPlaystoreUrl()] = 'playstore_url';
         }
-        if (empty($merchantDetails->businessDetail->getAppstoreUrl()) === false)
+        if (empty($businessDetails->getAppstoreUrl()) === false)
         {
-            $urls[$merchantDetails->businessDetail->getAppstoreUrl()] = 'appstore_url';
+            $urls[$businessDetails->getAppstoreUrl()] = 'appstore_url';
         }
 
         if (empty($merchantDetails->getWebsite()) === false)
@@ -422,6 +424,8 @@ class Service extends Base\Service
     {
         $urls = [];
 
+        $businessDetails = optional($merchantDetails->businessDetail);
+
         switch ($urlType)
         {
             case Constants::WEBSITE:
@@ -430,11 +434,11 @@ class Service extends Base\Service
                 break;
 
             case Constants::APPSTORE_URL:
-                $urls[] = $merchantDetails->businessDetail->getAppstoreUrl();
+                $urls[] = $businessDetails->getAppstoreUrl();
                 break;
 
             case Constants::PLAYSTORE_URL:
-                $urls[] = $merchantDetails->businessDetail->getPlaystoreUrl();
+                $urls[] = $businessDetails->getPlaystoreUrl();
                 break;
         }
 
@@ -481,7 +485,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    private function generateSupportDetails($merchantDetails ,array &$response)
+    private function generateSupportDetails($merchantDetails, array &$response)
     {
         try
         {
@@ -508,7 +512,7 @@ class Service extends Base\Service
         }
     }
 
-    private function generateMerchantWebsiteResponse($merchantDetails,array  &$response)
+    private function generateMerchantWebsiteResponse($merchantDetails, array &$response)
     {
         try
         {
@@ -723,8 +727,8 @@ class Service extends Base\Service
                                                         $document = $this->repo->merchant_document->findDocumentById($value);
 
                                                         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["isset(document)" => isset($document),
-                                                                                                               "value"=>$value,
-                                                                                                               "deleted" => empty($document->getAttribute(DocEntity::DELETED_AT))]);
+                                                                                                               "value"           => $value,
+                                                                                                               "deleted"         => empty($document->getAttribute(DocEntity::DELETED_AT))]);
 
                                                         if (isset($document) === true and empty($document->getAttribute(DocEntity::DELETED_AT)) === true)
                                                         {
@@ -766,7 +770,7 @@ class Service extends Base\Service
         }
     }
 
-    private function canActivateMerchant($merchantDetails,$websiteDetail) : bool
+    private function canActivateMerchant($merchantDetails, $websiteDetail): bool
     {
         try
         {
@@ -774,7 +778,7 @@ class Service extends Base\Service
 
             foreach (explode(',', Constants::VALID_ADMIN_SECTIONS) as $key)
             {
-                foreach ($urls as $url=>$url_type)
+                foreach ($urls as $url => $url_type)
                 {
                     $sectionUrl = $websiteDetail->getAdminUrl($url_type, $url, $key) ??
                                   $websiteDetail->getPublishedUrl($key);
@@ -927,6 +931,8 @@ class Service extends Base\Service
     {
         $websiteDetails = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantId);
 
+        $businessDetails = optional($this->merchant->merchantDetail->businessDetail);
+
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
             "input"       => $input,
             "merchant_id" => $merchantId
@@ -1034,13 +1040,11 @@ class Service extends Base\Service
                                 break;
                             case Constants::PLAYSTORE_URL:
 
-                                $businessDetail = $this->merchant->merchantDetail->businessDetail;
-
                                 $allWebsites = array_keys($sectionData[$key]);
 
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if ($websiteLink !== $businessDetail->getPlaystoreUrl())
+                                    if ($websiteLink !== $businessDetails->getPlaystoreUrl())
                                     {
                                         throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                                     }
@@ -1050,13 +1054,11 @@ class Service extends Base\Service
                                 break;
                             case Constants::APPSTORE_URL:
 
-                                $businessDetail = $this->merchant->merchantDetail->businessDetail;
-
                                 $allWebsites = array_keys($sectionData[$key]);
 
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if ($websiteLink !== $businessDetail->getAppstoreUrl())
+                                    if ($websiteLink !== $businessDetails->getAppstoreUrl())
                                     {
                                         throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                                     }
@@ -1204,7 +1206,7 @@ class Service extends Base\Service
 
         $sendCommunication = false;
 
-        if (empty($websiteDetail)===true or optional($websiteDetail)->getSectionStatus($sectionName) !== 3)
+        if (optional($websiteDetail)->getSectionStatus($sectionName) !== 3)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -1279,7 +1281,7 @@ class Service extends Base\Service
 
         $sendCommunication = false;
 
-        if (empty($websiteDetail) === true or optional($websiteDetail)->getSectionStatus($sectionName) !== 2)
+        if (optional($websiteDetail)->getSectionStatus($sectionName) !== 2)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -1320,7 +1322,7 @@ class Service extends Base\Service
                                     'address'                    => 'address',
                                     'merchant'                   => $merchant->toArray(),
                                     'merchant_details'           => $merchant->merchantDetail->toArray(),
-                                    'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(),$websiteDetail, $merchant->merchantDetail),
+                                    'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
                                 ]
                             ])->render();
 
@@ -1408,7 +1410,7 @@ class Service extends Base\Service
 
         $urlType = $input[Constants::URL_TYPE];
 
-        $businessDetail = $merchant->merchantDetail->businessDetail;
+        $businessDetail = optional($merchant->merchantDetail->businessDetail);
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
@@ -1481,7 +1483,7 @@ class Service extends Base\Service
 
         $urlType = $input[Constants::URL_TYPE];
 
-        $businessDetail = $merchant->merchantDetail->businessDetail;
+        $businessDetail = optional($merchant->merchantDetail->businessDetail);
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
@@ -1533,6 +1535,8 @@ class Service extends Base\Service
 
         $urlType = $input[Constants::URL_TYPE];
 
+        $businessDetails = optional($merchant->merchantDetail->businessDetail);
+
         switch ($urlType)
         {
             case Constants::WEBSITE:
@@ -1553,9 +1557,7 @@ class Service extends Base\Service
             case Constants::PLAYSTORE_URL:
 
                 // validate if the playstore_url exists for the merchant
-                $businessDetail = $merchant->merchantDetail->businessDetail;
-
-                if (empty($businessDetail->getPlaystoreUrl()) === true)
+                if (empty($businessDetails->getPlaystoreUrl()) === true)
                 {
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                 }
@@ -1565,9 +1567,7 @@ class Service extends Base\Service
             case Constants::APPSTORE_URL:
 
                 // validate if the url in input exists for the merchant
-                $businessDetail = $merchant->merchantDetail->businessDetail;
-
-                if (empty($businessDetail->getAppstoreUrl()) === true)
+                if (empty($businessDetails->getAppstoreUrl()) === true)
                 {
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                 }
@@ -1776,7 +1776,7 @@ class Service extends Base\Service
 
         $urlType = $input[Constants::URL_TYPE];
 
-        $businessDetail = $merchant->merchantDetail->businessDetail;
+        $businessDetail = optional($merchant->merchantDetail->businessDetail);
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
@@ -1847,7 +1847,7 @@ class Service extends Base\Service
 
         $urlType = $input[Constants::URL_TYPE];
 
-        $businessDetail = $merchant->merchantDetail->businessDetail;
+        $businessDetail = optional($merchant->merchantDetail->businessDetail);
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
@@ -1933,7 +1933,7 @@ class Service extends Base\Service
                                        'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
                                        'merchant'                   => $this->merchant->toArray(),
                                        'merchant_details'           => $this->merchant->merchantDetail->toArray(),
-                                       'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(),$websiteDetail,$this->merchant->merchantDetail),
+                                       'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $this->merchant->merchantDetail),
                                        'public'                     => false,
                                        'address'                    => 'address'
                                    ]
@@ -1973,7 +1973,7 @@ class Service extends Base\Service
                                            'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
                                            'merchant'                   => $merchant->toArray(),
                                            'merchant_details'           => $merchant->merchantDetail->toArray(),
-                                           'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(),$websiteDetail,$merchant->merchantDetail),
+                                           'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
                                            'public'                     => true,
                                            'address'                    => 'address'
                                        ]
@@ -2064,7 +2064,8 @@ class Service extends Base\Service
 
             $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
-            if (empty($websiteDetail) === true)
+            if (empty($websiteDetail) === true or
+                empty(optional($websiteDetail)->getStatus()) === true)
             {
                 return;
             }
@@ -2086,7 +2087,7 @@ class Service extends Base\Service
                 }
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
