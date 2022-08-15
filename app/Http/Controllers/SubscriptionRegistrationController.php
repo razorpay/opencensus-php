@@ -98,7 +98,7 @@ class SubscriptionRegistrationController extends Controller
     {
         $input = Request::all();
 
-        $invoice = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_SERVICE], function () use ($id, $input){
+        $invoice = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_SERVICE], function () use ($id, $input){
             return $this->service()->chargeToken($id, $input);
         });
 

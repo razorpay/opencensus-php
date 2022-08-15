@@ -590,7 +590,7 @@ class Core extends Base\Core
     {
         $token = null;
 
-        $idemPotentResponse = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CHECK_IDEMPOTENCY], function () use ($idemPotentKey){
+        $idemPotentResponse = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CHECK_IDEMPOTENCY], function () use ($idemPotentKey){
             return $this->checkAndProcessForIdempotencyKeyForTokenCharge($idemPotentKey);
         });
 
@@ -601,7 +601,7 @@ class Core extends Base\Core
 
         if ($merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true)
         {
-            $token = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant){
+            $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN], function () use ($id, $merchant){
                 return $this->repo->token->getByGatewayTokenAndMerchantIdWithForceIndex($id, $merchant->getId(),
                     $this->mode);
             });
@@ -609,12 +609,12 @@ class Core extends Base\Core
 
         if (empty($token) === true)
         {
-            $token = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN], function () use ($id, $merchant){
+            $token = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN], function () use ($id, $merchant){
                 return $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
             });
         }
 
-        $customer = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_CUSTOMER], function () use ($token){
+        $customer = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_CUSTOMER], function () use ($token){
             return $token->customer;
         });
 
@@ -648,7 +648,7 @@ class Core extends Base\Core
         );
 
         $orderCore = new Order\Core();
-        $order = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput){
+        $order = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput){
             return $orderCore->create($orderInput, $this->merchant);
         });
 
@@ -682,17 +682,18 @@ class Core extends Base\Core
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
-        $paymentData = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT], function () use ($paymentProcessor, $paymentInput){
+        $paymentData = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT], function () use ($paymentProcessor, $paymentInput){
             return $paymentProcessor->process($paymentInput);
         });
 
         if(empty($batchId) === false)
         {
-            $payment = $paymentProcessor->getPayment();
+            Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PAYMENT_SET_BATCH], function ($paymentProcessor, $batchId) {
 
-            $payment->setBatchId($batchId);
-
-            $this->repo->save($payment);
+                $payment = $paymentProcessor->getPayment();
+                $payment->setBatchId($batchId);
+                $this->repo->save($payment);
+            });
         }
 
         return $paymentData;

@@ -224,6 +224,7 @@ class HyperTrace
 
     // Recurring traces
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_SERVICE                           = 'subscription_registration_charge_token.service';
+    const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_SERVICE_SET_ORDER_BATCH           = 'subscription_registration_charge_token.service.set_order_batch';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE                              = 'subscription_registration_charge_token.core';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CHECK_IDEMPOTENCY            = 'subscription_registration_charge_token.core.check_idempotency';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_TOKEN_BY_GATEWAY_TOKEN = 'subscription_registration_charge_token.core.fetch_token_by_gateway_token';
@@ -231,4 +232,5 @@ class HyperTrace
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_FETCH_CUSTOMER               = 'subscription_registration_charge_token.core.fetch_customer';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER                 = 'subscription_registration_charge_token.core.create_order';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT              = 'subscription_registration_charge_token.core.process_payment';
+    const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PAYMENT_SET_BATCH            = 'subscription_registration_charge_token.core.payment_set_batch';
 }

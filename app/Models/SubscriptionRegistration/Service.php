@@ -333,7 +333,7 @@ class Service extends Base\Service
                 ]);
         }
 
-        $response = Tracer::inSpan([HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE], function () use ($id,
+        $response = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE], function () use ($id,
             $input, $batchId, $rowIdempotentId)
         {
             return $this->core->chargeToken($id, $input, $this->merchant, $batchId, $rowIdempotentId);
