@@ -6,16 +6,31 @@ use Request;
 use ApiResponse;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 class OneClickCheckoutController extends Controller
 {
 
+    /**
+     * Creates and returns the Rzp order_id for a Shopify checkout
+     * For APIs from merchant website, the content type is "text/plain"
+     */
     public function shopifyCreateCheckout()
     {
         $rawContents = Request::getContent();
         $headers = Request::header();
-        $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
+        $contentType = $headers['content-type'][0];
+        $bodyJSON = [];
+
+        if ($contentType === 'text/plain')
+        {
+            $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $contentType);
+        }
+        else
+        {
+            $bodyJSON = Request::all();
+        }
 
         $result = (new Shopify\Service)->shopifyCreateCheckout($bodyJSON);
 
@@ -112,8 +127,12 @@ class OneClickCheckoutController extends Controller
         $response->headers->set('Access-Control-Allow-Methods', $methods);
     }
 
-    // simple requests will send payload as a string
-    // body can be a string to array
+    /**
+     * Simple requests will send payload as a string so we need to parse it
+     * @param array|string $body - Raw contents from the request
+     * @param string $contentType - contentType from the header
+     * @return array $body - Body as an array
+     */
     protected function parseToJSONIfApplicable($body, string $contentType): array
     {
         $result = 'skip';

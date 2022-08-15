@@ -9135,7 +9135,8 @@ class Route
         'app_fetch_tokens_v2',
         'app_delete_tokens_v2',
         'customer_record_1cc_address_consent_view',
-        'customer_record_1cc_address_consent'
+        'customer_record_1cc_address_consent',
+        '1cc_shopify_checkout',
     ];
 
     /**

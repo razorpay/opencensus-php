@@ -21,7 +21,7 @@ class Utils
         {
             $lineItems[] = [
               'variant_id' => $item['variant_id'],
-              'quantity'   => $item['quantity']
+              'quantity'   => (int)$item['quantity']
             ];
         }
 

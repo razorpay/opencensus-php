@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
@@ -89,18 +90,20 @@ class Service extends Base\Service
      * amount from checkout and order should be the same
      * it may misbehave when auto coupon apply and free items work
      * explore building the order with the line_items from $checkout
+     * @param array cart
+     * @param token string
+     * @param string additional params part of preferences API
+     * @return array checkoutParams - Checkout and preferences object
      */
     public function shopifyCreateCheckout(array $input): array
     {
         $start = millitime();
+        $cart = $input['cart'];
+        $cartId = $cart['token'];
 
-        $checkout = (new Core)->placeShopifyCheckout($input);
+        $checkout = (new Core)->placeShopifyCheckout(['cart' => $cart]);
 
         $amount = (int)(floatval($checkout['totalPriceV2']['amount']) * 100);
-
-        $cart = $input['cart'];
-
-        $cartId = $cart['token'];
 
         $order = (new Order\Service)->createOrder([
             'receipt'          => (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT,
@@ -111,8 +114,6 @@ class Service extends Base\Service
             'notes'            => (new Checkout)->getNotesForCheckout($checkout, $cartId),
             'line_items'       => $this->shopifyCartLineItems($checkout),
         ]);
-
-        $formattedOrder = (new Order\Core)->getFormattedDataForCheckout($order, $this->merchant);
 
         $checkoutParams = [
             'order_id'           => $order->getPublicId(),
@@ -126,7 +127,31 @@ class Service extends Base\Service
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
             ['order_id' => $order->getPublicId(), 'time' => millitime() - $start]);
 
-        return array_merge($checkoutParams, ['order' => $formattedOrder]);
+        // form url encoded sends bool as string!
+        if (isset($input['send_preferences']) === true and $input['send_preferences'] == 'true')
+        {
+            $params = $this->getParamsForPreferences($input, $order);
+            $preferences = (new MerchantService)->getCheckoutPreferences($params);
+            $checkoutParams = array_merge($checkoutParams, ['preferences' => $preferences]);
+        }
+
+        return $checkoutParams;
+    }
+
+    /**
+     * Ensures preferences function receives same parametres as in normal API call
+     * @param array input - Post body and URL params received
+     * @param Order\Entity order - Razorpay order
+     */
+    protected function getParamsForPreferences(array $input, Order\Entity $order): array
+    {
+        unset($input['cart']);
+        unset($input['key']);
+        return array_merge(
+            $input,
+            [
+                'order_id' => $order->getPublicId(),
+            ]);
     }
 
     public function controlMagicCheckout(string $key, string $value)
