@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Lambda;
 
 use Excel;
 use Config;
+use RZP\Exception\BadRequestException;
 use ZipArchive;
 
 use RZP\Tests\Functional\TestCase;
@@ -11,6 +12,8 @@ use RZP\Excel\Export as ExcelExport;
 use RZP\Excel\ExportSheet as ExcelSheetExport;
 use Illuminate\Http\Testing\File as TestingFile;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 
 class LambdaTest extends TestCase
 {
@@ -256,5 +259,67 @@ class LambdaTest extends TestCase
         $handle = fopen(__DIR__ . '/MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', 'r');
 
         return (new TestingFile('MMS-CANCEL-RATN-RATNA0001-02052016-ESIGN000001-RES.zip', $handle));
+    }
+
+    protected function getPosSettlementFile(): TestingFile
+    {
+        $handle = fopen(__DIR__ . '/POS Sample data consolidated.xlsx', 'r');
+
+        return (new TestingFile('POS Sample data consolidated.xlsx', $handle));
+    }
+
+    public function testCreateBatchOfEzetapSettlementType()
+    {
+        $file = $this->getPosSettlementFile();
+
+        $request = [
+            'url'    => '/pos_settlements/validate/file',
+            'method' => 'POST',
+            'content' => [
+                "source" => "lambda",
+                'type' => 'ezetap_settlement',
+            ],
+            'files' => [
+                'file' => $file,
+            ]
+        ];
+
+        $batch = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('ezetap_settlement', $batch['type']);
+
+        $this->assertEquals('created', $batch['status']);
+
+        $this->assertEquals(3, $batch['total_count']);
+    }
+
+    public function testCreateBatchOfEzetapSettlementTypeFailure()
+    {
+        $testData = [
+            'request' => [
+                'url'    => '/pos_settlements/validate/file',
+                'method' => 'POST',
+                'content' => [
+                    "source" => "lambda",
+                    'type' => 'ezetap_settlement',
+                ],
+            ],
+            'response'  => [
+                'status_code' => 400,
+                'content'     => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'invalid input, either bucket key or uploaded file is required',
+                    ],
+                ],
+            ],
+            'exception' => [
+                'class' => 'RZP\Exception\BadRequestValidationFailureException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+            ],
+        ];
+
+        $this->startTest($testData);
+
     }
 }

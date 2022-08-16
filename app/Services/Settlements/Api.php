@@ -221,6 +221,17 @@ class Api extends Base
     }
 
     /**
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function posTransactionsAdd(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::POS_TRANSACTIONS_ADD, $input, self::SERVICE_API, $mode);
+    }
+
+    /**
      * Send Entity Alerts if per entity state time limit is breached.
      * @param array  $input
      * @return array

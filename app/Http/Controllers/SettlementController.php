@@ -7,6 +7,7 @@ use Request;
 use Response;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
+use RZP\Models\Batch;
 
 class SettlementController extends Controller
 {
@@ -809,5 +810,23 @@ class SettlementController extends Controller
         $data = $this->service()->initiateInterNodalTransfer($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function processPosSettlementFile()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processPosFile($input, Batch\Type::EZETAP_SETTLEMENT);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createPosSettlement()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createPosSettlement($input);
+
+        return ApiResponse::json($response);
     }
 }

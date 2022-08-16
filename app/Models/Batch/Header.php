@@ -323,6 +323,52 @@ class Header
     const HDFC_EM_DEBIT_NARRATION           = HdfcEMDebitHeadings::NARRATION;
 
     //
+    //HDFC ezetap settlements
+    //
+    const TRANSACTION_SOURCE                = 'Txn.Source';
+    const MERCHANT_CODE                     = 'MERCHANT CODE / External MID';
+    const TERMINAL_NUMBER                   = 'TERMINAL NUMBER / External TID';
+    const CARD_NUMBER_EZETAP                = 'CARD NUMBER  / Payer VPA / Customer Name';
+    const MERCHANT_TRACK_ID                 = 'MERCHANT_TRACKID';
+    const TRANS_DATE                        = 'TRANS DATE';
+    const SETTLE_DATE                       = 'SETTLE DATE';
+    const TRANSACTION_AMOUNT                = 'DOMESTIC AMT / Transaction Amount';
+    const NET_AMOUNT                        = 'Net Amount';
+    const UDF_1                             = 'UDF1';
+    const UDF_2                             = 'UDF2';
+    const UDF_3                             = 'UDF3';
+    const UDF_4                             = 'UDF4';
+    const UDF_5                             = 'UDF5';
+    const BANK_REFERENCE_NUMBER             = 'TRAN_ID / UPI Trxn ID/ Bank Reference No';
+    const SEQUENCE_NUMBER                   = 'SEQUENCE NUMBER / Txn ref no. (RRN)';
+    const DEBIT_CREDIT_TYPE                 = 'DEBITCREDIT_TYPE / Trans Type';
+    const REC_FMT                           = 'REC FMT / Transaction Type';
+    const CGST_AMT                          = 'CGST AMT';
+    const SGST_AMT                          = 'SGST AMT';
+    const IGST_AMT                          = 'IGST AMT';
+    const UTGST_AMT                         = 'UTGST AMT';
+    const MSF                               = 'MSF';
+    const GSTN_NO                           = 'GSTN_No';
+    const MERCHANT_NAME_EZETAP              = 'Merchant Name';
+    const BAT_NBR                           = 'BAT NBR';
+    const UPVALUE                           = 'UPVALUE';
+    const CARD_TYPE                         = 'CARD TYPE';
+    const INTNL_AMT                         = 'INTNL AMT';
+    const APPROV_CODE                       = 'APPROV CODE';
+    const ARN_NO                            = 'ARN NO';
+    const SERV_TAX                          = 'SERV TAX';
+    const SB_CESS                           = 'SB Cess';
+    const KK_CESS                           = 'KK Cess';
+    const INVOICE_NUMBER_EZETAP             = 'INVOICE_NUMBER';
+    const UPI_MERCHANT_ID                   = 'UPI Merchant ID';
+    const MERCHANT_VPA                      = 'Merchant VPA';
+    const CUSTOMER_REF_NO                   = 'Customer Ref No. (RRN)';
+    const CURRENCY_EZETAP                   = 'Currency';
+    const PAY_TYPE                          = 'Pay Type';
+
+
+
+
     // emandate npci - icici sponsore bank debit Response File Headers
     //
     const ICICI_NPCI_ENACH_DEBIT_ACH_TRANSACTION_CODE             = IciciENachDebitHeadings::ACH_TRANSACTION_CODE;
@@ -1622,6 +1668,95 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
                 self::SPEED
+            ],
+        ],
+
+        Type::EZETAP_SETTLEMENT => [
+
+            self::INPUT => [
+                self::TRANSACTION_SOURCE,
+                self::MERCHANT_CODE,
+                self::TERMINAL_NUMBER,
+                self::CARD_NUMBER_EZETAP,
+                self::MERCHANT_TRACK_ID,
+                self::TRANS_DATE,
+                self::SETTLE_DATE,
+                self::TRANSACTION_AMOUNT,
+                self::NET_AMOUNT,
+                self::UDF_1,
+                self::UDF_2,
+                self::UDF_3,
+                self::UDF_4,
+                self::UDF_5,
+                self::BANK_REFERENCE_NUMBER,
+                self::SEQUENCE_NUMBER,
+                self::DEBIT_CREDIT_TYPE,
+                self::REC_FMT,
+                self::CGST_AMT,
+                self::SGST_AMT,
+                self::IGST_AMT,
+                self::UTGST_AMT,
+                self::MSF,
+                self::GSTN_NO,
+                self::MERCHANT_NAME_EZETAP,
+                self::BAT_NBR,
+                self::UPVALUE,
+                self::CARD_TYPE,
+                self::INTNL_AMT,
+                self::APPROV_CODE,
+                self::ARN_NO,
+                self::SERV_TAX,
+                self::SB_CESS,
+                self::KK_CESS,
+                self::INVOICE_NUMBER_EZETAP,
+                self::UPI_MERCHANT_ID,
+                self::MERCHANT_VPA,
+                self::CUSTOMER_REF_NO,
+                self::CURRENCY_EZETAP,
+                self::PAY_TYPE,
+            ],
+
+            self::OUTPUT => [
+                self::TRANSACTION_SOURCE,
+                self::MERCHANT_CODE,
+                self::TERMINAL_NUMBER,
+                self::CARD_NUMBER_EZETAP,
+                self::MERCHANT_TRACK_ID,
+                self::TRANS_DATE,
+                self::SETTLE_DATE,
+                self::TRANSACTION_AMOUNT,
+                self::NET_AMOUNT,
+                self::UDF_1,
+                self::UDF_2,
+                self::UDF_3,
+                self::UDF_4,
+                self::UDF_5,
+                self::BANK_REFERENCE_NUMBER,
+                self::SEQUENCE_NUMBER,
+                self::DEBIT_CREDIT_TYPE,
+                self::REC_FMT,
+                self::CGST_AMT,
+                self::SGST_AMT,
+                self::IGST_AMT,
+                self::UTGST_AMT,
+                self::MSF,
+                self::GSTN_NO,
+                self::MERCHANT_NAME_EZETAP,
+                self::BAT_NBR,
+                self::UPVALUE,
+                self::CARD_TYPE,
+                self::INTNL_AMT,
+                self::APPROV_CODE,
+                self::ARN_NO,
+                self::SERV_TAX,
+                self::SB_CESS,
+                self::KK_CESS,
+                self::INVOICE_NUMBER_EZETAP,
+                self::UPI_MERCHANT_ID,
+                self::MERCHANT_VPA,
+                self::CUSTOMER_REF_NO,
+                self::CURRENCY_EZETAP,
+                self::PAY_TYPE,
             ],
         ],
 

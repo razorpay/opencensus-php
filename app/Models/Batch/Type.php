@@ -228,6 +228,8 @@ class Type
 
     const VIRTUAL_ACCOUNT_EDIT = "virtual_account_edit";
 
+    const EZETAP_SETTLEMENT    = "ezetap_settlement";
+
     const DEBIT_NOTE          = 'debit_note';
 
     const CREATE_PAYMENT_FRAUD  =  'create_payment_fraud';
@@ -308,6 +310,7 @@ class Type
         self::PAYMENT_TRANSFER_RETRY,
         self::PARTNER_REFERRAL_FETCH,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
+        self::EZETAP_SETTLEMENT,
     ];
 
     /**
@@ -389,6 +392,7 @@ class Type
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,
         self::VIRTUAL_ACCOUNT_EDIT,
+        self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::ADMIN_BATCH,
         self::ADJUSTMENT,
@@ -472,6 +476,7 @@ class Type
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,
         self::VIRTUAL_ACCOUNT_EDIT,
+        self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::RECURRING_CHARGE,
         self::AUTH_LINK,
@@ -533,6 +538,7 @@ class Type
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,
         self::VIRTUAL_ACCOUNT_EDIT,
+        self::EZETAP_SETTLEMENT,
         self::LOC_WITHDRAWAL,
         self::MERCHANT_CONFIG_INHERITANCE,
         self::ENTITY_UPDATE_ACTION,

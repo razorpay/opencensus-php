@@ -861,6 +861,10 @@ class Route
         'setl_holidays'                            => ['get',      'settlement/holidays',                            'SettlementController@getHolidayListForYear',                       ],
         'setl_transaction_replay'                  => ['post',     'settlement/transactions/replay',                 'SettlementController@replaySettlementTransactions',                ],
         'setl_transaction_replay_admin'            => ['post',     'settlement/transactions/replay/admin',           'SettlementController@replaySettlementTransactionsAdmin'            ],
+
+        'setl_process_pos_file'                    => ['post',     'pos_settlements/validate/file',                  'SettlementController@processPosSettlementFile'                     ],
+        'setl_pos_create'                          => ['post',     'pos_settlements/create',                         'SettlementController@createPosSettlement'                          ],
+
 //    deprecating this route since it is not in use
 //        'nodal_get_account_balance'                => ['get',      'nodal/balance/{channel}',                        'SettlementController@getAccountBalance'                            ],
         'nodal_initiate_transfer'                  => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
@@ -4426,6 +4430,7 @@ class Route
         'capital_multiple_transaction_create',
         'merchant_sub_create_batch',
         'merchant_bulk_onboarding_admin',
+        'setl_pos_create',
         'currency_fetch_rates_internal',
         'loc_mail',
         'capital_cards_mail',
@@ -4475,6 +4480,7 @@ class Route
         'bank_transfer_process_file',
         'bank_transfer_process_file_rbl',
         'bank_transfer_process_file_yesbank',
+        'setl_process_pos_file',
         'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_process_icici_internal',
@@ -13218,6 +13224,7 @@ class Route
             'bank_transfer_process_file_rbl',
             'bank_transfer_process_file_yesbank',
             'bank_transfer_process_file',
+            'setl_process_pos_file',
             'segment_create_update',
             'firs_document_categorize',
             'automate_merchant_master_firs',
@@ -13272,6 +13279,7 @@ class Route
             'batch_send_mail',
             'merchant_sub_create_batch',
             'merchant_bulk_onboarding_admin',
+            'setl_pos_create',
             'bulk_invoice_create',
             'bulk_contact_create',
             'bulk_submerchant_assign',

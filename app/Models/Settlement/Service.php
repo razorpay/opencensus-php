@@ -9,6 +9,7 @@ use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
 use RZP\Models\Schedule;
@@ -17,6 +18,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
@@ -36,11 +38,16 @@ use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Schedule\Task as scheduleTask;
+use Symfony\Component\HttpFoundation\File\File;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Batch;
 
 const CAPTURE              = 'capture';
 
 class Service extends Base\Service
 {
+    use FileHandlerTrait;
+
     const LEDGER_RECON_STATE_PROCESSING                                = 'processing';
     const LEDGER_RECON_STATE_PROCESSED                                 = 'processed';
     const LEDGER_RECON_TRIGGERED_SYSTEM                                = 'system';
@@ -2277,5 +2284,165 @@ class Service extends Base\Service
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName
         );
+    }
+
+    public function processPosFile(array $input, $batchType): array
+    {
+        $this->trace->info(
+            TraceCode::LAMBDA_REQUEST,
+            [
+                'input'      => $input,
+                'batch_type' => $batchType,
+            ]
+        );
+
+        Batch\Type::validateType($batchType);
+
+        $fileDetails = $this->getFileDetails($input, $batchType);
+
+        $batchCore = new Batch\Core;
+
+        if (isset($fileDetails['file_path']) === true)
+        {
+            $file = new File($fileDetails['file_path']);
+
+            $params = [
+                Batch\Entity::TYPE          => $batchType,
+                Batch\Entity::FILE          => $file,
+            ];
+
+            $sharedMerchant = $this->repo
+                ->merchant
+                ->findOrFailPublic(Account::SHARED_ACCOUNT);
+
+            $batch = $batchCore->create($params, $sharedMerchant);
+
+            return $batch->toArrayPublic();
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid input, cannot process batch');
+        }
+    }
+
+    protected function getFileDetails(array & $input)
+    {
+        $fileProcessor = new FileProcessor;
+
+        try {
+            if (isset($input['key']) === true)
+            {
+                $key = urldecode($input['key']);
+
+                // Adding this to migrate the lambdas to indian region bucket
+                // with old lambda bucket and region was not being passed
+                // thus added this step to pass the bucket and region along with the new lambda
+                // keeping the following config in order to support both the lmbdas old and new
+                // to ease the migration process
+
+                $bucketConfig = 'h2h_bucket';
+                $bucketRegion = null;
+
+                if(empty($input['bucket']) === false)
+                {
+                    //Chakra sends actual bucket name, API uses bucket config name
+                    //Get the bucket config name from AWS config
+                    $config =  \Config::get('aws');
+
+                    foreach ($config as $bucket => $bucketName)
+                    {
+                        if ($bucketName === $input['bucket'])
+                        {
+                            $bucketConfig = $bucket;
+                            break;
+                        }
+                    }
+
+                }
+
+                if (empty($input['region']) === false)
+                {
+                    $bucketRegion = $input['region'];
+                }
+
+                $filePath = $this->getH2HFileFromAws($key, true, $bucketConfig, $bucketRegion);
+
+                $file = new File($filePath);
+
+                $filesDetails = $fileProcessor->getFileDetails($file, FileProcessor::STORAGE);
+
+                $this->trace->info(TraceCode::LAMBDA_FILE_DETAILS, ["filePath" => $filePath, 'fileDetails' => $filesDetails]);
+            }
+            else if (isset($input['file']) === true)
+            {
+                $filesDetails = $fileProcessor->getFileDetails($input['file'], FileProcessor::STORAGE);
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'invalid input, either bucket key or uploaded file is required');
+            }
+        }
+        catch (\Exception $e)
+        {
+            throw $e;
+        }
+
+        return $filesDetails;
+    }
+
+    public function createPosSettlement(array $input): array
+    {
+        $externalTxns = [];
+
+        $merchantId = false;
+
+        try{
+            foreach ($input as $key => $row) {
+
+                if ($merchantId === false)
+                {
+                    $terminal = $this->repo->terminal->findByGatewayMerchantId($row['merchant_id'], 'hdfc_ezetap');
+
+                    if (isset($terminal) === false){
+                        return ['failure_reason' => 'Merchant not onboarded'];
+                    }
+
+                    $merchantId = $terminal['merchant_id'];
+                }
+
+                $row['source_type'] = 'POS';
+
+                $externalTxns[] = [
+                    'merchant_id' => $merchantId,
+                    'source_id' => $row['source_id'],
+                    'gateway_transaction_id' => $row['source_id'],
+                    'total_amount' => ((float) $row['total_amount']) * 100,
+                    'utr' => $row['utr'],
+                    'gateway_settled_at' => strtotime($row['gateway_settled_at']),
+                    'meta' => $row
+                ];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::BATCH_FILE_PROCESSING_ERROR,
+                [
+                    'input' => $input,
+                ]);
+
+            return $input;
+        }
+
+        $payload['pos_transactions'] = $externalTxns;
+
+        $response = app('settlements_api')->posTransactionsAdd($payload);
+
+        return $input;
+
     }
 }
