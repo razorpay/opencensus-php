@@ -916,6 +916,15 @@ class UserController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postUserDetailsToSalesforce()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new User\Service)->postUserDetailsToSalesforce($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function post2faOtp()
     {
         $input = Input::all();

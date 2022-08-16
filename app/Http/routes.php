@@ -101,6 +101,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/2fa/otp-resend', 'UserController@postResendOtp')->name('user_2fa_otp_resned');
         Route::get('/session', 'UserController@getSessionData')->middleware(['auth:user'])->name('user_session');
         Route::get('/identifier/{client_id}', 'UserController@getIdentityToken')->middleware(['auth:user'])->name('user_identity');
+        Route::post('/salesforce_event', 'UserController@postUserDetailsToSalesforce')->name('user_salesforce_event');
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()

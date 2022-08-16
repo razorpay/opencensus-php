@@ -441,6 +441,11 @@ class Service extends Base\Service
         return $this->handleLoginResponse($error, $genericUser, $logged_in_via);
     }
 
+    public function postUserDetailsToSalesforce(array $input)
+    {
+        return $this->requestAPI($input,'users/salesforce_event', 'POST');
+    }
+
     public function post2faOtp(array $input)
     {
         $request = new \App\Admin\ApiRequestAny();
