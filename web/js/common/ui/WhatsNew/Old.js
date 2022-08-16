@@ -9,6 +9,7 @@ import {
   isMobileAndTablet,
   isElementXPercentInViewport,
   linkFromSource,
+  getYoutubeVideoID,
 } from 'common/utils/rzp-utils';
 import {
   closeModal as closeModalx,
@@ -702,10 +703,13 @@ const NotificationCard = ({
       }
     };
 
+    const youtubeVideoID = getYoutubeVideoID(video_url);
+    const videoId = youtubeVideoID === false ? video_url?.split('/')?.slice(-1)[0] : youtubeVideoID;
+
     // eslint-disable-next-line babel/new-cap
     // eslint-disable-next-line no-unused-vars
     const player = new window.YT.Player(`player-${id}`, {
-      videoId: video_url.split('/').slice(-1)[0],
+      videoId,
       events: {
         onStateChange: onPlayerStateChange,
       },

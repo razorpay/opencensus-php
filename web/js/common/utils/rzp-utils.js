@@ -1369,7 +1369,11 @@ export function getErrorMessageFromResponse(errors) {
 }
 
 export const linkFromSource = (link = '', source = '') => {
-  return link.indexOf(source) >= 0;
+  let isFromSource = link?.indexOf(source) >= 0;
+
+  if (source === 'youtube') isFromSource = isFromSource || link?.indexOf('youtu') >= 0;
+
+  return isFromSource;
 };
 
 export const isLoggedInViaMobile = () => localStorage?.getItem('loggedInVia') === 'contact_mobile';
@@ -1471,4 +1475,16 @@ export const scrollToTop = (ref) => {
     top: 0,
     behavior: 'smooth',
   });
+};
+
+/**
+ * Fetches the Youtube video id from a Youtube url for a video
+ * @param {string} url - The Youtube url for the video
+ * @returns {string | false} The Youtube video id if the parsing is successful. Otherwise `false` is returned
+ */
+export const getYoutubeVideoID = (url = '') => {
+  /** Regex used from {@link https://stackoverflow.com/a/8260383 Stack Overflow} */
+  const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+  const match = url?.match(regExp);
+  return match && match[7].length === 11 ? match[7] : false;
 };
