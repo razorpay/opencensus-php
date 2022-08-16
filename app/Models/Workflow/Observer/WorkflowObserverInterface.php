@@ -12,4 +12,6 @@ interface WorkflowObserverInterface
     public function onReject(array $observerData);
 
     public function onCreate(array $observerData);
+
+    public function onExecute(array $observerData);
 }

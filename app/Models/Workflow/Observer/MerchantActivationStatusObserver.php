@@ -4,8 +4,14 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
+use Monolog\Logger;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\Metric;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\AccountStatus;
+use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FDService;
 use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
@@ -26,6 +32,14 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
     protected $app;
 
     protected $merchant;
+    /**
+     * @var mixed
+     */
+    protected $actionId;
+    /**
+     * @var mixed
+     */
+    protected $permissionName;
 
     public function __construct($input)
     {
@@ -38,6 +52,12 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         $this->entityId         = $input[DifferEntity::ENTITY_ID];
 
         $this->activationStatus   = $input[DifferEntity::PAYLOAD][MerchantDetailEntity::ACTIVATION_STATUS] ?? "";
+
+        if (key_exists(DifferEntity::PERMISSION, $input) === true) // permission at times might not be present
+        {
+            $this->permissionName   = $input[DifferEntity::PERMISSION];
+        }
+
     }
 
     public function onApprove(array $observerData)
@@ -70,11 +90,75 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
     public function onReject(array $observerData)
     {
+        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER,[
+            'on_reject'                => 'on_reject observer invoked.'
+        ]);
 
+        $data = Constants::MERCHANT_ACTION_METRO_BODY;
+
+        $data[DifferEntity::ENTITY_ID] = $this->entityId;
+
+        $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+
+        $data[Constants::PERMISSION_NAME] = PermissionName::EDIT_ACTIVATE_MERCHANT;
+
+        $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = Status::UNDER_REVIEW;
+
+        $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = Status::REJECTED;
+
+        $data[Constants::STATUS] = Status::REJECTED;
+
+        $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
     }
 
     public function onCreate(array $observerData)
     {
+        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER,[
+            'on_create'                => 'on_create observer invoked.',
+            'permission_name' => $this->permissionName
+        ]);
+
+        $data = Constants::MERCHANT_ACTION_METRO_BODY;
+
+        if ( $this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED)
+        {
+            $data[DifferEntity::ENTITY_ID] = $this->entityId;
+
+            $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+
+            $data[Constants::PERMISSION_NAME] = PermissionName::NEEDS_CLARIFICATION_RESPONDED;
+
+            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = Status::NEEDS_CLARIFICATION;
+
+            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = Status::UNDER_REVIEW;
+
+            $data[Constants::STATUS] = Constants::OPEN;
+
+            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+        }
+    }
+
+    public function onExecute(array $observerData)
+    {
+        $this->app['trace']->info(TraceCode::MERCHANT_ACTIVATION_STATUS_OBSERVER,[
+            'on_execute'                => 'on_execute observer invoked.'
+        ]);
+
+        $data = Constants::MERCHANT_ACTION_METRO_BODY;
+
+        $data[DifferEntity::ENTITY_ID] = $this->entityId;
+
+        $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+
+        $data[Constants::PERMISSION_NAME] = PermissionName::EDIT_ACTIVATE_MERCHANT;
+
+        $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = Status::UNDER_REVIEW;
+
+        $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = Status::ACTIVATED;
+
+        $data[Constants::STATUS] = Constants::EXECUTED;
+
+        $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
 
     }
 
@@ -130,5 +214,41 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
         }
 
         return array();
+    }
+
+    public function publishToMetroTopic($data, $topic) {
+        // publish message on the metro topic business-banking-enabled
+
+        $this->app['trace']->info(
+            TraceCode::MERCHANT_ACTIVATION_OBSERVER_METRO_PUBLISH,
+            [
+            'data' => $data
+            ]
+        );
+
+        $encodedData = [
+            'data' => json_encode($data)
+        ];
+
+        try
+        {
+            $response = $this->app['metro']->publish($topic, $encodedData);
+
+            $this->app['trace']->info(
+                TraceCode::MERCHANT_ACTIVATION_OBSERVER_METRO_PUBLISH,
+                [
+                'response' => $response
+                ]
+            );
+
+        } catch (\Throwable $exception)
+        {
+
+            $this->app['trace']->traceException(
+                $exception,
+                Logger::CRITICAL,
+                TraceCode::MERCHANT_ACTIVATION_OBSERVER_METRO_PUBLISH);
+            // usual flow will not fail if the message publish to metro fails
+        }
     }
 }

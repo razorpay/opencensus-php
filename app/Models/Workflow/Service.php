@@ -175,9 +175,45 @@ class Service extends Base\Service
         }
     }
 
-    public function performActionOnObserver(string $actionId, string $state)
+    public function performActionOnObserver(string $actionId, string $state, $workflowData=[])
     {
-        $workflowRequestData = (new DifferService)->fetchRequest($actionId);
+
+        $this->trace->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [
+            'actionId' => $actionId,
+            'state'    => $state,
+            'workflowData' => $workflowData
+        ]);
+
+        try
+        {
+            // fetch workflow data from ES
+            $workflowRequestData = (new DifferService)->fetchRequest($actionId);
+        }
+        catch (\Throwable $err) {
+            // Data not found in ES, assign the fallback payload
+            if (empty($workflowData) === true)
+            {
+                $this->trace->warn(TraceCode::WORKFLOW_ACTION_NOT_FOUND, [
+                    'actionId' => $actionId
+                ]);
+                return;
+            }
+            else
+            {
+                $workflowRequestData = [
+                    DifferEntity::ROUTE_PARAMS            => $workflowData[DifferEntity::ROUTE_PARAMS],
+                    DifferEntity::PAYLOAD                 => $workflowData[DifferEntity::PAYLOAD],
+                    DifferEntity::CONTROLLER              => $workflowData[DifferEntity::CONTROLLER ],
+                    DifferEntity::FUNCTION_NAME           => $workflowData[DifferEntity::FUNCTION_NAME ],
+                    DifferEntity::AUTH_DETAILS            => $workflowData[DifferEntity::AUTH_DETAILS] ?? [],
+                    DifferEntity::ROUTE                   => $workflowData[DifferEntity::ROUTE],
+                    DifferEntity::WORKFLOW_OBSERVER_DATA  => $workflowData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [],
+                    DifferEntity::ENTITY_ID               => $workflowData[DifferEntity::ENTITY_ID] ?? '',
+                    DifferEntity::ENTITY_NAME             => $workflowData[DifferEntity::ENTITY_NAME] ?? '',
+                    DifferEntity::PERMISSION              => $workflowData[DifferEntity::PERMISSION] ?? '',
+                ];
+            }
+        }
 
         $routeName = $workflowRequestData[DifferEntity::ROUTE];
 
@@ -202,7 +238,8 @@ class Service extends Base\Service
         }
 
         $observerData = $workflowRequestData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
-
+        // action id at times is not present in $workflowRequestData, pass it explicitly
+        $observerData[DifferEntity::ACTION_ID] = $actionId;
         $observerClassInstance = new $observerClass($workflowRequestData);
 
         $this->trace->info(TraceCode::PERFORM_ACTION_OBSERVER_DATA, [
@@ -222,6 +259,14 @@ class Service extends Base\Service
         else if ($state === Name::CLOSED)
         {
             $observerClassInstance->onClose($observerData);
+        }
+        else if ($state === Name::EXECUTED)
+        {
+            $observerClassInstance->onExecute($observerData);
+        }
+        else if ($state === Name::OPEN)
+        {
+            $observerClassInstance->onCreate($observerData);
         }
     }
 

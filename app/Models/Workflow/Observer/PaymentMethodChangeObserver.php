@@ -271,4 +271,9 @@ class PaymentMethodChangeObserver implements WorkflowObserverInterface
     {
 
     }
+
+    public function onExecute(array $observerData)
+    {
+
+    }
 }

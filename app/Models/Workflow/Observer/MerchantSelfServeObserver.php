@@ -149,6 +149,11 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
     }
 
+    public function onExecute(array $observerData)
+    {
+
+    }
+
     public function getMerchantId()
     {
         if (($this->entityName !== 'merchant') and

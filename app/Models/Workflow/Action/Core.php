@@ -277,7 +277,6 @@ class Core extends Base\Core
             if (($retry === false) and (empty($differInput) === false))
             {
                 unset($differInput[Entity::ORG_ID]);
-
                 // Create the diff for the entity
                 (new Differ\Core)->create($action, $differInput);
             }

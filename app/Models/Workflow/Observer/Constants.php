@@ -3,6 +3,8 @@
 namespace RZP\Models\Workflow\Observer;
 
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\State\Name as StateName;
+use RZP\Models\Workflow\Action\Differ\Entity;
 
 class Constants
 {
@@ -11,6 +13,7 @@ class Constants
     const EDIT_PAYMENT_METHOD                   = 'merchant_put_payment_methods';
     const EMAIL_CHANGE                          = 'merchant_edit_email';
     const MERCHANT_ACTIVATION_STATUS            = 'merchant_activation_status';
+    const INTERNAL_MERCHANT_ACTIVATION_STATUS   = 'internal_merchant_activation_status';
 
     const MERCHANT_SAVE_BUSINESS_WEBSITE        = 'merchant_save_business_website';
 
@@ -52,6 +55,8 @@ class Constants
 
         self::MERCHANT_ACTIVATION_STATUS            => MerchantActivationStatusObserver::class,
 
+        self::INTERNAL_MERCHANT_ACTIVATION_STATUS   => MerchantActivationStatusObserver::class,
+
         self::MERCHANT_SAVE_BUSINESS_WEBSITE        => MerchantSelfServeObserver::class,
 
         self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => MerchantSelfServeObserver::class,
@@ -63,6 +68,8 @@ class Constants
         self::MERCHANT_BANK_ACCOUNT_UPDATE          => MerchantSelfServeObserver::class,
 
         self::ADD_ADDITIONAL_WEBSITE_SELF_SERVE     => MerchantSelfServeObserver::class,
+
+
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [
@@ -91,4 +98,39 @@ class Constants
     const REJECTION_REASON_MESSAGE           = 'rejection_reason_message';
 
     const SHOW_REJECTION_REASON_ON_DASHBOARD = 'show_on_dashboard';
+
+    const CMMA_WORKFLOW_METRO_TOPIC = 'WORKFLOW-STATUS-CHANGE';
+
+    const WORKFLOW_ACTION_ID = 'workflow_action_id';
+
+    const STATUS = 'status';
+
+    const OPEN = 'open';
+
+    const EXECUTED = 'executed';
+
+    CONST PERMISSION_NAME = 'permission_name';
+
+    CONST OLD_DATA = 'old_data';
+
+    CONST NEW_DATA = 'new_data';
+
+    CONST ACTIVATION_STATUS = 'activation_status';
+
+    CONST MERCHANT = 'merchant';
+
+    const MERCHANT_ACTION_METRO_BODY = [
+        self::WORKFLOW_ACTION_ID => "",
+        self::STATUS => StateName::APPROVED,
+        Entity::ENTITY_NAME => self::MERCHANT,
+        Entity::ENTITY_ID => "",
+        self::PERMISSION_NAME => "",
+        self::OLD_DATA => [
+            self::ACTIVATION_STATUS => ""
+        ],
+        self::NEW_DATA => [
+            self::ACTIVATION_STATUS => ""
+        ]
+    ];
+
 }

@@ -65,6 +65,11 @@ class ScheduleSettlementObserver implements WorkflowObserverInterface
 
     }
 
+    public function onExecute(array $observerData)
+    {
+
+    }
+
     public function getMerchantId()
     {
         return $this->entityId;

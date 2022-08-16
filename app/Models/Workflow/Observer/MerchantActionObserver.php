@@ -69,6 +69,11 @@ class MerchantActionObserver implements WorkflowObserverInterface
         // TODO: Implement onCreate() method.
     }
 
+    public function onExecute(array $observerData)
+    {
+        // TODO: Implement onExecute() method.
+    }
+
     public function getMerchantId()
     {
         return $this->entityId;

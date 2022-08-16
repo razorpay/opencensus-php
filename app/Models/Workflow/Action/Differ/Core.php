@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
+use RZP\Models\State\Name;
 use RZP\Events\DifferEvent;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
@@ -61,6 +62,8 @@ class Core extends Base\Core
         $diff[Entity::CREATED_AT] = Carbon::now()->getTimestamp();
 
         $diff = $this->makerAction($diff);
+
+        (new Service())->performActionOnObserver($action->getId(), Name::OPEN, $diff);
 
         return $diff;
     }
@@ -453,7 +456,7 @@ class Core extends Base\Core
 
         $documentId = $document['_id'];
 
-        (new Service())->performActionOnObserver($actionId,$state);
+        (new Service())->performActionOnObserver($actionId, $state);
 
         $esResponse = $this->esDao->updateActionState(
             strtolower($this->baseIndex), self::ES_TYPE, $documentId, $state);
