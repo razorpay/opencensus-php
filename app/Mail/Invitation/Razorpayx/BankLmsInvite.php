@@ -19,7 +19,7 @@ class BankLmsInvite extends Mailable
 
     const EXISTING_USER_TEMPLATE_PATH      = 'emails.invitation.razorpayx.invite_existing_user';
 
-    const INVITE_LINK_FORMAT = '%s/auth?invitation=%s';
+    const INVITE_LINK_FORMAT = '%s/auth/invitation?token=%s';
 
     protected $invitation;
 
