@@ -161,8 +161,11 @@ class Service extends Base\Service
         }
 
         $ledgerRequest = (new InternalLedgerProcessor())->createLedgerPayloadFromEntity($internal, $params);
+        $ledgerRequestHeaders = [
+            self::TENANT => self::X
+        ];
 
-        $journal = $this->createJournal($ledgerRequest);
+        $journal = $this->createJournal($ledgerRequest, $ledgerRequestHeaders);
 
         // update the internal entity with journal_id
         $internal[Entity::TRANSACTION_ID] = $journal[Base\UniqueIdEntity::ID];
@@ -181,8 +184,11 @@ class Service extends Base\Service
         try
         {
             $ledgerRequest = (new InternalLedgerProcessor())->createLedgerPayloadFromEntity($internal, $params);
+            $ledgerRequestHeaders = [
+                self::TENANT => self::X
+            ];
 
-            $response = $this->ledgerService->createJournal($ledgerRequest, true);
+            $response = $this->ledgerService->createJournal($ledgerRequest, $ledgerRequestHeaders, true);
             $this->trace->info(TraceCode::INTERNAL_REVERSE_RECEIVE_RESPONSE,
                 [
                     'response' => $response,
@@ -261,9 +267,9 @@ class Service extends Base\Service
         return [$bankName, $beneMerchantId];
     }
 
-    private function createJournal(array $request): array
+    private function createJournal(array $request, array $headers): array
     {
-        $response =  $this->ledgerService->createJournal($request, true);
+        $response =  $this->ledgerService->createJournal($request, $headers, true);
         return $response[LedgerService::RESPONSE_BODY];
     }
 }
