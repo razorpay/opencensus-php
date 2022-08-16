@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\OneClickCheckout\Config;
 use RZP\Models\Order\OrderMeta;
+use RZP\Models\Merchant\Metric;
 
 /**
  * Used by 1cc
@@ -37,6 +38,8 @@ class ThirdWatchService
 
     private $trace;
 
+    private $mode;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -44,6 +47,8 @@ class ThirdWatchService
         $this->trace = $this->app['trace'];
 
         $this->cache = $this->app['cache'];
+
+        $this->mode = $this->app['rzp.mode'];
     }
 
     /**
@@ -128,11 +133,24 @@ class ThirdWatchService
     {
         $serviceStart = $this->getCurrentTimeInMillis();
 
+        $dimensions =[
+            "mode" => $this->mode
+        ];
+
+        $this->trace->count(
+            Metric::COD_ELIGIBILITY_CALL_COUNT,
+            $dimensions
+        );
+
+        $ex = [];
+
         try
         {
             if (!isset($input['address']) || !isset($input['order_id']) || !isset($input['device']))
             {
-                throw new Exception\BadRequestValidationFailureException();
+                $this->trace->count(Metric::COD_ELIGIBILITY_CALL_ERROR_COUNT, $dimensions);
+                $ex =  new Exception\BadRequestValidationFailureException();
+                throw $ex;
             }
 
             // Rzp order id
@@ -166,11 +184,13 @@ class ThirdWatchService
             }
             catch (Exception\BadRequestException $e)
             {
-                $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_ERROR);
+                $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_ERROR, $dimensions);
+                $ex = $e;
             }
             catch (\Exception $e)
             {
                 $rtoPredictionServiceResponse = true;
+                $ex = $e;
             }
 
             if($rtoPredictionServiceResponse == true)
@@ -200,6 +220,27 @@ class ThirdWatchService
         }
         finally
         {
+            if (empty($ex) === true){
+                $this->trace->info(TraceCode::COD_ELIGIBILITY_VALIDITY_REQUEST,
+                    array_merge(
+                        $dimensions,
+                        [
+                            'request' => $this->getMaskedAddressDetails($input)
+                        ]
+                    )
+                );
+            }else {
+                $this->trace->error(TraceCode::COD_ELIGIBILITY_VALIDITY_ERROR,
+                    array_merge(
+                        $dimensions,
+                        [
+                            'request' => $this->getMaskedAddressDetails($input),
+                            'exception'=> $e->getTrace()
+                        ]
+                    )
+                );
+            }
+
             $this->trace->histogram(
                 TraceCode::TW_ADDRESS_COD_VALIDITY_TOTAL_DURATION,
                 $this->getCurrentTimeInMillis() - $serviceStart
@@ -338,4 +379,30 @@ class ThirdWatchService
             $this->trace->count(TraceCode::FAILED_TO_UPDATE_COD_INTELLIGENCE_FLAG_API);
         }
     }
+
+    protected function getMaskedAddressDetails($input): array
+    {
+        $maskedRequest =[];
+        if (empty($input['order_id']) === false) {
+            $maskedRequest = array_merge($maskedRequest,
+                [
+                    "order_id" => $input['order_id']
+                ]);
+        }
+        if (empty($input['address']['line1']) === false) {
+            $maskedRequest = array_merge($maskedRequest,
+                [
+                    'address_line_1' => mask_by_percentage($input['address']['line1'])
+                ]);
+        }
+        if (empty($input['address']['line2']) === false) {
+            $maskedRequest = array_merge($maskedRequest,
+                [
+                    'address_line_2' => mask_by_percentage($input['address']['line2'])
+                ]
+            );
+        }
+        return $maskedRequest;
+    }
+
 }
