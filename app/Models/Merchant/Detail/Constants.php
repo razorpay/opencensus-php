@@ -140,6 +140,11 @@ class Constants
     const OCR_RESPONSE           = 'ocr_response';
     const VERIFICATION_RESULT    = 'verification_result';
 
+    const ENTITY_NAME            = 'entity_name';
+    const CASE_TYPE              = 'case_type';
+    const CASE_TYPE_ACTIVATION   = 'activation';
+    const CLARIFICATION_DATA     = 'clarification_data';
+
     //gstin integration constants
     const COMPANY_NAME        = 'company_name';
     const LEGAL_NAME          = 'legal_name';

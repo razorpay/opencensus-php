@@ -14,10 +14,12 @@ use RZP\Encryption;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Metro\MetroHandler;
 use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Merchant\Store\ConfigKey;
+use RZP\Metro\Constants as MetroConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
@@ -3090,7 +3092,7 @@ class Core extends Base\Core
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $merchant, $properties, SegmentEvent::ACTIVATION_STATUS_CHANGE);
-        
+
         SendSubmerchantActivatedEvents::dispatch($merchant, $input[Entity::ACTIVATION_STATUS]);
 
         $this->pushHubspotEvent($merchant, $merchantDetails);
@@ -3247,6 +3249,26 @@ class Core extends Base\Core
         $email = new ClarificationEmail($data, $org->toArray());
 
         Mail::queue($email);
+
+        try
+        {
+            $publishData = [
+                'data' => json_encode([
+                    DetailConstants::ENTITY_NAME => $merchant->getEntityName(),
+                    DetailConstants::ENTITY_ID => $merchant->getId(),
+                    DetailConstants::CASE_TYPE => DetailConstants::CASE_TYPE_ACTIVATION,
+                    DetailConstants::CLARIFICATION_DATA => $clarificationReasons,
+                ])
+            ];
+
+            (new MetroHandler())->publish(MetroConstants::NEEDS_CLARIFICATION_EVENT, $publishData);
+        }
+        catch (\Throwable $err) {
+            $this->trace->error(TraceCode::METRO_PUBLISH_NEEDS_CLARIFICATION_EVENT, [
+                'error' => $err,
+            ]);
+        }
+
     }
 
     public function sendSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant)
