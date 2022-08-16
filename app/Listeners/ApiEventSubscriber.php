@@ -486,6 +486,7 @@ class ApiEventSubscriber extends Base\Core
                         'razorpay_order_id'   => $order->getPublicId(),
                         'razorpay_payment_id' => $payment->getPublicId(),
                         'merchant_id'         => $payment->getMerchantId(),
+                        'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
                     ])->delay(now()->addMinutes(5));
 
@@ -494,6 +495,7 @@ class ApiEventSubscriber extends Base\Core
                         TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB,
                         [
                             'step'                => 'dispatch',
+                            'type'                => 'create_order',
                             'dispatched'          => $dispatched,
                             'mode'                => $this->mode,
                             'razorpay_order_id'   => $order->getPublicId(),

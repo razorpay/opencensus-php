@@ -165,5 +165,7 @@ final class Metric
     const COD_ELIGIBILITY_CALL_COUNT = 'cod_eligibility_call_count';
     const COD_ELIGIBILITY_CALL_ERROR_COUNT = 'cod_eligibility_call_error_count';
 
-
+    const WEBHOOK_PROCESS_REQUEST_1CC_COUNT                  = 'WEBHOOK_PROCESS_REQUEST_1CC_COUNT';
+    const WEBHOOK_PROCESS_REQUEST_1CC_ERROR_COUNT            = 'WEBHOOK_PROCESS_REQUEST_1CC_ERROR_COUNT';
+    const SHOPIFY_WEBHOOK_JOB_FAILED_COUNT                   = 'SHOPIFY_WEBHOOK_JOB_FAILED_COUNT';
 }

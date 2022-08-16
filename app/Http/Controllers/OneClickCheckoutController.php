@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
+use RZP\Models\Merchant\OneClickCheckout\Webhooks;
 
 class OneClickCheckoutController extends Controller
 {
@@ -105,6 +106,22 @@ class OneClickCheckoutController extends Controller
         $this->addCorsHeaders($response, 'POST, OPTIONS');
 
         return $response;
+    }
+
+    public function processWebhook(string $platform)
+    {
+        $input = Request::all();
+        $rawContents = Request::getContent();
+        $headers = Request::header();
+
+        (new Webhooks\Service)->handle([
+            'raw_contents' => $rawContents,
+            'headers'      => $headers,
+            'platform'     => $platform,
+            'input'        => $input,
+        ]);
+
+        return ApiResponse::json([], 204);
     }
 
     public function allowCors(string $methods = '')

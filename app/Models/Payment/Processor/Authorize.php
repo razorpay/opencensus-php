@@ -11633,6 +11633,7 @@ trait Authorize
                         'razorpay_order_id'   => $order->getPublicId(),
                         'razorpay_payment_id' => $payment->getPublicId(),
                         'merchant_id'         => $this->merchant->getId(),
+                        'type'                => 'create_order',
                         'dispatch_time'       => millitime() - $start,
                     ])->delay(now()->addMinutes(5));
 

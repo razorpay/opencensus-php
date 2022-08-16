@@ -307,12 +307,28 @@ class Service extends Base\Service
     public function placeShopifyOrder($order, $payment, $fromShopifyApi): array
     {
         $start = millitime();
-
-        (new Core)->canShopifyOrderBePlaced($order, $fromShopifyApi);
+        $receipt = $order->getReceipt();
+        if ($receipt !== OneClickCheckout\Constants::SHOPIFY_TEMP_RECEIPT)
+        {
+            if ($fromShopifyApi === true)
+            {
+                $this->trace->error(
+                    TraceCode::SHOPIFY_1CC_API_ERROR,
+                    [
+                        'type'             => 'duplicate_order_received',
+                        'order_id'         => $order->getPublicId(),
+                        'from_shopify_api' => $fromShopifyApi,
+                    ]);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            }
+            return [
+                'success' => false,
+                'retry'   => false,
+                'type'    => 'duplicate_order_received',
+            ];
+        }
 
         $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi);
-
-        (new Core)->saveShopifyOrderAsPlaced($order->getId());
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,

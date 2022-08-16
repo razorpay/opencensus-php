@@ -3713,6 +3713,7 @@ class Route
         '1cc_shopify_checkout_options_preflight'    => ['options',    '1cc/shopify/checkout_options',                          'OneClickCheckoutController@allowCors'                  ],
         '1cc_shopify_oauth_redirect'                => ['get',        '1cc/shopify/oauth/redirect',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
         '1cc_shopify_oauth_callback'                => ['get',        '1cc/shopify/oauth/callback',                            'OneClickCheckoutController@shopifyOAuthRedirect'                ],
+        '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
@@ -9111,6 +9112,9 @@ class Route
 
         // Growth Public Route
         'growth_get_public_asset_details',
+
+        // Webhooks from Shopify
+        '1cc_process_webhooks',
     ];
 
     /**

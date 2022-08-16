@@ -36,6 +36,19 @@ class Client
         $this->storefrontAccessToken = $config[OneClickCheckout\Constants::STOREFRONT_ACCESS_TOKEN];
     }
 
+    /**
+     * @param string merchantOrderId - Shopify order ID
+     * returns "transactions": [] and 200 even if order id is invalid
+     */
+    public function getTransactionsByOrder(string $merchantOrderId)
+    {
+        $resource = '/orders/' . strval($merchantOrderId) . '/transactions.json';
+        return $this->sendRestApiRequest(
+            null,
+            'get',
+            $resource);
+    }
+
     public function sendStorefrontRequest($body)
     {
         return $this->sendRequest(

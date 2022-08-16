@@ -520,38 +520,6 @@ class Core extends Base\Core
         }
     }
 
-    public function canShopifyOrderBePlaced($order, $fromShopifyApi)
-    {
-        $receipt = $order->getReceipt();
-
-        $orderId = $order->getId();
-
-        $key = $this->getCacheKeyForPlacedOrders($orderId);
-
-        $this->cache = $this->app['cache'];
-
-        if (empty($this->cache->get($key)) === false or $receipt !== (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT)
-        {
-            $this->trace->info(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
-                [
-                    'type'             => 'duplicate_order_received',
-                    'error'            => 'SQS error: Order has already been placed for this payment, nothing to worry here',
-                    'order_id'         => $orderId,
-                    'from_shopify_api' => $fromShopifyApi,
-                ]
-            );
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
-        }
-    }
-
-    public function saveShopifyOrderAsPlaced(string $orderId)
-    {
-        $key = $this->getCacheKeyForPlacedOrders($orderId);
-
-        $this->cache->put($key, 1, self::CACHE_VALIDITY_TTL);
-    }
-
     public function exceptionPlaceShopifyOrderAPI($e, array $rzpOrder, array $rzpPayment, array $body): array
     {
         $start = millitime();
@@ -1161,11 +1129,6 @@ class Core extends Base\Core
     public function getMutexKeyForOrder(string $paymentId): string
     {
         return self::MUTEX_KEY . ':' . $paymentId;
-    }
-
-    protected function getCacheKeyForPlacedOrders(string $orderId): string
-    {
-        return 'MAGIC_CHECKOUT:' . $orderId;
     }
 
     public function isPaymentAndOrderValid($order, $payment)

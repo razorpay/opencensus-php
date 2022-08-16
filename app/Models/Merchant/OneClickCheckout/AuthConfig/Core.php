@@ -78,4 +78,19 @@ class Core extends Base\Core
 
         return $val;
     }
+
+    public function getShopify1ccConfigByShopId(string $shopId): array
+    {
+        $midResponse = $this->repo->merchant_1cc_auth_configs->findMerchantIdByPlatformConfigValue(
+          $shopId, Constants::SHOPIFY, Constants::SHOP_ID);
+
+        if ($midResponse === null)
+        {
+            return [];
+        }
+
+        $creds = $this->getShopify1ccConfig($midResponse['merchant_id']);
+        $creds['merchant_id'] = $midResponse['merchant_id'];
+        return $creds;
+    }
 }

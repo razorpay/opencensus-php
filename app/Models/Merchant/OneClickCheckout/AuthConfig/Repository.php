@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\OneClickCheckout\Constants;
 
 class Repository extends Base\Repository
 {
@@ -34,6 +35,16 @@ class Repository extends Base\Repository
             ->where(Base\Entity::DELETED_AT, '=', null)
             ->first();
     }
+
+    public function findMerchantIdByPlatformConfigValue(string $value, string $platform, string $config)
+    {
+        return $this->newQuery()
+            ->where(Entity::PLATFORM, '=', $platform)
+            ->where(Entity::CONFIG, '=', $config)
+            ->where(Entity::VALUE, '=', $value)
+            ->first();
+    }
+
 
     public function deleteByMerchantAndPlatform($merchantId, $platform)
     {
