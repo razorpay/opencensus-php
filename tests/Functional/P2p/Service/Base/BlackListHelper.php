@@ -12,16 +12,7 @@ class BlackListHelper extends P2pHelper
 
         $request = $this->request('blacklist/add_batch');
 
-        $default = [
-            'type'              => 'vpa',
-            'username'          => 'customer',
-            'handle'            => 'razorhdfc',
-            'account_number'    => '',
-            'ifsc'              => '',
-            'beneficiary_name'  => 'Razorpay Customer',
-        ];
-
-        $this->content($request, $default, $content);
+        $this->content($request, $content);
 
         return $this->post($request);
     }

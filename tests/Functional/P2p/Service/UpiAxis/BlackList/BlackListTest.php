@@ -3,19 +3,39 @@
 namespace Functional\P2p\Service\UpiAxis\BlackList;
 
 use RZP\Exception\RuntimeException;
-use RZP\Models\P2p\BlackList\Entity;
+use RZP\Models\Vpa\Entity;
+use RZP\Models\P2p\BlackList\Entity as BlackListEntity;
 
 class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
 {
-    public function testCreate()
+    public function testCreateVpaBlackList()
     {
         $helper = $this->getBlackListHelper()->setMerchantOnAuth(true);
+        $this->expectExceptionMessage(RuntimeException::class);
 
         $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage("Not implemented, core Implementation is on the way");
 
-        $this->expectExceptionMessage("Not implemented, processor Implementation is on the way");
+        $helper = $this->getVpaHelper();
 
-        $response = $helper->create();
+        $helper->withSchemaValidated();
+
+        $vpas = $helper->fetchAllVpa();
+
+        $vpa = $vpas['items'][0];
+
+        $helper = $this->getBlackListHelper()->setMerchantOnAuth(true);
+
+        $input = array(
+            'type'              => 'vpa',
+            'username'          => $vpa[Entity::USERNAME],
+            'handle'            => $vpa[Entity::HANDLE],
+            'account_number'    => '',
+            'ifsc'              => '',
+            'beneficiary_name'  => '',
+        );
+
+        $response = $helper->create($input);
     }
 
     public function testRemove()
@@ -42,7 +62,7 @@ class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
 
     public function testEntity()
     {
-        $entity         = new Entity();
+        $entity         = new BlackListEntity();
         $entityClass    = $entity->getEntity();
         $entityName     = $entityClass->getP2pEntityName();
         $this->assertEquals('blacklist', $entityName);

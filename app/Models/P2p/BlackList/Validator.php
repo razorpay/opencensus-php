@@ -13,21 +13,44 @@ use RZP\Models\P2p\BankAccount;
  */
 class Validator extends Base\Validator
 {
+    protected static $addRules;
+
     public function rules()
     {
         $rules = [
             Entity::TYPE => 'string | in:vpa,bank_account',
         ];
 
-        $rules;
+        return $rules;
     }
 
     public function makeCreateRules()
     {
         $rules = $this->makeRules([
-            Entity::ENTITY_ID   => 'sometimes',
-            Entity::CLIENT_ID   => 'sometimes',
-            Entity::TYPE        => 'sometimes',
+            Entity::ENTITY_ID                       => 'sometimes',
+            Entity::CLIENT_ID                       => 'sometimes',
+            Entity::TYPE                            => 'sometimes',
+            BankAccount\Entity::ACCOUNT_NUMBER      => 'required_if:type,bank_account',
+            BankAccount\Entity::IFSC                => 'required_if:type,bank_account',
+            BankAccount\Entity::BENEFICIARY_NAME    => 'required_if:type,bank_account',
+            Vpa\Entity::HANDLE                      => 'required_if:type,vpa',
+            Vpa\Entity::USERNAME                    => 'required_if:type,vpa',
+        ]);
+
+        return $rules;
+    }
+
+    public function makeAddRules()
+    {
+        $rules = $this->makeRules([
+            Entity::ENTITY_ID                     => 'sometimes',
+            Entity::CLIENT_ID                     => 'sometimes',
+            Entity::TYPE                          => 'sometimes',
+            Vpa\Entity::USERNAME                  => 'sometimes',
+            Vpa\Entity::BENEFICIARY_NAME          => 'sometimes',
+            BankAccount\Entity::ACCOUNT_NUMBER    => 'sometimes',
+            BankAccount\Entity::IFSC              => 'sometimes',
+            BankAccount\Entity::HANDLE            => 'sometimes',
         ]);
 
         return $rules;
@@ -38,7 +61,7 @@ class Validator extends Base\Validator
         $rules = $this->makeRules([
             Entity::TYPE        => 'required',
             Entity::ENTITY_ID   => 'required',
-            Entity::CLIENT_ID   =>  'required',
+            Entity::CLIENT_ID   => 'required',
         ]);
 
         $rules->merge((new Vpa\Validator)->makeRules([
