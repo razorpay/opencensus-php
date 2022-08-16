@@ -519,10 +519,10 @@ class Service extends Base\Service
 
         // add note to ticket
         $noteResponse = $this->app[Constants::FRESHDESK_CLIENT]->addNoteToTicket($ticketId, $noteData);
-        
+
 
         // validate note response
-        $this->validateNoteResponse($noteResponse);
+        $this->validateNoteResponse($noteResponse, true);
 
         return $noteResponse;
     }
@@ -975,8 +975,9 @@ class Service extends Base\Service
         }
     }
 
-    protected function validateNoteResponse($response)
+    protected function validateNoteResponse($response, $ignorePrivate=false)
     {
+        // check for errors in response
         if (isset($response['errors']) !== false)
         {
             $this->trace->error(
@@ -986,6 +987,12 @@ class Service extends Base\Service
             );
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ADD_NOTE_FAILED);
+        }
+
+        // no need to validate further if private note addition validation is ignored
+        if ($ignorePrivate === true)
+        {
+            return;
         }
 
         if ((isset($response['private']) === false) or ($response['private'] !== false))

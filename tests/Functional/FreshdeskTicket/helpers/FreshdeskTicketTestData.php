@@ -619,5 +619,21 @@ return [
             'content' => [
             ]
         ]
+    ],
+
+    'testFreshDeskInternalAddPrivateNote' => [
+        'request' => [
+            'url' => '/internal/fd/ticket/3331/note',
+            'method' => 'POST',
+            'content' => [
+                'description' => 'Private note addition',
+                'private' => true
+            ]
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+            ]
+        ]
     ]
 ];

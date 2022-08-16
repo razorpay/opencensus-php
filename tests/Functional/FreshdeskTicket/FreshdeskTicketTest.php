@@ -509,4 +509,13 @@ class FreshdeskTicketTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testFreshDeskInternalAddPrivateNote()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->cmmaAppAuth();
+
+        $this->startTest();
+    }
 }
