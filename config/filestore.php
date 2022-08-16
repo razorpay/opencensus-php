@@ -120,6 +120,10 @@ return [
             'name'   => env('AWS_S3_CROSS_BORDER_BUCKET'),
             'region' => env('AWS_S3_CROSS_BORDER_REGION', 'ap-south-1')
         ],
+        'hdfc_collect_now_bucket_config' => [
+            'name'   => env('AWS_HDFC_COLLECT_NOW_SETTLEMENT_BUCKET'),
+            'region' => env('AWS_BUCKET_REGION', 'ap-south-1')
+        ],
     ],
 
     'local' => [
@@ -174,6 +178,10 @@ return [
         'cross_border_bucket_config' => [
             'name'   => env('LOCAL_CROSS_BORDER_BUCKET', 'cross_border_bucket'),
             'region' => null,
+        ],
+        'hdfc_collect_now_bucket_config' => [
+            'name'   => env('LOCAL_TEST_BUCKET', 'test_bucket'),
+            'region' => null
         ],
     ]
 ];

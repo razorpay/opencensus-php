@@ -35,6 +35,9 @@ return [
     'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
     'invoice_bucket'        => env('AWS_S3_INVOICES_BUCKET'),
     'test_bucket'           => env('AWS_S3_TEST_BUCKET'),
+
+    'hdfc_collect_now_settlement_bucket'           => env('AWS_HDFC_COLLECT_NOW_SETTLEMENT_BUCKET'),
+
     //
     // The below  bucket is used to store input reconciliation files
     // temporatily. Whenever a file is uploaded to this bucket, a request is
