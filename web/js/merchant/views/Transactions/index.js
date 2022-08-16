@@ -11,6 +11,7 @@ import DisputesList from 'merchant/views/Transactions/Disputes/List';
 import BatchPaymentsList from 'merchant/views/Transactions/BatchPayments/List';
 import BatchRefundsList from 'merchant/views/Transactions/BatchRefunds/List';
 import BatchRefundsUpload from 'merchant/views/Transactions/BatchRefunds/BatchUpload';
+import SuccessRate from 'merchant/views/Transactions/SuccessRate';
 import { fetchSettlementAmount as fnFetchSettlementAmount } from 'merchant/reducers/home';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import Amount from 'common/ui/Amount';
@@ -334,6 +335,9 @@ class TransactionsContainer extends Component {
                 </span>
               </div>
             ) : null}
+            <ShowWhen additionalCondition={(usr) => usr.findTag('success_rate')}>
+              <NavLink to="/success-rate">Success Rate</NavLink>
+            </ShowWhen>
           </header>
 
           <TestModeBanner />
@@ -353,6 +357,11 @@ class TransactionsContainer extends Component {
                 <Route path="/payments/batchuploads" component={BatchPaymentsList} />
                 <Route path="/payments" component={PaymentsList} />
                 <Route path="/disputes" component={DisputesList} />
+                <ShowWhenRoute
+                  path="/success-rate"
+                  component={SuccessRate}
+                  additionalCondition={(usr) => usr.findTag('success_rate')}
+                />
               </Switch>
             </ErrorBoundary>
           </content>

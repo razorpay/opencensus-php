@@ -310,6 +310,12 @@ export default class Content extends Component {
           />
           <Route path="/disputes" component={Transactions} />
 
+          <ShowWhenRoute
+            path="/success-rate"
+            component={Transactions}
+            additionalCondition={(usr) => usr.findTag('success_rate')}
+          />
+
           <Route
             path="/settlements/:id(setl_.+)/"
             component={SettlementDetailsV2}

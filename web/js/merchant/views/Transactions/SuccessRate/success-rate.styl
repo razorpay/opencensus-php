@@ -1,0 +1,341 @@
+$bg-white = #ffffff
+$text-blue = #528ff0
+$text-grey = #58666E
+$text-green = #008659
+$font-color = #0A1D38
+$default-grey = #9fb1c7
+$border-grey = #A6B0BF
+$border-blue = #336CD5
+$widget-border = #E8EAEB
+$pill-color = #132644
+$spacer = 8px
+
+.sr-dashboard
+  background-color: $bg-white
+  padding: $spacer * 3
+
+  .filter
+    display: flex
+    align-items: center
+    padding-bottom: $spacer * 3
+
+    .datepicker-group
+      margin-left: 0
+
+    .daterangepicker-container .DateRangePickerInput > .DateInput input
+      padding-bottom: 0
+
+    &__actions
+      margin-top: $spacer * 3
+      margin-left: $spacer * 2
+      .btn
+        font-weight: bold
+      .btn-text
+        color: $text-blue
+        background-color: transparent
+        margin-left: $spacer
+
+/*************** Success rate tabs ***************/
+  
+.sr-metrics
+  .nav.nav-tabs > li
+    display: inline-block
+    min-width: 260px
+    font-size: 14px
+    margin-bottom: $spacer * 2
+    margin-left: $spacer * 2
+    cursor: pointer
+    > a
+      margin: 0
+      padding: 0
+      border: none
+      text-align: left
+      color: inherit
+    &:hover > a, &.active > a
+      color: inherit
+      background-color: transparent
+      border: none
+    &:first-child
+      margin-left: 0
+    &:hover .metrics-card, &.active .metrics-card
+      border-color: $border-blue
+    &.active .metrics-card
+      position: relative
+      border-width: 2px
+      &::after
+        content: ""
+        position: absolute
+        top: 100%
+        left: 50%
+        margin-left: -10px
+        display: block
+        border-width: 10px
+        border-color: transparent
+        border-bottom-width: 0
+        border-top-color: $border-blue
+        border-style: solid
+
+/*******************************************************/
+
+/********** Success rate tabs metrics card **********/
+
+.sr-metrics .metrics-card
+  padding: $spacer * 2
+  padding-bottom: $spacer
+  background-color: $bg-white
+  border: 1px solid $border-grey
+  border-radius: 2px
+  &__title
+    margin: 0
+    small.help-content
+      display: inline-block
+      margin-left: 4px
+      color: $default-grey
+      cursor: pointer
+  > h1
+    color: $font-color
+    margin: $spacer 0
+    font-size: 24px
+    line-height: 36px
+  div.mini-chart
+    width: 100%
+    height: 40px
+    background-color: transparent
+    transition: 0.1s margin 0.05s ease-out
+    .min-chart-content
+      width: 100%
+      height: 100%
+      margin-bottom: 4px
+      border-bottom: 1px solid transparent
+      opacity: 0.6
+    &.active
+      transition: margin 0.1s ease-out
+    &.active .min-chart-content
+      opacity: 1
+    &.no-data .min-chart-content
+      border-bottom-color: $default-grey
+    &.no-data.active .min-chart-content
+      border-bottom-color: $border-blue
+
+/************************************************************/
+
+/********** Success rate common css **********/
+
+.sr-dashboard .panel.dasboard-home-panel
+  padding: $spacer * 3 $spacer * 1.5
+
+.sr-dashboard .alert-danger
+  padding: $spacer
+
+.sr-dashboard .box-widget
+  position: relative
+  padding: $spacer * 3
+  margin-bottom: $spacer * 3
+  background: $bg-white
+  border: 1px solid $widget-border
+  border-radius: 2px
+
+.sr-dashboard .styled-header
+  position: relative
+  font-weight: 700
+  font-size: 14px
+  line-height: 20px
+  color: #344A6C
+  padding-left: $spacer
+  margin-bottom: $spacer
+  &:before
+    content: ""
+    background-color: #336CD5
+    position: absolute
+    width: 2px
+    height: 20px
+    top 0
+    left: 0
+
+.vtab
+  width: 100%
+  display: flex
+  flex-direction: row
+
+  .vtab__tablist
+    display: flex
+    flex-direction: column
+    border-right: 1px solid #e6e7e8
+
+    .vtab__tablist__tab
+      min-width: 300px
+      background-color: $bg-white
+      padding: $spacer
+      color: $font-color
+      font-size: 1rem
+      border: 1px solid #E6E7E8
+      border-left: 0
+      border-right: 0
+      cursor: pointer
+      outline: none
+      &:hover, &.selected
+        background-color: #F5F8FE
+
+  .vtab__tabpanel
+    display: flex
+    flex-direction: column
+    flex-grow: 1
+    padding: $spacer
+    color: $font-color
+
+/************************************************************/
+
+/*************** Success rate No Data Component ***************/
+
+.sr-dashboard
+  .box-widget div.no-data
+    font-size: 20px
+    color: $default-grey
+    padding: $spacer * 2.5
+    text-align center
+    &__title
+      margin-bottom $spacer * 0.75
+    &__subtitle
+      font-size: 16px
+      color: $border-grey
+
+/*******************************************************/
+
+/********** Success rate graph **********/
+
+.sr-metrics .graph-panel
+  &__topbar
+    display: flex
+    align-items: center
+    justify-content: space-between
+    padding-right: $spacer * 2
+    padding-left: $spacer * 3
+    .panel-actions
+      margin-left: auto
+  div.chart-container
+    position: relative
+    height: 265px
+
+/************************************************************/
+
+/********** Success rate pill buttons **********/
+
+.sr-metrics
+  .tags-group
+    display: flex
+    align-items: center
+    flex-wrap: nowrap
+    &__tag
+      display: flex
+      align-items: center
+      justify-content: center
+      background-color: $bg-white
+      color: $text-grey
+      padding: 4px 16px
+      border: 1px solid $pill-color
+      border-radius: 16px
+      margin-inline: 4px
+      text-transform: capitalize
+      cursor: pointer
+
+/************************************************************/
+
+/********** Success rate volume widget **********/
+
+.sr-dashboard .volume-container
+  display: flex
+  min-height: 240px
+  .chart-col
+    width: 30%
+  .info-col
+    width: 70%
+    display: flex
+    flex-wrap: wrap
+  .info-card
+    padding-inline: $spacer * 4
+    padding-bottom: $spacer * 4
+    .styled-header
+      margin-bottom: $spacer * 2
+    &__label
+      display: flex
+      align-items: center
+      line-height: 26px
+      > p.label-text
+        font-size: 14px
+        color: $text-grey
+      > span.info-icon
+        padding-left: $spacer
+    &__value
+      display: flex
+      align-items: center
+      > p
+        font-size: 18px
+        font-weight: bold
+        line-height: 36px
+        color: $font-color
+      > p > span.highlight
+        color: $text-green
+
+    
+/************************************************************/
+
+.sr-dashboard .reasons-container
+  padding: 0
+
+.sr-dashboard .r-panel
+  padding: $spacer * 2 $spacer * 4
+  .r-grid
+    margin-right: -15px;
+    margin-left: -15px;
+    margin-top: $spacer * 4
+    &__item
+      margin-bottom: $spacer * 4
+    p.item-text        
+      color: $font-color
+      font-size: 18px
+      font-weight: bold
+      line-height: 36px
+    p.item-desc
+      color: #818EA3
+      font-size: 12px
+      line-height: 16px     
+
+.sr-dashboard .vtab__tablist__tab
+  .tab-card
+    display: flex
+    align-items: center
+    justify-content: space-between
+    padding: $spacer
+    padding-left: $spacer * 3
+    &__info
+      display: flex
+      flex-direction: column
+      align-items: flex-start
+      flex-grow: 1
+      div.info-value, div.info-label
+        display: flex
+        align-items: center
+      div.info-value
+        font-size: 13px
+        padding-bottom: $spacer
+        .rate
+          color:#0A1D38
+          font-size: 18px
+          font-weight: 600
+        > span
+          color: #D13821
+          padding-left: $spacer * 1.5
+        > span i.arrow
+          display: inline-block
+          transform: rotate(90deg)                
+      div.info-label
+        p.label-text
+          color: $text-grey
+          font-size: 14px
+        span.info-icon
+          padding-left: $spacer
+        > span > i.i-info-outline
+          font-size: 12px
+    > i.i-chevron-right
+      color: #3370DF
+      font-size: 24px

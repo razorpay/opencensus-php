@@ -23,6 +23,7 @@ import customersReducer from 'merchant/reducers/customers';
 import itemsReducer from 'merchant/reducers/items';
 import orderReducer from 'merchant/reducers/orders/details';
 import disputeReducer from 'merchant/reducers/disputes/details';
+import successRateReducer from 'merchant/reducers/successRate';
 import settlementReducer from 'merchant/reducers/settlements/details';
 import instantSettlementReducer from 'merchant/reducers/instantSettlements/details';
 import webhooksReducer from 'merchant/reducers/webhooks';
@@ -169,6 +170,7 @@ export default combineReducers({
   instantSettlement: instantSettlementReducer,
   disputes: disputesReducer,
   dispute: disputeReducer,
+  successRate: successRateReducer,
   webhooks: webhooksReducer,
   keys: keysReducer,
   credits: creditsReducer,
