@@ -22,6 +22,7 @@ use RZP\Models\Upi;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Metric as AddressMetric;
 use RZP\Models\Locale\Core as Locale;
 
 class Core extends Base\Core
@@ -445,6 +446,7 @@ class Core extends Base\Core
         return $customer;
     }
 
+
     /**
      * Used for 1 click checkout save address
      * Creates/fetches a global customer and saves address by associating the global customer to that address
@@ -458,41 +460,83 @@ class Core extends Base\Core
      */
     public function createGlobalAddress($input)
     {
-        if(Session()->has($this->mode . '_app_token') === false)
+        $this->trace->count(AddressMetric::GLOBAL_CREATE_ADDRESS_COUNT);
+
+        $startTime = millitime();
+
+        $response = [];
+
+        $ex = '';
+
+        try{
+
+            if(Session()->has($this->mode . '_app_token') === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            }
+
+            $appToken = Session()->get($this->mode . '_app_token');
+
+            Customer\Validator::validateCreateGlobalAddress($input);
+
+            $input = Customer\Validator::validateAndParseContactInInput($input);
+
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
+                ['app_token' => $appToken],
+                $this->merchant,
+                true);
+
+            // 1cc Demo: Reject address saving for +911234567890
+            if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
+            {
+                return [];
+            }
+
+            $addressEntity = new Address\Core();
+
+            $address = [];
+
+            if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
+                $address[Entity::SHIPPING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS], true);
+            }
+            if ( isset($input[Entity::BILLING_ADDRESS]) ) {
+                $address[Entity::BILLING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::BILLING_ADDRESS], true);
+            }
+
+            $this->traceResponseTime(
+                AddressMetric::GLOBAL_CREATE_ADDRESS_RESPONSE_TIME_MILLIS,
+                $startTime
+            );
+
+            $response = $address;
+
+            return $address;
+        }
+        catch (\Exception $exception)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            $ex = $exception;
+            $this->trace->count(AddressMetric::GLOBAL_CREATE_ADDRESS_ERROR_COUNT);
+            throw $exception;
         }
-
-        $appToken = Session()->get($this->mode . '_app_token');
-
-        Customer\Validator::validateCreateGlobalAddress($input);
-
-        $input = Customer\Validator::validateAndParseContactInInput($input);
-
-        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken],
-            $this->merchant,
-            true);
-
-        // 1cc Demo: Reject address saving for +911234567890
-        if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
-        {
-            return [];
+        finally {
+            if (empty($ex) === true){
+                $this->trace->info(TraceCode::GLOBAL_CREATE_ADDRESS_REQUEST,
+                        [
+                            'request' =>  $this->getMaskedDetails($input),
+                            'response' => $this->getMaskedDetails($response) ,
+                            'exception'=> $ex
+                        ]
+                );
+            }else {
+                $this->trace->error(TraceCode::GLOBAL_CREATE_ADDRESS_ERROR,
+                        [
+                            'request' => $this->getMaskedDetails($input),
+                            'response' => $this->getMaskedDetails($response) ,
+                            'exception'=> $ex->getTrace()
+                        ]
+                );
+            }
         }
-
-        $addressEntity = new Address\Core();
-
-        $address = [];
-
-        if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
-            $address[Entity::SHIPPING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS], true);
-        }
-        if ( isset($input[Entity::BILLING_ADDRESS]) ) {
-            $address[Entity::BILLING_ADDRESS] = $addressEntity->create($customer, Address\Type::CUSTOMER, $input[Entity::BILLING_ADDRESS], true);
-        }
-
-        return $address;
-
     }
 
     /**
@@ -1060,5 +1104,27 @@ class Core extends Base\Core
             'email'   => $customer->getEmail(),
             'contact' => $customer->getContact(),
         ];
+    }
+
+    protected function getMaskedDetails($data): array
+    {
+        if (empty($data['contact']) === false) {
+            $data['contact'] = mask_phone($data['contact']);
+        }
+        if (empty($data['email']) === false) {
+            $data['email'] = mask_email($data['email']);
+        }
+        if (empty($data['line1']) === false) {
+            $data['line1'] = mask_by_percentage($data['line1']);
+        }
+        if (empty($data['line2']) === false) {
+            $data['line2'] = mask_by_percentage($data['line2']);
+        }
+        return $data;
+    }
+    protected function traceResponseTime(string $metric, int $startTime, $dimensions = [])
+    {
+        $duration = millitime() - $startTime;
+        $this->trace->histogram($metric, $duration, $dimensions);
     }
 }

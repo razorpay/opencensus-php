@@ -7679,10 +7679,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_STATEMENT_BALANCE_ENTITY   = 'LEDGER_STATEMENT_BALANCE_ENTITY';
     const LEDGER_STATEMENT_CREATED_AT_ERROR = 'LEDGER_STATEMENT_CREATED_AT_ERROR';
 
+
     const SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB                       = 'SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB';
     const SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_ERROR                 = 'SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_ERROR';
     const SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_DELETE                = 'SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_DELETE';
     const DCC_ON_RECURRING_AUTO_DIRECT_EXPERIMENT                     = 'DCC_ON_RECURRING_AUTO_DIRECT_EXPERIMENT';
+    
+    //1cc Customer Metrics
+    const GLOBAL_CREATE_ADDRESS_REQUEST                               = 'GLOBAL_CREATE_ADDRESS_REQUEST';
+    const GLOBAL_CREATE_ADDRESS_ERROR                                 = 'GLOBAL_CREATE_ADDRESS_ERROR';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
