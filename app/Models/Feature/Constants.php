@@ -1064,6 +1064,8 @@ class Constants
 
     const ONE_CLICK_DUAL_CHECKOUT = 'one_cc_dual_checkout';
 
+    const ONE_CC_STORE_ACCOUNT = 'one_cc_store_account';
+
     const ONE_CLICK_OVERRIDE_THEME = 'one_cc_override_theme';
 
     const ONE_CC_REPORTING_TEST  = 'one_cc_reporting_test';
@@ -1526,7 +1528,8 @@ class Constants
         self::ONE_CLICK_DUAL_CHECKOUT,
         self::ONE_CC_REPORTING_TEST,
         self::ONE_CLICK_OVERRIDE_THEME,
-        self::ONE_CC_INPUT_ENGLISH
+        self::ONE_CC_INPUT_ENGLISH,
+        self::ONE_CC_STORE_ACCOUNT
     ];
 
     const ONE_CC_FEATURES = [
@@ -1539,7 +1542,8 @@ class Constants
         self::ONE_CLICK_DUAL_CHECKOUT,
         self::ONE_CC_REPORTING_TEST,
         self::ONE_CLICK_OVERRIDE_THEME,
-        self::ONE_CC_INPUT_ENGLISH
+        self::ONE_CC_INPUT_ENGLISH,
+        self::ONE_CC_STORE_ACCOUNT
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2036,6 +2040,7 @@ class Constants
         self::CROSS_ORG_LOGIN                 => true,
         self::MISSED_ORDERS_PLINK             => true,
         self::KFIN_MERCHANT_REPORT            => true,
+        self::ONE_CC_STORE_ACCOUNT            => true,
         self::CAMS_MERCHANT_REPORT            => true,
     ];
 

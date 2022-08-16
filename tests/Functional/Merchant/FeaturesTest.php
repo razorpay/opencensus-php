@@ -3262,4 +3262,11 @@ Regards,
 
         $this->startTest();
     }
+
+    public function testOneCcStoreAccountFeature()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
 }
