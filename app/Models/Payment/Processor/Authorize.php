@@ -4454,7 +4454,8 @@ trait Authorize
         list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
                                                                 $input, $merchant, $followGlobal);
 
-        $this->isTokenInteroperabilityAllowed($customer, $payment, $input);
+        // need to enable this check before enabling the token_interoperability
+       // $this->isTokenInteroperabilityAllowed($customer, $payment, $input);
 
         if (($customer === null) and
             ($payment->hasSubscription() === true) and
