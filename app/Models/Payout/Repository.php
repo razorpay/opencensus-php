@@ -58,9 +58,9 @@ class Repository extends Base\Repository
 
     public function saveOrFail($payout, array $options = array())
     {
-        $highTPSCompositePayoutFlag = $payout->merchant->isFeatureEnabled(Constants::HIGH_TPS_COMPOSITE_PAYOUT);
+        $isHighTpsPayout = Core::isHighTpsMerchant($payout);
 
-        ($highTPSCompositePayoutFlag === true) ? parent::saveOrFailWithoutEsSync($payout, $options) : parent::saveOrFail($payout, $options);
+        ($isHighTpsPayout === true) ? parent::saveOrFailWithoutEsSync($payout, $options) : parent::saveOrFail($payout, $options);
     }
 
     public function fetchCreatedPayouts($timestamp, $method)

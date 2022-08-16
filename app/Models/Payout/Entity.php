@@ -2656,10 +2656,18 @@ class Entity extends Base\PublicEntity
     {
         // Mail only for processed and reversed payouts
         // Ref: \RZP\Mail\Transaction\Payout::getSubject
-        return (($this->isBalanceTypeBanking() === true) and
-                ($this->merchant->isFeatureEnabled(Features::HIGH_TPS_COMPOSITE_PAYOUT) === false) and
-                ($this->merchant->isFeatureEnabled(Features::SKIP_PAYOUT_EMAIL) === false) and
-                (in_array($this->getStatus(), [Status::PROCESSED, Status::REVERSED], true) === true));
+        if ($this->isBalanceTypeBanking() === false)
+        {
+            return false;
+        }
+
+        if (Core::isHighTpsMerchant($this) === true)
+        {
+            return false;
+        }
+
+        return ($this->merchant->isFeatureEnabled(Features::SKIP_PAYOUT_EMAIL) === false) and
+                (in_array($this->getStatus(), [Status::PROCESSED, Status::REVERSED], true) === true);
     }
 
     /**

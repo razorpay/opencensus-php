@@ -321,6 +321,8 @@ class Service extends Base\Service
 
             $newFlowFlag = $this->merchant->isFeatureEnabled(Features::HIGH_TPS_COMPOSITE_PAYOUT);
 
+            $highTpsIngress = $this->merchant->isFeatureEnabled(Features::HIGH_TPS_PAYOUT_INGRESS);
+
             $asyncIngressFlag = $this->merchant->isFeatureEnabled(Features::PAYOUT_ASYNC_INGRESS);
 
             $this->compositePayoutSaveOrFail = !$asyncIngressFlag;
@@ -330,7 +332,7 @@ class Service extends Base\Service
                 'time_taken' => (microtime(true) - $startTime) * 1000,
             ]);
 
-            if ($newFlowFlag === true)
+            if (($highTpsIngress === true) or ($newFlowFlag === true))
             {
                 if ($balance->isAccountTypeDirect() === true)
                 {

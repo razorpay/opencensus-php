@@ -610,7 +610,7 @@ class Core extends Base\Core
             case Status::PROCESSED:
                 $oldStatus = $payout->getStatus();
                 $this->handlePayoutProcessed($payout, null, $ftsSourceAccountInformation);
-                if ($this->isHighTpsMerchant($payout) === false)
+                if ($this->isHighTpsMerchantWithSubBalance($payout) === false)
                 {
                     $this->processTdsForPayout($payout, $oldStatus);
                 }
@@ -618,7 +618,7 @@ class Core extends Base\Core
 
             case Status::REVERSED:
                 $oldStatus = $payout->getStatus();
-                if ($this->isHighTpsMerchant($payout) === true)
+                if ($this->isHighTpsMerchantWithSubBalance($payout) === true)
                 {
                     // this is only on shared account
                     $this->handlePayoutReversedForHighTpsMerchants($payout,
@@ -1202,7 +1202,11 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                $payout = $this->setSubBalance($payout);
+                // associate sub balance if merchant is not on ledger reverse shadow
+                if ($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                {
+                    $payout = $this->setSubBalance($payout);
+                }
 
                 // If failure happens after payout transaction was created, next retry attempt will fail in validation as status is different.
                 $payout->getValidator()->validatePostCreateProcessPayout();
@@ -2511,8 +2515,9 @@ class Core extends Base\Core
 
     public static function shouldPayoutGoThroughLedgerReverseShadowFlow($payout)
     {
-        // Skip ledger reverse shadow mode for high TPS merchant
-        if ($payout->merchant->isFeatureEnabled(FeatureConstants::HIGH_TPS_COMPOSITE_PAYOUT) === true)
+        // Currently ledger cannot support TPS > 100, and hence we don't call ledger for balance
+        // deduction and transaction creation if the below features are enabled
+        if (self::isHighTpsMerchantWithSubBalance($payout) === true)
         {
             return false;
         }
@@ -5718,10 +5723,19 @@ class Core extends Base\Core
         }
     }
 
-    public function isHighTpsMerchant(Entity $payout): bool
+    public static function isHighTpsMerchantWithSubBalance(Entity $payout): bool
     {
         return (($payout->isBalanceAccountTypeShared() === true) and
-                ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true));
+                (($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true) or
+                 ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_EGRESS) === true)));
+    }
+
+    public static function isHighTpsMerchant(Entity $payout): bool
+    {
+        return (($payout->isBalanceAccountTypeShared() === true) and
+                (($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true) or
+                 ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_EGRESS) === true) or
+                 ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_INGRESS) === true)));
     }
 
     /**

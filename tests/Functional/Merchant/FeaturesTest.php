@@ -3226,6 +3226,15 @@ Regards,
         $this->startTest();
     }
 
+    public function testHighTpsPayoutEgressFeatureAdditionWhenLedgerReverseShadowIsEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->startTest();
+    }
+
     public function testDualCheckoutFeature()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');

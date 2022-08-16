@@ -160,6 +160,7 @@ class Core extends Base\Core
                      [
                          Constants::PAYOUT_SERVICE_ENABLED,
                          Constants::HIGH_TPS_COMPOSITE_PAYOUT,
+                         Constants::HIGH_TPS_PAYOUT_EGRESS,
                          Constants::LEDGER_JOURNAL_READS,
                          Constants::LEDGER_JOURNAL_WRITES,
                          Constants::LEDGER_REVERSE_SHADOW,
@@ -1243,7 +1244,7 @@ class Core extends Base\Core
      */
     protected function controlFeatureAssignmentForLedger(string $newFeatureName, array $assignedFeatureNames)
     {
-        if (in_array($newFeatureName,[Constants::PAYOUT_SERVICE_ENABLED, Constants::HIGH_TPS_COMPOSITE_PAYOUT], true) === true and
+        if (in_array($newFeatureName,[Constants::PAYOUT_SERVICE_ENABLED, Constants::HIGH_TPS_COMPOSITE_PAYOUT, Constants::HIGH_TPS_PAYOUT_EGRESS], true) === true and
             in_array(Constants::LEDGER_REVERSE_SHADOW, $assignedFeatureNames, true) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -1259,6 +1260,13 @@ class Core extends Base\Core
             );
         }
 
+        if (($newFeatureName === Constants::HIGH_TPS_PAYOUT_EGRESS) and
+            in_array(Constants::LEDGER_JOURNAL_WRITES, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Enabling ' . $newFeatureName . ' is not allowed when ' . Constants::LEDGER_JOURNAL_WRITES . ' is already enabled.'
+            );
+        }
     }
 
     public function removeFeature(string $featureName, bool $shouldSync = false)

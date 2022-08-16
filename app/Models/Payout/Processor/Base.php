@@ -446,6 +446,21 @@ class Base extends BaseCore
             return $payout;
         });
 
+        if ((Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true) and
+            ($payout->isStatusCreated() === true))
+        {
+            $payoutType = $this->getPayoutType();
+
+            $downstreamProcessor = new DownstreamProcessor($payoutType,
+                                                           $payout,
+                                                           $this->mode,
+                                                           $this->fundTransferDestination);
+
+            // Assuming that only DownstreamProcessor\FundAccountPayout\Shared\Base will be used.
+            // the function processPayoutThroughLedger() only exists in this class
+            $downstreamProcessor->processPayoutThroughLedger();
+        }
+
         $this->trace->info(
             TraceCode::PAYOUT_CREATED_FOR_COMPOSITE_PAYOUT,
             [
@@ -453,7 +468,8 @@ class Base extends BaseCore
                 'payout' => $payout->toArrayPublic(),
             ]);
 
-        if ($payout->makeSyncFtsFundTransfer() === true)
+        if (($payout->isStatusBeforeCreate() === false) and
+            ($payout->makeSyncFtsFundTransfer() === true))
         {
             $isFts = false;
 
@@ -939,9 +955,14 @@ class Base extends BaseCore
 
     public function processPayoutPostCreate(Payout\Entity $payout, bool $queueFlag): Payout\Entity
     {
-        $highTPSCompositePayoutFlag = $payout->merchant->isFeatureEnabled(Feature::HIGH_TPS_COMPOSITE_PAYOUT);
+        //TODO: Need to remove the below flag once all merchants are off-boarded into ingress and egress flags
+        $highTPSCompositePayoutFlag = $payout->merchant->isFeatureEnabled(Features::HIGH_TPS_COMPOSITE_PAYOUT);
+        $highTPSPayoutEgressFlag    = $payout->merchant->isFeatureEnabled(Features::HIGH_TPS_PAYOUT_EGRESS);
+        $highTpsPayoutIngressFlag   = $payout->merchant->isFeatureEnabled(Features::HIGH_TPS_PAYOUT_INGRESS);
 
-        if ($highTPSCompositePayoutFlag === false)
+        if (($highTPSCompositePayoutFlag === false) and
+            ($highTPSPayoutEgressFlag === false) and
+            ($highTpsPayoutIngressFlag === false))
         {
             $payout = $this->incrementCounterAndSetExpectedFeeTypeForFundAccountPayouts($payout);
         }
@@ -960,7 +981,7 @@ class Base extends BaseCore
             $payout->setSyncFtsFundTransferFlag(true);
         }
 
-        if ($highTPSCompositePayoutFlag === true)
+        if (($highTPSCompositePayoutFlag === true) or ($highTPSPayoutEgressFlag === true))
         {
             /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
             $intermediateTxn = (new PayoutsIntermediateTransactions\Core)
@@ -1148,18 +1169,18 @@ class Base extends BaseCore
 
             $balanceId = $payout->getBalanceId();
 
-            if ($highTPSCompositePayoutFlag === true)
+            if (($highTPSCompositePayoutFlag === true) or ($highTPSPayoutEgressFlag === true))
             {
                 (new PayoutsIntermediateTransactions\Helper)->markIntermediateTransactionReversedAndIncrementBalance($payout);
             }
-            else
+            else if ($highTpsPayoutIngressFlag === false)
             {
                 (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
             }
 
             $payout->reload();
 
-            if ($highTPSCompositePayoutFlag === false and
+            if (($highTPSCompositePayoutFlag === false or $highTPSPayoutEgressFlag === false) and
                 Payout\Core::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === false)
             {
                 if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
@@ -1255,16 +1276,18 @@ class Base extends BaseCore
         if ($payout->getIsPayoutService() === false)
         {
             // We only have to send mail/webhook if the payout fails.
-            if ($payout->getStatus() === Status::FAILED)
+            // In ledger reverse shadow it is already dispatched when handling ledger failure
+            if (($payout->getStatus() === Status::FAILED) and
+                ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
             {
                 (new PayoutsStatusDetailsCore())->create($payout);
 
                 $this->app->events->dispatch('api.payout.failed', [$payout]);
-
             }
             else
             {
-                if ($highTPSCompositePayoutFlag === false) {
+                if (($highTPSCompositePayoutFlag === false) or ($highTPSPayoutEgressFlag === false))
+                {
                     $payoutType = $this->getPayoutType();
 
                     $processor = (new Payout\Core)->getProcessor($payoutType);
@@ -1273,7 +1296,8 @@ class Base extends BaseCore
 
                     if (($payout->isStatusBeforeCreate() === false) and
                         ($payout->getBalanceAccountType() === AccountType::SHARED) and
-                        ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false)) {
+                        ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
+                    {
                         (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
                     }
                 }
@@ -2493,9 +2517,11 @@ class Base extends BaseCore
 
             $highTpsMerchantFlag = $payout->merchant->isFeatureEnabled(Constants::HIGH_TPS_COMPOSITE_PAYOUT);
 
+            $highTpsIngressFlag = $payout->merchant->isFeatureEnabled(Constants::HIGH_TPS_PAYOUT_INGRESS);
+
             $asyncIngressFlag = $payout->merchant->isFeatureEnabled(Constants::PAYOUT_ASYNC_INGRESS);
 
-            if ($highTpsMerchantFlag === true)
+            if ($highTpsIngressFlag === true or $highTpsMerchantFlag === true)
             {
                 // Manually setting this to 0 so that the payout goes via the low priority queue
                 // and not via the normal queue
@@ -3164,7 +3190,6 @@ class Base extends BaseCore
         {
             // If flow reaches this catch block then workflow got activated.
            $response = $this->handleEarlyWorkflowResponseForPayoutService($payout, $payoutAmountRuleBeforeWorkflow);
-
         }
         catch (\Throwable $t)
         {

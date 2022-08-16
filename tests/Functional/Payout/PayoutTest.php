@@ -12096,9 +12096,16 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(PayoutPostCreateProcessLowPriority::class, 1);
     }
 
-    public function testCompositePayoutCreationViaNewCompositeFlowV1()
+    public function testCompositePayoutCreationViaNewCompositeFlowV1($highTpsIngressFlag = false)
     {
-        $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+        if ($highTpsIngressFlag === true)
+        {
+            $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_PAYOUT_INGRESS]);
+        }
+        else
+        {
+            $this->fixtures->merchant->addFeatures([Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT]);
+        }
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_PROCESS_ASYNC]);
 
@@ -12118,6 +12125,8 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($response[PayoutEntity::FUND_ACCOUNT][PayoutEntity::ID], $fundAccount->getPublicId());
         $this->assertEquals($response[PayoutEntity::FUND_ACCOUNT][PayoutEntity::CONTACT][PayoutEntity::ID],
                             $contact->getPublicId());
+
+        return $response;
     }
 
     public function testCompositePayoutCreationViaNewCompositeFlowFailsForInternalContact()
@@ -19241,6 +19250,151 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
+    public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsViaLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andReturn([
+                                   'code' => 200,
+                                   'body' => [
+                                       'id'               => 'journal1000000',
+                                       'created_at'       => '1654181900',
+                                       'updated_at'       => '1654181900',
+                                       'amount'           => '2000000',
+                                       'base_amount'      => '2000000',
+                                       'currency'         => 'INR',
+                                       'tenant'           => 'X',
+                                       'transactor_id'    => 'pout_JcfQCWi5c8T7I8',
+                                       'transactor_event' => 'payout_initiated',
+                                       'transaction_date' => 1654181853,
+                                       'ledger_entry'     => [
+                                           [
+                                               'id'               => 'JcfRLReGG8Djrk',
+                                               'created_at'       => '1654181900',
+                                               'updated_at'       => '1654181900',
+                                               'merchant_id'      => '10000000000000',
+                                               'journal_id'       => 'journal1000000',
+                                               'account_id'       => 'JcfRLUIDiCuVLK',
+                                               'amount'           => '2000000',
+                                               'base_amount'      => '2000000',
+                                               'type'             => 'credit',
+                                               'currency'         => 'INR',
+                                               'balance'          => '',
+                                               'account_entities' => [
+                                                   'account_type'      => [
+                                                       'cash',
+                                                   ],
+                                                   'fund_account_type' => [
+                                                       'adjustment',
+                                                   ],
+                                                   'transactor'        => [
+                                                       'X',
+                                                   ],
+                                               ],
+                                           ],
+                                           [
+                                               'id'               => 'JcfRLWMtL6GfSe',
+                                               'created_at'       => '1654181900',
+                                               'updated_at'       => '1654181900',
+                                               'merchant_id'      => '10000000000000',
+                                               'journal_id'       => 'journal1000000',
+                                               'account_id'       => 'JcfRLYK20OPXSL',
+                                               'amount'           => '2000000',
+                                               'base_amount'      => '2000000',
+                                               'type'             => 'debit',
+                                               'currency'         => 'INR',
+                                               'balance'          => 7998938,
+                                               'account_entities' => [
+                                                   'account_type'       => [
+                                                       'payable',
+                                                   ],
+                                                   'banking_account_id' => [
+                                                       'ABCde1234ABCde',
+                                                   ],
+                                                   'fund_account_type'  => [
+                                                       'merchant_va',
+                                                   ],
+                                                   'transactor'         => [
+                                                       'X',
+                                                   ],
+                                               ],
+                                           ],
+                                       ],
+                                   ],
+                               ]);
+
+        $this->fixtures->merchant->addFeatures([
+                                                   Feature\Constants::HIGH_TPS_PAYOUT_INGRESS,
+                                                   Feature\Constants::LEDGER_REVERSE_SHADOW
+                                               ]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout  = $this->getDbLastEntity('payout');
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        $request = [
+            'url'     => '/create_sub_balance',
+            'method'  => 'post',
+            'content' => [
+                'parent_balance_id' => $payout->getBalanceId(),
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        /** @var Balance\Entity $subBalance */
+        $subBalance = $this->getDbLastEntity('balance');
+
+        PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
+
+        /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
+        $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity(Constants\Entity::TRANSACTION);
+
+        /** @var Balance\Entity $subBalanceAfter */
+        $balanceAfter = $this->getDbEntityById('balance', $balance->getId());
+
+        /** @var Payout\Entity $payout */
+        $payout->reload();
+
+        // assertions on balance_id
+        $this->assertEquals($balance->getId(), $payout->getBalanceId());
+        $this->assertEquals($payout->getBalanceId(), $txn->getBalanceId());
+
+        // assertions on payout intermediate transactions
+        $this->assertNull($intermediateTxn);
+
+        // assertions on closing balance
+        $this->assertEquals($balanceAfter->getBalance(),
+                            $balance->getBalance() - $payout->getAmount() - $payout->getFees());
+        $this->assertEquals($balanceAfter->getBalance(), $txn->getBalance());
+
+        // assertions on id
+        $this->assertEquals('journal1000000', $txn->getId());
+        $this->assertEquals($txn->getId(), $payout->getTransactionId());
+        $this->assertEquals('payout', $txn->getType());
+
+        // assertions on amount and fees and pricing rule id
+        $this->assertEquals($payout->getAmount() + $payout->getFees(), $txn->getAmount());
+        $this->assertEquals($payout->getFees(), $txn->getFee());
+        $this->assertEquals($payout->getTax(), $txn->getTax());
+        $this->assertNotNull($payout->getPricingRuleId());
+
+        $publicResponse = $payout->toArrayPublic();
+
+        // assertions on payout status
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
     public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsAsyncIngress()
     {
         Queue::fake();
@@ -19344,6 +19498,152 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout->getFees(), $txn->getFee());
         $this->assertEquals($payout->getTax(), $txn->getTax());
         $this->assertEquals($payout->getAmount() + $payout->getFees(), $intermediateTxn->getAmount());
+        $this->assertNotNull($payout->getPricingRuleId());
+
+        $publicResponse = $payout->toArrayPublic();
+
+        // assertions on payout status
+        $this->assertEquals('created', $payout['internal_status']);
+        $this->assertEquals('processing', $publicResponse['status']);
+        $this->assertNotNull($payout['initiated_at']);
+    }
+
+    public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsAsyncIngressViaLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andReturn([
+                                   'code' => 200,
+                                   'body' => [
+                                       'id'               => 'journal1000000',
+                                       'created_at'       => '1654181900',
+                                       'updated_at'       => '1654181900',
+                                       'amount'           => '2000000',
+                                       'base_amount'      => '2000000',
+                                       'currency'         => 'INR',
+                                       'tenant'           => 'X',
+                                       'transactor_id'    => 'pout_JcfQCWi5c8T7I8',
+                                       'transactor_event' => 'payout_initiated',
+                                       'transaction_date' => 1654181853,
+                                       'ledger_entry'     => [
+                                           [
+                                               'id'               => 'JcfRLReGG8Djrk',
+                                               'created_at'       => '1654181900',
+                                               'updated_at'       => '1654181900',
+                                               'merchant_id'      => '10000000000000',
+                                               'journal_id'       => 'journal1000000',
+                                               'account_id'       => 'JcfRLUIDiCuVLK',
+                                               'amount'           => '2000000',
+                                               'base_amount'      => '2000000',
+                                               'type'             => 'credit',
+                                               'currency'         => 'INR',
+                                               'balance'          => '',
+                                               'account_entities' => [
+                                                   'account_type'      => [
+                                                       'cash',
+                                                   ],
+                                                   'fund_account_type' => [
+                                                       'adjustment',
+                                                   ],
+                                                   'transactor'        => [
+                                                       'X',
+                                                   ],
+                                               ],
+                                           ],
+                                           [
+                                               'id'               => 'JcfRLWMtL6GfSe',
+                                               'created_at'       => '1654181900',
+                                               'updated_at'       => '1654181900',
+                                               'merchant_id'      => '10000000000000',
+                                               'journal_id'       => 'journal1000000',
+                                               'account_id'       => 'JcfRLYK20OPXSL',
+                                               'amount'           => '2000000',
+                                               'base_amount'      => '2000000',
+                                               'type'             => 'debit',
+                                               'currency'         => 'INR',
+                                               'balance'          => 7998938,
+                                               'account_entities' => [
+                                                   'account_type'       => [
+                                                       'payable',
+                                                   ],
+                                                   'banking_account_id' => [
+                                                       'ABCde1234ABCde',
+                                                   ],
+                                                   'fund_account_type'  => [
+                                                       'merchant_va',
+                                                   ],
+                                                   'transactor'         => [
+                                                       'X',
+                                                   ],
+                                               ],
+                                           ],
+                                       ],
+                                   ],
+                               ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        $request = [
+            'url'     => '/create_sub_balance',
+            'method'  => 'post',
+            'content' => [
+                'parent_balance_id' => $balance->getId(),
+            ]
+        ];
+
+        $this->ba->adminAuth();
+        $this->makeRequestAndGetContent($request);
+
+        /** @var Balance\Entity $subBalance */
+        $subBalance = $this->getDbLastEntity('balance');
+
+        $response = $this->testCompositePayoutCreationViaNewCompositeFlowV1(true);
+
+        $payoutId = substr($response['id'], 5);
+
+        /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
+        $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
+
+        // assert that intermediate transaction is not created as merchant is on ledger reverse shadow
+        $this->assertNull($intermediateTxn);
+
+        /** @var TransactionEntity $txn */
+        $txn = $this->getDbLastEntity(Constants\Entity::TRANSACTION);
+
+        /** @var Balance\Entity $subBalanceAfter */
+        $subBalance = $this->getDbEntityById('balance', $subBalance->getId());
+
+        $balanceAfter = $this->getDbEntityById('balance', $balance->getId());
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        // assertions on balance_id
+        $this->assertEquals($balance->getId(), $payout->getBalanceId());
+        // assert that sub_balance was not picked as merchant is on ledger reverse shadow
+        $this->assertNotEquals($subBalance->getId(), $payout->getBalanceId());
+        $this->assertEquals($payout->getBalanceId(), $txn->getBalanceId());
+
+        // assertions on closing balance
+        $this->assertEquals($balanceAfter->getBalance(),
+                            $balance->getBalance() - $payout->getAmount() - $payout->getFees());
+        $this->assertEquals($balanceAfter->getBalance(), $txn->getBalance());
+
+        $this->assertEquals('journal1000000', $txn->getId());
+        $this->assertEquals($txn->getId(), $payout->getTransactionId());
+        $this->assertEquals($payout->getId(), $txn->source->getId());
+        $this->assertEquals('payout', $txn->getType());
+        $this->assertEquals($payoutId, $payout->getId());
+
+        $this->assertEquals($payout->getAmount() + $payout->getFees(), $txn->getAmount());
+        $this->assertEquals($payout->getFees(), $txn->getFee());
+        $this->assertEquals($payout->getTax(), $txn->getTax());
         $this->assertNotNull($payout->getPricingRuleId());
 
         $publicResponse = $payout->toArrayPublic();
@@ -19537,6 +19837,72 @@ class PayoutTest extends OAuthTestCase
         $this->assertNull($payout->getTransactionId());
     }
 
+    public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsWithLowBalanceViaLedgerReverseShadow()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                                  'Unexpected response code received from Ledger service.',
+                                  [
+                                      'status_code'   => 400,
+                                      'response_body' => [
+                                          'code' => 'invalid_argument',
+                                          'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                                      ],
+                                  ]
+                              ));
+        $this->fixtures->merchant->addFeatures([
+                                                   Feature\Constants::HIGH_TPS_PAYOUT_INGRESS,
+                                                   Feature\Constants::LEDGER_REVERSE_SHADOW
+                                               ]);
+
+        $this->expectWebhookEvent('payout.failed');
+
+        $txnsBefore = $this->getDbEntities(Constants\Entity::TRANSACTION);
+
+        $this->fixtures->on('test')->edit('balance', $this->bankingBalance->getId(), ['balance' => 1000]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout  = $this->getDbLastEntity('payout');
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get failed due to insufficient balance
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), false);
+
+        /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
+        $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
+
+        $txnsAfter = $this->getDbEntities(Constants\Entity::TRANSACTION);
+
+        /** @var Balance\Entity $balanceAfter */
+        $balanceAfter = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        /** @var Payout\Entity $payout */
+        $payout->reload();
+
+        // assertions on balance_id
+        $this->assertEquals($balanceAfter->getId(), $payout->getBalanceId());
+
+        // assertions on closing balance
+        $this->assertEquals($balanceAfter->getBalance(), $balance->getBalance());
+
+        $this->assertNull($intermediateTxn);
+
+        $this->assertEquals($txnsAfter->toArrayPublic()['count'], $txnsBefore->toArrayPublic()['count']);
+
+        // assertions on payout status
+        $this->assertEquals('failed', $payout->getStatus());
+        $this->assertEquals('BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING', $payout->getStatusCode());
+        $this->assertEquals('Insufficient balance to process payout', $payout->getFailureReason());
+        $this->assertNotNull($payout->getFailedAt());
+        $this->assertNull($payout->getTransactionId());
+    }
     public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsWithLowBalanceAndQueueIfLowBalanceFlagSet()
     {
         $txnsBefore = $this->getDbEntities(Constants\Entity::TRANSACTION);

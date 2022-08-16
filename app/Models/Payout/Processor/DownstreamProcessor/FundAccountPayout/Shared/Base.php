@@ -63,8 +63,7 @@ class Base extends FundAccountPayout\Base
             // reward_fee credits if available. The fees and tax of
             // transaction are updated accordingly. We
 
-            if (!(($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true) and
-                ($payout->merchant->isAtLeastOneFeatureEnabled([Feature\Constants::PAYOUT_PROCESS_ASYNC_LP, Feature\Constants::PAYOUT_PROCESS_ASYNC]) === true)))
+            if ($this->shouldSetFeesAndTaxForPayout($payout) === true)
             {
                 $this->setFeeAndTaxForPayout($payout);
             }
@@ -415,8 +414,10 @@ class Base extends FundAccountPayout\Base
             throw new LogicException('No Pricing Rule ID set for payout: ' . $payout->getId());
         }
 
-        if ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false &&
-            $payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === false)
+        if (($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false) and
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_EGRESS) === false) and
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_INGRESS) === false) and
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === false))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
         }
@@ -444,5 +445,17 @@ class Base extends FundAccountPayout\Base
         }
 
         return [$fees, $tax, $pricingRuleId];
+    }
+
+    protected function shouldSetFeesAndTaxForPayout($payout) : bool
+    {
+        if ((($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === true) or
+             ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_PAYOUT_EGRESS) === true)) and
+            ($payout->merchant->isAtLeastOneFeatureEnabled([Feature\Constants::PAYOUT_PROCESS_ASYNC_LP, Feature\Constants::PAYOUT_PROCESS_ASYNC]) === true))
+        {
+           return false;
+        }
+
+        return true;
     }
 }

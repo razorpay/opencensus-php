@@ -1279,6 +1279,16 @@ class Constants
     const HIGH_TPS_COMPOSITE_PAYOUT = 'high_tps_composite_payout';
 
     /**
+     * Flag to enable faster payout creation flow
+     */
+    const HIGH_TPS_PAYOUT_INGRESS = 'high_tps_payout_ingress';
+
+    /**
+     * Flag to enable faster payout processing flow
+     */
+    const HIGH_TPS_PAYOUT_EGRESS = 'high_tps_payout_egress';
+
+    /**
      * Used to route whatsapp merchant dashboard and admin dashboard requests to the new infra and new db.
      * If this flag is enabled the requests for this merchant will go to the new infra
      * This is just for 2 weeks campaign specifically for whatsapp
@@ -1951,6 +1961,8 @@ class Constants
         self::NETWORK_TOKENIZATION_LIVE       => true,
         self::NETWORK_TOKENIZATION_PAID       => true,
         self::HIGH_TPS_COMPOSITE_PAYOUT       => true,
+        self::HIGH_TPS_PAYOUT_INGRESS         => true,
+        self::HIGH_TPS_PAYOUT_EGRESS          => true,
         self::MERCHANT_ROUTE_WA_INFRA         => true,
         self::BENE_EMAIL_NOTIFICATION         => true,
         self::BENE_SMS_NOTIFICATION           => true,
