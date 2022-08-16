@@ -1349,7 +1349,8 @@ class Checkout
         $recurringData = $data['methods']['recurring'] ?? null;
 
         $data['methods'] = [
-            'entity' => 'methods'
+            'entity' => 'methods',
+            Methods\Entity::CARD_NETWORKS => $data['methods'][Methods\Entity::CARD_NETWORKS] ?? [],
         ];
 
         switch ($offerMethod)
