@@ -1349,6 +1349,24 @@ class Ledger extends BaseLedger
         ];
     }
 
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     */
+    public function replayJournalRejectedEvents($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        $response =  [
+            "journal_id"  => "K4n7QcIAScbrwZ",
+        ];
+
+        return [
+            'code' => 200,
+            'body' => $response
+        ];
+    }
+
     public function fetchLedgerConfigFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         $response = [

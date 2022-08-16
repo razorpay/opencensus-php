@@ -147,6 +147,13 @@ class LedgerController extends Controller
         return ApiResponse::json($response['body'], $response['code']);
     }
 
+    public function replayJournalRejectedEvents()
+    {
+        $response = $this->app['ledger']->replayJournalRejectedEvents($this->input, [], true);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
     public function fetchLedgerConfigFormFieldOptions()
     {
         $response = $this->app['ledger']->fetchLedgerConfigFormFieldOptions($this->input, [], true);

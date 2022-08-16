@@ -89,6 +89,7 @@ class Ledger
         'fetchFilter'                       => 'FetchFilter',
         'fetchAccountFormFieldOptions'      => 'FetchAccountFormFieldOptions',
         'fetchJournalFormFieldOptions'      => 'FetchJournalFormFieldOptions',
+        'replayJournalRejectedEvents'       => 'ReplayJournalRejectedEvents',
         'fetchLedgerConfigFormFieldOptions' => 'FetchLedgerConfigFormFieldOptions',
         'fetchAccountTypes'                 => 'FetchAccountTypes',
         'fetchMerchantLedgerEntryByID'      => 'FetchMerchantLedgerEntryByID',
@@ -456,6 +457,20 @@ class Ledger
     public function fetchJournalFormFieldOptions($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
     {
         return $this->sendRequest(self::DashboardURL . '/' . self::URLS['fetchJournalFormFieldOptions'],
+            Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function replayJournalRejectedEvents($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        return $this->sendRequest(self::DashboardURL . '/' . self::URLS['replayJournalRejectedEvents'],
             Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
     }
 
