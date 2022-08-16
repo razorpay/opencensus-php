@@ -118,20 +118,21 @@ class Core extends Base\Core
     const EMAIL_COUNT_FOR_PENDING_PAYOUT_APPROVAL = 5;
 
     //constants for fund loading downtime detection test payouts
-    const BANK                               = 'bank';
-    const STATUS                             = 'status';
-    const MODE                               = 'mode';
-    const MESSAGE                            = 'message';
-    const IS_DOWNTIME_DETECTED               = 'is_downtime_detected';
-    const SUCCESSFUL_YESB_TEST_PAYOUTS       = 'successful_YESB_test_payouts';
-    const DELAYED_YESB_TEST_PAYOUTS          = 'delayed_YESB_test_payouts';
-    const UNSUCCESSFUL_YESB_TEST_PAYOUTS     = 'unsuccessful_YESB_test_payouts';
-    const SUCCESSFUL_ICICI_TEST_PAYOUTS      = 'successful_ICICI_test_payouts';
-    const DELAYED_ICICI_TEST_PAYOUTS         = 'delayed_ICICI_test_payouts';
-    const UNSUCCESSFUL_ICICI_TEST_PAYOUTS    = 'unsuccessful_ICICI_test_payouts';
-    const NARRATION_ICICI                    = 'ICICI Test Payout';
-    const NARRATION_YESB                     = 'YESB Test Payout';
-    const PAYEE_ACCOUNT_NUMBER               = 3434957265741928;
+    const BANK                                       = 'bank';
+    const STATUS                                     = 'status';
+    const MODE                                       = 'mode';
+    const MESSAGE                                    = 'message';
+    const IS_DOWNTIME_DETECTED                       = 'is_downtime_detected';
+    const SUCCESSFUL_YESB_TEST_PAYOUTS               = 'successful_YESB_test_payouts';
+    const DELAYED_YESB_TEST_PAYOUTS                  = 'delayed_YESB_test_payouts';
+    const UNSUCCESSFUL_YESB_TEST_PAYOUTS             = 'unsuccessful_YESB_test_payouts';
+    const SUCCESSFUL_ICICI_TEST_PAYOUTS              = 'successful_ICICI_test_payouts';
+    const DELAYED_ICICI_TEST_PAYOUTS                 = 'delayed_ICICI_test_payouts';
+    const UNSUCCESSFUL_ICICI_TEST_PAYOUTS            = 'unsuccessful_ICICI_test_payouts';
+    const NARRATION_ICICI                            = 'ICICI Test Payout';
+    const NARRATION_YESB                             = 'YESB Test Payout';
+    const UTR_FOR_DELAYED_AND_UNSUCCESSFUl_CASES     = 'UTR_for_delayed_and_unsuccessful_cases';
+    const PAYEE_ACCOUNT_NUMBER                       = 3434957265741928;
 
     const REDIS_KEY_PREFIX                     = 'ps_data_migration_';
     const MAX_ATTEMPTS_FOR_DATA_MIGRATION      = 10;
@@ -5780,7 +5781,8 @@ class Core extends Base\Core
 
             list($successfulIciciTestPayouts,
                 $delayedIciciTestPayouts,
-                $unsuccessfulIciciTestPayouts
+                $unsuccessfulIciciTestPayouts,
+                $utr[]
                 ) = $this->calculateSuccessfulUnsuccessfulDelayedTestPayouts($testPayoutsICICI);
 
             if (($successfulIciciTestPayouts + $delayedIciciTestPayouts + $unsuccessfulIciciTestPayouts) > 0)
@@ -5802,6 +5804,7 @@ class Core extends Base\Core
                         self::SUCCESSFUL_ICICI_TEST_PAYOUTS => $successfulIciciTestPayouts,
                         self::DELAYED_ICICI_TEST_PAYOUTS => $delayedIciciTestPayouts,
                         self::UNSUCCESSFUL_ICICI_TEST_PAYOUTS => $unsuccessfulIciciTestPayouts,
+                        self::UTR_FOR_DELAYED_AND_UNSUCCESSFUl_CASES => $utr,
                     ]
                 ];
             }
@@ -5828,7 +5831,8 @@ class Core extends Base\Core
 
                 list($successfulYesbTestPayouts,
                     $delayedYesbTestPayouts,
-                    $unsuccessfulYesbTestPayouts
+                    $unsuccessfulYesbTestPayouts,
+                    $utr[]
                     ) = $this->calculateSuccessfulUnsuccessfulDelayedTestPayouts($testPayoutsYESB);
 
                 if (($successfulYesbTestPayouts + $delayedYesbTestPayouts + $unsuccessfulYesbTestPayouts) > 0)
@@ -5890,6 +5894,8 @@ class Core extends Base\Core
 
         $payeeAccountNumber = self::PAYEE_ACCOUNT_NUMBER;
 
+        $utrArray = [];
+
         foreach ($testPayouts as $testPayout)
         {
             $utr          = $testPayout->getUtr();
@@ -5904,6 +5910,7 @@ class Core extends Base\Core
                  if (abs(($createdAt -$processedAt)) / 60 > $thresholdForReceivingCallback)
                 {
                     $countOfDelayedFundLoading++;
+                    $utrArray[] = $utr;
                 }
                 else
                 {
@@ -5914,10 +5921,22 @@ class Core extends Base\Core
             else
             {
                 $countOfUnsuccessfulFundLoading++;
+                $utrArray[] = $utr;
             }
         }
 
-        return [$countOfSuccessfulFundLoading, $countOfDelayedFundLoading, $countOfUnsuccessfulFundLoading];
+        // this is done to show only 5 utrs in response in case of more number of utrs.
+        if (sizeof($utrArray) > 5)
+        {
+            $utrResult = array_slice($utrArray,0,5);
+        }
+        else
+        {
+            $utrResult = $utrArray;
+        }
+
+
+        return [$countOfSuccessfulFundLoading, $countOfDelayedFundLoading, $countOfUnsuccessfulFundLoading, $utrResult];
     }
 
     public function payoutServiceRedisKeySet($input)
