@@ -3466,6 +3466,78 @@ class ActivationTest extends OAuthTestCase
         $this->assertFalse($merchant->isActivated());
     }
 
+    public function testActivationRejectedWithUpdateObserverData1()
+    {
+        $data = [
+            'submitted'             => 1,
+            'activation_status'     => 'under_review'
+        ];
+
+        $maker = $this->fixtures->create('admin', [
+            'name' => "maker name",
+            'org_id'    => '100000razorpay',
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->setupWorkflow("Activation Workflow",Name::EDIT_ACTIVATE_MERCHANT);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status/internal',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'rejected',
+                'workflow_maker_id' => $maker->getPublicId(),
+            ],
+        ];
+
+        $this->ba->cmmaAppAuth();
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $expectedWorkflow  = $this->getExpectedArraysForWorkflowObserverTestCases(self::MERCHANT_ACTIVATED_WORKFLOW_DATA);
+
+        $this->assertStringStartsWith('w_action_', $response['id']);
+
+        $this->esClient->indices()->refresh();
+
+        $this->assertArraySelectiveEquals($expectedWorkflow, $response);
+
+        $workflowData = $this->getWorkflowData();
+
+        $this->assertArraySelectiveEquals([
+            'entity_name'   => 'merchant_detail',
+            'entity_id'     => $merchantId,
+            'maker'         =>'maker name',
+            'maker_id'      => $maker->getId(),
+            'maker_type'    => 'admin',
+            'diff' => [
+                'old' => [
+                    'activation_status' => 'under_review',
+                ],
+                'new' => [
+                    'activation_status' => 'rejected',
+                ]
+            ],
+        ], $workflowData);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals('under_review', $merchant->merchantDetail->getActivationStatus());
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals('rejected', $merchant->merchantDetail->getActivationStatus());
+
+        $this->assertFalse($merchant->isActivated());
+    }
+
     protected function runFixturesForInternationalActivation(string $merchantId, string $orgId = Org::RZP_ORG)
     {
         $this->fixtures->edit('merchant', $merchantId, ['international' => 0, 'org_id' => $orgId]);

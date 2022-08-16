@@ -1120,6 +1120,43 @@ class Service extends Base\Service
         return $merchantDetails->toArrayPublic();
     }
 
+    /**
+     * This function is used for updating merchant activation status
+     * @param string $merchantId
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateActivationStatusInternal(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
+            DetailConstants::INPUT => $input,
+            Entity::MERCHANT_ID    => $merchantId
+
+        ]);
+
+        $merchant->merchantDetail->getValidator()->validateInput('activationStatusInternal', $input);
+
+        $maker = $this->repo->admin->findOrFailPublic( Admin\Admin\Entity::stripDefaultSign($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]));
+
+        unset($input[DetailConstants::WORKFLOW_MAKER_ADMIN_ID]);
+
+        $this->app['workflow']->setMakerFromAuth(false);
+        $this->app['workflow']->setWorkflowMaker($maker);
+        $this->app['workflow']->setWorkflowMakerType(MakerType::ADMIN);
+
+        $this->app['workflow']->setPermission(PermissionName::EDIT_ACTIVATE_MERCHANT);
+
+        $this->app['basicauth']->setOrgId($merchant->getOrgId());
+
+        $merchantDetails = (new Core)->updateActivationStatus($merchant, $input, $maker);
+
+        return $merchantDetails->toArrayPublic();
+    }
+
+
     public function updateActivationStatusByPartner($merchantId, array $input): array
     {
         $partnerMerchant = $this->app['basicauth']->getMerchant();
@@ -1758,7 +1795,7 @@ class Service extends Base\Service
 
         $permission = $this->repo
                             ->permission
-                            ->findByOrgIdAndPermission($orgId, Admin\Permission\Name::EDIT_ACTIVATE_MERCHANT);
+                            ->findByOrgIdAndPermission($orgId, PermissionName::EDIT_ACTIVATE_MERCHANT);
 
         if (empty($permission) === true)
         {
@@ -2094,7 +2131,7 @@ class Service extends Base\Service
         $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,
             $entity,
-            [Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL]
+            [PermissionName::EDIT_MERCHANT_GSTIN_DETAIL]
         );
 
         if (empty($action) === true)
@@ -2449,7 +2486,7 @@ class Service extends Base\Service
 
         $isAddOperation = $input[DetailConstants::IS_ADD_GSTIN_OPERATION];
 
-        $permissionName = ($isAddOperation) ? Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL : Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL;
+        $permissionName = ($isAddOperation) ? PermissionName::EDIT_MERCHANT_GSTIN_DETAIL : PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL;
 
         $this->app['workflow']
             ->setPermission($permissionName)
@@ -2493,7 +2530,7 @@ class Service extends Base\Service
 
     protected function stopShowingRejectionReasonForGstInSelfServe($entityId, $entity, $isAddOperation)
     {
-        $permissionName = ($isAddOperation) ? Permission\Name::EDIT_MERCHANT_GSTIN_DETAIL : Permission\Name::UPDATE_MERCHANT_GSTIN_DETAIL;
+        $permissionName = ($isAddOperation) ? PermissionName::EDIT_MERCHANT_GSTIN_DETAIL : PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL;
 
         $action = (new WorkFlowActionCore())->fetchLastUpdatedWorkflowActionInPermissionList(
             $entityId,

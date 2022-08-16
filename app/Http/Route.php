@@ -740,6 +740,7 @@ class Route
         'merchant_activation_migrate'              => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_activation_archive'              => ['patch',    'merchant/activation/{id}/archive',               'MerchantController@updateActivationArchive'                        ],
         'merchant_activation_status'               => ['patch',    'merchant/activation/{id}/activation_status',     'MerchantController@updateActivationStatus'                         ],
+        'internal_merchant_activation_status'      => ['patch',    'merchant/activation/{id}/activation_status/internal', 'MerchantController@updateActivationStatusInternal'            ],
         'merchant_activation_status_change_log'    => ['get',      'merchant/activation/{id}/status_change_log',     'MerchantController@getActivationStatusChangeLog'                   ],
         'merchant_get_rejection_reasons'           => ['get',      'merchant/activation/rejection_reasons',          'MerchantController@getRejectionReasons'                            ],
         'merchant_aov_config'                      => ['get',      'merchant/aov-config',                            'MerchantController@getAovConfig'                                   ],
@@ -5098,6 +5099,8 @@ class Route
 
         'transaction_statement_fetch_multiple_for_banking_internal',
 
+        'internal_merchant_activation_status',
+
         // Magic Club
         'customer_one_cc_get_or_create_global',
         'customer_fetch_by_id_global',
@@ -7546,6 +7549,7 @@ class Route
         'merchant_activation_files'                => Permission::VIEW_MERCHANT,
         'merchant_activation_archive'              => Permission::MERCHANT_ACTIVATION_ARCHIVE,
         'merchant_activation_status'               => Permission::EDIT_ACTIVATE_MERCHANT,
+        'internal_merchant_activation_status'      => Permission::EDIT_ACTIVATE_MERCHANT,
         'merchant_activation_status_change_log'    => Permission::VIEW_ACTIVATION_FORM,
         'merchant_update_key_access'               => Permission::EDIT_MERCHANT_KEY_ACCESS,
         'merchant_get_rejection_reasons'           => Permission::VIEW_MERCHANT,
@@ -13523,6 +13527,7 @@ class Route
         ],
 
         'cmma' => [
+            'internal_merchant_activation_status',
             'internal_merchant_fetch',
             'freshdesk_update_ticket_internal',
             'internal_fd_create_ticket',

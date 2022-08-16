@@ -1392,6 +1392,15 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateActivationStatusInternal(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->updateActivationStatusInternal($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateActivationStatusPartner($id)
     {
         $input = Request::all();

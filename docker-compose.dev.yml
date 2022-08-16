@@ -12,7 +12,7 @@ services:
     build:
       context: .
       args:
-        GIT_TOKEN:
+        GIT_TOKEN: 
       dockerfile: Dockerfile.dev
     image: razorpay:api
     container_name: razorpay-api

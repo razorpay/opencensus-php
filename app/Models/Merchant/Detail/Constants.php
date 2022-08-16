@@ -172,6 +172,8 @@ class Constants
     const DOCUMENT_VERIFICATION_STATUS          = 'document_verification_status';
     const OCR_MATCHING_PERCENTAGE_WITH_PAN_NAME = 'ocr_match_percentage_with_pan_name';
 
+    const WORKFLOW_MAKER_ADMIN_ID = 'workflow_maker_id';
+
     const DOCUMENT_TYPES = [
         self::PERSONAL_PAN    => 'personal_pan',
         self::BUSINESS_PAN    => 'business_pan',

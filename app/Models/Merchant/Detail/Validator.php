@@ -324,6 +324,14 @@ class Validator extends Base\Validator
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30'
     ];
 
+    protected static $activationStatusInternalRules = [
+        Entity::ACTIVATION_STATUS               => 'required|string|max:30',
+        Entity::CLARIFICATION_MODE              => 'filled|string|max:15',
+        Entity::REJECTION_REASONS               => 'filled|array',
+        Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
+        Constants::WORKFLOW_MAKER_ADMIN_ID      => 'required|string|max:30',
+    ];
+
     protected  static $bulkEditRules = [
         Entity::FILE                            => 'required|file|max:1024|mime_types:text/csv,text/plain|mimes:csv,txt',
     ];
