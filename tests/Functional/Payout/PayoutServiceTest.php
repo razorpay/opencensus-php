@@ -9,15 +9,16 @@ use Requests_Response;
 
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Validator;
-use RZP\Models\Pricing\Fee;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Merchant\Balance\Entity as Balance;
@@ -522,6 +523,77 @@ class PayoutServiceTest extends TestCase
                 ]);
             $response->status_code = 200;
             $response->success = true;
+        }
+
+        return $response;
+    }
+
+    public function mockPayoutServiceGetFreePayout($fail = false, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceGetMock = Mockery::mock('RZP\Services\PayoutService\Get',
+                                              [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceGetMock->shouldReceive('sendRequest')
+                             ->withArgs(
+                                 function($arg) use ($request) {
+                                     try
+                                     {
+                                         // Using this method only here as we want to check if the keys in the
+                                         // request are coming properly or not.
+                                         $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                         return true;
+                                     }
+                                     catch (\Throwable $e)
+                                     {
+                                         return false;
+                                     }
+                                 }
+                             )
+                             ->andReturn(
+                             // We are returning this response only as we don't have a use case of supporting
+                             // response based on $request, if needed, that can also be added here using
+                             // andReturnUsing method instead of andReturn
+                                 $this->freePayoutGetResponseForPayoutServiceMock($fail)
+                             );
+
+        $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
+    }
+
+    public function freePayoutGetResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"       => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode(
+                [
+                    'free_payouts_count'           => FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
+                    'free_payouts_consumed'        => FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
+                    'free_payouts_supported_modes' => FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES,
+                ]);
+            $response->status_code = 200;
+            $response->success     = true;
         }
 
         return $response;
@@ -2682,6 +2754,73 @@ class PayoutServiceTest extends TestCase
             '/balance/' . $balance[Balance::ID] . '/free_payout';
 
         $this->startTest();
+    }
+
+    public function testAdminGetFreePayoutsCountFromPS()
+    {
+        $this->mockPayoutServiceGetFreePayout();
+
+        $this->fixtures->on('live')->merchant->addFeatures(
+            [
+                Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS
+            ]
+        );
+
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/admin/payouts/' . $balance[Balance::ID] . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] =
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_consumed'] =
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_supported_modes'] =
+            FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->startTest($testData);
+    }
+
+    public function testXDashboardGetFreePayoutsCountFromPS()
+    {
+        $this->mockPayoutServiceGetFreePayout();
+
+        $this->fixtures->on('live')->merchant->addFeatures(
+            [
+                Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS
+            ]);
+
+        $balance = $this->fixtures->create('balance',
+                                           [
+                                               Balance::ACCOUNT_TYPE => AccountType::SHARED,
+                                               Balance::TYPE         => Type::BANKING,
+                                           ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts/' . $balance[Balance::ID] . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] =
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_consumed'] =
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+
+        $testData['response']['content']['free_payouts_supported_modes'] =
+            FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->startTest($testData);
     }
 
     public function testDccPayoutsDetailsFetch()

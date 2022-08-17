@@ -4342,23 +4342,35 @@ class Core extends Base\Core
                 ]);
         }
 
-        $freePayoutsCount = (new Merchant\Balance\FreePayout)->getFreePayoutsCount($balance);
+        $merchantId = $balance->getMerchantId();
 
-        $freePayoutsSupportedModes = (new Merchant\Balance\FreePayout)->getFreePayoutsSupportedModes($balance);
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        /** @var Counter\Entity $counter */
-        $counter = (new Counter\Repository)->getCounterByAccountTypeAndBalanceId($balance->getAccountType(),
-                                                                                 $balanceId);
+        if ($merchant->isFeatureEnabled(FeatureConstants::FREE_PAYOUT_LEDGER_VIA_PS))
+        {
+            return $this->payoutGetApiServiceClient->getFreePayoutAttributesViaMicroservice($balanceId);
+        }
+        else
+        {
+            $freePayoutsCount = (new Merchant\Balance\FreePayout)->getFreePayoutsCount($balance);
 
-        $freePayoutsConsumed = ($counter === null) ? 0 : $counter->getFreePayoutsConsumed();
+            $freePayoutsSupportedModes = (new Merchant\Balance\FreePayout)->getFreePayoutsSupportedModes($balance);
 
-        $response = [
-            Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT           => $freePayoutsCount,
-            Counter\Entity::FREE_PAYOUTS_CONSUMED                     => $freePayoutsConsumed,
-            Merchant\Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES => $freePayoutsSupportedModes,
-        ];
+            /** @var Counter\Entity $counter */
+            $counter = (new Counter\Repository)->getCounterByAccountTypeAndBalanceId(
+                $balance->getAccountType(),
+                $balanceId);
 
-        return $response;
+            $freePayoutsConsumed = ($counter === null) ? 0 : $counter->getFreePayoutsConsumed();
+
+            $response = [
+                Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT           => $freePayoutsCount,
+                Counter\Entity::FREE_PAYOUTS_CONSUMED                     => $freePayoutsConsumed,
+                Merchant\Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES => $freePayoutsSupportedModes,
+            ];
+
+            return $response;
+        }
     }
 
     public function rejectWorkflowViaWorkflowService(Entity $payout, array $input)

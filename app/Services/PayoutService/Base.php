@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Error\PublicErrorDescription;
 
 class Base
@@ -32,6 +33,13 @@ class Base
     protected $secret;
 
     protected $baseUrl;
+
+    /**
+     * BasicAuth entity
+     * @var BasicAuth
+     *
+     */
+    protected $auth;
 
     const VERSION = '/v1';
 
@@ -57,6 +65,8 @@ class Base
         $this->key = $this->config[$this->mode]['payout_key'];
 
         $this->secret = $this->config[$this->mode]['payout_secret'];
+
+        $this->auth = $this->app['basicauth'];
     }
 
     const TIMEOUT = 60;

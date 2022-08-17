@@ -1418,6 +1418,43 @@ return [
         ],
     ],
 
+
+    'testAdminGetFreePayoutsCountFromPS' => [
+        'request'  => [
+            'url'     => '/admin/payouts/{id}/free_payout',
+            'method'  => 'GET',
+            'content' => [
+                'free_payouts_count'             => 12,
+                'free_payouts_supported_modes'   => ['IMPS']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'free_payouts_count'             => 12,
+                'free_payouts_supported_modes'   => ['IMPS']
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testXDashboardGetFreePayoutsCountFromPS' => [
+        'request'  => [
+            'url'     => '/admin/payouts/{id}/free_payout',
+            'method'  => 'GET',
+            'content' => [
+                'free_payouts_count'             => 12,
+                'free_payouts_supported_modes'   => ['IMPS']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'free_payouts_count'             => 12,
+                'free_payouts_supported_modes'   => ['IMPS']
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDccPayoutsDetailsFetch' => [
         'request'  => [
             'method' => 'POST',
