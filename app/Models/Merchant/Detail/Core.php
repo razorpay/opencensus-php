@@ -3934,19 +3934,31 @@ class Core extends Base\Core
 
         $creditBalance = [];
 
+        $ledgerResponse = [];
+
         if (empty($balance) === false)
         {
             $bankingAccount = $this->repo->banking_account->getActivatedBankingAccountFromBalanceId($balance->getId());
 
             $response[Merchant\Entity::BANKING_ACCOUNT] = $bankingAccount->toArrayPublic();
 
-            $creditBalance = $this->fetchBankingCreditBalances($merchant->getId(), Product::BANKING, $balance->getAccountType(), $bankingAccount->getPublicId());
+            if($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+            {
+                $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $bankingAccount->getPublicId());
+                if ((empty($ledgerResponse) === false) &&
+                    (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
+                    (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
+                {
+                    $response[Merchant\Entity::BANKING_ACCOUNT][Merchant\Balance\Entity::BALANCE][Merchant\Balance\Entity::BALANCE] = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+                }
+            }
+
+            $creditBalance = $this->fetchBankingCreditBalances($merchant->getId(), Product::BANKING, $ledgerResponse);
         }
 
         if (empty($creditBalance) == true)
         {
-
-            $creditBalance = $this->fetchBankingCreditBalances($merchant->getId(), Product::BANKING, null, null);
+            $creditBalance = $this->fetchBankingCreditBalances($merchant->getId(), Product::BANKING, null);
         }
 
         $response[Merchant\Entity::CREDIT_BALANCE] = $creditBalance;
@@ -3954,7 +3966,7 @@ class Core extends Base\Core
         return $response;
     }
 
-    protected function fetchBankingCreditBalances($merchantId, $product, $accountType, $bankingAccountId)
+    protected function fetchBankingCreditBalances($merchantId, $product, $ledgerResponse)
     {
         $creditBalances = $this->repo
             ->credits
@@ -3962,21 +3974,13 @@ class Core extends Base\Core
                 $merchantId,
                 $product);
 
-        $merchant = $this->repo->merchant->find($merchantId);
-
         // Calling ledger when merchant has "ledger_journal_reads" feature flag enabled
         // and balance is of type "shared".
-        if (($merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) &&
-            ($accountType === Merchant\Balance\AccountType::SHARED))
+        if ((empty($ledgerResponse) === false) &&
+            (empty($ledgerResponse[LedgerCore::REWARD_BALANCE]) === false) &&
+            (empty($ledgerResponse[LedgerCore::REWARD_BALANCE][LedgerCore::BALANCE]) === false))
         {
-            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($merchantId, $bankingAccountId);
-
-            if ((empty($ledgerResponse) === false) &&
-                (empty($ledgerResponse[LedgerCore::REWARD_BALANCE]) === false) &&
-                (empty($ledgerResponse[LedgerCore::REWARD_BALANCE][LedgerCore::BALANCE]) === false))
-            {
-                (new LedgerCore())->constructCreditBalanceFromLedger($creditBalances, $ledgerResponse);
-            }
+            (new LedgerCore())->constructCreditBalanceFromLedger($creditBalances, $ledgerResponse);
         }
 
         return $creditBalances;
