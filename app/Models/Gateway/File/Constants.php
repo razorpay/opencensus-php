@@ -76,6 +76,8 @@ class Constants
     const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
     const ENACH_NB_ICICI                    = 'enach_nb_icici';  // deprecated
 
+    const AXIS_PAYSECURE = 'axis_paysecure';
+
     const PAPER_NACH_CITI       = 'paper_nach_citi';
     const PAPER_NACH_ICICI      = 'paper_nach_icici';
 
@@ -219,6 +221,9 @@ class Constants
         Type::PARESDATA => [
            self::FIRST_DATA,
         ],
+        Type::CAPTURE => [
+            self::AXIS_PAYSECURE,
+        ],
     ];
 
     const TYPE_SENDER_MAPPING = [
@@ -234,6 +239,7 @@ class Constants
         Type::NACH_CANCEL       => MailConstants::MAIL_ADDRESSES[MailConstants::EMANDATE],
         Type::REFUND_FAILED     => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::PARESDATA         => MailConstants::MAIL_ADDRESSES[MailConstants::GATEWAY_POD],
+        Type::CAPTURE           => MailConstants::MAIL_ADDRESSES[MailConstants::CAPTURE],
         Type::CARDSETTLEMENT    => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
     ];
 
@@ -365,6 +371,10 @@ class Constants
 
         Type::PARESDATA => [
             self::FIRST_DATA    => [''],
+        ],
+
+        Type::CAPTURE => [
+            self::AXIS_PAYSECURE    => ['example@axisbank.com'],
         ],
     ];
 

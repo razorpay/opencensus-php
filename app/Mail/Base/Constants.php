@@ -20,6 +20,7 @@ class Constants
     const DEVELOPERS                    = 'developers';
     const ALERTS                        = 'alerts';
     const EMI                           = 'emi';
+    const CAPTURE                       = 'capture';
     const ADMIN                         = 'admin';
     const ACTIVATION                    = 'activation';
     const SUBSCRIPTIONS                 = 'subscriptions';
@@ -87,6 +88,7 @@ class Constants
         self::DEVELOPERS                => 'developers@razorpay.com',
         self::ALERTS                    => 'alerts@razorpay.com',
         self::EMI                       => 'emifiles@razorpay.com',
+        self::CAPTURE                   => 'capturefiles@razorpay.com',
         self::ADMIN                     => 'admin@razorpay.com',
         self::ACTIVATION                => 'activationsteam@razorpay.com',
         self::IRCTC                     => 'support@razorpay.com',

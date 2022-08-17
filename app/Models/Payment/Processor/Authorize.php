@@ -9522,6 +9522,12 @@ trait Authorize
             $networkCode = $payment->card->getNetworkCode();
         }
 
+        $acquirer = null;
+        if($networkCode !== null)
+        {
+            $acquirer = $payment->terminal->getGatewayAcquirer();
+        }
+
         $terminalMode = $payment->terminal->getMode();
 
         /*
@@ -9540,7 +9546,7 @@ trait Authorize
         }
         else if ($terminalMode === Terminal\Mode::PURCHASE)
         {
-            return (Payment\Gateway::supportsPurchase($gateway, $networkCode) === false);
+            return (Payment\Gateway::supportsPurchase($gateway, $networkCode, $acquirer) === false);
         }
 
         // Additional check for ICICI debit cards on First data terminal

@@ -259,7 +259,8 @@ class Gateway
         self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
         self::PAYU         => [self::PAYU],
-        self::HDFC_EZETAP  => [self::ACQUIRER_HDFC]
+        self::HDFC_EZETAP  => [self::ACQUIRER_HDFC],
+        self::PAYSECURE    => [self::ACQUIRER_AXIS]
     ];
 
     const POWER_WALLETS = [
@@ -403,6 +404,7 @@ class Gateway
         self::BILLDESK_OPTIMIZER    => self::BILLDESK_OPTIMIZER,
         self::OFFLINE_HDFC          => self::HDFC,
         self::HDFC_EZETAP           =>self::HDFC,
+        self::PAYSECURE             => self::AXIS,
     ];
 
 
@@ -1697,10 +1699,12 @@ class Gateway
      */
     public static $gatewayNetworkPurchaseSupport = [
         self::HITACHI                 => [
-            self::NOT_SUPPORTED     => [Network::RUPAY]
+            self::NOT_SUPPORTED     => [Network::RUPAY],
+            self::SUPPORTED         => [],
         ],
         self::PAYSECURE             => [
-            self::NOT_SUPPORTED     => [Network::RUPAY]
+            self::NOT_SUPPORTED     => [Network::RUPAY],
+            self::SUPPORTED         => [Network::RUPAY  => [self::ACQUIRER_AXIS]]
         ],
     ];
 
@@ -3835,13 +3839,13 @@ class Gateway
      * @param string $networkCode
      * @return bool
      */
-    public static function supportsPurchase($gateway, $networkCode = null): bool
+    public static function supportsPurchase($gateway, $networkCode = null, $acquirer=null): bool
     {
         $supportsPurchase = isset(self::$gatewayNetworkPurchaseSupport[$gateway]);
 
         if ($supportsPurchase === true)
         {
-            return self::isNetworkSupportedForPurchase($gateway, $networkCode);
+            return self::isNetworkSupportedForPurchase($gateway, $networkCode, $acquirer);
         }
 
         return true;
@@ -3902,7 +3906,7 @@ class Gateway
         return true;
     }
 
-    public static function isNetworkSupportedForPurchase($gateway, $networkCode)
+    public static function isNetworkSupportedForPurchase($gateway, $networkCode, $acquirer)
     {
         // This means that all the networks are supported by the gateway for Purchase.
         if ((isset(self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED]) === false) or
@@ -3910,6 +3914,20 @@ class Gateway
         {
             return true;
         }
+
+        //Some gateways may support purchase for only a selected few acquirers for purchase
+        $partialSupportedNetworks = self::$gatewayNetworkPurchaseSupport[$gateway][self::SUPPORTED];
+
+        if(in_array($networkCode, $partialSupportedNetworks, true) === true)
+        {
+            $supportedAcquirers = $partialSupportedNetworks[$networkCode];
+
+            if(in_array($acquirer, $supportedAcquirers, true) === true)
+            {
+                return true;
+            }
+        }
+
 
         // Get all the networks which are NOT supported by the gateway for Purchase.
         $notSupportedNetworks = self::$gatewayNetworkPurchaseSupport[$gateway][self::NOT_SUPPORTED];

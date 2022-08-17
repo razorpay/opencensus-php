@@ -303,6 +303,38 @@ EOT;
                     ->get();
     }
 
+    /**
+     * Returns all captured payments between timestamps
+     * with gateway=paysecure and acquirer=axis
+     * @param  int $from    timestamp for start of interval
+     * @param  int $to      timestamp for end of interval
+     * @return Collection of Payment
+     */
+    public function getAxisPaysecureCapturedTransactionsBetween($from, $to)
+    {
+        $terminalRepo = $this->repo->terminal;
+
+        $terminaltableName = $terminalRepo->getTableName();
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $terminalId = $terminalRepo->dbColumn(Terminal\Entity::ID);
+
+        $gateway = $terminalRepo->dbColumn(Terminal\Entity::GATEWAY);
+
+        $acquirer = $terminalRepo->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        return $this->newQueryWithConnection($this->getDataWarehouseConnection())
+            ->select($this->dbColumn('*'))
+            ->join($terminaltableName, $paymentTerminalId, '=', $terminalId)
+            ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+            ->where(Entity::METHOD, '=', Method::CARD)
+            ->where($gateway, '=', Payment\Gateway::PAYSECURE)
+            ->where($acquirer, '=', Payment\Gateway::ACQUIRER_AXIS)
+            ->with('merchant', 'card')
+            ->get();
+    }
+
     public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
         $tRepo = $this->repo->terminal;

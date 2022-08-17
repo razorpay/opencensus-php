@@ -54,6 +54,7 @@ class TransactionFilter extends Terminal\Filter
         'mcc',
         'application',
         'provider',
+        'acquirer',
         'card_mandate'
     ];
 
@@ -1149,6 +1150,26 @@ class TransactionFilter extends Terminal\Filter
 
             return (in_array(strtoupper($wallet), $enabledBanks, true));
         }
+    }
+
+    public function acquirerFilter(Terminal\Entity $terminal)
+    {
+        $payment = $this->input['payment'];
+
+        if (($payment->card() === true) and
+            ($terminal->getGateway() === Gateway::PAYSECURE) and
+            ($terminal->getGatewayAcquirer() === Gateway::ACQUIRER_AXIS))
+        {
+            $orgId = $this->input['merchant']->getOrgId();
+
+            if (($orgId !== 'CLTnQqDj9Si8bx') or
+                ($payment->card->getNetworkCode() !== Network::RUPAY))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function cardMandateFilter($terminal) {

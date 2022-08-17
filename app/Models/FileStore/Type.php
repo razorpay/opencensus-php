@@ -264,6 +264,8 @@ class Type
     const AXIS_CARD_SETTLEMENT_FILE         = 'axis_cardsettlement_file';
     const AXIS_CARD_SETTLEMENT_OUTPUT_FILE  = 'axis_cardsettlement_output_file';
 
+    const AXIS_PAYSECURE                    = 'axis_paysecure';
+
     const FIRST_DATA_PARES_FILE             = 'first_data_pares_file';
     const DATA_LAKE_SEGMENT_FILE            = 'data_lake_segment_file';
     const NIUM_SETTLEMENT_FILE              = 'nium_settlement_file';
@@ -409,6 +411,7 @@ class Type
             self::SBI_EMI_FILE,
             self::SBI_EMI_OUTPUT_FILE,
             self::ONECARD_EMI_FILE,
+            self::AXIS_PAYSECURE,
             self::CITI_EMI_FILE,
             self::SCBL_EMI_FILE,
             self::BOB_EMI_FILE,
@@ -523,6 +526,7 @@ class Type
         self::SBI_EMI_FILE,
         self::SBI_EMI_OUTPUT_FILE,
         self::ONECARD_EMI_FILE,
+        self::AXIS_PAYSECURE,
         self::BOB_EMI_FILE,
         self::CITI_EMI_FILE,
         self::SCBL_EMI_FILE,
@@ -709,6 +713,7 @@ class Type
         self::BEAM_BUCKET_CONFIG => [
             self::SBI_EMI_FILE,
             self::ONECARD_EMI_FILE,
+            self::AXIS_PAYSECURE,
             self::SCBL_EMI_FILE,
             self::ICICI_EMI_FILE_SFTP,
             self::ICICI_EMI_REFUND_FILE,

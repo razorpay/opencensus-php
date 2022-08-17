@@ -140,6 +140,7 @@ class Constants
     const SCROOGE_CREATED_AT       = 'created_at';
     const SCROOGE_BASE_AMOUNT      = 'base_amount';
     const SCROOGE_GATEWAY_ACQUIRER = 'gateway_acquirer';
+    const SCROOGE_PAYMENT_GATEWAY_CAPTURED = 'payment_gateway_captured';
 
     // Fetch Entities Related Constants
     const EXTRA_DATA          = 'extra_data';
