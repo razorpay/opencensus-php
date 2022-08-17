@@ -1087,6 +1087,15 @@ class Gateway extends Base\Gateway
             case Payment\Gateway::UPI_CITI:
                 return $input;
             case Payment\Gateway::UPI_SBI:
+                if($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_SBI)){
+                    $data = [
+                        'payload'       => $input,
+                        'gateway'       => Payment\Gateway::UPI_SBI,
+                        'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+                    ];
+
+                    return $this->upiPreProcess($data);
+                }
                 return $this->preProcessServerCallbackForUpiSbi($input);
             case Payment\Gateway::NETBANKING_YESB:
                 return $this->preProcessServerCallbackForYesb($input);
@@ -1684,6 +1693,11 @@ class Gateway extends Base\Gateway
         }
         if($gateway === Payment\Gateway::UPI_SBI)
         {
+            if($prefix === 'upiPayments')
+            {
+                return $baseUrl . $prefix . '/' . $gateway . '/v1/' . $this->action;
+            }
+
             $url = $baseUrl . $prefix . '/' . $gateway . '/v2/' . $this->action;
 
             $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), self::UPI_SBI_V3_MIGRATION, $mode);

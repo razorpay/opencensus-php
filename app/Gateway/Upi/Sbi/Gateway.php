@@ -20,12 +20,15 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Exception\AssertionException;
 use RZP\Exception\GatewayErrorException;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
     use Base\MozartTrait;
+
+    use CommonGatewayTrait;
 
     const ACQUIRER = Payment\Processor\Upi::SBIN;
 
@@ -141,6 +144,12 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
+
+        if((isset($input['gateway']['data']['version']) === true)
+            and ($input['gateway']['data']['version']) === 'v2')
+        {
+            return $this->upiCallback($input);
+        }
 
         $this->callbackRequest($input);
 
@@ -562,6 +571,17 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallback($input): array
     {
+        if($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_SBI) === true)
+        {
+            $data = [
+                'payload'       => $input,
+                'gateway'       => Payment\Gateway::UPI_SBI,
+                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ];
+
+            return $this->upiPreProcess($data);
+        }
+
         $response = $this->preProcessServerCallbackRequest($input);
 
         $response['pgMerchantId'] = json_decode($input['msg'], true)['pgMerchantId'];
@@ -587,7 +607,7 @@ class Gateway extends Base\Gateway
     public function postProcessServerCallback($input): array
     {
         return [
-            'pspRefNo' => $input['gateway']['data']['gateway_response']['pspRefNo'],
+            'pspRefNo' => $this->getPaymentIdFromServerCallback($input['gateway']),
             'status'   => 'SUCCESS',
             'message'  => 'Request Processed Successfully'
         ];
@@ -599,6 +619,13 @@ class Gateway extends Base\Gateway
      */
     public function getPaymentIdFromServerCallback(array $response): string
     {
+        $version = $response['data']['version'] ?? '';
+
+        if ($version === 'v2')
+        {
+            return $this->upiPaymentIdFromServerCallback($response);
+        }
+
         return $response['data']['paymentId'];
     }
 

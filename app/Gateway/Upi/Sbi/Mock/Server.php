@@ -144,6 +144,14 @@ class Server extends Base\Mock\Server
         return base64_encode($pgp->encryptSign($contentWithHash));
     }
 
+    public function decryptInput($entities){
+        $callbackData = json_decode($entities['gateway']['payload']['msg'], true);
+
+        $encrypted = $callbackData['resp'];
+
+        return $this->decrypt($encrypted);
+    }
+
     protected function decrypt($encrypted)
     {
         $gateway = $this->getGatewayInstance();

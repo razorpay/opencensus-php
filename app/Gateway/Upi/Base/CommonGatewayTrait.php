@@ -189,6 +189,25 @@ trait CommonGatewayTrait
         return $gatewayInput;
     }
 
+    public function shouldUseUpiPreProcess(string $gateway)
+    {
+        $feature = 'api' . '_' . $gateway . '_' . \RZP\Gateway\Mozart\Action::PRE_PROCESS . '_' . 'v1';
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            $feature, $mode);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
+            'gateway' => $gateway,
+            'variant' => $variant,
+            'mode'    => $mode,
+            'feature' => $feature,
+        ]);
+
+        return $variant === $gateway;
+    }
+
     /**
      * Pre Process function will be callback function , The purpose it serves that it makes the callback
      * to comply with the contracts . Give a simple interface to work with.

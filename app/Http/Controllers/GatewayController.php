@@ -1665,10 +1665,6 @@ class GatewayController extends Controller
             return false;
         }
 
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-            'message' => 'Pre-processing server callback decide',
-        ]);
-
         $feature = 'ups'. '_' . $gateway . '_' . UpiPaymentService::PRE_PROCESS . '_' . 'v1';
 
         $mode = ($mode === null) ? Mode::LIVE : $mode;

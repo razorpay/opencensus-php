@@ -1378,6 +1378,118 @@ class UpiPaymentServiceTest extends TestCase
         return $payment->getId();
     }
 
+    private function doAjaxPaymentWithUPS(string $terminalResource, string $gateway)
+    {
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create($terminalResource);
+
+        $this->gateway = $gateway;
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_'.$this->gateway.'_v1', 'upips');
+        });
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+    }
+
+    public function testSbiWithApiPreProcess()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->doAjaxPaymentWithUPS('terminal:shared_upi_mindgate_sbi_terminal', 'upi_sbi');
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_sbi_pre_process_v1', 'upi_sbi');
+        });
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $content = $this->mockServer('upi_sbi')->getAsyncCallbackContent($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_sbi');
+
+        $this->assertEquals(
+            [
+                'status' => 'SUCCESS',
+                'pspRefNo' => $payment['id'],
+                'message' => 'Request Processed Successfully',
+            ], $response
+        );
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::AUTHORIZED,
+                Entity::GATEWAY         => 'upi_sbi',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment
+        );
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNull($upiEntity);
+    }
+
+    public function testSbiWithApiPaymentWithApiPreProcess()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_mindgate_sbi_terminal');
+
+        $this->gateway = 'upi_sbi';
+
+        $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_sbi_pre_process_v1', 'upi_sbi');
+        });
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $content = $this->mockServer('upi_sbi')->getAsyncCallbackContent($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_sbi');
+
+        $this->assertEquals(
+            [
+                'status' => 'SUCCESS',
+                'pspRefNo' => $payment['id'],
+                'message' => 'Request Processed Successfully',
+            ], $response
+        );
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::AUTHORIZED,
+                Entity::GATEWAY         => 'upi_sbi',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::CPS_ROUTE       => Entity::API,
+            ], $payment
+        );
+
+        $upiEntity = $this->getDbLastEntity('upi', Mode::TEST);
+
+        $this->assertNotNull($upiEntity);
+    }
+
     public function testUpiSbiUpdatePostReconSuccess()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();

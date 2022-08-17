@@ -5,6 +5,7 @@ namespace RZP\Gateway\Mozart\Mock;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use \RZP\Gateway\Upi\Sbi\Mock\Server as Sbi;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Gateway\Mozart\Mock\Upi\MozartUpiResponse;
 use \RZP\Gateway\Upi\Yesbank\Mock\Server as Yesbank;
@@ -153,6 +154,41 @@ class PreProcess extends Base\Mock\Server
         {
             unset($response['error']);
         }
+
+        return $response;
+    }
+
+    public function upi_sbi($entities)
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+
+        $data = (new Sbi())->decryptInput($entities)['apiResp'];
+
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+        $response->mergeUpi([
+            UpiEntity::VPA                  => $data['payerVPA'] ?? '',
+            UpiEntity::STATUS_CODE          => $data['responseCode'],
+            UpiEntity::NPCI_REFERENCE_ID    => $data['custRefNo'],
+            UpiEntity::NPCI_TXN_ID          => $data['npciTransId'] ?? "",
+            UpiEntity::MERCHANT_REFERENCE   => $data['pspRefNo'],
+        ]);
+
+        $response->setPayment([
+            Payment\Entity::CURRENCY          => 'INR',
+            Payment\Entity::AMOUNT_AUTHORIZED => $data['amount']*100,
+        ]);
+
+        $response->setTerminal([
+            Terminal\Entity::GATEWAY_MERCHANT_ID2   => $data['payeeVPA'],
+            Terminal\Entity::GATEWAY                => 'upi_sbi',
+        ]);
+
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        unset($response['error']);
 
         return $response;
     }
