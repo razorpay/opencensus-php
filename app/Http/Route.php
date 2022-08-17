@@ -13109,6 +13109,7 @@ class Route
         ],
 
         'capital_collections_client' => [
+            'internal_merchant_fetch',
             'merchant_balance_create',
             'internal_balance_fetch_by_merchant_id',
             'internal_balance_fetch_by_merchant_id_old',
