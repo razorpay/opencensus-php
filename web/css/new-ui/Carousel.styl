@@ -76,7 +76,8 @@
         width:100%;
         flexProp(row,flex-start);
         overflow: scroll;
-
+        -ms-overflow-style: none;  
+        scrollbar-width: none; 
         .carouselCard {
             flexProp(row,space-between);
             flex: 1 0 100%;
@@ -102,6 +103,9 @@
                     flexProp(column,space-between);
                 }
         }
+    }
+    .carousel__list::-webkit-scrollbar {
+      display: none;
     }
 }
 #carouselModal {

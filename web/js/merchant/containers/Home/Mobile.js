@@ -45,18 +45,9 @@ import {
   getBannerAndModalVisibility,
 } from 'merchant/reducers/websitecompliance';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
-
-import lazy from 'merchant/routes/LazyLoader';
-
-const PaymentMethods = lazy(() =>
-  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
-);
-const Traffic = lazy(() =>
-  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
-);
-const RecentActivity = lazy(() =>
-  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
-);
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
+import Traffic from 'merchant/containers/Home/Traffic';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
 
 @connect(
   (state) => ({
@@ -235,7 +226,6 @@ class AnalyticsMobile extends Component {
     );
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
-
     return (
       <div className="home-analytics-mobile">
         <Space padding={[2.5, 1, 0, 2]}>
@@ -275,7 +265,9 @@ class AnalyticsMobile extends Component {
           ) : null}
           <WebsiteComplianceNudge screen="Home page" />
           {user.isWebsiteComplianceFlowEnabled && this.renderWebsiteCompliancePrompt()}
-          {carouselItem.length ? <Carousel carouselItem={carouselItem} /> : null}
+          {carouselItem.length ? (
+            <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
+          ) : null}
           {!user.isOnboardingV2Enabled ? (
             <div className={`v2-onboarding-card${expandOnboardingBanner ? ' expand' : ''}`}>
               {showOnboardingBanner && (
@@ -390,19 +382,21 @@ class AnalyticsMobile extends Component {
           </Header>
         </Sticky>
         <div className="dashboard">
-          <KeyMetrics
-            startDate={startDate}
-            endDate={endDate}
-            oldestTransactionDate={oldestTransactionDate}
-            mode={mode}
-            showGroupingByPtfm={showGroupingByPtfm}
-            sectionTitle=""
-            tabsMeta={tabsMeta}
-            isAdmin={isAdmin}
-            analyticsFetch={analyticsFetch}
-            onFilterChange={onFilterChange}
-            isMobile={true}
-          />
+          <LazyLoad height={100} offset={50} once>
+            <KeyMetrics
+              startDate={startDate}
+              endDate={endDate}
+              oldestTransactionDate={oldestTransactionDate}
+              mode={mode}
+              showGroupingByPtfm={showGroupingByPtfm}
+              sectionTitle=""
+              tabsMeta={tabsMeta}
+              isAdmin={isAdmin}
+              analyticsFetch={analyticsFetch}
+              onFilterChange={onFilterChange}
+              isMobile={true}
+            />
+          </LazyLoad>
           <p className="section-title">{paymentInsightsTitle}</p>
           <LazyLoad height={100} offset={50} once>
             <>

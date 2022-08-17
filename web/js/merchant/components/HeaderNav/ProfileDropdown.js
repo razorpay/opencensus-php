@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
-
+import LazyLoad from 'react-lazyload';
 import { STATUS } from 'merchant/views/Account/TrustedBadge/constants/data';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
@@ -371,11 +371,13 @@ export default class ProfileDropdown extends Component {
                 <div className="media media-action">
                   <div className="media-left">
                     <div className="media-object">
-                      <img
-                        src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
-                        alt="razorpay experiment"
-                        height="24"
-                      />
+                      <LazyLoad height={24} once>
+                        <img
+                          src="https://cdn.razorpay.com/static/assets/notifs/razorx.svg"
+                          alt="razorpay experiment"
+                          height="24"
+                        />
+                      </LazyLoad>
                     </div>
                   </div>
                   <div className="media-body">

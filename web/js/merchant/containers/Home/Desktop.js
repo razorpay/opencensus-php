@@ -80,7 +80,6 @@ import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCo
 import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
-import lazy from 'merchant/routes/LazyLoader';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
 import {
   fetchActivationDetails,
@@ -88,16 +87,9 @@ import {
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
-
-const PaymentMethods = lazy(() =>
-  import(/* webpackChunkName: 'paymentmethod' */ 'merchant/containers/Home/PaymentMethods'),
-);
-const Traffic = lazy(() =>
-  import(/* webpackChunkName: 'traffic' */ 'merchant/containers/Home/Traffic'),
-);
-const RecentActivity = lazy(() =>
-  import(/* webpackChunkName: 'recentactivity' */ 'merchant/containers/Home/RecentActivity'),
-);
+import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
+import Traffic from 'merchant/containers/Home/Traffic';
+import RecentActivity from 'merchant/containers/Home/RecentActivity';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -767,7 +759,9 @@ class AnalyticsDesktop extends Component {
               return null;
             }}
           >
-            {carouselItem.length ? <Carousel carouselItem={carouselItem} /> : null}
+            {carouselItem.length ? (
+              <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
+            ) : null}
           </ErrorBoundary>
           {user.canSwitchOnboardingCard ? (
             this.renderOnboardingAndRecommendationWidget()

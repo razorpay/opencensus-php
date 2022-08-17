@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import LazyLoad from 'react-lazyload';
 import { compose } from 'redux';
 import { withRouter } from 'react-router';
 import isEmpty from 'lodash/isEmpty';
@@ -16,7 +18,30 @@ import sanitizer from 'common/utils/xss-sanitizer';
 
 let slideIndex = 0;
 const trackerBannerFirstImpression = {};
-const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactElement => {
+
+const LazyImage = ({ enableLazy, children }) =>
+  enableLazy ? (
+    <LazyLoad throttle={200} once>
+      {children}
+    </LazyLoad>
+  ) : (
+    children
+  );
+
+const Carousel = ({
+  carouselItem,
+  openModal,
+  tracking,
+  history,
+  enableLazy,
+  minHeight,
+}): React.ReactElement => {
+  const [activeState, setActiveState] = useState<Record<string, boolean>>(
+    carouselItem.reduce((acc, each, index) => {
+      acc[`${each.id}_${index}`] = false;
+      return acc;
+    }, {}),
+  );
   let timer = 0;
 
   const bannerCardImp = (eventName, banner_id, banner_order) => {
@@ -43,6 +68,26 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
     );
   };
 
+  const updateActiveState = (slides, slideIndex): void => {
+    const id = slides[slideIndex - 1].getAttribute('id');
+    if (!activeState[`${id}_${slideIndex - 1}`]) {
+      setActiveState((prevState) => ({
+        ...prevState,
+        [`${id}_${slideIndex - 1}`]: true,
+      }));
+      if (minHeight) {
+        (slides[slideIndex - 1] as any).style.minHeight = `${minHeight}px`;
+      }
+    }
+  };
+
+  const handleOnload = (slideIndex): void => {
+    if (minHeight) {
+      const slides = document.getElementsByClassName('carouselCard');
+      (slides[slideIndex - 1] as any).style.minHeight = '';
+    }
+  };
+
   const automaticSlide = () => {
     let i;
     const slides = document.getElementsByClassName('carouselCard');
@@ -54,7 +99,13 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
     if (slideIndex > slides.length) {
       slideIndex = 1;
     }
-    (slides[slideIndex - 1] as any).style.display = 'flex';
+    if (slides[slideIndex - 1]) {
+      (slides[slideIndex - 1] as any).style.display = 'flex';
+      if (enableLazy) {
+        updateActiveState(slides, slideIndex);
+      }
+    }
+
     const bannerOrder = slides[slideIndex - 1]?.getAttribute('data-bannerOrder') || '';
     if (!trackerBannerFirstImpression[bannerOrder]) {
       bannerCardImp(
@@ -70,6 +121,7 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
   const manualSlide = (n) => {
     let i;
     const slides = document.getElementsByClassName('carouselCard');
+
     if (!slides) return;
     if (n > slides.length) {
       slideIndex = 1;
@@ -80,7 +132,12 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
     for (i = 0; i < slides.length; i++) {
       (slides[i] as any).style.display = 'none';
     }
-    (slides[slideIndex - 1] as any).style.display = 'flex';
+    if (slides[slideIndex - 1]) {
+      (slides[slideIndex - 1] as any).style.display = 'flex';
+      if (enableLazy) {
+        updateActiveState(slides, slideIndex);
+      }
+    }
 
     const bannerOrder = slides[slideIndex - 1]?.getAttribute('data-bannerOrder') || '';
 
@@ -157,7 +214,10 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
   }, []);
 
   const carouselList = carouselItem.map(
-    ({ id, title, description, bg_image, m_image, buttons, l2_content, tracking_data }, index) => (
+    (
+      { id = '', title, description, bg_image, m_image, buttons, l2_content, tracking_data },
+      index,
+    ) => (
       <div className="carouselCard" id={id} data-bannerOrder={index + 1} key={`${id}_${index}`}>
         <div className="carouselCard__content">
           <div>{title}</div>
@@ -185,7 +245,13 @@ const Carousel = ({ carouselItem, openModal, tracking, history }): React.ReactEl
           </div>
         </div>
         <div className="carouselCard__image">
-          <img src={isMobileDevice() ? m_image : bg_image} alt={title} />
+          <LazyImage enableLazy={enableLazy} key={`${id}_${index}`}>
+            <img
+              src={activeState[`${id}_${index}`] ? (isMobileDevice() ? m_image : bg_image) : ''}
+              onLoad={() => handleOnload(slideIndex)}
+              alt={title}
+            />
+          </LazyImage>
         </div>
       </div>
     ),

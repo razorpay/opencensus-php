@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import LazyLoad, { forceCheck } from 'react-lazyload';
 import RTracking from 'react-tracking';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
 
@@ -81,6 +82,7 @@ const appListLending = [
 @RTracking(() => window.rzpQ.component('AppSwitcher'))
 class AppSwitcher extends Component {
   handleShow = () => {
+    forceCheck();
     const { tracking, user } = this.props;
     tracking.trackEvent(
       window.rzpQ.onbr().clicked('dashboard.appswitcher', {
@@ -127,7 +129,9 @@ class AppSwitcher extends Component {
         className="item"
         rel="noreferrer noopener"
       >
-        <img className="icon" src={app.icon} alt={app.name} />
+        <LazyLoad height={25} once>
+          <img className="icon" src={app.icon} alt={app.name} />{' '}
+        </LazyLoad>
         <div className="info">
           <span className={`title ${app.new ? 'new' : null}`}>
             {app.name}
