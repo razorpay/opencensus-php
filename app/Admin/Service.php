@@ -1619,7 +1619,7 @@ class Service extends Base\Service
 
         try
         {
-            $redisConnection = $this->app['redis']->connection()->ping();
+            $redisConnection = $this->app['redis']->connection()->exists((string)rand(0 , 100));
         }
         catch (Exception $e)
         {

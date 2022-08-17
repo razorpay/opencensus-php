@@ -44,42 +44,39 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
     {
         $connection = $this->cache->connection();
 
-        $responses = $connection->transaction(function ($tx) use ($sessionId, $data)
+        $data = $this->getDefaultPayload($data, app());
+
+        $lifetime = $this->getLifetime($data);
+
+        // Write to admins:adminID:sessions = [ Sid1, Sid2, Sid3 ]
+        if (isset($data['admin_id']))
         {
-            $data = $this->getDefaultPayload($data, app());
+            $adminKey = $this->getAdminSessionKey($data['admin_id']);
 
-            $lifetime = $this->getLifetime($data);
+            $connection->sadd($adminKey, $sessionId);
 
-            $sessionKey = $this->sessionNamespace.':'.$sessionId;
+            $connection->expire($adminKey, $lifetime);
+        }
 
-            // Write to the main cache (hash)
+        // Write to users:userID:sessions = [ Sid1, Sid2, Sid3 ]
+        if (isset($data['user_id']))
+        {
+            $userKey = $this->getUserSessionKey($data['user_id']);
 
-            $tx->hmset($sessionKey, $data);
+            $connection->sadd($userKey, $sessionId);
 
-            $tx->expire($sessionKey, $lifetime);
+            $connection->expire($userKey, $lifetime);
+        }
 
-            // Write to admins:adminID:sessions = [ Sid1, Sid2, Sid3 ]
-            if (isset($data['admin_id']))
-            {
-                $adminKey = $this->getAdminSessionKey($data['admin_id']);
+        $sessionKey = $this->sessionNamespace.':'.$sessionId;
 
-                $tx->sadd($adminKey, $sessionId);
+        // Write to the main cache (hash)
 
-                $tx->expire($adminKey, $lifetime);
-            }
+        $connection->hmset($sessionKey, $data);
 
-            // Write to users:userID:sessions = [ Sid1, Sid2, Sid3 ]
-            if (isset($data['user_id']))
-            {
-                $userKey = $this->getUserSessionKey($data['user_id']);
+        $connection->expire($sessionKey, $lifetime);
 
-                $tx->sadd($userKey, $sessionId);
-
-                $tx->expire($userKey, $lifetime);
-            }
-        });
-
-        return $responses;
+        return true;
     }
 
     protected function getDefaultPayload($data, $container = null)
@@ -128,33 +125,30 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
         $data = $connection->hgetall($key);
 
-        $responses = $connection->transaction(function ($tx) use ($sessionId, $data, $key)
+        // Delete the key holding entire session data
+        $connection->del($key);
+
+        // Get rid of the relation from the users set
+        if (empty($data['user_id']) === false)
         {
-            // Get rid of the relation from the users set
-            if (empty($data['user_id']) === false)
-            {
-                $userId = $data['user_id'];
+            $userId = $data['user_id'];
 
-                $userKey = $this->getUserSessionKey($userId);
+            $userKey = $this->getUserSessionKey($userId);
 
-                $tx->srem($userKey, $sessionId);
-            }
+            $connection->srem($userKey, $sessionId);
+        }
 
-            // Get rid of the relation from the admins set
-            if (empty($data['admin_id']) === false)
-            {
-                $adminId = $data['admin_id'];
+        // Get rid of the relation from the admins set
+        if (empty($data['admin_id']) === false)
+        {
+            $adminId = $data['admin_id'];
 
-                $adminKey = $this->getAdminSessionKey($adminId);
+            $adminKey = $this->getAdminSessionKey($adminId);
 
-                $tx->srem($adminKey, $sessionId);
-            }
+            $connection->srem($adminKey, $sessionId);
+        }
 
-            // Delete the key holding entire session data
-            $tx->del($key);
-        });
-
-        return $responses;
+        return true;
     }
 
     private function getSessionKey($sessionId)
