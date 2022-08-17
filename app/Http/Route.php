@@ -917,6 +917,11 @@ class Route
         'setl_merchant_dashboard_config_get'       => ['post',     'settlements/dashboard/merchant_config/get',      'SettlementController@merchantDashboardConfigGet'                   ],
         'setl_entity_alerts'                       => ['post',     'settlements/check_for_entity_alerts',            'SettlementController@checkForEntityAlerts'                         ],
         'setl_nodal_initiate_transfer_admin'       => ['post',     'settlements/nodal/transfer/admin',               'SettlementController@initiateInterNodalTransfer'                   ],
+        'setl_insert_new_transaction_records'      => ['post',     'settlements/optimizer/insert_external_transactions','SettlementController@insertExternalTransactionRecord'           ],
+        'setl_update_execution_transaction_count'  => ['put',      'settlements/optimizer/update_transaction_count', 'SettlementController@updateTransactionCountOfExecution'            ],
+        'setl_update_optimiser_execution_status'   => ['put',      'settlements/optimizer/update_status_of_execution','SettlementController@updateStatusofOptimiserExecution'            ],
+
+
 
         'adj_fetch_by_id'                          => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                       => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
@@ -2988,6 +2993,7 @@ class Route
         'banking_account_statement_process'             => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
         'banking_account_statement_generate'            => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                                  ],
         'banking_account_statement_process_cron'        => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
+
         'banking_account_statement_process_pool'        => ['post',     'banking_account_statement/pool/process',                    'BankingAccountStatementController@fetchStatementForPoolAccount'              ],
         'banking_account_statement_channel_fetch'       => ['post',     'banking_account_statement/process/{channel}',               'BankingAccountStatementController@processAccountStatementForChannel'         ],
         'banking_account_statement_insert_missing'      => ['post',     'banking_account_statement/insert_missing',                  'BankingAccountStatementController@insertMissingStatements'                   ],
@@ -6723,6 +6729,9 @@ class Route
         'router_refresh_cron',
 
         'setl_optimizer_settlement_manual_api',
+        'setl_insert_new_transaction_records',
+        'setl_update_execution_transaction_count',
+        'setl_update_optimiser_execution_status',
 
         'banking_account_create_admin',
         'banking_account_create_dashboard_admin',
@@ -8005,6 +8014,9 @@ class Route
         'terminals_proxy_get_optimizer_merchant_methods'    => Permission::VIEW_GATEWAY_RULE,
 
         'setl_optimizer_settlement_manual_api'              => Permission::OPTIMIZER_SINGLE_RECON,
+        'setl_insert_new_transaction_records'               => Permission::OPTIMIZER_SINGLE_RECON,
+        'setl_update_execution_transaction_count'           => Permission::OPTIMIZER_SINGLE_RECON,
+        'setl_update_optimiser_execution_status'            => Permission::OPTIMIZER_SINGLE_RECON,
 
         //Enable maker/checker for payouts
         'payout_create'                            => Permission::CREATE_PAYOUT,
@@ -11176,6 +11188,9 @@ class Route
             'terminals_proxy_update_optimizer_provider',
             'terminals_proxy_get_optimizer_merchant_methods',
             'setl_optimizer_settlement_manual_api',
+            'setl_insert_new_transaction_records',
+            'setl_update_optimiser_execution_status',
+            'setl_update_execution_transaction_count',
             'gratis_postpaid_transactions',
             'group_create',
             'group_delete',

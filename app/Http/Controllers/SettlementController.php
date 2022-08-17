@@ -829,4 +829,32 @@ class SettlementController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function insertExternalTransactionRecord()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->insertExternalTransactionRecord($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateTransactionCountOfExecution()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateTransactionCountOfExecution($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateStatusofOptimiserExecution()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateStatusofOptimiserExecution($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

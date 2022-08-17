@@ -2445,4 +2445,34 @@ class Service extends Base\Service
         return $input;
 
     }
+
+    /**
+     * manual api to insert external transaction records for single recon
+     * @param $input
+     * @return array
+     */
+    public function insertExternalTransactionRecord($input) : array
+    {
+        return app('settlements_api')->insertExternalTransactionRecord($input);
+    }
+
+    /**
+     * manual api to update transaction count in optimiser execution table for single recon
+     * @param $input
+     * @return array
+     */
+    public function updateTransactionCountOfExecution($input) : array
+    {
+        return app('settlements_api')->updateTransactionCountOfExecution($input);
+    }
+
+    /**
+     * manual api to update status in optimiser execution table for single recon
+     * @param $input
+     * @return array
+     */
+    public function updateStatusofOptimiserExecution($input) : array
+    {
+        return app('settlements_api')->updateStatusofOptimiserExecution($input);
+    }
 }

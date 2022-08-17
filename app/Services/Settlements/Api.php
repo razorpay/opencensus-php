@@ -254,4 +254,40 @@ class Api extends Base
     {
         return $this->makeRequest(self::INITIATE_INTER_NODAL_TRANSFER, $input, self::SERVICE_API);
     }
+
+    /**
+     * Used to insert the transaction records in external_transactions table
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function insertExternalTransactionRecord(array $input) : array
+    {
+        return $this->makeRequest(self::SETTLEMENT_INSERT_EXTERNAL_TRANSACTIONS, $input, self::SERVICE_API);
+    }
+
+    /**
+     * Used to update transaction count in optimiser execution table
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function updateTransactionCountOfExecution(array $input) : array
+    {
+        return $this->makeRequest(self::SETTLEMENT_UPDATE_TRANSACTIONS_COUNT, $input, self::SERVICE_API);
+    }
+
+    /**
+     * Used to update status in optimiser execution table
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function updateStatusofOptimiserExecution(array $input) : array
+    {
+        return $this->makeRequest(self::SETTLEMENT_UPDATE_EXECUTION_STATUS, $input, self::SERVICE_API);
+    }
 }
