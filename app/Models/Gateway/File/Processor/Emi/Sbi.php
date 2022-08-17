@@ -26,6 +26,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Gateway\File\Constants as GatewayFileConstants;
+use RZP\Trace\TraceCode;
 
 class Sbi extends Base
 {
@@ -41,6 +42,12 @@ class Sbi extends Base
     const TEST_ENCRYPTION_IV = '123456789012';
 
     const S3_PATH = 'sbi_emi/';
+
+    // 24 hours = 24 * 60 * 60 = 86400
+    const REDIS_KEY_TTL = 86400;
+
+    // redis key format: emi:sbi_emi_ref_no_<payment_id>
+    const REDIS_KEY_FMT = 'emi:sbi_emi_ref_no_%s';
 
     /**
      * @var $file FileStore\Entity
@@ -233,6 +240,17 @@ class Sbi extends Base
                 $totalTransactions++;
 
                 $uniqueReferenceNum++;
+
+                try {
+                    $redisKey = sprintf(self::REDIS_KEY_FMT, $emiPayment->getId());
+
+                    $this->cache->set($redisKey, $uniqueReferenceNum, self::REDIS_KEY_TTL);
+
+                } catch (\Exception $e)
+                {
+                    $this->trace->info(TraceCode::MISC_TRACE_CODE, ['cache_val_set_error' => $uniqueReferenceNum]);
+                }
+
 
                 $principalAmount = $emiPayment->getAmount();
 
