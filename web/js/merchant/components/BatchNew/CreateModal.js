@@ -263,9 +263,8 @@ export default compose(
   connect(
     (state) => ({
       user: state.session.user,
-      refund_pricing: state.config.refund_pricing,
-      features: state.config.features,
-      default_refund_speed: state.config.config.default_refund_speed,
+      refund_pricing: state.config?.refund_pricing || {},
+      default_refund_speed: state.config?.config?.default_refund_speed,
     }),
     (dispatch) => bindActionCreators({ openModal }, dispatch),
   ),
