@@ -476,6 +476,7 @@ class Profile extends Component {
               onSave={this.saveBankAccountChanges}
             />
           ),
+          overlayStyles: { padding: '10px' },
           className: 'bank-account-details-change-modal',
           queryParams: {
             [ACTION_QUERY_PARAM_KEY]: UPDATE_BANK_ACCOUNT,
