@@ -134,8 +134,6 @@ class Repository extends Base\Repository
 
         $refundData = $this->dbColumn('*');
 
-        $paymentStatus = $paymentRepo->dbColumn(Payment\Entity::STATUS);
-
         $paymentGateway = $paymentRepo->dbColumn(Payment\Entity::GATEWAY);
         $paymentMethod = $paymentRepo->dbColumn(Payment\Entity::METHOD);
         $refundProcessedAt = $this->dbColumn(Entity::PROCESSED_AT);
