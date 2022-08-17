@@ -15,6 +15,12 @@ import { showNotification as showNotificationProp } from 'merchant_common/reduce
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import XCATooltip from './common/XCAtoolTip';
+import {
+  updateUtmParams,
+  utmCampaignMap,
+  utmMediumMap,
+  utmSourceMap,
+} from 'merchant/helpers/x/updateUtmCookie';
 
 const NitroSelfServeForms = ({
   setShowState,
@@ -99,6 +105,11 @@ const NitroSelfServeForms = ({
             ],
           })
             .then(() => {
+              updateUtmParams({
+                utm_campaign: utmCampaignMap.NITRO,
+                utm_source: utmSourceMap.PG,
+                utm_medium: utmMediumMap.DASHBOARD,
+              });
               tracking.trackEvent(
                 window.rzpQ
                   ?.merchantActions()

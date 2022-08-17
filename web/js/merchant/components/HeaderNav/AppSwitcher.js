@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import LazyLoad, { forceCheck } from 'react-lazyload';
 import RTracking from 'react-tracking';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'common/ui/Dropdown';
+import { utmCampaignMap, utmMediumMap, utmSourceMap } from 'merchant/helpers/x/updateUtmCookie';
 
 const closeButtonClass = 'close';
 
@@ -9,35 +10,35 @@ const appListBusinessBanking = [
   {
     icon: '/dist/css/assets/products/blue-theme/current-account.svg',
     name: 'Current Accounts',
-    link: 'https://razorpay.com/x/current-accounts/?ref=app-switcher',
+    link: 'https://razorpay.com/x/current-accounts/',
     desc: 'Business Banking built for disruptors.',
     showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/blue-theme/payout-link.svg',
     name: 'Payout Links',
-    link: 'https://razorpay.com/x/payout-links/?ref=app-switcher',
+    link: 'https://razorpay.com/x/payout-links/',
     desc: 'Easy and instant payouts',
     showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/blue-theme/vendor-payments.svg',
     name: 'Vendor Payments',
-    link: 'https://razorpay.com/x/vendor-payments/?ref=app-switcher',
+    link: 'https://razorpay.com/x/vendor-payments/',
     desc: 'Automated Tax payments.',
     showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/blue-theme/payouts.svg',
     name: 'Payouts',
-    link: 'https://razorpay.com/x/payouts/?ref=app-switcher',
+    link: 'https://razorpay.com/x/payouts/',
     desc: '24x7, Instant & Automated Payouts',
     showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/blue-theme/payroll.svg',
     name: 'Payroll',
-    link: 'https://razorpay.com/payroll/?ref=app-switcher',
+    link: 'https://razorpay.com/payroll/',
     desc: 'Automate and execute payroll',
     showForUnregisteredBusiness: true,
   },
@@ -48,14 +49,14 @@ const appListRiskAndFraud = [
   {
     icon: '/dist/css/assets/products/thirdwatch.svg',
     name: 'Thirdwatch',
-    link: 'https://razorpay.com/thirdwatch/?ref=app-switcher',
+    link: 'https://razorpay.com/thirdwatch/',
     desc: 'Fight fraud with Artificial Intelligence',
     showForUnregisteredBusiness: true,
   },
   {
     icon: '/dist/css/assets/products/prepay-cod.svg',
     name: 'Prepay COD',
-    link: 'https://razorpay.com/thirdwatch/prepay-cod/?ref=app-switcher',
+    link: 'https://razorpay.com/thirdwatch/prepay-cod/',
     desc: 'Convert risky CoD orders to prepaid.',
     showForUnregisteredBusiness: true,
     new: true,
@@ -66,14 +67,14 @@ const appListLending = [
   {
     icon: '/dist/css/assets/products/blue-theme/working-capital-loans.svg',
     name: 'Working Capital Loans',
-    link: 'https://razorpay.com/capital/working-capital-loans/?ref=app-switcher',
+    link: 'https://razorpay.com/capital/working-capital-loans/',
     desc: 'Avail collateral-free business loans',
     showForUnregisteredBusiness: false,
   },
   {
     icon: '/dist/css/assets/products/blue-theme/corporate-credit-cards.svg',
     name: 'Corporate Credit Cards',
-    link: 'https://razorpay.com/x/corporate-cards/?ref=app-switcher',
+    link: 'https://razorpay.com/x/corporate-cards/',
     desc: 'Instantly approved corporate credit card',
     showForUnregisteredBusiness: false,
   },
@@ -120,9 +121,15 @@ class AppSwitcher extends Component {
       return null;
     }
 
+    const appUrl = new URL(app.link);
+    appUrl.searchParams.append('ref', 'app-switcher');
+    appUrl.searchParams.append('utm_campaign', utmCampaignMap.APP_SWITCHER);
+    appUrl.searchParams.append('utm_source', utmSourceMap.PG);
+    appUrl.searchParams.append('utm_medium', utmMediumMap.DASHBOARD);
+
     return (
       <a
-        href={app.link}
+        href={appUrl.href}
         target="_blank"
         key={app.name}
         onClick={() => this.handleClick(app.name)}

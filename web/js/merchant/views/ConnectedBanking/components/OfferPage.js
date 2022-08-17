@@ -13,6 +13,12 @@ import Footer from './Footer';
 import OfferPageContent from './OfferPageContent';
 import { headerDivider } from '../data';
 import { sendDataToSalesForce } from '../../../../common/utils/common-api';
+import {
+  updateUtmParams,
+  utmCampaignMap,
+  utmMediumMap,
+  utmSourceMap,
+} from 'merchant/helpers/x/updateUtmCookie';
 
 const OfferPage = ({
   offerDetails,
@@ -38,6 +44,11 @@ const OfferPage = ({
   useEffect(() => {
     if (content?.ctaButton) {
       content.ctaButton.onCTAClick = () => {
+        updateUtmParams({
+          utm_campaign: utmCampaignMap.ACCOUNT_LINKING,
+          utm_source: utmSourceMap.PG,
+          utm_medium: utmMediumMap.DASHBOARD,
+        });
         setShowState('iframe');
         sendDataToSalesForce('connected-banking-icici', user);
         tracking?.trackEvent?.(

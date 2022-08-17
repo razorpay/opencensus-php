@@ -6,6 +6,12 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getKycAnalyticsProperties } from 'merchant/views/RazorpayXWidget/helpers';
+import {
+  updateUtmParams,
+  utmCampaignMap,
+  utmMediumMap,
+  utmSourceMap,
+} from 'merchant/helpers/x/updateUtmCookie';
 
 const featuresList = OFFER_DETAILS.ICICI.content.featuresList;
 
@@ -19,6 +25,12 @@ const OffersPage = ({ prev }) => {
   };
 
   const handleGetStartedButton = () => {
+    updateUtmParams({
+      utm_campaign: utmCampaignMap.BANKING_WIDGET,
+      utm_source: utmSourceMap.PG,
+      utm_medium: utmMediumMap.DASHBOARD,
+    });
+
     analyticsTrack({
       objectName: 'RazorpayX Get Started',
       actionName: 'Clicked',
