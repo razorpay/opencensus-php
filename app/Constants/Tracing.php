@@ -38,7 +38,8 @@ class Tracing
             'merchant',
             'signin',
             'admin',
-            'graph_request'
+            'user_salesforce_event',
+            'graph_request',
             ]
         );
 
