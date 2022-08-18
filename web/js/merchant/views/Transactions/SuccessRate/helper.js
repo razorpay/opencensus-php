@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { capitalize } from 'lodash';
+import cloneDeep from 'lodash/cloneDeep';
 import store from 'merchant/store';
 import {
   DATE_RANGE_PRESETS,
@@ -7,18 +8,34 @@ import {
   DEFAULT_PRESET,
   tabsOrder,
   chartStyle,
-  namedColors,
+  defaultPieChartStyle,
+  pieChartStyle,
 } from './constants';
 
 export const getInterval = (startDate, endDate) => {
-  let interval = DEFAULT_INTERVAL;
   const diff = endDate.diff(startDate, 'days');
-  if (diff > 3 && diff <= 30) {
-    interval = 1440; // 24 hours in minutes
-  } else if (diff > 30) {
-    interval = 1440 * 7; // 1week in minutes
+  if (diff <= 1) {
+    return DEFAULT_INTERVAL;
+  } else if (diff > 1 && diff <= 24) {
+    return 24 * 60; // 1 day ie., 24 hours * 60 minutes
+  } else if (diff > 24 && diff <= 60) {
+    return 7 * 24 * 60; // 1 week ie., 7 days * 24 hours * 60 minutes
   }
-  return interval;
+  return DEFAULT_INTERVAL;
+};
+
+export const setBreakdownInterval = (from, to) => {
+  const start_date = moment.unix(from);
+  const end_date = moment.unix(to);
+  const diff = end_date.diff(start_date, 'days');
+  if (diff <= 1) {
+    return 'hourly';
+  } else if (diff >= 2 && diff <= 24) {
+    return 'daily';
+  } else if (diff > 24) {
+    return 'weekly';
+  }
+  return 'hourly';
 };
 
 export const initialFilters = () => {
@@ -70,12 +87,12 @@ export const queryFilters = () => {
 export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown, tagIndex }) => {
   const dataset = {
     label: tabsOrder[tagIndex],
-    data: intervals?.map((obj) => ({ x: +moment.unix(obj.to).format('x'), y: obj.sr })),
+    data: intervals?.map((obj) => ({ x: +moment.unix(obj?.from).format('x'), y: obj.sr })),
     ...chartStyle[tagIndex],
   };
 
   const timestamps = intervals
-    .map((obj) => +moment.unix(obj?.to).format('x'))
+    .map((obj) => +moment.unix(obj?.from).format('x'))
     .sort((a, b) => {
       return Number(a) - Number(b);
     });
@@ -189,6 +206,28 @@ export const metricValues = (obj, options) => {
   return value;
 };
 
+export const getMetricsData = ({ metrics, data, payload, breakdown, group_by }) => {
+  const metricsClone = cloneDeep(metrics);
+  const groups = data.groups?.[group_by];
+
+  tabsOrder.forEach((tabName, tabIdx) => {
+    const groupIdx = groups.findIndex((group) => group.name === tabName.toLocaleLowerCase());
+
+    const args = {
+      intervals: (tabIdx > 0 ? groups[groupIdx]?.intervals : data?.intervals) ?? [],
+      startTime: payload.from,
+      endTime: payload.to,
+      breakdown,
+      tagIndex: tabIdx > 0 ? groupIdx : 0,
+    };
+
+    const vals = metricValues(tabIdx > 0 ? groups[groupIdx] : data, args);
+    metricsClone[tabName] = { ...metricsClone[tabName], ...vals };
+  });
+
+  return metricsClone;
+};
+
 export const getSuitableY = (y, yArray = [], direction) => {
   let result = y;
   yArray.forEach((existedY) => {
@@ -205,13 +244,15 @@ export const getSuitableY = (y, yArray = [], direction) => {
 };
 
 export const getPieChartData = (groupData) => {
-  const colors = Object.values(namedColors);
+  const { backgroundColor, borderColor } = defaultPieChartStyle;
   return groupData?.reduce(
-    (acc, data, index) => {
-      acc?.labels?.push(capitalize(data?.name) ?? '--');
+    (acc, data, idx) => {
+      const _backgroundColor = pieChartStyle?.[idx]?.backgroundColor ?? backgroundColor;
+      const _borderColor = pieChartStyle?.[idx]?.borderColor ?? borderColor;
+      acc?.labels?.push(capitalize(data?.name));
       acc?.datasets?.[0]?.data?.push(data?.sr);
-      acc?.datasets?.[0]?.backgroundColor?.push(colors[index]);
-      acc?.datasets?.[0]?.borderColor?.push(colors[index]);
+      acc?.datasets?.[0]?.backgroundColor?.push(_backgroundColor);
+      acc?.datasets?.[0]?.borderColor?.push(_borderColor);
       return acc;
     },
     {

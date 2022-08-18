@@ -3,12 +3,11 @@ import { Line } from 'react-chartjs-2';
 import { getChartAreaConfig } from '../chartConfig';
 
 const ChartArea = forwardRef((props, ref) => {
-  const { startDate, interval, histogram } = props;
+  const { interval, histogram } = props;
   const { datasets } = histogram;
 
   const chartOptions = getChartAreaConfig({
     breakdown: interval,
-    startDate,
     yLabel: 'Success Rate',
   });
 

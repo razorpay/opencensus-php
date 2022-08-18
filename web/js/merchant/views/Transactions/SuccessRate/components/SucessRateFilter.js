@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import DateRangePicker from 'common/ui/DateRangePicker';
+import moment from 'moment';
 import AsyncButton from 'react-async-button';
+import DateRangePicker from 'common/ui/DateRangePicker';
 import {
   updateDateRange,
   fetchSuccessRate,
@@ -14,21 +15,29 @@ import { DATE_RANGE_PRESETS, DEFAULT_PRESET } from '../constants';
 const SucessRateFilter = (props) => {
   const { endDate, fetchSuccessRate, fetchMerchantErrors, updateDateRange } = props;
 
-  const onDatesChange = (startDate, endDate, preset) => {
-    const interval = getInterval(startDate, endDate);
+  const isOutsideRange = useCallback((day) => {
+    const currentDay = moment();
+    const pastDay = currentDay.clone().subtract(90, 'days');
+    return day.isAfter(currentDay) || day.isBefore(pastDay);
+  }, []);
+
+  const onDatesChange = (from, to, preset) => {
+    const start_date = from.clone().startOf('hour');
+    const end_date = to.clone().endOf('hour');
+    const interval = getInterval(start_date, end_date);
     updateDateRange({
-      startDate,
-      endDate,
+      startDate: start_date,
+      endDate: end_date,
       interval,
       preset,
     });
   };
 
-  const onSearch = async () => {
+  const onSearch = () => {
     const payload = queryFilters();
-    await fetchSuccessRate(payload);
+    fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
-    await fetchMerchantErrors(errorsPaylod);
+    fetchMerchantErrors(errorsPaylod);
   };
 
   const onReset = async () => {
@@ -46,6 +55,7 @@ const SucessRateFilter = (props) => {
           presets={DATE_RANGE_PRESETS}
           endDate={endDate}
           onDatesChange={onDatesChange}
+          isOutsideRange={isOutsideRange}
           // onSelectPreset={trackPresetChange} TODO: Setup google analytics
         />
       </div>

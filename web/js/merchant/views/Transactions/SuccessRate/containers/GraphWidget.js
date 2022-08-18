@@ -13,7 +13,6 @@ import { queryFilters, getMerchantErrorsPayload } from '../helper';
 const GraphWidget = (props) => {
   const {
     isLoading,
-    tabLoading,
     activeTab,
     setActiveTab,
     metrics,
@@ -37,6 +36,7 @@ const GraphWidget = (props) => {
   );
 
   const handleTabChange = (tab) => {
+    if (tab.name === activeTab) return;
     setActiveTab(tab.name);
     const payload = queryFilters();
     fetchSuccessRate(payload);
@@ -70,7 +70,7 @@ const GraphWidget = (props) => {
         {tabPane.map((tab, idx) => {
           return (
             <TabPane key={`${tab.name}-${idx}`}>
-              <GraphPanel isLoading={isLoading || tabLoading} />
+              <GraphPanel />
             </TabPane>
           );
         })}
@@ -80,8 +80,8 @@ const GraphWidget = (props) => {
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { isLoading, tabLoading, activeTab, metrics } = successRate;
-  return { activeTab, isLoading, tabLoading, metrics };
+  const { isLoading, activeTab, metrics } = successRate;
+  return { isLoading, activeTab, metrics };
 };
 
 const mapDispatchToProps = (dispatch) => {

@@ -313,7 +313,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/success-rate"
             component={Transactions}
-            additionalCondition={(usr) => usr.findTag('success_rate')}
+            additionalCondition={(usr) => this.props.mode === 'live' && usr.findTag('success_rate')}
           />
 
           <Route

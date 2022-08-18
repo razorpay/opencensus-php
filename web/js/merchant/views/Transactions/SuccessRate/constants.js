@@ -1,6 +1,6 @@
+export const DEFAULT_PRESET = 0; // Last 6 Hours
+export const DEFAULT_INTERVAL = 60; // default 60 minutes
 export const DEFAULT_ACTIVE_TAB = 'Overall';
-export const DEFAULT_PRESET = 1;
-export const DEFAULT_INTERVAL = 1440;
 
 export const DATE_RANGE_PRESETS = [
   ['Last 6 Hours', -6, 'hours'],
@@ -8,6 +8,7 @@ export const DATE_RANGE_PRESETS = [
   ['Last 7 Days', -7, 'days'],
   ['Last 14 Days', -14, 'days'],
   ['Last 30 Days', -30, 'days'],
+  ['Last 60 Days', -60, 'days'],
   ['Last 90 Days', -90, 'days'],
 ];
 
@@ -52,7 +53,7 @@ export const tabMeta = {
   histogram: { labels: [], datasets: [] },
   tags: [],
   group_by: [],
-  selectedInterval: 'daily',
+  selectedInterval: 'hourly',
 };
 
 export const metricsCard = {
@@ -68,29 +69,47 @@ export const metricsCard = {
 export const graphIntervals = {
   hourly: {
     value: 'hourly',
-    isEnabled: false,
     title: 'Hourly',
     disabledText: 'Only available for minimum 6 hours till maximum 1 day (24 hours) duration',
+    isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 1,
   },
   daily: {
     value: 'daily',
-    isEnabled: true,
     title: 'Daily',
     disabledText: 'Only available minimum 2 days to maximum 24 days duration',
+    isEnabled: (startDate, endDate) => {
+      const diff = endDate.diff(startDate, 'days');
+      return diff > 1 && diff <= 14;
+    },
   },
   weekly: {
     value: 'weekly',
-    isEnabled: false,
     title: 'Weekly',
     disabledText: 'Available for minimum 14 days duration',
+    isEnabled: (startDate, endDate) => {
+      const diff = endDate.diff(startDate, 'days');
+      return diff >= 14;
+    },
   },
   monthly: {
     value: 'monthly',
-    isEnabled: false,
+    isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') >= 60,
     title: 'Monthly',
     disabledText: 'Available for minimum 60 days duration',
   },
 };
+
+export const breakdownInterval = {
+  hourly: 60, // 1hour ie., 60 mins
+  daily: 24 * 60, // 1 day ie., 24 hours * 60 minutes
+  weekly: 7 * 24 * 60, // 1 week ie., 7 days * 24 hours * 60 minutes
+  monthly: 4 * 7 * 24 * 60, // 1 month ie., 4 weeks * 7 days * 24 hours * 60 minutes
+};
+
+/**************************************** color variables ****************************************/
+
+export const gridLineColor = '#f0f3f7';
+export const chartFontColor = '#2d303380';
 
 export const namedColors = {
   'black.400': '#13264426',
@@ -104,6 +123,8 @@ export const namedColors = {
   'pink.400': '#ff00a826',
   'pink.500': '#FF00A8',
 };
+
+/**************************************** Graph methods ****************************************/
 
 export const defaultTagStyle = {
   borderColor: namedColors['black.500'],
@@ -135,6 +156,8 @@ export const tagStyles = [
   },
 ];
 
+/**************************************** Graph line chart ****************************************/
+
 export const defaultChartStyle = {
   fill: false,
   borderWidth: 2,
@@ -151,7 +174,7 @@ export const chartStyle = [
   {
     ...defaultChartStyle,
     borderColor: namedColors['black.500'],
-    borderDash: [10, 2],
+    borderDash: [10, 5],
   },
   {
     ...defaultChartStyle,
@@ -171,7 +194,31 @@ export const chartStyle = [
   },
 ];
 
-/*********************************************************************************************************/
+/**************************************** Volume pie chart ****************************************/
+
+export const defaultPieChartStyle = {
+  borderColor: namedColors['black.500'],
+  backgroundColor: namedColors['black.400'],
+};
+
+export const pieChartStyle = [
+  {
+    borderColor: namedColors['orange.500'],
+    backgroundColor: namedColors['orange.400'],
+  },
+  {
+    borderColor: namedColors['blue.500'],
+    backgroundColor: namedColors['blue.400'],
+  },
+  {
+    borderColor: namedColors['green.500'],
+    backgroundColor: namedColors['green.400'],
+  },
+  {
+    borderColor: namedColors['pink.500'],
+    backgroundColor: namedColors['pink.400'],
+  },
+];
 
 /**************************************** Failure Error Widget Variables ****************************************/
 

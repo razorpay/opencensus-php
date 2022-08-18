@@ -5,7 +5,8 @@ import { set, merge } from 'common/utils/immutable';
 import {
   initialFilters,
   onFetchSR,
-  metricValues,
+  getMetricsData,
+  setBreakdownInterval,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   DEFAULT_ACTIVE_TAB,
@@ -25,6 +26,7 @@ const UPDATE_TABS = 'UPDATE_TABS';
 const UPDATE_GRAPH_INTERVAL = 'UPDATE_GRAPH_INTERVAL';
 const SET_METRICS_DATA = 'SET_METRICS_DATA';
 const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
+const FETCH_INTERVALS = 'FETCH_INTERVALS';
 
 export const fetchSuccessRate = (payload) => async (dispatch) => {
   const { activeTab, metrics, tabs } = store?.getState()?.successRate;
@@ -55,24 +57,15 @@ export const fetchSuccessRate = (payload) => async (dispatch) => {
     const res = onFetchSR(options);
 
     if (activeTab === 'Overall' && data?.groups?.[group_by]) {
-      const groups = data.groups?.[group_by];
-
-      tabsOrder.forEach((tabName, tabIdx) => {
-        const groupIdx = groups.findIndex((group) => group.name === tabName.toLocaleLowerCase());
-
-        const args = {
-          intervals: (tabIdx > 0 ? groups[groupIdx]?.intervals : data?.intervals) ?? [],
-          startTime: payload.from,
-          endTime: payload.to,
-          breakdown: selectedInterval,
-          tagIndex: tabIdx > 0 ? groupIdx : 0,
-        };
-
-        const vals = metricValues(tabIdx > 0 ? groups[groupIdx] : data, args);
-        metrics[tabName] = { ...metrics[tabName], ...vals };
+      const metricsResult = getMetricsData({
+        metrics,
+        data,
+        payload,
+        breakdown: selectedInterval,
+        group_by,
       });
 
-      dispatch({ type: SET_METRICS_DATA, payload: metrics });
+      dispatch({ type: SET_METRICS_DATA, payload: metricsResult });
     }
 
     dispatch({
@@ -82,7 +75,7 @@ export const fetchSuccessRate = (payload) => async (dispatch) => {
         data,
         error: null,
         fetched: true,
-        tabLoading: false,
+        selectedInterval: setBreakdownInterval(payload.from, payload.to),
         ...res,
       },
     });
@@ -104,6 +97,52 @@ export const fetchMerchantErrors = (payload) => {
       data: payload,
     }),
   };
+};
+
+export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) => {
+  const { activeTab, tabs } = store?.getState()?.successRate;
+  const { group_by } = tabs[activeTab];
+
+  dispatch({ type: `${FETCH_INTERVALS}::PENDING` });
+
+  try {
+    const { data } = await merchantFetch({
+      url: 'success-rate/merchant/sr',
+      mode: 'live',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: payload,
+    });
+
+    if (data?.Code === 'SERVER_ERROR') throw new Error(data?.Description);
+
+    const options = {
+      data,
+      startTime: payload.from,
+      endTime: payload.to,
+      breakdown,
+      group_by,
+    };
+
+    const res = onFetchSR(options);
+
+    dispatch({
+      type: `${FETCH_INTERVALS}::SUCCESS`,
+      payload: {
+        ...tabs[activeTab],
+        data,
+        error: null,
+        fetched: true,
+        selectedInterval: breakdown,
+        ...res,
+      },
+    });
+  } catch (error) {
+    dispatch({
+      type: `${FETCH_INTERVALS}::ERROR`,
+      payload: { error: error?.errors?.[0] ?? error?.message },
+    });
+  }
 };
 
 export const updateDateRange = (payload) => {
@@ -145,6 +184,7 @@ const getInitialState = () => {
   const state = {
     isLoading: true,
     tabLoading: true,
+    graphLoading: false,
     isLoadingMerchantErrors: true,
     activeTab: DEFAULT_ACTIVE_TAB,
     filters: initialFilters(),
@@ -211,6 +251,27 @@ export default (state = getInitialState(), action) => {
       return merge(state, {
         isLoadingMerchantErrors: false,
         merchantErrors: {},
+      });
+
+    case `${FETCH_INTERVALS}::PENDING`:
+      return set(state, 'graphLoading', true);
+
+    case `${FETCH_INTERVALS}::SUCCESS`:
+      return merge(state, {
+        graphLoading: false,
+        tabs: {
+          ...state.tabs,
+          [state.activeTab]: payload,
+        },
+      });
+
+    case `${FETCH_INTERVALS}::ERROR`:
+      return merge(state, {
+        graphLoading: false,
+        tabs: {
+          ...state.tabs,
+          [state.activeTab]: { ...state.tabs[state.activeTab], ...payload },
+        },
       });
 
     case SET_METRICS_DATA:

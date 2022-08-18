@@ -335,7 +335,7 @@ class TransactionsContainer extends Component {
                 </span>
               </div>
             ) : null}
-            <ShowWhen additionalCondition={(usr) => usr.findTag('success_rate')}>
+            <ShowWhen additionalCondition={(usr) => mode === 'live' && usr.findTag('success_rate')}>
               <NavLink to="/success-rate">Success Rate</NavLink>
             </ShowWhen>
           </header>
@@ -360,7 +360,7 @@ class TransactionsContainer extends Component {
                 <ShowWhenRoute
                   path="/success-rate"
                   component={SuccessRate}
-                  additionalCondition={(usr) => usr.findTag('success_rate')}
+                  additionalCondition={(usr) => mode === 'live' && usr.findTag('success_rate')}
                 />
               </Switch>
             </ErrorBoundary>

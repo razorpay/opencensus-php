@@ -4,15 +4,14 @@ import GenericTooltip from 'common/ui/Tooltip';
 import { graphIntervals } from '../constants';
 
 const GraphIntervals = (props) => {
-  const { selected, onChange } = props;
+  const { selected, onChange, startDate, endDate } = props;
 
   return (
     <BtnGroup className="panel-action-item time-breakdown" value={selected} onChange={onChange}>
       {Object.values(graphIntervals).map((item, index) => {
-        const isEnabled = item.isEnabled;
+        const isEnabled = item.isEnabled(startDate, endDate);
         const btnProps = {
           value: item.value,
-          key: index,
           className: 'btn-default',
         };
 

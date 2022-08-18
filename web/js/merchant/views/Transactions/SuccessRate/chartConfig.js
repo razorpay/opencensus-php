@@ -1,4 +1,5 @@
-import { timeScale } from 'common/utils/chart/new';
+import moment from 'moment';
+import { chartFontColor, gridLineColor } from './constants';
 import { getSuitableY } from './helper';
 
 /**************************************** Overview Chart Config ****************************************/
@@ -22,6 +23,7 @@ export const overviewGraphOptions = {
   },
   legend: { display: false },
   tooltips: { enabled: false },
+  animation: false,
   scales: {
     xAxes: [
       {
@@ -39,19 +41,14 @@ export const overviewGraphOptions = {
       },
     ],
   },
-  animation: false,
 };
 
 /****************************************************************************************************/
 
 /**************************************** Line Chart Config ****************************************/
 
-export const getChartAreaConfig = ({ breakdown, startDate, yLabel }) => {
-  const generalConfig = timeScale({
-    breakdown,
-    startDate,
-    yLabel,
-  });
+export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
+  const now = moment();
 
   const chartOptions = {
     layout: {
@@ -62,24 +59,95 @@ export const getChartAreaConfig = ({ breakdown, startDate, yLabel }) => {
         bottom: 0,
       },
     },
-    ...generalConfig,
-    tooltips: { enabled: false },
+    tooltips: {
+      enabled: true,
+      callbacks: {
+        label: (tooltipItem, data) => {
+          return `${data?.datasets[tooltipItem?.datasetIndex]?.label}: ${tooltipItem?.yLabel}%`;
+        },
+      },
+    },
+    animation: false,
     scales: {
-      xAxes: [{ ...generalConfig.scales.xAxes[0] }],
+      xAxes: [
+        {
+          type: 'time',
+          distribution: 'series',
+          time: {
+            displayFormats: {
+              month: 'MMM YYYY',
+              day: 'MMM D',
+              week: 'MMM D',
+              hour: 'h a',
+              second: 'h a',
+              millisecond: 'h a',
+            },
+            tooltipFormat: 'DD MMM YYYY, hh:mm a',
+          },
+          gridLines: {
+            color: gridLineColor,
+            drawOnChartArea: true,
+          },
+          ticks: {
+            source: 'data',
+            autoSkip: true,
+            maxRotation: 0,
+            autoSkipPadding: 21,
+            fontColor: chartFontColor,
+            callback: (_, index, values) => {
+              // _ is value
+              let format = 'MMM D';
+              const currValue = moment(values[index].value);
+              if (breakdown === 'hourly') {
+                format = 'h a';
+              } else if (breakdown === 'monthly') {
+                format = 'MMM';
+              }
+
+              if (!currValue.isSame(now, 'year')) {
+                format += ' YYYY';
+              }
+
+              return currValue.format(format);
+            },
+          },
+        },
+      ],
       yAxes: [
         {
-          ...generalConfig.scales.yAxes[0],
           stacked: false,
+          offset: true,
+          gridLines: {
+            color: gridLineColor,
+            drawOnChartArea: true,
+          },
           ticks: {
+            beginAtZero: true,
+            suggestedMax: 10,
+            maxTicksLimit: 10,
             min: 0,
             max: 100,
             stepSize: 20,
+            fontColor: chartFontColor,
           },
         },
       ],
     },
-    animation: false,
   };
+
+  if (xLabel) {
+    chartOptions.scales.xAxes[0].scaleLabel = {
+      display: true,
+      labelString: xLabel,
+    };
+  }
+
+  if (yLabel) {
+    chartOptions.scales.yAxes[0].scaleLabel = {
+      display: true,
+      labelString: yLabel,
+    };
+  }
 
   return chartOptions;
 };
@@ -89,9 +157,7 @@ export const getChartAreaConfig = ({ breakdown, startDate, yLabel }) => {
 export const pieChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
-  legend: {
-    display: false,
-  },
+  legend: { display: false },
   layout: {
     padding: {
       top: 30,
@@ -100,7 +166,6 @@ export const pieChartOptions = {
       bottom: 30,
     },
   },
-  animation: false,
 };
 
 export const piePlugins = [

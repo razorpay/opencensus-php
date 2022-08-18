@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import moment from 'moment';
@@ -9,16 +9,25 @@ import TagGroup from './TagGroup';
 import GraphIntervals from './GraphIntervals';
 import ChartArea from './ChartArea';
 
-import { updateGraphInterval } from 'merchant/reducers/successRate';
-import { chartStyle, defaultLineStyle } from '../constants';
+import { updateGraphInterval, fetchBreakdownIntervals } from 'merchant/reducers/successRate';
+import { breakdownInterval, chartStyle, defaultLineStyle } from '../constants';
+import { queryFilters } from '../helper';
+
+const initTagList = ['Overall'];
 
 const GraphPanel = (props) => {
   const chartReference = React.useRef(null);
-  const [tagsList, setTagsList] = React.useState(['Overall']);
+  const [tagList, setTagList] = React.useState(initTagList);
   const { isLoading, activeTab, startDate, endDate, tab } = props;
   const { tags, selectedInterval, histogram, data, error, group_by } = tab;
   const { datasets } = histogram;
   const hasNoData = !histogram || datasets?.length === 0;
+
+  useEffect(() => {
+    return () => {
+      setTagList(initTagList);
+    };
+  }, [isLoading]);
 
   const updateDatasets = (tag, position) => {
     if (chartReference?.current) {
@@ -29,13 +38,13 @@ const GraphPanel = (props) => {
           ? data?.intervals
           : data?.groups[group_by].find((obj) => obj.name === tag)?.intervals;
 
-      if (position > -1 && tagsList.length > 1) {
+      if (position > -1 && tagList.length > 1) {
         chart.data.datasets.splice(position, 1);
       } else if (position < 0) {
         const newDataset = {
           label: tag,
           data: intervals.map((obj) => ({
-            x: +moment.unix(obj.to).format('x'),
+            x: +moment.unix(obj?.from).format('x'),
             y: obj.sr,
           })),
           ...(chartStyle[tagIndex] ?? defaultLineStyle),
@@ -47,7 +56,7 @@ const GraphPanel = (props) => {
   };
 
   const handleTags = (tag) => {
-    setTagsList((prevState) => {
+    setTagList((prevState) => {
       const tagsClone = [...prevState];
       const tagIndex = tagsClone.indexOf(tag);
       if (tagIndex > -1 && tagsClone.length > 1) tagsClone.splice(tagIndex, 1);
@@ -55,6 +64,14 @@ const GraphPanel = (props) => {
       updateDatasets(tag, tagIndex);
       return tagsClone;
     });
+  };
+
+  const handleBreakdown = (breakdown) => {
+    if (breakdown === selectedInterval) return;
+    const payload = queryFilters();
+    payload.interval = breakdownInterval[breakdown];
+    props.fetchBreakdownIntervals(breakdown, payload);
+    setTagList(initTagList);
   };
 
   return (
@@ -65,11 +82,11 @@ const GraphPanel = (props) => {
       error={error}
     >
       <PanelTopbar className="graph-panel__topbar">
-        <TagGroup isLoading={isLoading} tags={tags} selectedTags={tagsList} onSelect={handleTags} />
+        <TagGroup isLoading={isLoading} tags={tags} selectedTags={tagList} onSelect={handleTags} />
         <div className="panel-actions">
           <GraphIntervals
             selected={selectedInterval}
-            onChange={props.updateGraphInterval}
+            onChange={handleBreakdown}
             activeTab={activeTab}
             startDate={startDate}
             endDate={endDate}
@@ -87,12 +104,7 @@ const GraphPanel = (props) => {
               )}
               resetOnProps
             >
-              <ChartArea
-                ref={chartReference}
-                startDate={startDate}
-                interval={selectedInterval}
-                histogram={histogram}
-              />
+              <ChartArea ref={chartReference} interval={selectedInterval} histogram={histogram} />
             </ErrorBoundary>
           </div>
         </div>
@@ -102,8 +114,9 @@ const GraphPanel = (props) => {
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { activeTab, filters, tabs } = successRate;
+  const { isLoading, tabLoading, graphLoading, activeTab, filters, tabs } = successRate;
   return {
+    isLoading: isLoading || tabLoading || graphLoading,
     activeTab,
     startDate: filters?.startDate,
     endDate: filters?.endDate,
@@ -112,7 +125,7 @@ const mapStateToProps = ({ successRate }) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ updateGraphInterval }, dispatch);
+  return bindActionCreators({ updateGraphInterval, fetchBreakdownIntervals }, dispatch);
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GraphPanel);

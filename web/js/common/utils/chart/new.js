@@ -30,7 +30,7 @@ const gridLineColor = '#f0f3f7';
 export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
   const now = moment();
 
-  let scalesObj = {
+  const scalesObj = {
     scales: {
       xAxes: [
         {
@@ -58,10 +58,9 @@ export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
             maxRotation: 0,
             autoSkipPadding: 21,
             callback: (value, index, values) => {
-              let currValue = moment(values[index].value),
-                prevValue =
-                  values[index - 1] && moment(values[index - 1].value),
-                format = 'MMM D';
+              let currValue = moment(values[index].value);
+              const prevValue = values[index - 1] && moment(values[index - 1].value);
+              let format = 'MMM D';
 
               if (breakdown === 'monthly') {
                 format = 'MMM';
@@ -70,10 +69,6 @@ export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
                   currValue = startDate;
                 }
               } else if (breakdown === 'hourly') {
-                console.log(
-                  prevValue && prevValue.toDate(),
-                  currValue.toDate()
-                );
                 // make sure only days are displayed if
                 // the breakdown in hourly
                 if (prevValue && prevValue.isSame(currValue, 'day')) {
@@ -97,10 +92,9 @@ export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
             beginAtZero: true,
             suggestedMax: 10,
             maxTicksLimit: 10,
-            callback: value => {
-              // if spaces are not added, the labels get
-              // cut
-              return '    ' + humanReadableIndian(value);
+            callback: (value) => {
+              // if spaces are not added, the labels get cut
+              return `${humanReadableIndian(value)}`;
             },
             fontColor: 'rgba(45, 48, 51, 0.5)',
           },
@@ -130,7 +124,7 @@ export const timeScale = ({ xLabel, yLabel, breakdown, startDate }) => {
   return scalesObj;
 };
 
-export const getMillisecondsFromBreakdown = breakdown => {
+export const getMillisecondsFromBreakdown = (breakdown) => {
   switch (breakdown) {
     case 'daily':
       return 24 * 60 * 60 * 1000;
@@ -138,7 +132,7 @@ export const getMillisecondsFromBreakdown = breakdown => {
       return 7 * getMillisecondsFromBreakdown('daily');
     case 'monthly':
       return 4 * getMillisecondsFromBreakdown('weekly');
+    default:
+      return 0;
   }
-
-  return 0;
 };

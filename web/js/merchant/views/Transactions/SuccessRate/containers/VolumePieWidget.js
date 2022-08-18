@@ -43,54 +43,60 @@ const VolumePieWidget = (props) => {
 
   return (
     <div className="box-widget volume-container">
-      <div className="chart-col">
-        <StyledHeader text="Volume of attempts" />
-        {!isEmpty(compactData) ? (
-          <div className="pie-chart">
-            <Pie data={pieChartData} options={options} plugins={plugins} />
-          </div>
-        ) : (
-          <NoDataMessage title="No data available." />
-        )}
-      </div>
-      <div className="info-col">
-        {!isLoading && data?.sr ? (
-          <div className="info-card">
-            {isLoading ? (
-              <PlaceholderLoader style={{ marginBottom: '10px' }} />
-            ) : (
-              <StyledHeader text="Overall" />
-            )}
-            {isLoading ? (
-              <PlaceholderLoader />
-            ) : (
-              <div className="info-card__label">
-                <p className="label-text">Successful / Total Attempts</p>
-              </div>
-            )}
-            {isLoading ? (
-              <PlaceholderLoader />
-            ) : (
-              <div className="info-card__value">
-                <p>
-                  <span className="highlight">{data?.successful}</span>/{data?.total} ({data?.sr}
-                  %)
-                </p>
+      <div className="row">
+        <div className="col-sm-12 col-md-4">
+          <div className="chart-col">
+            <StyledHeader text="Volume of attempts" />
+            {!isEmpty(compactData) && (
+              <div className="pie-chart">
+                <Pie data={pieChartData} options={options} plugins={plugins} />
               </div>
             )}
           </div>
-        ) : undefined}
-        {!isEmpty(groupData) && groupData?.map(renderInfoCard)}
+        </div>
+        <div className="col-sm-12 col-md-8">
+          <div className="info-col">
+            {!isLoading && data?.sr ? (
+              <div className="info-card">
+                {isLoading ? (
+                  <PlaceholderLoader style={{ marginBottom: '10px' }} />
+                ) : (
+                  <StyledHeader text="Overall" />
+                )}
+                {isLoading ? (
+                  <PlaceholderLoader />
+                ) : (
+                  <div className="info-card__label">
+                    <p className="label-text">Successful / Total Attempts</p>
+                  </div>
+                )}
+                {isLoading ? (
+                  <PlaceholderLoader />
+                ) : (
+                  <div className="info-card__value">
+                    <p>
+                      <span className="highlight">{data?.successful}</span>/{data?.total} (
+                      {data?.sr}
+                      %)
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : undefined}
+            {!isEmpty(groupData) && groupData?.map(renderInfoCard)}
+          </div>
+        </div>
       </div>
+      {isEmpty(compactData) && <NoDataMessage title="No data available." />}
     </div>
   );
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { tabLoading, activeTab, tabs } = successRate;
+  const { isLoading, tabLoading, activeTab, tabs } = successRate;
   return {
     activeTab,
-    isLoading: tabLoading,
+    isLoading: isLoading || tabLoading,
     tab: tabs[activeTab],
   };
 };
