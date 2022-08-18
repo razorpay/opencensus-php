@@ -1490,6 +1490,82 @@ return [
         ],
     ],
 
+    'testPayoutsServiceCreateFailureProcessingCron' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/cron/create_failure_processing',
+            'content' => [
+                'count'  => 1,
+                'days'   => 2,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPayoutsServiceCreateFailureProcessingCronAndCountMissing' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/cron/create_failure_processing',
+            'content' => [
+                'days'   => 2,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The count field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPayoutsServiceCreateFailureProcessingCronAndDaysMissing' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/cron/create_failure_processing',
+            'content' => [
+                'count'  => 1,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The days field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPayoutsServiceUpdateFailureProcessingCron' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/cron/update_failure_processing',
+            'content' => [
+                'count'  => 1,
+                'days'   => 2,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDccPayoutsDetailsFetchPayoutCountValidationFailure' => [
         'request'  => [
             'method' => 'POST',

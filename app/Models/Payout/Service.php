@@ -123,6 +123,16 @@ class Service extends Base\Service
     protected $payoutServiceOnHoldCronClient;
 
     /**
+     * @var PayoutService\PayoutsCreateFailureProcessingCron
+     */
+    protected $payoutServiceCreateFailureProcessingCronClient;
+
+    /**
+     * @var PayoutService\PayoutsUpdateFailureProcessingCron
+     */
+    protected $payoutServiceUpdateFailureProcessingCronClient;
+
+    /**
      * @var PayoutService\OnHoldSLAUpdate
      */
     protected $payoutServiceOnHoldSLAUpdateClient;
@@ -146,6 +156,10 @@ class Service extends Base\Service
         $this->slackAppService = new SlackAppService($this->app);
 
         $this->payoutServiceOnHoldCronClient = $this->app[PayoutService\OnHoldCron::PAYOUT_SERVICE_ON_HOLD_CRON];
+
+        $this->payoutServiceCreateFailureProcessingCronClient = $this->app[PayoutService\PayoutsCreateFailureProcessingCron::PAYOUTS_CREATE_FAILURE_PROCESSING_CRON];
+
+        $this->payoutServiceUpdateFailureProcessingCronClient = $this->app[PayoutService\PayoutsUpdateFailureProcessingCron::PAYOUTS_UPDATE_FAILURE_PROCESSING_CRON];
 
         $this->payoutServiceOnHoldSLAUpdateClient = $this->app[PayoutService\OnHoldSLAUpdate::PAYOUT_SERVICE_ON_HOLD_SLA_UPDATE];
 
@@ -2490,6 +2504,72 @@ class Service extends Base\Service
             );
         }
         return $response;
+    }
+
+    public function payoutsServiceCreateFailureProcessingCron($input)
+    {
+        $this->trace->info
+        (
+            TraceCode::PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
+        (new Validator)->validateInput(Validator::PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON, $input);
+
+        try
+        {
+            $this->payoutServiceCreateFailureProcessingCronClient->triggerCreateFailureProcessingViaMicroservice($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+        return [
+            'success' => true,
+        ];
+    }
+
+    public function payoutsServiceUpdateFailureProcessingCron($input)
+    {
+        $this->trace->info
+        (
+            TraceCode::PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON_REQUEST,
+            [
+                'input' => $input,
+            ]
+        );
+
+        (new Validator)->validateInput(Validator::PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON, $input);
+
+        try
+        {
+            $this->payoutServiceUpdateFailureProcessingCronClient->triggerUpdateFailureProcessingViaMicroservice($input);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON_FAILED,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+
+            throw $exception;
+        }
+
+        return [
+            'success' => true,
+        ];
     }
 
     public function processSchedulePayoutOnPayoutService($input)

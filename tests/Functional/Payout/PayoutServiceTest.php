@@ -35,6 +35,8 @@ use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
+use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
+use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
@@ -2996,6 +2998,46 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
+    public function payoutsServiceCreateFailureProcessingCronResponseMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 500;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
+    public function payoutsServiceUpdateFailureProcessingCronResponseMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 500;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body        = json_encode([]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
     public function testInitiatePayoutsConsistencyCheck()
     {
         $this->ba->cronAuth();
@@ -3010,6 +3052,56 @@ class PayoutServiceTest extends TestCase
         $this->ba->cronAuth();
 
         $this->mockPayoutServiceDataConsistencyCheckerCronCreate(true);
+
+        $this->startTest();
+    }
+
+    public function testPayoutsServiceCreateFailureProcessingCron()
+    {
+        $this->ba->cronAuth();
+
+        $payoutServiceCreateFailureProcessingCronClient = Mockery::mock(
+            'RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron', [$this->app])->makePartial();
+
+        $payoutServiceCreateFailureProcessingCronClient->shouldReceive('sendRequest')
+            ->andReturn(
+                $this->payoutsServiceCreateFailureProcessingCronResponseMock(false)
+            );
+
+        $this->app->instance(PayoutsCreateFailureProcessingCron::PAYOUTS_CREATE_FAILURE_PROCESSING_CRON,
+            $payoutServiceCreateFailureProcessingCronClient);
+
+        $this->startTest();
+    }
+
+    public function testPayoutsServiceCreateFailureProcessingCronAndCountMissing()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutsServiceCreateFailureProcessingCronAndDaysMissing()
+    {
+        $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutsServiceUpdateFailureProcessingCron()
+    {
+        $this->ba->cronAuth();
+
+        $payoutServiceUpdateFailureProcessingCronClient = Mockery::mock(
+            'RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron', [$this->app])->makePartial();
+
+        $payoutServiceUpdateFailureProcessingCronClient->shouldReceive('sendRequest')
+            ->andReturn(
+                $this->payoutsServiceUpdateFailureProcessingCronResponseMock(false)
+            );
+
+        $this->app->instance(PayoutsUpdateFailureProcessingCron::PAYOUTS_UPDATE_FAILURE_PROCESSING_CRON,
+            $payoutServiceUpdateFailureProcessingCronClient);
 
         $this->startTest();
     }

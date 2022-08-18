@@ -101,6 +101,9 @@ class Validator extends Base\Validator
     const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
     const PAYOUT_SERVICE_FETCH_PRICING_INFO         = 'payout_service_fetch_pricing_info';
 
+    const PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON    = 'payouts_service_create_failure_processing_cron';
+    const PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON    = 'payouts_service_update_failure_processing_cron';
+
     const AMOUNT_REGEX = '/[^0-9]/';
 
     const TDS_CATEGORY_ID_CACHE_KEY = 'tds_category_id_list';
@@ -352,6 +355,16 @@ class Validator extends Base\Validator
     protected static $bulkRetryWorkflowRules = [
         Entity::PAYOUT_IDS          => 'required|array',
         Entity::PAYOUT_IDS . '.*'   => 'required|public_id|size:19',
+    ];
+
+    protected static $payoutsServiceCreateFailureProcessingCronRules = [
+        Entity::COUNT          => 'required|int',
+        Entity::DAYS           => 'required|int',
+    ];
+
+    protected static $payoutsServiceUpdateFailureProcessingCronRules = [
+        Entity::COUNT          => 'required|int',
+        Entity::DAYS           => 'required|int',
     ];
 
     protected static $bulkRejectRules = [

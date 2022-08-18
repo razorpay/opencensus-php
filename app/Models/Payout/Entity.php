@@ -279,6 +279,9 @@ class Entity extends Base\PublicEntity
     const NEXT_MONTH    = 'next_month';
     const ALL_TIME      = 'all_time';
 
+    const COUNT = 'count';
+    const DAYS  = 'days';
+
     const SCHEDULED_PAYOUTS_SUMMARY = [
         self::TODAY,
         self::NEXT_TWO_DAYS,
