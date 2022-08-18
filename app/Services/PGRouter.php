@@ -737,7 +737,7 @@ class PGRouter
 
                 continue;
             }
-            if ($res !== null and $res->status_code === 502)
+            if ($res !== null and $res->status_code > 500)
             {
                 continue;
             }
