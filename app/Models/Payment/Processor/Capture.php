@@ -331,7 +331,7 @@ trait Capture
                             [
                                 'payment_id'        => $this->payment->getId(),
                             ]);
-
+                        $this->publishMessageToMetro($this->payment);
                         $this->createLedgerEntriesForGatewayCapture($this->payment);
                     }
 
@@ -657,6 +657,7 @@ trait Capture
                             'payment_id'        => $this->payment->getId(),
                         ]);
 
+                    $this->publishMessageToMetro($this->payment);
                     $this->createLedgerEntriesForGatewayCapture($this->payment);
                 }
             }
