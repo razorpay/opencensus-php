@@ -124,7 +124,7 @@ class UserRoleBasedResponseFilter
         {
             return false;
         }
-        if (empty($userRole) === true or array_key_exists($userRole, self::ROUTE_FILTER_ROLES_MAPPING[$routeName]) === false)
+        if (empty($userRole) === true or in_array($userRole, self::ROUTE_FILTER_ROLES_MAPPING[$routeName]) === false)
         {
             return false;
         }
