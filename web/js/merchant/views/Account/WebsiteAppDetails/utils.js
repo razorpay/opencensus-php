@@ -133,3 +133,13 @@ export function shouldShowWebsiteComplianceModal(
     (totalViewCount > 0 || visibilityData.data.website_incomplete_soft_nudge_count === null)
   );
 }
+
+export function isUrlFieldEmpty(activationData) {
+  if (!activationData) return false;
+
+  const businessWebsiteUrl = activationData.business_website;
+  const appStoreUrl = activationData.appstore_url;
+  const playStoreUrl = activationData.playstore_url;
+
+  return !businessWebsiteUrl && !appStoreUrl && !playStoreUrl;
+}

@@ -28,17 +28,16 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
   useEffect(() => {
     // send analytics on banner load
     if (shouldShowBanner && user.isWebsiteComplianceFlowEnabled) {
-      const analyticsObj = {
+      analyticsTrack({
         objectName: 'Website wizard banner',
         actionName: 'Loaded',
         screen,
         properties: {
+          pageTitle: screen,
+          websiteCompliance: true,
           bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
-      };
-      analyticsTrack({
-        analyticsObj,
       });
     }
   }, []);
@@ -58,17 +57,16 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
         <div className="cta">
           <Link
             onClick={() => {
-              const analyticsObj = {
+              analyticsTrack({
                 objectName: 'Website wizard banner',
                 actionName: 'Interacted',
-                screen: 'Home page',
+                screen,
                 properties: {
+                  pageTitle: screen,
+                  websiteCompliance: true,
                   bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
                   ...getCommonAnalyticsProperties(window.rzp_user),
                 },
-              };
-              analyticsTrack({
-                analyticsObj,
               });
             }}
             to="/website-app-details?from=banner"

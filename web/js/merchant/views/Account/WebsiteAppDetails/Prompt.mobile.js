@@ -6,42 +6,44 @@ import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { updateBannerAndModalVisibility } from 'merchant/reducers/websitecompliance';
+import { withRouter } from 'react-router-dom';
 
 function PromptMobile({
   websiteComplianceModalVisibility,
   updateBannerAndModalVisibility,
   closeModal,
   user,
+  history,
+  screen,
 }) {
   const onUpdateClick = () => {
-    const analyticsObj = {
+    analyticsTrack({
       objectName: 'Website wizard modal',
       actionName: 'Interacted',
-      screen: 'Home page',
+      screen,
       properties: {
+        pageTitle: screen,
+        websiteCompliance: true,
         bannerTitle: 'Update details about your website/app',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
-    };
-    analyticsTrack({
-      analyticsObj,
     });
-    window.open('website-app-details?from=modal', '_self');
+    closeModal();
+    history.push('/website-app-details?from=modal');
   };
 
   useEffect(() => {
     // send analytics on modal load
-    const analyticsObj = {
+    analyticsTrack({
       objectName: 'Website wizard modal',
       actionName: 'Loaded',
-      screen: 'Home page',
+      screen,
       properties: {
+        pageTitle: screen,
+        websiteCompliance: true,
         bannerTitle: 'Update details about your website/app',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
-    };
-    analyticsTrack({
-      analyticsObj,
     });
   }, []);
 
@@ -75,12 +77,12 @@ function PromptMobile({
             return <li key={`${page}_${idx}`}>{page}</li>;
           })}
         </ul>
-        <div className="prompt-footer">Don’t have these details? We’ll help you create them.</div>
+        <div className="prompt-footer">Don’t have these details? We’ll help you create them</div>
         <div className="actions">
           <button className="btn btn-primary" onClick={onUpdateClick}>
             Update or create page
           </button>
-          {user.isWebsiteComplianceModalDismissible ? (
+          {!user.isWebsiteComplianceModalNonDismissible ? (
             <span className="btn btn-link" onClick={onCloseClick}>
               I'll do it later
             </span>
@@ -107,4 +109,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(PromptMobile);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PromptMobile));

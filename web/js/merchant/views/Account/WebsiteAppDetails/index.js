@@ -8,6 +8,7 @@ import {
   formatStatus,
   getStatusClass,
   getLatestNeedsClarificationComment,
+  isUrlFieldEmpty,
 } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import ViewComments from 'merchant/views/Account/WebsiteAppDetails/ViewComments';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -17,6 +18,8 @@ import {
   fetchMerchantWebsiteDetails,
 } from 'merchant/reducers/websitecompliance';
 import LoaderDots from 'common/ui/LoaderDots';
+import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
+import isEmpty from '@universe/utils/isEmpty';
 
 function WebsiteAppDetails({
   activationData,
@@ -29,28 +32,35 @@ function WebsiteAppDetails({
   const params = new Proxy(new URLSearchParams(window.location.search), {
     get: (searchParams, prop) => searchParams.get(prop),
   });
-  const from = params.from; // modal, banner email, sms, whatsapp
+  const from = params.from; // modal, banner, email, sms, whatsapp, nc & merchant dashboard
 
   useEffect(() => {
     // send analytics on wizard entry load
-    if (Object.keys(activationData.data).length) {
-      const analyticsObj = {
+    if (
+      Object.keys(activationData.data).length &&
+      Object.keys(websiteSectionDetailsData.data).length
+    ) {
+      const { data } = websiteSectionDetailsData;
+      let status;
+      if (Array.isArray(data)) status = 'details required';
+
+      if (typeof data === 'object' && !Array.isArray(data)) status = formatStatus(data.status);
+
+      analyticsTrack({
         objectName: 'Website wizard visit',
         actionName: 'Loaded',
         screen: 'Website/App details',
         properties: {
+          websiteCompliance: true,
+          pageTitle: 'Website/App details',
           previousPageUrl: document.referrer,
+          websiteComplianceStatus: status,
+          from: from ? from : 'Merchant dashboard',
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
-      };
-      if (from) {
-        analyticsObj.properties.source = from;
-      }
-      analyticsTrack({
-        analyticsObj,
       });
     }
-  }, [activationData, from]);
+  }, [activationData, websiteSectionDetailsData, from]);
 
   // fetch details if not present already
   useEffect(() => {
@@ -76,7 +86,7 @@ function WebsiteAppDetails({
     }
   }, [websiteSectionDetailsData, showNotification]);
 
-  if (!activationData.data && !activationData.error)
+  if (activationData.loading && !activationData.error)
     return (
       <div className="website-app-details-container">
         <Loader />
@@ -118,26 +128,23 @@ function WebsiteAppDetails({
   const ctaText = getCTAText();
 
   const onButtonClick = () => {
-    const analyticsObj = {
+    analyticsTrack({
       objectName: 'Website wizard visit',
       actionName: 'Clicked',
       screen: 'Website/App details',
       properties: {
+        websiteCompliance: true,
+        pageTitle: 'Website/App details',
         CTAName: ctaText,
         previousPageUrl: document.referrer,
         websiteUrl: businessWebsiteUrl,
         appStoreUrl,
         playStoreUrl,
+        from: from ? from : 'Merchant dashboard',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
-    };
-    if (from) {
-      analyticsObj.properties.source = from;
-    }
-    analyticsTrack({
-      analyticsObj,
     });
-    window.open('https://easy.razorpay.com/website-compliance', '_blank').focus();
+    window.open(`${window.EASY_ONBOARDING_URL}/website-compliance`, '_self');
   };
 
   const renderStatus = () => {
@@ -168,7 +175,7 @@ function WebsiteAppDetails({
     activationData.data.kyc_clarification_reasons,
   );
 
-  const showShouldNeedsClatificationComments = () => {
+  const showShouldNeedsClarificationComments = () => {
     if (activationData.data.kyc_clarification_reasons) {
       if (latestNeedsClarificationComments.length > 0) return true;
       else return false;
@@ -183,16 +190,37 @@ function WebsiteAppDetails({
       component: <ViewComments comments={latestNeedsClarificationComments} />,
     });
 
+  const { data } = websiteSectionDetailsData;
+  const formattedStatus = formatStatus(data.status);
+  const title = websiteComplianceEntryPointsData[formattedStatus].title;
+
+  if (isUrlFieldEmpty(activationData.data) && !activationData.loading) {
+    return (
+      <div className="website-app-details-container">
+        <div className="section-content">
+          <div className="section-header">
+            <p>Collect payments on your website or app</p>
+          </div>
+          <div className="section-body">
+            <span>
+              Update your business now as per RBI guidelines to avoid settlements being put on hold
+            </span>
+          </div>
+          <div className="section-footer">
+            <button onClick={onButtonClick}>Add website or app</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="website-app-details-container">
       <div className="section-content">
         <div className="section-header">
           {websiteSectionDetailsData.loading ? <LoaderDots /> : renderStatus()}
-          <p className="text">
-            Update your business information now as per RBI guidelines to avoid settlements being
-            put on-hold.
-          </p>
-          {showShouldNeedsClatificationComments() ? (
+          <p className="text">{data && !isEmpty(data) ? title : <LoaderDots />}</p>
+          {showShouldNeedsClarificationComments() ? (
             <div className="comment">
               {latestNeedsClarificationComments[0].reason_code}{' '}
               <p onClick={onViewClick} style={{ cursor: 'pointer' }}>
@@ -217,7 +245,7 @@ function WebsiteAppDetails({
         </div>
         <div className="section-footer">
           {ctaText ? (
-            <button onClick={onButtonClick}>
+            <button onClick={onButtonClick} disabled={websiteSectionDetailsData.loading}>
               {websiteSectionDetailsData.loading ? <LoaderDots /> : ctaText}
             </button>
           ) : null}

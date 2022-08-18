@@ -7,42 +7,43 @@ import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { updateBannerAndModalVisibility } from 'merchant/reducers/websitecompliance';
+import { withRouter } from 'react-router-dom';
 
 function PromptDesktop({
   websiteComplianceModalVisibility,
   updateBannerAndModalVisibility,
   closeModal,
   user,
+  history,
 }) {
   const onUpdateClick = () => {
-    const analyticsObj = {
+    analyticsTrack({
       objectName: 'Website wizard modal',
       actionName: 'Interacted',
       screen: 'Home page',
       properties: {
+        pageTitle: 'Home page',
+        websiteCompliance: true,
         bannerTitle: 'Update details about your website/app',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
-    };
-    analyticsTrack({
-      analyticsObj,
     });
-    window.open('website-app-details?from=modal', '_self');
+    closeModal();
+    history.push('/website-app-details?from=modal');
   };
 
   useEffect(() => {
     // send analytics on modal load
-    const analyticsObj = {
+    analyticsTrack({
       objectName: 'Website wizard modal',
       actionName: 'Loaded',
       screen: 'Home page',
       properties: {
+        pageTitle: 'Home page',
+        websiteCompliance: true,
         bannerTitle: 'Update details about your website/app',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
-    };
-    analyticsTrack({
-      analyticsObj,
     });
   }, []);
 
@@ -67,7 +68,7 @@ function PromptDesktop({
     <div className="website-app-details-container">
       <div className="prompt-container">
         <ModalHeader title={title} />
-        {user.isWebsiteComplianceModalDismissible ? (
+        {!user.isWebsiteComplianceModalNonDismissible ? (
           <span className="prompt-modal-close">
             <i class="i i-close" onClick={onCloseClick} />
           </span>
@@ -80,7 +81,7 @@ function PromptDesktop({
             return <li key={`${page}_${idx}`}>{page}</li>;
           })}
         </ul>
-        <div className="prompt-footer">Don’t have these details? We’ll help you create them.</div>
+        <div className="prompt-footer">Don’t have these details? We’ll help you create them</div>
         <div className="actions">
           <button className="btn btn-primary" onClick={onUpdateClick}>
             Update or create page
@@ -107,4 +108,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(PromptDesktop);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(PromptDesktop));

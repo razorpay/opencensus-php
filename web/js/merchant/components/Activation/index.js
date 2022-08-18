@@ -1,5 +1,6 @@
 /* eslint-disable */
 
+import { createRef } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import Form from 'common/new-ui/Form';
 import debounce from 'common/utils/debounce';
@@ -103,6 +104,9 @@ import { GTAG_KEYS, invokeGtag } from 'merchant/components/OnBoarding/utils';
 import { trackEvents as trackEventsAction } from 'merchant/reducers/trackEvents';
 import { capitalize } from 'common/utils/rzp-utils';
 
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+
 /*
  *             Main-form        LA-form
  * Submited      E F ~S        ~E ~F ~S
@@ -126,11 +130,13 @@ let FORM_TABS, // Maintains naming of the tabs
   FORM_TABS_NAMES; // All fields names in the FORM_TABS_CONTENT
 
 const SAVE_BUTTON_DISABLED_STEPS = [BUSINESS_DETAILS_STEP];
+const WEBSITE_COMPLIANCE_URLS = ['appstore_url', 'playstore_url', 'business_website'];
 
 @withRouter
 @connect(
   (state) => ({
     session: state.session,
+    websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   }),
   {
     showNotification,
@@ -195,6 +201,8 @@ export default class ActivationWizard extends React.Component {
 
   constructor(props) {
     super(props);
+    this.lastFieldNameUnderNCWebsiteCompliance = createRef();
+
     this.prepareTabs(props);
     this.setInitialTab();
 
@@ -296,7 +304,16 @@ export default class ActivationWizard extends React.Component {
             props.clarificationReasons,
             props.user.isActivationFormFullView,
           ) || [];
-
+        // get last visible field between appstore, playstore & website url
+        this.websiteComplianceNCFlowReasons = {};
+        if (ndcFields && Array.isArray(ndcFields)) {
+          ndcFields.forEach((field) => {
+            if (WEBSITE_COMPLIANCE_URLS.includes(field.name)) {
+              this.lastFieldNameUnderNCWebsiteCompliance.current = field.name;
+              this.websiteComplianceNCFlowReasons[field.name] = field.reasons[0];
+            }
+          });
+        }
         FORM_TABS_CONTENT.push(ndcFields);
         FORM_TABS_NAMES.push(ndcFields.map((f) => f?.name).filter((f) => Boolean(f)));
         NEEDS_CLARIFICATION_STEP = 5;
@@ -350,9 +367,8 @@ export default class ActivationWizard extends React.Component {
         const defaultAdditionalDoc = getDefaultAdditionalDoc(this);
         this.state.additional_doc = defaultAdditionalDoc || '';
         const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 15;
-        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-          ADDITIONAL_DOC_SELECT_FIELD_INDEX
-        ].options = getAdditionalDocOptions(this);
+        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX].options =
+          getAdditionalDocOptions(this);
       }
 
       if (doesHaveBusinessProofDocs(this)) {
@@ -445,6 +461,46 @@ export default class ActivationWizard extends React.Component {
     this.setState({
       commentlist: comments,
     });
+  };
+
+  onCommentBlur = (e, key) => {
+    const { user, websiteSectionDetailsData } = this.props;
+
+    if (
+      WEBSITE_COMPLIANCE_URLS.includes(key) &&
+      user.isWebsiteComplianceFlowEnabled &&
+      websiteSectionDetailsData.data.isWebsiteSectionsApplicable
+    ) {
+      const actionRequiredComment = this.websiteComplianceNCFlowReasons[key];
+      analyticsTrack({
+        objectName: 'NC merchant add comments',
+        actionName: 'Clicked',
+        screen: 'Activation page',
+        properties: {
+          pageTitle: 'Activation page',
+          websiteCompliance: true,
+          previousPageTitle: document.referrer,
+          merchantComment: e.target.value,
+          actionRequiredComment,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+  };
+
+  onEditWebsiteAppDetailsClick = () => {
+    analyticsTrack({
+      objectName: 'NC edit details',
+      actionName: 'Clicked',
+      screen: 'Activation page',
+      properties: {
+        pageTitle: 'Activation page',
+        websiteCompliance: true,
+        previousPageTitle: document.referrer,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    this.props.history.push('/website-app-details?from=nc');
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -1475,6 +1531,29 @@ export default class ActivationWizard extends React.Component {
   submitClarifications = async () => {
     const needsClarificationFields = FORM_TABS_CONTENT[this.state.activeTab];
 
+    let isWebsiteCompliance = false;
+    needsClarificationFields.forEach((item) => {
+      if (WEBSITE_COMPLIANCE_URLS.includes(item.name)) isWebsiteCompliance = true;
+    });
+    const { user, websiteSectionDetailsData } = this.props;
+    if (
+      isWebsiteCompliance &&
+      user.isWebsiteComplianceFlowEnabled &&
+      websiteSectionDetailsData.data.isWebsiteSectionsApplicable
+    ) {
+      analyticsTrack({
+        objectName: 'NC submit clarification',
+        actionName: 'Clicked',
+        screen: 'Activation page',
+        properties: {
+          pageTitle: 'Activation page',
+          websiteCompliance: true,
+          previousPageTitle: document.referrer,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+    }
+
     const hasFilledDetails = this.hasFilledClarificationDetails;
     const reqData = {
       submit: '1',
@@ -1848,9 +1927,8 @@ export default class ActivationWizard extends React.Component {
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX]
         ) {
-          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-            ADDITIONAL_DOC_SELECT_FIELD_INDEX
-          ].options = additionalDocOptions;
+          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX].options =
+            additionalDocOptions;
         }
 
         sideEffectFieldsToUpdate.additional_doc = additionalDoc;
@@ -3025,8 +3103,8 @@ export function ActivationField(field) {
     defaultValue = this.props.data[rest.name];
   }
 
-  const partnerActivationStatus = this.props?.partnerActivationData?.partner_activation
-    ?.activation_status;
+  const partnerActivationStatus =
+    this.props?.partnerActivationData?.partner_activation?.activation_status;
   if (
     !this.isOnKYCTab() && // don't check for NC tab, as we need to keep fields unlocked for NC tab
     this.props?.user?.isIndependentPartnerKYCEnabled &&
@@ -3049,6 +3127,7 @@ export function ActivationField(field) {
   }
 
   const _Component = rest.customField ? CustomField : Component;
+  const { user, websiteSectionDetailsData } = this.props;
 
   return (
     <>
@@ -3074,6 +3153,7 @@ export function ActivationField(field) {
                     placeholder="Enter your comment"
                     onChange={(e) => this.handleComment(e, key)}
                     maxlength="200"
+                    onBlur={(e) => this.onCommentBlur(e, key)}
                   />
                   <button class="delete-button" onClick={(e) => this.handleComment(e, key, true)}>
                     <i className="i i-delete" />
@@ -3100,6 +3180,18 @@ export function ActivationField(field) {
         }
         {...rest}
       />
+      {key === this.lastFieldNameUnderNCWebsiteCompliance.current &&
+        this.isOnKYCTab() &&
+        activation_status === 'needs_clarification' &&
+        user.isWebsiteComplianceFlowEnabled &&
+        websiteSectionDetailsData.data.isWebsiteSectionsApplicable && (
+          <div className="website-compliance--nc-flow-cta">
+            <p>Website / app info</p>
+            <button className="btn btn-primary" onClick={this.onEditWebsiteAppDetailsClick}>
+              Edit Details
+            </button>
+          </div>
+        )}
     </>
   );
 }
@@ -3174,12 +3266,8 @@ function handleInstantActivationSuccess(props) {
       fireL1FormSuccessEvents(props.user);
     }
   } else {
-    const {
-      isWhitelistFlow,
-      isBlacklistFlow,
-      isGraylistFlow,
-      isL1Submitted,
-    } = props.user.instantActivation;
+    const { isWhitelistFlow, isBlacklistFlow, isGraylistFlow, isL1Submitted } =
+      props.user.instantActivation;
     if (isWhitelistFlow && isL1Submitted) {
       props.showInstantActivationSuccessModal();
       fireL1FormSuccessEvents(props.user);

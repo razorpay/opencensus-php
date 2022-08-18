@@ -886,11 +886,11 @@ export default class User {
   get isWebsiteComplianceFlowEnabled() {
     return (
       this.isOrgRZP &&
-      getSplitzExperimentVariant('website_compliance_flow_experiment')?.variables?.result === 'on'
+      getSplitzExperimentVariant('website_compliance_flow_exp')?.variables?.result === 'on'
     );
   }
 
-  get isWebsiteComplianceModalDismissible() {
+  get isWebsiteComplianceModalNonDismissible() {
     return (
       this.isOrgRZP &&
       getSplitzExperimentVariant('website_compliance_modal_exp')?.variables?.result === 'on'

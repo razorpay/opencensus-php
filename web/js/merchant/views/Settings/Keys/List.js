@@ -18,6 +18,7 @@ import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nud
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
 import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 class KeysListContainer extends ListContainer {
   fetchEntityList() {
@@ -97,6 +98,8 @@ class KeysListContainer extends ListContainer {
     const { websiteComplianceModalVisibility } = this.props;
     const { user } = this.props;
 
+    const isMobileResolution = isMobileDevice();
+
     if (
       activationData.data &&
       websiteSectionDetailsData.data &&
@@ -108,9 +111,9 @@ class KeysListContainer extends ListContainer {
         websiteComplianceModalVisibility,
       );
 
-      if (shouldShowModal && user.isWebsiteComplianceFlowEnabled) {
+      if (shouldShowModal && user.isWebsiteComplianceFlowEnabled && isMobileResolution) {
         this.props.openModal({
-          component: <WebsiteComplianceMobilePrompt />,
+          component: <WebsiteComplianceMobilePrompt screen="API Keys" />,
           size: 'small',
         });
       }
@@ -124,13 +127,14 @@ class KeysListContainer extends ListContainer {
     const hasKeyAccess = this.props.session.user.has_key_access;
     const businessWebsite = this.props.session.user.business_website;
     const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
+    const isMobileResolution = isMobileDevice();
 
     return (
       <>
         <WebsiteComplianceNudge screen="API Keys" />
         <div className="banner-container">
           <DashboardBanner />
-          <WebsiteComplianceBanner screen="API Keys" />
+          {!isMobileResolution ? <WebsiteComplianceBanner screen="API Keys" /> : null}
           <CSATSurveyBanner user={this.props.session.user} />
         </div>
         <div class="content-wrapper">

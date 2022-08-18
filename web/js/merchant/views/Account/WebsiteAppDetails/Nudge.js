@@ -13,6 +13,7 @@ import { showNotification as fnShowNotification } from 'merchant_common/reducers
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
+import { withRouter } from 'react-router-dom';
 
 /* renders only on mobile devices/resolutions */
 function WebsiteAppDetailsNudge({
@@ -22,6 +23,7 @@ function WebsiteAppDetailsNudge({
   showNotification,
   screen,
   user,
+  history,
 }) {
   const isMobileResolution = isMobileDevice();
   const shouldShowNudge =
@@ -48,17 +50,16 @@ function WebsiteAppDetailsNudge({
   useEffect(() => {
     // send analytics on nudge load
     if (isMobileResolution && user.isWebsiteComplianceFlowEnabled && shouldShowNudge) {
-      const analyticsObj = {
+      analyticsTrack({
         objectName: 'Website wizard banner',
         actionName: 'Loaded',
         screen,
         properties: {
+          pageTitle: screen,
+          websiteCompliance: true,
           bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
-      };
-      analyticsTrack({
-        analyticsObj,
       });
     }
   }, []);
@@ -72,19 +73,18 @@ function WebsiteAppDetailsNudge({
   if (!isMobileResolution || !shouldShowNudge || !user.isWebsiteComplianceFlowEnabled) return null;
 
   const onUpdateClick = () => {
-    const analyticsObj = {
+    analyticsTrack({
       objectName: 'Website wizard banner',
       actionName: 'Interacted',
       screen,
       properties: {
+        pageTitle: screen,
+        websiteCompliance: true,
         bannerTitle: websiteComplianceEntryPointsData[nudgeType].title,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
-    };
-    analyticsTrack({
-      analyticsObj,
     });
-    window.open('website-app-details?from=banner', '_self');
+    history.push('/website-app-details?from=banner');
   };
 
   const renderStatus = () => {
@@ -120,6 +120,7 @@ function WebsiteAppDetailsNudge({
           Terms & Conditions, Privacy Policy, Contact Us, Cancellation and Refund Policy, and
           Shipping and Delivery Policy pages are required as per RBI guidelines.
         </div>
+        <div className="nudge-footer">Don’t have these details? We’ll help you create them</div>
         <div>
           <button className="btn btn-primary" onClick={onUpdateClick}>
             Update or create page
@@ -145,4 +146,4 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(mapStateToProps, mapDispatchToProps)(WebsiteAppDetailsNudge);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(WebsiteAppDetailsNudge));

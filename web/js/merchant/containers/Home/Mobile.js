@@ -160,7 +160,7 @@ class AnalyticsMobile extends Component {
           isWebsiteComplianceModalShown: true,
         });
         this.props.openModal({
-          component: <WebsiteCompliancePrompt />,
+          component: <WebsiteCompliancePrompt screen="Home page" />,
           size: 'small',
         });
       }
