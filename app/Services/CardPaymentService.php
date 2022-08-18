@@ -264,6 +264,11 @@ class CardPaymentService
             }
         }
 
+        if($action === ACTION::FORCE_AUTHORIZE_FAILED and $gateway === "kotak_debit_emi")
+        {
+            unset($input['gateway']);
+        }
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
@@ -271,7 +276,7 @@ class CardPaymentService
         ];
         // change action for force_authorize_failed to verify after content creation
         // to be take decisions further on action for fulcrum gateway
-        if ($action === Action::FORCE_AUTHORIZE_FAILED)
+        if ($action === Action::FORCE_AUTHORIZE_FAILED and $gateway !== 'kotak_debit_emi')
         {
             $action = Action::VERIFY;
         }

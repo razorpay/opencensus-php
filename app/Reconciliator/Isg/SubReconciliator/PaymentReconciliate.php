@@ -1,6 +1,7 @@
 <?php
 namespace RZP\Reconciliator\Isg\SubReconciliator;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Reconciliator\Base;
 
@@ -9,6 +10,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const BLACKLISTED_COLUMNS = [];
 
     const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::FINAL_AMOUNT;
+
+    const KOTAK_DEBIT_EMI       = 'kotak_debit_emi';
 
     public function getPaymentId(array $row)
     {
@@ -57,5 +60,18 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             $this->reportMissingColumn($row, ReconciliationFields::MDR);
         }
         return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MDR]);
+    }
+
+    protected function setAllowForceAuthorization(Payment\Entity $payment)
+    {
+        if($payment->getGateway() === self::KOTAK_DEBIT_EMI)
+        {
+            $this->allowForceAuthorization = true;
+        }
+    }
+
+    protected function getGatewayTransactionId($row)
+    {
+        return $row[ReconciliationFields::APAC_ID] ?? null;
     }
 }

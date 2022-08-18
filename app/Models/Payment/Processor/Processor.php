@@ -4320,7 +4320,8 @@ class Processor
             (isset($input[E::PAYMENT]) === true) and
             ($input[E::PAYMENT][Payment\Entity::CPS_ROUTE] === Payment\Entity::CARD_PAYMENT_SERVICE) and
             ((in_array($action, Action::$cardPaymentsSupportedActions) === true) or
-                ( $action === Action::FORCE_AUTHORIZE_FAILED and $input[E::PAYMENT][Payment\Entity::GATEWAY] === Payment\Gateway::FULCRUM)))
+                ( $action === Action::FORCE_AUTHORIZE_FAILED and (($input[E::PAYMENT][Payment\Entity::GATEWAY] === Payment\Gateway::FULCRUM) or
+                $input[E::PAYMENT][Payment\Entity::GATEWAY] === Payment\Gateway::KOTAK_DEBIT_EMI))))
         {
             return true;
         }

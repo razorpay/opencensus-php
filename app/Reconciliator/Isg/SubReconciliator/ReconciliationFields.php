@@ -14,4 +14,5 @@ class ReconciliationFields
     const REFUND_CANCEL_ID          = 'refund_cancel_id';
     const ARN                       = 'arn';
     const REFUND_AMOUNT             = 'amount';
+    const APAC_ID                   = 'apac_id';
 }

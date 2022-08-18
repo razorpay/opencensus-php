@@ -579,6 +579,7 @@ class Gateway
         self::NETBANKING_UJJIVAN,
         self::OFFLINE_HDFC,
         self::NETBANKING_TMB,
+        self::ISG,
     ];
 
     /**
