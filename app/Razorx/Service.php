@@ -271,6 +271,7 @@ class Service extends Base\Service
             'capital_cards_statement',
             'international_apm_onboarding',
             'capital_founders_card',
+            'capital_business_rewards',
             'capital_last_day_repayment',
             'capital_loc_x_migration_reroute',
             'capital_cards_nach_payment',
