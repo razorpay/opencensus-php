@@ -180,6 +180,50 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertTrue($metricCaptured);
     }
 
+    /**
+     *  Test Default opt in whatsapp status when stork throws an exception
+     */
+    public function testDefaultOptInStatusForWhatsapp()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setupPrivateAuthForPartner();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testFetchDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $metricCaptured = false;
+
+        $expectedMetricData = $this->getMerchantProductMetricData('payment_gateway');
+
+        $this->mockAndCaptureCountMetric(Metric::PRODUCT_CONFIG_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $this->storkMock->shouldReceive('optInStatusForWhatsapp')->once()->andThrow(new \Exception('record_not_found') );
+
+        $this->runRequestResponseFlow($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
     public function testUpdatePaymentGatewayConfig()
     {
         Mail::fake();

@@ -7726,6 +7726,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GLOBAL_CREATE_ADDRESS_REQUEST                               = 'GLOBAL_CREATE_ADDRESS_REQUEST';
     const GLOBAL_CREATE_ADDRESS_ERROR                                 = 'GLOBAL_CREATE_ADDRESS_ERROR';
 
+    const FAILED_TO_FETCH_WHATSAPP_STATUS                             = 'FAILED_TO_FETCH_WHATSAPP_STATUS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

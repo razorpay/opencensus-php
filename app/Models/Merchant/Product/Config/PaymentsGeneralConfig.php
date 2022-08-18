@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Product\Config;
 
 use File;
+use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Trace\Tracer;
@@ -170,13 +171,34 @@ class PaymentsGeneralConfig extends Base\Service
 
         $input = ['source' => 'pg.settings.config'];
 
-        $optInStatusResponse = $this->userService->optInStatusForWhatsapp($input, $merchantUser);
+        try
+        {
+            $optInStatusResponse = $this->userService->optInStatusForWhatsapp($input, $merchantUser);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->traceException($exception,
+                                         Logger::ERROR,
+                                         TraceCode::FAILED_TO_FETCH_WHATSAPP_STATUS
+            );
+
+            if ((empty($exception) === false) and
+                ($this->isRecordNotFoundException($exception) === false))
+            {
+                throw $exception;
+            }
+        }
 
         $response[Util\Constants::WHATSAPP] = $optInStatusResponse['consent_status'] ?? false;
 
         $response[Util\Constants::SMS] = $this->settlementService->getSettlementSmsNotificationStatus($merchant)['enabled'];
 
         return $response;
+    }
+
+    protected function isRecordNotFoundException(\Exception $ex)
+    {
+        return str_contains($ex->getMessage(), 'record_not_found');
     }
 
     public function createConfig(Merchant\Entity $merchant, array $configs): array
