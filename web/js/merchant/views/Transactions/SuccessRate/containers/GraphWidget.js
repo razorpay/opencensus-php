@@ -5,24 +5,36 @@ import { bindActionCreators } from 'redux';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 import MetricsCard from '../components/MetricsCard';
 import GraphPanel from '../components/GraphPanel';
+import MethodFilter from '../components/MethodFilter';
 
 import debounce from 'common/utils/debounce';
-import { setActiveTab, fetchSuccessRate, fetchMerchantErrors } from 'merchant/reducers/successRate';
-import { queryFilters, getMerchantErrorsPayload } from '../helper';
+import {
+  setActiveTab,
+  fetchSuccessRate,
+  fetchMerchantErrors,
+  setGroupTypeFilter,
+} from 'merchant/reducers/successRate';
+import { queryFilters, getMerchantErrorsPayload, getInitialGroupings } from '../helper';
+import { SR_FILTERS, DEFAULT_GROUP_BY } from '../constants';
 
 const GraphWidget = (props) => {
   const {
     isLoading,
+    tabLoading,
     activeTab,
     setActiveTab,
     metrics,
     fetchSuccessRate,
     fetchMerchantErrors,
+    setGroupTypeFilter,
   } = props;
 
   const tabContainerRef = useRef(null);
   const [tabWidth, setTabWidth] = useState();
   const tabPane = Object.values(metrics);
+  const methodFilters = SR_FILTERS; //optimizer filters to be added based on tag for optimizer sr dashboard.
+  const initialGroupings = getInitialGroupings(methodFilters);
+  const [selectedGroupings, setSelectedGroupings] = useState(initialGroupings);
 
   const handleTabWidth = useCallback(
     debounce(() => {
@@ -38,10 +50,28 @@ const GraphWidget = (props) => {
   const handleTabChange = (tab) => {
     if (tab.name === activeTab) return;
     setActiveTab(tab.name);
+    setSelectedGroupings(initialGroupings);
+    setGroupTypeFilter(initialGroupings[tab?.name]?.[0]?.value || DEFAULT_GROUP_BY?.[tab?.name]);
     const payload = queryFilters();
     fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
     fetchMerchantErrors(errorsPaylod);
+  };
+
+  const handleGroupingChange = (tabName) => (index) => ({ option }) => {
+    setSelectedGroupings((prevSelectedGroupings) => {
+      const newState = {
+        ...prevSelectedGroupings,
+        [tabName]: [
+          ...prevSelectedGroupings?.[tabName]?.slice(0, index),
+          option,
+          ...prevSelectedGroupings?.[tabName]?.slice(index + 1),
+        ],
+      };
+      return newState;
+    });
+    setGroupTypeFilter(option?.value);
+    fetchSuccessRate(queryFilters());
   };
 
   useEffect(() => {
@@ -70,6 +100,14 @@ const GraphWidget = (props) => {
         {tabPane.map((tab, idx) => {
           return (
             <TabPane key={`${tab.name}-${idx}`}>
+              {!(isLoading || tabLoading) && Object.keys(methodFilters).includes(tab.name) && (
+                <MethodFilter
+                  activeTab={activeTab}
+                  filtersList={methodFilters[activeTab]}
+                  handleGroupingChange={handleGroupingChange(tab?.name)}
+                  selectedGrouping={selectedGroupings?.[tab?.name]}
+                />
+              )}
               <GraphPanel />
             </TabPane>
           );
@@ -80,12 +118,15 @@ const GraphWidget = (props) => {
 };
 
 const mapStateToProps = ({ successRate }) => {
-  const { isLoading, activeTab, metrics } = successRate;
-  return { isLoading, activeTab, metrics };
+  const { isLoading, tabLoading, activeTab, metrics } = successRate;
+  return { isLoading, tabLoading, activeTab, metrics };
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ setActiveTab, fetchSuccessRate, fetchMerchantErrors }, dispatch);
+  return bindActionCreators(
+    { setActiveTab, setGroupTypeFilter, fetchSuccessRate, fetchMerchantErrors },
+    dispatch,
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GraphWidget);

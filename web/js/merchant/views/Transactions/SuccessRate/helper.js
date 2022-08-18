@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { capitalize } from 'lodash';
+import { capitalize, reduce, head } from 'lodash';
 import cloneDeep from 'lodash/cloneDeep';
 import store from 'merchant/store';
 import {
@@ -284,3 +284,19 @@ export const getMerchantErrorsPayload = () => {
 
   return payload;
 };
+
+//Returns a list of initial set of filters for each method.
+export const getInitialGroupings = (methodFilters) =>
+  reduce(
+    methodFilters,
+    (acc, tabFilters, key) => {
+      acc[key] = [
+        ...(acc?.[key] || []),
+        ...tabFilters?.map((filter) => {
+          return head(filter);
+        }),
+      ];
+      return acc;
+    },
+    {},
+  );

@@ -248,3 +248,26 @@ export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
 };
 
 /******************************************************************************************/
+
+/**************************************** TAB Filters Variables ****************************************/
+
+export const CARD_GROUPING_DATA = [
+  {
+    value: 'type',
+    text: 'Card Type',
+  },
+  {
+    value: 'network',
+    text: 'Card Networks',
+  },
+  {
+    value: 'issuer',
+    text: 'Banks',
+  },
+];
+
+export const SR_FILTERS = {
+  Card: [CARD_GROUPING_DATA],
+};
+
+/******************************************************************************************/

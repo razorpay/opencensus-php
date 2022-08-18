@@ -35,6 +35,36 @@ $spacer = 8px
         background-color: transparent
         margin-left: $spacer
 
+    .grouping-dropdown
+      width 192px
+      margin-right 20px
+
+/*************** Tab Filter ***************/
+
+.success-rate-tab-filter
+  left -28px !important //adding important to override element.style added by PowerSelect library
+  top 5px !important //adding important to override element.style added by PowerSelect library
+
+  &.PowerSelect__Tether
+    width 192px
+
+  .react-normal-select__Menu
+    .PowerSelect__Options
+      .PowerSelect__Option
+        padding 0 10px
+
+        &:hover
+          background-color #FAFBFC
+
+        & > span
+          line-height 40px
+
+      .PowerSelect__Option--highlighted
+        background-color $bg-white
+
+/*******************************************************/
+
+
 /*************** Success rate tabs ***************/
   
 .sr-metrics

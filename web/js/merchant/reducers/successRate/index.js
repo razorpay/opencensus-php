@@ -23,6 +23,7 @@ const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
 const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
 const UPDATE_TABS = 'UPDATE_TABS';
+const SET_GROUP_TYPE_FILTER = 'SET_GROUP_TYPE_FILTER';
 const UPDATE_GRAPH_INTERVAL = 'UPDATE_GRAPH_INTERVAL';
 const SET_METRICS_DATA = 'SET_METRICS_DATA';
 const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
@@ -180,6 +181,13 @@ export const updateGraphInterval = (interval) => {
   };
 };
 
+export const setGroupTypeFilter = (groupType) => {
+  return {
+    type: SET_GROUP_TYPE_FILTER,
+    payload: groupType,
+  };
+};
+
 const getInitialState = () => {
   const state = {
     isLoading: true,
@@ -307,6 +315,15 @@ export default (state = getInitialState(), action) => {
           [state.activeTab]: { ...tabClone, selectedInterval: payload },
         },
       };
+    }
+
+    case SET_GROUP_TYPE_FILTER: {
+      return merge(state, {
+        tabs: {
+          ...state?.tabs,
+          [state?.activeTab]: { ...state?.tabs?.[state?.activeTab], group_by: payload },
+        },
+      });
     }
 
     default:

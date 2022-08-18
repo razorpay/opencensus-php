@@ -1,5 +1,6 @@
 import React from 'react';
 import Group, { GroupItem } from 'common/ui/Group';
+import { classList } from 'common/utils/rzp-utils';
 import { PowerSelect } from 'react-power-select';
 
 const GroupingDropdown = ({
@@ -7,6 +8,7 @@ const GroupingDropdown = ({
   onGroupChange,
   selectedGrouping,
   displayTextKey = 'text',
+  className,
 }) => (
   <div className="grouping-dropdown">
     <Group>
@@ -15,7 +17,7 @@ const GroupingDropdown = ({
       </GroupItem>
       <GroupItem className="dropdown-group-item">
         <PowerSelect
-          className="react-normal-select"
+          className={classList(className, 'react-normal-select')}
           onChange={onGroupChange}
           options={grouping}
           optionLabelPath={displayTextKey}
