@@ -14,4 +14,11 @@ class Repository extends Base\Repository
                     ->where(Entity::MANDATE_ID, '=', $id)
                     ->first();
     }
+
+    public function findByCardMandateId($id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, '=', $id)
+            ->first();
+    }
 }

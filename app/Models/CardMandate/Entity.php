@@ -40,6 +40,8 @@ class Entity extends Base\PublicEntity
     const CANCELLED_BY               = 'cancelled_by';
     const MANDATE_HUB                = 'mandate_hub';
     const TERMINAL_ID                = 'terminal_id';
+    const NETWORK_TRANSACTION_ID     = 'network_transaction_id';
+    const HAS_INITIAL_TRANSACTION_ID = 'has_initial_transaction_id';
 
     const SKIP_SUMMARY_PAGE          = 'skip_summary_page';
 
@@ -77,6 +79,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::NETWORK_TRANSACTION_ID,
+        self::HAS_INITIAL_TRANSACTION_ID,
     ];
 
     protected $defaults = [
@@ -86,6 +90,16 @@ class Entity extends Base\PublicEntity
     public function setMandateId($url)
     {
         $this->setAttribute(self::MANDATE_ID, $url);
+    }
+
+    public function setNetworkTransactionId($network_transaction_id)
+    {
+        $this->setAttribute(self::NETWORK_TRANSACTION_ID, $network_transaction_id);
+    }
+
+    public function setHasInitialTransactionId($has_initial_transaction_id)
+    {
+        $this->setAttribute(self::HAS_INITIAL_TRANSACTION_ID, $has_initial_transaction_id);
     }
 
     public function setStatus($status)
@@ -237,6 +251,16 @@ class Entity extends Base\PublicEntity
     public function isMandateValidated()
     {
         return null;
+    }
+
+    public function getNetworkTransactionId()
+    {
+        return $this->getAttribute(self::NETWORK_TRANSACTION_ID);
+    }
+
+    public function getHasInitialTransactionId()
+    {
+        return $this->getAttribute(self::HAS_INITIAL_TRANSACTION_ID);
     }
 
     public function getRecurringCount()
