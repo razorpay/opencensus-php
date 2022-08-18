@@ -85,6 +85,9 @@ class Constants
     // tags
     const NO_DOC_LIMIT_BREACHED = 'no_doc_limit_breached';
 
+    // tags
+    const INSTANT_ACTIVATION_SUBM = 'instant_activation_subm';
+
     // external ids
     const EXTERNAL_ID       = 'external_id';
     const LEGAL_EXTERNAL_ID = 'legal_external_id';

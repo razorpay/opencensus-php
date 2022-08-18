@@ -176,6 +176,8 @@ class Core extends Merchant\Core
             return $subMerchant;
         });
 
+        $this->addInstantActivationTagIfApplicable($subMerchant, $input);
+
         $this->upsertMerchantEmails($subMerchant, $input);
 
         return $subMerchant;
@@ -329,6 +331,40 @@ class Core extends Merchant\Core
         {
             (new Merchant\Core())->appendTag($subMerchant, Constants::NO_DOC_LIMIT_BREACHED);
         }
+    }
+
+    /**
+     * Add the instant_activation_subm tag to whitelist sub-merchant for instant activation flow
+     * if the sub-m is whitelisted for the no-doc and partner is enabled with the INSTANT_ACTIVATION_V2_API feature.
+     * @param Merchant\Entity $submerchant
+     * @param array $input
+     */
+    public function addInstantActivationTagIfApplicable(Merchant\Entity $submerchant, array $input)
+    {
+        $noDocOnboarding = $input[Feature\Constants::NO_DOC_ONBOARDING] ?? false;
+
+        if($noDocOnboarding == true and $this->merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true)
+        {
+            // instant activation won't be enabled for merchants which are whitelisted for no-doc
+            return ;
+        }
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::INSTANT_ACTIVATION_V2_API) === true)
+        {
+            (new Merchant\Core())->appendTag($submerchant, Constants::INSTANT_ACTIVATION_SUBM);
+
+            $this->trace->info(TraceCode::INSTANT_ACTIVATION_ONBOARDING_API_TAG_APPENDED,[
+                'sub-merchant_id'   => $submerchant->getId(),
+                'tag_name'          => Constants::INSTANT_ACTIVATION_SUBM
+            ]);
+        }
+    }
+
+    public function isInstantActivationTagEnabled($merchantId): bool
+    {
+        $tags = (new Merchant\Service())->getTags($merchantId);
+
+        return (in_array('Instant_activation_subm', $tags) === true);
     }
 
     public function updateNCFieldsAcknowledgedIfApplicable(array $input, Merchant\Entity $subMerchant)

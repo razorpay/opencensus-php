@@ -326,6 +326,11 @@ class Constants
      */
     const NO_COMM_WITH_SUBMERCHANTS       = 'no_comm_with_submerchants';
 
+    /**
+     * This feature will enable partners to get the sub-merchants,
+     * onboarded via V2 onboarding APIs, instantly_activated after L1 form submission
+     */
+    const INSTANT_ACTIVATION_V2_API = 'instant_activation_v2_api';
 
     /**
      * Feature flag to skip approval workflow to access submerchant Kyc.
@@ -1493,13 +1498,13 @@ class Constants
      * Feature flag to configure report for KFIN
      */
     const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
-    
+
      /**
      * Feature flag to configure report for CAMS
      */
     const CAMS_MERCHANT_REPORT = 'cams_merchant_report';
 
-    
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -2050,6 +2055,7 @@ class Constants
         self::FK_NEW_ERROR_RESPONSE           => true,
         self::NO_CUSTOM_CHECKOUT_RECURRING_CONSENT => true,
         self::CROSS_ORG_LOGIN                 => true,
+        self::INSTANT_ACTIVATION_V2_API       => true,
         self::MISSED_ORDERS_PLINK             => true,
         self::KFIN_MERCHANT_REPORT            => true,
         self::ONE_CC_STORE_ACCOUNT            => true,

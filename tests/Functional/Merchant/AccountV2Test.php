@@ -8,11 +8,13 @@ use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Repository;
 use RZP\Models\Merchant\Service;
 use RZP\Models\Merchant\Document;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Traits\MocksSplitz;
+use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\AccountV2\Metric;
 use RZP\Models\Merchant\Detail\POIStatus;
 use Illuminate\Database\Eloquent\Factory;
@@ -793,6 +795,64 @@ class AccountV2Test extends TestCase
         $testData['request']['url'] = '/v2/accounts/' . $result['id'];
 
         $this->startTest($testData);
+    }
+
+    public function testInstantActivationTagAppendedOnSubM()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'instant_activation_v2_api',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $merchantId = $result['id'];
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $featureResult = (new AccountV2\Core())->isInstantActivationTagEnabled($merchantId);
+
+        $this->assertTrue($featureResult);
+    }
+
+    public function testInstantActivationTagAppendFailureDueToNoDoc()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding'
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'instant_activation_v2_api'
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $merchantId = $result['id'];
+
+        Account\Entity::verifyIdAndStripSign($merchantId);
+
+        $featureResult = (new AccountV2\Core())->isInstantActivationTagEnabled($merchantId);
+
+        $this->assertFalse($featureResult);
     }
 
 }
