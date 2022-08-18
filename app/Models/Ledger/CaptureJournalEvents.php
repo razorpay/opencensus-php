@@ -105,6 +105,10 @@ class CaptureJournalEvents
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
         }
+        else if ($transaction->getAmount() === 0)
+        {
+            $rule[Constants::ZERO_AMOUNT_ACCOUNTING] = Constants::ZERO_AMOUNT_PAYMENT;
+        }
 
         return $rule;
     }
@@ -165,8 +169,16 @@ class CaptureJournalEvents
         // Normal merchant captured scenario (commissions considered)
         else
         {
+            if ($amount !== 0)
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $fee - $tax);
+            }
+            else
+            {
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($fee + $tax);
+            }
+
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
-            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $fee - $tax);
             $moneyParams[Constants::TAX]                        = strval(abs($tax));
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
         }

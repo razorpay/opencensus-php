@@ -19,7 +19,9 @@ class Constants
     const DIRECT_SETTLEMENT                                 = 'direct_settlement';
     const DIRECT_SETTLEMENT_TERMINAL                        = 'direct_settlement_terminal';
     const WITH_REFUND                                       = 'with_refund';
-    const WITHOUT_REFUND                                       = 'without_refund';
+    const WITHOUT_REFUND                                    = 'without_refund';
+    const ZERO_AMOUNT_PAYMENT                               = 'zero_amount_payment';
+    const ZERO_AMOUNT_ACCOUNTING                            = 'zero_amount_accounting';
 
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";
