@@ -14,6 +14,39 @@ class Gstin extends BaseConfig
         ],
     ];
 
+    protected $enrichment_v2 = [
+        'online_provider' => [
+            'required_fields' => [
+                'gstin.aggregate_turnover',
+                'gstin.gross_total_income',
+                'gstr.e_filing_detail'
+            ],
+            'enrichment_details_fields' => [
+                "online_provider.details.trade_name.value",
+                "online_provider.details.legal_name.value",
+                "online_provider.details.aggregate_turnover",
+                "online_provider.details.gross_total_income",
+                "online_provider.details.e_filing_detail",
+                "online_provider.details.registration_date.value",
+            ]
+        ]
+    ];
+
+    protected $fetchDetailsRule = [
+        'version'    => 'v2',
+        'rules_list' => [
+            '0' => [
+                'rule_type' => 'string_comparison_rule',
+                'rule_def' => [
+                    '===' => [
+                        '1',
+                        '1'
+                    ]
+                ]
+            ],
+        ],
+    ];
+
     protected $rule_v2    = [
         "version"    => "v3",
         "rules_list" => [

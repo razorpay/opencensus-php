@@ -35,6 +35,9 @@ class Validator extends Base\Validator
         Entity::BLACKLISTED_PRODUCTS_CATEGORY                                 => 'sometimes|string|max:255|nullable',
         Entity::BUSINESS_PARENT_CATEGORY                                      => 'sometimes|string|nullable',
         Entity::PLUGIN_DETAILS                                                => 'sometimes|array',
+        Entity::LEAD_SCORE_COMPONENTS                                         => 'sometimes|array',
+        Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::GSTIN_SCORE          => 'sometimes|numeric|digits_between:1,3|nullable',
+        Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::DOMAIN_SCORE         => 'sometimes|numeric|digits_between:1,3|nullable',
         Entity::ONBOARDING_SOURCE                                             => ['filled', 'in:xpress_onboarding'],
     ];
 
@@ -65,6 +68,9 @@ class Validator extends Base\Validator
         Entity::BLACKLISTED_PRODUCTS_CATEGORY                                 => 'sometimes|string|max:255|nullable',
         Entity::BUSINESS_PARENT_CATEGORY                                      => 'sometimes|string|nullable',
         Entity::PLUGIN_DETAILS                                                => 'sometimes|array',
+        Entity::LEAD_SCORE_COMPONENTS                                         => 'sometimes|array',
+        Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::GSTIN_SCORE          => 'sometimes|numeric|digits_between:1,3|nullable',
+        Entity::LEAD_SCORE_COMPONENTS . '.' . Constants::DOMAIN_SCORE         => 'sometimes|numeric|digits_between:1,3|nullable',
         Entity::ONBOARDING_SOURCE                                             => ['filled', 'in:xpress_onboarding'],
     ];
 }

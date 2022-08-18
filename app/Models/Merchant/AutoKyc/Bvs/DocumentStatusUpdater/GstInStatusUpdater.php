@@ -6,6 +6,8 @@ use RZP\Jobs;
 use RZP\Constants\Mode;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Feature\Core as FeatureCore;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
+use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Store\ConfigKey;
@@ -38,6 +40,15 @@ class GstInStatusUpdater extends DefaultStatusUpdater
     public function updateValidationStatus(): void
     {
         $this->processUpdateValidationStatus();
+
+        if (empty(optional($this->merchantDetails->businessDetail)->getValueFromLeadScoreComponents(
+            BusinessDetailConstants::GSTIN_SCORE)) === true and
+            $this->merchantDetails->getGstinVerificationStatus() === DEConstants::VERIFIED)
+        {
+            $merchantDetailCore = (new MerchantDetailCore());
+
+            $merchantDetailCore->generateLeadScoreForMerchant($this->merchant, $this->merchantDetails);
+        }
 
         if($this->merchant->isNoDocOnboardingEnabled() === true)
         {

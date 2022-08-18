@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Jobs;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -43,6 +44,14 @@ class PanStatusUpdater extends DefaultStatusUpdater
    public function updateValidationStatus(): void
    {
        $this->processUpdateValidationStatus();
+
+       if (empty(optional($this->merchantDetails->businessDetail)->getValueFromLeadScoreComponents(
+           BusinessDetailConstants::GSTIN_SCORE)) === true)
+       {
+           $merchantDetailCore = (new MerchantDetailCore());
+
+           $merchantDetailCore->generateLeadScoreForMerchant($this->merchant, $this->merchantDetails);
+       }
 
        // If merchant is enabled with NoDocOnboarding feature then we fetch gst from verified pan and trigger BVS request.
        if($this->merchant->isNoDocOnboardingEnabled() === true)

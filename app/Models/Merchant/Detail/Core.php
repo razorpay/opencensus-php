@@ -18,6 +18,7 @@ use RZP\Metro\MetroHandler;
 use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Metro\Constants as MetroConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
@@ -113,6 +114,7 @@ use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Mail\Merchant\SubMerchantNCStatusChanged as SubMerchantNCStatusChangedEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
+use RZP\Models\Merchant\BusinessDetail\Core as BusinessDetailCore;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Models\Merchant\Detail\DeDupe\Constants as DedupeConstants;
@@ -5952,7 +5954,7 @@ class Core extends Base\Core
     /**
      * @return array
      */
-    public function getGSTDetailsList(): array
+    public function getGSTDetailsList(bool $includePersonalPan=true): array
     {
         $gstDetails = [];
 
@@ -5998,13 +6000,16 @@ class Core extends Base\Core
                     $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
             }
 
-            //get personal pan associated gstin
-            $pan = $merchantDetail->getPromoterPan();
-
-            if (empty($pan) == false && $merchantDetail->getPoiVerificationStatus() == DetailConstants::VERIFIED)
+            if ($includePersonalPan)
             {
-                $gstDetailsForPersonalPan =
-                    $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
+                //get personal pan associated gstin
+                $pan = $merchantDetail->getPromoterPan();
+
+                if (empty($pan) == false && $merchantDetail->getPoiVerificationStatus() == DetailConstants::VERIFIED)
+                {
+                    $gstDetailsForPersonalPan =
+                        $bvsCore->artefactCuratorProbeGetGstDetails($pan,"Active");
+                }
             }
 
             //merge both with company pan associated gstin given more priority
@@ -7623,5 +7628,167 @@ class Core extends Base\Core
         $data      = $store->fetchValuesFromStore($merchantDetail->getMerchantId(), ConfigKey::ONBOARDING_NAMESPACE,
                                                   [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
         return $data[ConfigKey::NO_DOC_ONBOARDING_INFO] ?? [];
+    }
+
+    public function generateLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $updateAndPushToSegment = false;
+        $gstinLeadScore = 0;
+        $domainLeadScore = 0;
+
+        try
+        {
+            $gstinLeadScore = optional($merchantDetails->businessDetail)->getValueFromLeadScoreComponents(BusinessDetailConstants::GSTIN_SCORE);
+
+            //Check if GSTIN lead score is already calculated, if yes, we won't recalculate
+            if (empty($gstinLeadScore) === true)
+            {
+                $gstinLeadScore = $this->generateGSTINLeadScoreForMerchant($merchant, $merchantDetails);
+
+                if (!empty($gstinLeadScore))
+                {
+                    $updateAndPushToSegment = true;
+                }
+            }
+
+            if ($updateAndPushToSegment === true)
+            {
+                $leadScoreComponents = [BusinessDetailConstants::GSTIN_SCORE => $gstinLeadScore,
+                    BusinessDetailConstants::DOMAIN_SCORE => $domainLeadScore];
+
+                (new BusinessDetailCore())->updateLeadScoreComponents($merchantDetails, $leadScoreComponents);
+
+                $this->trace->info(TraceCode::LEAD_SCORE_CALCULATION_SUCCESS, [
+                    'merchantId'             => $merchant->getId(),
+                    'leadScoreComponents'    => $leadScoreComponents
+                ]);
+
+                $properties = [];
+                $properties['gstin_lead_score'] = $gstinLeadScore;
+                $properties['domain_lead_score'] = $domainLeadScore;
+                $properties['total_lead_score'] = $gstinLeadScore + $domainLeadScore;
+                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::LEAD_SCORE_CALCULATION_FAILURE, [
+                'merchantId'     => $merchant->getId(),
+                'message'        => $e->getMessage()
+            ]);
+        }
+
+        return $gstinLeadScore + $domainLeadScore;
+    }
+
+    protected function generateGSTINLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    {
+        $this->trace->info(TraceCode::LEAD_SCORE_CALCULATION_ATTEMPT, [
+            'merchantId'            => $merchant->getId(),
+            'calculatingFor'        => BusinessDetailConstants::GSTIN_SCORE
+        ]);
+
+        $bvsCore = new AutoKyc\Bvs\Core($merchant, $merchantDetails);
+        $requestCreator =  new GstinAuth($merchant, $merchantDetails);
+        $gstin = $merchantDetails->getGstin();
+        $oldestRegisteredYear = null;
+        $aggregatedTurnoverSlab = null;
+
+        if (empty($gstin) === true)
+        {
+            $gstDetails = $this->getGSTDetailsList(false)[Constant::RESULTS];
+
+            if (empty($gstDetails) === true)
+            {
+                //No GST associated with PAN found
+                return 0;
+            }
+
+            //$gstDetails
+            $payload = $requestCreator->getRequestPayload();
+            $ownerId = $merchantDetails->getEntityId();
+            $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
+
+            foreach ($gstDetails as $gst)
+            {
+                $payload[Constant::DETAILS][Constant::GSTIN] = $gst;
+                $response = $bvsCore->fetchEnrichmentDetails($ownerId, $payload);
+
+                if (empty($response) === false)
+                {
+                    $validation = $response->getResponseData(true);
+
+                    if (empty($validation['enrichments']) === false)
+                    {
+                        $registeredYear = date('Y',strtotime(substr($validation['enrichments']['online_provider']['details']['registration_date']['value'],0,10)));
+
+                        if (empty($oldestRegisteredYear) === true or $oldestRegisteredYear > $registeredYear)
+                        {
+                            $oldestRegisteredYear = $registeredYear;
+                            $aggregatedTurnoverSlab = trim($validation['enrichments']['online_provider']['details']['aggregate_turnover']);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (empty($oldestRegisteredYear) === true)
+        {
+            $payload = $requestCreator->getRequestPayload();
+            $payload[Constant::DETAILS][Constant::GSTIN] = $gstin;
+            $ownerId = $merchantDetails->getEntityId();
+            $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
+            $response = $bvsCore->fetchEnrichmentDetails($ownerId, $payload);
+
+            if (empty($response) === false)
+            {
+                $validation = $response->getResponseData(true);
+
+                if (empty($validation['enrichments']) === false)
+                {
+                    $oldestRegisteredYear = date('Y',strtotime(substr($validation['enrichments']['online_provider']['details']['registration_date']['value'],0,10)));
+                    $aggregatedTurnoverSlab = trim($validation['enrichments']['online_provider']['details']['aggregate_turnover']);
+                }
+            }
+        }
+        if (empty($oldestRegisteredYear) === true)
+        {
+            //GSTIN Validation API failed and got no enrichment details
+            return 0;
+        }
+
+        //By now we should have populated the $oldestRegisteredYear and $aggregatedTurnoverSlab, calculate lead_score based on that.
+        $companyAge = date("Y") - $oldestRegisteredYear;
+        $ageScore = 0;
+        if ($companyAge <= 1) {
+            $ageScore = 30;
+        } elseif ($companyAge == 2) {
+            $ageScore = 35;
+        } elseif ($companyAge == 3) {
+            $ageScore = 40;
+        } elseif ($companyAge == 4) {
+            $ageScore = 45;
+        } elseif ($companyAge > 4) {
+            $ageScore = 50;
+        }
+
+        $aggregatedTurnoverScore = 0;
+        if ($aggregatedTurnoverSlab == 'Slab: Rs. 0 to 40 lakhs'){
+            $aggregatedTurnoverScore = 20;
+        } elseif ($aggregatedTurnoverSlab == 'Slab: Rs. 40 lakhs to 1.5 Cr.') {
+            $aggregatedTurnoverScore = 25;
+        } elseif ($aggregatedTurnoverSlab == 'Slab: Rs. 1.5 Cr. to 5 Cr.') {
+            $aggregatedTurnoverScore = 30;
+        } elseif ($aggregatedTurnoverSlab == 'Slab: Rs. 5 Cr. to 25 Cr.') {
+            $aggregatedTurnoverScore = 35;
+        } elseif ($aggregatedTurnoverSlab == 'Slab: Rs. 25 Cr. to 100 Cr.') {
+            $aggregatedTurnoverScore = 40;
+        } elseif ($aggregatedTurnoverSlab == 'Slab: Rs. 100 Cr. to 500 Cr.') {
+            $aggregatedTurnoverScore = 45;
+        } elseif ($aggregatedTurnoverSlab == 'Slab: Rs. 500 Cr. and above') {
+            $aggregatedTurnoverScore = 50;
+        }
+
+        return $ageScore + $aggregatedTurnoverScore;
     }
 }

@@ -205,4 +205,23 @@ class Core extends Base\Core
 
         return $appUrls;
     }
+
+    public function updateLeadScoreComponents(Entity $merchantDetails, $newLeadScore)
+    {
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $newLeadScore) {
+            $mutexResource = self::BUSINESS_DETAIL_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();
+            return $this->app[MerchantConstants::API_MUTEX]->acquireAndRelease
+            ($mutexResource,
+                function() use ($merchantDetails, $newLeadScore) {
+                    $businessDetail = $merchantDetails->businessDetail;
+                    $oldLeadScore = $businessDetail->getLeadScoreComponents();
+                    $leadScoreComponents = $this->mergeJson($oldLeadScore, $newLeadScore);
+                    $businessDetail->setLeadScoreComponents($leadScoreComponents);
+                    $this->repo->merchant_business_detail->saveOrFail($businessDetail);
+                },
+                MerchantConstants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                MerchantConstants::MERCHANT_MUTEX_RETRY_COUNT);
+        });
+    }
 }

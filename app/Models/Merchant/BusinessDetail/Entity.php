@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
     const AUDIT_ID                      = 'audit_id';
+    const LEAD_SCORE_COMPONENTS         = 'lead_score_components';
     const ONBOARDING_SOURCE             = 'onboarding_source';
 
     protected $entity = 'merchant_business_detail';
@@ -42,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_PARENT_CATEGORY,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::LEAD_SCORE_COMPONENTS,
         self::ONBOARDING_SOURCE
     ];
 
@@ -59,9 +61,10 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::WEBSITE_DETAILS => 'array',
-        self::APP_URLS        => 'array',
-        self::PLUGIN_DETAILS  => 'array',
+        self::WEBSITE_DETAILS           => 'array',
+        self::APP_URLS                  => 'array',
+        self::PLUGIN_DETAILS            => 'array',
+        self::LEAD_SCORE_COMPONENTS     => 'array'
     ];
 
     protected $defaults = [
@@ -69,6 +72,7 @@ class Entity extends Base\PublicEntity
         self::APP_URLS                       => null,
         self::BLACKLISTED_PRODUCTS_CATEGORY  => null,
         self::PLUGIN_DETAILS                 => null,
+        self::LEAD_SCORE_COMPONENTS          => [],
         self::ONBOARDING_SOURCE              => null
     ];
 
@@ -189,6 +193,32 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BLACKLISTED_PRODUCTS_CATEGORY);
     }
 
+
+    public function getLeadScoreComponents()
+    {
+        return $this->getAttribute(self::LEAD_SCORE_COMPONENTS);
+    }
+
+    public function setLeadScoreComponents($leadScoreComponents)
+    {
+        return $this->setAttribute(self::LEAD_SCORE_COMPONENTS, $leadScoreComponents);
+    }
+
+    public function getValueFromLeadScoreComponents($key)
+    {
+        $metaData   = $this->getAttribute(self::LEAD_SCORE_COMPONENTS);
+
+        $value = null;
+
+        if (empty($metaData) === false
+            and array_key_exists($key, $metaData))
+        {
+            $value = $metaData[$key];
+        }
+
+        return $value;
+    }
+    
     public function setOnboardingSource(string $onboardingSource)
     {
         return $this->setAttribute(self::ONBOARDING_SOURCE, $onboardingSource);

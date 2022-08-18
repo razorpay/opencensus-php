@@ -26,6 +26,8 @@ class Constants
     const ANDROID_APP_PRESENT        = 'android_app_present';
     const IOS_APP_PRESENT            = 'ios_app_present';
     const OTHERS_PRESENT             = 'others_present';
+    const GSTIN_SCORE                = 'gstin_score';
+    const DOMAIN_SCORE               = 'domain_score';
 
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';
