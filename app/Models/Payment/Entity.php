@@ -2910,6 +2910,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         $this->getAttribute(self::AMOUNT_AUTHORIZED);
     }
 
+    public function getDccMarkUpAmount()
+    {
+        $this->getAttribute(self::DCC_MARKUP_AMOUNT);
+    }
+
     /**
      * Gets adjusted amount with respect to customer fee bearer merchants.
      * This amount is compared against the requested capture amount by merchant

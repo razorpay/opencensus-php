@@ -3593,6 +3593,7 @@ class Processor
     protected function getCaptureVerifyData($payment)
     {
         $data = [];
+        $paymentMeta = $payment->paymentMeta;
 
         $data['payment'] = [
             'id'            => $payment->getId(),
@@ -3604,6 +3605,11 @@ class Processor
             'created_at'    => $payment->getCreatedAt(),
             'merchant_id'   => $payment->getMerchantId(),
             'base_amount'   => $payment->getBaseAmount(),
+            'gateway_captured' => $payment->getGatewayCaptured(),
+            'gateway_currency' => $payment->getGatewayCurrency(),
+            'dcc_markup_amount'=> $payment->getDccMarkUpAmount(),
+            'dcc_offered'   => $paymentMeta->isDccOffered(),
+            'forex_rate'    => $paymentMeta->getForexRate(),
         ];
 
         $terminal = $payment->terminal;
