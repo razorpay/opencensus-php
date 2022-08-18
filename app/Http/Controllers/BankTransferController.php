@@ -11,6 +11,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\Batch;
 use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
@@ -167,15 +168,28 @@ class BankTransferController extends Controller
 
             $provider = $inputList['gateway_provider']['provider'];
 
-            $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
-            /*
-             * Commenting this as RBL doesn't have check on their end to restrict retry count.
-             * In case the response is not 200, the retry is infinite.
-             */
-            //if (boolval($response['valid']) === false)
-            //{
-            //    return ApiResponse::json([], 500);
-            //}
+            $payeeAccount = $inputList['input']['payee_account'];
+
+            $variantFlag = $this->app['razorx']->getTreatment($payeeAccount,
+                                                              RazorxTreatment::SMARTCOLLECT_SERVICE_BANK_TRANSFER,
+                                                              Mode::LIVE);
+
+            if ($variantFlag === 'on')
+            {
+                $this->service()->processBankTransferInScService($inputList['input'], $provider, Request::all());
+            }
+            else
+            {
+                $response = $this->service()->saveRequestAndProcess($inputList['input'], $provider, false, Request::all());
+                /*
+                 * Commenting this as RBL doesn't have check on their end to restrict retry count.
+                 * In case the response is not 200, the retry is infinite.
+                 */
+                //if (boolval($response['valid']) === false)
+                //{
+                //    return ApiResponse::json([], 500);
+                //}
+            }
         }
         catch (BadRequestValidationFailureException $e)
         {
@@ -550,5 +564,15 @@ class BankTransferController extends Controller
                 $input
             ]
         ], $statusCode);
+    }
+
+    public function processBankTransferInternal()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->saveRequestAndProcessInternal($input);
+
+        return ApiResponse::json($response);
+
     }
 }

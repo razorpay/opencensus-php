@@ -566,6 +566,7 @@ final class RazorxTreatment
 
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 
+    public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
     // Experiment to ramp up the refund credits fetch mechanism with locking
     public const REFUND_CREDITS_WITH_LOCK = 'refund_credits_with_lock';

@@ -902,6 +902,14 @@ return [
         ],
     ],
 
+    'smart_collect' => [
+        'mock'          => env('SMART_COLLECT_MOCK', false),
+        'url'           => env('SMART_COLLECT_URL'),
+        'username'      => 'api',
+        'secret'        => env('SMART_COLLECT_SECRET'),
+        'timeout'       => env('SMART_COLLECT_TIMEOUT_SECS'),
+    ],
+
     'myoperator' => [
         'mock'              => env('MYOPERATOR_MOCK'),
         'api_token'         => env('MYOPERATOR_API_TOKEN'),

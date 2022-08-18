@@ -310,6 +310,15 @@ class Entity extends Base\PublicEntity
 
                 break;
 
+            case 'bank_transfer_process_internal':
+                $requestSource = [
+                    'source'              => 'callback',
+                    'request_from'        => 'bank',
+                    'sc_service_callback' => true
+                ];
+
+                break;
+
             default:
                 $app['trace']->info(
                     TraceCode::UNTRACKED_ENDPOINT_BANK_TRANSFER,

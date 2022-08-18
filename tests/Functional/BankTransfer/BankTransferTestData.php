@@ -2520,4 +2520,54 @@ return [
             ],
         ],
     ],
+
+    'testBankTransferRblViaScService' => [
+        'request'  => [
+            'url'     => '/ecollect/validate/internal',
+            'method'  => 'post',
+            'content' => [
+                'gateway'         => 'rbl',
+                'data'            => [
+                    'payee_account'  => '0001046002505396',
+                    'payee_ifsc'     => 'RATN0VAAPIS',
+                    'payer_name'     => 'CREDIT CARD OPERATIONS',
+                    'payer_account'  => '010405000010',
+                    'payer_ifsc'     => 'ICIC0000104',
+                    'mode'           => 'ift',
+                    'transaction_id' => 'CMS480098890',
+                    'time'           => 1655961550,
+                    'amount'         => '3439.46',
+                    'description'    => 'MID 74256975 ICICI PYT 121016',
+                    'narration'      => 'CMS480098890'
+                ],
+                'request_payload' => [
+                    'ServiceName' => 'VirtualAccount',
+                    'Action'      => 'VirtualAccountTransaction',
+                    'Data'        => [
+                        [
+                            'messageType'              => 'ft',
+                            'amount'                   => '3439.46',
+                            'UTRNumber'                => 'CMS480098890',
+                            'senderIFSC'               => 'ICIC0000104',
+                            'senderAccountNumber'      => '010405000010',
+                            'senderAccountType'        => 'Current Account',
+                            'senderName'               => 'CREDIT CARD OPERATIONS',
+                            'beneficiaryAccountType'   => 'Current Account',
+                            'beneficiaryAccountNumber' => '00010469876543210',
+                            'creditDate'               => '13-10-2016 1929',
+                            'creditAccountNumber'      => '409000404030',
+                            'corporateCode'            => 'CAFLT',
+                            'clientCodeMaster'         => '02405',
+                            'senderInformation'        => 'MID 74256975 ICICI PYT 121016',
+                        ],
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'valid' => true,
+            ],
+        ],
+    ],
 ];

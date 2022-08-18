@@ -41,6 +41,7 @@ class Service extends Base\Service
     protected $ip;
     protected $mutex;
     protected $core;
+    protected $smartCollectService;
 
     // Seconds in 15 minutes
     const FIFTEEN_MINUTES = 900;
@@ -62,6 +63,8 @@ class Service extends Base\Service
         $this->ip = $this->app['request']->ip();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->smartCollectService = $this->app['smartCollect'];
     }
 
     public function processPendingBankTransfer(array $input)
@@ -94,6 +97,31 @@ class Service extends Base\Service
 
             throw $ex;
         }
+    }
+
+    public function processBankTransferInScService(array $input,
+                                                   string $provider = null,
+                                                   $requestPayload = null)
+    {
+        $response = $this->smartCollectService->processBankTransfer(['data'            => $input,
+                                                                     'gateway'         => $provider,
+                                                                     'request_payload' => $requestPayload]);
+        if ((isset($response['status_code']) === true) and
+            ($response['status_code'] === 200))
+        {
+            return $response['body'];
+        }
+
+        return $this->saveRequestAndProcess($input, $provider, false, $requestPayload);
+    }
+
+    public function saveRequestAndProcessInternal(array $input)
+    {
+        $data           = $input['data'];
+        $provider       = $input['gateway'];
+        $requestPayload = $input['request_payload'];
+
+        return $this->saveRequestAndProcess($data, $provider, false, $requestPayload);
     }
 
     public function saveRequestAndProcess(

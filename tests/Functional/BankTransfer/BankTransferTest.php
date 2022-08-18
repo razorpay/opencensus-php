@@ -2483,6 +2483,57 @@ class BankTransferTest extends TestCase
         $this->assertEquals($testData['request']['content']['Data'][0]['senderAccountNumber'], $payerBankAccount['account_number']);
     }
 
+    public  function testBankTransferRblViaScService()
+    {
+        $this->enableRazorXTreatmentForRoutingApiToScService();
+
+        $testData = $this->testData['testBankTransferRbl'];
+
+        $testData['request']['content']['Data'][0]['beneficiaryAccountNumber'] = $this->getRblVaBankAccount();
+
+        $this->ba->directAuth();
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertEquals("Success", $response['Status']);
+
+        $this->ba->smartCollectAuth();
+
+        $processInternalTestData = $this->testData[__FUNCTION__];
+
+        $this->startTest($processInternalTestData);
+
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+
+        $this->assertEquals($bankTransfer['narration'], $testData['request']['content']['Data'][0]['UTRNumber']);
+        $this->assertEquals(343946, $bankTransfer['amount']);
+
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals(343946, $payment['amount']);
+        $this->assertEquals('bt_rbl', $payment['gateway']);
+    }
+
+    protected function enableRazorXTreatmentForRoutingApiToScService()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function($mid, $feature, $mode) {
+                                  if ($feature === RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+    }
+
     public function testBankTransferRblJSW()
     {
         $testData = $this->testData['testBankTransferRbl'];

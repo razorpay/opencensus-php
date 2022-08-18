@@ -684,13 +684,6 @@ class Core extends Base\Core
         switch ($routeName)
         {
             case 'bank_transfer_process':
-                $properties = [
-                    'source'        => 'callback',
-                    'request_from'  => 'bank',
-                ];
-
-                break;
-
             case 'bank_transfer_process_rbl':
             case 'bank_transfer_process_icici':
             case 'bank_transfer_process_hdfc_ecms':
@@ -702,13 +695,6 @@ class Core extends Base\Core
                 break;
 
             case 'bank_transfer_process_rbl_internal':
-                $properties = [
-                    'source'        => 'file',
-                    'request_from'  => 'bank',
-                ];
-
-                break;
-
             case 'bank_transfer_process_icici_internal':
                 $properties = [
                     'source'        => 'file',
@@ -733,6 +719,14 @@ class Core extends Base\Core
 
                 break;
 
+            case 'bank_transfer_process_internal':
+                $properties = [
+                    'source'              => 'callback',
+                    'request_from'        => 'bank',
+                    'sc_service_callback' => true
+                ];
+
+                break;
             default:
                 $this->trace->info(
                     TraceCode::UNTRACKED_ENDPOINT_BANK_TRANSFER,

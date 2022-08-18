@@ -751,6 +751,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerCommissionService();
 
+        $this->registerSmartCollect();
+
         $this->registerCdsHttpClients();
     }
 
@@ -833,6 +835,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'outbox',
             'splitzService',
             'bbpsService',
+            'smartcollect',
             'cds_http_client',
             AsvConstant::ASV_HTTP_CLIENT,
         ];
@@ -2160,6 +2163,17 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         });
     }
 
+    protected function registerSmartCollect()
+    {
+        $this->app->singleton('smartCollect', function($app)
+        {
+            $mock = $app['config']->get('applications.smart_collect.mock');
+
+            $implementation = $mock ? Mock\SmartCollect::class : SmartCollect::class;
+
+            return new $implementation($app);
+        });
+    }
     /**
      * register cds http client
      *

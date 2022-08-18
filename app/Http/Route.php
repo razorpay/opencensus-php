@@ -546,6 +546,7 @@ class Route
         'initiate_terminal_onboarding'             => ['post',     'terminals/onboard',                              'TerminalOnboardingController@postInitiateOnboarding'               ],
         'terminal_onboard_callback'                => ['post',     'terminals/onboard/{gateway}/callback/{mode}',    'TerminalOnboardingController@postTerminalOnboardCallback'          ],
         'bank_transfer_process'                    => ['post',     'ecollect/validate',                              'BankTransferController@processBankTransfer'                        ],
+        'bank_transfer_process_internal'           => ['post',     'ecollect/validate/internal',                     'BankTransferController@processBankTransferInternal'                ],
         'bank_transfer_process_yesbank_internal'   => ['post',     'ecollect/validate/yesbank/internal',             'BankTransferController@processYesbankBankTransfer'                 ],
         'bank_transfer_process_icici'              => ['post',     'ecollect/validate/icici',                        'BankTransferController@processIciciBankTransferCallback'           ],
         'bank_transfer_process_icici_internal'     => ['post',     'ecollect/validate/icici/internal',               'BankTransferController@processIciciBankTransfer'                   ],
@@ -5117,6 +5118,7 @@ class Route
 
         'transaction_statement_fetch_multiple_for_banking_internal',
 
+        'bank_transfer_process_internal',
         'internal_merchant_activation_status',
 
         // Magic Club
@@ -13675,6 +13677,9 @@ class Route
             'recon_update_data'
         ],
 
+        'smart_collect' => [
+            'bank_transfer_process_internal'
+        ],
         'consumer_app' => [
             'customer_one_cc_get_or_create_global',
             'customer_fetch_by_id_global',
