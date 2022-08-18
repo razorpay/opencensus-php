@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
+use RZP\Models\User;
 use RZP\Constants\Product;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -427,10 +428,29 @@ class Core extends Base\Core
         if (empty($partner) === false)
         {
             $merchantCore = new Merchant\Core;
-
-            $merchantCore->createPartnerSubmerchantAccessMap($partner, $merchant);
-
+            $role = null;
             $product = $promotion->getProduct() ?? Product::PRIMARY;
+
+            if ($product === Product::BANKING)
+            {
+                $properties = [
+                    'id'            => $partner->getId(),
+                    'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
+                ];
+
+                $isExpEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
+
+                if ($isExpEnabled === true)
+                {
+                    $role = User\Role::VIEW_ONLY;
+                }
+                else
+                {
+                    \Request::instance()->request->add([Merchant\Entity::ALLOW_USER_CREATION => false]);
+                }
+            }
+
+            $merchantCore->createPartnerSubmerchantAccessMap($partner, $merchant, null, $role);
 
             $data = [
                 'status'        => 'success',

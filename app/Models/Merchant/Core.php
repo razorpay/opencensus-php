@@ -3817,11 +3817,12 @@ class Core extends Base\Core
      * @param Entity $submerchant
      *
      * @param null $appType
+     * @param string $role Defined in RZP\Models\User\Role
      * @return array
      * @throws BadRequestException
      * @throws Throwable
      */
-    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant, $appType = null): array
+    public function createPartnerSubmerchantAccessMap(Entity $partner, Entity $submerchant, $appType = null, string $role = null): array
     {
         $merchantValidator = new Validator;
 
@@ -3861,7 +3862,7 @@ class Core extends Base\Core
                 ]);
         }
 
-        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $appType) {
+        $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $appType, $role) {
 
             $partnerApp = $this->fetchPartnerApplication($partner, $appType);
 
@@ -3885,7 +3886,7 @@ class Core extends Base\Core
             // Maintained for backward compatibility
             $this->addSubMerchantReferral($partner, $submerchant);
 
-            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant, $appType);
+            $this->assignSubmerchantDashboardAccessIfApplicable($partner, $submerchant, $appType, $role);
 
             // If the mapping already exists, the existing entity is returned
             $accessMap = (new AccessMap\Core)->addMappingForOAuthApp(
@@ -4813,7 +4814,7 @@ class Core extends Base\Core
      * @param Entity $submerchant
      * @param null $appType
      */
-    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null)
+    protected function assignSubmerchantDashboardAccessIfApplicable(Entity $partner, Entity $submerchant, $appType = null, string $role = null)
     {
         if ($partner->allowSubmerchantDashboardAccess($appType) === false)
         {
@@ -4823,7 +4824,7 @@ class Core extends Base\Core
         if ($this->isPartnerUserAddedToSubMUser($partner, $submerchant, Product::PRIMARY, [Role::OWNER]) === false)
         {
             // Attaches partners's user to the submerchant account as an owner
-            $this->attachSubMerchantUser($partner->primaryOwner()->getId(), $submerchant);
+            $this->attachSubMerchantUser($partner->primaryOwner()->getId(), $submerchant, null, $role);
         }
         else
         {

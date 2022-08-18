@@ -512,21 +512,6 @@ class AccountV2Test extends TestCase
         ];
 
         $this->mockSplitzTreatment($input, $output);
-
-        $input = [
-            "id"            => "10000000000000",
-            "experiment_id" => "JqPQNIjSTvE6v0",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
     }
 
     public function testGetValidationFieldsForNoDocOnboarding()

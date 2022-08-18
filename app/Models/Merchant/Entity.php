@@ -297,6 +297,8 @@ class Entity extends Base\PublicEntity
     const DCC_RECURRING_MARKUP_PERCENTAGE   = 'dcc_recurring_markup_percentage';
 
 
+    const ALLOW_USER_CREATION       = 'allow_user_creation';
+
     protected $entity = 'merchant';
 
     /**
@@ -3172,6 +3174,13 @@ class Entity extends Base\PublicEntity
      */
     public function allowSubmerchantDashboardAccess($appType = null): bool
     {
+        $allowUserCreation = \Request::all()[self::ALLOW_USER_CREATION] ?? true;
+
+        if ($allowUserCreation === false)
+        {
+            return false;
+        }
+
         // Later change to only fully managed partners
         return (($appType === MerchantApplications\Entity::MANAGED) and
                 (($this->isFullyManagedPartner() === true) or ($this->isAggregatorPartner() === true)));

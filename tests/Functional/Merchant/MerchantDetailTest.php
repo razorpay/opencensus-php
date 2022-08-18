@@ -21,6 +21,7 @@ use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Mail\Merchant\Rejection;
 use Functional\Helpers\BvsTrait;
+use RZP\Tests\Traits\MocksSplitz;
 use Illuminate\Http\UploadedFile;
 use RZP\Services\SalesForceClient;
 use RZP\Error\PublicErrorDescription;
@@ -69,7 +70,7 @@ class MerchantDetailTest extends OAuthTestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use WorkflowTrait;
-
+    use MocksSplitz;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
@@ -3118,7 +3119,6 @@ Team Razorpay', '1234567890');
         $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
 
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
-        $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], true);
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,
@@ -3128,14 +3128,6 @@ Team Razorpay', '1234567890');
         $configAttributes = [
             'default_plan_id' => self::DEFAULT_MERCHANT_ID,
             'entity_id'       => $app->getId(),
-            'entity_type'     => 'application',
-        ];
-
-        $this->fixtures->create('partner_config', $configAttributes);
-
-        $configAttributes = [
-            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
-            'entity_id'       => $referredApp->getId(),
             'entity_type'     => 'application',
         ];
 
@@ -3170,9 +3162,7 @@ Team Razorpay', '1234567890');
 
         $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
 
-        $referredApp = $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'reseller'], true);
-
-        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::REFERRED;
+        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::MANAGED;
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,
@@ -3182,14 +3172,6 @@ Team Razorpay', '1234567890');
         $configAttributes = [
             'default_plan_id' => self::DEFAULT_MERCHANT_ID,
             'entity_id'       => $managedApp->getId(),
-            'entity_type'     => 'application',
-        ];
-
-        $this->fixtures->create('partner_config', $configAttributes);
-
-        $configAttributes = [
-            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
-            'entity_id'       => $referredApp->getId(),
             'entity_type'     => 'application',
         ];
 
@@ -3221,7 +3203,7 @@ Team Razorpay', '1234567890');
 
         $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
 
-        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $referredApp->getId()]);
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $managedApp->getId()]);
 
         $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
                        ->where('user_id', '=', $referrerId)
@@ -3239,8 +3221,62 @@ Team Razorpay', '1234567890');
 
         $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
 
-        $this->assertSame($referredApp->getId(), $merchantAcessMap['entity_id']);
+        $this->assertSame($managedApp->getId(), $merchantAcessMap['entity_id']);
         $this->assertContains('MerchantUser01', $referredSubMerchant->users->getIds());
+    }
+
+    /**
+     * This testcase validates the following
+     * 1. Add referral code when subM sign up from referral link
+     * 2. attaches managed app
+     * 3. adds partner user to subM users list with a role
+     * 4. validates if the role above attached for banking account is Role::VIEW_ONLY
+     */
+    public function testPutPreSignUpDetailsWithBankingReferralCodeInXForAggregator()
+    {
+        $testData = $this->testData['testPutPreSignUpDetailsWithPrimaryReferralCodeInXForAggregator'];
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => self::DEFAULT_MERCHANT_ID,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => self::DEFAULT_MERCHANT_ID,
+            'entity_id'       => $app->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals', ["product" => Constants\Product::BANKING]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($referredSubMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+        $this->ba->addXOriginHeader();
+
+        $this->mockSplitzEvaluation();
+
+        $this->startTest($testData);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($referredSubMerchantId, 'MerchantUser01', 'banking');
+
+        $this->assertEquals($mapping->first()->role, Role::VIEW_ONLY);
     }
 
     public function testPutPreSignUpDetailsWithInvalidReferralCode()
@@ -7530,6 +7566,38 @@ We look forward to transacting with you!
             -Team Razorpay',
             '1234567890'
         );
+    }
+
+    private function mockSplitzEvaluation() {
+        $input = [
+            "experiment_id" => "JqPQNIjSTvE6v0",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "JIRYzx7YtMuB18",
+            "id"            => "10000000000000",
+            "request_data"  => "{\"id\":\"10000000000000\"}",
+        ];
+
+        // push metrics experiment, hence not enabling
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }
 

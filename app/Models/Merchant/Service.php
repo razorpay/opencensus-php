@@ -666,18 +666,21 @@ class Service extends Base\Service
             (($isOptionalEmailAllowed === true) and ($subMerchantEmailIsSame === true)) or
             (($isPartner === false) and ($hasAggregatorFeature === true)))
         {
-            $properties = [
-                'id'            => $aggregatorMerchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
-            ];
-
             $role = $subMerchant->getUserOwnerRole();
 
-            $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
-
-            if ($isExpEnabled === true)
+            if ($product === Product::BANKING)
             {
-                $role = $product === Product::BANKING ? User\Role::VIEW_ONLY : $role;
+                $properties = [
+                    'id'            => $aggregatorMerchant->getId(),
+                    'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
+                ];
+
+                $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+
+                if ($isExpEnabled === true)
+                {
+                    $role = User\Role::VIEW_ONLY;
+                }
             }
 
             $this->trace->info(TraceCode::ATTACH_SUBMERCHANT_USER, [
