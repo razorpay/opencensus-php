@@ -9384,17 +9384,20 @@ trait Authorize
             {
                 $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
 
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+                if (empty($transactionMessage) === false)
                 {
-                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
-                }));
+                    \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+                    {
+                        LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+                    }));
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
-                    [
-                        'payment_id'        => $payment->getId(),
-                        'message'           => $transactionMessage,
-                    ]);
+                    $this->trace->info(
+                        TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
+                        [
+                            'payment_id'        => $payment->getId(),
+                            'message'           => $transactionMessage,
+                        ]);
+                }
             }
         }
         catch (\Exception $e)

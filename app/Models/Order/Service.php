@@ -115,11 +115,6 @@ class Service extends Base\Service
             return true;
         }
 
-        if (isset($input[Entity::CONVENIENCE_FEE_CONFIG]) === true)
-        {
-            return $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_CONVENIENCE_FEE_ORDER_TO_PG_ROUTER, $this->mode) === 'on';
-        }
-
         $result = $this->app->razorx->getTreatment($merchant->getId(), RazorxTreatment::ROUTE_ORDER_TO_PG_ROUTER, $this->mode);
 
         if (($merchant->getId() === 'CYseUgx4bt9VFp') and

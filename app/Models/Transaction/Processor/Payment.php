@@ -276,7 +276,7 @@ class Payment extends Base
                 $this->calculateFeeForAmountCredit();
                 break;
 
-            case ($this->feeCredits >= $this->fees):
+            case (($this->feeCredits > 0) and ($this->feeCredits >= $this->fees)):
                 $this->calculateFeeForFeeCredit();
                 break;
 

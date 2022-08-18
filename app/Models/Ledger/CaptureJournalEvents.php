@@ -46,6 +46,11 @@ class CaptureJournalEvents
 
     public static function createTransactionMessageForGatewayCapture(Payment\Entity $payment): array
     {
+        if ($payment->isDirectSettlement() === true)
+        {
+            return [];
+        }
+
         $app = App::getFacadeRoot();
 
         $trace = $app['trace'];
@@ -88,19 +93,17 @@ class CaptureJournalEvents
     {
         $rule = null;
 
-        if($transaction->isGratis() === true)
-        {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
-        }
-
         if($transaction->isFeeCredits() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
         }
-
-        if($transaction->isPostpaid() === true)
+        else if($transaction->isPostpaid() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
+        }
+        else if($transaction->isGratis() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
         }
 
         return $rule;
@@ -112,19 +115,17 @@ class CaptureJournalEvents
 
         $rule[Constants::DIRECT_SETTLEMENT_ACCOUNTING] = Constants::DIRECT_SETTLEMENT;
 
-        if($transaction->isGratis() === true)
-        {
-            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
-        }
-
         if($transaction->isFeeCredits() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::FEE_CREDITS;
         }
-
-        if($transaction->isPostpaid() === true)
+        else if($transaction->isPostpaid() === true)
         {
             $rule[Constants::CREDIT_ACCOUNTING] = Constants::POSTPAID;
+        }
+        else if($transaction->isGratis() === true)
+        {
+            $rule[Constants::CREDIT_ACCOUNTING] = Constants::AMOUNT_CREDITS;
         }
 
         return $rule;
@@ -148,7 +149,7 @@ class CaptureJournalEvents
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
         }
-        else if($transaction->isPostpaid())
+        else if($transaction->isPostpaid() === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
             $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);

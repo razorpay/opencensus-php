@@ -357,14 +357,17 @@ trait Capture
             {
                 $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
 
-                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+                if (empty($transactionMessage) === false)
+                {
+                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
-                    [
-                        'payment_id'        => $payment->getId(),
-                        'message'           => $transactionMessage,
-                    ]);
+                    $this->trace->info(
+                        TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
+                        [
+                            'payment_id'        => $payment->getId(),
+                            'message'           => $transactionMessage,
+                        ]);
+                }
             }
         }
         catch (\Exception $e)
