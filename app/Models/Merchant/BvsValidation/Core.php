@@ -384,9 +384,9 @@ class Core extends Base\Core
 
     protected function shouldFireAccountUpdatedWebhook(string $merchantId)
     {
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->find($merchantId);
 
-        $isLinkedAccount = $merchant->isLinkedAccount();
+        $isLinkedAccount = (is_null($merchant) === false) ? $merchant->isLinkedAccount() : false;
 
         if($isLinkedAccount === false)
         {
