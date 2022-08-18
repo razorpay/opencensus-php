@@ -688,12 +688,9 @@ class Core extends Base\Core
 
         if(empty($batchId) === false)
         {
-            Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PAYMENT_SET_BATCH], function ($paymentProcessor, $batchId) {
-
-                $payment = $paymentProcessor->getPayment();
-                $payment->setBatchId($batchId);
-                $this->repo->save($payment);
-            });
+            $payment = $paymentProcessor->getPayment();
+            $payment->setBatchId($batchId);
+            $this->repo->save($payment);
         }
 
         return $paymentData;
