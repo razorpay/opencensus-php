@@ -7887,6 +7887,60 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testBankLmsEndToEndForLeadReceivedDateFiltersNegativecase()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::INITIATED,
+            null, Status::BANK_PICKED_UP_DOCS,
+            null, null,
+            $response);
+
+        $state_timestamp = $this->getDbLastEntity('banking_account_state');
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        // Tests already exist here
+        $url = sprintf('/banking_accounts/rbl/lms/banking_account?lead_received_from_date=%s&lead_received_to_date=%s',
+            $state_timestamp->getCreatedAt(),
+            $state_timestamp->getCreatedAt()
+        );
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => $url,
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testBankLmsEndToEndForFetchById()
     {
         // Make merchant as Bank CA Onboarding Partner

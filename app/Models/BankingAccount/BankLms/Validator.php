@@ -53,8 +53,8 @@ class Validator extends Base\Validator
         BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'sometimes|alpha_num|size:14',
         Entity::BUSINESS_CATEGORY                => 'sometimes|string',
         BankingAccount\Entity::BANK_ACCOUNT_TYPE => 'sometimes|string',
-        Constants::LEAD_RECEIVED_FROM_DATE       => 'sometimes|integer',
-        Constants::LEAD_RECEIVED_TO_DATE         => 'sometimes|integer',
+        Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
+        Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
     ];
 
     /**
