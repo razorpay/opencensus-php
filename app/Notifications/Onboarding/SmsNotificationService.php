@@ -72,6 +72,7 @@ class SmsNotificationService extends BaseNotificationService
         ];
 
         $payload[Constants::PARAMS] = array_merge($payload[OnboardingConstants::CONTENT_PARAMS], $this->args[Constants::PARAMS] ?? []);
+        $payload[OnboardingConstants::CONTENT_PARAMS] = $payload[Constants::PARAMS];
 
         return $payload;
     }

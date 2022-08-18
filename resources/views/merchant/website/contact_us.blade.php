@@ -1,4 +1,4 @@
-<div class= 'compalinace-content'>
+<div class='content-container'>
     <p class= 'content-head'>Contact us</p>
     <div class= 'content-seprater'></div>
     <p class= 'updated-date'>Last updated on {{{$data['updated_at']}}}</p>

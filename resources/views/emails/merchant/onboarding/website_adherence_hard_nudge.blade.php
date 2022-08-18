@@ -94,7 +94,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <a href="https://www.easy.razorpay.com/website-compliance" target="_blank"
+                                    <a href="https://dashboard.razorpay.com/app/website-app-details" target="_blank"
                                        style="
                                                     display: block;
                                                     text-decoration: none;

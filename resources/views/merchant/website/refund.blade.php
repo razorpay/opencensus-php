@@ -1,8 +1,9 @@
-<div class='compalinace-content'>
+<div class='content-container'>
     <p class='content-head'>Cancellation &amp; Refund Policy</p>
     <div class='content-seprater'></div>
     <p class='updated-date'>Last updated on {{{$data['updated_at']}}}</p>
-    <p class='content-text'>
+    @if ($data['website_detail']['refund_process_period'] !== 'Not applicable')
+        <p class='content-text'>
         {{{$data['merchant_legal_entity_name']}}} believes in helping its customers
         as far as possible, and has therefore a liberal cancellation policy. Under
         this policy:
@@ -10,11 +11,10 @@
     <ul class='unorder-list'>
         <li class='list-item'>
             <p class='content-text list-text'>
-                Cancellations will be considered only if the request is made within
-                {{{$data['website_detail']['refund_request_period']}}} of placing an
-                order. However, the cancellation request may not be entertained if the
-                orders have been communicated to the vendors/merchants and they have
-                initiated the process of shipping them.
+                Cancellations will be considered only if the request is made immediately
+                after placing the order. However, the cancellation request may not be
+                entertained if the orders have been communicated to the vendors/merchants
+                and they have initiated the process of shipping them.
             </p>
         </li>
         <li class='list-item'>
@@ -60,8 +60,8 @@
             </p>
         </li>
     </ul>
-    <p class='content-text'>
-        If merchant selects cancellation refund is not applicable:
-    </p>
+    @endif
+    @if ($data['website_detail']['refund_process_period'] === 'Not applicable')
     <p class='content-text'>No cancellations &amp; Refunds are entertained</p>
+    @endif
 </div>

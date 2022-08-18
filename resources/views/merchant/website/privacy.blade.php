@@ -1,4 +1,4 @@
-<div class='compalinace-content'>
+<div class='content-container'>
     <p class='content-head'>Privacy Policy</p>
     <div class='content-seprater'></div>
     <p class='updated-date'>Last updated on {{{$data['updated_at']}}}</p>
@@ -18,7 +18,7 @@
         to time by updating this page. You should check this page from time to time
         to ensure that you are happy with any changes.
     </p>
-    <p class='content-text'>We may collect the following information:</p>
+    <p class='content-text'><strong>We may collect the following information:</strong></p>
     <ul class='unorder-list'>
         <li class='list-item'>
             <p class='content-text list-text'>Name and job title</p>
@@ -39,7 +39,7 @@
             </p>
         </li>
     </ul>
-    <p class='content-text'>What we do with the information we gather</p>
+    <p class='content-text'><strong>What we do with the information we gather</strong></p>
     <p class='content-text'>
         We require this information to understand your needs and provide you with a
         better service, and in particular for the following reasons:
@@ -73,7 +73,7 @@
         We are committed to ensuring that your information is secure. In order to
         prevent unauthorised access or disclosure we have put in suitable measures.
     </p>
-    <p class='content-text'>How we use cookies</p>
+    <p class='content-text'><strong>How we use cookies</strong></p>
     <p class='content-text'>
         A cookie is a small file which asks permission to be placed on your
         computer's hard drive. Once you agree, the file is added and the cookie
@@ -100,7 +100,7 @@
         cookies if you prefer. This may prevent you from taking full advantage of
         the website.
     </p>
-    <p class='content-text'>Controlling your personal information</p>
+    <p class='content-text'><strong>Controlling your personal information</strong></p>
     <p class='content-text'>
         You may choose to restrict the collection or use of your personal
         information in the following ways:

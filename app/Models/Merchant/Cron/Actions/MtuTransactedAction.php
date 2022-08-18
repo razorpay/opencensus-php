@@ -107,7 +107,8 @@ class MtuTransactedAction extends BaseAction
             {
                 $args = [
                     EscalationConstants::MERCHANT => $merchant,
-                    "complianceUrl"               => 'https://www.easy.razorpay.com/website-compliance'
+                    "params"                      => [
+                        "complianceUrl" => 'https://dashboard.razorpay.com/app/website-app-details']
                 ];
 
                 $success = (new OnboardingNotificationHandler($args))

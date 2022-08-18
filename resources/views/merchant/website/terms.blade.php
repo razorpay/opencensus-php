@@ -1,4 +1,4 @@
-<div class='compalinace-content'>
+<div class='content-container'>
     <p class='content-head'>Terms &amp; Conditions</p>
     <div class='content-seprater'></div>
     <p class='updated-date'>Last updated on {{{$data['updated_at']}}}</p>
@@ -28,7 +28,7 @@
         {{{$data['merchant_details']['business_registered_pin']}}}. The term 'you' refers to the user or viewer of our website.
     </p>
     <p class='content-text'>
-        The use of this website is subject to the following terms of use:
+        <strong>The use of this website is subject to the following terms of use:</strong>
     </p>
     <ul class='unorder-list'>
         <li class='list-item'>

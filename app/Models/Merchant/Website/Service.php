@@ -258,60 +258,84 @@ class Service extends Base\Service
 
         try
         {
-            $response = $this->app['splitzService']->evaluateRequest([
-                                                                         'id'            => $merchant->getId(),
-                                                                         'experiment_id' => $this->app['config']->get('app.merchant_policies_exp_id'),
-                                                                     ]);
+            try
+
+            {
+                $response = $this->app['splitzService']->evaluateRequest([
+                                                                             'id'            => $merchant->getId(),
+                                                                             'experiment_id' => $this->app['config']->get('app.merchant_policies_exp_id'),
+                                                                         ]);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+
+                return false;
+            }
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $result = false;
+
+            if (empty($response['response']['variant']['variables']) === false)
+            {
+                foreach ($response['response']['variant']['variables'] as $variables)
+                {
+
+                    if ($variables['key'] === 'result')
+                    {
+                        $result = $variables['value'] === 'on';
+                    }
+
+                }
+            }
+
+            $businessDetail = optional($merchant->merchantDetail->businessDetail);
+
+            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
+                                                                   "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
+                                                                   "additional_Website" => $merchant->merchantDetail->getAttribute(DEntity::ADDITIONAL_WEBSITES),
+                                                                   "playstore"          => $businessDetail->getAppstoreUrl(),
+                                                                   "appstore"           => $businessDetail->getPlaystoreUrl(),
+                                                                   "variant"            => $variant,
+                                                                   "result"             => $result,
+                                                                   "response"           => $response
+            ]);
+
+            if ($variant === 'enable' or $result === true)
+            {
+
+                if ($merchant->isBusinessBankingEnabled() === true)
+                {
+                    return false;
+                }
+
+                if (empty($merchant->merchantDetail->getAttribute(
+                        DEntity::BUSINESS_WEBSITE)) === false)
+                {
+                    return true;
+                }
+
+                if (empty($merchant->merchantDetail->getAttribute(
+                        DEntity::ADDITIONAL_WEBSITES)) === false)
+                {
+                    return true;
+                }
+
+                if (empty($businessDetail->getAppstoreUrl()) === false)
+                {
+                    return true;
+                }
+                if (empty($businessDetail->getPlaystoreUrl()) === false)
+                {
+                    return true;
+                }
+            }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::WEBSITE_SECTION_ERROR, ['id' => $merchant->getId()]);
 
-            return false;
-        }
-
-        $variant = $response['response']['variant']['name'] ?? null;
-
-        $businessDetail = optional($merchant->merchantDetail->businessDetail);
-
-        $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
-                                                               "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
-                                                               "additional_Website" => $merchant->merchantDetail->getAttribute(DEntity::ADDITIONAL_WEBSITES),
-                                                               "playstore"          => $businessDetail->getAppstoreUrl(),
-                                                               "appstore"           => $businessDetail->getPlaystoreUrl(),
-                                                               "variant"            => $variant,
-                                                               "response"           => $response
-        ]);
-
-        if ($variant !== 'enable')
-        {
-            return false;
-        }
-
-        if ($merchant->isBusinessBankingEnabled() === true)
-        {
-            return false;
-        }
-
-        if (empty($merchant->merchantDetail->getAttribute(
-                DEntity::BUSINESS_WEBSITE)) === false)
-        {
-            return true;
-        }
-
-        if (empty($merchant->merchantDetail->getAttribute(
-                DEntity::ADDITIONAL_WEBSITES)) === false)
-        {
-            return true;
-        }
-
-        if (empty($businessDetail->getAppstoreUrl()) === false)
-        {
-            return true;
-        }
-        if (empty($businessDetail->getPlaystoreUrl()) === false)
-        {
-            return true;
         }
 
         return false;
@@ -1206,11 +1230,6 @@ class Service extends Base\Service
 
         $sendCommunication = false;
 
-        if (optional($websiteDetail)->getSectionStatus($sectionName) !== 3)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-        }
-
         if (empty($input[Constants::MERCHANT_CONSENT]) === false and $input[Constants::MERCHANT_CONSENT] === true)
         {
             $consentInput = [
@@ -1225,9 +1244,10 @@ class Service extends Base\Service
                 Entity::MERCHANT_WEBSITE_DETAILS =>
                     [
                         $sectionName => [
-                            Constants::PUBLISHED_URL => $published_url,
-                            Constants::STATUS        => Constants::SUBMITTED,
-                            Constants::UPDATED_AT    => Carbon::now()->getTimestamp()
+                            Constants::PUBLISHED_URL  => $published_url,
+                            Constants::STATUS         => Constants::SUBMITTED,
+                            Constants::SECTION_STATUS => 3,
+                            Constants::UPDATED_AT     => Carbon::now()->getTimestamp()
                         ]
                     ]
             ];
@@ -1281,11 +1301,6 @@ class Service extends Base\Service
 
         $sendCommunication = false;
 
-        if (optional($websiteDetail)->getSectionStatus($sectionName) !== 2)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-        }
-
         if (empty($input[Constants::MERCHANT_CONSENT]) === false and $input[Constants::MERCHANT_CONSENT] === true)
         {
             $consentInput = [ConsentEntity::CONSENT_FOR => Constants::WEBSITE . '_' . $sectionName];
@@ -1296,8 +1311,9 @@ class Service extends Base\Service
                 Entity::MERCHANT_WEBSITE_DETAILS =>
                     [
                         $sectionName => [
-                            Constants::STATUS     => Constants::SUBMITTED,
-                            Constants::UPDATED_AT => Carbon::now()->getTimestamp()
+                            Constants::STATUS         => Constants::SUBMITTED,
+                            Constants::SECTION_STATUS => 2,
+                            Constants::UPDATED_AT     => Carbon::now()->getTimestamp()
                         ]
                     ]
             ];
