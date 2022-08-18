@@ -13,6 +13,8 @@ use RZP\Base\Luhn;
 use RZP\Base\Repository;
 use RZP\Error\Error;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
@@ -6891,6 +6893,31 @@ class Processor
                     null);
             }
         }
+    }
+
+    private function validateOTP(string $id, array $gatewayInput)
+    {
+
+        if (isset($gatewayInput['otp']) === false)
+        {
+            return;
+        }
+
+        if (strlen($gatewayInput['otp']) >= 4 && strlen($gatewayInput['otp']) <= 10)
+        {
+            return;
+        }
+
+        $e = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH, null,  [
+            'next' => $this->getNextOtpAction(['resend_otp']),
+        ]);
+
+        $error = $e->getError();
+
+        $error->setPaymentMethod(Payment\Method::CARD);
+
+        throw $e;
+
     }
 
     public function isDarkRequest(): bool

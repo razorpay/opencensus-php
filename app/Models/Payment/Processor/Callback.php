@@ -56,6 +56,8 @@ trait Callback
      */
     private function coreCallback($id, $hash, array $gatewayInput)
     {
+        $this->validateOTP($id, $gatewayInput);
+
         // Axis migs started sending us card number in callback. This is a quickfix to
         // ignore the card number right before the callback is processed.
         unset($gatewayInput['realPan']);

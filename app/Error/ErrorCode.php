@@ -2258,6 +2258,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_STATUS_TRANSITION                                     = 'BAD_REQUEST_INVALID_STATUS_TRANSITION';
 
+    const BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH                         = 'BAD_REQUEST_PAYMENT_OTP_VALIDATION_INVALID_LENGTH';
+
     const INVALID_DATA_PARSER                                                       = 'INVALID_DATA_PARSER';
 
     const WORKFLOW_CREATION_FAILURE                                                 = 'WORKFLOW_CREATION_FAILURE';
