@@ -34,7 +34,7 @@ class HarvesterClient extends AbstractEventClient
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
 
     const QUERY_API_PATH        = 'analytics/pokedex';
-    const QUERY_API_PATH_V2     = 'pql/analytics';
+    const QUERY_API_PATH_V2     = 'v1/pql/analytics';
     const PINOT_QUERY_API_PATH  = 'twirp/rzp.harvester.v1.PqlService/SqlQuery';
 
     const RETRY = true;
