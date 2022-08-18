@@ -50,7 +50,11 @@ class Validator extends Base\Validator
         Constants::MIS_TYPE => 'required|string|in:leads',
         BankingAccount\Entity::STATUS => 'sometimes|string|in:initiated,processing,processed,cancelled,unserviceable,rejected,archived',
         BankingAccount\Entity::SUB_STATUS => 'sometimes|string',
-        BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'sometimes|alpha_num|size:14'
+        BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'sometimes|alpha_num|size:14',
+        Entity::BUSINESS_CATEGORY                => 'sometimes|string',
+        BankingAccount\Entity::BANK_ACCOUNT_TYPE => 'sometimes|string',
+        Constants::LEAD_RECEIVED_FROM_DATE       => 'sometimes|integer',
+        Constants::LEAD_RECEIVED_TO_DATE         => 'sometimes|integer',
     ];
 
     /**

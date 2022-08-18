@@ -247,6 +247,54 @@ class Repository extends Base\Repository
         });
     }
 
+    /**
+     * Filter to search when lead was sent to bank - start date
+     * Sent from Partner Bank LMS
+     * Defined here becuase it is using the same Download LMS code
+     */
+    public function addQueryParamLeadReceivedFromDate($query, $params)
+    {
+        return $query->whereExists(function ($q) use ($params) {
+
+            $filterFromDate = $params[BankLms\Constants::LEAD_RECEIVED_FROM_DATE];
+            $bankingAccountStateTable = $this->repo->banking_account_state->getTableName();
+            $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(State\Entity::BANKING_ACCOUNT_ID);
+            $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+            $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(State\Entity::STATUS);
+            $bankingAccountStateCreatedAtColumn = $this->repo->banking_account_state->dbColumn(State\Entity::CREATED_AT);
+
+            $q->select('*')
+                ->from($bankingAccountStateTable)
+                ->where($bankingAccountStateStatusColumn, '=', Status::INITIATED)
+                ->where($bankingAccountStateCreatedAtColumn, '>=', $filterFromDate)
+                ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn);
+        });
+    }
+
+    /**
+     * Filter to search when lead was sent to bank - end date
+     * Sent from Partner Bank LMS
+     * Defined here becuase it is using the same Download LMS code
+     */
+    public function addQueryParamLeadReceivedToDate($query, $params)
+    {
+        return $query->whereExists(function ($q) use ($params) {
+
+            $filterToDate = $params[BankLms\Constants::LEAD_RECEIVED_TO_DATE];
+            $bankingAccountStateTable = $this->repo->banking_account_state->getTableName();
+            $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(State\Entity::BANKING_ACCOUNT_ID);
+            $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+            $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(State\Entity::STATUS);
+            $bankingAccountStateCreatedAtColumn = $this->repo->banking_account_state->dbColumn(State\Entity::CREATED_AT);
+
+            $q->select('*')
+                ->from($bankingAccountStateTable)
+                ->where($bankingAccountStateStatusColumn, '=', Status::INITIATED)
+                ->where($bankingAccountStateCreatedAtColumn, '<=', $filterToDate)
+                ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn);
+        });
+    }
+
     public function addQueryParamAssigneeTeam($query, $params)
     {
         $assigneeTeamColumn = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::ASSIGNEE_TEAM);

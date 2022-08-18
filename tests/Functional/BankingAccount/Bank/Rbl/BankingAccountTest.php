@@ -7872,6 +7872,7 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXBankLMSOriginHeader();
 
+        // Tests already exist here
         $url = sprintf('/banking_accounts/rbl/lms/banking_account?lead_received_from_date=%s&lead_received_to_date=%s',
             $state_timestamp->getCreatedAt(),
             $state_timestamp->getCreatedAt()
