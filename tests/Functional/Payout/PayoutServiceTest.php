@@ -31,6 +31,7 @@ use RZP\Services\PayoutService\Get as PayoutServiceGet;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Merchant\Balance\AccountType as AccountType;
 use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
+use RZP\Services\PayoutService\Fetch as PayoutServiceFetch;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
@@ -117,6 +118,59 @@ class PayoutServiceTest extends TestCase
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+    }
+
+    public function mockPayoutServiceFetch($fail = false, $request = [])
+    {
+        $payoutServiceFetchMock = Mockery::mock('RZP\Services\PayoutService\Fetch',
+                                                [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceFetchMock->shouldReceive('sendRequest')
+                               ->withArgs(
+                                   function($arg) use ($request) {
+                                       try
+                                       {
+                                           // Using this method only here as we want to check if the keys in the
+                                           // request are coming properly or not.
+                                           $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                           if (empty($request['url']) === false)
+                                           {
+                                               return (substr($arg['url'], -1 * strlen($request['url'])) ===
+                                                       $request['url']);
+                                           }
+
+                                           return false;
+                                       }
+                                       catch (\Throwable $e)
+                                       {
+                                           return false;
+                                       }
+                                   }
+                               )
+                               ->andReturnUsing(
+                                   function() use ($request, $fail) {
+                                       return $this->getResponseForPayoutFetchServiceMock($fail, $request);
+                                   }
+                               );
+
+        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE__FETCH, $payoutServiceFetchMock);
+    }
+
+    public function mockPayoutServiceFetchShouldNotBeInvoked()
+    {
+        $payoutServiceFetchMock = Mockery::mock('RZP\Services\PayoutService\Fetch',
+                                                [$this->app])->makePartial();
+
+        $payoutServiceFetchMock->shouldNotReceive('fetch');
+
+        $payoutServiceFetchMock->shouldNotReceive('fetchMultiple');
+
+        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE__FETCH, $payoutServiceFetchMock);
     }
 
     public function mockPayoutServiceGet($fail = false, $request = [])
@@ -411,6 +465,27 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
+    public function getResponseForPayoutFetchServiceMock($fail, $request,  $status = 'processing')
+    {
+        $url = $request['url'];
+
+        if (empty($url) === false)
+        {
+            $getPayoutByIdUrl = '/payouts/pout_';
+
+            if (substr($url, 0, strlen($getPayoutByIdUrl)) === $getPayoutByIdUrl)
+            {
+                return $this->getResponseForPayoutByIdServiceMock($fail, $status);
+            }
+            else
+            {
+                return $this->getResponseForPayoutFetchMultipleServiceMock($fail, $status);
+            }
+        }
+
+        return new Requests_Response();
+    }
+
     public function getResponseForPayoutByIdServiceMock($fail, $status = 'processing')
     {
         $response = new Requests_Response();
@@ -419,11 +494,11 @@ class PayoutServiceTest extends TestCase
         {
             $response->body = json_encode(
                 [
-                    "error"   =>
+                    "error" =>
                         [
                             "code"        => ErrorCode::BAD_REQUEST_ERROR,
                             "description" => "Service Failure",
-                            "field"      => null
+                            "field"       => null
                         ]
                 ]);
             $response->status_code = 400;
@@ -455,6 +530,62 @@ class PayoutServiceTest extends TestCase
                 ]);
             $response->status_code = 200;
             $response->success = true;
+        }
+
+        return $response;
+    }
+
+    public function getResponseForPayoutFetchMultipleServiceMock($fail, $status = 'processing')
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"       => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        }
+        else
+        {
+            $response->body        = json_encode(
+                [
+                    "entity"   => "collection",
+                    "count"    => 1,
+                    "has_more" => true,
+                    "items"    => [
+                        [
+                            "id"              => "pout_Gg7sgBZgvYjlSB",
+                            "entity"          => "payout",
+                            "fund_account_id" => "fa_100000000000fa",
+                            "amount"          => 100,
+                            "currency"        => "INR",
+                            "merchant_id"     => "10000000000000",
+                            "notes"           => "",
+                            "fees"            => 0,
+                            "tax"             => 0,
+                            "status"          => $status,
+                            "purpose"         => "refund",
+                            "utr"             => "",
+                            "reference_id"    => null,
+                            "narration"       => "test Merchant Fund Transfer",
+                            "batch_id"        => "",
+                            "initiated_at"    => 1614325830,
+                            "failure_reason"  => null,
+                            "created_at"      => 1614325826,
+                            "fee_type"        => null
+                        ]
+                    ]
+                ]);
+            $response->status_code = 200;
+            $response->success     = true;
         }
 
         return $response;
@@ -3144,4 +3275,258 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchPayoutById()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = $this->testData[__FUNCTION__]['request']['url'];
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutByIdWithExpandParam()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = explode('?', $this->testData[__FUNCTION__]['request']['url'])[0];
+
+        $input = [
+            'expand' => ['user', 'fund_account.contact'],
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutByIdWithErrorFromService()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = $this->testData[__FUNCTION__]['request']['url'];
+
+        $this->mockPayoutServiceFetch(true, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutByIdWithUnsupportedParamsForService()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = $this->testData[__FUNCTION__]['request']['url'];
+
+        $request['url'] = '/payouts/' . $payout->getPublicId() . '?' . explode('?', $request['url'])[1];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $request['url'];
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutByIdOnTestModeForService()
+    {
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultiple()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = '/payouts';
+
+        $input = [
+            'mode'           => 'imps',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithExpandParam()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = '/payouts';
+
+        $input = [
+            'mode'           => 'imps',
+            'expand'         => ['user', 'fund_account.contact'],
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithErrorFromService()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = '/payouts';
+
+        $input = [
+            'mode'           => 'imps',
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(true, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithUnsupportedParamsForService()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = $this->testData[__FUNCTION__]['request']['url'];
+
+        $request['url'] .= '&contact_id=' . $payout->fundAccount->contact->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = $request['url'];
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithNonSharedBalanceType()
+    {
+        $this->testCreatePayout();
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $this->bankingBalance->getId(),
+            [
+                'account_type' => 'direct',
+            ]
+        );
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithNoAccountNumber()
+    {
+        $this->testCreatePayout();
+
+        $this->fixtures->on('live')->edit(
+            'balance',
+            $this->bankingBalance->getId(),
+            [
+                'account_type' => 'direct',
+            ]
+        );
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->testData[__FUNCTION__]['response']['content']['items'][0]['id'] = $payout->getPublicId();
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleOnTestModeForService()
+    {
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPayoutMultipleWithPayoutModeParam()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = '/payouts';
+
+        $input = [
+            'expand'         => ['user', 'fund_account.contact'],
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+            'mode'           => 'imps',
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
 }

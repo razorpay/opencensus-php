@@ -973,6 +973,13 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
+        if ($this->core->shouldFetchPayoutByIdViaMicroservice($input) === true)
+        {
+            $payout = $this->core->fetchByIdFromPayoutsService($id, $input);
+
+            return $payout;
+        }
+
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         //tracking slack app related events
@@ -1015,19 +1022,29 @@ class Service extends Base\Service
             $input[Entity::SOURCE_TYPE_EXCLUDE] = PayoutSourceEntity::XPAYROLL;
         }
 
+        $payoutServiceInput = $input;
+
+        if ($this->core->shouldFetchPayoutsViaMicroserviceAndUpdateInputAccordingly($payoutServiceInput) === true)
+        {
+            $payouts = $this->core->fetchMultipleFromPayoutsService($payoutServiceInput);
+
+            return $payouts;
+        }
+
         $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant, $useMasterConnection);
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems
         $payoutsArr = $this->mergePendingPayoutsViaWorkflowService($input, $payouts);
 
-        if (empty($payoutsArr) == true) {
+        if (empty($payoutsArr) == true)
+        {
             $this->trace->info(
                 TraceCode::PAYOUT_GET_EMPTY_RESPONSE,
                 [
-                    Entity::MERCHANT_ID => $this->merchant->getId(),
+                    Entity::MERCHANT_ID       => $this->merchant->getId(),
                     'is_reference_id_present' => array_key_exists(Entity::REFERENCE_ID, $input),
-                    'useMasterConnection' => $useMasterConnection
+                    'useMasterConnection'     => $useMasterConnection
                 ]);
         }
 

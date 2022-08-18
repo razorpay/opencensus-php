@@ -862,7 +862,12 @@ class Constants
     /**
      * Internal Contact Payout Service enables for merchant
      */
-    const INTERNAL_CONTACT_VIA_PS         = 'internal_contact_via_ps';
+    const INTERNAL_CONTACT_VIA_PS = 'internal_contact_via_ps';
+
+    /*
+     * Allow get calls (id and multiple) for virtual account payouts via payout service
+     */
+    const FETCH_VA_PAYOUTS_VIA_PS = 'fetch_va_payouts_via_ps';
 
     /**
      * Skips Risk check for merchants
@@ -1885,6 +1890,7 @@ class Constants
         self::RBL_CA_UPI                      => true,
         self::PAYOUT_SERVICE_ENABLED          => true,
         self::SCHEDULE_PAYOUT_VIA_PS          => true,
+        self::FETCH_VA_PAYOUTS_VIA_PS         => true,
         self::INTERNAL_CONTACT_VIA_PS         => true,
         self::WHITE_LABELLED_INVOICES         => true,
         self::WHITE_LABELLED_ROUTE            => true,

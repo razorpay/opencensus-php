@@ -190,6 +190,11 @@ class Core extends Base\Core
     protected $payoutGetApiServiceClient;
 
     /**
+     * @var PayoutService\Fetch
+     */
+    protected $payoutServiceFetchClient;
+
+    /**
      * @var PayoutService\QueuedInitiate
      */
     protected $payoutServiceQueuedInitiateClient;
@@ -236,6 +241,8 @@ class Core extends Base\Core
 
         $this->payoutServiceQueuedInitiateClient =
             $this->app[PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE];
+
+        $this->payoutServiceFetchClient = $this->app[PayoutService\Fetch::PAYOUT_SERVICE__FETCH];
 
         $this->workflowService = new Workflow\Service\Client;
 
@@ -1697,26 +1704,124 @@ class Core extends Base\Core
         return $this->repo->payout->findOrFail($payout->getId());
     }
 
-
-    //get payout by id from payouts service
-    public function fetchFromPayoutsService(string $id, Merchant\Entity $merchant): array
+    // Fetch payout by id from payouts service
+    public function fetchByIdFromPayoutsService(string $id, array $input): array
     {
         $this->trace->info(
-            TraceCode::PAYOUT_GET_REQUEST_FROM_MICROSERVICE,
+            TraceCode::PAYOUT_FETCH_BY_ID_VIA_MICROSERVICE_REQUEST,
             [
-                'id' => $id
+                'id'    => $id,
+                'input' => $input,
             ]);
 
-        $response = $this->payoutGetApiServiceClient->GetPayoutByIdViaMicroservice($id, $merchant->getId());
+        $response = $this->payoutServiceFetchClient->fetch(EntityConstant::PAYOUT, $id, $input);
 
         $this->trace->info(
-            TraceCode::PAYOUT_GET_RESPONSE_FROM_MICROSERVICE,
+            TraceCode::PAYOUT_FETCH_BY_ID_VIA_MICROSERVICE_RESPONSE,
             [
                 'response' => $response
             ]);
 
         return $response;
     }
+
+    // Fetch payout multiple from payouts service
+    public function fetchMultipleFromPayoutsService(array $input): array
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_FETCH_MULTIPLE_VIA_MICROSERVICE_REQUEST,
+            [
+                'input' => $input
+            ]);
+
+        $response = $this->payoutServiceFetchClient->fetchMultiple(EntityConstant::PAYOUT, $input);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_FETCH_MULTIPLE_VIA_MICROSERVICE_RESPONSE,
+            [
+                'response' => $response
+            ]);
+
+        return $response;
+    }
+
+    /**
+     * @param array $input
+     * @return bool
+     */
+    public function shouldFetchPayoutByIdViaMicroservice(array $input): bool
+    {
+        // Doing it this way so that we can avoid as many db calls as possible for fetching features.
+        if ($this->mode !== Constants\Mode::LIVE)
+        {
+            return false;
+        }
+
+        $isRoutingViaMicroserviceFeasible = (new Fetch)->canFetchRequestBeRoutedToMicroservice($input);
+
+        if ($isRoutingViaMicroserviceFeasible === false)
+        {
+            return false;
+        }
+
+        $isFetchEnabledViaPs = $this->merchant->isFeatureEnabled(FeatureConstants::FETCH_VA_PAYOUTS_VIA_PS);
+
+        return $isFetchEnabledViaPs;
+    }
+
+    /**
+     * @param array $input
+     * @return bool
+     */
+    public function shouldFetchPayoutsViaMicroserviceAndUpdateInputAccordingly(array & $input): bool
+    {
+        // Doing it this way so that we can avoid as many db calls as possible.
+        if ($this->mode !== Constants\Mode::LIVE)
+        {
+            return false;
+        }
+
+        $isRoutingViaMicroserviceFeasible = (new Fetch)->canFetchRequestBeRoutedToMicroservice($input);
+
+        if ($isRoutingViaMicroserviceFeasible === false)
+        {
+            return false;
+        }
+
+        $accountType = null;
+
+        if (isset($input[Entity::BALANCE_ID]) === true)
+        {
+            /** @var Balance\Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($input[Entity::BALANCE_ID]);
+
+            $accountType = $balance->getAccountType();
+        }
+
+        if ($accountType !== Balance\AccountType::SHARED)
+        {
+            return false;
+        }
+
+        $isFetchEnabledViaPs = $this->merchant->isFeatureEnabled(FeatureConstants::FETCH_VA_PAYOUTS_VIA_PS);
+
+        if ($isFetchEnabledViaPs === true)
+        {
+            $input[Entity::ACCOUNT_NUMBER] = $balance->getAccountNumber();
+
+            unset($input[Entity::BALANCE_ID]);
+
+            if (isset($input[Entity::PAYOUT_MODE]) === true)
+            {
+                $input[Entity::MODE] = $input[Entity::PAYOUT_MODE];
+
+                unset($input[Entity::PAYOUT_MODE]);
+            }
+        }
+
+        return $isFetchEnabledViaPs;
+    }
+
 
     /**
      * @param Entity $payout

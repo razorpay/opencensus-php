@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Base\Fetch as BaseFetch;
 use RZP\Models\Settlement\Channel;
 use RZP\Http\BasicAuth\Type as AuthType;
@@ -200,6 +201,30 @@ class Fetch extends BaseFetch
         Entity::SOURCE_TYPE_EXCLUDE,
     ];
 
+    const PAYOUT_SERVICE_FETCH_ALLOWED_FIELDS = [
+        Entity::ID,
+        Entity::STATUS,
+        Entity::PURPOSE,
+        Entity::REVERSED_FROM,
+        Entity::REVERSED_TO,
+        Entity::BATCH_ID,
+        Entity::PAYOUT_MODE,
+        Entity::QUEUED_REASON,
+        Entity::REVERSAL_ID,
+        Entity::FUND_ACCOUNT_ID,
+        Entity::REFERENCE_ID,
+        Entity::BALANCE_ID,
+        Entity::PRODUCT,
+        Entity::MODE,
+        Entity::TRANSACTION_ID,
+        Entity::UTR,
+        Entity::CONTACT_NAME,
+        Entity::CONTACT_EMAIL,
+        Entity::CONTACT_TYPE,
+        Entity::CHANNEL,
+        self::EXPAND,
+    ];
+
     protected function validateMethod(string $attribute, string $value)
     {
         Method::validateMethod($value);
@@ -234,5 +259,20 @@ class Fetch extends BaseFetch
         }
 
         throw new Exception\BadRequestValidationFailureException('Cannot sort payouts on: ' . $value);
+    }
+
+    public function canFetchRequestBeRoutedToMicroservice(array $input) : bool
+    {
+        $filteredInputAfterExcludingPayoutServiceFetchAllowedFields =
+            array_diff(array_keys($input), self::PAYOUT_SERVICE_FETCH_ALLOWED_FIELDS);
+
+        // If this condition is true, it means there were no elements in $input which were not present in
+        // PAYOUT_SERVICE_FETCH_ALLOWED_FIELDS and hence we can route the service via Microservice.
+        if (empty($filteredInputAfterExcludingPayoutServiceFetchAllowedFields) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

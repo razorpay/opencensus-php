@@ -8,15 +8,15 @@ use Razorpay\Edge\Passport\Passport;
 
 class AdminFetch extends Base
 {
-    const FETCH_PAYOUTS_BASE_URI = '/admin';
+    const ADMIN_FETCH_PAYOUTS_BASE_URI = '/admin';
 
-    const FETCH_PAYOUTS_URI = self::FETCH_PAYOUTS_BASE_URI . '/payouts';
+    const ADMIN_FETCH_PAYOUTS_URI = self::ADMIN_FETCH_PAYOUTS_BASE_URI . '/payouts';
 
-    const FETCH_REVERSALS_URI = self::FETCH_PAYOUTS_BASE_URI . '/reversals';
+    const ADMIN_FETCH_REVERSALS_URI = self::ADMIN_FETCH_PAYOUTS_BASE_URI . '/reversals';
 
-    const FETCH_PAYOUT_LOGS_URI = self::FETCH_PAYOUTS_BASE_URI . '/payout_logs';
+    const ADMIN_FETCH_PAYOUT_LOGS_URI = self::ADMIN_FETCH_PAYOUTS_BASE_URI . '/payout_logs';
 
-    const FETCH_PAYOUT_SOURCES_URI = self::FETCH_PAYOUTS_BASE_URI . '/payout_sources';
+    const ADMIN_FETCH_PAYOUT_SOURCES_URI = self::ADMIN_FETCH_PAYOUTS_BASE_URI . '/payout_sources';
 
     // payout create service name for singleton class
     const PAYOUT_SERVICE_ADMIN_FETCH = 'payout_service_admin_fetch';
@@ -35,7 +35,7 @@ class AdminFetch extends Base
 
     protected function getEntity(string $entity, array $input)
     {
-        $urlConstantName = 'FETCH_' . strtoupper($entity) . "_URI";
+        $urlConstantName = 'ADMIN_FETCH_' . strtoupper($entity) . "_URI";
 
         $urlConstant = __CLASS__ . '::' . strtoupper($urlConstantName);
 
