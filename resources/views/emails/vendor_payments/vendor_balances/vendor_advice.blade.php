@@ -706,10 +706,9 @@
                                           text-align: left;
                                           color: #0d2366;
                                         ">
-                                      {{ $invoice['tds_categories'][0]['code']
-                                      }}, {{
-                                      $invoice['tds_categories'][0]['description']
-                                      }}
+                                      @if($invoice['tds_categories'][0]['code'])
+                                      {{ $invoice['tds_categories'][0]['code'] }},@endif {{
+                                      $invoice['tds_categories'][0]['description'] }}
                                     </div>
                                     <div class="label" style="
                                           color: #7b8199;
@@ -737,8 +736,8 @@
                                           text-align: left;
                                           color: #0d2366;
                                         ">
-                                      {{ $invoice['tds_categories'][0]['code']
-                                      }}, {{
+                                      @if($invoice['tds_categories'][0]['code'])
+                                      {{ $invoice['tds_categories'][0]['code'] }},@endif {{
                                       $invoice['tds_categories'][0]['description']
                                       }}
                                     </div>
@@ -772,8 +771,8 @@
                                           text-align: left;
                                           color: #0d2366;
                                         ">
-                                      {{ $invoice['tds_categories'][1]['code']
-                                      }}, {{
+                                      @if($invoice['tds_categories'][1]['code'])
+                                      {{ $invoice['tds_categories'][1]['code'] }},@endif {{
                                       $invoice['tds_categories'][1]['description']
                                       }}
                                     </div>
@@ -802,8 +801,8 @@
                                           text-align: left;
                                           color: #0d2366;
                                         ">
-                                      {{ $invoice['tds_categories'][0]['code']
-                                      }}, {{
+                                      @if($invoice['tds_categories'][0]['code'])
+                                      {{ $invoice['tds_categories'][0]['code'] }},@endif {{
                                       $invoice['tds_categories'][0]['description']
                                       }}
                                     </div>
