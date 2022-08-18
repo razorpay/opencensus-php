@@ -3229,7 +3229,7 @@ class PaymentLinkTest extends TestCase
      * @group nocode_cds
      * @return void
      */
-    public function testUpdatePaymentPageWithCustomDomainEmptySlug()
+    public function testUpdatePaymentPageWithCustomDomainEmptySlugAnotherCustomDomain()
     {
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
         Config::set('app.nocode.cache.custom_url_ttl', 0);
@@ -3242,7 +3242,7 @@ class PaymentLinkTest extends TestCase
 
         $this->createNocodeCustomUrl([
             PaymentLink\NocodeCustomUrl\Entity::DOMAIN => "cds.razorpay.in",
-            PaymentLink\NocodeCustomUrl\Entity::SLUG => "myslug",
+            PaymentLink\NocodeCustomUrl\Entity::SLUG => "",
         ], $pl);
         $settings["custom_domain"] = "cds.razorpay.in";
         $pl->getSettingsAccessor()->upsert($settings)->save();
@@ -3296,8 +3296,6 @@ class PaymentLinkTest extends TestCase
      */
     public function testUpdatePaymentPageWithCustomDomainToRzpDomainWithOutSlug()
     {
-        $this->markTestSkipped();
-
         Config::set('app.nocode.cache.custom_url_ttl', 0);
 
         $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
@@ -3373,6 +3371,67 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuthLive();
 
         $this->startTest();
+    }
+
+    /**
+     * @group nocode_cds
+     * @return void
+     */
+    public function testUpdatePaymentPageWithCustomDomainEmptySlugToRzpDomainNoSlug()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+        Config::set('app.nocode.cache.custom_url_ttl', 0);
+        $this->createPaymentLink(self::TEST_PL_ID, [
+            PaymentLink\Entity::VIEW_TYPE => PaymentLink\ViewType::PAGE,
+            PaymentLink\Entity::SHORT_URL => "https://cds.razorpay.in/",
+        ]);
+
+        $pl = $this->getDbLastEntity("payment_link", Mode::LIVE);
+        $this->createNocodeCustomUrl([
+            PaymentLink\NocodeCustomUrl\Entity::DOMAIN => "cds.razorpay.in",
+            PaymentLink\NocodeCustomUrl\Entity::SLUG => "",
+        ], $pl);
+        $settings["custom_domain"] = "cds.razorpay.in";
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+
+        $pl = $this->getDbLastEntity("payment_link", Mode::LIVE);
+
+        $this->assertStringNotContainsString("cds.razorpay.in", $pl->getShortUrl());
+    }
+
+    /**
+     * @group nocode_cds
+     * @return void
+     */
+    public function testUpdatePaymentPageWithCustomDomainEmptySlugToDetailsShouldReturnEmptySlug()
+    {
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+        Config::set('app.nocode.cache.custom_url_ttl', 0);
+        $this->createPaymentLink(self::TEST_PL_ID, [
+            PaymentLink\Entity::VIEW_TYPE => PaymentLink\ViewType::PAGE,
+            PaymentLink\Entity::SHORT_URL => "https://cds.razorpay.in/",
+        ]);
+
+        $pl = $this->getDbLastEntity("payment_link", Mode::LIVE);
+        $this->createNocodeCustomUrl([
+            PaymentLink\NocodeCustomUrl\Entity::DOMAIN => "cds.razorpay.in",
+            PaymentLink\NocodeCustomUrl\Entity::SLUG => "",
+        ], $pl);
+        $settings["custom_domain"] = "cds.razorpay.in";
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->ba->proxyAuthLive();
+
+        $res = $this->startTest();
+
+        $pl = $this->getDbLastEntity("payment_link", Mode::LIVE);
+
+        $this->assertEquals("", $res[PaymentLink\Entity::SLUG]);
+        $this->assertEquals("", $pl->getSlugFromShortUrl());
     }
 
     // -------------------- Protected methods --------------------

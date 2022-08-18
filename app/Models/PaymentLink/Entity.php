@@ -712,7 +712,7 @@ class Entity extends Base\PublicEntity
     {
         $parts = explode('/', $this->getShortUrl());
 
-        return end($parts) ?: null;
+        return end($parts);
     }
 
     public function getCapturedPaymentsCount(): int

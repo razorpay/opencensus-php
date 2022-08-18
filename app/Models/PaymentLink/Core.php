@@ -124,15 +124,18 @@ class Core extends Base\Core
             && $paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
             && array_get($settings, Entity::CUSTOM_DOMAIN, "") === "")
         {
-            $validator->validateInput('slug', [Entity::SLUG => $input[Entity::SLUG]]);
+            $validator->validateGeneralSlug([
+                Entity::SLUG    => $input[Entity::SLUG],
+            ]);
         }
 
         if($paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
             && array_get($settings, Entity::CUSTOM_DOMAIN, "") !== "")
         {
-            $validator->validateInput('customDomainSlug', [Entity::CUSTOM_DOMAIN_SLUG => array_get($input, Entity::SLUG)]);
-
-            $validator->validateUniqueNocodeSlug($input[Entity::SLUG], $settings[Entity::CUSTOM_DOMAIN]);
+            $validator->validateCDSSlug([
+                Entity::SLUG            => array_get($input, Entity::SLUG),
+                Entity::CUSTOM_DOMAIN   => array_get($settings, Entity::CUSTOM_DOMAIN, "")
+            ]);
         }
 
         Tracer::inSpan(['name' => 'payment_page.create.short_url'], function() use ($paymentLink, $input, $settings) {
@@ -417,15 +420,18 @@ class Core extends Base\Core
                     && $paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
                     && array_get($settings, Entity::CUSTOM_DOMAIN, "") === "")
                 {
-                    $validator->validateInput('slug', [Entity::SLUG => $input[Entity::SLUG]]);
+                    $validator->validateGeneralSlug([
+                        Entity::SLUG    => array_get($input, Entity::SLUG)
+                    ]);
                 }
 
                 if($paymentLink->getViewType() !== ViewType::PAYMENT_HANDLE
                     && array_get($settings, Entity::CUSTOM_DOMAIN, "") !== "")
                 {
-                    $validator->validateInput('customDomainSlug', [Entity::CUSTOM_DOMAIN_SLUG => array_get($input, Entity::SLUG)]);
-
-                    $validator->validateUniqueNocodeSlug($input[Entity::SLUG], $settings[Entity::CUSTOM_DOMAIN], $paymentLink);
+                    $validator->validateCDSSlug([
+                        Entity::SLUG            => array_get($input, Entity::SLUG),
+                        Entity::CUSTOM_DOMAIN   => array_get($settings, Entity::CUSTOM_DOMAIN, ""),
+                    ], $paymentLink);
                 }
 
                 $this->changeStatusAfterUpdateIfApplicable($paymentLink);
@@ -472,13 +478,13 @@ class Core extends Base\Core
      * @return array
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function getSlugAndDomain(Entity $entity): array
+    public function getSlugAndDomain(Entity $entity, string $settingsCustomDomain): array
     {
         $nocodeCore = new NocodeCustomUrl\Core;
 
         $nocodeEntity = $nocodeCore->getExistingLinkedEntity($entity->getId(), $entity->getMerchantId());
 
-        if (empty($nocodeEntity) === true)
+        if (empty($nocodeEntity) === true || empty($settingsCustomDomain) === true)
         {
             [$domain] = $this->getShortenUrlRequestParams($entity);
 
@@ -499,18 +505,13 @@ class Core extends Base\Core
      */
     public function updateShortUrlIfApplicable(Entity $paymentLink, array $input)
     {
-        [$entitySlug, $entityDomain] = $this->getSlugAndDomain($paymentLink);
+        $entitySettingsCustomDomain = $input[Entity::SETTINGS_CUSTOM_DOMAIN_KEY];
+
+        [$entitySlug, $entityDomain] = $this->getSlugAndDomain($paymentLink, $entitySettingsCustomDomain);
 
         $inputDomain = array_get($input, Entity::SETTINGS . "." . Entity::CUSTOM_DOMAIN, "");
 
         $inputSlug = $input[Entity::SLUG] ?? null;
-
-        $entitySettingsCustomDomain = $input[Entity::SETTINGS_CUSTOM_DOMAIN_KEY];
-
-        if ($inputSlug === null)
-        {
-            return;
-        }
 
         if ($inputSlug === $entitySlug)
         {

@@ -5177,7 +5177,7 @@ return [
         ],
     ],
 
-    "testUpdatePaymentPageWithCustomDomainEmptySlug" => [
+    "testUpdatePaymentPageWithCustomDomainEmptySlugAnotherCustomDomain" => [
         'request'  => [
             'url'     => '/payment_pages/pl_100000000000pl',
             'method'  => 'patch',
@@ -5417,6 +5417,58 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    "testUpdatePaymentPageWithCustomDomainEmptySlugToRzpDomainNoSlug" => [
+        'request'  => [
+            'url'     => '/payment_pages/pl_100000000000pl',
+            'method'  => 'patch',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                'settings' => [
+                    "custom_domain" => ""
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    "testUpdatePaymentPageWithCustomDomainEmptySlugToDetailsShouldReturnEmptySlug" => [
+        'request' => [
+            'url'     => '/v1/payment_pages/pl_100000000000pl/details',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'    => 'pl_100000000000pl',
+                'slug'  => '',
+            ]
         ],
     ],
 ];

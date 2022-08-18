@@ -53,7 +53,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $slugRules = [
-        Entity::SLUG => 'filled|min:4|max:30'
+        Entity::SLUG => 'nullable|min:4|max:30'
     ];
 
     protected static $createRules = [
@@ -101,7 +101,7 @@ class Validator extends Base\Validator
         Entity::TITLE           => 'string|min:3|max:80|utf8',
         Entity::DESCRIPTION     => 'string|max:65535|nullable|utf8|custom', // 65535 bytes is size of mysql's text data type.
         Entity::NOTES           => 'sometimes|notes',
-        Entity::SLUG            => 'string',
+        Entity::SLUG            => 'nullable',
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048|utf8',
@@ -386,6 +386,36 @@ class Validator extends Base\Validator
 
 
         $this->validateAmount('total_amount', $totalAmount);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateGeneralSlug(array $input)
+    {
+        if(array_get($input, Entity::SLUG) === "")
+        {
+            throw new BadRequestValidationFailureException(trans("validation.filled", ["attribute" => Entity::SLUG]));
+        }
+
+        $this->validateInput(Entity::SLUG, [Entity::SLUG => array_get($input, Entity::SLUG)]);
+    }
+
+    /**
+     * @param array                               $input
+     * @param \RZP\Models\PaymentLink\Entity|null $paymentLink
+     *
+     * @return void
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     */
+    public function validateCDSSlug(array $input, ?Entity $paymentLink=null)
+    {
+        $this->validateInput('customDomainSlug', [Entity::CUSTOM_DOMAIN_SLUG => array_get($input, Entity::SLUG)]);
+
+        $this->validateUniqueNocodeSlug($input[Entity::SLUG], $input[Entity::CUSTOM_DOMAIN], $paymentLink);
     }
 
     /**
