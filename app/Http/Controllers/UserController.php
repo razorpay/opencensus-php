@@ -272,6 +272,15 @@ class UserController extends Controller
             return true;
         }
 
+        $experimentId = config('splitz.experiments')['WEBSITE_COMPLIANCE_FLOW_EXP'];
+
+        $data = (new SplitzService())->getVariantBulk($details['current'], [$experimentId], [], "splitz/bulkEvaluate");
+        
+        if ((($data[$experimentId]['variables']['result'] ?? null) === 'on') and
+            ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2')) {
+            return true;
+        };
+
         return false;
 
     }
