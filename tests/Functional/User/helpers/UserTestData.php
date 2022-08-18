@@ -722,10 +722,12 @@ return [
             'url'     => '/users/salesforce_event',
             'method'  => 'POST',
             'content' => [
-                'name'      => 'test',
-                'email'     => 'testcomapany@test.com',
-                'company'   =>  'Test Company',
-                'revenue'   =>  '10000'
+                'FirstName'                  => 'test',
+                'LastName'                   => 'test',
+                'Email'                      => 'testcomapany@test.com',
+                'Company'                    =>  'Test Company',
+                'Average_Monthly_Revenue__c' =>  '5Lacs',
+                'Campaign_Name__c'           => 'Project Nike'
             ]
         ],
         'response' => [

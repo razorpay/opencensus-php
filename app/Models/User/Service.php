@@ -1024,12 +1024,9 @@ class Service extends Base\Service
                 'payload'        => $input,
             ]);
 
-        (new Entity)->getValidator()->validateInput(Constants::SALESFORCE_EVENT, $input);
-
         try
         {
-            $payload = $this->getSalesForcePayload($input);
-            $response = $this->app->salesforce->sendUserDetailsToSalesforce($payload);
+            $response = $this->app->salesforce->sendUserDetailsToSalesforce($input);
         }
         catch(\Throwable $e)
         {
@@ -1038,7 +1035,13 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::SALESFORCE_FAILED_TO_DISPATCH_JOB);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
+            if($e->getCode() === ErrorCode::BAD_REQUEST_SALESFORCE_DUPLICATES_RECORD_DETECTED or
+                $e->getCode() === ErrorCode::BAD_REQUEST_SALESFORCE_FIELD_VALIDATION_ERROR)
+            {
+                throw $e;
+            }
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SALESFORCE_RETURNED_NON_2XX_RESPONSE);
         }
 
         $this->trace->info(
@@ -1048,20 +1051,6 @@ class Service extends Base\Service
             ]);
 
         return ['id' => $response['id']];
-    }
-
-    public function getSalesForcePayload(array $input) : array
-    {
-        $payload = [
-            "FirstName"                    => $input['name'],
-            "LastName"                     => 'NA',
-            "Email"                        => $input['email'],
-            "Company"                      => $input['company'],
-            "Average_Monthly_Revenue__c"   => $input['revenue'],
-            "Campaign_Name__c"             => 'Project Nike' ,
-        ];
-
-        return $payload;
     }
 
     public function setUserPassword(array $input): array

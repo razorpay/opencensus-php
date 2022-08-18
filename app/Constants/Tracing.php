@@ -225,6 +225,7 @@ class Tracing
             'user_fetch_admin',
             'fetch_partner_intent',
             'credits_fetch_multiple',
+            'user_salesforce_event',
 
             //payment page create
             'payment_page_create',

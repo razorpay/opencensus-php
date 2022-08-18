@@ -63,8 +63,13 @@ class SalesForceClient
     const PUT                   = 'PUT';
     const PATCH                 = 'PATCH';
     const GET                   = 'GET';
+    const REQUIRED_FIELD_MISSING = 'REQUIRED_FIELD_MISSING';
+    const INVALID_FIELD          = 'INVALID_FIELD';
+    const INVALID_EMAIL_ADDRESS  = 'INVALID_EMAIL_ADDRESS';
 
     const DASHBOARD_UPSERT_URL  = '/services/apexrest/DashboardOpportunityUpsert';
+
+    const VALIDATION_ERROR_CODES   = [self::REQUIRED_FIELD_MISSING, self::INVALID_FIELD, self::INVALID_EMAIL_ADDRESS];
 
     public function __construct($app)
     {
@@ -231,7 +236,7 @@ class SalesForceClient
             ]
         ];
 
-        $response = $this->makeRequestAndGetResponse($request);
+        $response = $this->makeRequest($request);
 
         return $response;
     }
@@ -668,6 +673,34 @@ class SalesForceClient
             throw new Exception\IntegrationException("Salesforce Returned non 200 Response");
         }
         return json_decode($response->body, true);
+    }
+
+    protected function makeRequest(array $request)
+    {
+        $response = $this->sendRequest($request);
+
+        $response_body = json_decode($response->body, true);
+
+        if ($response->status_code != 200 and $response->status_code != 201)
+        {
+            if(sizeof($response_body) > 0 &&
+                empty($response_body[0]['errorCode']) === false)
+            {
+                if($response_body[0]['errorCode'] === 'DUPLICATES_DETECTED')
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SALESFORCE_DUPLICATES_RECORD_DETECTED);
+                }
+
+                if(in_array($response_body[0]['errorCode'], self::VALIDATION_ERROR_CODES, true) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SALESFORCE_FIELD_VALIDATION_ERROR);
+                }
+            }
+
+            throw new Exception\IntegrationException("Salesforce Returned non 200 Response");
+        }
+
+        return $response_body;
     }
 
     protected function sendRequest(array $request): Requests_Response
