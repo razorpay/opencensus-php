@@ -512,7 +512,6 @@ class Profile extends Component {
     //required fields for api
     body.beneficiary_email = user.email;
     body.beneficiary_mobile = user.contact_mobile;
-    body.beneficiary_name = user.bank_account_name;
 
     for (const prop in body) {
       if (body.hasOwnProperty(prop)) {

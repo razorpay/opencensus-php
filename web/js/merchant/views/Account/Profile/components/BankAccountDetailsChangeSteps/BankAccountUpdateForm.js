@@ -16,6 +16,7 @@ import {
   INDIVIDUAL,
   NOT_REGISTERED,
 } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { isUnregisteredBusiness } from 'merchant/views/onboarding/mobile/services/utils';
 import Loader from 'common/components/Loader';
 import { trackBankAccountDetailsChange } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps/utils';
 import { connect } from 'react-redux';
@@ -47,6 +48,15 @@ const getMaskedPanNumber = (panNumber) => {
   return 'xxxxxxxxx^';
 };
 
+/* Method to validate the benificiary name */
+const validateBenificiaryName = (value) => {
+  return validateBankDetails(value, 'name') ? undefined : "Enter a Valid Account Holder's Name";
+};
+
+const registeredBusinessHelpText = 'Beneficiary name should be the same as a business name';
+const unregisteredBusinessHelpText =
+  'Beneficiary name should be the same as your name in KYC documents';
+
 const getBankName = (bank) => {
   if (!bank?.BANK || !bank.BRANCH) return '';
   return `${bank.BANK}, ${bank.BRANCH}`;
@@ -54,7 +64,7 @@ const getBankName = (bank) => {
 
 // TODO: temporarily disable new flow until new API for File upload is available
 const BankAccountUpdateForm = (props) => {
-  const { handleSubmit, settlementConfig, ifsc_code, showNotification } = props;
+  const { handleSubmit, settlementConfig, ifsc_code, showNotification, user } = props;
   const isOnTemporaryHold = settlementConfig.data?.config?.features?.hold?.status;
   const temporaryHoldReason = settlementConfig.data?.config?.features?.hold?.reason;
   const [showBranch, setShowBranch] = useState(false);
@@ -146,6 +156,9 @@ const BankAccountUpdateForm = (props) => {
   } else if (showBranch) {
     ifscCodeSuffix = getBankName(bankData);
   }
+  const beneficiaryNameHelpText = isUnregisteredBusiness(user.business_type)
+    ? unregisteredBusinessHelpText
+    : registeredBusinessHelpText;
 
   return (
     <div className="bank-account-update-form">
@@ -215,6 +228,23 @@ const BankAccountUpdateForm = (props) => {
               />
             </div>
           </div>
+
+          <div className="form-group">
+            <label className="col-md-12 control-label label-required">Beneficiary Name</label>
+            <div className="col-md-12">
+              <Field
+                name="beneficiary_name"
+                component={InputField}
+                className="material-input"
+                validate={[required(), validateBenificiaryName]}
+              />
+              <small className="help-block">
+                <i className="i i-info-circle" />
+                <span>{beneficiaryNameHelpText}</span>
+              </small>
+            </div>
+          </div>
+
           <div className="form-group">
             <label className="col-md-12 control-label label-required">
               Company&apos;s Bank Account Statement with Address

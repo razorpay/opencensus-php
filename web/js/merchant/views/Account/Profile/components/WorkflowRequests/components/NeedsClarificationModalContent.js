@@ -64,7 +64,9 @@ const NeedsClarificationModalContent = ({
         onChange={onChange}
         required
       />
-      {isResponseValid === false ? <p className="notify-error">Minimum 50 words required</p> : null}
+      {isResponseValid === false ? (
+        <p className="notify-error">Minimum 50 characters required</p>
+      ) : null}
       <div className="form-group">
         <FileUpload
           name="response-files"

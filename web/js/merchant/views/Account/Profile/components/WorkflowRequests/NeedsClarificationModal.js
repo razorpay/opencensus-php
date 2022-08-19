@@ -43,10 +43,9 @@ const NeedsClarificationModal = ({
   const isBankAccountUpdateWorkflow = workflowType === WORKFLOW_TYPES.BANK_DETAIL_UPDATE;
 
   const onChange = (e) => {
-    const input = e.target.value;
-    const tokens = input.split(' ');
+    const inputLength = e.target.value.length;
 
-    if (tokens.length >= 50) {
+    if (inputLength >= 50) {
       setIsResponseValid(true);
       setResponse(e.target.value);
     } else setIsResponseValid(false);
