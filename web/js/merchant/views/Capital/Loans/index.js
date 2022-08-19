@@ -542,10 +542,13 @@ export default class LoanApplicationOverview extends React.Component {
     const isFetchingLoanDisabledReason = this.state.loanDisabledReason.fetching;
 
     const isCAXExperimentEnabled = user.isCashAdvanceXMigrationEnabled;
+    const isCARerouteExperiment = user.isCARerouteExperiment;
     const hasApplication = loanApplicationDetails?.meta?.data?.application;
     const isProductCashAdvance = window.location.pathname.includes('cash-advance');
 
-    if (isCAXExperimentEnabled && isProductCashAdvance) {
+    const showV2CashAdvance =
+      isProductCashAdvance && (isCAXExperimentEnabled || (hasApplication && isCARerouteExperiment));
+    if (showV2CashAdvance) {
       const showApplyNow = !hasApplication;
       return (
         <SuspenseWithLoader>
