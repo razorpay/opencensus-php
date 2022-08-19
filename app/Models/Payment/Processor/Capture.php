@@ -351,23 +351,25 @@ trait Capture
 
     private function createLedgerEntriesForGatewayCapture(Payment\Entity $payment)
     {
+        if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
         try
         {
-            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
+            $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
+
+            if (empty($transactionMessage) === false)
             {
-                $transactionMessage = CaptureJournalEvents::createTransactionMessageForGatewayCapture($payment);
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
 
-                if (empty($transactionMessage) === false)
-                {
-                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
-
-                    $this->trace->info(
-                        TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
-                        [
-                            'payment_id'        => $payment->getId(),
-                            'message'           => $transactionMessage,
-                        ]);
-                }
+                $this->trace->info(
+                    TraceCode::GATEWAY_CAPTURED_EVENT_TRIGGERED,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'message'           => $transactionMessage,
+                    ]);
             }
         }
         catch (\Exception $e)

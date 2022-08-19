@@ -61,14 +61,14 @@ class CaptureJournalEvents
         $message = array(
             Constants::TRANSACTOR_ID                => $payment->getPublicId(),
             Constants::MERCHANT_ID                  => $payment->getMerchantId(),
-            Constants::CURRENCY                     => $payment->getCurrency(),
+            Constants::CURRENCY                     => Constants::INR_CURRENCY,
             Constants::TRANSACTOR_EVENT             => Constants::GATEWAY_CAPTURED,
             Constants::TRANSACTION_DATE             => $payment->getCreatedAt(),
             Constants::IDENTIFIERS                  => [
                 Constants::GATEWAY          => $gateway,
             ],
             Constants::MONEY_PARAMS                 => [
-                Constants::AMOUNT           => strval($payment->getAmount()),
+                Constants::AMOUNT           => strval($payment->getBaseAmount()),
                 Constants::BASE_AMOUNT      => strval($payment->getBaseAmount()),
             ]
         );

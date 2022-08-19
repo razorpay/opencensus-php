@@ -6,6 +6,7 @@ class Constants
 {
     //Gateway events
     const GATEWAY_CAPTURED                                  = "payment_gateway_captured";
+    const INR_CURRENCY                                      = "INR";
 
     //Merchant Capture events
     const MERCHANT_CAPTURED                                 = "payment_merchant_captured";

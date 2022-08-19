@@ -3544,6 +3544,8 @@ class Processor
                 $this->payment->setGatewayCaptured(true);
 
                 $this->repo->saveOrFail($this->payment);
+
+                $this->createLedgerEntriesForGatewayCapture($this->payment);
             }, 20);
 
         $this->publishMessageToMetro($payment);
