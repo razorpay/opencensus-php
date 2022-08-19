@@ -8,6 +8,7 @@ use Request;
 use ApiResponse;
 use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use Psr\Http\Message\RequestInterface;
 use Http\Discovery\Psr18ClientDiscovery;
@@ -37,7 +38,7 @@ class CapitalScorecardController extends Controller
             'X-Admin-Id'          => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email'       => $this->ba->getAdmin()->getEmail() ?? '',
             'X-Admin-Permissions' => $this->getCapitalPermissionsStringForAdmin(),
-            'X-Auth-Type'         => 'admin'
+            'X-Auth-Type'         => 'admin',
         ];
 
         if ($request->getQueryString() !== null) {
@@ -65,7 +66,7 @@ class CapitalScorecardController extends Controller
         $headers = [
             'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
             'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
-            'X-Auth-Type'   => 'admin'
+            'X-Auth-Type'   => 'admin',
         ];
 
         return $this->sendRequestAndParseResponse($url, $request->method(), $body, $headers);
@@ -85,6 +86,7 @@ class CapitalScorecardController extends Controller
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id'] = $this->app['request']->getTaskId();
         $headers['Authorization'] = 'Basic ' . base64_encode($username . ':' . $password);
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         return $this->sendRequest($headers, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }

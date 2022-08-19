@@ -9,6 +9,7 @@ use RZP\Mail\Los\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Str;
+use RZP\Http\RequestHeader;
 use Illuminate\Support\Facades\Mail;
 use RZP\Http\Request\Requests as RzpRequest;
 use RZP\Models\Admin\Permission\Category as PermissionCategory;
@@ -101,7 +102,7 @@ class LOSController extends Controller
 
         $headers = [
             'X-Service-Name' => $this->ba->getInternalApp() ?? '',
-            'X-Auth-Type'   => 'internal'
+            'X-Auth-Type'   => 'internal',
         ];
 
         $response = $this->sendRequestAndParseResponse($url, $body, $headers);
@@ -147,6 +148,7 @@ class LOSController extends Controller
         $headers['Accept']       = 'application/json';
         $headers['Content-Type'] = 'application/json';
         $headers['X-Task-Id'] = $this->app['request']->getTaskId();
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $auth = [$username, $password];
         $defaultOptions = [
