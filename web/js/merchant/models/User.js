@@ -718,8 +718,14 @@ export default class User {
   get isFrontendCareActive() {
     return this.getExpStatus('frontend_care_active');
   }
-  get showNewTicketCreationUI() {
-    return this.getExpStatus('care_ticket_ui_revamp');
+  get showOpenTicketStatus() {
+    return this.getExpStatus('open_ticket_status');
+  }
+
+  get isWorkflowTicketEnabled() {
+    return (
+      this.getExpStatus('open_ticket_status') && this.getExpStatus('is_workflow_ticket_enabled')
+    );
   }
 
   get isClickToCallActive() {

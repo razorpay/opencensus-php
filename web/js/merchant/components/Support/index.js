@@ -18,7 +18,6 @@ import SupportLoader from 'merchant/components/Support/components/Loader';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 
 const SupportBody = lazy(() => import('merchant/components/Support/components/SupportBody'));
-const SupportBodyOld = lazy(() => import('merchant/components/Support/components/SupportBodyOld'));
 @withRouter
 @connect(
   (state) => {
@@ -54,9 +53,14 @@ export default class Support extends Component {
   };
 
   componentDidMount() {
-    this.props.checkCallEligibility();
+    const {
+      checkCallEligibility: _checkCallEligibility,
+      checkScheduleCallConfig: _checkScheduleCallConfig,
+      user = {},
+    } = this.props;
+    _checkCallEligibility();
 
-    this.props.checkScheduleCallConfig().then((response) => {
+    _checkScheduleCallConfig().then((response) => {
       if (response.is_eligible) {
         analyticsTrack({
           objectName: 'request a call',
@@ -76,7 +80,7 @@ export default class Support extends Component {
 
     this.handleIsWebView();
 
-    if (this.props.user.isChatbotLive) {
+    if (user.isChatbotLive) {
       analyticsTrack({
         objectName: 'chatbot',
         actionName: 'initialised',
@@ -104,8 +108,9 @@ export default class Support extends Component {
   };
 
   fetchSupportFlags = () => {
+    const { user = {} } = this.props;
     return new Promise((resolve) => {
-      if (this.props.user.current) {
+      if (user.current) {
         const { supportFlags: oldSupportFlags } = this.state;
         this.setState(
           {
@@ -202,7 +207,8 @@ export default class Support extends Component {
   };
 
   handleChat = () => {
-    if (this.props.user.isChatbotLive) {
+    const { user = {} } = this.props;
+    if (user.isChatbotLive) {
       if (window.chatbotToggle) {
         window.chatbotToggle();
       }
@@ -213,11 +219,10 @@ export default class Support extends Component {
   };
 
   render() {
-    const { user, org, history } = this.props;
-    const { notifyCount, isOpened, isHidden } = this.state;
+    const { user, org, history, scheduleCallConfig } = this.props;
+    const { notifyCount, isOpened, isHidden, isWebView, botIsLoaded, supportFlags } = this.state;
     // Temporarily disabled till further notice for improving support quality index for calls,
     const isCallEnabled = false;
-    // const isCallEnabled = !user.isActivated || this.props.isCallEnabled;
 
     const isOnBoardingRevampScreen =
       history.location.pathname.includes('onboarding') ||
@@ -238,7 +243,6 @@ export default class Support extends Component {
 
     const shouldOpenRaiseAQueryOnMount = history?.location?.pathname?.includes('/app-support');
 
-    const showNewSupport = this.state.isWebView ? false : user.showNewTicketCreationUI;
     return (
       <div className={classList('support', isHidden && 'hidden')}>
         <SupportHeader
@@ -247,39 +251,24 @@ export default class Support extends Component {
           notifyCount={notifyCount}
           isOnBoardingRevampScreen={isOnBoardingRevampScreen}
           showComdelPopover={user.isComdelApiEnabled}
-          isWebView={this.state.isWebView}
+          isWebView={isWebView}
+          user={user}
         />
         <Suspense fallback={<SupportLoader isOpened={isOpened} />}>
-          {showNewSupport ? (
-            <SupportBody
-              onToggle={this.handleToggle}
-              isOpened={isOpened}
-              botIsLoaded={this.state.botIsLoaded}
-              onChat={this.handleChat}
-              notifyCount={notifyCount}
-              isCallEnabled={isCallEnabled}
-              scheduleCallConfig={this.props.scheduleCallConfig}
-              supportFlags={this.state.supportFlags}
-              user={this.props.user}
-              isWebView={this.state.isWebView}
-              fetchSupportFlags={this.fetchSupportFlags}
-            />
-          ) : (
-            <SupportBodyOld
-              onToggle={this.handleToggle}
-              isOpened={isOpened}
-              botIsLoaded={this.state.botIsLoaded}
-              onChat={this.handleChat}
-              notifyCount={notifyCount}
-              isCallEnabled={isCallEnabled}
-              scheduleCallConfig={this.props.scheduleCallConfig}
-              supportFlags={this.state.supportFlags}
-              user={this.props.user}
-              isWebView={this.state.isWebView}
-              shouldOpenRaiseAQueryOnMount={shouldOpenRaiseAQueryOnMount}
-              fetchSupportFlags={this.fetchSupportFlags}
-            />
-          )}
+          <SupportBody
+            onToggle={this.handleToggle}
+            isOpened={isOpened}
+            botIsLoaded={botIsLoaded}
+            onChat={this.handleChat}
+            notifyCount={notifyCount}
+            isCallEnabled={isCallEnabled}
+            scheduleCallConfig={scheduleCallConfig}
+            supportFlags={supportFlags}
+            user={user}
+            isWebView={isWebView}
+            shouldOpenRaiseAQueryOnMount={shouldOpenRaiseAQueryOnMount}
+            fetchSupportFlags={this.fetchSupportFlags}
+          />
         </Suspense>
       </div>
     );

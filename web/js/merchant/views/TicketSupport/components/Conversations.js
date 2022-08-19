@@ -1,21 +1,23 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import moment from 'moment';
 import { connect } from 'react-redux';
 import { Link, withRouter } from 'react-router-dom';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import { getCommonAnalyticsProperties, noop } from 'common/utils/rzp-utils';
+import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 import {
   SAMPLE_TICKET,
   MAX_CONVERSATION,
   MIN_TIME_TO_REFRESH,
   PRERECORDED_RESPONSES,
+  TICKET_STATUS_LABELS,
 } from './data';
 import {
   getExpiryTime,
   getEscalationType,
   getResponseArrivalType,
   getTicketStatus,
+  createWorkFlowTicket,
 } from '../utils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import Spinner from 'common/ui/Spinner';
@@ -24,6 +26,7 @@ import {
   fetchSupportTickets,
   replyToConversation,
   TICKET_BASE_URL,
+  FETCH_WORKFLOWS,
 } from 'merchant/reducers/config';
 import Reply from './Reply';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -62,13 +65,17 @@ export default class Conversations extends React.Component {
     size: MAX_CONVERSATION,
     current_page: 1,
     isReplyAdded: false,
+    shouldCreateNewTicketForWorkflow: false,
+    workflow: {},
   };
 
   goNext = (page) => {
+    const { match = {} } = this.props;
+    const { ticket = {}, conversations = {} } = this.state;
     // Disable local caching because file might expire
-    const TICKET_ID = this.props.match.params.id;
+    const TICKET_ID = ticket?.id || match?.params?.id;
     // eslint-disable-next-line react/no-access-state-in-setstate
-    const c = this.state.conversations;
+    const c = conversations;
     c.loading = true;
     this.setState({ conversations: c });
 
@@ -100,7 +107,7 @@ export default class Conversations extends React.Component {
   }
 
   trackRenderTicket = () => {
-    const ticket = this.state.ticket;
+    const { ticket } = this.state;
     analyticsTrack({
       objectName: 'show ticket details',
       actionName: 'rendered',
@@ -112,8 +119,77 @@ export default class Conversations extends React.Component {
     });
   };
 
+  handleFetchWorkFlow = () => {
+    const { match = {}, showNotification: _showNotification } = this.props;
+
+    const id = match?.params?.id?.replace('w_action_', '');
+    return merchantFetch({
+      url: FETCH_WORKFLOWS,
+      mode: 'live',
+      method: 'POST',
+      data: { id },
+    })
+      .then((e) => {
+        const workflow = e?.data?.items?.[0] || {};
+
+        this.setState({
+          workflow,
+        });
+      })
+      .catch((e) => {
+        this.track('conversation loading failed', 'Conversation | Status: Failed');
+        _showNotification({
+          type: 'error',
+          message: `Failed to load conversation, please try later! Status CODE: ${
+            e.code || 'UNKNOWN'
+          }`,
+        });
+      });
+  };
+
+  handleFetchWorkFlowTicket = () => {
+    const { match = {}, showNotification: _showNotification } = this.props;
+
+    const payload = {
+      cf_workflow_id: match?.params?.id,
+      tags: ['workflow_ticket'],
+    };
+
+    return merchantFetch({
+      url: TICKET_BASE_URL,
+      mode: 'live',
+      data: payload,
+    })
+      .then((e) => {
+        const results = e?.data?.results || [];
+        const ticket = results?.[0] || {};
+
+        this.setState(
+          {
+            ticket,
+            shouldCreateNewTicketForWorkflow: results.length === 0,
+            loadingTicket: false,
+          },
+          () => {
+            this.trackRenderTicket();
+            this.goNext(1);
+          },
+        );
+      })
+      .catch((e) => {
+        this.track('conversation loading failed', 'Conversation | Status: Failed');
+        _showNotification({
+          type: 'error',
+          message: `Failed to load conversation, please try later! Status CODE: ${
+            e.code || 'UNKNOWN'
+          }`,
+        });
+      });
+  };
+
   loadTicketDetails() {
-    return merchantFetch({ url: `${TICKET_BASE_URL}/${this.props.match.params.id}`, mode: 'live' })
+    const { showNotification: _showNotification, match = {} } = this.props;
+    return merchantFetch({ url: `${TICKET_BASE_URL}/${match?.params?.id}`, mode: 'live' })
       .then((e) => {
         let ticket = e.data;
         let error = false;
@@ -130,7 +206,7 @@ export default class Conversations extends React.Component {
       })
       .catch((e) => {
         this.track('conversation loading failed', 'Conversation | Status: Failed');
-        this.props.showNotification({
+        _showNotification({
           type: 'error',
           message: `Failed to load conversation, please try later! Status CODE: ${
             e.code || 'UNKNOWN'
@@ -139,9 +215,21 @@ export default class Conversations extends React.Component {
       });
   }
 
+  loadWorkflowDetails = () => {
+    this.handleFetchWorkFlow();
+    this.handleFetchWorkFlowTicket();
+  };
+
   componentDidMount() {
-    this.loadTicketDetails();
-    this.goNext(1);
+    const { match = {} } = this.props;
+
+    const isWorkflow = match?.params?.instance === 'workflow';
+    if (isWorkflow) {
+      this.loadWorkflowDetails();
+    } else {
+      this.loadTicketDetails();
+      this.goNext(1);
+    }
   }
 
   componentWillUnmount() {
@@ -188,7 +276,7 @@ export default class Conversations extends React.Component {
     let isEscalationReply = false;
 
     PRERECORDED_RESPONSES.forEach((RESPONSE) => {
-      isEscalationReply = isEscalationReply || ticket.body_text.indexOf(RESPONSE) !== -1;
+      isEscalationReply = isEscalationReply || ticket?.body_text?.indexOf(RESPONSE) !== -1;
     });
 
     return !isEscalationReply;
@@ -203,30 +291,111 @@ export default class Conversations extends React.Component {
     }
   };
 
+  handleCreateNewWorkflowTicket = ({ successCallback = noop, errorCallback = noop } = {}) => {
+    const { workflow } = this.state;
+    const { user, showNotification: _showNotification } = this.props;
+    createWorkFlowTicket(workflow, user)
+      .then((e) => {
+        const ticket = e?.data || {};
+        this.setState(
+          {
+            ticket,
+            shouldCreateNewTicketForWorkflow: false,
+          },
+          () => {
+            successCallback(ticket);
+          },
+        );
+      })
+      .catch((e) => {
+        errorCallback(e);
+        _showNotification({
+          type: 'error',
+          message: `Failed to create workflow ticket, please try later! Status CODE: ${
+            e.code || 'UNKNOWN'
+          }`,
+        });
+      });
+  };
+
   openGrievanceFlow(ticket) {
-    if (window.rzpTicketSystem) {
-      window.rzpTicketSystem.openModal('#raise-grievance', {
+    const { shouldCreateNewTicketForWorkflow } = this.state;
+
+    if (shouldCreateNewTicketForWorkflow) {
+      this.handleCreateNewWorkflowTicket({
+        successCallback: (newTicket) => {
+          window?.rzpTicketSystem?.openModal?.('#raise-grievance', {
+            ticketID: newTicket.id,
+          });
+        },
+      });
+    } else {
+      window?.rzpTicketSystem?.openModal?.('#raise-grievance', {
         ticketID: ticket.id,
       });
     }
+    analyticsTrack({
+      objectName: 'Request follow-up',
+      actionName: 'clicked',
+      screen: 'support tickets',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+        ticket_id: ticket.id,
+      },
+    });
   }
+  handleToggleReplySection() {
+    const { ticket = {} } = this.state;
+    analyticsTrack({
+      objectName: 'Reply Now',
+      actionName: 'button clicked',
+      screen: 'support tickets',
+      properties: {
+        ticketId: ticket?.id || 'NA',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
 
+    this.setState((prevState) => {
+      return { toggleReply: !prevState.toggleReply };
+    });
+  }
   render() {
     let total_conversations = [];
-    const TICKET_ID = this.props.match.params.id;
-    const has_callback = this.state.ticket.tags.includes('callback');
-    const has_click_to_call = this.state?.ticket?.tags?.includes('instant_callback_requested');
-    Object.keys(this.state.conversations.data).forEach((k) => {
-      total_conversations.push(...this.state.conversations.data[k]);
+    const {
+      match = {},
+      scheduleCallConfig,
+      user = {},
+      replyToConversation: _replyToConversation,
+    } = this.props;
+    const {
+      conversations = {},
+      ticket = {},
+      shouldCreateNewTicketForWorkflow,
+      workflow,
+      toggleReply,
+      loadingTicket,
+      error,
+      isReplyAdded,
+    } = this.state;
+    const TICKET_ID = ticket?.id || match.params.id;
+    const tags = ticket?.tags || [];
+    const has_callback = tags?.includes('callback');
+    const has_click_to_call = tags?.includes('instant_callback_requested');
+    Object.keys(conversations?.data)?.forEach((k) => {
+      total_conversations.push(...conversations?.data?.[k]);
     });
     total_conversations = total_conversations.filter(this.shouldBeVisible);
     let message, popup;
-    const MESSAGE = getResponseArrivalType(this.state.ticket);
-    const STATUS = getTicketStatus(this.state.ticket);
-    const responseFormatTime = moment(this.state.ticket.fr_due_by).format('DD MMM');
-    const is_escalated = getEscalationType(this.state.ticket) === 'escalated';
+    const MESSAGE = getResponseArrivalType(ticket, workflow);
+    const STATUS = getTicketStatus(ticket, workflow);
+    const responseFormatTime = moment(
+      workflow?.due_date ? parseInt(workflow?.due_date, 10) : ticket.fr_due_by,
+    ).format('DD MMM');
+    const is_escalated = getEscalationType(ticket, workflow) === 'escalated';
     const can_be_escalated =
-      getEscalationType(this.state.ticket) === 'able-to-escalate' && !has_callback;
+      getEscalationType(ticket, workflow) === 'able-to-escalate' && !has_callback;
 
     message = (
       <h3 className="fsz-14">
@@ -243,7 +412,7 @@ export default class Conversations extends React.Component {
       </h3>
     );
 
-    const isTicketCreatedByAgent = this.state.ticket.custom_fields.cf_created_by === 'agent';
+    const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
 
     if (MESSAGE === 'waiting-for-customer') {
       message = (
@@ -277,7 +446,7 @@ export default class Conversations extends React.Component {
         </h3>
       );
     }
-    if (STATUS === 'Work In Progress' && MESSAGE === 'within-expected-time') {
+    if (STATUS === TICKET_STATUS_LABELS.BEING_PROCESSED && MESSAGE === 'within-expected-time') {
       message = (
         <h3 className="fsz-14">
           This query is open and our team is working on it. You <br /> can expect reply before:{' '}
@@ -310,8 +479,8 @@ export default class Conversations extends React.Component {
       );
     }
 
-    if (this.state?.ticket?.status === 5 && MESSAGE !== 'Closed') {
-      if (this.state.toggleReply) {
+    if (ticket?.status === 5 && MESSAGE !== 'Closed') {
+      if (toggleReply) {
         message = '';
       } else {
         message = (
@@ -331,14 +500,15 @@ export default class Conversations extends React.Component {
       }
     }
 
-    const ticketType = this.state.ticket?.custom_fields?.cf_created_by || 'merchant';
-    const isLoading = this.state.conversations.loading || this.state.loadingTicket;
+    const ticketType = ticket?.custom_fields?.cf_created_by || 'merchant';
+    const isLoading = conversations?.loading || loadingTicket;
+
     return (
       <div className="content-wrapper content-sm ticket-support">
         <div className="panel">
-          {this.state.error ? (
+          {error ? (
             <FailedScreen />
-          ) : this.state?.conversations?.loading ? (
+          ) : conversations?.loading ? (
             <div className="ticket-cont-spinner">
               <Spinner />
             </div>
@@ -369,11 +539,12 @@ export default class Conversations extends React.Component {
               {!isLoading && (
                 <SuspenseWithLoader>
                   <Ticket
-                    logo_url={this.props.user.logo_url}
-                    ticket={this.state.ticket}
+                    logo_url={user.logo_url}
+                    ticket={ticket}
                     totalConversations={total_conversations}
                     ticketID={TICKET_ID}
-                    isReplyAdded={this.state.isReplyAdded}
+                    isReplyAdded={isReplyAdded}
+                    workflow={workflow}
                   />
                 </SuspenseWithLoader>
               )}
@@ -381,25 +552,23 @@ export default class Conversations extends React.Component {
                 <div className="ticket-replies-container">
                   <div className="q-open">
                     {message}
-                    {!(MESSAGE === 'Closed' || MESSAGE === 'Resolved') &&
-                    this.state.ticket?.status !== 5 ? (
+                    {!(MESSAGE === 'Closed' || MESSAGE === 'Resolved') && ticket?.status !== 5 ? (
                       <div className="row flex flex-wrap">
                         <button
                           onClick={() => {
-                            this.setState((prevState) => {
-                              return { toggleReply: !prevState.toggleReply };
-                            });
+                            this.handleToggleReplySection();
                           }}
                           style={{ position: 'relative' }}
-                          className={`btn btn-outline ${this.state.toggleReply ? 'active' : ''}`}
+                          className={`btn btn-outline${toggleReply ? ' active' : ''}`}
                         >
                           {' '}
                           <i className="i i-reply" /> Send a reply
-                          {this.state.toggleReply ? (
-                            <i className="i i-caret-down chev-down" />
-                          ) : null}
+                          {toggleReply ? <i className="i i-caret-down chev-down" /> : null}
                         </button>
-                        {(moment().diff(this.state.ticket?.fr_due_by, 'hours') > 0 ||
+                        {(moment().diff(
+                          ticket?.fr_due_by || parseInt(workflow?.due_date, 10),
+                          'hours',
+                        ) > 0 ||
                           is_escalated) && (
                           <span>
                             {!isTicketCreatedByAgent && (
@@ -409,7 +578,7 @@ export default class Conversations extends React.Component {
                                 } ${!can_be_escalated ? 'disabled-style' : ''}`}
                                 onClick={() => {
                                   if (can_be_escalated) {
-                                    this.openGrievanceFlow(this.state.ticket);
+                                    this.openGrievanceFlow(ticket);
                                   }
                                 }}
                               >
@@ -430,7 +599,7 @@ export default class Conversations extends React.Component {
                                           : `We will resolve this query over call`
                                         : is_escalated
                                         ? `You can expect reply before: ${responseFormatTime}`
-                                        : `You can expect reply    working hours.`}
+                                        : `You can expect reply within working hours.`}
                                     </span>
                                   )}
                                 </PopoverBody>
@@ -439,12 +608,12 @@ export default class Conversations extends React.Component {
                           </span>
                         )}
                         {!(has_callback || has_click_to_call) ? (
-                          this.props.scheduleCallConfig.is_eligible ? (
+                          scheduleCallConfig?.is_eligible ? (
                             <button
                               onClick={() => {
                                 if (window.rzpTicketSystem) {
                                   window.rzpTicketSystem.openModal(`#schedule-call`, {
-                                    ticket: this.state.ticket,
+                                    ticket,
                                   });
                                 }
                               }}
@@ -461,10 +630,7 @@ export default class Conversations extends React.Component {
                             <i className="i i-call-new" /> <span>Call requested,</span>{' '}
                             <b
                               onClick={() =>
-                                this.openCallDetails(
-                                  this.state.ticket.custom_fields.cf_callback_id,
-                                  this.state.ticket,
-                                )
+                                this.openCallDetails(ticket?.custom_fields?.cf_callback_id, ticket)
                               }
                               className="details"
                             >
@@ -481,14 +647,16 @@ export default class Conversations extends React.Component {
                       <Spinner />
                     </div>
                   )}
-                  {this.state.toggleReply ? (
+                  {toggleReply ? (
                     <Reply
-                      email={this.props.user.contact_email}
+                      email={user?.contact_email}
                       last={total_conversations.length === 0}
-                      logo_url={this.props.user.logo_url}
-                      replyToConversation={this.props.replyToConversation}
-                      ticket={this.state.ticket}
+                      logo_url={user?.logo_url}
+                      replyToConversation={_replyToConversation}
+                      ticket={ticket}
                       ticketID={TICKET_ID}
+                      shouldCreateNewTicketForWorkflow={shouldCreateNewTicketForWorkflow}
+                      handleCreateNewWorkflowTicket={this.handleCreateNewWorkflowTicket}
                       onClose={() => {
                         this.setState({ toggleReply: false });
                       }}

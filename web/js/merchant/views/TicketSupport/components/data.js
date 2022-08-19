@@ -1,44 +1,65 @@
+export const TICKET_STATUS_LABELS = {
+  ACTIVE: 'Active',
+  BEING_PROCESSED: 'Being Processed',
+  RESOLVED: 'Resolved',
+  CLOSED: 'Closed',
+  ACTION_REQUIRED: 'Action required',
+  DELAYED: 'Delayed',
+  REJECTED: 'Rejected',
+  FAILED: 'Failed',
+};
 export const statuses = {
   '2': {
-    name: 'Active',
+    name: TICKET_STATUS_LABELS.ACTIVE,
     class: 'active',
   },
   '3': {
-    name: 'Work In Progress',
+    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
     class: 'pending',
   },
   '4': {
-    name: 'Resolved',
+    name: TICKET_STATUS_LABELS.RESOLVED,
     class: 'active',
   },
   '5': {
-    name: 'Closed',
+    name: TICKET_STATUS_LABELS.CLOSED,
     class: 'danger',
   },
   '6': {
-    name: 'Awaiting Your Reply',
+    name: TICKET_STATUS_LABELS.ACTION_REQUIRED,
     class: 'info',
   },
   '8': {
-    name: 'Work In Progress',
+    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
     class: 'pending',
   },
   '9': {
-    name: 'Work In Progress',
+    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
     class: 'pending',
   },
   '10': {
-    name: 'Work In Progress',
+    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
     class: 'pending',
   },
   '11': {
-    name: 'Work In Progress',
+    name: TICKET_STATUS_LABELS.BEING_PROCESSED,
     class: 'pending',
   },
   '100': {
     name: 'Loading..',
     class: 'pending',
   },
+};
+
+export const workflowStatusClass = {
+  [TICKET_STATUS_LABELS.BEING_PROCESSED]: 'pending',
+  [TICKET_STATUS_LABELS.ACTIVE]: 'active',
+  [TICKET_STATUS_LABELS.RESOLVED]: 'resolved',
+  [TICKET_STATUS_LABELS.CLOSED]: 'danger',
+  [TICKET_STATUS_LABELS.ACTION_REQUIRED]: 'info',
+  [TICKET_STATUS_LABELS.DELAYED]: 'danger',
+  [TICKET_STATUS_LABELS.REJECTED]: 'pending',
+  [TICKET_STATUS_LABELS.FAILED]: 'danger',
 };
 
 export const param_to_qs = (params) => {

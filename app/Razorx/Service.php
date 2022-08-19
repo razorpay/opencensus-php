@@ -70,6 +70,8 @@ class Service extends Base\Service
             'new_categories_enable',
             'care_ticket_ui_revamp',
             'capital_ticket_enable',
+            'open_ticket_status',
+            'is_workflow_ticket_enabled',
             'click_to_call_active',
             'mobile_signup_care_changes_active',
             'instrument_requests_smart_dashboard',

@@ -1,5 +1,5 @@
 $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
-
+$support-body-border-color = #b3b3b34d;
 
 .support
   position: absolute
@@ -47,19 +47,31 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
   .support-help
     font-size: 14px;
     font-weight: 700;
+  .close-icon
+    border-radius: 50%;
   &.active
     display: none
+  &.inActive
+    bottom: 20px;
+    right: 40px;
+    width: 44px;
+    height: 644x;
+    border-radius: 50%;
+    color: #fff
+    display: flex;
+    align-items: center;
+    justify-content: center;
 .onboarding-screen
   bottom: 60px;
   right : 30px;
 .support-body
   position fixed
   background: #fff
-  bottom: 20px;
+  bottom: 76px;
   right: 40px;
   border-radius: 4px
   box-shadow: 0 5px 20px rgba(0,0,0,.16);
-  overflow: hidden;
+  overflow: scroll;
   transition: all 150ms ease-in;
   height: 0;
   width: 360px;
@@ -93,6 +105,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
       position: relative;
       color: #324664;
       font-weight: 700;
+      font-size: 14px;
       &:hover:not(.disabled)
         background-color: #f6fcfd
       &.disabled
@@ -101,6 +114,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         cursor: auto
         .help-block
           color:#f05150b3
+          font-size: 10px
       .help-content
         color: #D4AC0F;
         cursor: auto;
@@ -112,6 +126,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
         font-size: 11px;
       .help-block
         font-weight: 400;
+        font-size: 12px
       &.ticket
         background-image: url($ticketSystemCdn/icon-paper.png)
       &.callback
@@ -122,6 +137,7 @@ $ticketSystemCdn = 'https://cdn.razorpay.com/static/assets/ticket-system';
           left: 4px;
           border-radius: 2px;
           top: -1px;
+          font-size: 10px;
       &.callback.disabled
         filter: grayscale(100%)
       &.chat:not(.disabled)
@@ -155,9 +171,10 @@ div[class$="feedback_minimized_label"]
 
 //@todo: to be removed after going 100% live with new ui
 .support-body-old
-  max-width: 450px;
+
   &.active
     height: auto;
+
   header
     font-size: 16px
     font-weight: 600
@@ -165,10 +182,12 @@ div[class$="feedback_minimized_label"]
     background-color: $sidebar-bg-color
     color: #fff
     .mob-close
+      display: none;
       top: 5px;
       position: relative;
       font-size: 22px;
       cursor: pointer;
+    
   .support-list
     .support-item
       height: 80px
@@ -178,6 +197,7 @@ div[class$="feedback_minimized_label"]
       background-size: 40px;
       background-position: 20px;
       box-shadow: none;
+      font-size: 14px;
       .help-content
         color: #A3B0B7
         cursor: auto
@@ -189,19 +209,31 @@ div[class$="feedback_minimized_label"]
         background-image: url($ticketSystemCdn/icon-chat.png)
 
 @media(max-width: 424px)
+  .suport-body-old
+    width: 100%
+    height: 0
+    bottom: 0
+    left: 0
+    border: 1px solid $support-body-border-color
+    max-width:auto
+    &.active
+      height: 100%
+      max-height: 100vh;
+
+  .support-launcher
+    right: 20px;
   .support-body
     width: 100%
     height: 0
     bottom: 0
     left: 0
-    border: 1px solid #b3b3b34d
+    border: 1px solid $support-body-border-color
+    header
+      .mob-close
+        display: block;
     &.active
       height: 100%
       max-height: 100vh;
-    .support-close
-      font-size: 24px;
-      font-weight: bold;
-      display: inline-block !important
   .support-launcher
     right: 20px;
 

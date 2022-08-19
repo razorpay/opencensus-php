@@ -31,7 +31,8 @@ export default class Reply extends React.Component {
   };
 
   onBiggerFileSize = (_) => {
-    this.props.showNotification({
+    const { showNotification: _showNotification } = this.props;
+    _showNotification({
       type: 'error',
       message: `File exceeds total upload limit of ${MAX_SIZE_LIMIT / 1024 / 1024}MB!`,
     });
@@ -47,12 +48,12 @@ export default class Reply extends React.Component {
     });
 
     analyticsTrack({
-      objectName: 'ticket reply',
-      actionName: 'clicked',
+      objectName: 'Send a Reply',
+      actionName: 'submit button clicked',
       screen: 'support tickets',
       properties: {
-        ticketId: ticket.ticket_id,
-        status: statuses[ticket.status] ? statuses[ticket.status].name : ticket.status,
+        ticketId: ticket?.ticket_id,
+        status: statuses[ticket?.status] ? statuses[ticket?.status].name : ticket?.status,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -61,19 +62,29 @@ export default class Reply extends React.Component {
   reply = () => {
     this.track('send reply clicked', 'Tickets');
 
-    const bodyFormData = new FormData();
-    bodyFormData.append('body', this.state.body);
-    bodyFormData.append('user_id', this.props.ticket.requester_id);
+    const {
+      ticket,
+      ticketID,
+      replyToConversation: _replyToConversation,
+      onSuccess,
+      showNotification: _showNotification,
+      onClose,
+    } = this.props;
 
-    if (this.state.attachments && this.state.attachments.length) {
-      this.state.attachments.forEach((attachment) => {
+    const { attachments, body } = this.state;
+
+    const bodyFormData = new FormData();
+    bodyFormData.append('body', body);
+    bodyFormData.append('user_id', ticket.requester_id);
+
+    if (attachments && attachments.length) {
+      attachments.forEach((attachment) => {
         bodyFormData.append(`attachments[]`, attachment.rawFile);
       });
     }
 
     this.setState({ loading: true });
-    this.props
-      .replyToConversation(this.props.ticketID, bodyFormData)
+    _replyToConversation(ticketID, bodyFormData)
       .then((response) => {
         this.setState({ loading: false, body: null });
 
@@ -82,12 +93,12 @@ export default class Reply extends React.Component {
           attachments: [],
         });
 
-        if (this.props.onSuccess) {
+        if (onSuccess) {
           if (response.success) {
-            this.props.onSuccess(response.data);
+            onSuccess(response.data);
             this.track('reply delivered', 'Tickets | Status: Success');
           } else {
-            this.props.showNotification({
+            _showNotification({
               type: 'error',
               message: `Failed to reply, please try later! Status CODE: ${
                 response.data ? response.data.code : 'UNKNOWN'
@@ -99,16 +110,38 @@ export default class Reply extends React.Component {
         } else {
           this.track('reply undelivered', 'Tickets | Status: Failed');
         }
-        this.props.onClose();
+        onClose();
       })
       .catch((e) => {
         this.setState({ loading: false });
         this.track('reply undelivered', 'Tickets | Status: Failed');
-        this.props.showNotification({
+        _showNotification({
           type: 'error',
           message: `Failed to reply, please try later! Status CODE: ${e.code || 'UNKNOWN'}`,
         });
       });
+  };
+
+  handleCreateWorkflowTicketAndReply = () => {
+    const { handleCreateNewWorkflowTicket = () => {}, ticket = {} } = this.props;
+    this.setState({ loading: true }, () => {
+      handleCreateNewWorkflowTicket?.({
+        successCallback: this.reply,
+        errorCallback: () => {
+          this.setState({ loading: true });
+        },
+      });
+    });
+    analyticsTrack({
+      objectName: 'workflow send a reply',
+      actionName: 'submit button clicked',
+      screen: 'support tickets',
+      properties: {
+        ticketId: ticket?.ticket_id,
+        status: statuses[ticket?.status] ? statuses[ticket?.status].name : ticket?.status,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
   };
 
   addFile = (file) => {
@@ -122,7 +155,8 @@ export default class Reply extends React.Component {
           const alreadyExist = attachments.find((attachment) => attachment.name === file.name);
 
           if (alreadyExist) {
-            this.props.showNotification({
+            const { showNotification: _showNotification } = this.props;
+            _showNotification({
               type: 'error',
               message: `File already added!`,
             });
@@ -176,22 +210,20 @@ export default class Reply extends React.Component {
   };
 
   getRemainingUploadSize = () => {
-    return this.state.attachments.reduce((prev, attachment) => {
+    const { attachments } = this.state;
+    return attachments?.reduce((prev, attachment) => {
       return prev - attachment.file.length;
     }, MAX_SIZE_LIMIT);
   };
 
   render() {
     const REMAINING_SIZE = this.getRemainingUploadSize();
-    const { onClose } = this.props;
+    const { onClose, ticket, shouldCreateNewTicketForWorkflow, logo_url, user = {} } = this.props;
+    const { attachments, loading, body } = this.state;
 
-    const img = this.props.logo_url ? (
+    const img = logo_url ? (
       <div className="revamped-user-image">
-        <img
-          className="img-round revamped-user-image"
-          src={this.props.logo_url}
-          alt="revamped-user-image"
-        />
+        <img className="img-round revamped-user-image" src={logo_url} alt="revamped-user-image" />
       </div>
     ) : (
       <div className="revamped-user-image">
@@ -208,7 +240,7 @@ export default class Reply extends React.Component {
                 <h5 className="mb-0 mt-0">
                   <div className="row">
                     <div className="col-xs-5 message-owner row-container">
-                      <b>{this.props.user.name}</b>
+                      <b>{user?.name}</b>
                       <p className="to-account">To: Razorpay Account</p>
                       <i className="i i-close close-icon" onClick={onClose} role="button" />
                     </div>
@@ -216,7 +248,7 @@ export default class Reply extends React.Component {
                 </h5>
                 <div className="reply-quill">
                   <textarea
-                    value={this.state.body}
+                    value={body}
                     onChange={(e) => this.setState({ body: e.target.value })}
                     cols="30"
                     rows="3"
@@ -226,9 +258,9 @@ export default class Reply extends React.Component {
                   />
                 </div>
                 <div>
-                  {this.state.attachments &&
-                    this.state.attachments.length !== 0 &&
-                    this.state.attachments.map((attachment) => {
+                  {attachments &&
+                    attachments.length !== 0 &&
+                    attachments.map((attachment) => {
                       return (
                         <FileUpload
                           size="large"
@@ -255,15 +287,19 @@ export default class Reply extends React.Component {
                   />
 
                   <button
-                    onClick={this.reply}
-                    disabled={this.state.loading || !this.state.body}
+                    onClick={
+                      shouldCreateNewTicketForWorkflow
+                        ? this.handleCreateWorkflowTicketAndReply
+                        : this.reply
+                    }
+                    disabled={loading || !body}
                     className="btn btn-primary ticket-reply-btn"
                   >
-                    {this.state.loading ? (
+                    {loading ? (
                       'Sending'
                     ) : (
                       <span>
-                        <span>{this.props.ticket?.status === 5 ? 'Re-open Query' : 'Send'}</span>
+                        <span>{ticket?.status === 5 ? 'Re-open Query' : 'Send'}</span>
                         <i className="i i-send reply-icon" />
                       </span>
                     )}

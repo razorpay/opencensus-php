@@ -4,10 +4,10 @@ import {
   getFormattedDate,
   getEscalationType,
 } from '../utils';
+import { TICKET_STATUS_LABELS } from './data';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 export default function TicketBriefMessage(props) {
-  // let ticketStatus, ticketResponseArrivalType, expectedResponseDate, isEscalated;
   const ticketStatus = getTicketStatus(props.ticket);
   const ticketResponseArrivalType = getResponseArrivalType(props.ticket);
   const expectedResponseDate = getFormattedDate(new Date(props.ticket.fr_due_by));
@@ -18,7 +18,8 @@ export default function TicketBriefMessage(props) {
         <div class="Ticket-Brief-Message-Status-Desc text-danger">
           <i class="i i-clock ticket-message-icn" /> Reply Before <b>{expectedResponseDate}</b>
         </div>
-      ) : ticketStatus === 'Work In Progress' || ticketStatus === 'Active' ? (
+      ) : ticketStatus === TICKET_STATUS_LABELS.BEING_PROCESSED ||
+        ticketStatus === TICKET_STATUS_LABELS.ACTIVE ? (
         isEscalated ? (
           <div class="Ticket-Brief-Message-Status-Desc">
             <span>

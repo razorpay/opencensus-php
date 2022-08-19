@@ -1,19 +1,23 @@
-import { statuses } from './data';
+import { statuses, workflowStatusClass, TICKET_STATUS_LABELS } from './data';
 import React from 'react';
 
-export default class TicketStatus extends React.Component {
-  componentDidMount() {}
+const TicketStatus = ({ workflow, ticket } = {}) => {
+  const today = new Date();
+  const dueDate = new Date(ticket?.fr_due_by || parseInt(workflow?.due_date, 10));
 
-  render() {
-    const ticket = this.props.ticket;
-    const status = statuses[ticket.status];
-    return (
-      <span
-        style={{ marginLeft: '10px' }}
-        className={`label ticket-status-label label-${status && status.class}`}
-      >
-        {status?.name}
-      </span>
-    );
-  }
-}
+  let statusLabel = workflow?.state || statuses[ticket?.status]?.name;
+  const isDelayed =
+    (statusLabel === TICKET_STATUS_LABELS.ACTIVE ||
+      statusLabel === TICKET_STATUS_LABELS.BEING_PROCESSED) &&
+    today > dueDate;
+  const status = workflow?.state || statuses[ticket.status];
+
+  const cssClass = isDelayed
+    ? workflowStatusClass[TICKET_STATUS_LABELS.DELAYED]
+    : workflowStatusClass[status] || status?.class;
+
+  statusLabel = isDelayed ? TICKET_STATUS_LABELS.DELAYED : statusLabel;
+  return <span className={`label ticket-status-label label-${cssClass}`}>{statusLabel}</span>;
+};
+
+export default TicketStatus;

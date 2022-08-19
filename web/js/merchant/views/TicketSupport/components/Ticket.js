@@ -5,6 +5,7 @@ import TicketStatus from './TicketStatus';
 import Attachment from './Attachment';
 import Message from './Message';
 import sanitizer from 'common/utils/xss-sanitizer';
+import { TICKET_STATUS_LABELS } from './data';
 const RAZORPAY_LOGO = `https://razorpay.com/assets/razorpay-glyph.svg`;
 
 @connect((state) => {
@@ -39,7 +40,7 @@ export default class Ticket extends React.Component {
   };
 
   render() {
-    const { ticket, user, totalConversations } = this.props;
+    const { ticket, user, totalConversations, workflow } = this.props;
     const { showMoreConversation } = this.state;
     const isTicketCreatedByAgent = ticket?.custom_fields?.cf_created_by === 'agent';
 
@@ -53,10 +54,19 @@ export default class Ticket extends React.Component {
       img = <img className="img-round" src={RAZORPAY_LOGO} alt="ticket-user-logo" />;
     }
 
-    const category = ticket?.custom_fields?.cf_requestor_subcategory;
-    const subCategory = ticket?.custom_fields?.cf_requester_item;
+    const category = workflow?.sub_category || ticket?.custom_fields?.cf_requestor_subcategory;
+    const subCategory = workflow?.item || ticket?.custom_fields?.cf_requester_item;
     const ticketConversationsLength = totalConversations?.length;
-    if (ticket) {
+
+    const description =
+      workflow?.state === TICKET_STATUS_LABELS.REJECTED
+        ? `Rejection Reason: ${
+            ticket?.rejection_reason ||
+            'We apologise that we cannot support your request at this time. Please reach out to support for more queries.'
+          }`
+        : workflow?.description || ticket?.description;
+
+    if (ticket || workflow) {
       return (
         <div className="message-container">
           <div className="title-section">
@@ -72,12 +82,16 @@ export default class Ticket extends React.Component {
                   </>
                 )}
               </div>
-              <TicketStatus ticket={ticket} />
+              <TicketStatus ticket={ticket} workflow={workflow} />
             </div>
             <div className="title-text-container sub-text" style={{ justifyContent: 'flex-start' }}>
-              <p>Ticket #{ticket?.ticket_id}</p>
+              <p>#{workflow?.id || ticket?.ticket_id}</p>
               <p className="separator text-size-25">&#183;</p>
-              <p>{moment(ticket.created_at).format('ddd, MMM D, YYYY, hh:mm A')}</p>
+              <p>
+                {moment(
+                  workflow?.created_at ? parseInt(workflow.created_at, 10) : ticket.created_at,
+                ).format('ddd, MMM D, YYYY, hh:mm A')}
+              </p>
             </div>
           </div>
           <div className="user-details-container">
@@ -98,7 +112,9 @@ export default class Ticket extends React.Component {
                   className={`lh-18 user-ticket-description ${
                     this.state.showFullMessage ? '' : 'truncated'
                   }`}
-                  dangerouslySetInnerHTML={{ __html: sanitizer(ticket?.description) }}
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizer(description),
+                  }}
                 />
               </div>
             </div>

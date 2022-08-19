@@ -6,20 +6,30 @@ import { fetchTicketsRaisedByAgents } from 'merchant/reducers/config';
 import { analyticsTrack } from 'common/utils/analytics';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
-import WriteToUsPopup from './WriteToUsPopup';
-import { CreateTicketEmitter } from '../../../views/TicketSupport/utils';
-import { initCare, TicketSystemEmitter } from '../../../care/init';
+import WriteToUsPopup from 'merchant/components/Support/components/WriteToUsPopup';
+import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { initCare, TicketSystemEmitter } from 'merchant/care/init';
 import ErrorBoundary, { Ranks, Teams, InlineFallbackComponent } from 'common/new-ui/ErrorBoundary';
 import { Modal, ModalBody } from 'common/components/Modal';
+import getMobileDetect from 'common/utils/mobileDetect';
 import errorService from '@razorpay/universe-utils/errorService';
-import SupportActions from './SupportActions';
 import {
   getCommonSupportProperties,
   getDeviceSource,
 } from 'merchant/components/Support/getCommonSupportProperties';
+import { getCookie, setCookie } from 'common/utils/cookies';
+import SupportActions from 'merchant/components/Support/components/SupportActions';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
-const SupportSection = lazy(() =>
-  import(/* webpackChunkName: 'frontend-care-new' */ '@razorpay/frontend-care-new'),
+const OpenRequestStatus = lazy(() =>
+  import('@razorpay/frontend-care').then((module) => ({
+    default: module.OpenRequestStatus,
+  })),
+);
+
+const SupportSection = lazy(
+  () => import(/* webpackChunkName: 'frontend-care' */ '@razorpay/frontend-care'),
+  // This will be replaced by @razorpay/care in prod
 );
 
 const isWorkingDay = () => {
@@ -44,6 +54,9 @@ class SupportBody extends Component {
     timings: [],
     careSupportSection: null,
     openClickToCall: false,
+    isClickToCallSubmitted: false,
+    isChatWithUsDisabled: false,
+    modalToBeOpenedOnBackClick: '',
   };
   openDashboardGuide = (_) => {
     analyticsTrack({
@@ -69,21 +82,26 @@ class SupportBody extends Component {
         ...getCommonSupportProperties(),
       },
     });
-    const user = this.props.user;
+    const {
+      user = {},
+      supportFlags = {},
+      openModal: _openModal,
+      closeModal: _closeModal,
+    } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
     if (rzpTicketSystem) {
       if (pcb) {
         pcb();
       }
-      if (this.props.supportFlags.show_create_ticket_popup) {
-        this.props.openModal({
+      if (supportFlags.show_create_ticket_popup) {
+        _openModal({
           size: 'small',
           component: (
             <WriteToUsPopup
               businessName={user.name}
               id={id}
-              supportFlags={this.props.supportFlags}
-              closeModal={this.props.closeModal}
+              supportFlags={supportFlags}
+              closeModal={_closeModal}
             />
           ),
         });
@@ -94,63 +112,33 @@ class SupportBody extends Component {
     }
   };
 
-  handleCloseCareSupportSection = () => {
-    this.setState(
-      {
-        careSupportSection: null,
-      },
-      () => {
-        if (this.props.isOpened) {
-          this.props.onToggle();
-        }
-        if (this.props.isWebView) {
-          try {
-            window.ReactNativeWebView.postMessage(JSON.stringify({ eventType: 'EXIT' }));
-          } catch (error) {
-            errorService.captureError(error, {
-              tags: {
-                team: Teams.CARE,
-              },
-              rank: Ranks.P2,
-            });
-          }
-        }
-      },
-    );
-  };
-
   componentDidMount() {
+    const {
+      user = {},
+      shouldOpenRaiseAQueryOnMount,
+      fetchTicketsRaisedByAgents: _fetchTickets,
+    } = this.props;
     window.rzpTicketSystem = {
       openModal: (id, data) => {
-        initCare(this.props.user, { id, data });
+        initCare(user, { id, data });
       },
       options: {},
     };
 
-    if (this.props.user.isMobileSignupCareActive) {
-      this.props.fetchTicketsRaisedByAgents();
+    if (user.isMobileSignupCareActive) {
+      _fetchTickets();
     }
 
     CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {
       this.createTicket(id, pcb, lcb);
     });
     TicketSystemEmitter.on('openModal', (module, initialData) => {
-      this.setState(
-        {
-          careSupportSection: {
-            module,
-            initialData,
-          },
+      this.setState({
+        careSupportSection: {
+          module,
+          initialData,
         },
-        () => {
-          if (
-            ['#ticket', 'ticket', 'tickets', '#tickets'].includes(module) &&
-            !this.props.isOpened
-          ) {
-            this.props.onToggle();
-          }
-        },
-      );
+      });
     });
     TicketSystemEmitter.on('closeModal', () => {
       this.handleCloseCareSupportSection();
@@ -197,12 +185,28 @@ class SupportBody extends Component {
         }
       }),
     ]).catch((err) => console.log(err));
+
+    if (getMobileDetect().isWebView() && shouldOpenRaiseAQueryOnMount) {
+      window.rzpTicketSystem.openModal(`#tickets`);
+    }
+    this.checkIfClickToCallSubmitted();
   }
 
-  handleClick = (id) => {
-    const { onChat, notifyCount, user } = this.props;
+  checkIfClickToCallSubmitted = () => {
+    if (getCookie('click-to-call-submitted')) {
+      this.setState({ isClickToCallSubmitted: true });
+    }
+  };
+  handleClick = async (id, screen = 'home page') => {
+    const {
+      onToggle,
+      onChat,
+      notifyCount,
+      fetchSupportFlags,
+      isOpened,
+      supportFlags = {},
+    } = this.props;
     const rzpTicketSystem = window.rzpTicketSystem;
-    this.handleCloseCareSupportSection();
     if (rzpTicketSystem) {
       trackSupportOptions(id);
       if (id === 'call') {
@@ -212,70 +216,172 @@ class SupportBody extends Component {
       }
 
       if (id === 'schedule-call') {
-        analyticsTrack({
-          objectName: 'request a call',
-          actionName: 'clicked',
-          screen: 'home page',
-          properties: {
-            ...getCommonAnalyticsProperties(window.rzp_user),
-            ...getCommonSupportProperties(),
-          },
-        });
+        this.scheduleCallTracking();
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#schedule-call`);
       }
 
       if (id === 'click-to-call') {
-        analyticsTrack({
-          objectName: 'click to call',
-          actionName: 'clicked',
-          screen: 'home page',
-          properties: {
-            ...getCommonAnalyticsProperties(window.rzp_user),
-            ...getCommonSupportProperties(),
-          },
-        });
+        this.clickToCallTracking();
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#click-to-call`);
       }
+
+      if (id === 'open-queries') {
+        this.openQueriesTracking(screen);
+        if (isOpened) onToggle();
+        // eslint-disable-next-line consistent-return
+        return rzpTicketSystem.openModal(`#open-queries`);
+      }
       if (id === 'chat') {
-        const { isChatbotLive } = user;
-        analyticsTrack({
-          objectName: 'chat with us',
-          actionName: 'clicked',
-          screen: 'home page',
-          properties: {
-            isChatbot: isChatbotLive,
-            ...getCommonAnalyticsProperties(window.rzp_user),
-            ...getCommonSupportProperties(),
-          },
-        });
+        const newSupportflags = await fetchSupportFlags(false);
+        const showChat = Boolean(newSupportflags?.show_chat);
+
+        this.chatWithUsTracking({ showChat });
+
+        if (!showChat) {
+          this.setState({
+            isChatWithUsDisabled: true,
+          });
+          return;
+        }
         // if notifications pending, then enable chat
-        if (!this.props.supportFlags.show_chat && notifyCount < 1) {
+        if (!supportFlags.show_chat && notifyCount < 1) {
           return;
         }
 
+        onToggle();
         onChat();
         return;
       }
+
+      if (id === 'tickets') {
+        this.ticketsTracking();
+      }
+      onToggle();
       this.createTicket(id);
     } else {
-      console.log('RZP TICKET SYSTEM INIT FAILED');
+      errorService.captureError('RZP TICKET SYSTEM INIT FAILED', {
+        tags: {
+          team: Teams.CARE,
+        },
+        rank: Ranks.P2,
+      });
     }
+  };
+
+  scheduleCallTracking = () => {
+    analyticsTrack({
+      objectName: 'request a call',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  clickToCallTracking = () => {
+    analyticsTrack({
+      objectName: 'click to call',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+  openQueriesTracking = (screen = 'home page') => {
+    analyticsTrack({
+      objectName: 'View All Queries',
+      actionName: 'clicked',
+      screen,
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  chatWithUsTracking = ({ showChat } = {}) => {
+    const { user: { isChatbotLive } = {} } = this.props;
+
+    analyticsTrack({
+      objectName: 'chat with us',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        isChatbot: isChatbotLive,
+        isAvailable: showChat,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  ticketsTracking = () => {
+    analyticsTrack({
+      objectName: 'have a query',
+      actionName: 'clicked',
+      screen: 'home page',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
+  };
+
+  openQueriesTracking = () => {
+    analyticsTrack({
+      objectName: 'view all Queries',
+      actionName: 'clicked',
+      screen: 'help section',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+      },
+    });
   };
 
   handleTicketCreatingSuccess = (data) => {
     TicketSystemEmitter.emit('ticket-created', data);
   };
 
+  handleCloseCareSupportSection = () => {
+    this.setState(
+      {
+        careSupportSection: null,
+        modalToBeOpenedOnBackClick: '',
+      },
+      () => {
+        const { isWebView } = this.props;
+        if (isWebView) {
+          try {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ eventType: 'EXIT' }));
+          } catch (error) {
+            errorService.captureError(error, {
+              tags: {
+                team: Teams.CARE,
+              },
+              rank: Ranks.P2,
+            });
+          }
+        }
+      },
+    );
+  };
+
   handleCareAnalytics = (payload) => {
     if (!payload) {
       return;
     }
-    const { properties = {}, ...rest } = payload;
+    const { properties = {}, screen, ...rest } = payload;
     try {
       analyticsTrack({
         ...rest,
+        screen: screen || 'help section',
         properties: {
           ...properties,
           ...getCommonAnalyticsProperties(window.rzp_user),
@@ -286,12 +392,95 @@ class SupportBody extends Component {
       //
     }
   };
+  onClickToCallSuccess = () => {
+    const { isClickToCallSubmitted: hasClickToCallSubmitted } = this.state;
+    if (!hasClickToCallSubmitted) {
+      const now = new Date();
+      const minutes = 30;
+      now.setTime(now.getTime() + minutes * 60 * 1000);
+      setCookie('click-to-call-submitted', new Date(), now);
+      this.setState({ isClickToCallSubmitted: true });
+    }
+  };
+
+  onRequestFollowUp = ({ ticket, openedFrom } = {}) => {
+    if (window.rzpTicketSystem) {
+      window.rzpTicketSystem.openModal('#raise-grievance', {
+        ticketID: ticket.id,
+      });
+    }
+    analyticsTrack({
+      objectName: 'Request follow-up',
+      actionName: 'clicked',
+      screen: 'help section',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties(),
+        ticket_id: ticket.id,
+      },
+    });
+    this.setState({
+      modalToBeOpenedOnBackClick: openedFrom,
+    });
+  };
+
+  handleOpenQueries = ({ screen, openedFrom = 'help' } = {}) => {
+    this.handleClick('open-queries', screen);
+    this.setState({
+      modalToBeOpenedOnBackClick: openedFrom,
+    });
+  };
+
+  handleBackClick = () => {
+    const { modalToBeOpenedOnBackClick = 'help' } = this.state;
+    const { onToggle, isOpened } = this.props;
+
+    if (modalToBeOpenedOnBackClick === 'help') {
+      this.setState(
+        {
+          careSupportSection: null,
+          modalToBeOpenedOnBackClick: '',
+        },
+        () => {
+          if (!isOpened) {
+            onToggle();
+          }
+        },
+      );
+    } else {
+      this.setState(
+        {
+          modalToBeOpenedOnBackClick: '',
+        },
+        () => {
+          this.handleClick(modalToBeOpenedOnBackClick);
+        },
+      );
+    }
+  };
 
   render() {
-    const { notifyCount, isOpened, isCallEnabled, scheduleCallConfig, user } = this.props;
-    const { handleClick } = this;
-    const { careSupportSection } = this.state;
+    const {
+      notifyCount,
+      isOpened,
+      onToggle,
+      isCallEnabled,
+      scheduleCallConfig,
+      user,
+      isWebView,
+      supportFlags,
+      botIsLoaded,
+    } = this.props;
+    const {
+      careSupportSection,
+      isClickToCallSubmitted,
+      isChatWithUsDisabled,
+      timings,
+      openClickToCall,
+    } = this.state;
     const shouldDisable = !isWorkingDay();
+    const { showOpenTicketStatus = false } = user;
+
     let scheduleCallbackReason =
       scheduleCallConfig && scheduleCallConfig.is_eligible === false && scheduleCallConfig.reason
         ? scheduleCallConfig.reason
@@ -299,20 +488,20 @@ class SupportBody extends Component {
 
     if (scheduleCallConfig.reason === 'NOT_AVAILABLE') {
       scheduleCallbackReason = (
-        <span class="text-danger">Slots are unavailable right now, try later.</span>
+        <span className="text-danger">Slots are unavailable right now, try later.</span>
       );
     }
 
     if (scheduleCallConfig.reason === 'ALREADY_BOOKED') {
-      scheduleCallbackReason = <span class="text-danger">Call already requested.</span>;
+      scheduleCallbackReason = <span className="text-danger">Call already requested.</span>;
     }
 
     const today = new Date().getDay();
     let date;
-    if (this.state.timings.length) {
+    if (timings.length) {
       date = {
-        start: this.state.timings[today].start / 60,
-        end: this.state.timings[today].end / 60,
+        start: timings[today].start / 60,
+        end: timings[today].end / 60,
         start_zone: 'AM',
         end_zone: 'AM',
       };
@@ -327,8 +516,10 @@ class SupportBody extends Component {
         date.end_zone = 'PM';
       }
     }
+
+    const isMobile = isMobileDevice(1020);
     return (
-      <div class={classList('support-body', isOpened && 'active')}>
+      <div className={classList('support-body support-body-old', isOpened && 'active')}>
         <ErrorBoundary
           resetOnProps
           rank={Ranks.P1}
@@ -350,44 +541,70 @@ class SupportBody extends Component {
             );
           }}
         >
-          <SupportSection
-            user={{
-              experiments: user.experiments,
-              email: user.email,
-              name: user.name,
-              id: user.id,
-              contact_mobile: user?.user?.contact_mobile,
-            }}
-            analyticsInstance={this.handleCareAnalytics}
-            // removing hash to support frontend care package
-            module={careSupportSection?.module?.replace('#', '')}
-            initialData={careSupportSection?.initialData}
-            onSuccess={this.handleTicketCreatingSuccess}
-            onClose={this.handleCloseCareSupportSection}
-            shouldOpenExistingTicketsOnNewTab={!this.props.isWebView}
-            shouldPersistSearchString={this.props.isWebView}
-            deviceSource={getDeviceSource()}
-            supportComponents={
-              this.props.isWebView
-                ? []
-                : [
-                    <SupportActions
-                      key="SupportActions"
-                      notifyCount={notifyCount}
-                      isCallEnabled={isCallEnabled}
-                      handleClick={handleClick}
-                      shouldDisable={shouldDisable}
-                      scheduleCallbackReason={scheduleCallbackReason}
-                      openClickToCall={this.state.openClickToCall}
-                      user={this.props.user}
-                      supportFlags={this.props.supportFlags}
-                      botIsLoaded={this.props.botIsLoaded}
-                      timings={this.state.timings}
-                      date={date}
-                      isEligible={scheduleCallConfig.is_eligible}
-                    />,
-                  ]
-            }
+          {careSupportSection ? (
+            <SupportSection
+              user={{
+                experiments: user.experiments,
+                email: user.email,
+                name: user.name,
+                id: user.id,
+                contact_mobile: user?.user?.contact_mobile,
+              }}
+              analyticsInstance={this.handleCareAnalytics}
+              // removing hash to support frontend care package
+              module={careSupportSection.module?.replace('#', '')}
+              initialData={careSupportSection.initialData}
+              onSuccess={this.handleTicketCreatingSuccess}
+              onClose={this.handleCloseCareSupportSection}
+              hideModalHeader={isWebView}
+              shouldPersistSearchString={isWebView}
+              onClickToCallSuccess={this.onClickToCallSuccess}
+              shouldOpenExistingTicketsOnNewTab={!isWebView}
+              deviceSource={getDeviceSource()}
+              onRequestFollowUp={this.onRequestFollowUp}
+              handleOpenQueries={this.handleOpenQueries}
+              showBackButton={isMobile}
+              onBackClick={this.handleBackClick}
+            />
+          ) : null}
+
+          <header>
+            <i className="i i-headset m-r" /> Help and Support{' '}
+            <i className="i i-close pull-right mob-close" onClick={onToggle} />
+          </header>
+          {showOpenTicketStatus && (
+            <OpenRequestStatus
+              user={{
+                experiments: user.experiments,
+                email: user.email,
+                name: user.name,
+                id: user.id,
+                contact_mobile: user?.user?.contact_mobile,
+              }}
+              handleOpenQueries={this.handleOpenQueries}
+              shouldPersistSearchString={isWebView}
+              shouldOpenExistingTicketsOnNewTab={!isWebView}
+              onRequestFollowUp={this.onRequestFollowUp}
+              analyticsInstance={this.handleCareAnalytics}
+            />
+          )}
+          <SupportActions
+            key="SupportActions"
+            notifyCount={notifyCount}
+            isCallEnabled={isCallEnabled}
+            handleClick={this.handleClick}
+            shouldDisable={shouldDisable}
+            scheduleCallbackReason={scheduleCallbackReason}
+            openClickToCall={openClickToCall}
+            user={user}
+            supportFlags={supportFlags}
+            botIsLoaded={botIsLoaded}
+            timings={timings}
+            date={date}
+            isEligible={scheduleCallConfig.is_eligible}
+            isClickToCallSubmitted={isClickToCallSubmitted}
+            isChatWithUsDisabled={isChatWithUsDisabled}
+            openDashboardGuide={this.openDashboardGuide}
           />
         </ErrorBoundary>
       </div>

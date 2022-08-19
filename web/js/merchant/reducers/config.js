@@ -31,6 +31,8 @@ const REMOVE_LOGO = 'REMOVE_LOGO';
 const FETCH_FEATURE_STATUS = 'FETCH_FEATURE_STATUS';
 const FETCH_INTERNATIONAL_SETTING_STATUS = 'FETCH_INTERNATIONAL_SETTING_STATUS';
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
+export const FETCH_WORKFLOWS =
+  'care_service/merchant/twirp/rzp.care.workflow.v1.WorkflowService/FetchWorkflows';
 
 const DEFAULT_CALL_BACK_SCHEDULE_RESPONSE = {
   is_eligible: false,
@@ -51,8 +53,11 @@ export const fetchSupportTicketsApiCall = (params, filter) => {
     url,
     mode: 'live',
   }).then((res) => {
+    const filteredResults = res?.data?.results?.filter(
+      (item) => !item?.custom_fields?.cf_workflow_id,
+    );
     return {
-      data: res.data.results,
+      data: filteredResults,
       query: params,
     };
   });

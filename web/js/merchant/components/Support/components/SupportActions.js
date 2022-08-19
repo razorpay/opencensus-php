@@ -16,7 +16,6 @@ function SupportActions({
   botIsLoaded,
   timings,
   date,
-  isOldFlow,
   isClickToCallSubmitted,
   isChatWithUsDisabled,
   openDashboardGuide,
@@ -29,14 +28,13 @@ function SupportActions({
     (!show_chat && notifyCount < 1) || (isChatbotLive && !botIsLoaded) || supportFlags?.isFetching;
   return (
     <ul className="support-list">
-      {isOldFlow && (
-        <li
-          className={`support-item p-all ticket ${!loaded ? 'disabled' : ''}`}
-          onClick={!loaded ? noop : handleClick.bind(null, 'tickets')}
-        >
-          Have a query? <small className="help-block">Check existing query/raise a new one</small>
-        </li>
-      )}
+      <li
+        className={`support-item p-all ticket${!loaded ? ' disabled' : ''}`}
+        onClick={!loaded ? noop : handleClick.bind(null, 'tickets')}
+      >
+        Have a query? <small className="help-block">Check existing query/raise a new one</small>
+      </li>
+
       <ShowWhen
         myRole="owner admin"
         additionalCondition={() =>
@@ -52,7 +50,6 @@ function SupportActions({
             Request a call <span className="badge">Recommended</span>
           </span>
           <small className="help-block">{scheduleCallbackReason}</small>
-          {!isOldFlow && <i className="i i-chevron-right" />}
         </li>
       </ShowWhen>
       {isFrontendCareActive && isClickToCallActive && openClickToCall && (
@@ -67,8 +64,6 @@ function SupportActions({
           <small className="help-block">
             {isClickToCallSubmitted ? 'You will receive a call shortly' : 'Click to call instantly'}
           </small>
-
-          {!isOldFlow && <i className="i i-chevron-right" />}
         </li>
       )}
       {window.rzp_user ? (
@@ -92,7 +87,6 @@ function SupportActions({
                 ? 'Currently unavailable'
                 : 'For quick questions or help on dashboard'}
             </small>
-            {!isOldFlow && <i className="i i-chevron-right" />}
           </li>
         ) : null
       ) : null}
@@ -106,22 +100,18 @@ function SupportActions({
           <small className="help-block">
             {shouldDisable ? 'Currently unavailable' : 'For queries and help on the dashboard'}
           </small>
-          {!isOldFlow && <i className="i i-chevron-right" />}
         </li>
       ) : null}
 
-      {isOldFlow && (
-        <li className="support-item p-all dashboard_guide" onClick={openDashboardGuide}>
-          Dashboard Guide{' '}
-          <small className="help-block">Read more about how to use the dashboard</small>
-        </li>
-      )}
+      <li className="support-item p-all dashboard_guide" onClick={openDashboardGuide}>
+        Dashboard Guide{' '}
+        <small className="help-block">Read more about how to use the dashboard</small>
+      </li>
     </ul>
   );
 }
 
 SupportActions.defaultProps = {
-  isOldFlow: false,
   isEligible: false,
   botIsLoaded: false,
   isCallEnabled: false,
@@ -144,7 +134,6 @@ SupportActions.propTypes = {
   shouldDisable: PropTypes.bool,
   botIsLoaded: PropTypes.bool,
   openClickToCall: PropTypes.bool,
-  isOldFlow: PropTypes.bool,
   isClickToCallSubmitted: PropTypes.bool,
   isChatWithUsDisabled: PropTypes.bool,
   handleClick: PropTypes.func,

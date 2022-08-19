@@ -98,14 +98,21 @@ export default class SupportHeader extends Component {
       isOnBoardingRevampScreen,
       showComdelPopover,
       isWebView,
-    } = this.props;
+    } = this?.props;
     const content = (
       <>
         {notifyCount ? <span className="notify-icon">{notifyCount}</span> : null}
-        <div className="open-icon">
-          <span className="support-icon" />
-          <span className="support-help">Help</span>
-        </div>
+        {!isOpened && (
+          <div className="open-icon">
+            <span className="support-icon" />
+            <span className="support-help">Help</span>
+          </div>
+        )}
+        {isOpened && (
+          <div className="close-icon">
+            <i className="i i-close " />
+          </div>
+        )}
       </>
     );
 
@@ -117,7 +124,7 @@ export default class SupportHeader extends Component {
       <div
         className={classList(
           'support-launcher',
-          isOpened && 'active',
+          isOpened && 'inActive',
           isOnBoardingRevampScreen && 'onboarding-screen',
         )}
         onClick={this.handleToggle}
