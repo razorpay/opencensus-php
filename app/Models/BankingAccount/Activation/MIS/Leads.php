@@ -166,6 +166,22 @@ class Leads extends Base
 
             $bankAccountType = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE];
 
+            // TODO:
+            // This is not optimized, doing this now for the lack of better method
+            // We will revert this when we move it to reports
+            $sentToBankLog = $bankingAccount->activationStates->where(BankingAccount\Entity::STATUS, '=', BankingAccount\Status::INITIATED);
+            $sentToBankTimestamp = $sentToBankLog->pluck(BankingAccount\Entity::CREATED_AT)->first();
+
+            $sentToBankDate = '';
+            $sentToBankTime = '';
+
+            if (
+                $sentToBankTimestamp !== null)
+            {
+                $sentToBankDate = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('Y-m-d') ?? '';
+                $sentToBankTime = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('h:i A') ?? '';;
+            }
+
             $zeroAmb = ($bankAccountType === ActivationDetail\Validator::ZERO_BALANCE) ? 'Yes' : 'No';
 
             $fileInput[] = [
@@ -178,8 +194,8 @@ class Leads extends Base
                 self::PINCODE => $bankingAccount[BankingAccount\Entity::PINCODE],
                 self::CONSTITUTION_TYPE => $this->toPublic(self::CONSTITUTION_TYPE, $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY]),
                 self::MERCHANT_ICV => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::INITIAL_CHEQUE_VALUE],
-                self::APPLICATION_SUBMISSION_DATE => date('Y-m-d'),
-                self::TIMESTAMP => Carbon::createFromTimestamp(time(), Timezone::IST)->format('h:i A'),
+                self::APPLICATION_SUBMISSION_DATE => $sentToBankDate,
+                self::TIMESTAMP => $sentToBankTime,
                 self::BUSINESS_MODEL =>  $this->toPublic(self::BUSINESS_MODEL, $bankingAccount->merchant->merchantDetail[Merchant\Detail\Entity::BUSINESS_CATEGORY]),
                 self::ACCOUNT_TYPE => $this->toPublic(self::ACCOUNT_TYPE, $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE]),
                 self::COMMENT => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::COMMENT],
