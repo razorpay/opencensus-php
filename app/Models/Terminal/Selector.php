@@ -12,6 +12,8 @@ use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Diag\EventCode;
+use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -851,6 +853,13 @@ class Selector extends Base\Core
             $paymentData['meta_data'] = $this->getPaymentMetadataArray($payment);
 
             $paymentData['force_terminal_id'] = $payment->getForceTerminalId();
+
+            if(($payment->getMethod() === Method::PAYLATER || $payment->getMethod() === Method::CARDLESS_EMI) and
+                (in_array($payment['wallet'], CardlessEmi::$fullNameForSupportedBanks, true) ||
+                    (in_array($payment['wallet'], PayLater::$fullNameForSupportedBanks, true))))
+            {
+                $paymentData['wallet'] = strtoupper($payment['wallet']);
+            }
 
             if ((in_array($paymentData['method'], [Method::CARD, Method::UPI, Method::EMI]) === true ) and
                 ($payment->isGooglePayCard() === false))
