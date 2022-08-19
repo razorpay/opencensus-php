@@ -1504,6 +1504,15 @@ class Constants
      */
     const KFIN_MERCHANT_REPORT = 'kfin_merchant_report';
 
+    /**
+     * NB : Enable only for maker-checker corporate flow
+     *
+     * Enable feature flag if corporate net banking auto refund shouldn't occur for 30 minutes
+     * same as retail or normal corporate flow.
+     * It will be refunded only after Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE value
+     */
+    const NETBANKING_CORPORATE_DELAY_REFUND = 'nb_corporate_delay_refund';
+
      /**
      * Feature flag to configure report for CAMS
      */
@@ -2064,6 +2073,7 @@ class Constants
         self::INSTANT_ACTIVATION_V2_API       => true,
         self::MISSED_ORDERS_PLINK             => true,
         self::KFIN_MERCHANT_REPORT            => true,
+        self::NETBANKING_CORPORATE_DELAY_REFUND => false,
         self::ONE_CC_STORE_ACCOUNT            => true,
         self::CAMS_MERCHANT_REPORT            => true,
     ];

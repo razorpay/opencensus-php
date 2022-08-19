@@ -164,6 +164,15 @@ class Netbanking
         self::AUBL_C,
     ];
 
+    protected static $selfCorporateMakerCheckerFlow = [
+        self::ICIC_C,
+        self::UTIB_C,
+        self::BARB_C,
+        self::KKBK_C,
+        self::RATN_C,
+        self::HDFC_C,
+    ];
+
     protected static $selfTPV = [
         IFSC::ICIC,
         IFSC::HDFC,
@@ -1487,6 +1496,11 @@ class Netbanking
     public static function isCorporateBank($bank): bool
     {
         return in_array($bank, self::$selfCorp, true) === true;
+    }
+
+    public static function isCorporateMakerCheckerBank($bank): bool
+    {
+        return in_array($bank, self::$selfCorporateMakerCheckerFlow, true) === true;
     }
 
     public static function getSupportedBanksForGateway(

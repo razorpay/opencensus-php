@@ -4951,6 +4951,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         );
     }
 
+    public function isCorporateMakerCheckerNetbanking(): bool
+    {
+        return (
+            ($this->isNetbanking() === true) and
+            (Netbanking::isCorporateMakerCheckerBank($this->getBank()) === true)
+        );
+    }
+
     public static function getCacheUpiStatusKey(string $id): string
     {
         parent::verifyIdAndStripSign($id);

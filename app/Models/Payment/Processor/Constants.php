@@ -76,6 +76,7 @@ class Constants
     const REFUND_AT_FOR_NACH_PAYMENT            = 'Merchants default value %s for nach payments has been set as refund_at value';
     const REFUND_AT_FOR_UPI_OTM                 = 'Merchants auto_refund_delay %s has been set as refund_at value to UPI metadata end time';
     const REFUND_AT_OVERRIDDEN_CAPTURE_SETTINGS = 'Payment refund at value has been overridden with capture settings value, %s';
+    const MERCHANT_AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE = 'Merchant has enabled the nb_corporate_delay_refund flag option, there will be a %s delay in refunding payments';
 
     //Auto Capture Reasons
     const UPI_OTM_PAYMENT                           = 'UPI OTM Payment';

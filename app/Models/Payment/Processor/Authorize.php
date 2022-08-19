@@ -5040,6 +5040,19 @@ trait Authorize
                 $reason = sprintf(PaymentConstants::MERCHANT_AUTO_REFUND_DELAY,$payment->merchant->getAutoRefundDelay());
             }
         }
+        else if($payment->isCorporateMakerCheckerNetbanking() === true and
+            $payment->merchant->isFeatureEnabled(Feature\Constants::NETBANKING_CORPORATE_DELAY_REFUND) === true )
+        {
+//            This block is only executed only in this 2 conditions met
+//                  1. If the transaction is a NETBANKING_CORPORATE Maker-Checker flow transaction = true
+//                  2. If the merchant has enabled the feature 'nb_corporate_delay_refund'
+//
+//             The feature is only enable for the banks have corporate maker checker flow.
+//             Else it shouldn't be applicable.
+            $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE;
+
+            $reason = sprintf(PaymentConstants::MERCHANT_AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE,Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE);
+        }
 
         $payment->setRefundAt($merchantAutoRefundTime);
 
