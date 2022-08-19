@@ -118,6 +118,12 @@ export const DISABLE_MAGIC_REASONS = [
 
 export const SHOPIFY_CHECKOUT_SETTINGS = [
   {
+    label: 'Buy Now button',
+    value: false,
+    key: 'one_cc_buy_now_button',
+    description: 'Enable Magic Checkout on Buy Now',
+  },
+  {
     label: 'Auto fetch coupon',
     value: false,
     key: 'one_cc_auto_fetch_coupons',
@@ -186,3 +192,5 @@ export const SHOPIFY_MAGIC_CHECKOUT = {
 export const SHOPIFY_RECEIPT_PREFIX = 'shopify_1cc_receipt';
 
 export const ORDER_PENDING = 'Order Pending';
+
+export const SHOPIFY_BUY_NOW_BUTTON = 'one_cc_buy_now_button';

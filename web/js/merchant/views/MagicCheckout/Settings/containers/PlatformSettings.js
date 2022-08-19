@@ -23,6 +23,7 @@ const PlatformSettings = ({
   updatePage,
   fetchSettings,
   displayNotification,
+  user,
 }) => {
   const { nested_view_type, status, has_saved_config } = settings;
 
@@ -104,7 +105,12 @@ const PlatformSettings = ({
         <div>
           <div className="padding-16 bg-settings platform-heading-container">
             <div className="font-bold font-20 platform-heading">Platform Settings</div>
-            <PlatformSubText {...settings} updatePage={handleUpdatePage} merchantId={merchantId} />
+            <PlatformSubText
+              {...settings}
+              updatePage={handleUpdatePage}
+              merchantId={merchantId}
+              user={user}
+            />
           </div>
           {nested_view_type === NESTED_VIEW_TYPE.PLATFORM_SELECTION ? (
             <Settings />
@@ -120,6 +126,7 @@ const PlatformSettings = ({
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
   merchantId: state.config?.config?.id,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

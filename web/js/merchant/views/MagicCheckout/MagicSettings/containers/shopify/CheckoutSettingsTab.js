@@ -12,11 +12,12 @@ import {
   SHOPIFY_ANALYTICS_SETTINGS,
   FETCH_STATUS,
   PLATFORMS,
+  SHOPIFY_BUY_NOW_BUTTON,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
 
-const CheckoutSettingsTab = ({ settings, merchantId, updateSettings }) => {
+const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => {
   const [checkoutSettings, setCheckoutSettings] = useState([]);
   const [analyticSettings, setAnalyticSettings] = useState([]);
 
@@ -42,6 +43,13 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings }) => {
       return tempAnalyticSettings;
     });
   }, [settings]);
+
+  useEffect(() => {
+    const { isShopifyMagicEnabled } = user;
+    if (!isShopifyMagicEnabled && SHOPIFY_CHECKOUT_SETTINGS[0].key === SHOPIFY_BUY_NOW_BUTTON) {
+      SHOPIFY_CHECKOUT_SETTINGS.shift();
+    }
+  }, []);
 
   const onToggleCheckout = useCallback((checked, label) => {
     setCheckoutSettings((prevSettings) => {
@@ -136,6 +144,7 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings }) => {
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
   merchantId: state.config?.config?.id,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

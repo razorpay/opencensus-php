@@ -3,6 +3,7 @@ import {
   NESTED_VIEW_TYPE,
   PLATFORMS,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
+import MagicCheckoutToggle from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/MagicCheckoutToggle';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -14,8 +15,11 @@ const PlatformSubText = ({
   shipping_info,
   merchantId,
   one_click_checkout,
+  user,
 }) => {
   let domainSubText = shop_id;
+  const { isShopifyMagicEnabled } = user;
+
   if (platform === PLATFORMS.VALUES.WOOCOMMERCE) {
     domainSubText = shipping_info.split('wp-json')[0];
   }
@@ -66,6 +70,11 @@ const PlatformSubText = ({
             Edit
           </div>
         </div>
+        {isShopifyMagicEnabled && (
+          <div className="display-flex align-center margin-t-16">
+            <MagicCheckoutToggle />
+          </div>
+        )}
       </div>
     );
   }

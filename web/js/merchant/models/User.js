@@ -394,6 +394,10 @@ export default class User {
     return this.getExpStatus('magic_rto_analytics_live');
   }
 
+  get isShopifyMagicEnabled() {
+    return this.getExpStatus('1cc_shopify_magic_enable');
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 
