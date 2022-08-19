@@ -94,6 +94,12 @@ class DownstreamProcessor
             }
 
             $subProcessor = $subProcessor . '\\' . studly_case($accountType) . '\\' . studly_case($channel);
+
+            if (class_exists($subProcessor) === false)
+            {
+                $subProcessor =
+                    __NAMESPACE__ . '\\' . studly_case($this->type) . '\\' . studly_case($accountType) . '\\' . 'Base';
+            }
         }
 
         return new $subProcessor;
