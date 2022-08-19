@@ -1174,6 +1174,14 @@ class Core extends Base\Core
         return false;
     }
 
+    private function isPaymentPagesEnabled()
+    {
+        /*
+         * Currently the feature is true to all product conditions
+         * */
+        return true;
+    }
+
     private function isPaymemtGatewayEnabled()
     {
         $activation_status = $this->merchant->merchantDetail->getActivationStatus();
@@ -1209,6 +1217,11 @@ class Core extends Base\Core
         if ($this->isPaymemtGatewayEnabled() === true)
         {
             $currentProducts[] = Constants::PAYMENT_GATEWAY;
+        }
+
+        if ($this->isPaymentPagesEnabled() === true)
+        {
+            $currentProducts[] = Constants::PAYMENT_PAGES;
         }
 
         return $currentProducts;

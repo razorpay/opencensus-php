@@ -206,6 +206,7 @@ final class Constants
     const VARIANT                                    = 'variant';
     const QR_CODE                                    = 'qr_code';
     const TAP_AND_PAY                                = 'tap_and_pay';
+    const PAYMENT_PAGES                              = 'payment_pages';
     const PAYMENT_LINK                               = 'payment_link';
     const PAYMENT_GATEWAY                            = 'payment_gateway';
     const IS_NEW_PRODUCT                             = 'is_new_product';
@@ -1123,6 +1124,13 @@ final class Constants
             self::TITLE          => 'Tap & Pay',
             self::DESCRIPTION    => 'Accept card payments by swiping your card on your NFC enabled phone',
             self::IS_NEW_PRODUCT => false
+        ],
+
+        self::PAYMENT_PAGES => [
+            self::TYPE           => 'payment_pages',
+            self::TITLE          => 'Payment Pages',
+            self::DESCRIPTION    => 'Create your custom branded page and start accepting payments for your products and services',
+            self::IS_NEW_PRODUCT => true
         ]
     ];
 
