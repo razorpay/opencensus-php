@@ -183,7 +183,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     /**
      *  Test Default opt in whatsapp status when stork throws an exception
      */
-    public function testDefaultOptInStatusForWhatsapp()
+    public function testDefaultOptInStatusForWhatsappInCaseOfException()
     {
         Mail::fake();
 
