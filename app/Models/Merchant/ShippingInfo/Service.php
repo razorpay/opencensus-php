@@ -721,17 +721,33 @@ class Service extends Base\Service
      */
     protected function getPincodeAndState($address)
     {
-        try
-        {
-            $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode'], true, true, $address['country']);
-        }
-        catch (Throwable $e)
-        {
+        try {
+            try {
+
+                $response = $this->app['pincodesearch']->fetchCityAndStateFromPincode($address['zipcode'], true, true, $address['country']);
+
+            } catch (Throwable $e) {
+
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
+                {
+                    //fetch details from google api
+                    return $this->fetchCityAndStateFromPincodeAndCountry($address['zipcode'], $address['country']);
+                }
+                else
+                {
+                    $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
+                        ['pincode' => $address['zipcode'],
+                            'error' => $e->getMessage()]);
+                    $response = ['city' => '', 'state' => '', 'state_code' => ''];
+                }
+            }
+        } catch (Throwable $ex) {
+            //to catch the exception from fetchCityAndStateFromPincodeAndCountry google api call
             $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
-                ['error' => $e->getMessage()]);
+                ['pincode' => $address['zipcode'],
+                    'error' => $e->getMessage()]);
             $response = ['city' => '', 'state' => '', 'state_code' => ''];
         }
-
         $address['city'] = $response['city'];
 
         $address['state'] = $response['state'];
