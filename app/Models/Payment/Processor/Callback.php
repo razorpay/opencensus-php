@@ -56,8 +56,6 @@ trait Callback
      */
     private function coreCallback($id, $hash, array $gatewayInput)
     {
-        $this->validateOTP($id, $gatewayInput);
-
         // Axis migs started sending us card number in callback. This is a quickfix to
         // ignore the card number right before the callback is processed.
         unset($gatewayInput['realPan']);
@@ -87,6 +85,8 @@ trait Callback
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CALLBACK_INITIATED, $payment);
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_CALLBACK_REQUEST);
+
+        $this->validateOTP($payment, $gatewayInput);
 
         // For redirect flow
         $this->checkForMerchantCallbackUrl($payment);

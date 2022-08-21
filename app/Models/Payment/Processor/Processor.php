@@ -6897,8 +6897,12 @@ class Processor
         }
     }
 
-    private function validateOTP(string $id, array $gatewayInput)
+    private function validateOTP(Payment\Entity $payment, array $gatewayInput)
     {
+        if ($payment->getMethod() != Method::CARD)
+        {
+            return;
+        }
 
         if (isset($gatewayInput['otp']) === false)
         {
