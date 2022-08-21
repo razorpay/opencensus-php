@@ -30,6 +30,7 @@ use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Gateway\File\Constants as GatewayFileConstants;
 use RZP\Services\Scrooge;
 use RZP\Trace\TraceCode;
+use RZP\Mail\Gateway\CaptureFile\Base as CaptureMail;
 
 class AxisPaysecure extends Base
 {
@@ -551,6 +552,42 @@ class AxisPaysecure extends Base
                 ]
             );
         }
+
+        try
+        {
+            $this->sendConfirmationMail();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::AXIS_RUPAY_CAPTURE_FILE_CONFIRMATION_MAIL_FAILED,
+                [
+                    'file_name'     => $fullFileName,
+                    'error_code'    => $e->getCode(),
+                    'error'         => $e->getMessage(),
+                ]);
+        }
+    }
+
+    //TODO: complete this
+    protected function sendConfirmationMail()
+    {
+        $recipients = $this->gatewayFile->getRecipients();
+
+        $date = Carbon::createFromTimestamp($this->gatewayFile->getBegin(), Timezone::IST)->format('d-M-y');
+
+        $data = [
+            'body' => "Hi,\n\nThe transaction file for " . $date . " has been shared over SFTP. Please check and confirm."
+        ];
+
+        $captureMail = new CaptureMail(
+            $data,
+            Payment\Gateway::PAYSECURE,
+            Payment\Gateway::ACQUIRER_AXIS,
+            $recipients,
+            []
+        );
+
+        Mail::queue($captureMail);
     }
 
     protected function getBucketConfig()

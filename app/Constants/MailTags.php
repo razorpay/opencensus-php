@@ -22,6 +22,8 @@ class MailTags
     const AXIS_SETTLEMENT_FILES            = 'axis_settlement_files';
     const AXIS_BENEFICIARY_MAIL            = 'axis_beneficiary_mail';
 
+    const AXIS_PAYSECURE_MAIL              = 'axis_paysecure_mail';
+
     const HDFC_SETTLEMENT_FILES            = 'hdfc_settlement_files';
     const HDFC_BENEFICIARY_MAIL            = 'hdfc_beneficiary_mail';
 

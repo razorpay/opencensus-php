@@ -4,6 +4,7 @@ namespace Functional\Gateway\File;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Mail\Gateway\CaptureFile\Base as CaptureMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -103,6 +104,14 @@ class AxisCaptureFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileDetails, $file);
+
+        Mail::assertQueued(CaptureMail::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+            self::assertEquals('capturefiles@razorpay.com', $mail->from[0]['address']);
+            self::assertEquals('example@axisbank.com', $mail->to[0]['address']);
+            return true;
+        });
     }
 
     public function testFileCreatedSuccessfullyWithFullRefund()
@@ -162,6 +171,14 @@ class AxisCaptureFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileDetails, $file);
+
+        Mail::assertQueued(CaptureMail::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+            self::assertEquals('capturefiles@razorpay.com', $mail->from[0]['address']);
+            self::assertEquals('example@axisbank.com', $mail->to[0]['address']);
+            return true;
+        });
     }
 
     public function testFileCreatedSuccessfullyWithPartialRefund()
@@ -224,6 +241,14 @@ class AxisCaptureFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileDetails, $file);
+
+        Mail::assertQueued(CaptureMail::class, function ($mail)
+        {
+            $this->assertEmpty($mail->attachments);
+            self::assertEquals('capturefiles@razorpay.com', $mail->from[0]['address']);
+            self::assertEquals('example@axisbank.com', $mail->to[0]['address']);
+            return true;
+        });
     }
 
     protected function mockCps()
