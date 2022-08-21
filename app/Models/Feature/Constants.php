@@ -1517,6 +1517,11 @@ class Constants
      * Feature flag to configure report for CAMS
      */
     const CAMS_MERCHANT_REPORT = 'cams_merchant_report';
+    
+     /**
+     * Feature flag to configure report for BSE
+     */
+    const BSE_MERCHANT_REPORT = 'bse_merchant_report';
 
 
     public static $recurringFeatures = [
@@ -2076,6 +2081,7 @@ class Constants
         self::NETBANKING_CORPORATE_DELAY_REFUND => false,
         self::ONE_CC_STORE_ACCOUNT            => true,
         self::CAMS_MERCHANT_REPORT            => true,
+        self::BSE_MERCHANT_REPORT             => true,
     ];
 
     // Entity type constants
