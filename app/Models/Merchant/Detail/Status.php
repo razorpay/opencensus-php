@@ -28,7 +28,14 @@ class Status
         self::ACTIVATED             => [],
     ];
 
-    const OPEN_STATUSES = [
+    const MERCHANT_OPEN_STATUSES = [
+        self::INSTANTLY_ACTIVATED,
+        self::UNDER_REVIEW,
+        self::NEEDS_CLARIFICATION,
+        self::ACTIVATED_MCC_PENDING
+    ];
+
+    const SUBMERCHANT_OPEN_STATUSES = [
         self::INSTANTLY_ACTIVATED,
         self::UNDER_REVIEW,
         self::NEEDS_CLARIFICATION,

@@ -19,7 +19,7 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
 
         // fetch all merchants who are not activated
         $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
-            DetailStatus::OPEN_STATUSES, OrgEntity::ORG_ID_LIST
+            DetailStatus::SUBMERCHANT_OPEN_STATUSES, OrgEntity::ORG_ID_LIST
         );
 
         if (empty($merchantIdList) === true)

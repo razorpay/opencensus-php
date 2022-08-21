@@ -65,7 +65,7 @@ class Constants
     const IS_NULL                   = 'is null';
     const TRUE                      = 'true';
     const OPEN_STATUS_CONDITION     = [
-        DEntity::ACTIVATION_STATUS => Status::OPEN_STATUSES
+        DEntity::ACTIVATION_STATUS => Status::MERCHANT_OPEN_STATUSES
     ];
 
     // hard limit for sub-merchant no-doc onboarding
@@ -90,7 +90,7 @@ class Constants
                 self::TO          => self::ADMIN,
                 self::CONDITIONS  => [
                     DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::OPEN_STATUSES
+                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -126,7 +126,7 @@ class Constants
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
                     DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::OPEN_STATUSES
+                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -145,7 +145,7 @@ class Constants
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
                     DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::OPEN_STATUSES
+                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -164,7 +164,7 @@ class Constants
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
                     DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L1_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::OPEN_STATUSES
+                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
                 ],
                 self::MILESTONE   => 'L1',
                 self::ACTIONS     => [
@@ -271,7 +271,7 @@ class Constants
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
                     DEntity::ACTIVATION_FORM_MILESTONE => DConstants::L2_SUBMISSION,
-                    DEntity::ACTIVATION_STATUS         => Status::OPEN_STATUSES
+                    DEntity::ACTIVATION_STATUS         => Status::MERCHANT_OPEN_STATUSES
                 ],
                 self::MILESTONE   => 'L2',
                 self::ACTIONS     => [

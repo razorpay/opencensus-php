@@ -667,14 +667,14 @@ class Core extends Base\Core
             $merchantIdList = array_column($queryResponse, Entity::MERCHANT_ID);
 
             $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
-                $merchantIdList, DetailStatus::OPEN_STATUSES);
+                $merchantIdList, DetailStatus::MERCHANT_OPEN_STATUSES);
 
         }
         else
         {
             // fetch all the merchants who are not in end states
             $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
-                DetailStatus::OPEN_STATUSES);
+                DetailStatus::MERCHANT_OPEN_STATUSES);
         }
 
         if (empty($merchantIdList) === true)
