@@ -186,6 +186,7 @@ class NeedsClarificationMetaData
             self::FIELD_ARTEFACT_DETAILS_MAP_REFERENCE_KEY => Constant::GSTIN,
             Constants::FIELD_NAME                          => Entity::GSTIN,
             Constants::FIELD_TYPE                          => Constants::TEXT,
+            Constants::DEDUPE_CHECK_KEY                    => Entity::GSTIN,
             Constants::REASON_MAPPING                      => [
                 BvsValidationConstant::INPUT_DATA_ISSUE      => ReasonList::INVALID_GSTIN_NUMBER,
                 BvsValidationConstant::DATA_UNAVAILABLE      => ReasonList::GSTIN_DATA_UNAVAILABLE,

@@ -305,7 +305,7 @@ class AccountV2Test extends TestCase
         $this->assertEquals('activated_kyc_pending', $value);
     }
 
-    public function testGetOnboardingSourceForNoDocMerchant()
+    public function testGetOnboardingSource()
     {
         $this->setUpPartnerWithKycHandled();
 
@@ -327,17 +327,9 @@ class AccountV2Test extends TestCase
 
         $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
 
-        $merchantDetails = $merchant->merchantDetail;
+        (new \RZP\Models\Merchant\Detail\Core())->storeOnboardingSourceForNoDocMerchants($merchant);
 
-        $merchantDetails->setBankDetailsVerificationStatus(POIStatus::VERIFIED);
-
-        $merchantDetails->setCompanyPanVerificationStatus(POIStatus::VERIFIED);
-
-        $merchantDetails->setGstinVerificationStatus(POIStatus::VERIFIED);
-
-        $businessDetail = $merchantDetails->businessDetail;
-
-        $value = $businessDetail->getOnboardingSource();
+        $value = $merchant->merchantDetail->businessDetail->getOnboardingSource();
 
         $this->assertEquals('xpress_onboarding', $value);
     }

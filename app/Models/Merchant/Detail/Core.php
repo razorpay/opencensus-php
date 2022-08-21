@@ -252,8 +252,6 @@ class Core extends Base\Core
 
         $merchantDetails = $this->getMerchantDetails($merchant, $input);
 
-        $this->storeOnboardingSourceForNoDocMerchants($merchant);
-
         $oldMerchantDetails = clone $merchantDetails;
 
         $this->convertStatesToStatesCode($input);
@@ -403,7 +401,7 @@ class Core extends Base\Core
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
     }
 
-    private function storeOnboardingSourceForNoDocMerchants(Merchant\Entity $merchant)
+    public function storeOnboardingSourceForNoDocMerchants(Merchant\Entity $merchant)
     {
         if ($merchant->isNoDocOnboardingEnabled() == false)
         {
@@ -2952,6 +2950,8 @@ class Core extends Base\Core
 
             if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING && $merchant->isNoDocOnboardingEnabled() === true)
             {
+                $this->storeOnboardingSourceForNoDocMerchants($merchant);
+
                 (new Merchant\Activate)->activate($merchant, false, $shouldSave);
             }
 

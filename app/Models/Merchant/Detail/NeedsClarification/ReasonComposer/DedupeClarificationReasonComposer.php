@@ -74,7 +74,7 @@ class DedupeClarificationReasonComposer extends BaseClarificationReasonComposer
                                                                  ]];
                 break;
             case Entity::PROMOTER_PAN:
-                $clarificationReasons[Entity::PROMOTER_PAN_NAME] = [[
+                $clarificationReasons[Entity::PROMOTER_PAN] = [[
                                                                         MerchantConstants::REASON_TYPE => Constants::PREDEFINED_REASON_TYPE,
                                                                         Constants::FIELD_TYPE          => ClarificationConstants::TEXT,
                                                                         Constants::REASON_CODE         => NeedsClarificationReasonsList::FIELD_ALREADY_EXIST
@@ -87,12 +87,12 @@ class DedupeClarificationReasonComposer extends BaseClarificationReasonComposer
                                                                   Constants::REASON_CODE         => NeedsClarificationReasonsList::FIELD_ALREADY_EXIST
                                                               ]];
                 break;
-            case Entity::BANK_ACCOUNT_NUMBER:
-                $clarificationReasons[Entity::BANK_ACCOUNT_NUMBER] = [[
-                                                                          MerchantConstants::REASON_TYPE => Constants::PREDEFINED_REASON_TYPE,
-                                                                          Constants::FIELD_TYPE          => ClarificationConstants::TEXT,
-                                                                          Constants::REASON_CODE         => NeedsClarificationReasonsList::FIELD_ALREADY_EXIST
-                                                                      ]];
+            case Entity::GSTIN:
+                $clarificationReasons[Entity::GSTIN] = [[
+                                                                  MerchantConstants::REASON_TYPE => Constants::PREDEFINED_REASON_TYPE,
+                                                                  Constants::FIELD_TYPE          => ClarificationConstants::TEXT,
+                                                                  Constants::REASON_CODE         => NeedsClarificationReasonsList::FIELD_ALREADY_EXIST
+                                                              ]];
                 break;
         }
 
