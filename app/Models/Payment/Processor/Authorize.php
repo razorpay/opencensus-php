@@ -1828,6 +1828,14 @@ trait Authorize
         $this->validateContactAndProviderFromToken($payment, $input);
     }
 
+    protected function validatePayLaterIfApplicableForRedirect(Payment\Entity $payment, $input)
+    {
+        if((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL))
+        {
+            $this->validatePayLaterIfApplicable($payment,$input);
+        }
+    }
+
     protected function validatePayLaterIfApplicable(Payment\Entity $payment, $input)
     {
         if ($payment->isPayLater() === false)
@@ -10442,8 +10450,7 @@ trait Authorize
                 {
                     return $ret;
                 }
-                $this->validatePayLaterIfApplicable($payment, $input);
-
+                $this->validatePayLaterIfApplicableForRedirect($payment,$input);
                 //Address validation if required
                 $this->validateAddressIfPresent($payment,$input);
 
