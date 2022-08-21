@@ -31,6 +31,7 @@ class Status
     const CREATE_REQUEST_SUBMITTED           = 'create_request_submitted';
     const ON_HOLD                            = 'on_hold';
     const PENDING_ON_CONFIRMATION            = 'pending_on_confirmation';
+    const PENDING_ON_OTP                     = 'pending_on_otp';
 
     /**
      * Used only to expose publicly.
@@ -69,6 +70,7 @@ class Status
         self::BATCH_SUBMITTED              => self::PROCESSING,
         self::CREATE_REQUEST_SUBMITTED     => self::PROCESSING,
         self::ON_HOLD                      => self::QUEUED,
+        self::PENDING_ON_OTP               => self::PENDING,
     ];
 
     /**
@@ -85,7 +87,8 @@ class Status
             self::QUEUED,
             self::BATCH_SUBMITTED,
             self::CREATE_REQUEST_SUBMITTED,
-            self::SCHEDULED
+            self::SCHEDULED,
+            self::PENDING_ON_OTP  // TODO: check if this is needed
         ],
         self::FAILED => [
             self::REVERSED,
@@ -125,6 +128,7 @@ class Status
             self::BATCH_SUBMITTED,
             self::CREATE_REQUEST_SUBMITTED,
             self::ON_HOLD,
+            self::PENDING_ON_OTP,
         ],
         self::ON_HOLD => [
             self::QUEUED,
@@ -171,6 +175,10 @@ class Status
             self::INITIATED,
             self::QUEUED,
             self::ON_HOLD,
+        ],
+        self::PENDING_ON_OTP => [
+            self::PENDING,
+            self::CREATED,
         ],
     ];
 
@@ -219,6 +227,7 @@ class Status
         self::ON_HOLD,
         self::REJECTED,
         self::CREATE_REQUEST_SUBMITTED,
+        self::PENDING_ON_OTP,
     ];
 
     /**

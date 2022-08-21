@@ -1523,6 +1523,11 @@ class Constants
      */
     const BSE_MERCHANT_REPORT = 'bse_merchant_report';
 
+    /**
+     * Feature flag for enabling 2FA payout flows for ICICI CA merchants;
+     */
+    const ICICI_2FA = 'ICICI_2FA';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2081,6 +2086,7 @@ class Constants
         self::NETBANKING_CORPORATE_DELAY_REFUND => false,
         self::ONE_CC_STORE_ACCOUNT            => true,
         self::CAMS_MERCHANT_REPORT            => true,
+        self::ICICI_2FA                       => true,
         self::BSE_MERCHANT_REPORT             => true,
     ];
 
