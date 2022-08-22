@@ -59,6 +59,7 @@ class Base extends BaseProcessor
         Constants::UJVN,
         Constants::RBL_CORP,
         Constants::DBS,
+        Constants::YESB,
     ];
 
     public function fetchEntities(): PublicCollection

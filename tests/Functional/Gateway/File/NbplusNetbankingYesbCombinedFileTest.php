@@ -204,12 +204,12 @@ class NbplusNetbankingYesbCombinedFileTest extends NbPlusPaymentServiceNetbankin
         $this->assertEquals($claimFileRow2['transaction_amount'], $this->getFormattedAmount($payment2['amount']));
     }
 
-    protected function getFormattedDate($date, $format = 'd/m/Y')
+    protected function getFormattedDate($date, $format = 'd/m/Y'): string
     {
         return Carbon::createFromTimestamp($date, Timezone::IST)->format($format);
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }

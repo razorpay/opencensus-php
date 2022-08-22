@@ -44,14 +44,9 @@ class Yesb extends NetbankingBase
         return $formattedData;
     }
 
-    protected function fetchPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
+    protected function fetchReconciledPaymentsToClaim(int $begin, int $end, array $statuses): PublicCollection
     {
-        $claims = $this->repo->payment->fetchPaymentsWithStatus(
-                    $begin,
-                    $end,
-                    static::GATEWAY,
-                    $statuses
-                );
+        $claims = parent::fetchReconciledPaymentsToClaim($begin, $end, $statuses);
 
         $claims = $claims->reject(function($claim)
         {
