@@ -12,12 +12,34 @@ import { analyticsTrack } from 'common/utils/analytics';
 const EvidenceUpload = (props) => {
   const { dispute, saveAsDraft, showNotification, fileTypes, canUserTakeAction } = props;
   const [docTypes, setDocTypes] = useState(fileTypes.filter((item) => item.name !== 'others'));
-  const [userSelectedDocs, setUserSelectedDocs] = useState([]);
+  const [selectedFixedDocs, setSelectedFixedDocs] = useState([]);
+  const [selectedOptionalDocs, setSelectedOptionalDocs] = useState([]);
+
+  const isOtherFile = (docType) => docType === 'others';
 
   useEffect(() => {
     if (dispute.evidence) {
-      const uploadedEvidence = fileTypes.filter((f) => !!dispute?.evidence?.[f.name]);
-      setUserSelectedDocs(uploadedEvidence);
+      const fixedFileTypes = fileTypes.filter((file) => file.name !== 'others');
+
+      const uploadedFixedFiles = fixedFileTypes
+        .filter((file) => !!dispute?.evidence?.[file.name])
+        .map((file) => ({
+          name: file.name,
+          label: titleCase(file.name),
+          docId: dispute?.evidence?.[file.name],
+          docType: '',
+        }));
+      setSelectedFixedDocs(uploadedFixedFiles);
+
+      if (dispute?.evidence?.others) {
+        const uploadedOtherFile = (dispute?.evidence?.others || []).map((file) => ({
+          name: file.type,
+          label: titleCase(file.type),
+          docId: file.document_ids,
+          docType: 'others',
+        }));
+        setSelectedOptionalDocs(uploadedOtherFile);
+      }
 
       const restDocs = fileTypes.filter((f) => !dispute?.evidence?.[f.name]);
       setDocTypes(restDocs);
@@ -26,35 +48,46 @@ const EvidenceUpload = (props) => {
 
   const addDocument = (event) => {
     if (!event.option) return;
-    const { name, label } = event.option;
+    const { name, label, docType = '' } = event.option;
 
-    setUserSelectedDocs([...userSelectedDocs, { name, label }]);
-
-    setDocTypes((docs) => docs.filter((file) => file.name !== name));
+    if (isOtherFile(docType)) {
+      setSelectedOptionalDocs((docs) => [...docs, { name, label, docType }]);
+    } else {
+      setSelectedFixedDocs((docs) => [...docs, { name, label, docType }]);
+      setDocTypes((docs) => docs.filter((file) => file.name !== name));
+    }
   };
 
-  const isOtherFile = (fileType) => fileTypes.filter((item) => item.name === fileType).length === 0;
-
-  const removeDocument = (fileName) => {
+  const removeDocument = (fileName, docType) => {
     if (!canUserTakeAction) {
       return null;
     }
-    setUserSelectedDocs((docs) => docs.filter((d) => d.name !== fileName));
-
-    // Adding doc type back
-    setDocTypes((files) => files.concat(fileTypes.filter((f) => f.name === fileName)));
 
     let data;
+
     // remove file from server
-    if (isOtherFile(fileName)) {
-      const updatedDocs = dispute.evidence.others.filter((item) => item.type !== fileName);
+    if (isOtherFile(docType)) {
+      const updatedDocs = (selectedOptionalDocs || [])
+        .filter((doc) => doc.name !== fileName && !!doc.docId)
+        .map((doc) => ({
+          type: doc.name,
+          document_ids: doc.docId,
+        }));
+
       data = {
-        others: updatedDocs.length !== 0 ? updatedDocs : null,
+        others: updatedDocs?.length !== 0 ? updatedDocs : null,
       };
+
       saveAsDraft({ others: null }).then((_) => {
-        saveAsDraft(data);
+        saveAsDraft(data).then((_) => {
+          setSelectedOptionalDocs(updatedDocs);
+        });
       });
     } else {
+      // Adding fixed doc type back
+      setDocTypes((files) => files.concat(fileTypes.filter((f) => f.name === fileName)));
+
+      setSelectedFixedDocs((docs) => docs.filter((item) => item.name !== fileName));
       data = {
         [fileName]: null,
       };
@@ -63,7 +96,7 @@ const EvidenceUpload = (props) => {
     return null;
   };
 
-  const uploadFile = (file, progressTracker, fileType) => {
+  const uploadFile = (file, progressTracker, fileType, docType) => {
     if (file) {
       const formData = new FormData();
       formData.append('file', file);
@@ -71,7 +104,7 @@ const EvidenceUpload = (props) => {
 
       analyticsTrack({
         objectName: 'dispute presentment',
-        actionName: `add ${titleCase(isOtherFile(fileType) ? 'others' : fileType)}`,
+        actionName: `add ${titleCase(isOtherFile(docType) ? 'others' : fileType)}`,
         screen: 'disputes',
         properties: {
           timestamp: Date.now(),
@@ -89,8 +122,17 @@ const EvidenceUpload = (props) => {
           if (res.data.id) {
             let data;
 
-            if (isOtherFile(fileType)) {
-              data = { others: [{ type: fileType, document_ids: [res.data.id] }] };
+            if (isOtherFile(docType)) {
+              const previousFiles = (selectedOptionalDocs || [])
+                .filter((doc) => !!doc.docId)
+                .map((doc) => ({
+                  type: doc.name,
+                  document_ids: doc.docId,
+                }));
+
+              data = {
+                others: [...previousFiles, { type: fileType, document_ids: [res.data.id] }],
+              };
             } else {
               data = { [fileType]: [res.data.id] };
             }
@@ -107,35 +149,20 @@ const EvidenceUpload = (props) => {
     return null;
   };
 
-  const documents = userSelectedDocs.map((doc) =>
-    doc.name !== 'others' ? (
-      <DismissableFileInput
-        key={doc.name}
-        name={doc.name}
-        label={doc.label}
-        defaultValue={dispute?.evidence?.[doc.name]}
-        onFileChange={uploadFile}
-        onFileRemove={removeDocument}
-        showNotification={showNotification}
-        disputeStatus={dispute.status}
-        canUserTakeAction={canUserTakeAction}
-      />
-    ) : (
-      dispute?.evidence?.others?.map((item, idx) => (
-        <DismissableFileInput
-          key={item.type}
-          name={item.type}
-          label={titleCase(item.type)}
-          defaultValue={dispute?.evidence?.others[idx]}
-          onFileChange={uploadFile}
-          onFileRemove={removeDocument}
-          showNotification={showNotification}
-          disputeStatus={dispute.status}
-          canUserTakeAction={canUserTakeAction}
-        />
-      ))
-    ),
-  );
+  const documents = [...selectedFixedDocs, ...selectedOptionalDocs].map((doc) => (
+    <DismissableFileInput
+      key={doc.name}
+      name={doc.name}
+      label={doc.label}
+      docType={doc.docType}
+      defaultValue={doc.docId}
+      onFileChange={uploadFile}
+      onFileRemove={(fileName) => removeDocument(fileName, doc.docType)}
+      showNotification={showNotification}
+      disputeStatus={dispute.status}
+      canUserTakeAction={canUserTakeAction}
+    />
+  ));
 
   return (
     <div class="evidence-upload">
@@ -154,7 +181,9 @@ const EvidenceUpload = (props) => {
               return (
                 <AddOtherDoc
                   onActionClick={(name) => {
-                    addDocument({ option: { label: name, name: name.replaceAll(' ', '_') } });
+                    addDocument({
+                      option: { label: name, name: name.replaceAll(' ', '_'), docType: 'others' },
+                    });
                     select.actions.close();
                   }}
                 />
@@ -169,6 +198,7 @@ const EvidenceUpload = (props) => {
 };
 
 const DismissableFileInput = ({
+  key,
   label,
   name,
   onFileChange,
@@ -176,10 +206,11 @@ const DismissableFileInput = ({
   showNotification,
   disputeStatus,
   canUserTakeAction,
+  docType,
   ...rest
 }) => {
   return (
-    <div class="remove-wrapper">
+    <div key={`${key}-${rest.defaultValue?.[0]}`} class="remove-wrapper">
       <EntityDetailRow label={<strong>{label}</strong>}>
         <FileUpload
           name={name}
@@ -196,12 +227,14 @@ const DismissableFileInput = ({
               message: `Document too large. Max limit 2MB`,
             });
           }}
-          onFileChange={(file, progressTracker) => onFileChange(file, progressTracker, name)}
+          onFileChange={(file, progressTracker) =>
+            onFileChange(file, progressTracker, name, docType)
+          }
           onCloseClick={() => onFileRemove(name)}
           fileName={
             <span
               onClick={() => {
-                merchantFetch(`documents/${rest.defaultValue[0]}`)
+                merchantFetch(`documents/${rest.defaultValue?.[0]}`)
                   .then((res) => {
                     if (res?.data.url) {
                       window.open(res.data.url);
