@@ -371,24 +371,29 @@ class Authenticate
      */
     private function resolveOAuthLocally(): bool
     {
-        return false;
-        //if ($this->requestContext->hasPassportJwt === false or empty($this->requestContext->passport) === true)
-        //{
-        //    return false;
-        //}
-        //$passportUtil = (new PassportUtil($this->requestContext->passport));
-        //
-        //if ($passportUtil->canPassportBeUsedForOauth() === false)
-        //{
-        //    return false;
-        //}
-        //
-        //if ($this->app['env'] === 'testing' or $this->app['env'] === 'bvt')
-        //{
-        //    return true;
-        //}
-        //
-        //return $this->isRazorXEnabledForResolvingOAuthLocally();
+        // if the request has a passport attached to it
+        if ($this->requestContext->hasPassportJwt === false or empty($this->requestContext->passport) === true)
+        {
+            return false;
+        }
+
+        // if the attached passport has valid data to be used for oauth authentication and info extraction
+        $passportUtil = (new PassportUtil($this->requestContext->passport));
+
+        if ($passportUtil->canPassportBeUsedForOauth() === false)
+        {
+            return false;
+        }
+
+        // if env is testing or bvt, skip using passport as these requests dont have a passport attached as of now
+        //TODO: Once Edge is integrated in BVT, remove bvt check
+        if ($this->app['env'] === 'testing' or $this->app['env'] === 'bvt')
+        {
+            return true;
+        }
+
+        // if the experiment is enabled for this request to use passport
+        return $this->isRazorXEnabledForResolvingOAuthLocally();
     }
 
     //TODO : Need to remove this experiment after sometime

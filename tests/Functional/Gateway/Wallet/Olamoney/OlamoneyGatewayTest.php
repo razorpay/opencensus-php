@@ -4,6 +4,10 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Olamoney;
 
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Tests\Functional\TestCase;
+use Razorpay\Edge\Passport\Passport;
+use Razorpay\Edge\Passport\OAuthClaims;
+use Razorpay\Edge\Passport\ConsumerClaims;
+use Razorpay\Edge\Passport\CredentialClaims;
 use RZP\Gateway\Wallet\Olamoney\ResponseFields;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -465,6 +469,36 @@ class OlamoneyGatewayTest extends TestCase
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
         $authPayment = $this->doAuthPayment($payment);
+
+        $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArraySelectiveEquals($authPayment, $content);
+    }
+
+    public function testFailedPaymentWithPassport()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $authPayment = $this->doAuthPayment($payment);
+        //add passport for testing passport roles
+        $passport = new Passport;
+        $passport->identified    = true;
+        $passport->authenticated = true;
+        $passport->mode          = 'test';
+        $passport->roles         = ['oauth.public'];
+        //set consumer
+        $consumer           = new ConsumerClaims;
+        $consumer->id       = '10000000000000';
+        $consumer->type     = 'merchant';
+        $passport->consumer = $consumer;
+        //set credential
+        $credential            = new CredentialClaims;
+        $credential->username  = 'rzp_test_K1000000000000';
+        $passport->credential  = $credential;
+        app('request.ctx.v2')->passport = $passport;
+        app('request.ctx.v2')->hasPassportJwt = true;
 
         $response = $this->redirectPayment($authPayment['razorpay_payment_id']);
 

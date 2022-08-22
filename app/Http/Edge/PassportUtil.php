@@ -47,18 +47,20 @@ class PassportUtil
     {
         $errors = [];
         if(
-            $this->ensureNotEmpty($this->passport->consumer, 'consumer', $errors) === true and
-            $this->ensureNotEmpty($this->fetchOauthScopes(), 'oauth_scopes', $errors) === true and
             $this->ensureNotEmpty($this->passport->mode, 'mode', $errors) === true and
-            $this->ensureNotEmpty($this->passport->credential->publicKey, 'public_key', $errors) === true and
+            $this->ensureNotEmpty($this->passport->consumer, 'consumer', $errors) === true and
             $this->ensureNotEmpty($this->passport->consumer->id, 'consumer_id', $errors) === true and
+            $this->passport->consumer->type === 'merchant' and
+            $this->ensureNotEmpty($this->passport->credential, 'credential', $errors) === true and
+            $this->ensureNotEmpty($this->passport->credential->publicKey, 'public_key', $errors) === true and
+            $this->ensureNotEmpty($this->passport->oauth, 'oauth', $errors) === true and
             $this->ensureNotEmpty($this->passport->oauth->accessTokenId, 'access_token_id', $errors) === true and
             $this->ensureNotEmpty($this->passport->oauth->clientId, 'client_id', $errors) === true and
             $this->ensureNotEmpty($this->passport->oauth->appId, 'app_id', $errors) === true and
             $this->ensureNotEmpty($this->passport->oauth->ownerId, 'oauth_owner_id', $errors) === true and
             $this->ensureNotEmpty($this->passport->oauth->env, 'oauth_env', $errors) === true and
-            $this->checkConsumerId($errors) === true and
-            $this->passport->consumer->type === 'merchant'
+            $this->ensureNotEmpty($this->fetchOauthScopes(), 'oauth_scopes', $errors) === true and
+            $this->checkConsumerId($errors) === true
         )
         {
             return true;
@@ -91,10 +93,14 @@ class PassportUtil
         {
             foreach ($roles as $role)
             {
-                if ((starts_with($role, 'oauth')) === true)
+                if ((starts_with($role, 'oauth::')) === true)
                 {
                     $roleSplit = explode("::", $role);
-                    array_push($scopes, $roleSplit[2]);
+
+                    if(empty($roleSplit[2]) === false)
+                    {
+                        array_push($scopes, $roleSplit[2]);
+                    }
                 }
             }
         }
