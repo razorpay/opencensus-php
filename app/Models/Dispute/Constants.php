@@ -26,6 +26,26 @@ class Constants
     const CHARGEBACK_WHATSAPP_TEMPLATE_NAME = 'whatsapp_risk_chargeback_notification_mobile_signup';
     const CHARGEBACK_WHATSAPP_TEMPLATE      = 'Hi {merchantName}, we have received chargeback against payment(s) processed on your Razorpay Account. We request you to kindly respond with proof of service within the specified deadline to contest the chargeback with the bank. Please check link {supportTicketLink} for more details';
 
+    const RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE_NAME = 'risk_chargeback_with_attachment';
+    const RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE = '*CHARGEBACK NOTIFICATION*
+
+Hello {merchantName}
+
+Greetings from Razorpay!
+
+This is to notify you on the chargeback(s) received on the following payments accepted by your business. Please download the attached file for the detailed list
+
+1. You are requested to immediately stop the delivery of the services for the given transactions (and let us know once you do so).
+2. In case the services are already rendered, kindly upload the below documents on your Razorpay dashboard :
+A) Valid invoices
+B) Proofs of delivery
+C) Any other relevant docs pertaining to each chargeback.
+
+Please login to your Razorpay dashboard (click on the link at the bottom) to respond to all the pending chargebacks in a timely manner to avoid business losses.
+
+Regards,
+Razorpay';
+
     const MCC_TO_EXCLUDE_FROM_DEDUCT_AT_ONSET = [
         '6211',
     ];
@@ -47,4 +67,5 @@ class Constants
     ];
 
     const FRAUD_CHARGEBACK = 'fraud_chargeback';
+
 }

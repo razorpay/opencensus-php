@@ -7,6 +7,11 @@ use Mail;
 use View;
 use Carbon\Carbon;
 
+use mikehaertl\tmp\File;
+use mikehaertl\wkhtmlto\Pdf;
+use RZP\Models\FileStore;
+
+
 use RZP\Exception;
 use RZP\Jobs\NotifyRas;
 use RZP\Models\Feature;
@@ -41,6 +46,10 @@ class Core extends Base\Core
     // 72 hours = 72*60*60
     const REFUND_PROCESS_REDIS_TTL         = 259200; // in seconds
     const REFUND_PROCESS_REDIS_KEY         = 'dispute_refund_process_%s';
+
+    const HEADER_FILE_NAME                 = 'resources/views/emails/dispute/header';
+
+    const DATE_FORMAT                      = 'd/m/Y h:i A';
 
     const DEBIT_ADJUSTMENT_DESCRIPTION  = 'Debit disputed amount V2';
 
@@ -256,7 +265,7 @@ class Core extends Base\Core
 
         $files = [];
 
-        $fileCore = new File\Core;
+        $fileCore = new DisputeFileCore;
 
         if (array_key_exists(DisputeFileCore::FILES, $input) === true)
         {
@@ -282,7 +291,7 @@ class Core extends Base\Core
             return $dispute->toArrayPublic();
         });
 
-        $response[File\Core::ALL_FILES] = $fileCore->getFilesForEntity($dispute);
+        $response[DisputeFileCore::ALL_FILES] = $fileCore->getFilesForEntity($dispute);
 
         return $response;
     }
@@ -871,6 +880,15 @@ class Core extends Base\Core
 
                     $this->trace->count(Metrics::DISPUTE_SUCCESS_TOTAL);
                 }
+                if ($bulkMailData[Entity::PHASE] === Phase::CHARGEBACK and isset($bulkMailData['isFraud']) === false)
+                {
+                    $isWhatsappEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchantId,
+                        Merchant\RazorxTreatment::RISK_WHATSAPP_NOTIFICATION);
+
+                    if ($isWhatsappEnabled === true) {
+                        $this->generatePDFAndSendWhatsapp($merchant, $bulkMailData);
+                    }
+                }
             }
 
             $this->repo->transaction(function() use ($disputeIds)
@@ -904,6 +922,71 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    public function generatePDFAndSendWhatsapp($merchant, $bulkMailData)
+    {
+        $options = [
+            'print-media-type',
+            'header-html'      => new File(self::HEADER_FILE_NAME, '.html'),
+            'header-spacing'   => '-18',
+            'footer-font-size' => '6',
+            'footer-right'     => 'Page [page] of [topage]',
+            'footer-left'      => 'Date and Time: ' . Carbon::createFromTimestamp(Carbon::now()->getTimestamp(),
+                    Timezone::IST)
+                    ->format(self::DATE_FORMAT),
+            'dpi'              => 290,
+            'zoom'             => 1,
+            'ignoreWarnings'   => false,
+            'encoding'         => 'UTF-8',
+        ];
+
+        $pdf = new Pdf($options);
+
+        $viewTemplate = 'emails.dispute.whatsapp_template';
+
+        $html =  View::make($viewTemplate, $bulkMailData)->with('disputesDataTable', $this->createDisputesDataTable($bulkMailData['disputes']))->render();
+
+        $pdf->addPage($html);
+
+        $pdfContent = $pdf->toString();
+
+        $signedFileUrl = $this->fileUploadAndGetUrl($pdfContent);
+
+        $dataForPDF = [
+            'merchantName'          => $merchant->getName(),
+        ];
+
+        $attachmentData = [
+            'public_file_url'   => $signedFileUrl,
+            'display_name'  => 'Chargeback Details',
+            'extension'     => 'pdf',
+            'msg_type'      => 'DOCUMENT',
+            'is_cta_template' => true,
+            'button_url_param' => 'signin?screen=sign_in',
+        ];
+
+        $this->sendWhatsappMessage($merchant, DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE_NAME,
+            DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE, $dataForPDF, $attachmentData);
+
+    }
+
+    public function fileUploadAndGetUrl($pdfContent)
+    {
+        $creator = new FileStore\Creator;
+
+        $creator->name('Chargeback Details')
+            ->content($pdfContent)
+            ->extension(FileStore\Format::PDF)
+            ->mime('application/pdf')
+            ->store(FileStore\Store::S3)
+            ->type(FileStore\Type::BULK_DISPUTES_FILE)
+            ->save()
+            ->getFileInstance();
+
+        $signedFileUrl = $creator->getSignedUrl();
+
+        return $signedFileUrl['url'];
     }
 
     protected function getFormattedAmount($amount, $currency)
@@ -1002,16 +1085,36 @@ class Core extends Base\Core
         $this->app['raven']->sendSms($payload);
     }
 
-    private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params)
+    private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params, $attachmentData=[])
     {
         $receiver = $merchant->merchantDetail->getContactMobile();
 
-        $whatsAppPayload = [
-            'ownerId'       => $merchant->getId(),
-            'ownerType'     => 'merchant',
-            'template_name' => $whatsappTemplateName,
-            'params'        => $params
-        ];
+        if (count($attachmentData) > 0)
+        {
+            $whatsAppPayload = [
+                'ownerId'       => $merchant->getId(),
+                'ownerType'     => 'merchant',
+                'template_name' => $whatsappTemplateName,
+                'params'        => $params,
+                'isAttachment'  => true,
+                'public_file_url'   => $attachmentData['public_file_url'],
+                'display_name'  => $attachmentData['display_name'],
+                'extension'     => $attachmentData['extension'],
+                'msg_type'      => $attachmentData['msg_type'],
+                'is_cta_template' => $attachmentData['is_cta_template'],
+                'button_url_param' => $attachmentData['button_url_param']
+            ];
+
+        }
+        else
+        {
+            $whatsAppPayload = [
+                'ownerId'       => $merchant->getId(),
+                'ownerType'     => 'merchant',
+                'template_name' => $whatsappTemplateName,
+                'params'        => $params,
+            ];
+        }
 
         (new Stork)->sendWhatsappMessage(
             $this->mode,

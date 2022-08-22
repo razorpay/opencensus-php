@@ -399,20 +399,37 @@ class Stork
                 $context = json_decode(json_encode(['template' => $input['template_name']]));
             }
 
-            if (isset($input['is_cta_template'])==true and isset($input['button_url_param'])==true)
+            if (isset($input['is_cta_template']) == true and isset($input['public_file_url']) == true)
             {
                 $whatsappChannels = json_decode(json_encode([
                     'destination'=>$receiver,
                     'text'=>$text,
                     'is_cta_template'=>$input['is_cta_template'],
-                    'button_url_param'=>$input['button_url_param']
+                    'button_url_param'=>$input['button_url_param'],
+                    'attachment'=> [
+                        'public_file_url'=>$input['public_file_url'],
+                        'display_name'=>$input['display_name'],
+                        'extension'=>$input['extension'],
+                        'msg_type'=>$input['msg_type'],
+                    ]
                 ]));
             }
+
             else {
-                $whatsappChannels = json_decode(json_encode([
-                    'destination'=>$receiver,
-                    'text'=>$text,
-                ]));
+                if (isset($input['is_cta_template']) == true and isset($input['button_url_param']) == true) {
+                    $whatsappChannels = json_decode(json_encode([
+                        'destination' => $receiver,
+                        'text' => $text,
+                        'is_cta_template' => $input['is_cta_template'],
+                        'button_url_param' => $input['button_url_param'],
+                    ]));
+                }
+                else {
+                    $whatsappChannels = json_decode(json_encode([
+                        'destination' => $receiver,
+                        'text' => $text,
+                    ]));
+                }
             }
 
             $requestPayload = [
