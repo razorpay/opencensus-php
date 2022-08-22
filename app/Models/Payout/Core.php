@@ -4815,6 +4815,14 @@ class Core extends Base\Core
                     ->createPayoutServiceTransaction($input);
     }
 
+    public function deductCreditsViaPayoutService(array $input)
+    {
+        (new Validator)->validateInput(Validator::DEDUCT_CREDITS_VIA_PAYOUT_SERVICE, $input);
+
+        return $this->getProcessor('fund_account_payout')
+                    ->deductCreditsViaPayoutService($input);
+    }
+
     public function fetchPricingInfoForPayoutService(array $input)
     {
         return $this->getProcessor('fund_account_payout')

@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
+use RZP\Constants as RzpConstants;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Vpa;
@@ -36,6 +37,7 @@ use RZP\Models\WalletAccount;
 use RZP\Models\Payout\Entity;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Internal\Service;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
@@ -3397,6 +3399,120 @@ class Base extends BaseCore
             },
             $this->payoutServiceMutexTTL,
             ErrorCode::BAD_REQUEST_LEDGER_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS);
+    }
+
+    /**
+     * Function is called from payout Microservice to deduct credits in api.
+     * This is needed because credits are owned by api for now.
+     * Once credits are migrated to payout service then this won't be needed.
+     *
+     * @param array $params
+     * @return array
+     */
+    public function deductCreditsViaPayoutService(array $params): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_SERVICE_DEDUCT_CREDITS_REQUEST,
+            [
+                'params' => $params
+            ]);
+
+        try
+        {
+            $payoutId = $params[Payout\Entity::PAYOUT_ID];
+
+            $fees = $params[Payout\Entity::FEES];
+
+            $tax = $params[Payout\Entity::TAX];
+
+            /*
+             * Check if credits already deducted or not
+             */
+            $creditsAlreadyDeducted = (new Credits\Transaction\Core)->checkIfCreditsDeductedForSource($payoutId, RzpConstants\Entity::PAYOUT);
+
+            if ($creditsAlreadyDeducted === true)
+            {
+
+                $this->trace->info(TraceCode::PAYOUT_SERVICE_DEDUCT_CREDITS_DUPLICATE_REQUEST,
+                    [
+                        'payout_id' => $payoutId
+                    ]);
+
+                return [
+                    Entity::FEES            => $fees - $tax,
+                    Entity::TAX             => 0,
+                    'credits_used'          => true,
+                ];
+            }
+
+            $payout = (new Payout\Entity);
+
+            $payout->setId($payoutId);
+
+            $payout->setFees($fees);
+
+            $payout->setTax($tax);
+
+            /*
+                Setting some default value here since this is needed to identify downstream processor.
+            */
+            $payout->setChannel(BankingAccount\Channel::YESBANK);
+
+            $merchant = (new Merchant\Repository)->findOrFail($params[Payout\Entity::MERCHANT_ID]);
+
+            $payout->merchant()->associate($merchant);
+
+            /** @var Balance\Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($params[Entity::BALANCE_ID]);
+
+            $payout->balance()->associate($balance);
+
+            $downstreamProcessor = new DownstreamProcessor($this->getPayoutType(), $payout, $this->mode);
+
+            $downstreamProcessor->processAdjustFeeAndTaxesIfCreditsAvailable();
+
+            $response = [
+                Entity::FEES            => $payout->getFees(),
+                Entity::TAX             => $payout->getTax(),
+            ];
+
+            if ($payout->getFeeType() === CreditType::REWARD_FEE)
+            {
+                $response += [
+                    'credits_used' => true,
+                ];
+            }
+            else
+            {
+                $response += [
+                    'credits_used' => false,
+                ];
+            }
+
+            $this->trace->info(TraceCode::PAYOUT_SERVICE_DEDUCT_CREDITS_RESPONSE,
+                [
+                    'response' => $response
+                ]);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SERVICE_DEDUCT_CREDITS_REQUEST_FAILED,
+                [
+                    'payout_id' => $payoutId,
+                ]
+            );
+
+            throw new Exception\ServerErrorException(
+                'Internal error occurred while deducting merchant credits via payout service.',
+                ErrorCode::SERVER_ERROR,
+                [
+                'message' => $exception->getMessage()
+            ]);
+        }
     }
 
     /**

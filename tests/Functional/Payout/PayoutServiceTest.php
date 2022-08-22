@@ -766,6 +766,381 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("txn_" . $response['transaction_id'], $txn['id']);
     }
 
+    public function testDeductCreditsViaPayoutService()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'merchant_id'   => '10000000000000',
+            'value'         => 500 ,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun = $this->getDbLastEntity('credits', 'live');
+
+        $creditsTransactionAfterTestRun = $this->getDbLastEntity('credit_transaction', 'live');
+
+        $this->assertEquals(500, $creditsAfterTestRun["value"]);
+
+        $this->assertEquals(100, $creditsAfterTestRun["used"]);
+
+        $this->assertEquals('payout', $creditsTransactionAfterTestRun["entity_type"]);
+
+        $this->assertEquals('Gg7sgBZgvYTTTT', $creditsTransactionAfterTestRun["entity_id"]);
+
+        $this->assertEquals(100, $creditsTransactionAfterTestRun["credits_used"]);
+    }
+
+    public function testDeductCreditsViaPayoutServiceBadRequest()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testDeductCreditsViaPayoutServiceBadRequestInvalidStatus()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testDeductCreditsViaPayoutServiceAndCreditsNotAvailable()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'merchant_id'   => '10000000000000',
+            'value'         => 50,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun = $this->getDbLastEntity('credits', 'live');
+
+        $this->assertEquals(50, $creditsAfterTestRun["value"]);
+
+        $this->assertEquals(0, $creditsAfterTestRun["used"]);
+    }
+
+    public function testDeductCreditsViaPayoutServiceAndDoubleCreditRequestReceived()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12345',
+            'merchant_id'   => '10000000000000',
+            'value'         => 500,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id' => 'credTRANv12345',
+            'entity_id'     => 'Gg7sgBZgvYTTTT',
+            'entity_type'   => 'payout',
+            'credits_used'  => 100,
+            'credits_id'    => 'Gg7sgBZgv12345',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun = $this->getDbLastEntity('credits', 'live');
+
+        $creditsTransactionAfterTestRun = $this->getDbEntities('credit_transaction', ['credits_id' => 'Gg7sgBZgv12345', 'entity_type' => 'payout'], 'live');
+
+        $this->assertEquals(500, $creditsAfterTestRun["value"]);
+
+        $this->assertEquals(0, $creditsAfterTestRun["used"]);
+
+        $this->assertEquals(1, $creditsTransactionAfterTestRun->count());
+    }
+
+    public function testDeductCreditsViaPayoutServiceAndInternalServerErrorCase()
+    {
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testReverseCreditsViaPayoutService()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12345',
+            'merchant_id'   => '10000000000000',
+            'value'         => 100,
+            'used'          => 100,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12346',
+            'merchant_id'   => '10000000000000',
+            'value'         => 100,
+            'used'          => 50,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id'            => 'credTRANv12345',
+            'entity_id'     => 'Gg7sgBZgvYTTTT',
+            'entity_type'   => 'payout',
+            'credits_used'  => 100,
+            'credits_id'    => 'Gg7sgBZgv12345',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id'            => 'credTRANv12346',
+            'entity_id'     => 'Gg7sgBZgvYTTTT',
+            'entity_type'   => 'payout',
+            'credits_used'  => 50,
+            'credits_id'    => 'Gg7sgBZgv12346',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun1 = $this->getDbEntityById('credits','Gg7sgBZgv12345', 'live');
+
+        $creditsAfterTestRun2 = $this->getDbEntityById('credits','Gg7sgBZgv12346', 'live');
+
+        $creditsTransactionAfterTestRun1 = $this->getDbLastEntityOrderByCreatedAt('credit_transaction', ['credits_id' => 'Gg7sgBZgv12345', 'entity_type' => 'payout'], 'live');
+
+        $creditsTransactionAfterTestRun2 = $this->getDbLastEntityOrderByCreatedAt('credit_transaction', ['credits_id' => 'Gg7sgBZgv12346', 'entity_type' => 'payout'], 'live');
+
+        $this->assertEquals(0, $creditsAfterTestRun1["used"]);
+
+        $this->assertEquals(0, $creditsAfterTestRun2["used"]);
+
+        $this->assertEquals(-100, $creditsTransactionAfterTestRun1["credits_used"]);
+
+        $this->assertEquals(-50, $creditsTransactionAfterTestRun2["credits_used"]);
+    }
+
+    public function testReverseCreditsViaPayoutServiceAndDoubleReversalRequestReceived()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12345',
+            'merchant_id'   => '10000000000000',
+            'value'         => 200,
+            'used'          => 100,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id'            => 'credTRANv12345',
+            'entity_id'     => 'Revxyk0gB5Fx11',
+            'entity_type'   => 'payout',
+            'credits_used'  => -100,
+            'credits_id'    => 'Gg7sgBZgv12345',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun1 = $this->getDbEntityById('credits','Gg7sgBZgv12345', 'live');
+
+        $creditsTransactionAfterTestRun1 = $this->getDbEntities('credit_transaction', ['credits_id' => 'Gg7sgBZgv12345', 'entity_type' => 'payout'], 'live');
+
+        $this->assertEquals(200, $creditsAfterTestRun1["value"]);
+
+        $this->assertEquals(100, $creditsAfterTestRun1["used"]);
+
+        $this->assertEquals(1, $creditsTransactionAfterTestRun1->count());
+    }
+
+    public function testReverseCreditsViaPayoutServiceAndInternalServerErrorCase()
+    {
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testReverseCreditsViaPayoutServiceBadRequest()
+    {
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testReverseCreditsViaPayoutServiceAndSourceReversal()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12345',
+            'merchant_id'   => '10000000000000',
+            'value'         => 100,
+            'used'          => 100,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12346',
+            'merchant_id'   => '10000000000000',
+            'value'         => 100,
+            'used'          => 50,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id'            => 'credTRANv12345',
+            'entity_id'     => 'Gg7sgBZgvYTTTT',
+            'entity_type'   => 'payout',
+            'credits_used'  => 100,
+            'credits_id'    => 'Gg7sgBZgv12345',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id'            => 'credTRANv12346',
+            'entity_id'     => 'Gg7sgBZgvYTTTT',
+            'entity_type'   => 'payout',
+            'credits_used'  => 50,
+            'credits_id'    => 'Gg7sgBZgv12346',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun1 = $this->getDbEntityById('credits','Gg7sgBZgv12345', 'live');
+
+        $creditsAfterTestRun2 = $this->getDbEntityById('credits','Gg7sgBZgv12346', 'live');
+
+        $creditsTransactionAfterTestRun1 = $this->getDbLastEntityOrderByCreatedAt('credit_transaction', ['credits_id' => 'Gg7sgBZgv12345', 'entity_type' => 'reversal'], 'live');
+
+        $creditsTransactionAfterTestRun2 = $this->getDbLastEntityOrderByCreatedAt('credit_transaction', ['credits_id' => 'Gg7sgBZgv12346', 'entity_type' => 'reversal'], 'live');
+
+        $this->assertEquals(0, $creditsAfterTestRun1["used"]);
+
+        $this->assertEquals(0, $creditsAfterTestRun2["used"]);
+
+        $this->assertEquals(-100, $creditsTransactionAfterTestRun1["credits_used"]);
+
+        $this->assertEquals(-50, $creditsTransactionAfterTestRun2["credits_used"]);
+    }
+
+    public function testReverseCreditsViaPayoutServiceAndDoubleReversalRequestReceivedWithSourceReversal()
+    {
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->fixtures->on('live')->create('credits', [
+            'id'            => 'Gg7sgBZgv12345',
+            'merchant_id'   => '10000000000000',
+            'value'         => 200,
+            'used'          => 100,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
+        $this->fixtures->on('live')->create('credit_transaction', [
+            'id'            => 'credTRANv12345',
+            'entity_id'     => 'Revxyk0gB5Fx11',
+            'entity_type'   => 'reversal',
+            'credits_used'  => -100,
+            'credits_id'    => 'Gg7sgBZgv12345',
+            'created_at'    => Carbon::now()->subHours(6)->getTimestamp(),
+            'updated_at'    => Carbon::now()->subHours(6)->getTimestamp()
+        ]);
+
+        $this->startTest();
+
+        $creditsAfterTestRun1 = $this->getDbEntityById('credits','Gg7sgBZgv12345', 'live');
+
+        $creditsTransactionAfterTestRun1 = $this->getDbEntities('credit_transaction', ['credits_id' => 'Gg7sgBZgv12345', 'entity_type' => 'reversal'], 'live');
+
+        $this->assertEquals(200, $creditsAfterTestRun1["value"]);
+
+        $this->assertEquals(100, $creditsAfterTestRun1["used"]);
+
+        $this->assertEquals(1, $creditsTransactionAfterTestRun1->count());
+    }
+
     public function testFetchPricingInfoForPayoutService($mode = 'IMPS')
     {
         $balance = $this->getDbEntities('balance',

@@ -125,4 +125,9 @@ class Service extends Base\Service
     {
         (new Core)->createReversalViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
+
+    public function reverseCreditsViaPayoutService(array $input)
+    {
+        return (new Core)->reverseCreditsViaPayoutService($input);
+    }
 }

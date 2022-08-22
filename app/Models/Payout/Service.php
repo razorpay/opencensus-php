@@ -202,6 +202,11 @@ class Service extends Base\Service
         return $this->core->createPayoutServiceTransaction($input);
     }
 
+    public function deductCreditsViaPayoutService(array $input)
+    {
+        return $this->core->deductCreditsViaPayoutService($input);
+    }
+
     public function fetchPricingInfoForPayoutService(array $input)
     {
         $this->trace->info(

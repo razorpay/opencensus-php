@@ -714,6 +714,14 @@ final class FactoryData
                                                            ]
         );
 
+        $factory(\RZP\Models\Merchant\Credits\Transaction\Entity::class, [
+                'id'            => $faker->uniqueid,
+                'entity_id'     => '12345678912345',
+                'entity_type'   => 'payout',
+                'credits_used'  => 50,
+            ]
+        );
+
         $factory(\RZP\Models\Transaction\FeeBreakup\Entity::class, [
                                                                      'id'            => $faker->uniqueid,
                                                                  ]

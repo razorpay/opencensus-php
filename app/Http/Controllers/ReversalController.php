@@ -49,4 +49,14 @@ class ReversalController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function reverseCreditsViaPayoutService()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->reverseCreditsViaPayoutService($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

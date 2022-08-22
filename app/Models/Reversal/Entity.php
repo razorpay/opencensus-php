@@ -48,6 +48,11 @@ class Entity extends Base\PublicEntity
     const TRANSFER_ID           = 'transfer_id';
     const PAYOUT_ID             = 'payout_id';
 
+    const REVERSAL_ID = 'reversal_id';
+
+    const FEE_TYPE = 'fee_type';
+
+    const ERROR                  = 'error';
 
     // Relations
     const TRANSACTION = 'transaction';
@@ -292,6 +297,16 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setEntityType($entityType)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $entityType);
+    }
+
+    public function setEntityId($entityId)
+    {
+        $this->setAttribute(self::ENTITY_ID, $entityId);
     }
 
     // -------------------- End Setters --------------------------

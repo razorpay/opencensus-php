@@ -67,6 +67,297 @@ return [
         ],
     ],
 
+    'testDeductCreditsViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/deduct_credits',
+            'content' => [
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "fees"          => 200,
+                "tax"           => 100,
+                "status"        => "create_request_submitted",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "fees"          => 100,
+                "tax"           => 0,
+                "credits_used"  => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeductCreditsViaPayoutServiceAndCreditsNotAvailable' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/deduct_credits',
+            'content' => [
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "fees"          => 200,
+                "tax"           => 100,
+                "status"        => "create_request_submitted",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "fees"          => 200,
+                "tax"           => 100,
+                "credits_used"  => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeductCreditsViaPayoutServiceAndDoubleCreditRequestReceived' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/deduct_credits',
+            'content' => [
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "fees"          => 200,
+                "tax"           => 100,
+                "status"        => "create_request_submitted",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "fees"          => 100,
+                "tax"           => 0,
+                "credits_used"  => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeductCreditsViaPayoutServiceAndInternalServerErrorCase' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/deduct_credits',
+            'content' => [
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "fees"          => 200,
+                "tax"           => 100,
+                "status"        => "create_request_submitted",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL123",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\ServerErrorException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR,
+        ],
+    ],
+
+    'testDeductCreditsViaPayoutServiceBadRequestInvalidStatus' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/deduct_credits',
+            'content' => [
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "fees"          => 200,
+                "tax"           => 100,
+                "status"        => "random_status",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid status:random_status sent for merchant credits deduction via payout service',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDeductCreditsViaPayoutServiceBadRequest' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/deduct_credits',
+            'content' => [
+                "fees"          => 200,
+                "tax"           => 100,
+                "status"        => "random_status",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The payout id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testReverseCreditsViaPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/reverse_credits',
+            'content' => [
+                "reversal_id"   => "Revxyk0gB5Fx11",
+                "entity_type"   => "payout",
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+                "fee_type"      => "reward_fee",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success"       => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testReverseCreditsViaPayoutServiceAndDoubleReversalRequestReceived' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/reverse_credits',
+            'content' => [
+                "reversal_id"   => "Revxyk0gB5Fx11",
+                "entity_type"   => "payout",
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+                "fee_type"      => "reward_fee",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success"       => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testReverseCreditsViaPayoutServiceAndInternalServerErrorCase' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/reverse_credits',
+            'content' => [
+                "reversal_id"   => "Revxyk0gB5Fx11",
+                "entity_type"   => "payout",
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+                "fee_type"      => "reward_fee",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => 'We are facing some trouble completing your request at the moment. Please try again shortly.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\ServerErrorException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR,
+        ],
+    ],
+
+    'testReverseCreditsViaPayoutServiceBadRequest' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/reverse_credits',
+            'content' => [
+                "entity_type"   => "reversal",
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+                "fee_type"      => "reward_fee",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The reversal id field is required when entity type is reversal.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testReverseCreditsViaPayoutServiceAndSourceReversal' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/reverse_credits',
+            'content' => [
+                "reversal_id"   => "Revxyk0gB5Fx11",
+                "entity_type"   => "reversal",
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+                "fee_type"      => "reward_fee",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success"       => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testReverseCreditsViaPayoutServiceAndDoubleReversalRequestReceivedWithSourceReversal' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/reverse_credits',
+            'content' => [
+                "reversal_id"   => "Revxyk0gB5Fx11",
+                "entity_type"   => "reversal",
+                "payout_id"     => "Gg7sgBZgvYTTTT",
+                "merchant_id"   => "10000000000000",
+                "balance_id"    => "GhidjxhfiCL7WT",
+                "fee_type"      => "reward_fee",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "success"       => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testFetchPricingInfoForPayoutService' => [
         'request'  => [
             'method'  => 'POST',

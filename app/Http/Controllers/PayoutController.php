@@ -53,6 +53,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deductCreditsViaPayoutService()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->deductCreditsViaPayoutService($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchPricingInfoForPayoutService()
     {
         $input = Request::all();

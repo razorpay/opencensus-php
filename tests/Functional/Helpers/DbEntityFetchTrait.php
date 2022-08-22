@@ -34,6 +34,13 @@ trait DbEntityFetchTrait
                     ->last();
     }
 
+    protected function getDbLastEntityOrderByCreatedAt(string $entity, array $input = array(), $mode = 'test')
+    {
+        return $this->getEntityObjectForMode($entity, $mode)
+            ->where($input)
+            ->orderBy('created_at', 'desc')->first();
+    }
+
     protected function getDbLastEntity($entity, $mode = 'test')
     {
         $entities = $this->getDbEntities($entity, [], $mode);

@@ -97,6 +97,7 @@ class Validator extends Base\Validator
     // Payout Service Validations
     const PAYOUT_SERVICE_CREATE                     = 'payout_service_create';
     const PAYOUT_SERVICE_TRANSACTION_CREATE         = 'payout_service_transaction_create';
+    const DEDUCT_CREDITS_VIA_PAYOUT_SERVICE         = 'deduct_credits_via_payout_service';
     const PAYOUT_SERVICE_FTS_CREATE                 = 'payout_service_fts_create';
     const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
     const PAYOUT_SERVICE_FETCH_PRICING_INFO         = 'payout_service_fetch_pricing_info';
@@ -285,6 +286,10 @@ class Validator extends Base\Validator
         'attachments',
     ];
 
+    protected static $deductCreditsViaPayoutServiceValidators = [
+        'status_for_credits_deduction_via_payout_service',
+    ];
+
     // Both regular(type:default) and on demand(type:on_demand) payouts are validated through merchantPayoutRules.
     protected static $merchantPayoutRules = [
         Entity::PURPOSE    => 'required|string|max:30|in:payout',
@@ -425,6 +430,15 @@ class Validator extends Base\Validator
     protected static $payoutServiceTransactionCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+    ];
+
+    protected static $deductCreditsViaPayoutServiceRules = [
+        Entity::PAYOUT_ID                   => 'required|alpha_num|size:14',
+        Entity::FEES                        => 'required|int',
+        Entity::TAX                         => 'required|int',
+        Entity::STATUS                      => 'required|string',
+        Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
+        Entity::BALANCE_ID                  => 'required|alpha_num|size:14',
     ];
 
     protected static $payoutServiceFetchPricingInfoRules = [
@@ -1419,6 +1433,24 @@ class Validator extends Base\Validator
             $this->validateAttachmentsForAuth();
 
             $this->validateAttachmentsInput($attachments);
+        }
+    }
+
+    public function validateStatusForCreditsDeductionViaPayoutService(array $input)
+    {
+        $status = $input[Payout\Entity::STATUS];
+
+        /*
+        Check if status is pre-create only for credits deduction
+        */
+        if (!(($status === Status::CREATE_REQUEST_SUBMITTED) or
+            ($status === Status::SCHEDULED) or
+            ($status === Status::QUEUED) or
+            ($status === Status::PENDING) or
+            ($status === Status::ON_HOLD)))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid status:' . $status . ' sent for merchant credits deduction via payout service');
         }
     }
 

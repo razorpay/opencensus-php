@@ -429,6 +429,22 @@ class Base extends FundAccountPayout\Base
         $payout->setPricingRuleId($pricingRuleId);
     }
 
+    public function adjustFeeAndTaxesIfCreditsAvailable($payout)
+    {
+        $fees = $payout->getFees();
+
+        $tax = $payout->getTax();
+
+        if ($payout->merchant->isFeatureEnabled(Feature\Constants::HIGH_TPS_COMPOSITE_PAYOUT) === false)
+        {
+            $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        }
+
+        $payout->setFees($fees);
+
+        $payout->setTax($tax);
+    }
+
     protected function calculateFeesAndTaxForPayouts(Entity $payout)
     {
         list($fees, $tax, $feesSplit) = (new Pricing\PayoutFee)->calculateMerchantFees($payout);

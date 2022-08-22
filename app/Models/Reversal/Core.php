@@ -4,7 +4,9 @@ namespace RZP\Models\Reversal;
 
 use Razorpay\Trace\Logger;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Error\Error;
 use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
@@ -770,6 +772,38 @@ class Core extends Base\Core
     }
 
     /**
+     * This function is only used by payouts.
+     * Credits can be reversed either via some internal state transition such as queued or
+     * can be reversed in case of terminal state such as failed/reversed.
+     * EntityType in credit_transaction table is payout for internal state transition cases but if payout is actually
+     * failed/reversed then credit EntityType is reversal.
+     * So while checking credits are already reversed or not we shall check for reversal entityType.
+     *
+     * @param Entity $reversal
+     *
+     * @return bool
+     */
+    protected function shouldHandleRewardForPayoutReversal(Reversal\Entity $reversal)
+    {
+        if (($reversal->getEntityType() === E::PAYOUT) and
+            ($reversal->entity->getFeeType() === Transaction\CreditType::REWARD_FEE))
+        {
+            $creditTxns = (new Credits\Transaction\Core)->getReverseCreditTransactionsForSource(
+                $reversal->getId(),
+                Constants\Entity::REVERSAL);
+
+            if ($creditTxns->count() > 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Create reversal for settlement.ondemand entity based on which ondemandPayout got reversed
      *
      * @param Ondemand\Entity $settlementOndemand
@@ -1015,6 +1049,136 @@ class Core extends Base\Core
             },
             $this->payoutServiceMutexTTLForReversal,
             ErrorCode::BAD_REQUEST_REVERSAL_CREATION_FOR_PAYOUT_SERVICE_IN_PROGRESS);
+    }
+
+    /**
+     * Function is called from payout Microservice to reverse credits in api.
+     * This is needed because credits are owned by api for now.
+     * Once credits are migrated to payout service then this won't be needed.
+     *
+     * @param array $params
+     * @return array
+     */
+    public function reverseCreditsViaPayoutService(array $params): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_SERVICE_REVERSE_CREDITS_REQUEST,
+            [
+                'params' => $params
+            ]);
+
+        (new Validator)->validateInput(Validator::REVERSE_CREDITS_VIA_PAYOUT_SERVICE, $params);
+
+        try
+        {
+            $payoutId = $params[Reversal\Entity::PAYOUT_ID];
+
+            $payout = (new Payout\Entity);
+
+            $payout->setId($payoutId);
+
+            $payout->setFeeType($params[Payout\Entity::FEE_TYPE]);
+
+            $entityType = $params[Reversal\Entity::ENTITY_TYPE];
+
+            $merchant = (new Merchant\Repository)->findOrFail($params[Payout\Entity::MERCHANT_ID]);
+
+            /** @var Balance\Entity $balance */
+            $balance = $this->repo->balance->findOrFailById($params[Entity::BALANCE_ID]);
+
+            switch ($entityType)
+            {
+                case constants\Entity::PAYOUT:
+
+                    $payout->merchant()->associate($merchant);
+
+                    $payout->balance()->associate($balance);
+
+                    // Check if credits already reversed for payout source type. If yes -> skip it.
+                    $creditTxns = (new Credits\Transaction\Core)->getReverseCreditTransactionsForSource(
+                        $payoutId,
+                        Constants\Entity::PAYOUT);
+
+                    if ($creditTxns->count() > 0)
+                    {
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_REVERSE_CREDITS_SKIPPED,
+                            [
+                                'payout_id' => $payoutId,
+                            ]);
+                    }
+                    else
+                    {
+                        (new Credits\Transaction\Core)->reverseCreditsForSource(
+                            $payout->getId(),
+                            Constants\Entity::PAYOUT,
+                            $payout);
+                    }
+
+                    break;
+
+                case constants\Entity::REVERSAL:
+
+                    $reversalId = $params[Reversal\Entity::REVERSAL_ID];
+
+                    $reversal = (new Reversal\Entity);
+
+                    $reversal->setId($reversalId);
+
+                    $reversal->setEntityType($entityType);
+
+                    $reversal->setEntityId($payoutId);
+
+                    $reversal->entity()->associate($payout);
+
+                    $reversal->merchant()->associate($merchant);
+
+                    $reversal->balance()->associate($balance);
+
+                    if ($this->shouldHandleRewardForPayoutReversal($reversal) === true)
+                    {
+                        (new Credits\Transaction\Core)->reverseCreditsForSource(
+                            $reversal->getEntityId(),
+                            $reversal->getEntityType(),
+                            $reversal);
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::PAYOUT_SERVICE_REVERSE_CREDITS_SKIPPED,
+                            [
+                                'payout_id' => $payoutId,
+                                'reversal_id' => $reversalId,
+                            ]);
+                    }
+
+                    break;
+            }
+
+            $response = [
+                'success' => true,
+            ];
+
+            $this->trace->info(TraceCode::PAYOUT_SERVICE_REVERSE_CREDITS_RESPONSE,
+                [
+                    'response' => $response
+                ]);
+
+            return $response;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SERVICE_REVERSE_CREDITS_REQUEST_FAILED,
+                []
+            );
+
+            throw new Exception\ServerErrorException(
+                'Internal error occurred while reversing merchant credits via payout service.',
+                ErrorCode::SERVER_ERROR,
+                [
+                    'message' => $exception->getMessage()
+                ]);
+        }
     }
 
     public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)

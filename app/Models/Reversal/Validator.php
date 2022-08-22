@@ -14,6 +14,8 @@ class Validator extends Base\Validator
 {
     const PAYOUT_SERVICE_REVERSAL_CREATE = 'payout_service_reversal_create';
 
+    const REVERSE_CREDITS_VIA_PAYOUT_SERVICE = 'reverse_credits_via_payout_service';
+
     protected static $createRules = [
         Entity::AMOUNT               => 'required|integer|min:0',
         Entity::FEE                  => 'sometimes|integer|min:0',
@@ -29,6 +31,15 @@ class Validator extends Base\Validator
     protected static $payoutServiceReversalCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::PAYOUT_ID            => 'required|string|size:14',
+    ];
+
+    protected static $reverseCreditsViaPayoutServiceRules = [
+        Entity::REVERSAL_ID            => 'string|size:14|required_if:entity_type,reversal',
+        Entity::ENTITY_TYPE            => 'required|string|in:payout,reversal',
+        Entity::PAYOUT_ID              => 'required|string|size:14',
+        Entity::MERCHANT_ID            => 'required|string|size:14',
+        Entity::BALANCE_ID             => 'required|string|size:14',
+        Entity::FEE_TYPE               => 'present|string',
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)

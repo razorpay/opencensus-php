@@ -297,6 +297,26 @@ class Core extends Base\Core
         return false;
     }
 
+    /*
+     * This method returns true if credits are deducted for source.
+     * We fetch latest entry from credit transaction table and check if its a positive entry or not.
+     * There are possibility of credits deduction & reversal in case of queued payouts so we check on latest entry.
+     */
+    public function checkIfCreditsDeductedForSource($sourceId, $sourceType)
+    {
+        $creditTxn = $this->repo->credit_transaction->getLatestCreditTransactionsForSource($sourceId, $sourceType);
+
+        if (isset($creditTxn) === true)
+        {
+            if ($creditTxn->getCreditsUsed() > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getReverseCreditTransactionsForSource($sourceId, $sourceType)
     {
         $creditTxns = $this->repo->credit_transaction->getReverseCreditTransactionsForSource($sourceId, $sourceType);

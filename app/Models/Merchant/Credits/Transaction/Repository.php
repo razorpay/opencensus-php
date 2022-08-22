@@ -31,6 +31,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getLatestCreditTransactionsForSource(string $sourceId, string $sourceType)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, $sourceId)
+            ->where(Entity::ENTITY_TYPE, $sourceType)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->first();
+    }
+
     public function getSumOfCreditTransactionsForSource(string $sourceId)
     {
         return $this->newQuery()

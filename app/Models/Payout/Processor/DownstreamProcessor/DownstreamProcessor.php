@@ -78,6 +78,13 @@ class DownstreamProcessor
         $subProcessor->setFeeAndTaxForPayout($this->payout);
     }
 
+    public function processAdjustFeeAndTaxesIfCreditsAvailable()
+    {
+        $subProcessor = $this->getSubProcessorClass();
+
+        $subProcessor->adjustFeeAndTaxesIfCreditsAvailable($this->payout);
+    }
+
     public function getSubProcessorClass()
     {
         $subProcessor = __NAMESPACE__ . '\\' . studly_case($this->type);

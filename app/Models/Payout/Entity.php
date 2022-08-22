@@ -130,7 +130,6 @@ class Entity extends Base\PublicEntity
     // status code send from bank side
     const STATUS_CODE            = 'status_code';
 
-    // error object key for payout
     const ERROR                  = 'error';
 
     // to send reason and description for queued state
