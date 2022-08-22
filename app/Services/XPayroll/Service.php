@@ -12,6 +12,7 @@ use RZP\Http\Request\Requests;
 use RZP\Http\Response\StatusCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
 
 /**
  * This class will be the main file that will talk to
@@ -61,25 +62,27 @@ class Service
     protected function getDataFromPayout(PayoutEntity $payout): array
     {
         return [
-            'id'              => $payout->getId(),
-            'entity'          => $payout->getEntity(),
-            'fund_account_id' => $payout->getFundAccountId(),
-            'amount'          => $payout->getAmount(),
-            'currency'        => $payout->getCurrency(),
-            'notes'           => $payout->getNotes(),
-            'fees'            => $payout->getFees(),
-            'tax'             => $payout->getTax(),
-            'status'          => $payout->getStatus(),
-            'purpose'         => $payout->getPurpose(),
-            'utr'             => $payout->getUtr(),
-            'mode'            => $payout->getMode(),
-            'channel'         => $payout->getChannel(),
-            'remark'          => $payout->getRemarks(),
-            'reference_id'    => $payout->getReferenceId(),
-            'narration'       => $payout->getNarration(),
-            'batch_id'        => $payout->getBatchId(),
-            'failure_reason'  => $payout->getFailureReason(),
-            'created_at'      => $payout->getCreatedAt(),
+            'id'                => $payout->getId(),
+            'entity'            => $payout->getEntity(),
+            'fund_account_id'   => $payout->getFundAccountId(),
+            'amount'            => $payout->getAmount(),
+            'currency'          => $payout->getCurrency(),
+            'notes'             => $payout->getNotes(),
+            'fees'              => $payout->getFees(),
+            'tax'               => $payout->getTax(),
+            'status'            => $payout->getStatus(),
+            'purpose'           => $payout->getPurpose(),
+            'utr'               => $payout->getUtr(),
+            'mode'              => $payout->getMode(),
+            'channel'           => $payout->getChannel(),
+            'remark'            => $payout->getRemarks(),
+            'reference_id'      => $payout->getReferenceId(),
+            'narration'         => $payout->getNarration(),
+            'batch_id'          => $payout->getBatchId(),
+            'failure_reason'    => $payout->getFailureReason(),
+            'created_at'        => $payout->getCreatedAt(),
+            'status_details_id' => $payout->getStatusDetailsId(),
+            'status_details'    => $this->getStatusDetailsFromPayout($payout),
         ];
     }
 
@@ -165,5 +168,41 @@ class Service
         }
 
         return $responseBody;
+    }
+
+    public function getStatusDetailsFromPayout(PayoutEntity $payout)
+    {
+        if ($payout->getStatusDetailsId() === null)
+        {
+            $statusDetailsArray =
+                [
+                    'reason'        => null,
+                    'description'   => null,
+                    'source'        => null,
+                ];
+        }
+
+        else
+        {
+            $statusDetails = (new PayoutsStatusDetails\Repository())->fetchStatusDetailsFromStatusDetailsId($payout->getStatusDetailsId());
+
+            if ($statusDetails !== null)
+            {
+                $source = $payout->getSourceForStatusDetails($statusDetails);
+            }
+            else
+            {
+                $source = null;
+            }
+
+            $statusDetailsArray =
+                [
+                    'reason'        => $statusDetails['reason'],
+                    'description'   => $statusDetails['description'],
+                    'source'        => $source,
+                ];
+        }
+
+        return $statusDetailsArray;
     }
 }

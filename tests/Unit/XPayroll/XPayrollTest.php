@@ -87,4 +87,53 @@ class XPayrollTest extends TestCase
         $this->ba->appAuthTest($this->config['applications.xpayroll.secret']);
         $this->startTest();
     }
+
+    public function testStatusDetailsInXPayrollWebhook()
+    {
+        $payout = $this->fixtures->create('payout', [
+            'status'           => 'processed',
+            'pricing_rule_id'  => '1nvp2XPMmaRLxb',
+            'status_details_id'=> '1nvp2XPMmaRLwb'
+        ]);
+
+        $this->fixtures->create('payout_source', [
+            'payout_id'   => $payout->getId(),
+            'source_id'   => 'xpr_1',
+            'source_type' => 'xpayroll',
+            'priority'    => 1
+        ]);
+
+        $this->fixtures->create('payouts_status_details', [
+            'payout_id'   => $payout->getId(),
+            'id'          => '1nvp2XPMmaRLwb',
+            'status'      => 'processed',
+            'reason'      => 'payout_processed',
+            'description' => 'Payout is processed and the money has been credited into the beneficiaries account.',
+            'mode'        => 'system',
+        ]);
+
+        $xPayrollServiceMock = Mockery::mock('RZP\Services\XPayroll\Service')->makePartial();
+
+        $xPayrollServiceMock->shouldReceive('sendStatusUpdate')
+            ->andReturnUsing(function(array $request) {
+                $statusDetails = $request['status_details'];
+                $statusDetailsId = $request['status_details_id'];
+
+                $statusDetailsExpected = [
+                    'reason'      => 'payout_processed',
+                    'source'      => 'beneficiary_bank',
+                    'description' => 'Payout is processed and the money has been credited into the beneficiaries account.',
+                ];
+
+                self::assertEquals('1nvp2XPMmaRLwb', $statusDetailsId);
+
+                self::assertArraySubset($statusDetailsExpected, $statusDetails);
+
+                return [];
+            });
+
+        $this->app->instance('xpayroll', $xPayrollServiceMock);
+
+        SourceUpdater::update($payout);
+    }
 }
