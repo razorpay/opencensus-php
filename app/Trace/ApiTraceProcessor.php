@@ -127,6 +127,8 @@ class ApiTraceProcessor
 
         $this->addAwsTlsVersion($record);
 
+        $this->addRazorpayRequestId($record);
+
         $this->addRouteNameForExceptions($record);
 
         $this->scrubCardNumberViaCcPay($record);
@@ -460,5 +462,12 @@ class ApiTraceProcessor
         $tlsVersion = $this->app->request->headers->get(RequestHeader::X_AMAZON_TLS_VERSION);
 
         $record['request']['x-amzn-tls-version'] = $tlsVersion;
+    }
+
+    private function addRazorpayRequestId(array &$record)
+    {
+        $razorpayId = $this->app->request->headers->get(RequestHeader::X_RAZORPAY_REQUEST_ID);
+
+        $record['request']['x-razorpay-request-id'] = $razorpayId;
     }
 }
