@@ -988,6 +988,18 @@ class PaymentCreateController extends Controller
                         if((in_array($merchant->getId(), Preferences::MID_IXIGO, true) === true)
                             && ($gateway === Gateway::CARDLESS_EMI))
                         {
+                            $url = $data['request']['url'];
+
+                            $parts = parse_url($url);
+
+                            $url_without_params = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+
+                            if (isset($parts['query']) === true)
+                            {
+                                parse_str($parts['query'], $query_params);
+                                $data['request']['url'] = $url_without_params;
+                                $data['request']['content'] = array_merge($query_params, 	 $data['request']['content'] ?? []);
+                            }
                             return $this->redirectToGatewayGetForm($data);
                         }
 
