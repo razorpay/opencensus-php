@@ -216,7 +216,8 @@ class Service extends Base\Service
 
         if ((ctype_alnum($input[Token\Entity::GATEWAY_TOKEN]) === false) or
             ((strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 20) and
-             ((strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 15) and
+                (strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 10) and
+                ((strlen($input[Token\Entity::GATEWAY_TOKEN]) !== 15) and
               ($accept_new_axis_umrn_mandate_migration === false ))))
         {
             throw new Exception\BadRequestValidationFailureException(
