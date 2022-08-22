@@ -34,6 +34,7 @@ class Fetch extends BankingAccount\Fetch
             Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
             Constants::ACTIVATION_ACCOUNT_TYPE       => 'sometimes|string',
             BankingAccount\Entity::BANK_ACCOUNT_TYPE => 'sometimes|string',
+            Constants::SORT_SENT_TO_BANK_DATE        => 'sometimes|in:asc,desc',
         ],
         AuthType::PRIVILEGE_AUTH => [
             self::EXPAND_EACH                                        => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments',
@@ -104,6 +105,7 @@ class Fetch extends BankingAccount\Fetch
             Entity::BUSINESS_CATEGORY,
             Constants::LEAD_RECEIVED_FROM_DATE,
             Constants::LEAD_RECEIVED_TO_DATE,
+            Constants::SORT_SENT_TO_BANK_DATE,
             Constants::ACTIVATION_ACCOUNT_TYPE,
             BankingAccount\Entity::BANK_ACCOUNT_TYPE,
             self::EXPAND_EACH,

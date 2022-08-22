@@ -454,6 +454,30 @@ class Repository extends Base\Repository
         }
     }
 
+    public function addQueryParamSortSentToBankDate(Base\BuilderEx $query, array $params)
+    {
+        $sentToBankDate = 'sent_to_bank_date';
+        $sortOrder = $params[BankLms\Constants::SORT_SENT_TO_BANK_DATE];
+
+        $bankingAccountState = $this->repo->banking_account_state->getTableName();
+        $bankingAccountId = State\Entity::BANKING_ACCOUNT_ID;
+
+        $subquery = DB::table($bankingAccountState)
+                ->select($bankingAccountId, DB::raw('min(created_at) as sent_to_bank_date'))
+                ->where(State\Entity::STATUS, '=', Status::INITIATED)
+                ->groupBy($bankingAccountId);
+
+        $query->joinSub($subquery, $bankingAccountState, function($join)
+        {
+            $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(State\Entity::BANKING_ACCOUNT_ID);
+            $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+
+            $join->on($bankingAccountIdColumn, '=', $bankingAccountIdForeignColumn);
+        });
+
+        $query->orderBy($sentToBankDate, $sortOrder);
+    }
+
     /**
      * Filter out Balance Id for balances where gateway balance has updated in last 24 hours
      *

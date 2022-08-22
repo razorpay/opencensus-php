@@ -7853,6 +7853,45 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testBankLmsEndToEndSortBySentToBankDate()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount();
+
+        // Attach Sub-merchant to RBl Merchant
+       $this->assertUpdateBankingAccountStatusFromTo(
+           Status::PICKED, Status::INITIATED,
+           null, null,
+           null, null,
+           $response);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account?sort_sent_to_bank_date=desc',
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testBankLmsEndToEndForLeadReceivedDateFilters()
     {
         // Make merchant as Bank CA Onboarding Partner
