@@ -50,6 +50,8 @@ class SetApiHeaders {
 
         ApiRequest::addHeader(Headers::DEV_SERVE_USER,$request->header(Headers::DEV_SERVE_USER));
 
+        ApiRequest::addHeader(Headers::X_RAZORPAY_REQUEST_ID, $request->header(Headers::X_RAZORPAY_REQUEST_ID));
+
         $csrfToken = $request->session()->token();
 
         $timeStamp = microtime(true);

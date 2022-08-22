@@ -6,6 +6,7 @@ use App;
 use Http\Route;
 use Razorpay\Api\Request as ApiRequest;
 use Request;
+use Uuid;
 
 /**
  * Injects url/method and remote IP of the current web request in all records
@@ -46,6 +47,10 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     public function getServerData()
     {
+
+        if(!$this->request->hasHeader('X-Razorpay-Request-Id')) {
+            $this->request->headers->set('X-Razorpay-Request-Id','Api-'.Uuid::generate());
+        }
         $serverData = [
             'request_id'        => $this->request->getId(),
             'uri'               => $this->request->path(),
@@ -57,7 +62,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'server_ip'         => $this->request->server('SERVER_ADDR'),
             'env'               => $this->env,
             'user_agent'        => $this->request->header('User-Agent'),
-            'x_amzn_trace_id'   => $this->request->header('X-Amzn-Trace-Id')
+            'x_amzn_trace_id'   => $this->request->header('X-Amzn-Trace-Id'),
+            'x-razorpay-request-id' => $this->request->header('X-Razorpay-Request-Id')
         ];
 
         return $serverData;
