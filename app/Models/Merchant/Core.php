@@ -3877,6 +3877,8 @@ class Core extends Base\Core
 
         $accessMap = $this->repo->transactionOnLiveAndTest(function() use ($partner, $submerchant, $appType, $role) {
 
+            $this->removeFromAggSettlementIfApplicable($partner, $submerchant);
+
             $partnerApp = $this->fetchPartnerApplication($partner, $appType);
 
             $config = (new PartnerConfig\Core)->fetch($partnerApp);
@@ -3913,6 +3915,95 @@ class Core extends Base\Core
         });
 
         return $accessMap->toArrayPublic();
+    }
+
+    /**
+     * We are checking if there is an existing partner for the submerchant in merchant_access_map
+     * If so, then we are removing the submerchant from the aggregate settlement.
+     */
+    public function removeFromAggSettlementIfApplicable(Entity $partner, Entity $submerchant)
+    {
+        if($this->isExpEnableForSendingUnlinkingRequestToNSS($partner) === false)
+        {
+            // Using the same experiment here that was used in unlinking funtionality.
+            return ;
+        }
+
+        $merchantAccessMapList = $this->repo
+            ->merchant_access_map
+            ->fetchAffiliatedPartnersForSubmerchant($submerchant->getId());
+
+        if ($merchantAccessMapList->isEmpty() === true)
+        {
+            return ;
+        }
+
+        $nssFeature = $this->repo
+            ->feature
+            ->findByEntityTypeEntityIdAndName(Constants::MERCHANT, $submerchant->getId(), FeatureConstants::NEW_SETTLEMENT_SERVICE);
+
+        $featureResult = ($nssFeature === null) ? false : true;
+
+        if($featureResult === false)
+        {
+            $this->trace->info(TraceCode::SUBMERCHANT_NOT_ONBOARDED_ON_NSS,[
+                'sub-merchant_id' => $submerchant->getId()
+            ]);
+
+            return ;
+        }
+
+        $dimensions = [
+            'partner_id'     => $partner->getId(),
+            'action'         => 'disable_settle_to',
+            'reason_code'    => 'Removing subM from agg. settlement, if more than 1 partner are linked.'
+        ];
+
+        try
+        {
+            $req = [
+                'merchant_id' => $submerchant->getId()
+            ];
+
+            $response = app('settlements_api')->merchantConfigGet($req, $this->mode);
+
+            $this->trace->info(TraceCode::AGGREGATE_SETTLEMENT_SUBMERCHANT_LINKING_REQUEST,[
+                'submerchant_id'    => $submerchant->getId(),
+                'merchant_config'   => $response
+            ]);
+
+            if ($response['config']['types']['aggregate']['enable'] === true and
+                $response['config']['types']['aggregate']['settle_to'] !== $partner->getId())
+            {
+                $response['config']['types']['aggregate']['enable'] = false;
+                $response['config']['types']['default']['enable'] = true;
+                $response['config']['types']['aggregate']['settle_to'] = '';
+
+                unset($response['config']['active']);
+
+                $request = array_merge($req, $response);
+
+                $result = app('settlements_api')->migrateMerchantConfigUpdate($request, $this->mode);
+
+                $this->trace->info(TraceCode::AGGREGATE_SETTLEMENT_LINK_REQUEST_CONFIG_UPDATE_SUCCESS,[
+                    'submerchant_id'   => $submerchant->getId(),
+                    'updated_config'   => $result
+                ]);
+
+                $this->trace->count(Metric::AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL, $dimensions);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::AGGREGATE_SETTLEMENT_LINK_REQUEST_CONFIG_UPDATE_FAILURE,[
+                'sub_merchant_id' => $submerchant->getId(),
+                'partner_id'      => $partner->getId()
+            ]);
+
+            $this->trace->count(Metric::AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_FAILURE_TOTAL, $dimensions);
+
+            throw (new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AGG_SUBMERCHANT_CONFIG_UPDATE_FAILED));
+        }
     }
 
     /**

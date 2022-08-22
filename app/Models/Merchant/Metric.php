@@ -162,6 +162,9 @@ final class Metric
     const AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_SUCCESS = 'aggregate_settlement_unlinking_request_success';
     const AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_FAILURE = 'aggregate_settlement_unlinking_request_failure';
 
+    const AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL   = 'agg_settlement_subm_multiple_partner_link_request_success';
+    const AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_FAILURE_TOTAL   = 'agg_settlement_subm_multiple_partner_link_request_failure';
+
     const COD_ELIGIBILITY_CALL_COUNT = 'cod_eligibility_call_count';
     const COD_ELIGIBILITY_CALL_ERROR_COUNT = 'cod_eligibility_call_error_count';
 

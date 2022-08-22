@@ -7598,6 +7598,22 @@ We look forward to transacting with you!
         ];
 
         $this->mockSplitzTreatment($input, $output);
+
+        //experiment not relevant, hence not enabling
+        $input = [
+            "experiment_id" => "JmNwFyivyRzcg3",
+            "id" => '10000000000000',
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => null
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }
 

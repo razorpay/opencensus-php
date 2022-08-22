@@ -837,6 +837,148 @@ class PartnerTest extends OAuthTestCase
         $this->assertNull($accessMapEntity);
     }
 
+    /**
+     * This testcase validates:
+     * 1. Add NSS feature on default sub-merchant.
+     * 2. Link default sub-merchant with default partner and agg. settlement is enabled for the partner.
+     * 3. Verify merchant_access_map DB entity is created.
+     * 4. Create another partner and link it with the default sub-m.
+     * 5. Sub-merchant is removed from agg. settlement and is verified by the metrics captured.
+     * 5. Verify merchant_access_map DB entity is created.
+     */
+    public function testLinkMultiplePartnersAggregateSubMerchant()
+    {
+        $this->mockSplitzEvaluation();
+        $this->mockSplitzEvaluation(10000000000003);
+
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'settle_to_enabled');
+        });
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->testPartnerSubmerchantLinkViaBatch();
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000000'], 'live');
+
+        $this->assertNotNull($accessMapEntity);
+
+        $metricCaptured = false;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $partnerId = '10000000000003';
+
+        $expectedDimensions = [
+            'partner_id'     => $partnerId
+        ];
+
+        $this->mockAndCaptureCountMetric(MerchantMetric::AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL,
+            $metricsMock, $metricCaptured, $expectedDimensions);
+
+        $this->createPartnerAndLinkWithSubmerchant($partnerId, '10000000000009');
+
+        $this->assertTrue($metricCaptured);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000003'], 'live');
+
+        $this->assertNotNull($accessMapEntity);
+    }
+
+    /**
+     * This testcase validates:
+     * 1. Add NSS feature on default sub-merchant.
+     * 2. Link default sub-merchant with default partner.
+     * 3. Verify merchant_access_map DB entity is created.
+     * 4. Create another partner and link it with the default sub-m.
+     * 5. Verify merchant_access_map DB entity is created and metric related to agg. settlement is not captured.
+     */
+    public function testLinkMultiplePartnersForSubMerchant()
+    {
+        $this->mockSplitzEvaluation();
+        $this->mockSplitzEvaluation(10000000000003);
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->testPartnerSubmerchantLinkViaBatch();
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000000'], 'live');
+
+        $this->assertNotNull($accessMapEntity);
+
+        $metricCaptured = false;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $partnerId = '10000000000003';
+
+        $expectedDimensions = [
+            'partner_id'     => $partnerId
+        ];
+
+        $this->mockAndCaptureCountMetric(MerchantMetric::AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL,
+            $metricsMock, $metricCaptured, $expectedDimensions);
+
+        $this->createPartnerAndLinkWithSubmerchant($partnerId, '10000000000009');
+
+        $this->assertFalse($metricCaptured);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000003'], 'live');
+
+        $this->assertNotNull($accessMapEntity);
+    }
+
+    /**
+     * This testcase validates:
+     * 1. Add NSS feature on default sub-merchant.
+     * 2. Sub-merchant on agg. settlement with another merchant.
+     * 3. Create a partner and link it with the default sub-m.
+     * 4. Metric related to removal from agg. settlement is not captured.
+     * 5. Verify merchant_access_map DB entity is created.
+     */
+    public function testLinkPartnersAggregateSubMerchant()
+    {
+        $this->mockSplitzEvaluation(10000000000003);
+
+        $this->app->singleton('settlements_api', function($app)
+        {
+            $implementation = Api::class ;
+
+            return new $implementation($app, 'settle_to_enabled');
+        });
+
+        $this->fixtures->merchant->addFeatures(['new_settlement_service'], self::DEFAULT_SUBMERCHANT_ID);
+
+        $metricCaptured = false;
+
+        $metricsMock = $this->createMetricsMock();
+
+        $partnerId = '10000000000003';
+
+        $expectedDimensions = [
+            'partner_id'     => $partnerId
+        ];
+
+        $this->mockAndCaptureCountMetric(MerchantMetric::AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL,
+            $metricsMock, $metricCaptured, $expectedDimensions);
+
+        $this->createPartnerAndLinkWithSubmerchant($partnerId, '10000000000009');
+
+        $this->assertFalse($metricCaptured);
+
+        $accessMapEntity = $this->getDbEntity('merchant_access_map', ['merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            'entity_owner_id' => '10000000000003'], 'live');
+
+        $this->assertNotNull($accessMapEntity);
+    }
+
     protected function createPartnerAndLinkWithSubmerchant(string $partnerId, string $submerchantId)
     {
         $partnerType = 'reseller';
