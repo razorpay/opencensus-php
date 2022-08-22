@@ -27,7 +27,17 @@ export function initSentry(appName) {
         browserTracing: {
           tracingOrigins: ['dashboard.razorpay.com', /^\//],
         },
-        tracesSampleRate: 0.05,
+        tracesSampler: (samplingContext) => {
+          // Possible values for operation is 'navigation' and 'pageload'
+          // 80% of the current transactions are navigation transactions which we are note interested in
+          // Web vitals can be collected only for pageload transactions, so we are sampling only those
+
+          if (samplingContext?.transactionContext?.op === 'pageload') {
+            return 0.2;
+          } else {
+            return 0;
+          }
+        },
       });
     } catch (e) {
       console.error('Error while initializing sentry');
