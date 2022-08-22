@@ -172,6 +172,8 @@ class ProviderCode
     const AMAZON_PAY         = 'amazonpay';
     const AMAZON             = 'amazon';
     const EQUITASBANK        = 'equitasbank';
+    const GROWW              = 'yesg';
+    const OKCREDIT           = 'axb';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -335,6 +337,8 @@ class ProviderCode
         self::AMAZON             => self::PPIW,
         self::AMAZON_PAY         => self::PPIW,
         self::EQUITASBANK        => IFSC::ESFB,
+        self::GROWW              => IFSC::YESB,
+        self::OKCREDIT           => IFSC::UTIB,
     ];
 
     /**

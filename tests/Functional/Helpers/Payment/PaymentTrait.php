@@ -3518,6 +3518,8 @@ trait PaymentTrait
             "amazon",
             "amazonpay",
             "equitasbank",
+            "yesg",
+            "axb",
         ];
 
         return $vpaHandles;
