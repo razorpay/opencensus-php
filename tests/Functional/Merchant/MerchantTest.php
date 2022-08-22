@@ -880,6 +880,29 @@ class MerchantTest extends TestCase
         $this->assertEquals([], $response['methods']['emi']);
     }
 
+    public function testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiEnabledAndWIthFeatureFlag()
+    {
+        $this->createMerchant();
+
+        $merchant = $this->fixtures->merchant->activate('1X4hRFHFx4UiXt');
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => $merchant['id'],
+                'name'        => 'rule_based_enablement'
+            ]
+        );
+        $this->fixtures->merchant->enableEmi('1X4hRFHFx4UiXt');
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $response = $this->startTest();
+    }
+
+
     public function testEditMerchantWithNullFeeCreditsThreshold()
     {
         $this->createMerchant();
@@ -12369,6 +12392,25 @@ IFSC Code  ICIC0001206
         ];
 
         $this->assertArraySelectiveEquals($expectedCardNetworks, $cardNetworks);
+    }
+
+    public function testEditMerchantCategoryShouldResetMethodsWithRuleBasedFeatureFlag()
+    {
+        $merchant = $this->createMerchant();
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => $merchant['id'],
+                'name'        => 'rule_based_enablement'
+            ]
+        );
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $this->startTest();
     }
 
     public function testEditMerchantCategoryShouldNotResetMethodsIfResetMethodsInInputIsFalse()

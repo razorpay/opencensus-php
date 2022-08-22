@@ -28,6 +28,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Feature as Feature;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Services\KafkaProducer;
 
 class Core extends Base\Core
@@ -104,7 +105,7 @@ class Core extends Base\Core
         if (isset($input['amazonpay']) === true && $input['amazonpay'] === '1') {
             (new Validator)->validateCategoryForAmazonPay($mcc);
         }
-        
+
         if (isset($input[Methods\Entity::CARD_NETWORKS]) === true)
         {
             $inputCardNetworks = $input[Methods\Entity::CARD_NETWORKS];
@@ -594,6 +595,24 @@ class Core extends Base\Core
         }
     }
 
+    public function validateRuleBasedFeatureFlagForMerchant(string $merchantId) :bool
+    {
+        $featureResult = $this->repo->feature->findMerchantWithFeatures($merchantId, [Features::RULE_BASED_ENABLEMENT,])->toArray();
+
+        $featureNames = [];
+        foreach ($featureResult as $feature)
+        {
+            array_push($featureNames, $feature["name"]);
+        }
+
+        if (in_array(Features::RULE_BASED_ENABLEMENT, $featureNames))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function validateCategoryUpdateForMerchant(string $categoryToBeUpdated, \RZP\Models\Merchant\Entity $merchant, bool $forceIgnoreValidation)
     {
         switch ($categoryToBeUpdated)
@@ -601,11 +620,17 @@ class Core extends Base\Core
             case '5094':
             case '5944':
             case '7631':
-                if (!$forceIgnoreValidation)
+                //$forceIgnoreValidation is the input of the reset_methods
+                if (!$forceIgnoreValidation) //reset_methods = false
                 {
                     (new Validator)->validateEmiOptionsForJewelleryMerchants($categoryToBeUpdated, $merchant);
                 }
                 break;
+        }
+
+        if ($forceIgnoreValidation) //reset_methods = true
+        {
+            (new Validator)->validateAndAllowResetMerchantMethods($merchant->getId());
         }
     }
 

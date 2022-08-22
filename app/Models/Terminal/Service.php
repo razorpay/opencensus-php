@@ -261,7 +261,7 @@ class Service extends Base\Service
             if ( str_ends_with($key, 'EditTerminalRules') === true )
             {
                 $gatewayCamelCase = str_ireplace('EditTerminalRules', '', $key); // replaces EditTerminalRules from property key to empty string
-                    
+
                 $gateway = strtolower(preg_replace("/[A-Z]/", '_' . "$0", $gatewayCamelCase));
 
                 $response[$gateway] = array_keys($value);
@@ -1574,6 +1574,18 @@ class Service extends Base\Service
 
         try
         {
+            $skipEventRulesTrigger = (new \RZP\Models\Merchant\Methods\Core)->validateRuleBasedFeatureFlagForMerchant($merchantId);
+
+            //if 'rule_based_enablement' feature is enabled, consuming of events has to be skipped
+            if ($skipEventRulesTrigger)
+            {
+                $this->trace->info(TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED, [
+                    'merchant_id' => $merchantId,
+                ]);
+
+                return [];
+            }
+
             $this->trace->info(TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER, ['merchant_id' => $merchantId]);
 
             /**

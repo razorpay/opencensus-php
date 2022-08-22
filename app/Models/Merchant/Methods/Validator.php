@@ -185,6 +185,18 @@ class Validator extends Base\Validator
             }
         }
 
+    public function validateAndAllowResetMerchantMethods(string $merchantId)
+    {
+        $blockMethodsReset = (new Core)->validateRuleBasedFeatureFlagForMerchant($merchantId);
+
+        if ($blockMethodsReset)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Please disable "rule_based_enablement" feature to reset all methods. Or please try MCC edit without
+                resetting merchant methods' );
+        }
+    }
+
     public function validateCategoryForPaylater(string $mcc)
     {
         if (in_array($mcc, DefaultMethodsForCategory::PAYLATER_DISABLED_MCCS)) {

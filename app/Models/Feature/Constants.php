@@ -20,6 +20,7 @@ class Constants
     const WEBHOOKS                        = 'webhooks';
     const AGGREGATOR                      = 'aggregator';
     const TERMINAL_ONBOARDING             = 'terminal_onboarding';
+    const RULE_BASED_ENABLEMENT           = 'rule_based_enablement';
     const S2SWALLET                       = 's2swallet';
     const S2SUPI                          = 's2supi';
     const S2SAEPS                         = 's2saeps';
@@ -1745,6 +1746,7 @@ class Constants
         self::X_PAYOUT_LINKS_MS               => true,
         self::GOOGLE_PAY_OMNICHANNEL          => true,
         self::TERMINAL_ONBOARDING             => true,
+        self::RULE_BASED_ENABLEMENT           => true,
         self::SHOW_SUPPORT_URL                => true,
         self::TEST_MODE_SETTLEMENT            => true,
         self::VIJAYA_MERCHANT                 => true,
@@ -2523,6 +2525,11 @@ class Constants
         self::SETTLEMENTS_SMS_STOP  => [
             'feature'       => self::SETTLEMENTS_SMS_STOP,
             'display_name'  => 'Disable SMS notifications for settlements',
+            'documentation' => '',
+        ],
+        self::RULE_BASED_ENABLEMENT  => [
+            'feature'       => self::RULE_BASED_ENABLEMENT,
+            'display_name'  => 'Enable rule based/ system based instrument enablement/disablement',
             'documentation' => '',
         ],
         self::ORG_CUSTOM_BRANDING => [

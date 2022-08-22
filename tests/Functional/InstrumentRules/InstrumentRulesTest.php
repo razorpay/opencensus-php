@@ -121,6 +121,28 @@ class InstrumentRulesTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantDetailOnSavedEventWithruleBasedFeatureFlag()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => $merchant['id'],
+                'name'        => 'rule_based_enablement'
+            ]
+        );
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $this->startTest();
+    }
+
     public function testMerchantManualTriggerEventThrowsException()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -162,6 +184,28 @@ class InstrumentRulesTest extends TestCase
 
             return $response;
         }, 1);
+
+        $this->startTest();
+    }
+
+    public function testMerchantManualTriggerEventThrowsExceptionWithRuleBasedFeatureFlag()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->fixtures->feature->create(
+            [
+                'entity_type' => 'merchant',
+                'entity_id'   => $merchant['id'],
+                'name'        => 'rule_based_enablement'
+            ]
+        );
+
+        $admin = $this->ba->getAdmin();
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth($merchant->getId());
 
         $this->startTest();
     }

@@ -928,6 +928,37 @@ return [
             'status_code' => 200,
     ],
 
+    'testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiEnabledAndWIthFeatureFlag'=> [
+        'request' => [
+            'raw' => json_encode([
+                'category'      => '5944',
+                'reset_methods' => true,
+            ]),
+            'url' => '/merchants/1X4hRFHFx4UiXt',
+            'method' => 'put',
+            'server' => [
+                // Case: In sign-up case we will not have any other headers
+                // (eg. X-Dashboard-User-Email etc) from dashboard.
+                'CONTENT_TYPE'  => 'application/json',
+                'HTTP_X-Dashboard' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Please disable "rule_based_enablement" feature to reset all methods. Or please try MCC edit without
+                resetting merchant methods',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditMerchantCategoryToBlacklistedJewelleryCategoryWithEmiDisabled' => [
         'request' => [
             'raw' => json_encode([
@@ -9091,6 +9122,38 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testEditMerchantCategoryShouldResetMethodsWithRuleBasedFeatureFlag' => [
+    'request'  => [
+        'raw'    => json_encode([
+            'category'      => '6211',
+            'category2'     => 'mutual_funds',
+            'reset_methods' => true,
+        ]),
+        'url'    => '/merchants/1X4hRFHFx4UiXt',
+        'method' => 'put',
+        'server' => [
+            // Case: In sign-up case we will not have any other headers
+            // (eg. X-Dashboard-User-Email etc) from dashboard.
+            'CONTENT_TYPE'     => 'application/json',
+            'HTTP_X-Dashboard' => 'true',
+        ]
+    ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Please disable "rule_based_enablement" feature to reset all methods. Or please try MCC edit without
+                resetting merchant methods',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+],
 
     'testEditMerchantCategoryShouldResetMethods' => [
         'request'  => [
