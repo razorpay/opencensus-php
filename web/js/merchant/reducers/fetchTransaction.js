@@ -3,6 +3,7 @@ import { paiseToRupees } from 'common/utils/rzp-utils';
 import { set, merge } from 'common/utils/immutable';
 
 const FETCH_TRANSACTION = 'FETCH_TRANSACTION';
+const TIMEOUT_ANALYTICS_API = 6000;
 
 export const fetchAmount = (activatedAt) => {
   return {
@@ -10,6 +11,7 @@ export const fetchAmount = (activatedAt) => {
     payload: merchantFetch({
       url: 'merchant/analytics',
       method: 'post',
+      timeout: TIMEOUT_ANALYTICS_API,
       data: {
         filters: {
           default: [
@@ -38,6 +40,7 @@ export const fetchAmount = (activatedAt) => {
 
 const initialState = {
   amount: null,
+  amountWhenAPITimeout: 0,
 };
 
 const updateAmount = (state, response) => {
@@ -47,6 +50,7 @@ const updateAmount = (state, response) => {
   return merge(state, { amount: payment });
 };
 
+/*eslint func-names: ["error", "never"]*/
 export default function (state = initialState, action) {
   switch (action.type) {
     case `${FETCH_TRANSACTION}::PENDING`:
@@ -56,7 +60,11 @@ export default function (state = initialState, action) {
       return updateAmount(state, action.payload);
 
     case `${FETCH_TRANSACTION}::ERROR`:
-      return set(state, 'amount', initialState.amount);
+      if (action.payload && action.payload.code === 'ECONNABORTED') {
+        return set(state, 'amount', initialState.amountWhenAPITimeout);
+      } else {
+        return set(state, 'amount', initialState.amount);
+      }
 
     default:
       return state;

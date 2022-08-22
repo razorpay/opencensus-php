@@ -87,6 +87,16 @@ export default function ajax(params = {}) {
             }),
           );
         } else {
+          if (
+            params.timeout &&
+            params.url === '/merchant/api/live/merchant/analytics' &&
+            err.code === 'ECONNABORTED'
+          ) {
+            reject({
+              code: err.code,
+              errors: err.message,
+            });
+          }
           reject({
             code: err.status,
             errors: [message],
