@@ -19,6 +19,13 @@ class Constants
 
     const PINOT_TABLE_PAYMNETS_AUTH_FACT     = "payments_auth_fact";
 
+    const PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT  = 'plugin_merchant_fact';
+
+    const PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT_SCHEMA = [
+        'plugin_transactions' => self::PINOT_DATA_TYPE_LONG,
+        'total_transactions'  => self::PINOT_DATA_TYPE_LONG,
+    ];
+
     const PINOT_TABLE_SEGMENT_FACT_SCHEMA   = [
         'merchant_details_created_at'                   => self::PINOT_DATA_TYPE_LONG,
         'merchant_details_merchant_id'                  => self::PINOT_DATA_TYPE_STRING,
@@ -56,6 +63,7 @@ class Constants
 
     const PINOT_TABLE_SCHEMA_MAP = [
         self::PINOT_TABLE_SEGMENT_FACT                  => self::PINOT_TABLE_SEGMENT_FACT_SCHEMA,
+        self::PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT     => self::PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT_SCHEMA,
         self::PINOT_TABLE_PAYMNETS_AUTH_FACT            => self::PINOT_TABLE_PAYMENTS_AUTH_FACT_SCHEMA
     ];
 }

@@ -9890,7 +9890,17 @@ class Service extends Base\Service
 
     public function isPluginMerchant($merchantId)
     {
-        $data = $this->getPluginAndTotalPaymentCountsFromDruid($merchantId);
+        $isDruidMigrationEnabled = (new Core())->isRazorxExperimentEnable($merchantId,
+                                                                          RazorxTreatment::DRUID_MIGRATION);
+
+        if($isDruidMigrationEnabled === true)
+        {
+            $data = $this->getPluginAndTotalPaymentCountsFromPinot($merchantId);
+        }
+        else
+        {
+            $data = $this->getPluginAndTotalPaymentCountsFromDruid($merchantId);
+        }
 
         $this->trace->info(
             TraceCode::DRUID_DATA_PLUGIN_MERCHANT,
@@ -9929,6 +9939,30 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    public function getPluginAndTotalPaymentCountsFromPinot($merchantId): array
+    {
+        $query = 'select payment_analytics_total_plugin_payments as plugin_transactions,payments_total_payments as total_transactions from pinot.plugin_merchant_fact where plugin_merchant_fact.payments_merchant_id=\'%s\'';
+
+        $query = sprintf($query, $merchantId);
+
+        $content = [
+            'query' => $query
+        ];
+
+        $pinotService = $this->app['eventManager'];
+
+        $data = $pinotService->getDataFromPinot($content, self::REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT);
+
+        $parsedResults = [];
+
+        foreach ($data as $key => $value)
+        {
+            array_push($parsedResults, $pinotService->parsePinotDefaultType($value, 'plugin_merchant_fact'));
+        }
+
+        return $parsedResults;
     }
 
     public function settlementsEventsCron($input)

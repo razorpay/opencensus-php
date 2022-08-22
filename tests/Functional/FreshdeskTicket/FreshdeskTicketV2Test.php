@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Services\RazorXClient;
 use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\Mock\HarvesterClient;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -599,6 +600,11 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->mockRazorxTreatment('on');
 
+        $this->mockPinot([
+                             'plugin_transactions' => 1,
+                             'total_transactions'  => 25
+                         ]);
+
         $response = $this->startTest();
     }
 
@@ -672,6 +678,11 @@ class FreshdeskTicketV2Test extends TestCase
     public function testCreateTicketRzpWithDCMigrationExperimentOn()
     {
         $this->mockRazorxTreatment('on');
+
+        $this->mockPinot([
+                             'plugin_transactions' => 1,
+                             'total_transactions'  => 25
+                         ]);
 
         $this->fixtures->edit('merchant_detail', '10000000000000', ['activation_status' => 'activated']);
 
@@ -804,7 +815,7 @@ class FreshdeskTicketV2Test extends TestCase
 
             if ($testCase['razorx'] === 'on')
             {
-                $this->mockDruid($testCase['druid_data']);
+                $this->mockPinot($testCase['druid_data']);
 
                 if ($testCase['plugin_transaction'] === true)
                 {
@@ -936,6 +947,11 @@ class FreshdeskTicketV2Test extends TestCase
                                                                        ],
                                                                        'priority'      => 1,
                                                                    ]);
+
+            $this->mockPinot([
+                                 'plugin_transactions' => 1,
+                                 'total_transactions'  => 25
+                             ]);
 
             $response = $this->startTest();
 
@@ -1465,6 +1481,11 @@ class FreshdeskTicketV2Test extends TestCase
         $this->mockStork();
 
         $this->mockRaven();
+
+        $this->mockPinot([
+                             'plugin_transactions' => 1,
+                             'total_transactions'  => 25
+                         ]);
 
         $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.ticket_created', '9876543210');
 
@@ -3044,5 +3065,20 @@ class FreshdeskTicketV2Test extends TestCase
 
         $druidService->method( 'getDataFromDruid')
                      ->willReturn([null, [$dataFromDruid]]);
+    }
+
+    protected function mockPinot(array $array)
+    {
+        $harvesterService = $this->getMockBuilder(HarvesterClient::class)
+                                 ->setConstructorArgs([$this->app])
+                                 ->setMethods([ 'getDataFromPinot'])
+                                 ->getMock();
+
+        $this->app->instance('eventManager', $harvesterService);
+
+        $dataFromHarvester = $array;
+
+        $harvesterService->method( 'getDataFromPinot')
+                         ->willReturn([$dataFromHarvester]);
     }
 }
