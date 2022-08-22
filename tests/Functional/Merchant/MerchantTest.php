@@ -11,6 +11,7 @@ use Crypt;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Services\Mock;
+use RZP\Models\Payout;
 use RZP\Models\Comment;
 use RZP\Models\User\Role;
 use RZP\Services\Aws\Sns;
@@ -9012,7 +9013,7 @@ IFSC Code  ICIC0001206
         $this->assertArraySelectiveEquals($expectedBankingAccount, $liveBankingAccount->toArray());
         $this->assertNotNull($balanceId);
 
-        /** @var BankingAccount\Entity $bankingAccount */
+        /** @var Balance $balance */
         $balance = $this->getDbEntityById('balance', $balanceId);
 
         $expectedBalance = [
@@ -9032,6 +9033,7 @@ IFSC Code  ICIC0001206
 
         $this->assertArrayHasKey('banking', $merchants);
 
+        /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals(BankingAccount\AccountType::NODAL, $bankingAccount->getAccountType());
@@ -9061,6 +9063,13 @@ IFSC Code  ICIC0001206
         // Assert that the ledger_journal_writes feature is not enabled at all
         $this->assertNotContains('ledger_journal_writes', $testFeaturesArray);
         $this->assertNotContains('ledger_journal_writes', $liveFeaturesArray);
+
+        $this->setFreePayoutsCountInAdminKey();
+
+        $freePayoutAttributes = (new Payout\Core)->getFreePayoutsAttributes($balance->getId());
+
+        // Assert that the free payouts count is 0 for all activated shared accounts
+        $this->assertEquals(0, $freePayoutAttributes[Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT]);
     }
 
     public function testMerchantSwitchProductWithLedgerExperimentOn($expValue = 'on', $category2 = 'school')

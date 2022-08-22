@@ -16,6 +16,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Merchant\Attribute\Group;
@@ -43,7 +44,12 @@ class Core extends Base\Core
 
             (new BankingAccount\Core)->createScheduleTaskForFeeRecovery($balance, $merchant);
 
-            (new Counter\Core)->fetchOrCreate($balance);
+            (new Balance\Service)->updateFreePayout(
+                $balance->getId(),
+                [
+                    Balance\FreePayout::FREE_PAYOUTS_COUNT =>
+                        Balance\FreePayout::NEW_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI
+                ]);
 
             (new BankingAccount\Core)->createRZPFeesContactAndFundAccount($merchant, $balance->getChannel());
 

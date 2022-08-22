@@ -968,7 +968,12 @@ class Core extends Base\Core
 
             $this->createScheduleTaskForFeeRecovery($balance, $merchant);
 
-            (new Counter\Core)->fetchOrCreate($balance);
+            (new Balance\Service)->updateFreePayout(
+                $balance->getId(),
+                [
+                    Balance\FreePayout::FREE_PAYOUTS_COUNT =>
+                        Balance\FreePayout::NEW_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL
+                ]);
 
             $stateCore = new State\Core;
 
