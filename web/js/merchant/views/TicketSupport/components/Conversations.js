@@ -73,7 +73,10 @@ export default class Conversations extends React.Component {
     const { match = {} } = this.props;
     const { ticket = {}, conversations = {} } = this.state;
     // Disable local caching because file might expire
-    const TICKET_ID = ticket?.id || match?.params?.id;
+    let TICKET_ID = ticket?.id;
+    if (TICKET_ID === SAMPLE_TICKET.id) {
+      TICKET_ID = match?.params?.id;
+    }
     // eslint-disable-next-line react/no-access-state-in-setstate
     const c = conversations;
     c.loading = true;
@@ -379,7 +382,11 @@ export default class Conversations extends React.Component {
       error,
       isReplyAdded,
     } = this.state;
-    const TICKET_ID = ticket?.id || match.params.id;
+
+    let TICKET_ID = ticket?.id;
+    if (TICKET_ID === SAMPLE_TICKET.id) {
+      TICKET_ID = match?.params?.id;
+    }
     const tags = ticket?.tags || [];
     const has_callback = tags?.includes('callback');
     const has_click_to_call = tags?.includes('instant_callback_requested');
