@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\EdgeThrottler;
 
 use GuzzleHttp\Psr7\Response;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use function GuzzleHttp\json_encode;
@@ -470,28 +471,16 @@ class DashboardProxy extends TestCase
 
     public function testRequestFailure()
     {
-        $mockResponse = new Response(404, [], '{
-                          "message": "Not found"
-                        }');
-
-        $httpClient = app('throttler_http_client');
-        $httpClient->addResponse($mockResponse);
-
-        $response = $this->sendRequest([
-            'url'     => '/edge/rate_limiter/limit/123',
-            'method'  => 'DELETE',
-        ]);
-
-        $this->assertCount(1, $httpClient->getRequests());
-
-        $req = $httpClient->getRequests()[0];
-
-        $this->assertSame('DELETE', $req->getMethod());
-        $this->assertSame('/rate-limits/123', $req->getUri()->getPath());
-
-        $response->assertNotFound();
-        $response->assertExactJson([
-            'message' => 'Not found',
-        ]);
+        try
+        {
+            $this->sendRequest([
+                'url'     => '/edge/rate_limiter/limit/123',
+                'method'  => 'DELETE',
+            ]);
+        }
+        catch(\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+        }
     }
 }

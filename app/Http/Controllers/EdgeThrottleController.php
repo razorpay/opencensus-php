@@ -140,7 +140,7 @@ class EdgeThrottleController extends Controller
 
         $method = $request->method();
 
-        if (isset($request['route_id']) === false and isset($request['service_id']) === false) 
+        if (isset($request['route_id']) === false and isset($request['service_id']) === false)
         {
             $path = '/rate-limit-rules' . $this->constructQueryParam();
         }
@@ -402,6 +402,7 @@ class EdgeThrottleController extends Controller
      * @param bool $isList
      * @return mixed
      * @throws InvalidArgumentException
+     * @throws BadRequestException
      */
     protected function finalizeResponse(ResponseInterface $response, array $keys, bool $isList = false)
     {
@@ -413,11 +414,15 @@ class EdgeThrottleController extends Controller
         }
 
         //
-        // if the response status code is not 2xx then return received response directly with status code
+        // if the response status code is not 2xx then throw bad request exception
         //
         if (($response->getStatusCode() < 200) or ($response->getStatusCode() >= 300))
         {
-            return Response::make((string) $response->getBody(), $response->getStatusCode());
+            $this->trace->info(TraceCode::EDGE_RATE_LIMITER_ERROR, [
+                'status' => $response->getStatusCode(),
+                'body'   => $response->getBody(),
+            ]);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY);
         }
 
         $finalResult = [];
