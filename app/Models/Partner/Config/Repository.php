@@ -59,9 +59,9 @@ class Repository extends Base\Repository
     /**
      * Fetch default and overridden configs of the OAuth applications
      *
-     * @param array $appIds
-     * @param string|null $mode
-     * @return mixed
+     * @param   array           $appIds
+     * @param   string|null     $mode
+     * @return  Base\PublicCollection
      */
     public function fetchAllConfigForApps(array $appIds, string $mode = null)
     {
@@ -97,10 +97,10 @@ class Repository extends Base\Repository
      * Fetch default and overridden configs in sync for given applicationIDs.
      * It fails if data is not in sync in test and live DB.
      *
-     * @param array $appIds
+     * @param   array   $appIds
      *
-     * @return Base\PublicCollection
-     * @throws LogicException
+     * @return  Base\PublicCollection
+     * @throws  LogicException
      */
     public function fetchAllConfigsInSyncOrFail(array $appIds) : Base\PublicCollection
     {

@@ -23,13 +23,16 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * @param   string      $merchantId the partner's MID for whom merchant Apps need to be fetched
-     * @param   array       $types      application types, ex., referred, managed
-     * @param   string|null $mode       the connection mode
+     * @param   string      $merchantId     The partner's MID for whom merchant Apps need to be fetched
+     * @param   array       $types          Application types, ex., referred, managed
+     * @param   string|null $mode           The connection mode
+     * @param   bool        $withTrashed    Whether to include soft deleted results?
      *
      * @return  Base\PublicCollection
      */
-    public function fetchMerchantApplications(string $merchantId, array $types = [], string $mode = null) : Base\PublicCollection
+    public function fetchMerchantApplications(
+        string $merchantId, array $types = [], string $mode = null, bool $withTrashed = false
+    ) : Base\PublicCollection
     {
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
         $query = $query->merchantId($merchantId);
@@ -38,6 +41,10 @@ class Repository extends Base\Repository
         {
             $query = $query->whereIn(Entity::TYPE, $types);
         }
+        if ($withTrashed === true)
+        {
+            $query = $query->withTrashed();
+        }
 
         return $query->orderBy(Entity::TYPE)->orderBy(Entity::ID)->get();
     }
@@ -45,19 +52,20 @@ class Repository extends Base\Repository
     /**
      * Fetch merchant applications in sync for given merchantIDs and given types.
      * It fails if data is not in sync in test and live DB.
-     * @param   string  $merchantId the partner's MID for whom merchant Apps need to be fetched
-     * @param   array   $types      application types, ex., referred, managed
+     * @param   string  $merchantId     The partner's MID for whom merchant Apps need to be fetched
+     * @param   array   $types          Application types, ex., referred, managed
+     * @param   bool    $withTrashed    Whether to include soft deleted results?
      *
      * @return  Base\PublicCollection
      *
      * @throws  LogicException
      */
-    public function fetchMerchantApplicationsInSyncOrFail(
-        string $merchantId, array $types = []
+    public function fetchMerchantAppInSyncOrFail(
+        string $merchantId, array $types = [], bool $withTrashed = false
     ) : Base\PublicCollection
     {
-        $liveEntities = $this->fetchMerchantApplications($merchantId, $types, 'live');
-        $testEntities = $this->fetchMerchantApplications($merchantId, $types, 'test');
+        $liveEntities = $this->fetchMerchantApplications($merchantId, $types, 'live', $withTrashed);
+        $testEntities = $this->fetchMerchantApplications($merchantId, $types, 'test', $withTrashed);
         $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
         if ($isSynced === true)
         {
@@ -87,5 +95,33 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where($entityType, $entityId)
                     ->get();
+    }
+
+    /**
+     * @param   array   $applicationIds Application IDs of merchant application
+     *
+     * @return  Base\PublicCollection
+     */
+    public function fetchMerchantApplicationByAppIds(array $applicationIds) : Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::APPLICATION_ID, $applicationIds)
+                    ->get();
+    }
+
+    /**
+     * Restores the merchant applications for given appIds
+     * @param   array           $deletedAppIds  The application_id of merchant applications
+     * @param   string|null     $mode
+     * @return  void
+     */
+    public function restoreDeletedApps(array $deletedAppIds, string $mode = null)
+    {
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+        return $query->whereIn(Entity::APPLICATION_ID, $deletedAppIds)
+                     ->withTrashed()
+                     ->update([
+                         Entity::DELETED_AT => null,
+                     ]);
     }
 }

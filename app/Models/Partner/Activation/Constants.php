@@ -57,5 +57,5 @@ class Constants
     ];
 
     const ACTIVATION_ROUTE_NAME     = 'partner_activation_status';
-    const ACTIVATION_CONTROLLER     = 'RZP\Http\Controllers\PartnerActivationController@updatePartnerActivationStatus';
+    const PARTNER_CONTROLLER     = 'RZP\Http\Controllers\PartnerController@updatePartnerActivationStatus';
 }

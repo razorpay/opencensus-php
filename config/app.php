@@ -406,7 +406,7 @@ return array(
     'capital_migration_experiment_id' => env('CAPITAL_MIGRATION_EXPERIMENT_ID'),
 
     'cmma_soft_limit_breach_trigger_experiment_id' => env('CMMA_SOFT_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
-    
+
     'cmma_amp_trigger_experiment_id' => env('CMMA_AMP_TRIGGER_EXPERIMENT_ID'),
 
     'cmma_escalation_new_process_id' => env('CMMA_ESCALATION_NEW_PROCESS_ID'),
@@ -431,6 +431,7 @@ return array(
     'product_config_issue_exp_id' => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
 
     'user_role_migration_for_x_exp_id' => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
+    'partner_type_migration_exp_id' => env('PARTNER_TYPE_MIGRATION_EXP_ID'),
     'merchant_policies_exp_id' => env('MERCHANT_POLICIES_EXP_ID'),
 
     'merchant_kyc_update_to_partner_exp_id'            => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),

@@ -149,6 +149,29 @@ class AuthService
         return $result;
     }
 
+    /**
+     * migrates a single reseller partner to aggregator partner
+     *
+     * @param   string       $merchantId         The Merchant's ID to whom the application belongs
+     * @param   array        $appIdsToRestore    The app IDs to restore
+     * @param   array|null   $appIdsToDelete     The app IDs to delete
+     *
+     * @return  mixed
+     * @throws  Exception\ServerErrorException
+     */
+    public function restoreApplication(string $merchantId, array $appIdsToRestore, array $appIdsToDelete = null) : array
+    {
+        $input = [
+            Application\Entity::MERCHANT_ID => $merchantId,
+            'app_ids_to_restore'            => $appIdsToRestore,
+            'app_ids_to_delete'             => $appIdsToDelete
+        ];
+
+        $this->trace->info(TraceCode::PARTNER_RESTORE_APPLICATION, $input);
+
+        return $this->sendRequest('applications/restore', Requests::PUT, $input);
+    }
+
     public function updateApplication(string $id, array $input, string $merchantId) : array
     {
         $input[Application\Entity::MERCHANT_ID] = $merchantId;

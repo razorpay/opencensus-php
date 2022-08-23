@@ -31,6 +31,23 @@ class Core extends Base\Core
         return $merchantApplication;
     }
 
+    public function deleteMultipleApplications(array $applicationIds)
+    {
+        $merchantApplications  = $this->repo->merchant_application->fetchMerchantApplicationByAppIds($applicationIds);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_APPLICATIONS_DELETE,
+            [
+                'application_ids' => $merchantApplications->pluck(Entity::APPLICATION_ID)->toArray(),
+            ]
+        );
+
+        foreach ($merchantApplications as $merchantApplication)
+        {
+            $this->repo->deleteOrFail($merchantApplication);
+        }
+    }
+
     public function deleteByApplication(string $applicationId)
     {
         $this->delete($applicationId, Merchant\Constants::APPLICATION_ID);

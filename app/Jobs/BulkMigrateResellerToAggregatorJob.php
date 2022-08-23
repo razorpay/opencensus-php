@@ -5,8 +5,8 @@ namespace RZP\Jobs;
 
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Partner;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
 
 class BulkMigrateResellerToAggregatorJob extends Job
 {
@@ -45,7 +45,7 @@ class BulkMigrateResellerToAggregatorJob extends Job
 
         $failedMerchantIds = [];
 
-        $core = new Merchant\Core;
+        $core = new Partner\Core();
 
         foreach ($this->requestParams as $param) {
             try

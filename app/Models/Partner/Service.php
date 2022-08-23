@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner;
 
+use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -10,10 +11,13 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class Service extends Base\Service
 {
+    private $merchantCore;
+
     private $activationCore;
 
     private $merchantValidator;
@@ -23,6 +27,8 @@ class Service extends Base\Service
     public function __construct()
     {
         $this->core = new Core();
+
+        $this->merchantCore = new Merchant\Core();
 
         $this->activationCore = new Activation\Core();
 
@@ -34,7 +40,7 @@ class Service extends Base\Service
     }
 
     /**
-     * @throws \Throwable
+     * @throws Throwable
      * @throws Exception\LogicException
      * @throws Exception\BadRequestException
      */
@@ -177,5 +183,72 @@ class Service extends Base\Service
         $mock = $input['mock'] ?? false;
 
         return $this->core->dispatchPartnerWeeklyActivationSummaryMails($limit, $afterId, $mock);
+    }
+
+    /**
+     * bulk migrates reseller partners to aggregator partners by pushing jobs
+     *
+     * @param $input {
+     *                  "data" => array({ "merchant_id" => <merchantID>, "new_auth_create" => <Boolean> }),
+     *                  "batch_size" => <Int>
+     *              }
+     * @return mixed
+     * @throws Throwable
+     */
+    public function bulkMigrateResellerToAggregatorPartner(array $input)
+    {
+        if ($this->isPartnerTypeMigrationExpEnabled() === false)
+        {
+            return ['success' => true, 'errorMessage' => null];
+        }
+        return $this->core()->bulkMigrateResellerToAggregatorPartner($input);
+    }
+
+    /**
+     * migrates a single reseller partner to aggregator partner
+     *
+     * @param $input { "merchant_id" => <merchantID>, "new_auth_create" => Boolean }
+     * @return mixed
+     * @throws Throwable
+     */
+    public function migrateResellerToAggregatorPartner($input)
+    {
+        if ($this->isPartnerTypeMigrationExpEnabled() === false)
+        {
+            return ['success' => true, 'errorMessage' => null];
+        }
+
+        $traceInfo = ['params' => $input];
+        $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST, $traceInfo);
+        $result = null;
+
+        try
+        {
+            $result = $this->core()->migrateResellerToAggregatorPartner($input);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR, $traceInfo);
+            throw $e;
+        }
+
+        $traceInfo = ['success' => $result, 'errorMessage' => null];
+        $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
+        return $traceInfo;
+    }
+
+    /**
+     * Checks whether merchant from partner auth is allowed to run this migration.
+     *
+     * @return bool
+     */
+    private function isPartnerTypeMigrationExpEnabled() : bool
+    {
+        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.partner_type_migration_exp_id'),
+        ];
+        return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
     }
 }

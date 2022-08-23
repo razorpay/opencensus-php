@@ -5,13 +5,16 @@ namespace RZP\Models\Merchant\MerchantUser;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Trace\TraceCode;
 use RZP\Models\User\Role;
+use RZP\Exception\LogicException;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class Repository extends Base\Repository
 {
+    use Base\RepositoryUpdateTestAndLive;
     protected $entity = Constants\Entity::MERCHANT_USER;
 
     //
@@ -217,6 +220,57 @@ class Repository extends Base\Repository
             ->whereIn(Entity::ROLE, $roleIds)
             ->where(Entity::PRODUCT, 'banking')
             ->get()->count();
+    }
+
+    /**
+     * Fetches all the merchant_users for given merchantIds and roles from the provided connection mode
+     *
+     * @param   array       $merchantIds    Merchant IDs
+     * @param   array       $roles          User roles
+     * @param   string|null $mode           connection mode
+     *
+     * @return  Base\PublicCollection
+     */
+    public function fetchMerchantUsersByMerchantIdsAndRoles(array $merchantIds, array $roles, string $mode = null)
+    {
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+
+        return $query->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                     ->where(Entity::ROLE, $roles)
+                     ->whereIn(Entity::PRODUCT, ['primary', 'banking'])
+                     ->get();
+    }
+
+    /**
+     * Fetches all the merchant_users for given merchantIds and roles.
+     * It fails if data is not in sync in test and live DB.
+     *
+     * @param   array       $merchantIds    Merchant IDs
+     * @param   array       $roles          User roles
+     *
+     * @return  Base\PublicCollection
+     * @throws  LogicException
+     */
+    public function fetchMerchantUsersByMerchantIdsInSyncOrFail(array $merchantIds, array $roles)
+    {
+        $liveEntities = $this->fetchMerchantUsersByMerchantIdsAndRoles($merchantIds, $roles, 'live');
+        $testEntities = $this->fetchMerchantUsersByMerchantIdsAndRoles($merchantIds, $roles, 'test');
+        $isSynced = $this->areEntitiesSyncOnLiveAndTest($liveEntities, $testEntities);
+        if ($isSynced === true)
+        {
+            return $liveEntities;
+        }
+        else
+        {
+            $this->trace->critical(
+                TraceCode::DATA_MISMATCH_ON_LIVE_AND_TEST,
+                [
+                    'on_live' => $liveEntities,
+                    'on_test' => $testEntities
+                ]
+            );
+            throw new LogicException("Data is not synced on Live and Test DB");
+        }
     }
 
     public function getBankingUsersForMerchantRoles(array $merchantIdToRolesMapping): Base\PublicCollection

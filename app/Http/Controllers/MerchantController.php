@@ -3238,24 +3238,6 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function bulkMigrateResellerToAggregatorPartner()
-    {
-        $input = Request::all();
-
-        $this->service()->bulkMigrateResellerToAggregatorPartner($input);
-
-        return ApiResponse::json([]);
-    }
-
-    public function migrateResellerToAggregatorPartner()
-    {
-        $input = Request::all();
-
-        $response = $this->service()->migrateResellerToAggregatorPartner($input);
-
-        return ApiResponse::json([$response]);
-    }
-
     public function removeSubmerchantDashboardAccessOfPartner()
     {
         $input = Request::all();

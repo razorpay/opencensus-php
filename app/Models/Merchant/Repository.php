@@ -1078,13 +1078,11 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param string $appId
+     * @param   string          $appId
+     * @param   string          $partnerId
+     * @param   string|null     $mode connection mode
      *
-     * @param string $partnerId
-     *
-     * @param string|null $mode connection mode
-     *
-     * @return Base\PublicCollection
+     * @return  Base\PublicCollection
      */
     public function getSubMerchantsForPartnerAndApplication(string $appId, string $partnerId, string $mode = null)
     {
@@ -1109,10 +1107,10 @@ class Repository extends Base\Repository
      * Fetch merchants in sync for given appId and partner's MID.
      * It fails if data is not in sync in test and live DB.
      *
-     * @param string $appId
-     * @param string $partnerId
-     * @return Base\PublicCollection
-     * @throws LogicException
+     * @param   string  $appId
+     * @param   string  $partnerId
+     * @return  Base\PublicCollection
+     * @throws  LogicException
      */
     public function getSubMerchantsForPartnerAndAppInSyncOrFail(string $appId, string $partnerId) : Base\PublicCollection
     {

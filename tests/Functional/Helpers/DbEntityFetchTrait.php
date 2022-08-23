@@ -34,6 +34,15 @@ trait DbEntityFetchTrait
                     ->last();
     }
 
+    protected function getTrashedDbEntity(string $entity, array $input = array(), $mode = 'test')
+    {
+        return $this->getEntityObjectForMode($entity, $mode)
+            ->where($input)
+            ->withTrashed()
+            ->get()
+            ->last();
+    }
+
     protected function getDbLastEntityOrderByCreatedAt(string $entity, array $input = array(), $mode = 'test')
     {
         return $this->getEntityObjectForMode($entity, $mode)

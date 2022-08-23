@@ -459,8 +459,8 @@ class Core extends Base\Core
     /**
      * This function updates the application for all configs associated with provided existing application id.
      *
-     * @param string $existingAppId // ApplicationId associated with Partner config
-     * @param string $appId // ApplicationId to update the partner config
+     * @param string $existingAppId     ApplicationId associated with Partner config
+     * @param string $appId             ApplicationId to update the partner config
      *
      * @return void
      */

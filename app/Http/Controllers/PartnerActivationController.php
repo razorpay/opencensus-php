@@ -6,7 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Models\Partner;
 
-class PartnerActivationController extends Controller
+class PartnerController extends Controller
 {
     protected $service = Partner\Service::class;
 
@@ -77,5 +77,22 @@ class PartnerActivationController extends Controller
 
         return ApiResponse::json($response);
     }
-    
+
+    public function bulkMigrateResellerToAggregatorPartner()
+    {
+        $input = Request::all();
+
+        $this->service()->bulkMigrateResellerToAggregatorPartner($input);
+
+        return ApiResponse::json([]);
+    }
+
+    public function migrateResellerToAggregatorPartner()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->migrateResellerToAggregatorPartner($input);
+
+        return ApiResponse::json([$response]);
+    }
 }

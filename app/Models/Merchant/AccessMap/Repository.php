@@ -281,10 +281,10 @@ class Repository extends Base\Repository
      * Fetch merchant access maps in sync for given entityId and entityOwnerId.
      * It fails if data is not in sync in test and live DB.
      *
-     * @param string $entityId
-     * @param string $entityOwnerId
-     * @return Base\PublicCollection
-     * @throws LogicException
+     * @param   string  $entityId       the entity or application ID
+     * @param   string  $entityOwnerId  the partner's merchant ID
+     * @return  Base\PublicCollection
+     * @throws  LogicException
      */
     public function fetchAccessMapsInSyncOrFail(string $entityId, string $entityOwnerId) : Base\PublicCollection
     {

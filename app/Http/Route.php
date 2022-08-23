@@ -2682,18 +2682,23 @@ class Route
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'              ],
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
         //Partner activation routes
-        'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerActivationController@updatePartnerActivationStatus'         ],
-        'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerActivationController@editPartnerActivationDetails'          ],
-        'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerActivationController@getPartnerActivationDetails'           ],
-        'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerActivationController@savePartnerActivationDetails'          ],
+        'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
+        'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerController@editPartnerActivationDetails'          ],
+        'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerController@getPartnerActivationDetails'           ],
+        'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerController@savePartnerActivationDetails'          ],
         'partner_activation_migrate'               => ['post',     'partner/activation/migrate',                     'MerchantController@createPartnerActivationForPartners'             ],
-        'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerActivationController@performAction'                         ],
-        'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerActivationController@bulkAssignReviewer'                    ],
-        'partner_send_weekly_activation_summary_emails' => ['post', 'partner/send_weekly_activation_summary_emails', 'PartnerActivationController@sendPartnerWeeklyActivationSummaryEmails'       ],
+        'partner_actions'                          => ['put',      'partner/{id}/action',                            'PartnerController@performAction'                         ],
+        'partner_activation_bulk_assign_reviewer'  => ['post',     'partner/activation/bulk_assign_reviewer',        'PartnerController@bulkAssignReviewer'                    ],
+        'partner_send_weekly_activation_summary_emails' => ['post', 'partner/send_weekly_activation_summary_emails', 'PartnerController@sendPartnerWeeklyActivationSummaryEmails'       ],
 
         //route for sending events to partner with pending commission and Incomplete KYC
-        'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerActivationController@sendEventsOfPartnersWithCommissionPending'],
+        'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerController@sendEventsOfPartnersWithCommissionPending'],
 
+        // Partner types migration routes
+        'bulk_migrate_aggregator_to_reseller'      => ['put',      'partner/migrate_aggregator_to_reseller/bulk',       'MerchantController@bulkConvertAggregatorToResellerPartner'         ],
+        'bulk_migrate_reseller_to_aggregator'      => ['put',      'partner/migrate_reseller_to_aggregator/bulk',       'PartnerController@bulkMigrateResellerToAggregatorPartner'],
+        'migrate_reseller_to_aggregator'           => ['put',      'partner/migrate_reseller_to_aggregator',            'PartnerController@migrateResellerToAggregatorPartner'    ],
+        'partner_remove_switch_merchant_access'    => ['put',      'partner/remove_submerchant_dashboard_access/bulk',  'MerchantController@removeSubmerchantDashboardAccessOfPartner'      ],
 
         // partner kyc access
         'partner_kyc_access_request'              => ['post',     'partner/kyc_access_request',                     'PartnerKycAccessController@createRequestForKyc'                     ],
@@ -2723,11 +2728,6 @@ class Route
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
         'merchant_partners_fetch'                  => ['get',      'merchants/{id}/partners',                        'MerchantController@getAffiliatedPartners'                          ],
         'merchant_associated_accounts_fetch'       => ['get',      'merchant/{id}/associated_accounts',              'MerchantController@getAssociatedAccounts'                          ],
-
-        'bulk_migrate_aggregator_to_reseller'      => ['put',      'partner/migrate_aggregator_to_reseller/bulk',   'MerchantController@bulkConvertAggregatorToResellerPartner'         ],
-        'bulk_migrate_reseller_to_aggregator'      => ['put',      'partner/migrate_reseller_to_aggregator/bulk',   'MerchantController@bulkMigrateResellerToAggregatorPartner'         ],
-        'migrate_reseller_to_aggregator'           => ['put',      'partner/migrate_reseller_to_aggregator',        'MerchantController@migrateResellerToAggregatorPartner'             ],
-        'partner_remove_switch_merchant_access'    => ['put',      'partner/remove_submerchant_dashboard_access/bulk','MerchantController@removeSubmerchantDashboardAccessOfPartner'     ],
 
         // Webhook Api Wrapper
         'webhook_fire'                             => ['post',     'webhook/{event}/fire',                           'WebhookV2Controller@processWebhook'                                ],

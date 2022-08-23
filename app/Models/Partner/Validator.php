@@ -4,14 +4,22 @@ namespace RZP\Models\Partner;
 
 use RZP\Base;
 
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 
 class Validator extends Base\Validator
 {
+    protected static $resellerToAggregatorMigrationRules = [
+        'merchant_id'     => 'required|alpha_num|size:14',
+        'new_auth_create' => 'required|boolean',
+    ];
+
     /**
      * @param Merchant\Entity $partner
 
@@ -57,5 +65,38 @@ class Validator extends Base\Validator
                 ]
             );
         }
+    }
+
+    /**
+     * Validates the existing and deleted merchant applications of the reseller partner who was once an Aggregator.
+     * @param   PublicCollection $existingApplications      The existing merchant_applications of the Reseller
+     * @param   PublicCollection $deletedApplications       The deleted merchant_applications of partner when it was an Aggregator
+     *
+     * @return  bool    Returns true if this Reseller is eligible for migration to aggregator, only based on apps check
+     */
+    public function validateMerchantAppForAggrTurnedReseller(
+        PublicCollection $existingApplications, PublicCollection $deletedApplications
+    ) : bool
+    {
+        $deletedAppTypeDiff = array_diff(
+            array_column($deletedApplications->toArray(), MerchantApplicationsEntity::TYPE),
+            [MerchantApplicationsEntity::MANAGED, MerchantApplicationsEntity::REFERRED]
+        );
+        if (
+            count($existingApplications) > 1 or
+            count($deletedApplications) !== 2 or
+            empty($deletedAppTypeDiff) === false
+        )
+        {
+            $this->trace->info(
+                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_APPLICATIONS,
+                [
+                    'existingApplications' => $existingApplications,
+                    'deletedApplications'  => $deletedApplications
+                ]
+            );
+            return false;
+        }
+        return true;
     }
 }
