@@ -821,15 +821,6 @@ trait Capture
                     ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_CAPTURED);
             }
 
-            //The below condition will help us identify if a transaction was created at the gateway capture stage itself.
-            //If it is created then we don't send the same transaction ID again in journal request.
-            //Always initialize this variable before we create / update txn.
-            $isTransactionPresent = true;
-            if ($payment->hasTransaction() === false)
-            {
-                $isTransactionPresent = false;
-            }
-
             $this->updatePaymentCaptured($payment, $autoCaptured);
 
             //
@@ -868,7 +859,7 @@ trait Capture
                     'payment_id'        => $payment->getId(),
                 ]);
 
-            $this->createLedgerEntriesForMerchantCapture($payment, $txn, $isTransactionPresent);
+            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
 
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.
@@ -887,13 +878,13 @@ trait Capture
     }
 
 
-    private function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn, bool $isTransactionPresent)
+    private function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
     {
         try
         {
             if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
             {
-                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn, $isTransactionPresent);
+                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn);
 
                 \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
                     // Job will be dispatched only if the transaction commits.
@@ -904,8 +895,7 @@ trait Capture
                     TraceCode::PAYMENT_MERCHANT_CAPTURED_EVENT_TRIGGERED,
                     [
                         'payment_id'            => $payment->getId(),
-                        'message'               => $transactionMessage,
-                        'isTransactionPresent'  => $isTransactionPresent
+                        'message'               => $transactionMessage
                     ]);
             }
         }

@@ -10,7 +10,7 @@ use RZP\Models\Ledger\Constants as LedgerConstants;
 
 class CaptureJournalEvents
 {
-    public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction, bool $isTransactionPresent): array
+    public static function createTransactionMessageForMerchantCapture(Payment\Entity $payment, Transaction\Entity $transaction): array
     {
         if ($payment->isDirectSettlement() === true)
         {
@@ -26,12 +26,6 @@ class CaptureJournalEvents
         }
 
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
-
-        //If the transaction was already present at gateway capture stage then we don't send the same api transaction id in merchant captured stage
-        if($isTransactionPresent === true)
-        {
-            unset($transactionMessage[Constants::API_TRANSACTION_ID]);
-        }
 
         $merchantCaptureData = array(
             Constants::TRANSACTOR_ID                 => $payment->getPublicId(),
@@ -72,19 +66,6 @@ class CaptureJournalEvents
                 Constants::BASE_AMOUNT      => strval($payment->getBaseAmount()),
             ]
         );
-
-        if($payment->getTransactionId() !== null)
-        {
-            $message[Constants::API_TRANSACTION_ID] = $payment->getTransactionId();
-        }
-        else
-        {
-            $trace->info(
-                TraceCode::TRANSACTION_ID_UNAVAILABLE_AT_GATEWAY_CAPTURE,
-                [
-                    'payment_id'        => $payment->getId(),
-                ]);
-        }
 
         return $message;
     }
