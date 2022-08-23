@@ -96,20 +96,20 @@ return [
                                         'current_state' => '1-100000_workflow',
                                         'next_states' =>
                                             array (
-                                                0 => 'Checker_0_0_Approval',
+                                                0 => 'Checker_role_RzpChekrRoleId_0_0_Approval',
                                             ),
                                     ),
-                                'Checker_0_0_Approval' =>
+                                'Checker_role_RzpChekrRoleId_0_0_Approval' =>
                                     array (
-                                        'current_state' => 'Checker_0_0_Approval',
+                                        'current_state' => 'Checker_role_RzpChekrRoleId_0_0_Approval',
                                         'next_states' =>
                                             array (
-                                                0 => 'Maker_0_1_Approval',
+                                                0 => 'Maker_role_RzpMakerRoleId_0_1_Approval',
                                             ),
                                     ),
-                                'Maker_0_1_Approval' =>
+                                'Maker_role_RzpMakerRoleId_0_1_Approval' =>
                                     array (
-                                        'current_state' => 'Maker_0_1_Approval',
+                                        'current_state' => 'Maker_role_RzpMakerRoleId_0_1_Approval',
                                         'next_states' =>
                                             array (
                                                 0 => 'END_STATE',
@@ -120,12 +120,12 @@ return [
                                         'current_state' => '100000-20000000000_workflow',
                                         'next_states' =>
                                             array (
-                                                0 => 'SuperAdmin_1_0_Approval',
+                                                0 => 'SuperAdmin_role_RzpAdminRoleId_1_0_Approval',
                                             ),
                                     ),
-                                'SuperAdmin_1_0_Approval' =>
+                                'SuperAdmin_role_RzpAdminRoleId_1_0_Approval' =>
                                     array (
-                                        'current_state' => 'SuperAdmin_1_0_Approval',
+                                        'current_state' => 'SuperAdmin_role_RzpAdminRoleId_1_0_Approval',
                                         'next_states' =>
                                             array (
                                                 0 => 'END_STATE',
@@ -146,9 +146,9 @@ return [
                                                 'max' => 100000,
                                             ),
                                     ),
-                                'Checker_0_0_Approval' =>
+                                'Checker_role_RzpChekrRoleId_0_0_Approval' =>
                                     array (
-                                        'name' => 'Checker_0_0_Approval',
+                                        'name' => 'Checker_role_RzpChekrRoleId_0_0_Approval',
                                         'group_name' => '1',
                                         'type' => 'checker',
                                         'rules' =>
@@ -169,9 +169,9 @@ return [
                                                     ),
                                             ),
                                     ),
-                                'Maker_0_1_Approval' =>
+                                'Maker_role_RzpMakerRoleId_0_1_Approval' =>
                                     array (
-                                        'name' => 'Maker_0_1_Approval',
+                                        'name' => 'Maker_role_RzpMakerRoleId_0_1_Approval',
                                         'group_name' => '2',
                                         'type' => 'checker',
                                         'rules' =>
@@ -204,9 +204,9 @@ return [
                                                 'max' => 20000000000,
                                             ),
                                     ),
-                                'SuperAdmin_1_0_Approval' =>
+                                'SuperAdmin_role_RzpAdminRoleId_1_0_Approval' =>
                                     array (
-                                        'name' => 'SuperAdmin_1_0_Approval',
+                                        'name' => 'SuperAdmin_role_RzpAdminRoleId_1_0_Approval',
                                         'group_name' => '1',
                                         'type' => 'checker',
                                         'rules' =>
@@ -393,21 +393,21 @@ return [
                                             'current_state' => '1-100000_workflow',
                                             'next_states' =>
                                                 array (
-                                                    0 => 'Checker_0_0_Approval',
-                                                    1 => 'Maker_0_0_Approval',
+                                                    0 => 'Checker_role_RzpChekrRoleId_0_0_Approval',
+                                                    1 => 'Maker_role_RzpMakerRoleId_0_0_Approval',
                                                 ),
                                         ),
-                                    'Checker_0_0_Approval' =>
+                                    'Checker_role_RzpChekrRoleId_0_0_Approval' =>
                                         array (
-                                            'current_state' => 'Checker_0_0_Approval',
+                                            'current_state' => 'Checker_role_RzpChekrRoleId_0_0_Approval',
                                             'next_states' =>
                                                 array (
                                                     0 => 'And_0_0_Result',
                                                 ),
                                         ),
-                                    'Maker_0_0_Approval' =>
+                                    'Maker_role_RzpMakerRoleId_0_0_Approval' =>
                                         array (
-                                            'current_state' => 'Maker_0_0_Approval',
+                                            'current_state' => 'Maker_role_RzpMakerRoleId_0_0_Approval',
                                             'next_states' =>
                                                 array (
                                                     0 => 'And_0_0_Result',
@@ -426,29 +426,29 @@ return [
                                             'current_state' => '100000-20000000000_workflow',
                                             'next_states' =>
                                                 array (
-                                                    0 => 'SuperAdmin_1_0_Approval',
-                                                    1 => 'Finance_L1_1_0_Approval',
+                                                    0 => 'SuperAdmin_role_RzpAdminRoleId_1_0_Approval',
+                                                    1 => 'Finance_L1_role_FinanceL1_1_0_Approval',
                                                 ),
                                         ),
-                                    'SuperAdmin_1_0_Approval' =>
+                                    'SuperAdmin_role_RzpAdminRoleId_1_0_Approval' =>
                                         array (
-                                            'current_state' => 'SuperAdmin_1_0_Approval',
+                                            'current_state' => 'SuperAdmin_role_RzpAdminRoleId_1_0_Approval',
                                             'next_states' =>
                                                 array (
-                                                    0 => 'Finance_L2_1_1_Approval',
+                                                    0 => 'Finance_L2_role_FinanceL2_1_1_Approval',
                                                 ),
                                         ),
-                                    'Finance_L1_1_0_Approval' =>
+                                    'Finance_L1_role_FinanceL1_1_0_Approval' =>
                                         array (
-                                            'current_state' => 'Finance_L1_1_0_Approval',
+                                            'current_state' => 'Finance_L1_role_FinanceL1_1_0_Approval',
                                             'next_states' =>
                                                 array (
-                                                    0 => 'Finance_L2_1_1_Approval',
+                                                    0 => 'Finance_L2_role_FinanceL2_1_1_Approval',
                                                 ),
                                         ),
-                                    'Finance_L2_1_1_Approval' =>
+                                    'Finance_L2_role_FinanceL2_1_1_Approval' =>
                                         array (
-                                            'current_state' => 'Finance_L2_1_1_Approval',
+                                            'current_state' => 'Finance_L2_role_FinanceL2_1_1_Approval',
                                             'next_states' =>
                                                 array (
                                                     0 => 'END_STATE',
@@ -469,9 +469,9 @@ return [
                                                     'max' => 100000,
                                                 ),
                                         ),
-                                    'Checker_0_0_Approval' =>
+                                    'Checker_role_RzpChekrRoleId_0_0_Approval' =>
                                         array (
-                                            'name' => 'Checker_0_0_Approval',
+                                            'name' => 'Checker_role_RzpChekrRoleId_0_0_Approval',
                                             'group_name' => '1',
                                             'type' => 'checker',
                                             'rules' =>
@@ -492,9 +492,9 @@ return [
                                                         ),
                                                 ),
                                         ),
-                                    'Maker_0_0_Approval' =>
+                                    'Maker_role_RzpMakerRoleId_0_0_Approval' =>
                                         array (
-                                            'name' => 'Maker_0_0_Approval',
+                                            'name' => 'Maker_role_RzpMakerRoleId_0_0_Approval',
                                             'group_name' => '1',
                                             'type' => 'checker',
                                             'rules' =>
@@ -524,8 +524,8 @@ return [
                                                 array (
                                                     'states' =>
                                                         array (
-                                                            0 => 'Checker_0_0_Approval',
-                                                            1 => 'Maker_0_0_Approval',
+                                                            0 => 'Checker_role_RzpChekrRoleId_0_0_Approval',
+                                                            1 => 'Maker_role_RzpMakerRoleId_0_0_Approval',
                                                         ),
                                                 ),
                                         ),
@@ -541,9 +541,9 @@ return [
                                                     'max' => 20000000000,
                                                 ),
                                         ),
-                                    'SuperAdmin_1_0_Approval' =>
+                                    'SuperAdmin_role_RzpAdminRoleId_1_0_Approval' =>
                                         array (
-                                            'name' => 'SuperAdmin_1_0_Approval',
+                                            'name' => 'SuperAdmin_role_RzpAdminRoleId_1_0_Approval',
                                             'group_name' => '1',
                                             'type' => 'checker',
                                             'rules' =>
@@ -564,9 +564,9 @@ return [
                                                         ),
                                                 ),
                                         ),
-                                    'Finance_L1_1_0_Approval' =>
+                                    'Finance_L1_role_FinanceL1_1_0_Approval' =>
                                         array (
-                                            'name' => 'Finance_L1_1_0_Approval',
+                                            'name' => 'Finance_L1_role_FinanceL1_1_0_Approval',
                                             'group_name' => '1',
                                             'type' => 'checker',
                                             'rules' =>
@@ -587,9 +587,9 @@ return [
                                                         ),
                                                 ),
                                         ),
-                                    'Finance_L2_1_1_Approval' =>
+                                    'Finance_L2_role_FinanceL2_1_1_Approval' =>
                                         array (
-                                            'name' => 'Finance_L2_1_1_Approval',
+                                            'name' => 'Finance_L2_role_FinanceL2_1_1_Approval',
                                             'group_name' => '2',
                                             'type' => 'checker',
                                             'rules' =>

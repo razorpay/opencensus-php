@@ -26,6 +26,8 @@ class Constants
     const WORKFLOW_NAME = 'workflow_name';
     const WORKFLOW_ID = 'workflow_id';
 
+    const ON = 'on';
+
     const WORKFLOW_TOGGLE_ACTIVATE_MERCHANT                   = 'WORKFLOW_TOGGLE_ACTIVATE_MERCHANT';
     const WORKFLOW_TOGGLE_FUNDS                               = 'WORKFLOW_TOGGLE_FUNDS';
     const WORKFLOW_TOGGLE_INTERNATIONAL                       = 'WORKFLOW_TOGGLE_INTERNATIONAL';

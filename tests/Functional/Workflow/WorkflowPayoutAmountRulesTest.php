@@ -2,7 +2,11 @@
 
 namespace RZP\Tests\Functional\Workflow;
 
+use Carbon\Carbon;
 use DB;
+use RZP\Constants\Timezone;
+use RZP\Models\Workflow\Step;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -183,6 +187,48 @@ class WorkflowPayoutAmountRulesTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_" . $this->makerRole->getId();
 
         $this->startTest();
+    }
+
+    public function testEditPayoutWorkflowForCAC()
+    {
+        $this->ba->adminAuth();
+        $this->ba->addAccountAuth('10000000000000');
+
+        // Attach a rule to the first workflow which we have created
+        $payoutAmountRule = $this->fixtures->create('workflow_payout_amount_rules',[
+            'workflow_id' => $this->workflowIds[0],
+            'min_amount'  => 0,
+            'max_amount'  => 100
+        ]);
+
+        $this->fixtures->create('workflow_payout_amount_rules',[
+            'id'          => '123456',
+            'workflow_id' => $this->workflowIds[1],
+            'min_amount'  => 100,
+            'max_amount'  => null
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['permissions'][0] = "perm_" . $this->permissionId;
+        $this->testData[__FUNCTION__]['request']['content']['workflows'][0]['levels'][0]['steps'][0]['role_id'] = "role_finance_l1";
+
+        $response = $this->startTest();
+
+        Step\Entity::setCacStatus(false);
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
     }
 
     public function testEditActivePayoutWorkflow()

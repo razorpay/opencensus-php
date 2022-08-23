@@ -79,7 +79,7 @@ class Core extends Base\Core
         {
             $step = array_merge($step, $data);
 
-            Role\Entity::verifyIdAndSilentlyStripSign($step[Step\Entity::ROLE_ID]);
+            Role\Entity::silentlyStripSign($step[Step\Entity::ROLE_ID]);
 
             (new Step\Core)->create($step, $workflow);
         }

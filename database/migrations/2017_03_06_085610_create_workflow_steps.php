@@ -37,16 +37,6 @@ class CreateWorkflowSteps extends Migration
             $table->tinyInteger(Step::LEVEL)
                   ->default(0);
 
-            $table->foreign(Step::ROLE_ID)
-                  ->references(Role::ID)
-                  ->on(Table::ROLE)
-                  ->on_delete('restrict');
-
-            $table->foreign(Step::WORKFLOW_ID)
-                  ->references(Workflow::ID)
-                  ->on(Table::WORKFLOW)
-                  ->on_delete('restrict');
-
             $table->integer(Step::CREATED_AT);
 
             $table->integer(Step::UPDATED_AT);

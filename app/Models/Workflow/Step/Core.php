@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Workflow\Step;
 
+use RZP\Constants\Mode;
 use RZP\Models\Workflow;
+use RZP\Models\Merchant;
 use RZP\Models\Workflow\Base;
 
 class Core extends Base\Core
@@ -15,9 +17,27 @@ class Core extends Base\Core
 
         $step->build($input);
 
-        $role = $this->repo->role->findOrFailPublic($input[Entity::ROLE_ID]);
-
         $step->workflow()->associate($workflow);
+
+        $isCacEnabled = false;
+
+        if (empty($this->merchant) === false)
+        {
+            $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                    Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                    Mode::LIVE) === Workflow\Constants::ON;
+        }
+
+        Entity::setCacStatus($isCacEnabled);
+
+        if ($isCacEnabled === true)
+        {
+            $role = $this->repo->roles->findOrFailPublic($input[Entity::ROLE_ID]);
+        }
+        else
+        {
+            $role = $this->repo->role->findOrFailPublic($input[Entity::ROLE_ID]);
+        }
 
         $step->role()->associate($role);
 

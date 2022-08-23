@@ -532,6 +532,79 @@ return [
         ],
     ],
 
+    'testEditPayoutWorkflowForCAC' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/admin-workflows/rules/payout_amount',
+            'content' => [
+                "workflows" => [
+                    [
+                        "name" => "Payout-Workflow-EDnqetiSK0XR7R-3",
+                        "permissions" => [],
+                        "levels" => [
+                            [
+                                "op_type"   => "and",
+                                "steps"     => [
+                                    [
+                                        "role_id"        => null,
+                                        "reviewer_count" => 1,
+                                    ],
+                                ],
+                                "level" => 1,
+                            ],
+                        ],
+                        "payout_amount_rules" => [
+                            [
+                                "min_amount" => 0,
+                                "max_amount" => 10,
+                            ]
+                        ],
+                        "org_id" => "org_100000razorpay",
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => array (
+                'entity' => 'collection',
+                'count' => 1,
+                'items' =>
+                    array (
+                        0 =>
+                            array (
+                                'min_amount' => 0,
+                                'max_amount' => 10,
+                                'merchant_id' => '10000000000000',
+                                'workflow' =>
+                                    array (
+                                        'merchant_id' => '10000000000000',
+                                        'steps' =>
+                                            array (
+                                                0 =>
+                                                    array (
+                                                        'level' => 1,
+                                                        'role_id' => 'role_finance_l1',
+                                                        'op_type' => 'and',
+                                                        'reviewer_count' => 1,
+                                                    ),
+                                            ),
+                                        'permissions' =>
+                                            array (
+                                                0 =>
+                                                    array (
+                                                        'name' => 'create_payout',
+                                                        'description' => 'Merchant can create a new payout',
+                                                        'category' => 'payouts',
+                                                        'assignable' => false,
+                                                    ),
+                                            ),
+                                    ),
+                            ),
+                    ),
+            )
+        ],
+    ],
+
     'testEditActivePayoutWorkflow' => [
         'request' => [
             'method'  => 'PUT',

@@ -9,6 +9,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
+use RZP\Models\Workflow;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\Feature\Constants;
@@ -1693,6 +1694,18 @@ class Base extends BaseCore
                     ]);
 
                 $this->trace->count(Metric::PAYOUT_WORKFLOW_CREATION_FAILED_TOTAL);
+
+                $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                        Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                        Mode::LIVE) === Workflow\Constants::ON;
+
+                if ($isCacEnabled === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,
+                        null,
+                        ['payout_id' => optional($payout)->getId()]);
+                }
             }
         }
 

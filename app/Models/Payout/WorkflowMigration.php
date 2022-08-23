@@ -20,7 +20,7 @@ class WorkflowMigration
         $this->payoutCore = new Core();
     }
 
-    public function convertOldSummaryIntoNew(Merchant\Entity $merchant, bool $skipFetchFromWfs, bool $returnOld)
+    public function convertOldSummaryIntoNew(Merchant\Entity $merchant, bool $skipFetchFromWfs, bool $returnOld, bool $isCacEnabled = false)
     {
         $this->merchant = $merchant;
 
@@ -33,10 +33,10 @@ class WorkflowMigration
             return $oldConfigByAmountRules;
         }
 
-        return $this->getNewConfigFromOldAmountRules($oldConfigByAmountRules);
+        return $this->getNewConfigFromOldAmountRules($oldConfigByAmountRules, $isCacEnabled);
     }
 
-    protected function getNewConfigFromOldAmountRules($oldConfigByAmountRules)
+    protected function getNewConfigFromOldAmountRules($oldConfigByAmountRules, $isCacEnabled)
     {
         $newConfig = $this->getNewConfigPartial();
         $template = & $newConfig['config']['template'];
@@ -65,10 +65,11 @@ class WorkflowMigration
 
                 foreach ($stepData['roles'] as $key => $role )
                 {
-                    $nextChildStateName = "{$role['name']}_{$rangeKey}_{$step}_Approval";
+                    $name = str_replace(" ", "_", $role['name']);
+                    $nextChildStateName = "{$name}_{$role['id']}_{$rangeKey}_{$step}_Approval";
                     $childStateNames[] = $nextChildStateName;
 
-                    $template['states_data'][$nextChildStateName] = $this->getCheckerStatedata($nextChildStateName, $step, $role);
+                    $template['states_data'][$nextChildStateName] = $this->getCheckerStatedata($nextChildStateName, $step, $role, $isCacEnabled);
                 }
 
                 $this->createStateTransitionForParent($template, $parentStateNames, $childStateNames);
@@ -160,15 +161,22 @@ class WorkflowMigration
         ];
     }
 
-    protected function getCheckerStatedata($nextChildStateName, $step, $role)
+    protected function getCheckerStatedata($nextChildStateName, $step, $role, $isCacEnabled)
     {
+        $value = strtolower(str_replace(" ", "_", $role['name']));
+
+        if ($isCacEnabled === true)
+        {
+            $value = $role['id'];
+        }
+
         return [
             "name" => $nextChildStateName,
             "group_name" => strval($step+1),
             "type" => "checker",
             "rules" => [
                 "actor_property_key" => "role",
-                "actor_property_value" => strtolower(str_replace(" ", "_", $role['name'])),
+                "actor_property_value" => $value,
                 "count" => $role['reviewer_count'],
             ],
             "callbacks" => [

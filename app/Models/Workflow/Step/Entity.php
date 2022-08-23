@@ -3,6 +3,7 @@
 namespace RZP\Models\Workflow\Step;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Constants\Mode;
 use RZP\Models\Workflow\Base;
 
 class Entity extends Base\Entity
@@ -28,6 +29,8 @@ class Entity extends Base\Entity
     protected $entity = 'workflow_step';
 
     protected $generateIdOnCreate = false;
+
+    protected static $isCacEnabled = false;
 
     protected $fillable = [
         self::LEVEL,
@@ -79,7 +82,14 @@ class Entity extends Base\Entity
 
     public function role()
     {
-        return $this->belongsTo('RZP\Models\Admin\Role\Entity');
+        if (self::getCacStatus() === true)
+        {
+            return $this->belongsTo('RZP\Models\Roles\Entity');
+        }
+        else
+        {
+            return $this->belongsTo('RZP\Models\Admin\Role\Entity');
+        }
     }
 
     public function checkers()
@@ -105,5 +115,15 @@ class Entity extends Base\Entity
     public function getReviewerCount()
     {
         return $this->getAttribute(self::REVIEWER_COUNT);
+    }
+
+    public static function getCacStatus()
+    {
+        return self::$isCacEnabled;
+    }
+
+    public static function setCacStatus($isCacEnabled)
+    {
+        return self::$isCacEnabled = $isCacEnabled;
     }
 }

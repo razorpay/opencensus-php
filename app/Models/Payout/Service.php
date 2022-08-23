@@ -26,6 +26,7 @@ use RZP\Error\ErrorCode;
 use RZP\Services\UfhService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Workflow;
 use RZP\Models\Settings;
 use RZP\Models\Admin\Org;
 use RZP\Traits\TrimSpace;
@@ -1240,7 +1241,11 @@ class Service extends Base\Service
 
             $this->app['basicauth']->setMerchant($this->merchant);
 
-            $newConfig = (new WorkflowMigration())->convertOldSummaryIntoNew($this->merchant, $skipFetchFromWfs, $returnOld);
+            $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                Mode::LIVE) === Workflow\Constants::ON;
+
+            $newConfig = (new WorkflowMigration())->convertOldSummaryIntoNew($this->merchant, $skipFetchFromWfs, $returnOld, $isCacEnabled);
 
             $this->app['trace']->info(
                 TraceCode::WORKFLOW_CONFIG_MIGRATE_PAYLOAD,
