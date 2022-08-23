@@ -22,6 +22,10 @@ class ProviderPsp
     const BHIM_DLB_UPI      = 'bhim_dlb_upi';
     const PAYZAPP           = 'payzapp';
     const BHIM_INDUSPAY     = 'bhim_induspay';
+    const GROWW             = 'groww';
+    const OK_CREDIT         = 'ok_credit';
+    const JIO               = 'jio';
+    const BHIM_SBIPAY       = 'bhim_sbipay';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

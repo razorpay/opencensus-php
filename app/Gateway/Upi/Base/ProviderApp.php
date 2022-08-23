@@ -20,6 +20,7 @@ class ProviderApp
     const DAKPAY_UPI_IPBB       = 'com.fss.ippbpsp';
     const MOBIKWIK              = 'com.mobikwik_new';
     const BHIM_INDUSPAY_APP     = 'com.mgs.induspsp';
+    const JIO_APP               = 'com.jio.myjio';
 
     // For all other PSP Apps
     const OTHER             = 'other';

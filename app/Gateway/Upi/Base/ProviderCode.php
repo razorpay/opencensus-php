@@ -174,6 +174,8 @@ class ProviderCode
     const EQUITASBANK        = 'equitasbank';
     const GROWW              = 'yesg';
     const OKCREDIT           = 'axb';
+    const YESG               = 'yesg';
+    const AXB                = 'axb';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -339,6 +341,8 @@ class ProviderCode
         self::EQUITASBANK        => IFSC::ESFB,
         self::GROWW              => IFSC::YESB,
         self::OKCREDIT           => IFSC::UTIB,
+        self::YESG               => IFSC::YESB,
+        self::AXB                => IFSC::UTIB,
     ];
 
     /**
@@ -422,7 +426,11 @@ class ProviderCode
         ProviderPsp::DIGI_BANK,
         ProviderPsp::BHIM_DLB_UPI,
         ProviderPsp::PAYZAPP,
-        ProviderPsp::BHIM_INDUSPAY
+        ProviderPsp::BHIM_INDUSPAY,
+        ProviderPsp::GROWW,
+        ProviderPsp::OK_CREDIT,
+        ProviderPsp::JIO,
+        ProviderPsp::BHIM_SBIPAY,
     ];
 
     /**
@@ -455,6 +463,10 @@ class ProviderCode
         self::APAY          => ProviderPsp::AMAZON_PAY,
         self::AMAZON        => ProviderPsp::AMAZON_PAY,
         self::AMAZON_PAY    => ProviderPsp::AMAZON_PAY,
+        self::YESG          => ProviderPsp::GROWW,
+        self::AXB           => ProviderPsp::OK_CREDIT,
+        self::JIO           => ProviderPsp::JIO,
+        self::SBI           => ProviderPsp::BHIM_SBIPAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
