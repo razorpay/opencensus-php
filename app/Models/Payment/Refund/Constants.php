@@ -26,6 +26,11 @@ class Constants
     const MAX_REFUND_RETRY_ATTEMPTS            = 3;
     const MAX_REFUND_VERIFY_REQUESTS           = 100;
     const PAYMENT_AGE_LIMIT_FOR_GATEWAY_REFUND = 'payment_age_limit_for_gateway_refund';
+    const IS_UPI_AND_AMOUNT_MISMATCHED         = 'is_upi_and_amount_mismatched';
+    const IS_HDFC_VAS_DS_CUSTOMER_FEE_BEARER   = 'is_hdfc_vas_ds_customer_fee_bearer_surcharge';
+    const DISCOUNT_RATIO                       = 'discount_ratio';
+    const DISCOUNTED_AMOUNT                    = 'discounted_amount';
+    const GATEWAY_AMOUNT                       = 'gateway_amount';
     /**
      * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.

@@ -1167,6 +1167,16 @@ class Service extends Base\Service
                         $data[RefundConstants::IS_UPI_OTM] = $payment->isUpiOtm();
 
                         $data[RefundConstants::IS_DCC] = $payment->isDCC();
+
+                        $data[RefundConstants::GATEWAY_AMOUNT] = $payment->getGatewayAmount();
+
+                        $data[RefundConstants::DISCOUNTED_AMOUNT] = $payment->getDiscountedAmountIfApplicable();
+
+                        $data[RefundConstants::IS_UPI_AND_AMOUNT_MISMATCHED] = $payment->isUpiAndAmountMismatched();
+
+                        $data[RefundConstants::IS_HDFC_VAS_DS_CUSTOMER_FEE_BEARER] = $payment->isHdfcVasDSCustomerFeeBearerSurcharge();
+
+                        $data[RefundConstants::DISCOUNT_RATIO] = $payment->getDiscountRatioIfApplicable();
                     }
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;
