@@ -142,9 +142,9 @@ class Service extends Base\Service
 
         if (empty($currentAccount) === false) {
             $response['bank_account'] = [
-                "name"           => $currentAccount[BankingAccount\Entity::BENEFICIARY_NAME],
-                "ifsc"           => $currentAccount[BankingAccount\Entity::ACCOUNT_IFSC],
-                "account_number" => $currentAccount[BankingAccount\Entity::ACCOUNT_NUMBER]
+                "name"           => $currentAccount[BankingAccount\Entity::BENEFICIARY_NAME] ?? '',
+                "ifsc"           => $currentAccount[BankingAccount\Entity::ACCOUNT_IFSC] ?? '',
+                "account_number" => $currentAccount[BankingAccount\Entity::ACCOUNT_NUMBER] ?? '',
             ];
         }
 

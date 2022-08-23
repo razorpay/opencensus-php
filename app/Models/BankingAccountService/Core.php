@@ -238,6 +238,11 @@ class Core extends Base\Core
             $input[BankingAccountEntity::ACCOUNT_NUMBER] = $basBankingAccount['account_number'];
         }
 
+        if (empty($basBankingAccount['beneficiary_name']) === false)
+        {
+            $input[BankingAccountEntity::BENEFICIARY_NAME] = $basBankingAccount['beneficiary_name'];
+        }
+
         $ba->build($input);
 
         $status = $basBankingAccount[Constants::STATUS];
