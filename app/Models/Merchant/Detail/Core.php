@@ -3793,7 +3793,7 @@ class Core extends Base\Core
 
             if ($isMtuCouponExperimentEnabled === true)
             {
-                $response['showMtuPopup'] = $this->isMerchantEligibleForMtuPopup($merchant,$mtuTransacted);
+                $response['showMtuPopup'] = $this->isEligibleForMtuPopup($merchant, $mtuTransacted);
             }
 
             if ((new Merchant\Website\Service())->isMerchantTncApplicable($merchant) === true)
@@ -3865,9 +3865,19 @@ class Core extends Base\Core
         }
         return false;
     }
-    private function isMerchantEligibleForMtuPopup(Merchant\Entity $merchant,bool $mtu): bool
+
+    private function isEligibleForMtuPopup(Merchant\Entity $merchant, bool $mtu): bool
     {
-        if($mtu === true) return false;
+        if ($mtu === true)
+        {
+            return false;
+        }
+
+        if ($merchant->isSignupSourceIn(DDConstants::MOBILE_APP_SOURCES) === false and
+            $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false)
+        {
+            return false;
+        }
 
         if ($merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {

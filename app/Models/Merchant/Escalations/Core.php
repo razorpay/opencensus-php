@@ -14,14 +14,10 @@ use RZP\Services\ApachePinotClient;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\Segment as SegmentAnalytics;
-use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Merchant\Constants as MConstants;
-use RZP\Models\Coupon\Constants as CouponCodeConstants;
 use RZP\Services\Segment\EventCode as SegmentEvent;
-use RZP\Models\Merchant\MerchantActionNotification;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Merchant\Account as MerchantAccount;
 use RZP\Models\Merchant\Escalations\Actions\Entity as ActionEntity;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 

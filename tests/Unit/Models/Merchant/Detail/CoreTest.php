@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Services\Mock\ApachePinotClient;
@@ -1165,8 +1166,105 @@ class CoreTest extends TestCase
 
         $response = (new Core)->createResponse($merchantDetail);
 
+        $this->assertFalse($response['showMtuPopup']);
+    }
+
+    public function testEligibleForMtuPopupShowSignupCampaign()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
         $this->assertTrue($response['showMtuPopup']);
     }
+
+    public function testEligibleForMtuPopupShowSignupSourceIos()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_source' => 'ios'
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertTrue($response['showMtuPopup']);
+    }
+
+    public function testEligibleForMtuPopupShowSignupSourceAndroid()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'id' => $merchantId,
+            'activated' => 1,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp()
+        ];
+
+        $this->fixtures->create('merchant', $merchantAttributes);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_source' => 'android'
+        ]);
+
+        $response = (new Core)->createResponse($merchantDetail);
+
+        $this->assertTrue($response['showMtuPopup']);
+    }
+
     public function testM2MNotEligibleForMtuPopupShow()
     {
         $this->enableRazorXTreatmentForRazorX();

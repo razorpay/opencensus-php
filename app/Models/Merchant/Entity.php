@@ -3408,6 +3408,25 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function isSignupSourceIn($signupSourceList): bool
+    {
+        $app = App::getFacadeRoot();
+
+        $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRole($this->getId());
+
+        if (empty($deviceDetail) === true)
+        {
+            return false;
+        }
+
+        if (in_array($deviceDetail->getSignupSource(), $signupSourceList, true) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isBilldeskSIHubEnabled(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::RECURRING_CARD_MANDATE_BILLDESK_SIHUB);

@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron\Collectors;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Services\ApachePinotClient;
+use RZP\Models\DeviceDetail\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Escalations\Entity;
 use RZP\Models\Merchant\Core as MerchantCore;
@@ -24,6 +25,8 @@ class FirstPaymentOfferDataCollector extends TimeBoundDbDataCollector
         ]);
 
         $merchantIdList = $this->repo->merchant->fetchAllLiveActivatedRegularMerchantsOfOrg($startTime, $endTime);
+
+        $merchantIdList = $this->repo->user_device_detail->filterSignupCampaignAndSourceFromMerchantIdList($merchantIdList, Constants::EASY_ONBOARDING, Constants::MOBILE_APP_SOURCES);
 
         $subMerchants = $this->repo->merchant_access_map->fetchSubMerchants($merchantIdList);
 

@@ -9,4 +9,12 @@ class Constants
     const CLIENT_IP = 'ip';
     const G_CLICK_ID = 'gclid';
     const G_CLIENT_ID = '_ga';
+
+    const ANDROID   = 'android';
+    const IOS       = 'ios';
+
+    const MOBILE_APP_SOURCES = [
+        self::ANDROID,
+        self::IOS
+    ];
 }

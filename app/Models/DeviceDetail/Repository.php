@@ -47,6 +47,23 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function filterSignupCampaignAndSourceFromMerchantIdList(array $merchantIdList, string $signupCampaign, array $signupSources, $role = Role::OWNER)
+    {
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantUserIdColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::USER_ID);
+        $merchantUserRoleColumn = $this->repo->merchant_user->dbColumn(MerchantUser\Entity::ROLE);
+
+        return $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            ->join(Table::MERCHANT_USER, $merchantUserIdColumn, '=', $this->dbColumn(Entity::USER_ID))
+            ->where($merchantUserRoleColumn, '=', $role)
+            ->whereIn($merchantIdColumn, $merchantIdList)
+            ->where(Entity::SIGNUP_CAMPAIGN, '=', $signupCampaign)
+            ->orWhereIn(Entity::SIGNUP_SOURCE, $signupSources)
+            ->distinct()
+            ->pluck($merchantIdColumn)
+            ->toArray();
+    }
+
     public function removeSignupCampaignIdsFromMerchantIdList(array $merchantIdList, string $signupCampaign, $role = Role::OWNER)
     {
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
