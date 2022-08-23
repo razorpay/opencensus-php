@@ -440,7 +440,32 @@ trait Verify
             $finalErrorCode = $e->getCode();
         }
 
-        $errorCodeNonVerifiable = $this->isFinal($payment->getMethod(), $finalErrorCode);
+        $isOptimizerPayment = false;
+
+        $terminalTypeArray = array();
+
+        if ($payment->hasTerminal() === true)
+        {
+            $terminalTypeArray = $payment->terminal->getType();
+
+            if (($terminalTypeArray != null) && (in_array('optimizer', $terminalTypeArray) === true))
+            {
+                $isOptimizerPayment = true;
+            }
+        }
+
+        $errorCodeNonVerifiable = $this->isFinal($payment->getMethod(), $finalErrorCode, $isOptimizerPayment);
+
+        if ($isOptimizerPayment === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_VERIFY_OPTIMIZER_CHECK,
+                [
+                    'payment_id' => $payment->getId(),
+                    'error_code_non_verifiable' => $errorCodeNonVerifiable,
+                    'terminal_id' => $payment->terminal->getId(),
+                    'terminal_type_array' => $terminalTypeArray,
+                ]);
+        }
 
         if($errorCodeNonVerifiable === true)
         {
@@ -466,8 +491,13 @@ trait Verify
      * @param string $internalErrorCode
      * @return bool
      */
-    protected function isFinal(string $method, string $internalErrorCode) : bool
+    protected function isFinal(string $method, string $internalErrorCode, bool $isOptimizerPayment) : bool
     {
+        if ($isOptimizerPayment === true)
+        {
+            return false;
+        }
+
         $code = $this->processErrorVerifiableMapping($method, $internalErrorCode);
 
         $this->trace->info(TraceCode::PAYMENT_VERIFY_FAILED,

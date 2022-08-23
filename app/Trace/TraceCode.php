@@ -303,6 +303,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTH_TIMED_OUT                                = 'PAYMENT_AUTH_TIMED_OUT';
     const PAYMENT_SHOULD_HAVE_TIMED_OUT                         = 'PAYMENT_SHOULD_HAVE_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                                 = 'PAYMENT_VERIFY_FAILED';
+    const PAYMENT_VERIFY_OPTIMIZER_CHECK                        = 'PAYMENT_VERIFY_OPTIMIZER_CHECK';
     const PAYMENT_VERIFY_FILTER                                 = 'PAYMENT_VERIFY_FILTER';
     const PAYMENT_FAILED                                        = 'PAYMENT_FAILED';
     const PAYMENT_CANCELLED                                     = 'PAYMENT_CANCELLED';
@@ -7769,6 +7770,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::PAYMENT_CAPTURE_SUCCESS                               => 'Payment captured successfully',
         self::PAYMENT_CAPTURE_FAILURE                               => 'Payment capture failed',
         self::PAYMENT_VERIFY_FAILED                                 => 'Payment verification with gateway failed',
+        self::PAYMENT_VERIFY_OPTIMIZER_CHECK                        => 'Payment verification check for optimizer',
         self::PAYMENT_FAILED_TO_AUTHORIZED                          => 'Payment failed but which succeeded on gateway, converting it to authorized',
         self::PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND                 => 'Payment request does not have checkout id',
         self::PAYMENT_QUEUE_CAPTURE_REQUEST                         => 'Payment capture request via queue',

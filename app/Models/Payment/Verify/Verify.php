@@ -2116,7 +2116,21 @@ class Verify extends Base\Core
         $method = $payment->getMethod();
         $internal_error_code = $payment->getInternalErrorCode()??'';
 
-        $isFinalErrorCode = $this->isFinal($method, $internal_error_code);
+        $isOptimizerPayment = false;
+
+        $terminalTypeArray = array();
+
+        if ($payment->hasTerminal() === true)
+        {
+            $terminalTypeArray = $payment->terminal->getType();
+
+            if (($terminalTypeArray !== null) && (in_array('optimizer', $terminalTypeArray) === true))
+            {
+                $isOptimizerPayment = true;
+            }
+        }
+
+        $isFinalErrorCode = $this->isFinal($method, $internal_error_code, $isOptimizerPayment);
 
         if ($isFinalErrorCode === true)
         {
@@ -2136,6 +2150,17 @@ class Verify extends Base\Core
             ];
 
             $this->app['diag']->trackVerifyPaymentEvent(EventCode::PAYMENT_VERIFICATION_FILTERED_FINAL_FAILURE, $payment, null, $customProperties);
+        }
+
+        if ($isOptimizerPayment === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_VERIFY_OPTIMIZER_CHECK,
+                [
+                    'payment_id' => $payment->getId(),
+                    'error_code_non_verifiable' => $isFinalErrorCode,
+                    'terminal_id' => $payment->terminal->getId(),
+                    'terminal_type_array' => $terminalTypeArray,
+                ]);
         }
 
         return $isFinalErrorCode;
