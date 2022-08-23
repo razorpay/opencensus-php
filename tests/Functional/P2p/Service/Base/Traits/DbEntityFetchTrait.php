@@ -117,4 +117,16 @@ trait DbEntityFetchTrait
     {
         return $this->getDbLastEntity(Entity::P2P_CLIENT, $this->dbEntityFetchMode);
     }
+
+    /****************************** Blacklist *************************************/
+    
+    public function getDbLastBlacklist(): P2p\BlackList\Entity
+    {
+        return $this->getDbLastEntity(Entity::P2P_BLACKLIST, $this->dbEntityFetchMode);
+    }
+
+    public function getDbBlacklists(array $where): PublicCollection
+    {
+        return $this->getDbEntities(Entity::P2P_BLACKLIST, $where, $this->dbEntityFetchMode);
+    }
 }

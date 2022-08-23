@@ -24,6 +24,11 @@ class Processor extends Base\Processor
 
         $blackList = $this->findEntityId($this->input->get(Entity::TYPE), $input);
 
+        $input = [
+            Entity::TYPE => $blackList->getP2pEntityName(),
+            Entity::ENTITY_ID => $blackList->getId(),
+        ];
+
         $entity = $this->core->create($blackList, $input);
 
         return $entity->toArrayPublic();

@@ -30,13 +30,7 @@ class Validator extends Base\Validator
             Entity::ENTITY_ID                       => 'sometimes',
             Entity::CLIENT_ID                       => 'sometimes',
             Entity::TYPE                            => 'sometimes',
-            BankAccount\Entity::ACCOUNT_NUMBER      => 'required_if:type,bank_account',
-            BankAccount\Entity::IFSC                => 'required_if:type,bank_account',
-            BankAccount\Entity::BENEFICIARY_NAME    => 'required_if:type,bank_account',
-            Vpa\Entity::HANDLE                      => 'required_if:type,vpa',
-            Vpa\Entity::USERNAME                    => 'required_if:type,vpa',
         ]);
-
         return $rules;
     }
 
@@ -46,12 +40,19 @@ class Validator extends Base\Validator
             Entity::ENTITY_ID                     => 'sometimes',
             Entity::CLIENT_ID                     => 'sometimes',
             Entity::TYPE                          => 'sometimes',
-            Vpa\Entity::USERNAME                  => 'sometimes',
-            Vpa\Entity::BENEFICIARY_NAME          => 'sometimes',
-            BankAccount\Entity::ACCOUNT_NUMBER    => 'sometimes',
-            BankAccount\Entity::IFSC              => 'sometimes',
-            BankAccount\Entity::HANDLE            => 'sometimes',
         ]);
+
+        $rules->merge((new Vpa\Validator)->makeRules([
+            Vpa\Entity::HANDLE      => 'required_if:type,vpa',
+            Vpa\Entity::USERNAME    => 'required_if:type,vpa',
+            Vpa\Entity::VERIFIED    => 'sometimes_if:type,vpa',
+        ]));
+
+        $rules->merge((new BankAccount\Validator)->makeRules([
+            BankAccount\Entity::ACCOUNT_NUMBER      => 'required_if:type,bank_account',
+            BankAccount\Entity::IFSC                => 'required_if:type,bank_account',
+            BankAccount\Entity::BENEFICIARY_NAME    => 'required_if:type,bank_account',
+        ]));
 
         return $rules;
     }

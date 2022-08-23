@@ -333,6 +333,7 @@ class Table
     const P2P_REGISTER_TOKEN    = 'p2p_register_tokens';
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_MANDATE           = 'p2p_mandates';
+    const P2P_BLACKLIST         = 'p2p_blacklist';
 
     const SETTLEMENT_ONDEMAND          = 'settlement_ondemands';
     const SETTLEMENT_ONDEMAND_PAYOUT   = 'settlement_ondemand_payouts';

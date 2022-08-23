@@ -60,6 +60,12 @@ class Entity extends Base\Entity
         Entity::DELETED_AT  => 'int',
     ];
 
+    protected $defaults = [
+        Entity::CLIENT_ID       => '',
+        Entity::MERCHANT_ID     => '',
+        Entity::DELETED_AT      => 0,
+    ];
+
     /***************** GETTERS *****************/
 
     /**

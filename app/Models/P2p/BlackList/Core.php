@@ -16,8 +16,10 @@ class Core extends Base\Core
      */
     public function create(Base\Entity $blacklist, array $input): Entity
     {
-        $this->build($input);
+        $entity = $this->build($input);
 
-        throw new \RZP\Exception\RuntimeException("Not implemented, core Implementation is on the way");
+        $this->repo->saveOrFail($entity);
+
+        return $entity;
     }
 }

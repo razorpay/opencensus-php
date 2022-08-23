@@ -10,12 +10,6 @@ class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
 {
     public function testCreateVpaBlackList()
     {
-        $helper = $this->getBlackListHelper()->setMerchantOnAuth(true);
-        $this->expectExceptionMessage(RuntimeException::class);
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage("Not implemented, core Implementation is on the way");
-
         $helper = $this->getVpaHelper();
 
         $helper->withSchemaValidated();
@@ -35,7 +29,13 @@ class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
             'beneficiary_name'  => '',
         );
 
-        $response = $helper->create($input);
+        $response   = $helper->create($input);
+
+        $expectedId = Entity::verifyIdAndSilentlyStripSign($vpa[Entity::ID]);
+
+        $this->assertEquals($expectedId, $response[BlackListEntity::ENTITY_ID]);
+
+        $this->assertEquals($vpa[Entity::ENTITY], $response[BlackListEntity::TYPE]);
     }
 
     public function testRemove()

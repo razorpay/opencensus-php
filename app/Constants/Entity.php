@@ -1267,6 +1267,7 @@ class Entity
         self::P2P_CONCERN           => \RZP\Models\P2p\Transaction\Concern::class,
         self::P2P_CLIENT            => \RZP\Models\P2p\Client::class,
         self::P2P_MANDATE           => \RZP\Models\P2p\Mandate::class,
+        self::P2P_BLACKLIST         => \RZP\Models\P2p\BlackList::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,
         self::P2P_UPI_AXIS          => \RZP\Gateway\P2p\Upi::class,
