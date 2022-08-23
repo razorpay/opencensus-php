@@ -185,6 +185,8 @@ class Base extends BaseProcessor
 
         $nbplusPaymentIds = [];
 
+        $upiPaymentIds = [];
+
         // Refunds were fetched from scrooge
         if ($this->fetchRefundsFromScrooge === true)
         {
@@ -202,6 +204,11 @@ class Base extends BaseProcessor
                     ($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE_PAYMENTS))
                 {
                     $nbplusPaymentIds[] = $payment->getId();
+                }
+                else if (($this->isUpsRefundGateway() === true) and
+                    ($payment->getCpsRoute() === PaymentEntity::UPI_PAYMENT_SERVICE))
+                {
+                    $upiPaymentIds[] = $payment->getId();
                 }
             }
 
@@ -268,6 +275,8 @@ class Base extends BaseProcessor
         }
 
         $data = $this->addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds($data, $nbplusPaymentIds, $payment->getMethod());
+
+        $data = $this->addUpiGatewayEntitiesToDataWithUpiPaymentIds($data, $upiPaymentIds);
 
         $this->checkIfRefundsAreInValidDateRange($data);
 
@@ -439,6 +448,152 @@ class Base extends BaseProcessor
         }
 
         return $data;
+    }
+
+    /**
+     * Returns true if the gateway is onboarded on UPI Payment Service, i.e. UPS
+     * else returns false
+     *
+     * @return bool
+     */
+    protected function isUpsRefundGateway()
+    {
+        return false;
+    }
+
+    protected function addUpiGatewayEntitiesToDataWithUpiPaymentIds(array $data, array $upiPaymentIds)
+    {
+        if (empty($upiPaymentIds) === true) {
+            return $data;
+        }
+
+        list($upiGatewayEntities, $fetchSuccess) = $this->fetchUpiGatewayEntities($upiPaymentIds);
+
+        // Throwing an error in case of UPS fetch failure
+        if ($fetchSuccess === false)
+        {
+            throw new GatewayFileException(
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
+                [
+                    'id' => $this->gatewayFile->getId(),
+                ]
+            );
+        }
+
+        $data = array_map(function($row) use ($upiGatewayEntities)
+        {
+            $paymentId = $row['payment']['id'];
+
+            if (isset($upiGatewayEntities[$paymentId]) === true)
+            {
+                $row['gateway'] = $upiGatewayEntities[$paymentId];
+            }
+
+            return $row;
+        }, $data);
+
+        return $data;
+    }
+
+    protected function fetchUpiGatewayEntities(array $paymentIds)
+    {
+        $shouldFetchEntities = true;
+
+        $start = 0;
+
+        $fetchLimit = self::UPS_FETCH_ENTITY_COUNT;
+
+        $gatewayData = [];
+
+        $fetchSuccess = true;
+
+        while ($shouldFetchEntities === true)
+        {
+            $requestPaymentIds = array_slice($paymentIds, $start, $fetchLimit);
+
+            if ((count($requestPaymentIds) === 0) or ($fetchSuccess === false))
+            {
+                $shouldFetchEntities = false;
+            }
+            else
+            {
+                try
+                {
+                    $entities = $this->fetchMultipleUpsGatewayEntities($requestPaymentIds);
+
+                    $start += $fetchLimit;
+
+                    $gatewayData = array_merge($gatewayData, $entities);
+
+                    $fetchSuccess = true;
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
+                        [
+                            'input' => $requestPaymentIds,
+                            'id'    => $this->gatewayFile->getId(),
+                        ]
+                    );
+
+                    $fetchSuccess = false;
+                }
+            }
+        }
+
+        $paymentIdToGatewayDataMap = [];
+
+        foreach ($gatewayData as $data)
+        {
+            if (isset($data[Constants::PAYMENT_ID]) === true)
+            {
+                // check if gateway data is not empty to avoid null pointer exceptions
+                // and unnecessary call to json_decode function
+                if (empty($data[Constants::GATEWAY_DATA]) === false)
+                {
+                    $data[Constants::GATEWAY_DATA] = json_decode($data[Constants::GATEWAY_DATA], true);
+                }
+
+                // set gateway data as empty array, if it is empty
+                // gateway data can be empty if the above if condition does not evaluate to true
+                // or, if the gateway data was an invalid json string and json_decode returned NULL
+                if (empty($data[Constants::GATEWAY_DATA]) === true)
+                {
+                    $data[Constants::GATEWAY_DATA] = [];
+                }
+
+                $paymentIdToGatewayDataMap[$data[Constants::PAYMENT_ID]] = $data;
+            }
+        }
+
+        return [$paymentIdToGatewayDataMap, $fetchSuccess];
+    }
+
+    protected function fetchMultipleUpsGatewayEntities(array $paymentIds)
+    {
+        $action = Constants::MULTIPLE_ENTITY_FETCH;
+
+        $gateway = static::GATEWAY;
+
+        $input = [
+            Constants::MODEL            => Constants::AUTHORIZE,
+            Constants::REQUIRED_FIELDS  => [
+                Constants::CUSTOMER_REFERENCE,
+                Constants::MERCHANT_REFERENCE,
+                Constants::GATEWAY_MERCHANT_ID,
+                Constants::GATEWAY_DATA,
+                Constants::PAYMENT_ID,
+            ],
+            Constants::COLUMN_NAME      => Constants::PAYMENT_ID,
+            Constants::VALUES           => $paymentIds,
+        ];
+
+        $response = $this->app['upi.payments']->action($action, $input, $gateway);
+
+        return $response;
     }
 
     /**

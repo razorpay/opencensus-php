@@ -327,6 +327,30 @@ class Service extends UpiPaymentService
         return [$response, 200];
     }
 
+    protected function multipleEntityFetch(array $content)
+    {
+        $this->request($content);
+
+        $response['success'] = 200;
+
+        $entities = [];
+
+        for($i = 0; $i < count($content['values']); $i++)
+        {
+            $entities[] = [
+                'npci_txn_id'           => 'FT202271253720413' . $i,
+                'customer_reference'    => '22712135190' . $i,
+                'gateway_reference'     => '',
+            ];
+        }
+
+        $response['entities'] = $entities;
+
+        $this->content($response);
+
+        return [$response, 200];
+    }
+
     public function content(&$content)
     {
         return $content;

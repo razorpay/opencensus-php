@@ -84,6 +84,8 @@ class Service
 
     const ENTITY_FETCH = 'entity_fetch';
 
+    const MULTIPLE_ENTITY_FETCH = 'multiple_entity_fetch';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -332,6 +334,7 @@ class Service
                 ];
                 break;
             case self::ENTITY_FETCH:
+            case self::MULTIPLE_ENTITY_FETCH:
                 $data = $input;
                 break;
             default:
@@ -473,6 +476,8 @@ class Service
                 return $this->processVerifyResponse($response);
             case self::ENTITY_FETCH:
                 return $this->processEntityFetchResponse($response);
+            case self::MULTIPLE_ENTITY_FETCH:
+                return $this->processMultipleEntityFetchResponse($response);
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -495,6 +500,22 @@ class Service
         }
 
         return $entity;
+    }
+
+    protected function processMultipleEntityFetchResponse(array $response): array
+    {
+        $entities = $response[Response::ENTITIES] ?? null;
+
+        if (empty($entities) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+                null,
+                ['response' => $response],
+                'no record found for entity fetch response');
+        }
+
+        return $entities;
     }
 
     /**
@@ -829,6 +850,7 @@ class Service
                 $traceData += $this->getVerifyTraceData($request[Request::CONTENT]);
                 break;
             case self::ENTITY_FETCH:
+            case self::MULTIPLE_ENTITY_FETCH:
                 $traceData += $request[Request::CONTENT];
                 break;
             default:

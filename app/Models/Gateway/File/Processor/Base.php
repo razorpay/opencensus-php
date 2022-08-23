@@ -37,6 +37,12 @@ abstract class Base extends Core
      */
     const NBPLUS_FETCH_ENTITY_COUNT = 1000;
 
+    /**
+     * Being used to paginate the fetch from UPS
+     * Number of gateway entities to be fetched in each call
+     */
+    const UPS_FETCH_ENTITY_COUNT = 1000;
+
     protected $mutex;
 
     /**

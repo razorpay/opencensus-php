@@ -396,4 +396,23 @@ class Constants
         self::UPI_SBI => 'sbi/sbi_upi_refund/outgoing'
     ];
     const SUCCESS            = 'success';
+
+    // UPS authorize entity columns
+    const CUSTOMER_REFERENCE    = 'customer_reference';
+    const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
+    const MERCHANT_REFERENCE    = 'merchant_reference';
+    const GATEWAY_DATA          = 'gateway_data';
+    const PAYMENT_ID            = 'payment_id';
+
+    // Models in UPS
+    const AUTHORIZE = 'authorize';
+
+    // Entity fetch request paramenters
+    const MODEL             = 'model';
+    const REQUIRED_FIELDS   = 'required_fields';
+    const COLUMN_NAME       = 'column_name';
+    const VALUES            = 'values';
+
+    // Actions
+    const MULTIPLE_ENTITY_FETCH = 'multiple_entity_fetch';
 }

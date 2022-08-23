@@ -49,6 +49,8 @@ class UpiSbiGatewayTest extends TestCase
      */
     protected $sharedTerminal;
 
+    protected $upiPaymentService;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = Constants::MINDGATE_SBI_GATEWAY_TEST_DATA_FILE;
@@ -801,6 +803,13 @@ class UpiSbiGatewayTest extends TestCase
     public function testRefundFileFlow()
     {
         Mail::fake();
+
+        $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
+
+        $this->upiPaymentService = Mockery::mock('RZP\Services\UpiPayment\Mock\Service', [$this->app])->makePartial();
+
+        $this->app->instance('upi.payments', $this->upiPaymentService);
+
         $payments = [];
 
         // Create 3 payments
@@ -820,13 +829,42 @@ class UpiSbiGatewayTest extends TestCase
 
         $this->fixtures->edit('upi', $upiEntity['id'], [Upi::MERCHANT_REFERENCE => 'HDFc9935b57bb584fa493a265fb8723fdbb']);
 
-        // Refund 2 fully and the other one partially
-        $refundAmount = [50000, 50000, 10000];
+        // create UPS Payments
+        $upsPayments        = [];
+        $upsGatewayEntities = [];
+
+        $upsPayments[]          = $this->createCapturedPayment();
+        $gatewayEntity          = $this->getDbLastEntity('upi');
+        $upsGatewayEntities[]   = [
+            File\Constants::GATEWAY_MERCHANT_ID => $gatewayEntity[Upi::GATEWAY_MERCHANT_ID],
+            File\Constants::CUSTOMER_REFERENCE  => $gatewayEntity[Upi::NPCI_REFERENCE_ID],
+            File\Constants::GATEWAY_DATA        => json_encode($gatewayEntity[Upi::GATEWAY_DATA]),
+            File\Constants::PAYMENT_ID          => $gatewayEntity[Upi::PAYMENT_ID],
+        ];
+        $this->fixtures->edit('upi', $gatewayEntity['id'], [Upi::PAYMENT_ID => 'unknown_pay_id']);
+        $this->fixtures->edit('payment', $upsPayments[0]['id'], [Payment\Entity::CPS_ROUTE => 4]);
+
+        $upsPayments[]          = $this->createCapturedPayment();
+        $gatewayEntity          = $this->getDbLastEntity('upi');
+        $upsGatewayEntities[]   = [
+            File\Constants::GATEWAY_MERCHANT_ID => $gatewayEntity[Upi::GATEWAY_MERCHANT_ID],
+            File\Constants::MERCHANT_REFERENCE  => 'SBI93FFE55C71C64203824B3E241302B487',
+            File\Constants::CUSTOMER_REFERENCE  => $gatewayEntity[Upi::NPCI_REFERENCE_ID],
+            File\Constants::GATEWAY_DATA        => json_encode($gatewayEntity[Upi::GATEWAY_DATA]),
+            File\Constants::PAYMENT_ID          => $gatewayEntity[Upi::PAYMENT_ID],
+        ];
+        $this->fixtures->edit('upi', $gatewayEntity['id'], [Upi::PAYMENT_ID => 'unknown_pay_id']);
+        $this->fixtures->edit('payment', $upsPayments[1]['id'], [Payment\Entity::CPS_ROUTE => 4]);
+
+        $allPayments = array_merge($payments, $upsPayments);
+
+        // Refund 3 fully and the other 2 partially
+        $refundAmount = [50000, 50000, 10000, 50000, 10000];
 
         $refunds = [];
         $refundEntities = [];
 
-        foreach ($payments as $count => $payment)
+        foreach ($allPayments as $count => $payment)
         {
             $refunds[] = $this->refundPayment($payment[Payment\Entity::ID], $refundAmount[$count]);
 
@@ -856,6 +894,12 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals(1, $refundEntity['is_scrooge']);
 
         $this->setFetchFileBasedRefundsFromScroogeMockResponse($refundEntities);
+
+        // mock ups response
+        $this->mockUpsServerContentFunction(function(& $content) use ($upsGatewayEntities) {
+            $content['entities'] = $upsGatewayEntities;
+            $content['success']  = true;
+        });
 
         $data = $this->generateRefundsExcelForSbiUpi();
 
@@ -887,6 +931,10 @@ class UpiSbiGatewayTest extends TestCase
         $refundId1 = str_replace('rfnd_', "",$refunds[1]['id']);
 
         $refundId2 = str_replace('rfnd_', "",$refunds[2]['id']);
+
+        $refundId3 = str_replace('rfnd_', "",$refunds[3]['id']);
+
+        $refundId4 = str_replace('rfnd_', "",$refunds[4]['id']);
 
         $expectedRefundFileForNullMR = [
             'pg_merchant_id' => "SBI0000000000119",
@@ -920,9 +968,31 @@ class UpiSbiGatewayTest extends TestCase
             'refund_remark' =>  "Refund for ".$upiEntity->getPaymentId()
         ];
 
+        $expectedRefundFileContentForUpsGatewayEntityWithoutCustomerRef = [
+            'pg_merchant_id' => $upsGatewayEntities[1][File\Constants::GATEWAY_MERCHANT_ID],
+            'refund_req_no' => $refundId3,
+            'trans_ref_no' => 7971807546,
+            'customer_ref_no' => 123456789012,
+            'order_no' => $upsGatewayEntities[0][File\Constants::PAYMENT_ID],
+            'refund_req_amt' => 500,
+            'refund_remark' =>  "Refund for ". $upsGatewayEntities[0][Upi::PAYMENT_ID],
+        ];
+
+        $expectedRefundFileContentForUpsGatewayEntity = [
+            'pg_merchant_id' => $upsGatewayEntities[1][File\Constants::GATEWAY_MERCHANT_ID],
+            'refund_req_no' => $refundId4,
+            'trans_ref_no' => 7971807546,
+            'customer_ref_no' => 123456789012,
+            'order_no' => $upsGatewayEntities[1][File\Constants::MERCHANT_REFERENCE],
+            'refund_req_amt' => 100,
+            'refund_remark' =>  "Refund for ". $upsGatewayEntities[1][Upi::PAYMENT_ID],
+        ];
+
         $this->assertArraySelectiveEquals($expectedRefundFileForNullMR, $refundFileRows[0]);
         $this->assertArraySelectiveEquals($expectedRefundFileForEmptyMR, $refundFileRows[1]);
         $this->assertArraySelectiveEquals($expectedRefundFileContentForMR, $refundFileRows[2]);
+        $this->assertArraySelectiveEquals($expectedRefundFileContentForUpsGatewayEntityWithoutCustomerRef, $refundFileRows[3]);
+        $this->assertArraySelectiveEquals($expectedRefundFileContentForUpsGatewayEntity, $refundFileRows[4]);
 
         Mail::assertQueued(RefundFileMail::class);
     }
@@ -1988,5 +2058,10 @@ class UpiSbiGatewayTest extends TestCase
         $this->ba->appAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function mockUpsServerContentFunction($closure)
+    {
+        $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
     }
 }

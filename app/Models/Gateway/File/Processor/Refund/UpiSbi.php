@@ -119,10 +119,10 @@ class UpiSbi extends Base
             }
 
             $formattedData[] = [
-                $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'], '"'),
+                $pgMerchantId  => trim($row['gateway']['gateway_merchant_id'] ?? '', '"'),
                 $refReqNo      => trim($row['refund']['id'], '"'),
                 $txnRefNo      => trim($referenceNo, '"'),
-                $custRefNo     => trim($row['gateway']['npci_reference_id'], '"'),
+                $custRefNo     => trim($row['gateway']['npci_reference_id'] ?? $row['gateway']['customer_reference'] ?? '', '"'),
                 $orderNo       => trim($paymentId, '"'),
                 $refAmt        => empty($gatewayAmt) ? trim($row['refund']['amount'] / 100, '"') : ($gatewayAmt / 100),
                 $refRemark     => trim('Refund for ' . $row['payment']['id'], '"'),
@@ -130,6 +130,11 @@ class UpiSbi extends Base
         }
 
         return $formattedData;
+    }
+
+    public function isUpsRefundGateway()
+    {
+        return true;
     }
 
     public function createFile($data)
