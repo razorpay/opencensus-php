@@ -187,7 +187,8 @@ export const instantSettlementsReducer = makeCollectionReducer('INSTANT_SETTLEME
 export const fetchDisputes = (params) => fetchAll(params, Dispute, 'DISPUTES');
 export const disputesReducer = makeCollectionReducer('DISPUTES');
 
-export const fetchSubmerchants = (params) => fetchAll(params, Submerchant, 'SUB_MERCHANTS');
+export const fetchSubmerchants = (params) =>
+  fetchAll(decodeSensitiveFields(params), Submerchant, 'SUB_MERCHANTS');
 
 const submerchantsHandler = {
   'SUB_MERCHANT_CREATE::SUCCESS': (state, action) => {
