@@ -293,6 +293,7 @@ class Validator extends Base\Validator
         Entity::NOTES                                   => 'sometimes|string',
         Entity::EMI                                     => 'sometimes|boolean',
         Entity::EMI_SUBVENTION                          => 'sometimes|in:customer,merchant',
+        Entity::ENABLED_WALLETS                         => 'sometimes|array',
     ];
 
     protected static $cashfreeTerminalRules = [
@@ -363,6 +364,7 @@ class Validator extends Base\Validator
         Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::NOTES                                   => 'sometimes|string',
+        Entity::ENABLED_WALLETS                         => 'sometimes|array',
     ];
 
     protected static $pinelabsTerminalRules = [
@@ -770,6 +772,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
+        Entity::ENABLED_WALLETS            => 'sometimes|array',
     ];
 
     protected static $cashfreeEditTerminalRules = [
@@ -812,6 +815,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
+        Entity::ENABLED_WALLETS            => 'sometimes|array',
     ];
 
     protected static $pinelabsEditTerminalRules = [
@@ -1966,6 +1970,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
         Entity::TPV                                     => 'sometimes|in:0,1,2',
         Entity::NOTES                                   => 'sometimes|string',
+        Entity::ENABLED_WALLETS                         => 'sometimes|array',
     ];
 
     protected static $paytmEditTerminalRules = [
@@ -1983,6 +1988,7 @@ class Validator extends Base\Validator
         Entity::NOTES                      => 'sometimes|string',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
         Entity::TPV                        => 'sometimes|in:0,1,2',
+        Entity::ENABLED_WALLETS            => 'sometimes|array',
     ];
 
     protected static $enachRblTerminalRules = [
