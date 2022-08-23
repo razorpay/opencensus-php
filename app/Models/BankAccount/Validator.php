@@ -24,6 +24,7 @@ class Validator extends Base\Validator
 
     protected static $addBankAccountRules = [
         Detail\Entity::ADDRESS_PROOF_URL        => 'sometimes',
+        Entity::ENTITY_ID                       => 'sometimes',
         Entity::IFSC_CODE                       => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER                  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35|custom',
         Entity::BENEFICIARY_NAME                => 'required|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|between:4,120|string',

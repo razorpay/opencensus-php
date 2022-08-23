@@ -821,6 +821,15 @@ class SettlementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function readCustomSettlementsFile()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->readCustomSettlementsFile($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createPosSettlement()
     {
         $input = Request::all();

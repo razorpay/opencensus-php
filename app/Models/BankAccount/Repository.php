@@ -36,6 +36,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getOrgBankAccount($orgId, $type=null)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $orgId)
+            ->where(Entity::TYPE, '=', $type ?? Type::ORG)
+            ->first();
+    }
+
     public function getBankAccountOnConnection($merchant, string $mode)
     {
         return $this->newQueryWithConnection($mode)

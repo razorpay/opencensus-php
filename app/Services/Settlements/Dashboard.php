@@ -4,6 +4,7 @@ namespace RZP\Services\Settlements;
 
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\RuntimeException;
+use RZP\Trace\TraceCode;
 
 class Dashboard extends Base
 {
@@ -263,7 +264,12 @@ class Dashboard extends Base
      */
     public function bankAccountCreate(array $input, $mode = null) : array
     {
-        return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $input, self::SERVICE_DASHBOARD, $mode);
+        return $this->makeRequest(self::ORG_BANK_ACCOUNT_CREATE, $input, self::SERVICE_DASHBOARD, $mode);
+    }
+
+    public function orgBankAccountCreate(array $input, $mode = null) : array
+    {
+        return $this->makeRequest(self::ORG_BANK_ACCOUNT_CREATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
     /**
@@ -276,6 +282,21 @@ class Dashboard extends Base
     public function bankAccountUpdate(array $input) : array
     {
         return $this->makeRequest(self::BANK_ACCOUNT_UPDATE, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function orgBankAccountUpdate( $input) : array
+    {
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_ORG_BANK_ACCOUNT_UPDATE,
+            [
+                "info" => "updating org bank account in settlements",
+                "org_id" => $input["entity_id"]
+            ]);
+
+        $req = $this->getBankAccountCreateRequestForSettlementService($input,'payout', true);
+
+        return $this->makeRequest(self::ORG_BANK_ACCOUNT_UPDATE, $req, self::SERVICE_DASHBOARD);
     }
 
     /**
@@ -310,17 +331,27 @@ class Dashboard extends Base
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function createBankAccount($input, $mode)
+    public function createBankAccount($input, $mode, $isOrgAccount = false)
     {
-        if ($input->getType() !== Type::MERCHANT)
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_BANK_ACCOUNT_REQUEST,
+            [
+                'info' => "creating org bank account in settlements",
+                "org_id" => $input["entity_id"]
+            ]);
+
+        if (($input->getType() !== Type::MERCHANT) and ($input->getType() !== Type::ORG))
         {
             return null;
         }
 
-        $req = $this->getBankAccountCreateRequestForSettlementService($input);
+        $req = $this->getBankAccountCreateRequestForSettlementService($input,'payout', $isOrgAccount);
 
         (new Validator)->validateInput('create_bank_account', $req);
 
+        if ($input->getType() === Type::ORG) {
+            return $this->orgBankAccountCreate($req, $mode);
+        }
         return $this->bankAccountCreate($req, $mode);
     }
 

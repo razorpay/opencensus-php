@@ -9,7 +9,8 @@ use RZP\Models\Contact\Validator as fundAccountValidator;
 class Validator extends Base\Validator
 {
     protected static $createBankAccountRules = [
-        'merchant_id'         => 'required|string|size:14',
+        'org_id'             =>  'required_if:type,==,org|string|size:14',
+        'merchant_id'         => 'required_if:type,!=,org|string|size:14',
         'account_number'      => 'required|alpha_num',
         'account_type'        => 'required|in:current,saving,nodal',
         'ifsc_code'           => 'required|string',
