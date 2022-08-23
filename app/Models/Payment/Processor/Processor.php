@@ -574,7 +574,7 @@ class Processor
             {
                 return false;
             }
-            
+
             $supportedFlows = [
                 Card\IIN\Flow::_3DS,
                 Card\IIN\Flow::HEADLESS_OTP,
@@ -3592,7 +3592,10 @@ class Processor
     {
         $data = [];
         $paymentMeta = $payment->paymentMeta;
-
+        $gateway_captured = 0;
+        if ($payment->getGatewayCaptured() === true) {
+            $gateway_captured = 1;
+        }
         $data['payment'] = [
             'id'            => $payment->getId(),
             'amount'        => $payment->getAmount(),
@@ -3603,7 +3606,7 @@ class Processor
             'created_at'    => $payment->getCreatedAt(),
             'merchant_id'   => $payment->getMerchantId(),
             'base_amount'   => $payment->getBaseAmount(),
-            'gateway_captured' => $payment->getGatewayCaptured(),
+            'gateway_captured' => $gateway_captured,
             'gateway_currency' => $payment->getGatewayCurrency(),
             'dcc_markup_amount'=> $payment->getDccMarkUpAmount(),
             'dcc_offered'   => $paymentMeta->isDccOffered(),
