@@ -13,6 +13,7 @@ __webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`; // eslint-dis
 
 const SignIn = React.lazy(() => import('./signin'));
 const SignUp = React.lazy(() => import('./signup'));
+const ResetPassword = React.lazy(() => import('./resetPassword'));
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -28,13 +29,26 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const App = () => {
-  const location = window.location.pathname.substr(1);
+  const route = window.location.pathname.substring(1);
+
+  const getComponentBasedOnRoute = (route) => {
+    switch (route) {
+      case ROUTES.SIGNIN:
+        return <SignIn />;
+      case ROUTES.SIGNUP:
+        return <SignUp />;
+      case ROUTES.RESETPASSWORD:
+        return <ResetPassword />;
+      default:
+        return '404';
+    }
+  };
 
   return (
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <Suspense fallback={<FullPageLoader />}>
-        <Size height="100%">{location.includes(ROUTES.SIGNUP) ? <SignUp /> : <SignIn />}</Size>
+        <Size height="100%">{getComponentBasedOnRoute(route)}</Size>
       </Suspense>
     </ThemeProvider>
   );

@@ -39,6 +39,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/', 'UserController@getIndex')->name('dashboard');
         Route::get('/signup', 'UserController@getIndex')->name('signup');
         Route::get('/signin', 'UserController@getIndex')->name('signin');
+        Route::get('/resetpassword', 'UserController@getIndex')->name('resetpassword');
         Route::get('/app/{path?}', 'UserController@getIndex')->name('dashboard_app')
             ->where(['path' => '.*']);
 

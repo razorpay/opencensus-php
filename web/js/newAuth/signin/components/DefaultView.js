@@ -6,7 +6,7 @@ import View from '@razorpay/blade-old/src/atoms/View';
 import { LinkButton } from '../styles';
 import { LoginCardArray } from '../data';
 import LoginCard from './LoginCard';
-import { fetchLoginCards, transformFetchLoginCardData } from '../../signin/apis';
+import { fetchLoginCards, transformFetchLoginCardData } from '../../apis';
 import Loader from '../../../../js/common/components/Loader';
 
 const DefaultView = () => {

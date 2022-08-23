@@ -36,4 +36,4 @@ export type MerchantStyles = Partial<{
   checkout_theme_color: string;
 }>;
 
-export type TransformedOrgData = ReturnType<typeof import('./apis').transformFetchOrgData>;
+export type TransformedOrgData = ReturnType<typeof import('../apis').transformFetchOrgData>;

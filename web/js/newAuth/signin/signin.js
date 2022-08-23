@@ -6,7 +6,7 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Flex from '@razorpay/blade-old/src/atoms/Flex';
 import View from '@razorpay/blade-old/src/atoms/View';
-import { fetchOrg, transformFetchOrgData } from './apis';
+import { fetchOrg, transformFetchOrgData } from '../apis';
 import { getBankingCaptchaColor, getTheme } from './theme';
 import { BANK_NAMES, getHostName, isTestEnvironment, IGNORE_BG_IMAGES_BANKS } from '../utils';
 import { DesktopOnlyView } from '../commonStyles';

@@ -1,7 +1,7 @@
 /* eslint valid-jsdoc: 0 */
 import ajax from 'common/utils/ajax';
 import { BANK_NAMES } from 'newAuth/utils';
-import { getChannelID } from '../../../js/merchant/models/GrowthService/commonUtils';
+import { getChannelID } from '../merchant/models/GrowthService/commonUtils';
 
 const ENDPOINTS = {
   ORG: '/org',
@@ -32,13 +32,13 @@ export const fetchLoginCards = () => {
 };
 
 /**
- * @param {import("./types").OrgData} data
+ * @param {import("./signin/types").OrgData} data
  * @TODO: Fix banking URL inconsistencies
  * @see https://razorpay.slack.com/archives/CTM086NSF/p1646307229892829
  */
-export const transformFetchOrgData = (data) => {
+export const transformFetchOrgData = (data, defaultLogo = 'img/logo_full.png') => {
   return {
-    logo: data.login_logo_url || 'img/logo_full.png',
+    logo: data.login_logo_url || defaultLogo,
     isOrgRZP: data.custom_code === 'rzp',
     orgName: data.custom_code,
     secondFactorAuthMode: OTP_AUTH_MODE[data.second_factor_auth_mode] || 'phone number/email',

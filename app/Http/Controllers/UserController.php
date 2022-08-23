@@ -117,7 +117,7 @@ class UserController extends Controller
         $data['newAuthFlow'] = false;
         $data['newAuthRoute'] = 'signup';
 
-        if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin"))
+        if (empty($currentRouteName) === false and ($currentRouteName === "signup" || $currentRouteName === "signin" || $currentRouteName === "resetpassword"))
         {
             if ($currentRouteName === 'signup')
             {
@@ -136,6 +136,8 @@ class UserController extends Controller
             if ($currentRouteName === 'signin')
             {
                 $data['newAuthRoute'] = 'signin'; // new signin flow
+            } else if ($currentRouteName === "resetpassword"){
+                $data['newAuthRoute'] = 'resetpassword'; // new reset flow
             }
         }
 

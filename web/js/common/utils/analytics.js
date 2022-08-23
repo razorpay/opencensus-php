@@ -107,7 +107,7 @@ export const initAnalytics = () => {
         };
         analytics.SNIPPET_VERSION = '4.1.0';
         // Events on signup and signin are required to be sent to Website project(Segment).
-        // isAuthPage is set to true only by signup/signin/forgot password/2FA pages. (excludes all /app pages).
+        // isAuthPage is set to true only by signup/signin/forgot-password/2FA/resetpassword pages. (excludes all /app pages).
         // if isAuthPage is true, send to website project or else dashboard project.
         analytics.load(window.SEGMENT_API_KEY);
         analytics.page();
