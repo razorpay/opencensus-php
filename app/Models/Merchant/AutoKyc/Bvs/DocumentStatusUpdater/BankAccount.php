@@ -54,6 +54,7 @@ class BankAccount extends DefaultStatusUpdater
         $featureCore = (new FeatureCore());
         $data         = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
                                                           [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
+        $verificationStatus = $this->merchantDetails->getBankDetailsVerificationStatus();
 
         $noDocData = $data[ConfigKey::NO_DOC_ONBOARDING_INFO]??null;
         if (empty($noDocData) === true)
@@ -63,17 +64,11 @@ class BankAccount extends DefaultStatusUpdater
             return;
         }
 
-        if ($this->merchantDetails->getBankDetailsVerificationStatus() === DEConstants::VERIFIED)
+        if ($verificationStatus === DEConstants::VERIFIED)
         {
             $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::STATUS] = Detail\RetryStatus::PASSED;
 
             $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
-
-            $merchantDetails = $this->merchantDetails;
-
-            $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails) {
-                $this->repo->merchant_detail->saveOrFail($merchantDetails);
-            });
 
             $this->postUpdateValidationStatus();
         }
@@ -93,7 +88,8 @@ class BankAccount extends DefaultStatusUpdater
             TraceCode::BANK_ACCOUNT_RETRY_STATUS,
             [
                 'merchant_id'      => $this->merchant->getId(),
-                'noDocData'        => $noDocData
+                'noDocData'        => $noDocData,
+                'bank_account_verification_status' =>  $verificationStatus
             ]
         );
 
