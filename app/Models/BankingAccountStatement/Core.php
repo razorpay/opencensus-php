@@ -485,12 +485,16 @@ class Core extends Base\Core
                     $latestCorrectedId = min($latestCorrectedId, $basEntity->getId());
                 }
 
+                // Adding delay of 2 secs in updated_before so that all inserted statements are updated
+                // And no overlap during updation occurs
+                $delay = 2;
+
                 $params = [
                     'channel'              => $channel,
                     'account_number'       => $accountNumber,
                     'bas_id_to_amount_map' => $basIdToAmountMap,
                     'created_at'           => $createdAt,
-                    'update_before'        => Carbon::now()->getTimestamp(),
+                    'update_before'        => Carbon::now()->getTimestamp() + $delay,
                     'latest_corrected_id'  => $latestCorrectedId,
                     'batch_number'         => 0
                 ];
@@ -524,7 +528,7 @@ class Core extends Base\Core
 
         try
         {
-            BankingAccountStatementUpdate::dispatch($this->mode, $params);
+            BankingAccountStatementUpdate::dispatch($this->mode, $params)->delay(10);
 
             $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
                 [
