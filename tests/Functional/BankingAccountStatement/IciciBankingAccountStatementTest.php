@@ -6,10 +6,12 @@ use Queue;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
 use RZP\Services\Mozart;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer;
+use RZP\Error\PublicErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
@@ -21,6 +23,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -2766,6 +2769,72 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(1, $response['number_of_missing_statements']);
 
         $this->assertEquals(json_encode([$statement]), $response['missing_statements']);
+    }
+
+    public function testIciciInsertMissingAccountStatementWhileInProgress()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
+            '2224440041626915' => [
+                [
+                    'type'                      => 'credit',
+                    'amount'                    => '100',
+                    'currency'                  => 'INR',
+                    'channel'                   => 'icici',
+                    'account_number'            => '2224440041626915',
+                    'bank_transaction_id'       => 'S71034964',
+                    'balance'                   => 1000100,
+                    'transaction_date'          => 1613586600,
+                    'posted_date'               => 1613627140,
+                    'bank_serial_number'        => 'S71034964',
+                    'description'               => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
+                    'balance_currency'          => 'INR',
+                ]
+            ],
+        ]]);
+
+        $mockMutex = new MockMutexService($this->app);
+
+        $this->app->instance('api.mutex', $mockMutex);
+
+        $mutex = $this->app['api.mutex'];
+
+        $basDetails = $this->fixtures->create('banking_account_statement_details', [
+            'status' => BasDetails\Status::UNDER_MAINTENANCE,
+            'account_number' => '2224440041626915',
+            'channel' => BasDetails\Channel::ICICI
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testInsertIciciMissingAccountStatement'];
+
+        $testData['request']['content']['account_number'] = '2224440041626915';
+
+        $testData['response'] = [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ];
+
+        $testData['exception'] = [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS,
+        ];
+
+        $mutex->acquireAndRelease(
+            'banking_account_statement_fetch_2224440041626915_icici',
+            function() use ($testData) {
+                $this->startTest($testData);
+            },
+            300);
+
+        $basDetails->reload();
+
+        $this->assertEquals(BasDetails\Status::UNDER_MAINTENANCE, $basDetails->getStatus());
     }
 
     public function testDryRunInsertMissingAccountStatement()

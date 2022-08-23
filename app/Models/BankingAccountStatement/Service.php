@@ -4,8 +4,8 @@ namespace RZP\Models\BankingAccountStatement;
 
 use Cache;
 use RZP\Models\Base;
-use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Service extends Base\Service
 {
@@ -144,10 +144,8 @@ class Service extends Base\Service
 
             return $response;
         }
-        catch(\Exception $exception)
+        catch (\Exception $exception)
         {
-            $this->core()->releaseBasDetailsFromStatementFix($accountNumber, $channel);
-
             $this->trace->traceException(
                 $exception,
                 null,
@@ -157,6 +155,11 @@ class Service extends Base\Service
                     'channel'        => $channel
                 ]
             );
+
+            if ($exception->getCode() !== ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
+            {
+                $this->core()->releaseBasDetailsFromStatementFix($accountNumber, $channel);
+            }
 
             throw $exception;
         }

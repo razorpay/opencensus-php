@@ -1152,6 +1152,11 @@ class Core extends Base\Core
 
                 $basDetailEntity->setStatementClosingBalance($initialStatementClosingBalance + $netBalanceChange);
 
+                if ($basDetailEntity->getChannel() === BASDetails\Channel::RBL)
+                {
+                    $basDetailEntity->setPaginationKey(null);
+                }
+
                 $this->repo->saveOrFail($basDetailEntity);
             },
             30,
