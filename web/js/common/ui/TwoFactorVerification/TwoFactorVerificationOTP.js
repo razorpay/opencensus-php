@@ -15,7 +15,27 @@ class TwoFactorVerificationOTP extends React.Component {
     onSuccess: () => {},
   };
 
-  state = { otpValue: null };
+  noOfAttempts = 1;
+  timerIntervalId = null;
+
+  state = { otpValue: null, resendTimer: 30, wrongOtp: false };
+
+  setTimerInterval = () => {
+    this.timerIntervalId = setInterval(() => {
+      this.setState((state) => {
+        if (state.resendTimer > 0) {
+          return { resendTimer: state.resendTimer - 1 };
+        } else {
+          clearInterval(this.timerIntervalId);
+        }
+        return {};
+      });
+    }, 1000);
+  };
+
+  componentWillUnmount() {
+    this.timerIntervalId && clearInterval(this.timerIntervalId);
+  }
 
   updateOtpValue = (otp) => {
     this.setState({ otpValue: otp });
@@ -68,13 +88,41 @@ class TwoFactorVerificationOTP extends React.Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    this.setTimerInterval();
   }
 
+  attemptsTimerRef = { 2: 60, 3: 120, 4: 240, 5: 300 };
+  onResendOtp = () => {
+    const { title, onResend } = this.props;
+
+    this.noOfAttempts += 1;
+    analyticsTrack({
+      objectName: '2fa setup popup',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {
+        action: 'resend',
+        '2FaFlow': title,
+        otpAttempts: this.noOfAttempts,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+
+    return onResend().then(() => {
+      this.setState(
+        { resendTimer: this.attemptsTimerRef[this.noOfAttempts] || this.attemptsTimerRef[5] },
+        this.setTimerInterval,
+      );
+    });
+  };
+
   render() {
+    const { resendTimer, wrongOtp } = this.state;
+    const { title, renderMessage } = this.props;
     return (
       <div>
         <ModalHeader
-          title={this.props.title}
+          title={title}
           onCloseClick={(...e) => {
             analyticsTrack({
               objectName: '2fa setup popup',
@@ -82,48 +130,42 @@ class TwoFactorVerificationOTP extends React.Component {
               screen: 'my account',
               properties: {
                 action: 'cancel',
-                '2FaFlow': this.props.title,
+                '2FaFlow': title,
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             this.onCloseClick(...e);
           }}
         />
-        <div class="modal-body">
-          {this.props.renderMessage()}
+        <div className="modal-body">
+          {renderMessage()}
           <OtpInput
             onComplete={this.updateOtpValue}
             onChange={this.updateOtpValue}
-            wrong={this.state.wrongOtp}
+            wrong={wrongOtp}
           />
-          <p class="m-t m-b">
-            Didn’t receive an OTP?{' '}
-            <AsyncBtn.Transparent
-              pendingState="Sending OTP..."
-              onClick={() => {
-                analyticsTrack({
-                  objectName: '2fa setup popup',
-                  actionName: 'clicked',
-                  screen: 'my account',
-                  properties: {
-                    action: 'resend',
-                    '2FaFlow': this.props.title,
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-                return this.props.onResend();
-              }}
-              class="m-l"
-              showLoader={false}
-            >
-              Resend
-            </AsyncBtn.Transparent>
+          <p className="m-t m-b">
+            {resendTimer > 0 ? (
+              `Resend OTP in ${resendTimer} seconds`
+            ) : (
+              <>
+                Didn’t receive an OTP?{' '}
+                <AsyncBtn.Transparent
+                  pendingState="Sending OTP..."
+                  onClick={this.onResendOtp}
+                  className="m-l"
+                  showLoader={false}
+                >
+                  Resend
+                </AsyncBtn.Transparent>
+              </>
+            )}
           </p>
-          <div class="Modal__actions">
+          <div className="Modal__actions">
             <AsyncBtn.Primary
               pendingState="Verifying OTP..."
               type="submit"
-              class="Button--full-width"
+              className="Button--full-width"
               onClick={this.onConfirm}
             >
               Confirm
