@@ -182,6 +182,8 @@ class Validator extends Base\Validator
         'speed_decisioned' => 'required|string|in:instant,optimum,normal',
         'gateway'          => 'required|string',
         'mode'             => 'sometimes|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',  // instant refunds mode
+        'fee'              => 'sometimes|integer',
+        'tax'              => 'sometimes|integer',
     ];
 
     protected static $refundEmailDataRules = [

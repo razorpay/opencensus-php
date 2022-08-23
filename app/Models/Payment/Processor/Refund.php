@@ -1833,32 +1833,17 @@ trait Refund
 
         $baseAmount = intval($refundInput[RefundEntity::BASE_AMOUNT]);
 
-        $refundCreateInput = [
-            RefundEntity::AMOUNT => $amount,
-        ];
-
         // For emandate Rs0 registration refunds
-        if (($payment->isEmandate() === true) && (empty($refundCreateInput[RefundEntity::AMOUNT]) === true))
+        if (($payment->isEmandate() === true) && (empty($refundInput[RefundEntity::AMOUNT]) === true))
         {
             // unsetting it since validator on amount would execute and build will fail, if input has amount.
             // also, emandate raises refund requests by NOT supplying the amount. keeping it uniform.
-            unset($refundCreateInput[RefundEntity::AMOUNT]);
+            unset($refundInput[RefundEntity::AMOUNT]);
         }
 
-        $refund = (new Payment\Refund\Entity)->build($refundCreateInput, $payment);
-
-        $refund->merchant()->associate($this->merchant);
+        $refund = (new Payment\Refund\Service())->buildVirtualRefundEntity($payment, $refundInput);
 
         $refund->balance()->associate($this->merchant->primaryBalance);
-
-        // Setting the original refund id created on scrooge
-        $refund->setId($refundId);
-
-        $refund->setRawBaseAmount($baseAmount);
-
-        $refund->setSpeedDecisioned($refundInput[RefundEntity::SPEED_DECISIONED]);
-
-        $refund->setGateway($refundInput[RefundEntity::GATEWAY]);
 
         if (empty($refundInput[RefundConstants::MODE]) === false)
         {

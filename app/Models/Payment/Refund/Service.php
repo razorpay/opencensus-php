@@ -1862,7 +1862,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function buildVirtualRefundEntity(Payment\Entity $payment, array &$input, string $refundId = null)
+    public function buildVirtualRefundEntity(Payment\Entity $payment, array &$input, string $refundId = null)
     {
         $refund = (new RefundEntity())->forceFill($input);
 
