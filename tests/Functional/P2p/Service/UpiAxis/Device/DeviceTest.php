@@ -57,6 +57,35 @@ class DeviceTest extends TestCase
         ]);
     }
 
+    public function testVerificationWithInvalidContact()
+    {
+        $helper = $this->getDeviceHelper();
+
+        $initiate = $helper->initiateVerification([
+            Fields::SDK => [
+                Fields::SIM_ID  => '0',
+            ]
+        ]);
+
+        $helper->withSchemaValidated();
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('The contact format is invalid');
+
+        $helper->verification($initiate['callback'], [
+            Fields::SDK => [
+                Fields::STATUS                    => 'SUCCESS',
+                Fields::IS_DEVICE_BOUND           => 'true',
+                Fields::IS_DEVICE_ACTIVATED       => 'true',
+                Fields::DEVICE_FINGERPRINT        => '61F275C82A0AECC4788FA',
+                Fields::CUSTOMER_MOBILE_NUMBER    => '919742417121232', // invalid 15 digit contact
+                Fields::VPA_ACCOUNTS              => [],
+                Fields::UDF_PARAMETERS            => [],
+            ]
+        ]);
+    }
+
     public function testVerificationEvents()
     {
         $this->expectWebhookEvent(

@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         $rules = [
             Entity::CUSTOMER_ID         => 'string|min:14|max:19',
             Entity::MERCHANT_ID         => 'string',
-            Entity::CONTACT             => 'string|regex:/91(\d*){10}/',
+            Entity::CONTACT             => 'string|regex:/^91[\d*]{10}$/',
             Entity::SIMID               => 'string',
             Entity::UUID                => 'string',
             Entity::TYPE                => 'string',
