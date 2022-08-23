@@ -3,9 +3,11 @@
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use Config;
+use Carbon\Carbon;
 use RZP\Gateway\Enach\Rbl;
-use RZP\Gateway\Enach\Base\Entity;
 use RZP\Models\Payment\Gateway;
+use RZP\Gateway\Enach\Base\Entity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Gateway\Enach\Rbl\DebitFileHeadings as Headings;
 
 class EnachRbl extends Base
@@ -76,5 +78,21 @@ class EnachRbl extends Base
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Headings::BENEFICIARYACNO]);
+    }
+
+    public function shouldSendToBatchService(): bool
+    {
+        $key = Carbon::now()->getTimestamp();
+
+        $razorxTreatment = RazorxTreatment::BATCH_SERVICE_EMANDATE_DEBIT_ENACH_RBL_MIGRATION;
+
+        $variant = $this->app->razorx->getTreatment($key,
+            $razorxTreatment,
+            $this->mode
+        );
+
+        $result = (strtolower($variant) === 'on');
+
+        return $result;
     }
 }

@@ -199,6 +199,8 @@ class Type
 
     const ENACH_NPCI_NETBANKING       = 'enach_npci_netbanking';
 
+    const EMANDATE_DEBIT_ENACH_RBL    = 'emandate_debit_enach_rbl';
+
     //
     // Support admin action for bulk retrying refunds via FTA to custom sources
     //
