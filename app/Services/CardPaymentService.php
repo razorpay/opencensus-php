@@ -53,6 +53,12 @@ class CardPaymentService
     const ERROR     = 'error';
     const AUTHORIZE = 'authorize';
 
+    /**
+     * Default OTP attempts limit
+     * @var integer
+     */
+    const OTP_ATTEMPTS_LIMIT = 3;
+
     // Entities fetch params
     const RRN = 'rrn';
 
@@ -191,6 +197,21 @@ class CardPaymentService
         return $headers;
     }
 
+    protected function verifyOtpAttempts($payment, $limit = null)
+    {
+        if ($limit === null)
+        {
+            $limit = self::OTP_ATTEMPTS_LIMIT;
+        }
+
+        if ($payment['otp_attempts'] >= $limit)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED, null, null,
+            ['method'=> $payment['method']]);
+        }
+    }
+
     public function action(string $gateway, string $action, array $input)
     {
         $this->action = $action;
@@ -199,6 +220,11 @@ class CardPaymentService
 
         $this->input = $input;
 
+        if ($this->action === Action::CALLBACK and $gateway === Payment\Gateway::KOTAK_DEBIT_EMI)
+        {
+            $this->verifyOtpAttempts($input['payment']);
+        }
+        
         if (empty($input[Entity::TERMINAL]) === false)
         {
             $input[Entity::TERMINAL] = $input[Entity::TERMINAL]->toArrayWithPassword();

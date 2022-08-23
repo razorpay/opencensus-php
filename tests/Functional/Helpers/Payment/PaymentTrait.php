@@ -57,6 +57,7 @@ trait PaymentTrait
     use PaymentHdfcDebitEmiTrait;
     use PaymentWalletAmazonpayTrait;
     use PaymentWalletAirtelMoneyTrait;
+    use PaymentKotakDebitEmiTrait;
 
     use RequestResponseFlowTrait
     {

@@ -703,6 +703,7 @@ trait Callback
             $input['card'] = array();
 
             $input['card']['number'] = $this->getCardNumber($card, $payment->getGateway());
+            $input['emi_plan'] = $payment->emi;
         }
     }
 
@@ -788,6 +789,7 @@ trait Callback
         switch ($internalErrorCode)
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
+            case ErrorCode::BAD_REQUEST_PAYMENTS_INVALID_OTP_TRY_NEW:
                 $this->payment->incrementOtpAttempts();
 
                 $this->app['segment']->trackPayment($payment,
