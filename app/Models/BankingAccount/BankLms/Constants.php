@@ -12,5 +12,6 @@ class Constants
     const LEAD_RECEIVED_FROM_DATE       = 'lead_received_from_date';
     const ACTIVATION_ACCOUNT_TYPE       = 'activation_account_type';
 
+    const IS_GREEN_CHANNEL              = 'is_green_channel';
     const SORT_SENT_TO_BANK_DATE        = 'sort_sent_to_bank_date';
 }

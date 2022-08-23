@@ -248,9 +248,29 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Filter to search whether lead is green_channel or not
+     */
+    public function addQueryParamIsGreenChannel(Base\BuilderEx $query, $params)
+    {
+        $greenChannel = $params[BankLms\Constants::IS_GREEN_CHANNEL];
+
+        if ($greenChannel === 'yes') {
+            $greenChannel = 'true';
+        } else {
+            $greenChannel = 'false';
+        }
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $query->whereRaw('json_unquote(json_extract(additional_details, \'$."green_channel"\')) = \''.$greenChannel.'\'');
+    }
+
+    /**
      * Filter to search when lead was sent to bank - start date
      * Sent from Partner Bank LMS
-     * Defined here becuase it is used by the Download MIS 
+     * Defined here becuase it is used by the Download MIS
      */
     public function addQueryParamLeadReceivedFromDate($query, $params)
     {
@@ -261,12 +281,12 @@ class Repository extends Base\Repository
 
             $q->selectRaw('*')
             ->from(function ($q2) {
-                
+
                 $bankingAccountStateTable = $this->repo->banking_account_state->getTableName();
                 $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
                 $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(State\Entity::BANKING_ACCOUNT_ID);
                 $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(State\Entity::STATUS);
-                
+
                 $q2->from($bankingAccountStateTable)
                     ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn)
                     ->where($bankingAccountStateStatusColumn, '=', Status::INITIATED)
@@ -281,7 +301,7 @@ class Repository extends Base\Repository
 
     /**
      * Filter to search when lead was sent to bank - end date
-     * 
+     *
      * This is a dummy code block, the end date filter is handled above in `addQueryParamLeadReceivedFromDate`
      * The validator will ensure that we are getting both fields
      */

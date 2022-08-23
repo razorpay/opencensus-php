@@ -7813,7 +7813,6 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
-
     public function testBankLmsEndToEndForBusinessCategory()
     {
         // Make merchant as Bank CA Onboarding Partner
@@ -7853,6 +7852,56 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testBankLmsEndToEndForGreenChannel()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount('10000000000000', [
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY   => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM          => 'self_serve',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS  => [
+                    'green_channel' =>  true,
+                ],
+            ]
+        ]);
+
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+           Status::PICKED, Status::INITIATED,
+           null, null,
+           null, null,
+           $response);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $url = '/banking_accounts/rbl/lms/banking_account?is_green_channel=yes';
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => $url,
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testBankLmsEndToEndSortBySentToBankDate()
     {
         // Make merchant as Bank CA Onboarding Partner
@@ -7870,10 +7919,19 @@ class BankingAccountTest extends TestCase
         $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
 
         // New Merchant Apply for Current Account
-        $response = $this->MerchantApplyForCurrentAccount();
+        $response = $this->MerchantApplyForCurrentAccount('10000000000000', [
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY   => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM          => 'self_serve',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS  => [
+                    'green_channel' =>  true,
+                ],
+            ]
+        ]);
+
 
         // Attach Sub-merchant to RBl Merchant
-       $this->assertUpdateBankingAccountStatusFromTo(
+        $this->assertUpdateBankingAccountStatusFromTo(
            Status::PICKED, Status::INITIATED,
            null, null,
            null, null,
