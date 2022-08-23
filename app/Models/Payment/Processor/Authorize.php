@@ -9381,6 +9381,8 @@ trait Authorize
 
             $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
+            $this->publishMessageToMetro($payment);
+
             (new Shield($this->app))->enqueueShieldEvent($event);
 
             return true;

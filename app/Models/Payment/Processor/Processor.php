@@ -3547,14 +3547,18 @@ class Processor
 
     protected function publishMessageToMetro($payment)
     {
-        if ($payment->isCard() === false)
+
+        if (($payment->isCard() === false)
+        and ($payment->isUpi() === false))
         {
             return;
         }
 
-        if ($payment->isGatewayCaptured() === false)
+        if ( ($payment->isCard() === true)  )
         {
-            return;
+            if  ($payment->isGatewayCaptured() === false) {
+                return;
+            }
         }
 
         if ($this->mode !== Mode::LIVE)
@@ -3564,8 +3568,12 @@ class Processor
 
         try
         {
+            if($payment->isUpi() === true){
+                $data = $this->getAutorizeVerifyData($payment);
+            }
+            else{
             $data = $this->getCaptureVerifyData($payment);
-
+            }
             $publishData['data'] = json_encode($data);
 
             $response = $this->app['metro']->publish(self::CAPTURE_VERIFY_METRO_TOPIC, $publishData);
@@ -3586,6 +3594,42 @@ class Processor
                 []);
         }
 
+    }
+    protected function getAutorizeVerifyData($payment)
+    {
+        $data = [];
+
+        $data['payment'] = [
+            'amount'        => $payment->getAmount(),
+            'id'            => $payment->getId(),
+            'status'        => $payment->getStatus(),
+            'description'   => $payment->getDescription(),
+            'vpa' => $payment->getVpa(),
+        ];
+
+        $terminal = $payment->terminal;
+
+        $data['terminal'] = [
+            'id'                  => $payment->terminal->getId(),
+            'gateway'             => $payment->terminal->getGateway(),
+            'vpa'                 => $payment->terminal->getVpa(),
+        ];
+
+
+        $data['upi'] = [
+            'gateway'                  => $payment->getGateway(),
+            'gateway_amount'           => $payment->getAmount(),
+            'npci_reference_id'        => $payment->getReference16(),
+            'vpa'                      => $payment->getVpa(),
+        ];
+
+        $action =$payment->action;
+
+        $data['action'] = [
+            'action' => 'verify',
+        ];
+
+        return $data;
     }
 
     protected function getCaptureVerifyData($payment)
