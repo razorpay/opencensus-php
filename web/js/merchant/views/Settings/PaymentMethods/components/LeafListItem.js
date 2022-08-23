@@ -42,6 +42,8 @@ import AdditionalDetails from './InstrumentStatuses/AdditionalDetails';
 import MissingInfoModal from './MissingInfoModal';
 import { withRouter } from 'react-router-dom';
 
+import ConfirmBoxContext from './ConfimBoxContent';
+
 class LeafListItem extends React.Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -138,7 +140,24 @@ class LeafListItem extends React.Component {
         });
         this.props.closeModal();
       })
-      .finally(() => this.setState({ loading: false }));
+      .finally(() => {
+        this.setState({ loading: false });
+        this.context.confirm({
+          forceClose: true,
+        });
+      });
+  };
+
+  handleOnCancelRequest = (instrument, leafInstrument) => {
+    this.setState({ loading: false });
+    this.tracker('instrument request confirmation popup', 'clicked', 'settings', {
+      actionName: 'cancel',
+      instrumentName: instrument.name,
+      method: leafInstrument.name,
+    });
+    this.context.confirm({
+      forceClose: true,
+    });
   };
 
   handleCreateRequest = () => {
@@ -160,33 +179,16 @@ class LeafListItem extends React.Component {
     this.context
       .confirm({
         header: 'Confirmation',
-        message: () => (
-          <div style={{ marginBottom: '-5px' }}>
-            This instrument will be enabled for you using &nbsp;
-            <span className="toggler-btn">
-              <a href="https://razorpay.com/pricing/" target="_blank" rel="noopener noreferrer">
-                Standard Pricing <i className="i i-external-link" style={{ marginLeft: '2px' }} />
-              </a>
-            </span>
-            . Processing the request roughly takes {instrumentsTat && instrumentsTat[requestSlug]}{' '}
-            working days.
-            <br /> <br />
-          </div>
+        message: (
+          <ConfirmBoxContext
+            numberOfDays={instrumentsTat && instrumentsTat[requestSlug]}
+            onRequestAbort={() => this.handleOnCancelRequest(instrument, leafInstrument)}
+            onRequest={() => {
+              this.createRequestAction(instrument, leafInstrument, requestSlug);
+            }}
+          />
         ),
-        affirmativeLabel: 'Confirm',
-        affirmativePendingLabel: 'Requesting...',
-        abortLabel: 'Cancel',
-        action: () => {
-          this.createRequestAction(instrument, leafInstrument, requestSlug);
-        },
-        abort: () => {
-          this.setState({ loading: false });
-          this.tracker('instrument request confirmation popup', 'clicked', 'settings', {
-            actionName: 'cancel',
-            instrumentName: instrument.name,
-            method: leafInstrument.name,
-          });
-        },
+        hideActions: true,
       })
       .catch(() => {});
     return true;

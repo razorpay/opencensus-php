@@ -17,29 +17,33 @@ const ConfirmModal = (props) => {
         style={confirmModelStyle}
         onRequestClose={props.onAbort}
         closeTimeoutMS={300}
-        class={`${props.org.custom_code} Modal Modal--small Modal--confirm ${className}`}
+        className={`${props.org.custom_code} Modal Modal--small Modal--confirm ${className}`}
         contentLabel="ConfirmModal"
         ariaHideApp={false}
       >
-        <div class="modal-header">
-          <h3 class="modal-title">{typeof header === 'function' ? header() : header || 'Alert'}</h3>
+        <div className="modal-header">
+          <h3 className="modal-title">
+            {typeof header === 'function' ? header() : header || 'Alert'}
+          </h3>
         </div>
 
-        <div class="modal-body">
+        <div className="modal-body">
           {typeof message === 'function' ? message() : <p>{message}</p>}
 
-          <div class="Modal__actions">
-            <button type="button" class="btn btn-outline" onClick={props.onAbort}>
-              {props.options.abortLabel}
-            </button>
-            <AsyncButton
-              type="button"
-              class="btn btn-primary"
-              onClick={props.onAffirm}
-              text={props.options.affirmativeLabel}
-              pendingText={props.options.affirmativePendingLabel}
-            />
-          </div>
+          {!props.options.hideActions && (
+            <div className="Modal__actions">
+              <button type="button" className="btn btn-outline" onClick={props.onAbort}>
+                {props.options.abortLabel}
+              </button>
+              <AsyncButton
+                type="button"
+                className="btn btn-primary"
+                onClick={props.onAffirm}
+                text={props.options.affirmativeLabel}
+                pendingText={props.options.affirmativePendingLabel}
+              />
+            </div>
+          )}
         </div>
       </Modal>
     </div>

@@ -8,11 +8,15 @@ import { bindActionCreators } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { withRouter } from 'react-router-dom';
 import { merchantFetch } from 'merchant/utils/ajax';
+import { STANDARD_PRICING_URL } from '../constants';
 
 const SET_VALUE = 'SET_VALUE';
 const SET_PAGE = 'SET_PAGE';
 const SET_SECONDARY_PAGE = 'SET_SECONDARY_PAGE';
 const SET_DISABLED = 'SET_DISABLED';
+const TOGGLE_CHECKBOX = 'TOGGLE_CHECKBOX';
+
+const LAST_PAGE = 2;
 
 const MissingInfoForm = ({ fields, values, onChange }) => (
   <div className="form-container">
@@ -53,18 +57,34 @@ const MissingInfoForm = ({ fields, values, onChange }) => (
   </div>
 );
 
-const InstrumentTat = ({ tat, instrument }) => (
-  <div className="tat">
+const InstrumentTat = ({ tat, instrument, isChecked, handleCheckBoxToggle }) => (
+  <div className="tat payment-method-confirm-message">
     <p className="primary-text">
       {instrument} for recurring payments will be enabled for you using{' '}
-      <a href="https://razorpay.com/pricing/" target="_blank" rel="noopener noreferrer">
+      <a href={STANDARD_PRICING_URL} target="_blank" rel="noopener noreferrer">
         Standard Pricing <i className="i i-external-link" />
       </a>
       . Enabling the request roughly takes <b>{tat} working days</b>.
     </p>
-    <p className="secondary-text">
-      Please review the form before submitting. For any concern after submission, you can contact
-      our support.
+    <p className="primary-text">
+      Please confirm the following pages are added on your website:
+      <ul className="confirm-list">
+        <li>Terms and Conditions</li>
+        <li>Privacy Policy</li>
+        <li>Cancellation and Refund</li>
+        <li>Shipping and Exchange</li>
+        <li>Contact Us</li>
+      </ul>
+      <Input.Check
+        name="instruments"
+        defaultValue={false}
+        checked={isChecked}
+        onChange={handleCheckBoxToggle}
+        autoRender
+        fieldLabel={
+          "I've added these pages and understand that my request will be rejected without them"
+        }
+      />
     </p>
   </div>
 );
@@ -83,13 +103,20 @@ const reducer = (state, action) => {
     }
     case SET_DISABLED:
       return { ...state, disabled: action.payload };
+    case TOGGLE_CHECKBOX:
+      return { ...state, isChecked: action.payload };
     default:
       return state;
   }
 };
 
 const MissingInfoModal = (props) => {
-  const [state, dispatch] = useReducer(reducer, { page: 1, values: {}, disabled: true });
+  const [state, dispatch] = useReducer(reducer, {
+    page: 1,
+    values: {},
+    disabled: true,
+    isChecked: false,
+  });
   const {
     tat,
     instrument: { name, collect_info, path },
@@ -100,7 +127,7 @@ const MissingInfoModal = (props) => {
     createRequestAction,
     history,
   } = props;
-  const { page, values, disabled } = state;
+  const { page, values, disabled, isChecked } = state;
 
   const saveMerchantDetails = (data) => {
     return merchantFetch({
@@ -129,7 +156,7 @@ const MissingInfoModal = (props) => {
   const onPrimaryButtonClick = async () => {
     dispatch({ type: SET_PAGE });
     try {
-      if (page === 2) {
+      if (page === LAST_PAGE) {
         dispatch({ type: SET_DISABLED, payload: true });
         const data = {
           ...values,
@@ -161,6 +188,13 @@ const MissingInfoModal = (props) => {
     });
   };
 
+  const handleCheckBoxToggle = () => {
+    return dispatch({
+      type: TOGGLE_CHECKBOX,
+      payload: !isChecked,
+    });
+  };
+
   useEffect(() => {
     if (Object.values(values)?.every((v) => v.length > 0)) {
       dispatch({ type: SET_DISABLED, payload: false });
@@ -174,6 +208,8 @@ const MissingInfoModal = (props) => {
     collect_info?.forEach(({ name }) => (initialValues[name] = ''));
     dispatch({ type: SET_VALUE, payload: initialValues });
   }, []);
+
+  const isNotCheckedRequiredInfo = page === LAST_PAGE && !isChecked;
 
   return (
     <>
@@ -193,10 +229,15 @@ const MissingInfoModal = (props) => {
       {page === 1 ? (
         <MissingInfoForm values={values} fields={collect_info} onChange={onChange} />
       ) : (
-        <InstrumentTat tat={tat} instrument={name} />
+        <InstrumentTat
+          tat={tat}
+          instrument={name}
+          isChecked={isChecked}
+          handleCheckBoxToggle={handleCheckBoxToggle}
+        />
       )}
       <div className="footer">
-        {page === 2 && (
+        {page === LAST_PAGE && (
           <button
             type="button"
             disabled={disabled}
@@ -208,7 +249,7 @@ const MissingInfoModal = (props) => {
         )}
         <button
           type="button"
-          disabled={disabled}
+          disabled={disabled || isNotCheckedRequiredInfo}
           className="btn btn-primary"
           onClick={onPrimaryButtonClick}
         >

@@ -31,7 +31,7 @@ export default class ConfirmModalProvider extends Component {
   }
 
   confirm(options = {}) {
-    let promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) => {
       this.setState({
         confirmResolve: resolve,
         confirmReject: reject,
@@ -44,10 +44,14 @@ export default class ConfirmModalProvider extends Component {
       };
     }
 
+    if (options.forceClose) {
+      return this.setState({
+        show: false,
+      });
+    }
+
     options.message =
-      typeof options.message === 'undefined'
-        ? 'Are you sure to continue ?'
-        : options.message;
+      typeof options.message === 'undefined' ? 'Are you sure to continue ?' : options.message;
     options.affirmativeLabel = options.affirmativeLabel || 'OK';
     options.abortLabel = options.abortLabel || 'Cancel';
 
@@ -62,16 +66,14 @@ export default class ConfirmModalProvider extends Component {
   }
 
   affirm() {
-    let action = this.state.options.action;
-    let returnFn = action && action();
+    const action = this.state.options.action;
+    const returnFn = action && action();
     if (returnFn && typeof returnFn.then === 'function') {
       return returnFn
         .then(() => {
           this.close();
         })
-        .catch(err => {
-          this.close();
-        });
+        .catch(() => this.close());
     }
 
     this.close();
@@ -92,15 +94,10 @@ export default class ConfirmModalProvider extends Component {
   }
 
   render() {
-    let { show, options } = this.state;
+    const { show, options } = this.state;
     return (
       <div>
-        <ConfirmModal
-          show={show}
-          options={options}
-          onAffirm={this.affirm}
-          onAbort={this.abort}
-        />
+        <ConfirmModal show={show} options={options} onAffirm={this.affirm} onAbort={this.abort} />
 
         {Children.only(this.props.children)}
       </div>

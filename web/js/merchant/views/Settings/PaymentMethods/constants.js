@@ -51,3 +51,5 @@ export const additionalDetailsStatus = {
   executed: 'updated',
   closed: 'updated',
 };
+
+export const STANDARD_PRICING_URL = 'https://razorpay.com/pricing/';
