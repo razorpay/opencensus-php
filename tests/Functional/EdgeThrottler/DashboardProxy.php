@@ -135,6 +135,7 @@ class DashboardProxy extends TestCase
                 'id' => '050a23b1-628e-4af8-96ef-80201ddd2a19',
             ],
             'rule'       => 'consumer_username::route_name',
+            'rule_component_preference' => '{\"consumer_username\":false,\"route_name\":true}',
             'created_at' => 1621410238,
             'updated_at' => 1621410238,
             'enabled'    => true,
@@ -178,6 +179,7 @@ class DashboardProxy extends TestCase
                 'id' => '050a23b1-628e-4af8-96ef-80201ddd2a19',
             ],
             'rule'       => 'consumer_username::route_name',
+            'rule_component_preference' => '{\"consumer_username\":false,\"route_name\":true}',
             'created_at' => 1621410238,
             'updated_at' => 1621410238,
             'enabled'    => true
@@ -220,6 +222,7 @@ class DashboardProxy extends TestCase
             "data": [{
                 "id": "9405289d-70a0-4b53-adfb-1429ad432fd5",
                 "rule": "consumer_username::route_name",
+                "rule_component_preference": "{\"consumer_username\":false,\"route_name\":true}",
                 "enabled": true,
                 "service": {
                     "id": "050a23b1-628e-4af8-96ef-80201ddd2a19"
@@ -255,6 +258,7 @@ class DashboardProxy extends TestCase
                         'id' => '050a23b1-628e-4af8-96ef-80201ddd2a19',
                     ],
                     'rule' => 'consumer_username::route_name',
+                    'rule_component_preference' => '{\"consumer_username\":false,\"route_name\":true}',
                     'created_at' => 1621410238,
                     'updated_at' => 1621410238,
                     'enabled'    => true
@@ -270,6 +274,7 @@ class DashboardProxy extends TestCase
             "data": [{
                 "id": "80a423aa-1178-4898-9213-11854e151d65",
                 "rule": "request_header.318",
+                "rule_component_preference": "{\"request_header\":true}",
                 "enabled": true,
                 "priority": 100,
                 "route": null,
@@ -307,6 +312,7 @@ class DashboardProxy extends TestCase
                         'id' => '094d8793-a2d5-4468-a302-3042567d4d65',
                     ],
                     'rule' => 'request_header.318',
+                    'rule_component_preference' => '{\"request_header\":true}',
                     'created_at' => 1649080101,
                     'updated_at' => 1649080101,
                     'enabled'    => true,
