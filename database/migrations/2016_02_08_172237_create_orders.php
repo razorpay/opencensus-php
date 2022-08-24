@@ -106,7 +106,7 @@ class CreateOrders extends Migration
                   ->nullable()
                   ->default(null);
 
-            $table->char(Order::REFERENCE8, Order::ID_LENGTH)
+            $table->string(Order::REFERENCE8)
                   ->nullable()
                   ->default(null);
 

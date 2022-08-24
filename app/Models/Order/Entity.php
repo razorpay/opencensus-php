@@ -103,6 +103,7 @@ class Entity extends Base\PublicEntity
     const REFERENCE6        = 'reference6';
     // Using reference7 column to store config_id for convenience fee config
     const FEE_CONFIG_ID     = 'reference7';
+    // Using reference8 column to store "source" of orders
     const REFERENCE8        = 'reference8';
     const PUBLIC_KEY        = 'public_key';
 
@@ -570,6 +571,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PUBLIC_KEY, $publicKey);
     }
 
+    public function setReference8($reference8)
+    {
+        $this->setAttribute(self::REFERENCE8, $reference8);
+    }
+
     public function setReceipt($receipt)
     {
         $this->setAttribute(self::RECEIPT, $receipt);
@@ -783,6 +789,11 @@ class Entity extends Base\PublicEntity
     public function getPublicKey()
     {
         return $this->getAttribute(self::PUBLIC_KEY);
+    }
+
+    public function getReference8()
+    {
+        return $this->getAttribute(self::REFERENCE8);
     }
 
     public function getMerchantId()

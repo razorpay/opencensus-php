@@ -522,6 +522,12 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        $isMerchantDashboard = $this->app['basicauth']->isMerchantDashboardApp();
+        if ($isMerchantDashboard) {
+            // We are passing this filter to not show the internal orders in merchant dashboard
+            $input[Entity::REFERENCE8] = 'null';
+        }
+
         $orders = $this->repo->order->fetch($input, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $orders->toArrayPublic();

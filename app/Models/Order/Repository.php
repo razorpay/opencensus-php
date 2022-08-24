@@ -25,12 +25,14 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
+        Entity::REFERENCE8      => 'sometimes|nullable|string',
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
         Entity::NOTES           => 'sometimes|notes_fetch',
         self::EXPAND . '*'      => 'filled|string|in:virtual_account,transfers',
     ];
 
     protected $appFetchParamRules = [
+        Entity::REFERENCE8      => 'sometimes|nullable|string',
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
