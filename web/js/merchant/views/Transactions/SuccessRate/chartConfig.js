@@ -38,6 +38,9 @@ export const overviewGraphOptions = {
         display: false,
         gridLines: { display: false },
         offset: true,
+        ticks: {
+          beginAtZero: true,
+        },
       },
     ],
   },
@@ -158,6 +161,8 @@ export const pieChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   legend: { display: false },
+  tooltips: { enabled: false },
+  animation: false,
   layout: {
     padding: {
       top: 30,
@@ -183,6 +188,8 @@ export const piePlugins = [
       chart.config.data.labels.forEach((label, i) => {
         const meta = chart.getDatasetMeta(0);
         const arc = meta.data[i];
+        const dataset = chart.config.data.datasets[0];
+        const value = dataset.data[i];
         const centerPoint = arc.getCenterPoint();
         const model = arc._model;
         const color = '#818EA3';
@@ -229,10 +236,12 @@ export const piePlugins = [
         //fill custom label
         const labelAlignStyle = edgePointX < chartCenterPoint.x ? 'left' : 'right';
         const labelX = edgePointX;
-        const labelY = point2Y;
+        const labelY = point2Y + 15;
+        const valueY = point2Y;
         ctx.textAlign = labelAlignStyle;
         ctx.textBaseline = 'bottom';
         ctx.fillStyle = '#818EA3';
+        ctx.fillText(`${value} %`, labelX, valueY);
         ctx.fillText(label, labelX, labelY);
       });
       ctx.restore();

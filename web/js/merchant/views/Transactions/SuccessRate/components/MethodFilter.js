@@ -9,6 +9,7 @@ const MethodFilter = (props) => {
     if (groupingData?.length > 0) {
       return (
         <GroupingDropdown
+          key={index}
           className="success-rate-tab-filter"
           onGroupChange={handleGroupingChange(index)}
           grouping={groupingData}

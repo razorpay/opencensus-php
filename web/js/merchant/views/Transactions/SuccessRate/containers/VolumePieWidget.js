@@ -1,19 +1,22 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Pie } from 'react-chartjs-2';
-import { isEmpty, compact, capitalize } from 'lodash';
+import compact from 'lodash/compact';
+import isEmpty from 'lodash/isEmpty';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
 import StyledHeader from '../components/StyledHeader';
 import NoDataMessage from '../components/NoDataMessage';
 import { pieChartOptions as options, piePlugins as plugins } from '../chartConfig';
 import { getPieChartData } from '../helper';
+import { TAG_MAP } from '../constants';
 
-const renderInfoCard = ({ name, successful, total, sr } = {}) => {
-  if (!sr) return null;
+const renderInfoCard = ({ name = '--', successful, total, sr } = {}, index) => {
+  if (name === 'others' && !sr) return null;
+  const label = TAG_MAP[name] ?? name;
   return (
-    <div className="info-card">
-      <StyledHeader text={capitalize(name) ?? '--'} />
+    <div key={`${name}___${index}`} className="info-card">
+      <StyledHeader text={label} />
       <div className="info-card__label">
         <p className="label-text">Successful / Total Attempts</p>
       </div>
@@ -29,13 +32,14 @@ const renderInfoCard = ({ name, successful, total, sr } = {}) => {
 const VolumePieWidget = (props) => {
   const { isLoading, tab = {} } = props;
   const { group_by, data } = tab;
-  const groupData = data?.groups?.[group_by];
+  const groupData = data?.groups?.[group_by] ?? [];
   const pieChartData = getPieChartData(groupData);
   const compactData = compact(pieChartData?.datasets?.[0]?.data);
 
   if (isLoading) {
     return (
       <div className="box-widget volume-container">
+        <StyledHeader text="Volume of attempts" />
         <Spinner />
       </div>
     );
@@ -44,7 +48,7 @@ const VolumePieWidget = (props) => {
   return (
     <div className="box-widget volume-container">
       <div className="row">
-        <div className="col-sm-12 col-md-4">
+        <div className="col-sm-12 col-md-5">
           <div className="chart-col">
             <StyledHeader text="Volume of attempts" />
             {!isEmpty(compactData) && (
@@ -54,7 +58,7 @@ const VolumePieWidget = (props) => {
             )}
           </div>
         </div>
-        <div className="col-sm-12 col-md-8">
+        <div className="col-sm-12 col-md-7">
           <div className="info-col">
             {!isLoading && data?.sr ? (
               <div className="info-card">

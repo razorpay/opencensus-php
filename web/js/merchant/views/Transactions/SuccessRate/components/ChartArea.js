@@ -13,7 +13,7 @@ const ChartArea = forwardRef((props, ref) => {
 
   if (!datasets) return null;
 
-  return <Line ref={ref} options={chartOptions} data={{ datasets }} redraw={true} />;
+  return <Line ref={ref} options={chartOptions} data={{ datasets }} redraw />;
 });
 
 export default ChartArea;

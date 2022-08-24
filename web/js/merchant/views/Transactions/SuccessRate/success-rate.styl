@@ -281,11 +281,11 @@ $spacer = 8px
     width: 100%
     height: 250px
   .info-col
-    width: 70%
+    width: 100%
     display: flex
     flex-wrap: wrap
   .info-card
-    padding-inline: $spacer * 4
+    padding-inline: $spacer * 2
     padding-bottom: $spacer * 4
     .styled-header
       margin-bottom: $spacer * 2
@@ -306,32 +306,37 @@ $spacer = 8px
         font-weight: bold
         line-height: 36px
         color: $font-color
-      > p > span.highlight
-        color: $text-green
+        > span.highlight
+          color: $text-green
+    &:first-child .styled-header
+      color: $border-blue
 
     
 /************************************************************/
 
 .sr-dashboard .reasons-container
   padding: 0
-
-.sr-dashboard .r-panel
-  padding: $spacer * 2 $spacer * 4
-  .r-grid
-    margin-right: -15px;
-    margin-left: -15px;
-    margin-top: $spacer * 4
-    &__item
-      margin-bottom: $spacer * 4
-    p.item-text        
-      color: $font-color
-      font-size: 18px
-      font-weight: bold
-      line-height: 36px
-    p.item-desc
-      color: #818EA3
-      font-size: 12px
-      line-height: 16px     
+  .rp-panel
+    padding: $spacer * 2 $spacer * 4
+    height: 100%
+    div.no-data
+      padding-inline: 0
+      text-align: start
+    .rp-grid
+      margin-right: -15px
+      margin-left: -15px
+      margin-top: $spacer * 4
+      &__item
+        margin-bottom: $spacer * 4
+        p.item-count       
+          color: $font-color
+          font-size: 18px
+          font-weight: bold
+          line-height: 36px
+        p.item-description
+          color: #818EA3
+          font-size: 12px
+          line-height: 16px     
 
 .sr-dashboard .vtab__tablist__tab
   .tab-card

@@ -1,6 +1,8 @@
 import store from 'merchant/store';
 import { merchantFetch, merchantFetchWithContentType } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
+import cloneDeep from 'lodash/cloneDeep';
+import lodashset from 'lodash/set';
 
 import {
   initialFilters,
@@ -22,7 +24,7 @@ import {
 const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
 const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
-const UPDATE_TABS = 'UPDATE_TABS';
+const UPDATE_TAB_DATA = 'UPDATE_TAB_DATA';
 const SET_GROUP_TYPE_FILTER = 'SET_GROUP_TYPE_FILTER';
 const UPDATE_GRAPH_INTERVAL = 'UPDATE_GRAPH_INTERVAL';
 const SET_METRICS_DATA = 'SET_METRICS_DATA';
@@ -168,7 +170,7 @@ export const getActiveTab = () => {
 export const updateGraphData = (payload) => {
   const tabClone = getActiveTab();
   return {
-    type: UPDATE_TABS,
+    type: UPDATE_TAB_DATA,
     payload: { ...tabClone, ...payload },
   };
 };
@@ -176,7 +178,7 @@ export const updateGraphData = (payload) => {
 export const updateGraphInterval = (interval) => {
   const tabClone = getActiveTab();
   return {
-    type: UPDATE_TABS,
+    type: UPDATE_TAB_DATA,
     payload: { ...tabClone, selectedInterval: interval },
   };
 };
@@ -223,107 +225,95 @@ export default (state = getInitialState(), action) => {
   const { type, payload } = action;
 
   switch (type) {
-    case `${FETCH_SUCCESS_RATE}::PENDING`:
+    case `${FETCH_SUCCESS_RATE}::PENDING`: {
       return set(state, action.key, true);
+    }
 
-    case `${FETCH_SUCCESS_RATE}::SUCCESS`:
-      return merge(state, {
-        isLoading: false,
-        tabLoading: false,
-        tabs: {
-          ...state.tabs,
-          [state.activeTab]: payload,
-        },
-      });
+    case `${FETCH_SUCCESS_RATE}::SUCCESS`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'isLoading', false);
+      lodashset(stateClone, 'tabLoading', false);
+      lodashset(stateClone, `tabs.${state.activeTab}`, payload);
+      return stateClone;
+    }
 
-    case `${FETCH_SUCCESS_RATE}::ERROR`:
-      return merge(state, {
-        isLoading: false,
-        tabLoading: false,
-        tabs: {
-          ...state.tabs,
-          [state.activeTab]: { ...state.tabs[state.activeTab], ...payload },
-        },
-      });
+    case `${FETCH_SUCCESS_RATE}::ERROR`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'isLoading', false);
+      lodashset(stateClone, 'tabLoading', false);
+      lodashset(stateClone, `tabs.${state.activeTab}.error`, payload);
+      return stateClone;
+    }
 
-    case `${FETCH_MERCHANT_ERRORS}::PENDING`:
+    case `${FETCH_MERCHANT_ERRORS}::PENDING`: {
       return set(state, 'isLoadingMerchantErrors', true);
+    }
 
-    case `${FETCH_MERCHANT_ERRORS}::SUCCESS`:
-      return merge(state, {
-        isLoadingMerchantErrors: false,
-        merchantErrors: { ...payload?.data },
-      });
+    case `${FETCH_MERCHANT_ERRORS}::SUCCESS`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'isLoadingMerchantErrors', false);
+      lodashset(stateClone, 'merchantErrors', payload?.data);
+      return stateClone;
+    }
 
-    case `${FETCH_MERCHANT_ERRORS}::ERROR`:
-      return merge(state, {
-        isLoadingMerchantErrors: false,
-        merchantErrors: {},
-      });
+    case `${FETCH_MERCHANT_ERRORS}::ERROR`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'isLoadingMerchantErrors', false);
+      lodashset(stateClone, 'merchantErrors', payload?.data);
+      return stateClone;
+    }
 
-    case `${FETCH_INTERVALS}::PENDING`:
+    case `${FETCH_INTERVALS}::PENDING`: {
       return set(state, 'graphLoading', true);
+    }
 
-    case `${FETCH_INTERVALS}::SUCCESS`:
-      return merge(state, {
-        graphLoading: false,
-        tabs: {
-          ...state.tabs,
-          [state.activeTab]: payload,
-        },
-      });
+    case `${FETCH_INTERVALS}::SUCCESS`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'graphLoading', false);
+      lodashset(stateClone, `tabs.${state.activeTab}`, payload);
+      return stateClone;
+    }
 
-    case `${FETCH_INTERVALS}::ERROR`:
-      return merge(state, {
-        graphLoading: false,
-        tabs: {
-          ...state.tabs,
-          [state.activeTab]: { ...state.tabs[state.activeTab], ...payload },
-        },
-      });
+    case `${FETCH_INTERVALS}::ERROR`: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, 'graphLoading', false);
+      lodashset(stateClone, `tabs.${state.activeTab}.error`, payload);
+      return stateClone;
+    }
 
-    case SET_METRICS_DATA:
+    case SET_METRICS_DATA: {
       return set(state, 'metrics', payload);
+    }
 
-    case SET_ACTIVE_TAB:
+    case SET_ACTIVE_TAB: {
       return set(state, 'activeTab', payload);
+    }
 
-    case UPDATE_DATE_RANGE:
+    case UPDATE_DATE_RANGE: {
       return merge(state, {
         filters: {
           ...state.filters,
           ...payload,
         },
       });
+    }
 
-    case UPDATE_TABS: {
-      return {
-        ...state,
-        tabs: {
-          ...state.tabs,
-          [state.activeTab]: payload,
-        },
-      };
+    case UPDATE_TAB_DATA: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `tabs.${state.activeTab}`, payload);
+      return stateClone;
     }
 
     case UPDATE_GRAPH_INTERVAL: {
-      const tabClone = getActiveTab();
-      return {
-        ...state,
-        tabs: {
-          ...state.tabs,
-          [state.activeTab]: { ...tabClone, selectedInterval: payload },
-        },
-      };
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `tabs.${state.activeTab}.selectedInterval`, payload);
+      return stateClone;
     }
 
     case SET_GROUP_TYPE_FILTER: {
-      return merge(state, {
-        tabs: {
-          ...state?.tabs,
-          [state?.activeTab]: { ...state?.tabs?.[state?.activeTab], group_by: payload },
-        },
-      });
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `tabs.${state.activeTab}.group_by`, payload);
+      return stateClone;
     }
 
     default:

@@ -40,10 +40,7 @@ const SuccessRate = (props) => {
 
 const mapStateToProps = ({ successRate }) => {
   const { activeTab, tabs } = successRate;
-  return {
-    activeTab,
-    tabs,
-  };
+  return { activeTab, tabs };
 };
 
 const mapDispatchToProps = (dispatch) => {

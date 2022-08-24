@@ -1,5 +1,6 @@
 import moment from 'moment';
-import { capitalize, reduce, head } from 'lodash';
+import head from 'lodash/head';
+import reduce from 'lodash/reduce';
 import cloneDeep from 'lodash/cloneDeep';
 import store from 'merchant/store';
 import {
@@ -10,6 +11,7 @@ import {
   chartStyle,
   defaultPieChartStyle,
   pieChartStyle,
+  TAG_MAP,
 } from './constants';
 
 export const getInterval = (startDate, endDate) => {
@@ -43,7 +45,7 @@ export const initialFilters = () => {
    * since, we'll not have latest downtime data,
    * we query data with endDate 5mins lesser than the current time.
    */
-  const endDate = moment().endOf('hour').add(1, 'second');
+  const endDate = moment().endOf('hour');
   const startDate = endDate
     .clone()
     .add(...DATE_RANGE_PRESETS[DEFAULT_PRESET].slice(1))
@@ -172,7 +174,14 @@ export const onFetchSR = ({ data, startTime, endTime, breakdown, group_by = '' }
 
     if (intervals?.length > 0) {
       const tags =
-        groups?.[group_by]?.reduce((initArray, obj) => [...initArray, obj.name], ['Overall']) ?? [];
+        groups?.[group_by]?.reduce(
+          (accumulator, { name, sr } = {}) => {
+            if (!name || (name === 'others' && !sr)) return accumulator;
+            accumulator.push(name);
+            return accumulator;
+          },
+          ['Overall'],
+        ) ?? [];
 
       const options = {
         intervals,
@@ -243,23 +252,32 @@ export const getSuitableY = (y, yArray = [], direction) => {
   return result;
 };
 
-export const getPieChartData = (groupData) => {
+export const getPieChartData = (groupData = []) => {
   const { backgroundColor, borderColor } = defaultPieChartStyle;
-  return groupData?.reduce(
-    (acc, data, idx) => {
+  const totalSum = groupData.reduce((total, value) => total + (value?.total ?? 0), 0);
+
+  const result = groupData.reduce(
+    (accumulator, datapoint, idx) => {
+      // when 'others' SR is '0' there is no need to show on Pie Chart
+      if (!datapoint?.sr) return accumulator;
       const _backgroundColor = pieChartStyle?.[idx]?.backgroundColor ?? backgroundColor;
       const _borderColor = pieChartStyle?.[idx]?.borderColor ?? borderColor;
-      acc?.labels?.push(capitalize(data?.name));
-      acc?.datasets?.[0]?.data?.push(data?.sr);
-      acc?.datasets?.[0]?.backgroundColor?.push(_backgroundColor);
-      acc?.datasets?.[0]?.borderColor?.push(_borderColor);
-      return acc;
+      const percentage = (datapoint?.successful / totalSum) * 100 || 0;
+      const percentageValue = percentage.toFixed(2);
+      const label = (TAG_MAP[datapoint?.name] ?? datapoint?.name) || '--';
+      accumulator?.labels?.push(label);
+      accumulator?.datasets?.[0]?.data?.push(percentageValue);
+      accumulator?.datasets?.[0]?.backgroundColor?.push(_backgroundColor);
+      accumulator?.datasets?.[0]?.borderColor?.push(_borderColor);
+      return accumulator;
     },
     {
       labels: [],
       datasets: [{ data: [], backgroundColor: [], borderColor: [], borderWidth: 1 }],
     },
   );
+
+  return result;
 };
 
 export const getMerchantErrorsPayload = () => {
@@ -286,7 +304,7 @@ export const getMerchantErrorsPayload = () => {
 };
 
 //Returns a list of initial set of filters for each method.
-export const getInitialGroupings = (methodFilters) =>
+export const getInitialGroupings = (methodFilters) => {
   reduce(
     methodFilters,
     (acc, tabFilters, key) => {
@@ -300,3 +318,4 @@ export const getInitialGroupings = (methodFilters) =>
     },
     {},
   );
+};

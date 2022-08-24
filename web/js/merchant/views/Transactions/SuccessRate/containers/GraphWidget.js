@@ -33,7 +33,7 @@ const GraphWidget = (props) => {
   const [tabWidth, setTabWidth] = useState();
   const tabPane = Object.values(metrics);
   const methodFilters = SR_FILTERS; //optimizer filters to be added based on tag for optimizer sr dashboard.
-  const initialGroupings = getInitialGroupings(methodFilters);
+  const initialGroupings = getInitialGroupings(methodFilters) ?? {};
   const [selectedGroupings, setSelectedGroupings] = useState(initialGroupings);
 
   const handleTabWidth = useCallback(

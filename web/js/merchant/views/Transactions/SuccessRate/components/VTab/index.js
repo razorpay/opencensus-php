@@ -1,20 +1,29 @@
 import React from 'react';
-import TabContent from './TabContent';
+import { ERROR_CATEGORIES, ERROR_CATEGORIES_VS_DISPLAY_TEXT } from '../../constants';
 import TabPane from './TabPane';
+import TabContent from './TabContent';
+import ReasonsPanel from '../ReasonsPanel';
 
 function VTab(props) {
-  const { defaultActiveKey, selected, tabs, onTabChange, ariaLabel } = props;
+  const { selectedTab, isLoading, onTabChange, ariaLabel, tabData } = props;
+  const selectedKey = Object.values(ERROR_CATEGORIES)[selectedTab];
+  const title = ERROR_CATEGORIES_VS_DISPLAY_TEXT[selectedKey] ?? '--';
+  const content = tabData?.[selectedKey] ?? [];
 
   return (
     <div className="vtab" aria-label={ariaLabel}>
-      <TabPane selected={defaultActiveKey || selected} onTabChange={onTabChange} tabs={tabs} />
+      <TabPane
+        selectedTab={selectedTab}
+        isLoading={isLoading}
+        onTabChange={onTabChange}
+        tabData={tabData}
+      />
       <TabContent
-        key={`vtab__tabContent-${selected}`}
-        id={`vtab__tabContent-${selected}`}
-        controlledBy={`vtab__tabPane-${selected}`}
-        tabs={tabs}
+        key={`vtab__tabContent-${selectedTab}`}
+        id={`vtab__tabContent-${selectedTab}`}
+        controlledBy={`vtab__tabPane-${selectedTab}`}
       >
-        {tabs[selected].panel}
+        <ReasonsPanel isLoading={isLoading} heading={`Failure reasons: ${title}`} data={content} />
       </TabContent>
     </div>
   );

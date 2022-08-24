@@ -1,56 +1,25 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
-import { isEmpty, map } from 'lodash';
-import Spinner from 'common/ui/Spinner';
 import VTab from '../components/VTab';
-import ReasonsPanel from '../components/ReasonsPanel';
-import NoDataMessage from '../components/NoDataMessage';
-import StyledHeader from '../components/StyledHeader';
-import { ERROR_CATEGORIES_VS_DISPLAY_TEXT } from '../constants';
 
-const geTabData = (merchantErrors) => {
-  return map(merchantErrors, (errorDetails, errorLabel) => {
-    const errorDisplayText = ERROR_CATEGORIES_VS_DISPLAY_TEXT[errorLabel] || errorLabel;
-    return {
-      label: errorLabel,
-      errorDisplayText,
-      totalCount: errorDetails.reduce((count, data) => count + Number(data?.count), 0),
-      panel: <ReasonsPanel heading={`Failure reasons: ${errorDisplayText}`} data={errorDetails} />,
-    };
-  });
-};
+const DEFAULT_ACTIVE_TAB = 0;
 
 const FailureReasonsWidget = (props) => {
-  const [activeTab, setActiveTab] = React.useState(0);
+  const [activeTab, setActiveTab] = React.useState(DEFAULT_ACTIVE_TAB);
   const { isLoadingMerchantErrors, merchantErrors } = props;
 
-  const handleTabChange = (tab) => setActiveTab(tab);
+  useEffect(() => setActiveTab(DEFAULT_ACTIVE_TAB), [isLoadingMerchantErrors]);
 
-  if (isLoadingMerchantErrors) {
-    return (
-      <div className="box-widget volume-container">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (isEmpty(merchantErrors)) {
-    return (
-      <div className="box-widget">
-        <StyledHeader text="Failure reasons" />
-        <NoDataMessage title="No data available." />
-      </div>
-    );
-  }
+  const handleTabChange = useCallback((tab) => setActiveTab(tab), []);
 
   return (
     <div className="box-widget reasons-container">
       <VTab
-        defaultActiveKey={0}
-        selected={activeTab}
-        tabs={geTabData(merchantErrors)}
-        onTabChange={handleTabChange}
         ariaLabel="Vertical Tabs"
+        selectedTab={activeTab}
+        isLoading={isLoadingMerchantErrors}
+        onTabChange={handleTabChange}
+        tabData={merchantErrors}
       />
     </div>
   );

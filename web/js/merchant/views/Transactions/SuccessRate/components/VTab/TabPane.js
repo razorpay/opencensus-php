@@ -1,45 +1,64 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { TOOLTIP_TEXT_VS_ERROR_CATEGORIES } from '../../constants';
+import {
+  ERROR_CATEGORIES,
+  ERROR_CATEGORIES_VS_DISPLAY_TEXT,
+  TOOLTIP_TEXT_VS_ERROR_CATEGORIES,
+} from '../../constants';
 
 const TabPane = (props) => {
-  const { ariaLabel, selected, onTabChange, tabs } = props;
+  const { isLoading, ariaLabel, selectedTab, onTabChange, tabData } = props;
+
+  const onChange = useCallback((e) => onTabChange(Number(e?.currentTarget?.id)), [onTabChange]);
 
   return (
     <div role="tablist" aria-label={ariaLabel} className="vtab__tablist">
-      {tabs?.map((tabDetails, idx) => {
-        const { totalCount, label, errorDisplayText } = tabDetails;
-        const toolTipText = TOOLTIP_TEXT_VS_ERROR_CATEGORIES[label];
+      {Object.values(ERROR_CATEGORIES).map((tabKey, idx) => {
+        const isActive = idx === selectedTab;
+        const title = ERROR_CATEGORIES_VS_DISPLAY_TEXT[tabKey];
+        const infoText = TOOLTIP_TEXT_VS_ERROR_CATEGORIES[tabKey];
+        const totalCount = tabData[tabKey]?.reduce((count, data) => count + data?.count, 0);
+
         return (
           <button
             key={`vtab__tabPane-${idx}`}
-            id={`vtab__tabPane-${idx}`}
-            className={`vtab__tablist__tab ${idx === selected ? 'selected' : ''}`}
-            onClick={() => onTabChange(idx)}
+            id={idx}
+            className={`vtab__tablist__tab${isActive ? ' selected' : ''}`}
+            onClick={onChange}
+            type="button"
             role="tab"
-            aria-clicked={idx === selected}
+            aria-pressed={isActive}
             aria-controls={`vtab__tabContent-${idx}`}
           >
             <div className="tab-card">
               <div className="tab-card__info">
                 <div className="info-value">
-                  <p className="rate">{totalCount}</p>
-                </div>
-                <div className="info-label">
-                  <p className="label-text">{errorDisplayText}</p>
-                  {toolTipText && (
-                    <span className="info-icon">
-                      <i className="i i-info-outline" />
-                      <Popover align="top">
-                        <PopoverBody>
-                          <div>{toolTipText}</div>
-                        </PopoverBody>
-                      </Popover>
-                    </span>
+                  {isLoading ? (
+                    <PlaceholderLoader style={{ width: '30px', height: '16px' }} />
+                  ) : (
+                    <p className="rate">{totalCount ?? 0}</p>
                   )}
                 </div>
+                {isLoading ? (
+                  <PlaceholderLoader style={{ height: '18px' }} />
+                ) : (
+                  <div className="info-label">
+                    <p className="label-text">{title}</p>
+                    {infoText && (
+                      <span className="info-icon">
+                        <i className="i i-info-outline" />
+                        <Popover align="top">
+                          <PopoverBody>
+                            <div>{infoText}</div>
+                          </PopoverBody>
+                        </Popover>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-              {idx === selected && <i className="i i-chevron-right" />}
+              {isActive && <i className="i i-chevron-right" />}
             </div>
           </button>
         );

@@ -18,7 +18,7 @@ const initTagList = ['Overall'];
 const GraphPanel = (props) => {
   const chartReference = React.useRef(null);
   const [tagList, setTagList] = React.useState(initTagList);
-  const { isLoading, activeTab, startDate, endDate, tab } = props;
+  const { isLoading, activeTab, startDate, endDate, tab = {} } = props;
   const { tags, selectedInterval, histogram, data, error, group_by } = tab;
   const { datasets } = histogram;
   const hasNoData = !histogram || datasets?.length === 0;
@@ -34,16 +34,16 @@ const GraphPanel = (props) => {
       const chart = chartReference.current.chartInstance;
       const tagIndex = tags.indexOf(tag);
       const intervals =
-        tag === 'Overall'
+        (tag === 'Overall'
           ? data?.intervals
-          : data?.groups[group_by].find((obj) => obj.name === tag)?.intervals;
+          : data?.groups[group_by]?.find((obj) => obj.name === tag)?.intervals) ?? [];
 
       if (position > -1 && tagList.length > 1) {
         chart.data.datasets.splice(position, 1);
       } else if (position < 0) {
         const newDataset = {
           label: tag,
-          data: intervals.map((obj) => ({
+          data: intervals?.map((obj) => ({
             x: +moment.unix(obj?.from).format('x'),
             y: obj.sr,
           })),

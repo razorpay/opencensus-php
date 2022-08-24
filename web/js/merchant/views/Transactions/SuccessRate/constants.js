@@ -26,6 +26,13 @@ export const DEFAULT_GROUP_BY = {
   Netbanking: 'bank',
 };
 
+export const TAG_MAP = {
+  upi: 'UPI',
+  card: 'Card',
+  netbanking: 'Netbanking',
+  others: 'Others',
+};
+
 /**************************************** Graph Widget Variables ****************************************/
 
 export const tabsOrder = ['Overall', 'UPI', 'Card', 'Netbanking'];
@@ -224,27 +231,27 @@ export const pieChartStyle = [
 
 export const ERROR_CATEGORIES = {
   CUSTOMER: 'customer',
-  OTHER: 'others',
-  BUSINESS: 'business',
   BANKING: 'bank',
+  BUSINESS: 'business',
+  OTHER: 'others',
 };
 
 export const ERROR_CATEGORIES_VS_DISPLAY_TEXT = {
   [ERROR_CATEGORIES.CUSTOMER]: 'Customer drop-offs',
-  [ERROR_CATEGORIES.OTHER]: 'Other failures',
-  [ERROR_CATEGORIES.BUSINESS]: 'Business failures',
   [ERROR_CATEGORIES.BANKING]: 'Banking failures',
+  [ERROR_CATEGORIES.BUSINESS]: 'Business failures',
+  [ERROR_CATEGORIES.OTHER]: 'Other failures',
 };
 
 export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
   [ERROR_CATEGORIES.CUSTOMER]:
-    "Customer drop-offs are failures that occur from the customer's side, like customer cancellations, incorrect CVV, insufficient funds etc.",
-  [ERROR_CATEGORIES.OTHER]:
-    'Other failures include errors due to fraud detection, internal provider issues etc.',
-  [ERROR_CATEGORIES.BUSINESS]:
-    'Business failures occur due to the non-activation of payment methods, international payments etc.',
+    "Customer-related failures occur from the customer's side, like customer cancellations, incorrect CVV, insufficient funds.",
   [ERROR_CATEGORIES.BANKING]:
-    'Banking failures occur due to issues at the customer’s bank, UPI app, wallets, etc.',
+    'Banking-related failures occur due to issues at the customer’s bank, UPI app, wallets.',
+  [ERROR_CATEGORIES.BUSINESS]:
+    'Business-related failures occur due to the non-activation of payment methods, international payments.',
+  [ERROR_CATEGORIES.OTHER]:
+    'Other failures include errors due to fraud detection, internal provider issues.',
 };
 
 /******************************************************************************************/
