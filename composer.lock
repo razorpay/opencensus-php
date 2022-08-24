@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "11681fba774323ffa66ea3ff38c8f881",
+    "content-hash": "68af20fc09a007fc35dfd18d368361b4",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -8303,16 +8303,16 @@
         },
         {
             "name": "razorpay/oauth",
-            "version": "2.3.1",
+            "version": "2.4.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/oauth.git",
-                "reference": "09124627739e02db4506f13f46aa84b2c71e3c9c"
+                "reference": "732160a3fddd4f15eb468f77ff730f21dec9785d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/oauth/zipball/09124627739e02db4506f13f46aa84b2c71e3c9c",
-                "reference": "09124627739e02db4506f13f46aa84b2c71e3c9c",
+                "url": "https://api.github.com/repos/razorpay/oauth/zipball/732160a3fddd4f15eb468f77ff730f21dec9785d",
+                "reference": "732160a3fddd4f15eb468f77ff730f21dec9785d",
                 "shasum": ""
             },
             "require": {
@@ -8351,10 +8351,10 @@
                 "service"
             ],
             "support": {
-                "source": "https://github.com/razorpay/oauth/tree/2.3.1",
+                "source": "https://github.com/razorpay/oauth/tree/2.4.0",
                 "issues": "https://github.com/razorpay/oauth/issues"
             },
-            "time": "2022-07-13T12:55:31+00:00"
+            "time": "2022-08-24T07:46:30+00:00"
         },
         {
             "name": "razorpay/outbox-php",
