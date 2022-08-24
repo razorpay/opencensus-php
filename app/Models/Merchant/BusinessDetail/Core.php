@@ -214,10 +214,17 @@ class Core extends Base\Core
             ($mutexResource,
                 function() use ($merchantDetails, $newLeadScore) {
                     $businessDetail = $merchantDetails->businessDetail;
-                    $oldLeadScore = $businessDetail->getLeadScoreComponents();
-                    $leadScoreComponents = $this->mergeJson($oldLeadScore, $newLeadScore);
-                    $businessDetail->setLeadScoreComponents($leadScoreComponents);
-                    $this->repo->merchant_business_detail->saveOrFail($businessDetail);
+                    if (empty($businessDetail) == false)
+                    {
+                        $oldLeadScore = $businessDetail->getLeadScoreComponents();
+                        $leadScoreComponents = $this->mergeJson($oldLeadScore, $newLeadScore);
+                        $businessDetail->setLeadScoreComponents($leadScoreComponents);
+                        $this->repo->merchant_business_detail->saveOrFail($businessDetail);
+                    }
+                    else
+                    {
+                        $this->createBusinessDetail($merchantDetails, [BusinessDetailEntity::LEAD_SCORE_COMPONENTS => $newLeadScore]);
+                    }
                 },
                 MerchantConstants::MERCHANT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
