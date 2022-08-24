@@ -34,6 +34,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\Merchant\XChannelDefinition;
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
@@ -242,6 +243,10 @@ class Service extends Base\Service
         if ($campaignTypeAttr !== null) {
             $input['x_onboarding_category'] = 'self_serve';
         }
+
+        $xChannelDefinitionService = new XChannelDefinition\Service;
+        $xChannelDefinitionService->storeChannelDetails($this->merchant, $input);
+        $xChannelDefinitionService->addChannelDetailsInSFPayload($this->merchant, $input);
 
         // Putting in a try catch block so that any error here does not disrupt
         // the main signup flow. This will be removed once X flow simplifies the payload for salesforce

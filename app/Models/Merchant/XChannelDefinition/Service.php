@@ -1,0 +1,397 @@
+<?php
+
+namespace RZP\Models\Merchant\XChannelDefinition;
+
+use RZP\Constants\Product;
+use RZP\Models\Base;
+use RZP\Models\Merchant\Attribute as Attribute;
+use RZP\Models\Merchant\Attribute\Entity as AttributeEntity;
+use RZP\Models\Merchant\Entity;
+use RZP\Trace\TraceCode;
+use Throwable;
+
+class Service extends Base\Service
+{
+
+    /**
+     * Get channel and subchannel given UTM params array. Fields used: website, final_utm_source, final_utm_medium,
+     * final_utm_campaign
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getChannelAndSubchannel(array $input): array
+    {
+        // Default values in case there's no matching channel or sub-channel
+        $result = [
+            Constants::CHANNEL    => Channels::UNMAPPED,
+            Constants::SUBCHANNEL => Channels::UNMAPPED,
+        ];
+
+        $refWebsite       = $input['website'] ?? '';
+        $finalUtmSource   = $input['final_utm_source'] ?? '';
+        $finalUtmMedium   = $input['final_utm_medium'] ?? '';
+        $finalUtmCampaign = $input['final_utm_campaign'] ?? '';
+        $lcsCategory      = $this->getLastClickSourceCategory($finalUtmSource, $finalUtmMedium);
+
+        foreach (Channels::$channelSubchannelMapping as $channel => $subchannelDetails)
+        {
+            // If URL patterns for the channel are specified, we find channel using that and use other parameters for
+            // finding sub-channel
+            $channelUrlPatterns = Channels::$channelRefWebsiteMapping[$channel];
+
+            if (!empty($channelUrlPatterns))
+            {
+                $urlMatch = $this->checkExactOrRegexMatchAgainstPatterns($refWebsite, $channelUrlPatterns);
+
+                // Channel has matched, next we need to check for sub-channels
+                if ($urlMatch)
+                {
+                    $result[Constants::CHANNEL]    = $channel;
+                    $result[Constants::SUBCHANNEL] = $this->getSubchannel($channel, $lcsCategory, $finalUtmCampaign, $refWebsite);
+
+                    return $result;
+                }
+                // If no match found, continue looking.
+            }
+            else
+            {
+                $subchannels = Channels::$channelSubchannelMapping[$channel];
+                if (!empty($subchannels))
+                {
+                    $subchannel = $this->getSubchannel($channel, $lcsCategory, $finalUtmCampaign, $refWebsite);
+                    if (!empty($subchannel) && $subchannel !== Channels::UNMAPPED)
+                    {
+                        $result[Constants::CHANNEL]    = $channel;
+                        $result[Constants::SUBCHANNEL] = $subchannel;
+
+                        return $result;
+                    }
+                }
+                // If current channel doesn't have any sub-channels, continue looking.
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param string $lastClickSource
+     * @param string $lastClickMedium
+     *
+     * @return string
+     */
+    protected function getLastClickSourceCategory(string $lastClickSource, string $lastClickMedium): string
+    {
+        $lastClickSource = $lastClickSource ?? '';
+        $lastClickMedium = $lastClickMedium ?? '';
+
+        $inputLcSourceMedium = $lastClickSource . ' ' . $lastClickMedium;
+
+        foreach (Constants::LCS_CATEGORY_TO_SOURCE_MEDIUM_MAPPING as $lcsCategory => $lastClickSourceMediums)
+        {
+            if ($this->checkExactOrRegexMatchAgainstPatterns($inputLcSourceMedium, $lastClickSourceMediums))
+            {
+                return $lcsCategory;
+            }
+        }
+
+        return Constants::LCS_CATEGORY_UNKNOWN;
+    }
+
+    protected function getChannelPriority(string $channelName): int
+    {
+        return Channels::$channelPriorities[$channelName] ?? -1;
+    }
+
+    public function addChannelDetailsInSFPayload(Entity $merchant, array &$utm_params)
+    {
+        $attributeCore = new Attribute\Core;
+        $attributes    = $attributeCore->fetchKeyValues($merchant, Product::BANKING, Attribute\Group::X_SIGNUP,
+                                                        [Attribute\Type::CHANNEL, Attribute\Type::SUBCHANNEL]);
+
+        $channel    = '';
+        $subchannel = '';
+        foreach ($attributes as $attribute)
+        {
+            if ($attribute[Attribute\Entity::TYPE] === Attribute\Type::CHANNEL)
+            {
+                $channel = $attribute[Attribute\Entity::VALUE];
+            }
+            elseif ($attribute[Attribute\Entity::TYPE] === Attribute\Type::SUBCHANNEL)
+            {
+                $subchannel = $attribute[Attribute\Entity::VALUE];
+            }
+        }
+
+        $utm_params['x_channel']    = empty($channel) ? Channels::UNMAPPED : $channel;
+        $utm_params['x_subchannel'] = empty($subchannel) ? Channels::UNMAPPED : $subchannel;
+    }
+
+    /**
+     * Store channel and sub-channel details which can be used to attribute where the signup came from and which
+     * products the merchant is interested in. Returns existing or newly-assigned channel and sub-channel.
+     *
+     * @param Entity $merchant
+     * @param array  $utmParams
+     */
+    public function storeChannelDetails(Entity $merchant, array $utmParams)
+    {
+        $attributeCore = new Attribute\Core;
+
+        $existingChannel = null;
+        $signupSource    = null;
+        $channelDetails  = [];
+
+        try
+        {
+            $signupSourceAttribute = $attributeCore->fetchKeyValues($merchant, Product::BANKING,
+                                                                    Attribute\Group::X_MERCHANT_PREFERENCES,
+                                                                    [Attribute\Type::X_SIGNUP_PLATFORM])->first();
+            if (!empty($signupSourceAttribute))
+            {
+                $signupSource = $signupSourceAttribute[AttributeEntity::VALUE];
+            }
+
+            $existingChannelAttribute = $attributeCore->fetchKeyValues($merchant, Product::BANKING,
+                                                                       Attribute\Group::X_SIGNUP,
+                                                                       [Attribute\Type::CHANNEL])->first();
+            if (!empty($existingChannelAttribute))
+            {
+                $existingChannel = $existingChannelAttribute[AttributeEntity::VALUE];
+            }
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::X_CHANNEL_DEFINITION_MERCHANT_ATTRIBUTES_FETCH_FAILURE);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_EXISTING_ATTRIBUTE_VALUES, [
+            "signup_source"    => $signupSource,
+            "existing_channel" => $existingChannel,
+        ]);
+
+        try
+        {
+            // Check if channel is not present
+            if (empty($existingChannel))
+            {
+                $channelDetails = $this->getChannelAndSubchannel($utmParams);
+
+                // Check if signed up via X mobile app
+                if (!empty($signupSource) && $signupSource === Constants::X_MOBILE_APP)
+                {
+                    $this->updateChannelDetailsIfMobilePriorityIsHigher($existingChannel, $channelDetails);
+                }
+
+                $this->upsertChannelDetailsInMerchantAttributes($channelDetails, $utmParams, $merchant);
+            }
+            else
+            {
+                // Channel is already present, we only need to update it if user signed up via mobile app and current
+                // channel's priority is less preferred
+
+                // Check if signed up via X mobile app
+                if (!empty($signupSource) && $signupSource === Constants::X_MOBILE_APP)
+                {
+                    if ($this->updateChannelDetailsIfMobilePriorityIsHigher($existingChannel, $channelDetails))
+                    {
+                        $this->upsertChannelDetailsInMerchantAttributes($channelDetails, $utmParams, $merchant);
+                    }
+                }
+            }
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::X_CHANNEL_DEFINITION_FAILED_TO_STORE_CHANNEL_DETAILS);
+
+            return;
+        }
+    }
+
+    /**
+     * Checks if mobile channel's priority is higher than given existing channel. Also updates the channel and
+     * sub-channel in $channelDetails if so. Priority is higher if it has a lower value.
+     *
+     * @param string $existingChannel
+     * @param array  $channelDetails
+     *
+     * @return bool
+     */
+    protected function updateChannelDetailsIfMobilePriorityIsHigher(string $existingChannel, array &$channelDetails): bool
+    {
+        $existingChannelPriority = $this->getChannelPriority($existingChannel);
+        $xMobileChannelPriority  = $this->getChannelPriority(Channels::MOBILE_APP_SIGNUPS);
+
+        // If priority of mobile app signup channel is preferred over existing channel, update channel details
+        if ($existingChannelPriority !== -1 && ($xMobileChannelPriority < $existingChannelPriority))
+        {
+            $channelDetails[Constants::CHANNEL]    = Channels::MOBILE_APP_SIGNUPS;
+            $channelDetails[Constants::SUBCHANNEL] = Channels::MOBILE_APP_SIGNUPS_DIRECT;
+
+            return true;
+        }
+        // If it's a non-existent channel or Unmapped, we can safely replace channel with Mobile
+        elseif ($existingChannelPriority === -1)
+        {
+            $channelDetails[Constants::CHANNEL]    = Channels::MOBILE_APP_SIGNUPS;
+            $channelDetails[Constants::SUBCHANNEL] = Channels::MOBILE_APP_SIGNUPS_DIRECT;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function getArrayValueOrDefault(array $arr, string $key, $defaultValue)
+    {
+        if (isset($arr[$key]) && !empty($arr[$key]))
+        {
+            return $arr[$key];
+        }
+
+        return $defaultValue;
+    }
+
+    protected function upsertChannelDetailsInMerchantAttributes(array $channelDetails, array $utmParams, Entity $merchant)
+    {
+        $attributeService = new Attribute\Service;
+
+        $channel                 = $this->getArrayValueOrDefault($channelDetails, Constants::CHANNEL, Channels::UNMAPPED);
+        $subchannel              = $this->getArrayValueOrDefault($channelDetails, Constants::SUBCHANNEL, Channels::UNMAPPED);
+        $finalUtmSource          = $this->getArrayValueOrDefault($utmParams, Constants::FINAL_UTM_SOURCE, Constants::UNKNOWN);
+        $finalUtmMedium          = $this->getArrayValueOrDefault($utmParams, Constants::FINAL_UTM_MEDIUM, Constants::UNKNOWN);
+        $finalUtmCampaign        = $this->getArrayValueOrDefault($utmParams, Constants::FINAL_UTM_CAMPAIGN, Constants::UNKNOWN);
+        $refWebsite              = $this->getArrayValueOrDefault($utmParams, Constants::WEBSITE, Constants::UNKNOWN);
+        $lastClickSourceCategory = $this->getLastClickSourceCategory($finalUtmSource, $finalUtmMedium);
+
+        $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SAVING_DETAILS, [
+            'channel'                    => $channel,
+            'subchannel'                 => $subchannel,
+            'final_utm_source'           => $finalUtmSource,
+            'final_utm_medium'           => $finalUtmMedium,
+            'final_utm_campaign'         => $finalUtmCampaign,
+            'ref_website'                => $refWebsite,
+            'last_click_source_category' => $lastClickSourceCategory,
+        ]);
+
+        $data = [
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::CHANNEL,
+                Attribute\Entity::VALUE => $channel,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::SUBCHANNEL,
+                Attribute\Entity::VALUE => $subchannel,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_SOURCE,
+                Attribute\Entity::VALUE => $finalUtmSource,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_MEDIUM,
+                Attribute\Entity::VALUE => $finalUtmMedium,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_CAMPAIGN,
+                Attribute\Entity::VALUE => $finalUtmCampaign,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::REF_WEBSITE,
+                Attribute\Entity::VALUE => $refWebsite,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::LAST_CLICK_SOURCE_CATEGORY,
+                Attribute\Entity::VALUE => $lastClickSourceCategory,
+            ],
+        ];
+
+        try
+        {
+            $attributeService->upsert(Attribute\Group::X_SIGNUP, $data, Product::BANKING, $merchant);
+        }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException($e, null, TraceCode::X_CHANNEL_DEFINITION_MERCHANT_ATTRIBUTES_SAVE_FAILURE, $data);
+        }
+    }
+
+    /**
+     * Check if item is an exact or regex match against a list of patterns. If a pattern starts with a / character, it
+     * would be treated as regex, else only string equality would be checked. Results of this function are
+     * case-insensitive.
+     *
+     * @param string $item
+     * @param array  $patterns
+     *
+     * @return bool
+     */
+    protected function checkExactOrRegexMatchAgainstPatterns(string $item, array $patterns): bool
+    {
+        $item = trim(strtolower($item ?? ''));
+
+        foreach ($patterns as $pattern)
+        {
+            // Treat pattern as case-insensitive, ignore surrounding whitespaces
+            $pattern = trim(strtolower($pattern));
+
+            // Check exact match
+            if ($pattern === $item)
+            {
+                return true;
+            }
+
+            // If pattern starts with "/", evaluate it as regex
+            if ((substr($pattern, 0, 1) === '/') && (preg_match($pattern, $item) === 1))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function getSubchannel(string $channel, string $lcsCategory, string $finalUtmCampaign, string $refWebsite)
+    {
+        $subchannels = Channels::$channelSubchannelMapping[$channel];
+        if (empty($subchannels))
+        {
+            return Channels::UNMAPPED; // If the channel doesn't have any sub-channels, we'll consider sub-channel as Unmapped
+        }
+
+        foreach ($subchannels as $subchannel => $subchannelDetails)
+        {
+            $sourceCategories = $subchannelDetails[Constants::LAST_CLICK_SOURCE_CATEGORY];
+            $campaigns        = $subchannelDetails[Constants::FINAL_UTM_CAMPAIGN];
+            $refWebsites      = $subchannelDetails[Constants::REF_WEBSITE];
+
+            $match = true;
+
+            // If any of the filters are non-empty, we need to consider them to find if the sub-channel is a match
+            if (!empty($sourceCategories))
+            {
+                $match = $this->checkExactOrRegexMatchAgainstPatterns($lcsCategory, $sourceCategories);
+            }
+            if (!empty($campaigns))
+            {
+                $match = $match && in_array($finalUtmCampaign, $campaigns);
+            }
+            if (!empty($refWebsites))
+            {
+                $match = $match && $this->checkExactOrRegexMatchAgainstPatterns($refWebsite, $refWebsites);
+            }
+
+            // If match is true and at least one of the filters was non-empty, then we consider sub-channel as a match.
+            if ($match && !(empty($sourceCategories) && empty($campaigns) && empty($refWebsites)))
+            {
+                return $subchannel;
+            }
+        }
+
+        return Channels::UNMAPPED; // Return sub-channel as Unmapped if there's no match
+    }
+
+}

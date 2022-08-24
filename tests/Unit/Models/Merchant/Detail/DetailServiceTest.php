@@ -21,6 +21,7 @@ class DetailServiceTest extends TestCase
     protected $partnerActivationMock;
     protected $stakeholderEntityMock;
     protected $merchantRepoMock;
+    protected $merchantAttributeRepoMock;
     protected $m2mReferralRepoMock;
     protected $merchantMethodsMock;
     protected $merchantDocumentCoreMock;
@@ -154,6 +155,9 @@ class DetailServiceTest extends TestCase
         $this->merchantDetailEntityMock->shouldReceive('getAttribute')->andReturn();
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
+        $this->repoMock->shouldReceive('driver')->with('merchant_attribute')->andReturn($this->merchantAttributeRepoMock);
+        $this->merchantAttributeRepoMock->shouldReceive('getKeyValues')->andReturn([]);
+
         $response = $this->merchantService->saveMerchantDetailForPreSignUp($merchantData);
 
         $this->assertEquals([], $response);
@@ -769,8 +773,11 @@ class DetailServiceTest extends TestCase
         // Merchant Repo mocking
         $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
 
-        // M2M Referrals Repo mocking
-        $this->m2mReferralRepoMock = Mockery::mock('RZP\Models\Merchant\M2MReferral\Repository');
+        // Merchant attribute Repo mocking
+        $this->merchantAttributeRepoMock  = Mockery::mock("RZP\Models\Merchant\Attribute\Repository");
+
+        // Merchant Attribute Repo mocking
+        $this->merchant = Mockery::mock('RZP\Models\Merchant\Attribute\Repository');
 
         // Merchant Mocking
         $this->merchantDetailEntityMock = Mockery::mock('RZP\Models\Merchant\Detail\Entity');

@@ -83,9 +83,10 @@ class Service extends Base\Service
      * @return mixed
      * @throws \RZP\Exception\BadRequestValidationFailureException
      */
-    public function upsert(string $group, array $input, string $saveProduct = null)
+    public function upsert(string $group, array $input, string $saveProduct = null, $merchant = null)
     {
-        $merchant = $this->merchant;
+        $merchant = $merchant ?? $this->merchant; // During signup, merchant wouldn't already be set in the service
+
         $product =  $saveProduct ?? $this->auth->getRequestOriginProduct();
 
         if (in_array($group, [Group::X_MERCHANT_CURRENT_ACCOUNTS], true) === true)

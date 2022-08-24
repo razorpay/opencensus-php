@@ -959,7 +959,9 @@ class BankingAccountTest extends TestCase
         });
 
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => 'ca_onboarding_flow',
+        ]);
 
         $this->assertArraySelectiveEquals(
             [
@@ -1022,7 +1024,9 @@ class BankingAccountTest extends TestCase
 
         $response = $this->startTest();
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => 'ca_onboarding_flow',
+        ]);
 
         $this->assertArraySelectiveEquals(
             [

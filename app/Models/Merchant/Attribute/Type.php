@@ -5,9 +5,18 @@ namespace RZP\Models\Merchant\Attribute;
 class Type
 {
     // ONBOARDING Types
-    const MERCHANT_ONBOARDING_CATEGORY  = 'merchant_onboarding_category';
-    const CA_PAGE_VISITED               = 'ca_page_visited';
-    const CAMPAIGN_TYPE                 = 'campaign_type';
+    const MERCHANT_ONBOARDING_CATEGORY = 'merchant_onboarding_category';
+    const CA_PAGE_VISITED              = 'ca_page_visited';
+    const CAMPAIGN_TYPE                = 'campaign_type';
+
+    // X Channel Definition types, used during signup
+    const CHANNEL                    = 'channel';
+    const SUBCHANNEL                 = 'subchannel';
+    const REF_WEBSITE                = 'ref_website';
+    const FINAL_UTM_SOURCE           = 'final_utm_source';
+    const FINAL_UTM_MEDIUM           = 'final_utm_medium';
+    const FINAL_UTM_CAMPAIGN         = 'final_utm_campaign';
+    const LAST_CLICK_SOURCE_CATEGORY = 'last_click_source_category';
 
     // PREFERENCES Types
     const BUSINESS_CATEGORY                                = 'business_category';

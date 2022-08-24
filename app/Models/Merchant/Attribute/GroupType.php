@@ -6,7 +6,14 @@ class GroupType
 {
     const GROUP_TYPE_MAP = [
         Group::X_SIGNUP => [
-            Type::CA_PAGE_VISITED
+            Type::CA_PAGE_VISITED,
+            Type::CHANNEL,
+            Type::SUBCHANNEL,
+            Type::REF_WEBSITE,
+            Type::FINAL_UTM_SOURCE,
+            Type::FINAL_UTM_MEDIUM,
+            Type::FINAL_UTM_CAMPAIGN,
+            Type::LAST_CLICK_SOURCE_CATEGORY,
         ],
 
         Group::ONBOARDING => [

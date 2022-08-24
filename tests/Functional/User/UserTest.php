@@ -257,7 +257,9 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => 'ca_page_visited',
+        ]);
 
         $this->assertArraySelectiveEquals(
             [
@@ -300,7 +302,9 @@ class UserTest extends TestCase
 
         $this->startTest($testDataToReplace);
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => Type::CAMPAIGN_TYPE,
+        ]);
 
         $this->assertArraySelectiveEquals(
             [
@@ -499,7 +503,9 @@ class UserTest extends TestCase
 
         $this->startTest($testDataToReplace);
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => Type::CAMPAIGN_TYPE,
+        ]);
 
         $this->assertArraySelectiveEquals(
             [
@@ -535,7 +541,9 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => 'ca_page_visited',
+        ]);
 
         $featuresArray = $this->getDbEntity('feature',
                                             [
@@ -571,7 +579,9 @@ class UserTest extends TestCase
         $this->ba->dashboardGuestAppAuth();
         $this->startTest($testDataToReplace);
 
-        $merchantAttribute = $this->getDbEntity('merchant_attribute');
+        $merchantAttribute = $this->getDbEntity('merchant_attribute', [
+            'type' => 'ca_page_visited',
+        ]);
 
         $this->assertArraySelectiveEquals(
             [

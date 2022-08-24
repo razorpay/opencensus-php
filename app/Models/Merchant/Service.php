@@ -7394,6 +7394,9 @@ class Service extends Base\Service
             // 2. store signup source information
             $this->storeRelevantPreSignUpSourceInfoForBanking($utmParams, $merchant);
 
+            $xChannelDefinitionService = new XChannelDefinition\Service;
+            $xChannelDefinitionService->addChannelDetailsInSFPayload($merchant, $utmParams);
+
             $this->app->salesforce->sendProductSwitchDetails($utmParams, $merchant);
         }
 
@@ -7428,6 +7431,9 @@ class Service extends Base\Service
         $this->storeIfVisitedCaStaticPage($merchant, $utmParams);
 
         $this->storeCampaignType($merchant, $utmParams);
+
+        $xChannelDefinitionService = new XChannelDefinition\Service;
+        $xChannelDefinitionService->storeChannelDetails($merchant, $utmParams);
     }
 
     public function migrationBankingVAs(array $input)
