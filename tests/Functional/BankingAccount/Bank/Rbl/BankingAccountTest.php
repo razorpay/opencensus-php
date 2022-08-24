@@ -8028,6 +8028,8 @@ class BankingAccountTest extends TestCase
             null, null,
             $response);
 
+        sleep(3);
+
         // Attach Sub-merchant to RBl Merchant
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::INITIATED, Status::INITIATED,
