@@ -21,6 +21,8 @@ class DeveloperConsoleController extends Controller
      */
     protected $config;
 
+    protected $developerConsoleService;
+
     const TYPES   = [
             'incoming',
             'outgoing',
@@ -53,6 +55,8 @@ class DeveloperConsoleController extends Controller
         parent::__construct();
 
         $this->config      = app('config')->get('services.developer_console');
+
+        $this->developerConsoleService = $this->app['developer_console'];
     }
 
     public function runMaintenance($type)
@@ -197,6 +201,32 @@ class DeveloperConsoleController extends Controller
             throw $e;
         }
         return $response;
+    }
+
+    public function merchantDashboard($path)
+    {
+        $request = Request::instance();
+
+        $method = 'POST';
+
+        $payload = $request->all();
+
+        $response = $this->developerConsoleService->sendRequestAndParseResponse($path, $method, 'merchant',$payload);
+
+        return ApiResponse::json($response);
+    }
+
+    public function adminDashboard($path)
+    {
+        $request = Request::instance();
+
+        $method = 'POST';
+
+        $payload = $request->all();
+
+        $response = $this->developerConsoleService->sendRequestAndParseResponse($path, $method, 'admin',$payload);
+
+        return ApiResponse::json($response);
     }
 
 }

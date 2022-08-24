@@ -3064,8 +3064,10 @@ class Route
         'edge_delete_rate_limit_limit'            => ['delete',   'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@deleteLimit'                        ],
         'edge_update_rate_limit_spinnaker'        => ['patch',    'spinnaker/edge/rate_limiter/limit/{id}',                    'EdgeThrottleController@updateLimit'                        ],
 
-        'developer_console_action'                => ['post',     'developer_console/{type}/fetch/{action}',                   'DeveloperConsoleController@dashboardSearch'               ],
-        'developer_console_maintenance'           => ['post',     'developer_console/{type}/re-arrange',                       'DeveloperConsoleController@runMaintenance'                ],
+        'developer_console_action'                => ['post',     'developer_console/{type}/fetch/{action}',                   'DeveloperConsoleController@dashboardSearch'                ],
+        'developer_console_maintenance'           => ['post',     'developer_console/{type}/re-arrange',                       'DeveloperConsoleController@runMaintenance'                 ],
+        'developer_console_merchant_action'       => ['post',     'developer_console/merchant/{path?}',                        'DeveloperConsoleController@merchantDashboard'              ],
+        'developer_console_admin_action'          => ['post',     'developer_console/admin/{path?}',                           'DeveloperConsoleController@adminDashboard'                 ],
 
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
@@ -5296,6 +5298,7 @@ class Route
         'store_get_product',
         'store_patch_product',
         'developer_console_action',
+        'developer_console_merchant_action',
         'fetch_payments_ongoing_downtimes',
         'fetch_payments_resolved_downtimes',
         'fetch_payments_scheduled_downtimes',
@@ -7215,6 +7218,8 @@ class Route
 
         'admin_bulk_assign_role',
 
+        'developer_console_admin_action',
+
         'banking_account_statement_fetch_missing',
     ];
 
@@ -7828,6 +7833,7 @@ class Route
         'batch_create_admin'                       => Permission::ADMIN_BATCH_CREATE,
         'send_test_sms'                            => Permission::STORK_WRITE_OPERATION,
         'file_upload_admin'                        => Permission::ADMIN_FILE_UPLOAD,
+        'developer_console_admin_action'           => Permission::DEVELOPER_CONSOLE_ADMIN,
         'reporting_config_get'                     => Permission::VIEW_MERCHANT_REPORT,
         'reporting_config_list'                    => Permission::VIEW_MERCHANT_REPORT,
         'reporting_config_create'                  => Permission::CREATE_SELF_SERVE_REPORT,
@@ -9531,6 +9537,7 @@ class Route
             'delete_merchant_options',
             'delete_merchant_options_admin',
             'developer_console_action',
+            'developer_console_merchant_action',
             'device_create',
             'device_verify',
             'device_verify_token',
@@ -12606,6 +12613,7 @@ class Route
             'relay_props_action',
             'relay_create_bulk_props',
 
+            'developer_console_admin_action',
 
             // Growth Assets
             'growth_get_asset_details',

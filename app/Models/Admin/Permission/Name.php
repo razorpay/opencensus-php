@@ -375,6 +375,7 @@ class Name
     const RETRY_REFUNDS_WITH_APPENDED_ID      = 'retry_refunds_with_appended_id';
     const REFUNDS_BANK_FILE_UPLOAD            = 'refunds_bank_file_upload';
     const CAPITAL_LOS_CREATE_APPLICATION      = 'capital_los_create_application';
+    const DEVELOPER_CONSOLE_ADMIN             = 'developer_console_admin';
 
     const CAPITAL_LOS_APPLICATION_READ                              = 'capital_los_application_read';
     const CAPITAL_LOS_APPLICATION_EDIT                              = 'capital_los_application_edit';

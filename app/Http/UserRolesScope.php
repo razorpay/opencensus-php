@@ -234,7 +234,8 @@ class UserRolesScope
             'subscription_update'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
 
             // Developer Console
-            'developer_console_action'    => [Role::OWNER],
+            'developer_console_action'          => [Role::OWNER],
+            'developer_console_merchant_action' => [Role::OWNER],
 
             // Partner routes
             'submerchants_fetch'          => Role::allExceptPaymentLinkRoles(),

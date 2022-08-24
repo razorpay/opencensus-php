@@ -739,6 +739,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerLedger();
 
+        $this->registerDeveloperConsole();
+
         $this->registerSplitz();
 
         $this->registerGrowth();
@@ -833,6 +835,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cache.store',
             'cache.psr6',
             'ledger',
+            'developer_console',
             Acs\SyncEventManager::SINGLETON_NAME,
             'outbox',
             'splitzService',
@@ -2088,6 +2091,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $enabled = $app['config']->get('applications.ledger.enabled');
 
             $implementation = $enabled ? Ledger::class : Mock\Ledger::class;
+
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerDeveloperConsole()
+    {
+        $this->app->bind('developer_console', function($app)
+        {
+            $enabled = $app['config']->get('applications.developer_console.enabled');
+
+            $implementation = $enabled ? DeveloperConsole::class : Mock\DeveloperConsole::class;
 
             return new $implementation($app);
         });

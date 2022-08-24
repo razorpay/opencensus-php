@@ -1243,6 +1243,15 @@ return [
         ],
     ],
 
+    'developer_console' => [
+        'enabled'   => env('DEVELOPER_CONSOLE_ENABLED', false),
+        'host'     => env('DEVELOPER_CONSOLE_HOST'),
+        'username_merchant' => env('DEVELOPER_CONSOLE_USERNAME'),
+        'password_merchant' => env('DEVELOPER_CONSOLE_PASSWORD'),
+        'username_admin' => env('DEVELOPER_CONSOLE_ADMIN_USERNAME'),
+        'password_admin' => env('DEVELOPER_CONSOLE_ADMIN_PASSWORD'),
+    ],
+
     'banking_account_service' => [
         'url'                      => env('APP_BANKING_ACCOUNT_SERVICE_URL'),
         'secret'                   => env('APP_BANKING_ACCOUNT_SERVICE_SECRET'),
