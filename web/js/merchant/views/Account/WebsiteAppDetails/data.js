@@ -15,7 +15,7 @@ export const websiteComplianceEntryPointsData = {
   },
   'details required': {
     title:
-      'Update your business information now as per RBI guidelines to avoid settlements being puton-hold',
+      'Update your business information now as per RBI guidelines to avoid settlements being put on-hold',
   },
   verified: {
     title:

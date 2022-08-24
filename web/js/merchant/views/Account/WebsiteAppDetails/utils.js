@@ -85,8 +85,12 @@ export function isNudgeHardForWebsiteCompliance(activationData, websiteComplianc
   const isActivated = activationData?.activated === 1;
 
   let areSectionUrlsReceived = true;
-  if (websiteComplianceData?.status === null || Array.isArray(websiteComplianceData))
+  if (Array.isArray(websiteComplianceData)) {
     areSectionUrlsReceived = false;
+  } else if (!websiteComplianceData?.status) {
+    // either status key isn't present || status === null
+    areSectionUrlsReceived = false;
+  }
 
   return (
     websiteComplianceData.isWebsiteSectionsApplicable &&
@@ -102,8 +106,12 @@ export function isNudgeSoftForWebsiteCompliance(activationData, websiteComplianc
   const isActivated = activationData?.activated === 1;
 
   let areSectionUrlsReceived = true;
-  if (websiteComplianceData?.status === null || Array.isArray(websiteComplianceData))
+  if (Array.isArray(websiteComplianceData)) {
     areSectionUrlsReceived = false;
+  } else if (!websiteComplianceData?.status) {
+    // either status key isn't present || status === null
+    areSectionUrlsReceived = false;
+  }
 
   return (
     websiteComplianceData.isWebsiteSectionsApplicable &&
