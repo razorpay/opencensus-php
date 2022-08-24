@@ -61,6 +61,11 @@ class Service extends Base\Service
         return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);
     }
 
+    public function getTransactionMutexresource($payment)
+    {
+        return $payment->getId()."_transaction";
+    }
+
     /**
      * used by capital-collections service to create transactions
      *
@@ -435,8 +440,10 @@ class Service extends Base\Service
 
         $payment->setExternal(true);
 
+        $resource = $this->getTransactionMutexresource($payment);
+
         return $this->mutex->acquireAndRelease(
-            $payment->getId()."_"."transaction",
+            $resource,
             function () use ($payment)
             {
                 try

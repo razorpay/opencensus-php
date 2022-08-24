@@ -28,6 +28,7 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\Foundation\SubReconciliate
 {
+
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         RequestProcessor\Base::KOTAK,
         RequestProcessor\Base::NETBANKING_AXIS,
@@ -114,7 +115,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
     const SKIP_IIN_SAVING_GATEWAYS = [
         RequestProcessor\Base::HITACHI
     ];
-
     const GATEWAY_FEES_MISSING_GATEWAYS = [
         // For HDFC, record gateway fees of payments before 7th Nov
         RequestProcessor\Base::HDFC         => 1509993000,
@@ -334,35 +334,43 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $this->runPreReconciledAtCheckRecon($rowDetails);
 
-        if ($this->reconciled === true)
-        {
-            $this->handleAlreadyReconciled($paymentId, $this->getPaymentTransaction()->getReconciledAt());
+        $resource = (new Transaction\Service())->getTransactionMutexresource($this->payment);
 
-            //
-            // Record gateway fee and service tax for reconciled payments
-            //
-            $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
-
-            $this->createGatewayCapturedEntityIfApplicable($row);
-        }
-        else
-        {
-            $validate = $this->validatePaymentDetails($row);
-
-            if ($validate === true)
+        $this->mutex->acquireAndRelease(
+            $resource,
+            function () use ($row, $rowDetails, $paymentId)
             {
-                $persistSuccess = $this->persistReconciliationData($rowDetails, $row);
-
-                if ($persistSuccess === false)
+                if ($this->reconciled === true)
                 {
-                    $this->handlePersistReconciliationDataFailure($paymentId);
+                    $this->handleAlreadyReconciled($paymentId, $this->getPaymentTransaction()->getReconciledAt());
+
+                    //
+                    // Record gateway fee and service tax for reconciled payments
+                    //
+                    $this->recordMissingGatewayFeeAndServiceTax($rowDetails);
+
+                    $this->createGatewayCapturedEntityIfApplicable($row);
                 }
-            }
-            else
-            {
-                $this->handleFailedValidation($paymentId);
-            }
-        }
+                else
+                {
+                    $validate = $this->validatePaymentDetails($row);
+
+                    if ($validate === true)
+                    {
+                        $persistSuccess = $this->persistReconciliationData($rowDetails, $row);
+
+                        if ($persistSuccess === false)
+                        {
+                            $this->handlePersistReconciliationDataFailure($paymentId);
+                        }
+                    }
+                    else
+                    {
+                        $this->handleFailedValidation($paymentId);
+                    }
+                }
+
+            });
 
         $this->setTransactionDetailsInOutput($this->getPaymentTransaction());
 
