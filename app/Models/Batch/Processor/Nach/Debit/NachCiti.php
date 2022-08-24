@@ -178,7 +178,7 @@ class NachCiti extends Base
         ];
     }
 
-    protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
+    protected function  removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER]);
     }

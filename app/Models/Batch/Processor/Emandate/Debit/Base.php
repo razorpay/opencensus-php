@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
@@ -13,6 +14,7 @@ use RZP\Reconciliator\Base\Constants;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
+use RZP\Trace\Tracer;
 
 class Base extends BaseProcessor
 {
@@ -30,7 +32,9 @@ class Base extends BaseProcessor
 
         try
         {
-            $this->updatePaymentEntities($content);
+            Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_UPDATE_PAYMENT_ENTITIES], function () use ($content){
+                $this->updatePaymentEntities($content);
+            });
 
             $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
         }
@@ -65,8 +69,10 @@ class Base extends BaseProcessor
 
         $this->assertAmount($payment, $content);
 
-        // Update payment
-        $this->updatePayment($payment, $content);
+        Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_UPDATE_PAYMENT], function () use ($payment, $content){
+            // Update payment
+            $this->updatePayment($payment, $content);
+        });
     }
 
     protected function getPayment(array $content)
@@ -144,7 +150,9 @@ class Base extends BaseProcessor
             }
             else
             {
-                $this->processAuthorizedPayment($payment);
+                Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_PROCESS_AUTHORIZED_PAYMENT], function () use ($payment){
+                    $this->processAuthorizedPayment($payment);
+                });
             }
         }
         else if ($this->isRejected($content) === true)

@@ -417,6 +417,7 @@ class Tracing
 
             // recurring
             'subscription_registration_charge_token',
+            'emandate_batch_process',
         ]);
     }
 

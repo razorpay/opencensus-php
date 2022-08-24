@@ -233,4 +233,8 @@ class HyperTrace
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER                 = 'subscription_registration_charge_token.core.create_order';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT              = 'subscription_registration_charge_token.core.process_payment';
     const SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PAYMENT_SET_BATCH            = 'subscription_registration_charge_token.core.payment_set_batch';
+    const EMANDATE_DEBIT_PAYMENT_PROCESSING_BATCH_REQUEST                          = 'emandate_debit_payment.process_batch_request';
+    const EMANDATE_DEBIT_UPDATE_PAYMENT_ENTITIES                                   = 'emandate_debit_payment.update_payment_entities';
+    const EMANDATE_DEBIT_UPDATE_PAYMENT                                            = 'emandate_debit_payment.update_payment';
+    const EMANDATE_DEBIT_PROCESS_AUTHORIZED_PAYMENT                                = 'emandate_debit_payment.process_authorized_payment';
 }

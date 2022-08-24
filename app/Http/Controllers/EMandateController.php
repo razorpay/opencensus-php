@@ -5,10 +5,12 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Models\EMandate;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Trace\Tracer;
 
 class EMandateController extends Controller
 {
@@ -54,7 +56,9 @@ class EMandateController extends Controller
     {
         $batchId = Request::header(RequestHeader::X_Batch_Id);
 
-        $data = $this->service()->processBatchRequest($this->input);
+        $data = Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_PAYMENT_PROCESSING_BATCH_REQUEST], function () use ($batchId){
+            return $this->service()->processBatchRequest($this->input);
+        });
 
         $this->trace->info(
             TraceCode::BATCH_PROCESSING_API_RESPONSE,
