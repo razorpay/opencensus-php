@@ -14,6 +14,10 @@ class Fetch extends BaseFetch
             Entity::CUSTOMER_ID => 'sometimes|alpha_num|size:14',
             Entity::MERCHANT_ID => 'sometimes|alpha_num',
         ],
+        AuthType::PRIVILEGE_AUTH=> [
+            Entity::CONTACT     => 'sometimes|string|max:12',
+            Entity::CUSTOMER_ID => 'sometimes|alpha_num|size:14',
+        ],
         AuthType::PRIVATE_AUTH=> [
             Entity::CONTACT     => 'required|string|max:12',
         ],

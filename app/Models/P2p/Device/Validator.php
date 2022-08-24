@@ -220,6 +220,13 @@ class Validator extends Base\Validator
               Entity::CONTACT   => 'string|required|regex:/91(\d*){10}/',
             ]);
         }
+        else if($this->context === Context::APPLICATION)
+        {
+            $rules = $this->makeRules([
+              Entity::CONTACT       => 'string|sometimes|regex:/91(\d*){10}/',
+              Entity::CUSTOMER_ID   => 'sometimes|alpha_num|size:14',
+            ]);
+        }
 
         return $rules;
     }
