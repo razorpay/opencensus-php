@@ -63,6 +63,13 @@ class Core extends Base\Core
 
         $iin = $this->fillNetworkDetails($card, $input);
 
+        $this->trace->info(
+            TraceCode::UPDATED_IIN_AND_CARD_ENTITY,
+            [
+                'iin_entity = '   => $iin,
+                'card_entity = '  => $card,
+            ]);
+
         if (empty($iin) === false)
         {
             $card->iinRelation()->associate($iin);
@@ -587,6 +594,27 @@ class Core extends Base\Core
             $tokenizedRange = substr($input['number'], 0, 9);
 
             $iinNumber = Card\IIN\IIN::getTransactingIinforRange($tokenizedRange) ?? $iinNumber;
+
+            if(isset($input['token']) && $input['token']!=="" && isset($card['iin']) && $card['iin']!=="" && substr($tokenizedRange,0,6) === $card['iin'])
+            {
+                $token_entity = $this->repo->token->findOrFailByPublicIdAndMerchant($input['token'], $this->merchant);
+
+                if(isset($token_entity["card_id"]))
+                {
+                    $network_card = $this->repo->card->getCardById($token_entity["card_id"]);
+
+                    $card['iin'] = $network_card['iin'];
+
+                    $iinNumber = $network_card['iin'];
+                }
+
+                $this->trace->info(
+                    TraceCode::UPDATED_IIN_AND_TOKEN_DETAILS,
+                    [
+                        'iin_number = '    => $iinNumber,
+                        'token_entity = '  => $token_entity,
+                    ]);
+            }
         }
 
         $network = Card\Network::detectNetwork($iinNumber);
@@ -831,6 +859,7 @@ class Core extends Base\Core
             CARD\Entity::IS_CVV_OPTIONAL        => false,
             Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
+            Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
 
         if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())

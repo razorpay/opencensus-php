@@ -1276,6 +1276,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_RECURRING_STATUS_ALREADY_SET                    = 'TOKEN_RECURRING_STATUS_ALREADY_SET';
     const GATEWAY_RECURRING_STATUS_NOT_SET                      = 'GATEWAY_RECURRING_STATUS_NOT_SET';
     const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON             = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
+    const UPDATED_IIN_AND_TOKEN_DETAILS                         = 'UPDATED_IIN_AND_TOKEN_DETAILS';
+    const UPDATED_IIN_AND_CARD_ENTITY                           = 'UPDATED_IIN_AND_CARD_ENTITY';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
