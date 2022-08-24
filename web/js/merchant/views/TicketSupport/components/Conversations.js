@@ -364,6 +364,22 @@ export default class Conversations extends React.Component {
       return { toggleReply: !prevState.toggleReply };
     });
   }
+
+  getExpectedReplyTime = () => {
+    const { match = {} } = this.props;
+    const { workflow } = this.state;
+    const isWorkflow = match?.params?.instance === 'workflow';
+    if (!isWorkflow || !workflow?.id) {
+      return 8;
+    }
+
+    const createdAt = moment(parseInt(workflow?.created_at, 10));
+    const dueDate = moment(parseInt(workflow?.due_date, 10));
+    const duration = moment.duration(dueDate.diff(createdAt));
+    const hours = duration.asHours();
+
+    return hours;
+  };
   render() {
     let total_conversations = [];
     const {
@@ -412,7 +428,7 @@ export default class Conversations extends React.Component {
             <span>You can</span>
             <br />
             <span>
-              expect reply within <b>8 working hours</b>.
+              expect reply within <b>{this.getExpectedReplyTime()} working hours</b>.
             </span>
           </>
         ) : null}
