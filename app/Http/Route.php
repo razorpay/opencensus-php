@@ -13139,7 +13139,8 @@ class Route
             'merchant_fetch_internal_users',
             'internal_merchant_fetch',
             'capital_cards_mail',
-            'feature_add_internal'
+            'feature_add_internal',
+            'internal_fd_create_ticket'
         ],
 
         'capital_collections_client' => [
