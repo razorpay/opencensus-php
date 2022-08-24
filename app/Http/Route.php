@@ -2698,11 +2698,16 @@ class Route
         //route for sending events to partner with pending commission and Incomplete KYC
         'partner_commission_pending'               => ['post',     'partner/commissions_pending',                    'PartnerController@sendEventsOfPartnersWithCommissionPending'],
 
+
+        //cron route for sending daily transacted submerchant events for all partners
+        'partner_send_daily_transacted_submerchant_events' => ['post', 'partner/send_daily_transacted_submerchant_events',  'PartnerController@sendSubmerchantFirstTransactionSegmentEvents'],
+
         // Partner types migration routes
         'bulk_migrate_aggregator_to_reseller'      => ['put',      'partner/migrate_aggregator_to_reseller/bulk',       'MerchantController@bulkConvertAggregatorToResellerPartner'         ],
         'bulk_migrate_reseller_to_aggregator'      => ['put',      'partner/migrate_reseller_to_aggregator/bulk',       'PartnerController@bulkMigrateResellerToAggregatorPartner'],
         'migrate_reseller_to_aggregator'           => ['put',      'partner/migrate_reseller_to_aggregator',            'PartnerController@migrateResellerToAggregatorPartner'    ],
         'partner_remove_switch_merchant_access'    => ['put',      'partner/remove_submerchant_dashboard_access/bulk',  'MerchantController@removeSubmerchantDashboardAccessOfPartner'      ],
+
 
         // partner kyc access
         'partner_kyc_access_request'              => ['post',     'partner/kyc_access_request',                     'PartnerKycAccessController@createRequestForKyc'                     ],
@@ -4426,6 +4431,9 @@ class Route
         'merchant_autokyc_hard_limit',
         'merchant_autokyc_escalation',
         'partner_send_weekly_activation_summary_emails',
+
+        //cron route for sending daily transacted submerchant events
+        'partner_send_daily_transacted_submerchant_events',
 
 
         // metro routes
@@ -12771,6 +12779,9 @@ class Route
             'merchant_autokyc_hard_limit',
             'merchant_autokyc_escalation',
             'partner_send_weekly_activation_summary_emails',
+
+            //cron route for sending daily transacted submerchant events
+            'partner_send_daily_transacted_submerchant_events',
 
             // cron for generating merchant report
             'merchant_report',

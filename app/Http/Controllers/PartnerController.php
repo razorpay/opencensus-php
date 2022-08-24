@@ -78,6 +78,16 @@ class PartnerController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    public function sendSubmerchantFirstTransactionSegmentEvents()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendSubmerchantFirstTransactionSegmentEvents($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function bulkMigrateResellerToAggregatorPartner()
     {
         $input = Request::all();

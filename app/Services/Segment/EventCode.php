@@ -46,6 +46,8 @@ class EventCode
 
     const AFFILIATE_ACCOUNT_ADDED = 'Affiliate Account Added';
 
+    const SUBMERCHANT_FIRST_TRANSACTION = 'Submerchant First Transaction';
+
     const L1_SUBMISSION = 'L1 Submission';
 
     const L2_SUBMISSION = 'L2 Submission';

@@ -4,14 +4,17 @@ namespace RZP\Models\Merchant\AccessMap;
 
 use DB;
 
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Base\ConnectionType;
+use RZP\Exception\LogicException;
+use RZP\Models\Base\PublicCollection;
 use \RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
-use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -322,5 +325,46 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ENTITY_OWNER_ID, $entityOwnerId)
                     ->get();
+    }
+    /**
+     * Returns all the  submerchants who had done their first payment after the timestamp.
+     *
+     * @param string|null $afterId
+     * @param int $chunk
+     * @param int $from
+     *
+     * @return array
+     */
+    public function getTransactedSubmerchants(string $afterId = null, int $chunk, int $from) : array
+    {
+        $submerchantId       = $this->repo->merchant_access_map->dbColumn(Entity::MERCHANT_ID);
+        $entityOwnerId       = $this->repo->merchant_access_map->dbColumn(Entity::ENTITY_OWNER_ID);
+        $paymentMerchantId   = $this->repo->payment->dbColumn(Entity::MERCHANT_ID);
+        $paymentCreatedAt    = $this->repo->payment->dbColumn(Entity::CREATED_AT);
+        $accessMapCreatedAt  = $this->repo->merchant_access_map->dbColumn(Entity::CREATED_AT);
+        $paymentAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        $query =   $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                        ->select($submerchantId)
+                        ->join(Table::PAYMENT, $submerchantId, '=', $paymentMerchantId)
+                        ->where($paymentCreatedAt, '>=', $accessMapCreatedAt)
+                        ->where($paymentCreatedAt, '>=', $from)
+                        ->where($submerchantId, '!=', null)
+                        ->where($entityOwnerId, '!=', null)
+                        ->where($paymentAuthorizedAt, '!=', null)
+                        ->groupBy($paymentMerchantId)
+                        ->having(DB::raw('min(`merchant_access_map`.created_at)'), '>=', $from );// For getting the payments done after the from timestamp
+
+        if (empty($afterId) === false)
+        {
+            $query->where($submerchantId, '>', $afterId);
+        }
+
+        if (empty($chunk) === false)
+        {
+            $query->take($chunk);
+        }
+
+        return $query->get()->pluck(Entity::MERCHANT_ID)->toArray();
     }
 }

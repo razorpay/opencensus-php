@@ -10,7 +10,7 @@ class Constants
     const WEEKLY_ACTIVATION_SUMMARY_JOB_PAGE_SIZE = 300;
     const WEEKLY_ACTIVATION_SUMMARY_PARTNER_LIMIT = 1000000;
     const WEEKLY_ACTIVATION_SUMMARY_JOB_BATCH_SIZE = 10;
-    
+
     public static $subMActivationStatusLabels = [
         'activated' => 'Activated',
         'activated_mcc_pending' => 'Activated Mcc Pending',
@@ -18,9 +18,9 @@ class Constants
         'rejected' => 'Rejected',
         'under_review' => 'Under Review',
         'instantly_activated' => 'Instantly Activated',
-        'needs_clarification' => 'Needs Clarification'        
+        'needs_clarification' => 'Needs Clarification'
     ];
-    
+
     const RATE_LIMIT_SUBMERCHANT_INVITE_BATCH_PREFIX  = 'rate_limit_submerchant_invite_batch_prefix:';
 
     // sub-merchant signup sources

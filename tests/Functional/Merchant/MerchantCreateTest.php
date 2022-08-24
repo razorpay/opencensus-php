@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use Mail;
+use Queue;
 use Mockery;
 use RZP\Constants;
 use Carbon\Carbon;
@@ -29,6 +30,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Jobs\SubmerchantFirstTransactionEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
@@ -493,6 +495,174 @@ class MerchantCreateTest extends TestCase
                     }));
 
         $this->startTest();
+    }
+
+    public function testSegmentEventPushSubmerchantFirstTransaction()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMapping($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId = '101Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+
+        $this->fixtures->payment->createAuthorized(['merchant_id'=> '101Submerchant']);
+
+        $input = [
+            "experiment_id" => "K8zmvNaQrRuz5g",
+            "id"            => "101Submerchant",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["Submerchant First Transaction"], true));
+            }));
+
+        $test = new SubmerchantFirstTransactionEvent('test',[]);
+        $test->handle();
+    }
+
+    public function testSegmentMultipleEventPushSubmerchantFirstTransaction()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMapping($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId  = '101Submerchant';
+        $submerchantId2 = '102Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId2]);
+
+        $this->fixtures->payment->createAuthorized(['merchant_id'=> $submerchantId]);
+        $this->fixtures->payment->createAuthorized(['merchant_id'=> $submerchantId2]);
+
+        $input = [
+            "experiment_id" => "K8zmvNaQrRuz5g",
+            "id"            => $submerchantId,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            "experiment_id" => "K8zmvNaQrRuz5g",
+            "id"            => $submerchantId2,
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(2))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["Submerchant First Transaction"], true));
+            }));
+
+        $test = new SubmerchantFirstTransactionEvent('test',[]);
+        $test->handle();
+    }
+
+    public function testSkipSegmentEventPushForFirstTransactionBeforeLastCronTime()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMapping($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId = '101Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+
+        $this->fixtures->payment->createAuthorized(['merchant_id' => '101Submerchant', 'created_at' => '1660731670']);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(false);
+
+        $test = new SubmerchantFirstTransactionEvent('test',[]);
+        $test->handle();
+    }
+
+    public function testSkipSegmentEventSubmerchantFirstTransaction()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMapping($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId = '101Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyAndTrackEvent')
+            ->willReturn(false);
+
+        $test = new SubmerchantFirstTransactionEvent('test',[]);
+        $test->handle();
     }
 
     public function testCreateSubMerchantWithEmailUserExists()

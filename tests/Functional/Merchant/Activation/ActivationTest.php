@@ -2106,7 +2106,7 @@ class ActivationTest extends OAuthTestCase
             $currentActivationStatus);
 
         $this->startTest($testData);
-        // ensure job was triggered 
+        // ensure job was triggered
         Queue::assertPushed(SendSubmerchantActivatedEvents::class);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
@@ -2163,7 +2163,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest($testData);
 
-        // ensure job was triggered 
+        // ensure job was triggered
         Queue::assertPushed(SendSubmerchantActivatedEvents::class);
 
         $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)

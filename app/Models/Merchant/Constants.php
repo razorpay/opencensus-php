@@ -215,6 +215,13 @@ final class Constants
     const MERCHANT_SEGMENT_TRANSACTION_COUNT         = 'merchant_segment_transaction_count';
     const TOTAL_TRANSACTIONS_IN_LAST_MONTH_TTL       = 60 * 60 * 24 * 2; //two days
 
+    const SUBMERCHANT_FIRST_TRANSACTION_CRON_CACHE_KEY = 'submerchant_first_transaction_timestamp';
+
+    const DAILY_TRANSACTED_SUBMERCHANTS_JOB_PAGE_SIZE  = 100;
+    const DAILY_TRANSACTED_SUBMERCHANTS_LIMIT          = 100000;
+    const DAILY_TRANSACTED_SUBMERCHANTS_BATCH_SIZE     = 10;
+    const DEFAULT_LAST_CRON_SUB_DAYS                   = 1;
+
     //Merchant tags
     const CAP_ES_0_DMT30           = 'CAP_ES_0_DMT30';
     const CAP_ES_0_XCA             = 'CAP_ES_0_XCA';

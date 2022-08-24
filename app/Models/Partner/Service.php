@@ -12,6 +12,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\SubmerchantFirstTransactionEvent ;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 
 class Service extends Base\Service
@@ -185,6 +186,12 @@ class Service extends Base\Service
         return $this->core->dispatchPartnerWeeklyActivationSummaryMails($limit, $afterId, $mock);
     }
 
+    public function sendSubmerchantFirstTransactionSegmentEvents(array $input)
+    {
+        SubmerchantFirstTransactionEvent::dispatch($this->mode, $input);
+
+        return ['triggered' => 'true', 'input' => $input];
+    }
     /**
      * bulk migrates reseller partners to aggregator partners by pushing jobs
      *
