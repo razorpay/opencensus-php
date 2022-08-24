@@ -173,8 +173,8 @@
     justify-content: space-between
     align-items: center
     @media (max-width: $screen-xs-max)
-      align-items: flex-end
       flex-direction: column
+      gap: 5px
 
     .info
       @media (max-width: $screen-xs-max)
@@ -214,11 +214,16 @@
 
 
   .report-download
+    @media (max-width: $screen-xs-max)
+      width: 100%
+
     .rzp-popover
       width: 220px
 
     .report-download-trigger
       margin: 0
+      @media (max-width: $screen-xs-max)
+        width: 100%
 
     .rzp-tooltip-inner
       padding: 0
