@@ -5730,6 +5730,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($commonMerchantBankingBalance['balance'], $updatedCommonMerchantBankingBalance['balance']);
 
     }
+
     public function testBankTransferForCustomerFeeBearerWithPercentRate()
     {
         $pricingPlanId = $this->fixtures->create('pricing:bank_transfer_percent_pricing_plan', ['fee_bearer' => 'customer']);

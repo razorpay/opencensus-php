@@ -118,16 +118,28 @@ class PayoutsClient extends Core
     protected function getFundAccountCreationPayload(Entity $bankTransfer,
                                                      Contact\Entity $contact)
     {
-        $payerName          = $bankTransfer->payerBankAccount->getName();
-        $payerIfscCode      = $bankTransfer->payerBankAccount->getIfscCode();
-        $payerAccountNumber = $bankTransfer->payerBankAccount->getAccountNumber();
+        $payerName            = $bankTransfer->payerBankAccount->getName();
+        $payerIfscCode        = $bankTransfer->payerBankAccount->getIfscCode();
+        $payerAccountNumber   = $bankTransfer->payerBankAccount->getAccountNumber();
+        $updatedPayerIfscCode = null;
+
+        if (array_key_exists($payerIfscCode, BankAccount\OldNewIfscMapping::$oldToNewIfscMapping) === true)
+        {
+            $updatedPayerIfscCode = BankAccount\OldNewIfscMapping::getNewIfsc($payerIfscCode);
+
+            $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED,
+                               [
+                                   'old_ifsc' => $payerIfscCode,
+                                   'new_ifsc' => $updatedPayerIfscCode,
+                               ]);
+        }
 
         return [
             FundAccount\Entity::CONTACT_ID   => $contact->getPublicId(),
             FundAccount\Entity::ACCOUNT_TYPE => FundAccount\Entity::BANK_ACCOUNT,
             FundAccount\Entity::BANK_ACCOUNT => [
                 BankAccount\Entity::NAME           => $payerName,
-                BankAccount\Entity::IFSC           => $payerIfscCode,
+                BankAccount\Entity::IFSC           => $updatedPayerIfscCode ?? $payerIfscCode,
                 BankAccount\Entity::ACCOUNT_NUMBER => $payerAccountNumber,
             ]
         ];

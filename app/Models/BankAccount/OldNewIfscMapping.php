@@ -2,6 +2,11 @@
 
 namespace RZP\Models\BankAccount;
 
+use App;
+
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
+
 /**
  * Class OldNewIfscMapping
  * @package RZP\Models\BankAccount
@@ -20,13 +25,39 @@ namespace RZP\Models\BankAccount;
 class OldNewIfscMapping
 {
     /**
-     * returns new value of ifsc for the passed value. If the mapping does not exists, it returns null.
+     * The function returns a valid IFSC for an invalid/dead from the mappings array. If the mapping does not exist, the
+     *  old ifsc itself is returned.
      */
     public static function getNewIfsc(string $oldIfsc)
     {
-        return self::$oldToNewIfscMapping[$oldIfsc];
+        $app = App::getFacadeRoot();
+
+        /**
+         * @var Trace $trace
+         */
+        $trace = $app['trace'];
+
+        $newIfsc = self::$oldToNewIfscMapping[$oldIfsc] ?? $oldIfsc;
+
+        // If no mapping exists, we will return the $oldIfsc itself and raise a warning
+        if ($newIfsc === $oldIfsc)
+        {
+            $trace->warning(TraceCode::IFSC_MAPPING_MISSING_FOR_INVALID_IFSC,
+                            [
+                                'old_ifsc' => $oldIfsc,
+                            ]);
+        }
+
+        return $newIfsc;
     }
 
+    /**
+     * For current list of valid IFSC, refer https://github.com/razorpay/ifsc/releases/tag/v2.0.9. Few mapped IFSCs in
+     * the current mappings array require a new/default IFSC as they are invalid as per the new package upgrade. Refer
+     * https://docs.google.com/spreadsheets/d/10WiXIa3c06uWF659a6x2UeAMKTR6AFd2zp-qzb0L8Ag/ fora list of them.
+     * This array needs to be flattened after addition of mappings since we should never be doing multiple lookups.
+     * Refer testLookupCountForFetchingUpdatedIfsc() function in tests/Unit/Utility/IfscValidationTest.php
+     */
     public static $oldToNewIfscMapping = [
         "ORBC0101685" => "PUNB0168510",
         "ORBC0100353" => "PUNB0035310",
@@ -15734,7 +15765,7 @@ class OldNewIfscMapping
         "ALLA0211274" => "IDIB000A611",
         "ALLA0210037" => "IDIB000G538",
         "ALLA0213119" => "IDIB000G536",
-        "ALLA0212302" => "IDIB000G511",
+        "ALLA0212302" => "IDIB000A023",
         "ALLA0211552" => "IDIB000G539",
         "ALLA0212983" => "IDIB000G540",
         "ALLA0213439" => "IDIB000G541",
@@ -15780,7 +15811,7 @@ class OldNewIfscMapping
         "ALLA0211766" => "IDIB000G575",
         "ALLA0210435" => "IDIB000G576",
         "ALLA0211607" => "IDIB000G577",
-        "ALLA0212752" => "IDIB000G578",
+        "ALLA0212752" => "IDIB000A023",
         "ALLA0211261" => "IDIB000G579",
         "ALLA0211038" => "IDIB000G580",
         "ALLA0211976" => "IDIB000G581",
@@ -15890,7 +15921,7 @@ class OldNewIfscMapping
         "ALLA0211334" => "IDIB000G668",
         "ALLA0211035" => "IDIB000G669",
         "ALLA0211356" => "IDIB000G670",
-        "ALLA0212176" => "IDIB000V508",
+        "ALLA0212176" => "IBID000G080",
         "ALLA0211403" => "IDIB000H501",
         "ALLA0212350" => "IDIB000H593",
         "ALLA0211263" => "IDIB000B798",
@@ -16077,7 +16108,7 @@ class OldNewIfscMapping
         "ALLA0212561" => "IDIB000J510",
         "ALLA0211492" => "IDIB000A642",
         "ALLA0213433" => "IDIB000J511",
-        "ALLA0212975" => "IDIB000J512",
+        "ALLA0212975" => "IDIB000J038",
         "ALLA0212120" => "IDIB000J513",
         "ALLA0212094" => "IDIB000J514",
         "ALLA0212808" => "IDIB000J508",
@@ -16381,7 +16412,7 @@ class OldNewIfscMapping
         "ALLA0213218" => "IDIB000K644",
         "ALLA0212862" => "IDIB000K649",
         "ALLA0211996" => "IDIB000K646",
-        "ALLA0212217" => "IDIB000K647",
+        "ALLA0212217" => "IDIB000K198",
         "ALLA0212593" => "IDIB000K648",
         "ALLA0211213" => "IDIB000K650",
         "ALLA0212781" => "IDIB000K651",
@@ -16457,7 +16488,7 @@ class OldNewIfscMapping
         "ALLA0210933" => "IDIB000K762",
         "ALLA0212027" => "IDIB000K717",
         "ALLA0212551" => "IDIB000K718",
-        "ALLA0213016" => "IDIB000K719",
+        "ALLA0213016" => "IDIB000K181",
         "ALLA0210788" => "IDIB000K720",
         "ALLA0210620" => "IDIB000K721",
         "ALLA0212678" => "IDIB000K723",
@@ -16741,7 +16772,7 @@ class OldNewIfscMapping
         "ALLA0212047" => "IDIB000M569",
         "ALLA0210252" => "IDIB000M570",
         "ALLA0210306" => "IDIB000M571",
-        "ALLA0212937" => "IDIB000B515",
+        "ALLA0212937" => "IDIB000B135",
         "ALLA0212448" => "IDIB000B846",
         "ALLA0212762" => "IDIB000M572",
         "ALLA0211563" => "IDIB000M573",
@@ -16984,7 +17015,7 @@ class OldNewIfscMapping
         "ALLA0211823" => "IDIB000M781",
         "ALLA0211884" => "IDIB000M782",
         "ALLA0213475" => "IDIB000M783",
-        "ALLA0210910" => "IDIB000M784",
+        "ALLA0210910" => "IDIB000E013",
         "ALLA0210909" => "IDIB000M785",
         "ALLA0210598" => "IDIB000B535",
         "ALLA0212139" => "IDIB000N593",
@@ -17176,7 +17207,7 @@ class OldNewIfscMapping
         "ALLA0212069" => "IDIB000P525",
         "ALLA0210456" => "IDIB000A527",
         "ALLA0210632" => "IDIB000B552",
-        "ALLA0212830" => "IDIB000P526",
+        "ALLA0212830" => "IDIB000P066",
         "ALLA0212506" => "IDIB000P527",
         "ALLA0212927" => "IDIB000P529",
         "ALLA0213184" => "IDIB000P528",
@@ -17785,7 +17816,7 @@ class OldNewIfscMapping
         "ALLA0211346" => "IDIB000S715",
         "ALLA0213437" => "IDIB000S716",
         "ALLA0212246" => "IDIB000S717",
-        "ALLA0212029" => "IDIB000B606",
+        "ALLA0212029" => "IDIB000B109",
         "ALLA0212294" => "IDIB000M689",
         "ALLA0212796" => "IDIB000S718",
         "ALLA0213400" => "IDIB000S719",
@@ -17863,7 +17894,7 @@ class OldNewIfscMapping
         "ALLA0213313" => "IDIB000S791",
         "ALLA0212978" => "IDIB000S790",
         "ALLA0212617" => "IDIB000S792",
-        "ALLA0211155" => "IDIB000B609",
+        "ALLA0211155" => "IDIB000A023",
         "ALLA0211246" => "IDIB000S793",
         "ALLA0211019" => "IDIB000S794",
         "ALLA0213240" => "IDIB000S796",
@@ -17981,7 +18012,7 @@ class OldNewIfscMapping
         "ALLA0212122" => "IDIB000T593",
         "ALLA0212080" => "IDIB000T595",
         "ALLA0211382" => "IDIB000T596",
-        "ALLA0213438" => "IDIB000T597",
+        "ALLA0213438" => "IDIB000T067",
         "ALLA0213130" => "IDIB000T598",
         "ALLA0212702" => "IDIB000T599",
         "ALLA0212748" => "IDIB000T600",
@@ -18042,7 +18073,7 @@ class OldNewIfscMapping
         "ALLA0210550" => "IDIB000U531",
         "ALLA0212300" => "IDIB000U532",
         "ALLA0210101" => "IDIB000B627",
-        "ALLA0212450" => "IDIB000U534",
+        "ALLA0212450" => "IDIB000P166",
         "ALLA0212008" => "IDIB000R588",
         "ALLA0213208" => "IDIB000U535",
         "ALLA0212692" => "IDIB000P605",
@@ -18538,7 +18569,7 @@ class OldNewIfscMapping
         "ALLA0210027" => "IDIB000K745",
         "ALLA0210611" => "IDIB000A577",
         "ALLA0211083" => "IDIB000C604",
-        "ALLA0212304" => "IDIB000C602",
+        "ALLA0212304" => "IDIB000C026",
         "ALLA0212102" => "IDIB000C603",
         "ALLA0212307" => "IDIB000S561",
         "ALLA0213019" => "IDIB000C605",
@@ -18608,7 +18639,7 @@ class OldNewIfscMapping
         "ALLA0213494" => "IDIB000D515",
         "ALLA0211535" => "IDIB000D517",
         "ALLA0213278" => "IDIB000D518",
-        "ALLA0212060" => "IDIB000D519",
+        "ALLA0212060" => "IDIB000A001",
         "ALLA0211210" => "IDIB000D520",
         "ALLA0211511" => "IDIB000D521",
         "ALLA0210447" => "IDIB000D522",
@@ -18686,7 +18717,7 @@ class OldNewIfscMapping
         "ALLA0213177" => "IDIB000D588",
         "ALLA0211661" => "IDIB000D589",
         "ALLA0211790" => "IDIB000D590",
-        "ALLA0212207" => "IDIB000D592",
+        "ALLA0212207" => "IDIB000D043",
         "ALLA0211408" => "IDIB000D591",
         "ALLA0210700" => "IDIB000D593",
         "ALLA0211629" => "IDIB000D595",
@@ -20985,7 +21016,7 @@ class OldNewIfscMapping
         "UTBI0RRBBGB" => "PUNB0RRBBGB",
         "UTBI0RRBTGB" => "PUNB0RRBTGB",
         "UTIB0000000" => "UTIB0000004",
-        "ANDB0002758" => "ANDB0000001",
+        "ANDB0002758" => "UBIN0800015",
         "CBIN0000000" => "CBIN0011102",
         "CBIN0010020" => "CBIN0011102",
         "CBIN0010053" => "CBIN0011102",
@@ -21000,7 +21031,7 @@ class OldNewIfscMapping
         "CBIN0284414" => "CBIN0011102",
         "CNRB0002563" => "CNRB0000002",
         "CNRB0008056" => "CNRB0000002",
-        "CORP0002124" => "CORP0000011",
+        "CORP0002124" => "UBIN0900117",
         "FINO0001093" => "FINO0009001",
         "FINO0001231" => "FINO0009001",
         "FINO0001273" => "FINO0009001",
@@ -21614,5 +21645,45 @@ class OldNewIfscMapping
         "IOBA0000997" => "IOBA0000002",
         "LAVB0000101" => "DBSS0IN0996",
         "PUNB0061800" => "PUNB0000010",
+        "IDIB000A149" => "IDIB000S644",
+        "IDIB000B123" => "IDIB000B691",
+        "IDIB000B515" => "IDIB000B135",
+        "IDIB000B606" => "IDIB000B109",
+        "IDIB000C602" => "IDIB000C026",
+        "IDIB000D592" => "IDIB000D043",
+        "IDIB000J512" => "IDIB000J038",
+        "IDIB000K200" => "IDIB000K669",
+        "IDIB000K211" => "IDIB000K635",
+        "IDIB000K647" => "IDIB000K198",
+        "IDIB000K719" => "IDIB000K181",
+        "IDIB000L014" => "IDIB000L525",
+        "IDIB000M207" => "IDIB000M537",
+        "IDIB000M223" => "IDIB000R010",
+        "IDIB000M323" => "IDIB000U508",
+        "IDIB000M784" => "IDIB000E013",
+        "IDIB000P045" => "IDIB000P680",
+        "IDIB000P526" => "IDIB000P066",
+        "IDIB000R078" => "IDIB000R631",
+        "IDIB000S115" => "IDIB000K710",
+        "IDIB000S252" => "IDIB000L573",
+        "IDIB000S275" => "IDIB000S728",
+        "IDIB000S301" => "IDIB000J560",
+        "IDIB000T597" => "IDIB000T067",
+        "IDIB000U534" => "IDIB000P166",
+        "IDIB000V508" => "IBID000G080",
+        "KCCB0KDI069" => "KCCB0KAD069",
+        "SIBL0000858" => "SIBL0000170",
+        "SRCB0JCB001" => "IBKL0JCB001",
+        "SRCB0JCB002" => "IBKL0JCB002",
+        "SRCB0JCB003" => "IBKL0JCB003",
+        "SRCB0JCB004" => "IBKL0JCB004",
+        "SRCB0JCB005" => "IBKL0JCB005",
+        "SRCB0JCB006" => "IBKL0JCB006",
+        "SRCB0JCB007" => "IBKL0JCB007",
+        "SRCB0JCB008" => "IBKL0JCB008",
+        "SRCB0JCB009" => "IBKL0JCB009",
+        "SRCB0JCB010" => "IBKL0JCB010",
+        "SRCB0JCB011" => "IBKL0JCB011",
+        "SRCB0JCB012" => "IBKL0JCB012",
     ];
 }

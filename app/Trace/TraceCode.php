@@ -7764,6 +7764,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const FAILED_TO_FETCH_WHATSAPP_STATUS                             = 'FAILED_TO_FETCH_WHATSAPP_STATUS';
 
+    const IFSC_MAPPING_MISSING_FOR_INVALID_IFSC                       = 'IFSC_MAPPING_MISSING_FOR_INVALID_IFSC';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

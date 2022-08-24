@@ -187,7 +187,7 @@ class Base extends BaseCore
 
     protected function getNewIfscMapping(string $ifsc)
     {
-        $newIfsc = BankAccount\OldNewIfscMapping::$oldToNewIfscMapping[$ifsc];
+        $newIfsc = BankAccount\OldNewIfscMapping::getNewIfsc($ifsc);
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_OLD_TO_NEW_IFSC_BEING_USED, [
                   'old_ifsc' => $ifsc,
