@@ -45,6 +45,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { isOrgFeatureExist } from 'merchant/models/User';
 
 function isWorkflowChangeAllowed(workflow) {
   return (
@@ -98,7 +99,7 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
   const isLimitReached = hasAdditionalWebsites ? user.additional_websites.length === 5 : false;
 
   return (
-    <div class="website-self-serve__listItem additional-websites__listcontainer">
+    <div className="website-self-serve__listItem additional-websites__listcontainer">
       <div>
         {hasAdditionalWebsites ? (
           user.additional_websites.map((website, idx) => (
@@ -110,7 +111,7 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
             </div>
           ))
         ) : (
-          <span class="additional-websites__listcontainer">--</span>
+          <span className="additional-websites__listcontainer">--</span>
         )}
       </div>
       {user.business_website &&
@@ -120,6 +121,7 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
         !isLimitReached && (
           <div>
             <Button.Transparent
+              type="button"
               onClick={() => {
                 selfServeTrackInitiate({
                   selfServeAction: 'Additional Website - App Url Updated',
@@ -129,7 +131,7 @@ function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWork
                 handleEditWebsite(FLOWS.ADDITIONAL_WEBSITE);
               }}
             >
-              <i class="i i-plus p-l" />
+              <i className="i i-plus p-l" />
             </Button.Transparent>
           </div>
         )}
@@ -146,7 +148,9 @@ const MerchantDetails = ({
   closeModal,
   tracking,
   fetchWorkflowStatus,
+  isAdminAsMerchant,
 }) => {
+  const isAccountActivation = isAdminAsMerchant || !isOrgFeatureExist('hide_activation_form');
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
   const openNeedsClarificationModal = (data) => {
     analyticsTrack({
@@ -264,7 +268,7 @@ const MerchantDetails = ({
   );
 
   return (
-    <div class="list-group details-row-container">
+    <div className="list-group details-row-container">
       <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
 
       {changeDisplayName && (
@@ -272,8 +276,8 @@ const MerchantDetails = ({
           label={() => (
             <div>
               <span>Display Name</span>
-              <small class="help-content">
-                <i class="i i-info-outline" />
+              <small className="help-content">
+                <i className="i i-info-outline" />
                 <Popover align="top" theme="dark">
                   <PopoverBody>
                     <div>{ATTR_DETAILS.display_name.desc}</div>
@@ -287,7 +291,7 @@ const MerchantDetails = ({
               <span>
                 {user.display_name}
                 <a
-                  class="p-l"
+                  className="p-l"
                   onClick={(...args) => {
                     selfServeTrackInitiate({
                       selfServeAction: 'Display Name Updated',
@@ -369,7 +373,7 @@ const MerchantDetails = ({
 
       <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
 
-      <ShowWhen additionalCondition={(_user) => _user.isAllowedEdit('activation')}>
+      <ShowWhen additionalCondition={() => isAccountActivation}>
         <DetailRow
           label={() => <b>Account Activation</b>}
           value={() => (
@@ -419,9 +423,9 @@ const MerchantDetails = ({
               user.activation_status ? (
                 <ActivationStatusLabel status={user.activation_status} />
               ) : (
-                <div class="activation-bar-content activation-status-secondary">
-                  <div class="activation-bar-text">{user.activation_progress}% Completed</div>
-                  <div class="activation-bar">
+                <div className="activation-bar-content activation-status-secondary">
+                  <div className="activation-bar-text">{user.activation_progress}% Completed</div>
+                  <div className="activation-bar">
                     <ProgressBar type="success" max={100} value={user.activation_progress} />
                   </div>
                 </div>
@@ -435,13 +439,13 @@ const MerchantDetails = ({
           <DetailRow
             label="Account Access"
             value={() => (
-              <div class="account-access" style={{ textAlign: 'right' }}>
+              <div className="account-access">
                 {user.has_key_access ? 'Complete' : 'Limited'}
-                <small class="help-content" style={{ paddingLeft: '4px' }}>
-                  <i class="i i-help" />
+                <small className="help-content">
+                  <i className="i i-help" />
                   <Popover align="right" theme="dark">
                     <PopoverBody>
-                      <div style={{ textAlign: 'left' }}>
+                      <div>
                         {user.has_key_access
                           ? 'You have access to all products and API keys. Integrate using our robust APIs or request access to products such as Subscriptions,  Route,  and Smart Collect.'
                           : 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products such as Route, Subscriptions, etc.'}
@@ -458,10 +462,10 @@ const MerchantDetails = ({
           >
             <DetailRow
               label={() => (
-                <div class="website-self-serve__listItem">
+                <div className="website-self-serve__listItem">
                   <span>Business Website/App details</span>
-                  <small class="help-content">
-                    <i class="i i-info-outline" />
+                  <small className="help-content">
+                    <i className="i i-info-outline" />
                     <Popover align="top" theme="dark">
                       <PopoverBody>
                         <div>
@@ -498,10 +502,10 @@ const MerchantDetails = ({
           <IntoView hashedWith={[NC_ADD_ADDITIONAL_WEBSITE, RR_ADD_ADDITIONAL_WEBSITE]}>
             <DetailRow
               label={() => (
-                <div class="website-self-serve__listItem">
+                <div className="website-self-serve__listItem">
                   <span>Additional Business Website/App</span>
-                  <small class="help-content">
-                    <i class="i i-info-outline" />
+                  <small className="help-content">
+                    <i className="i i-info-outline" />
                     <Popover align="top" theme="dark">
                       <PopoverBody>
                         <div>
@@ -542,8 +546,8 @@ const MerchantDetails = ({
               label={() => (
                 <div>
                   <TextHighlighter hashedWith={BILLING_LABEL}>Brand Name</TextHighlighter>
-                  <small class="help-content">
-                    <i class="i i-info-outline" />
+                  <small className="help-content">
+                    <i className="i i-info-outline" />
                     <Popover align="top" theme="dark">
                       <PopoverBody>
                         <div>
@@ -567,7 +571,7 @@ const MerchantDetails = ({
                   <span>
                     {user.billing_label}
                     <a
-                      class="p-l"
+                      className="p-l"
                       onClick={(e) => {
                         selfServeTrackInitiate({
                           selfServeAction: 'Brand Name Updated',
@@ -587,7 +591,7 @@ const MerchantDetails = ({
                       }}
                       title="Edit Billing Label"
                     >
-                      <i class="i i-edit" />
+                      <i className="i i-edit" />
                     </a>
                   </span>
                 ) : (
@@ -610,7 +614,7 @@ const MerchantDetails = ({
         <DetailRow
           label="Terms and Conditions Page"
           value={() => (
-            <div style={{ display: 'flex' }}>
+            <div className="terms-and-cond">
               {!user.merchant_tnc ? (
                 <a
                   onClick={() => {
@@ -623,16 +627,17 @@ const MerchantDetails = ({
               ) : (
                 <>
                   <Button.Secondary
+                    type="button"
                     onClick={() => {
                       const eventName = 'edit_tnc_page';
                       showGenerateTnCModal(eventName);
                     }}
-                    style={{ padding: '3px 8px', fontSize: '12px' }}
                     children="EDIT DETAILS"
+                    className="edit-details-btn"
                   />
                   <div>
-                    <a href={user.merchant_tnc.link} target="_blank" rel="noopener noreferrer">
-                      <span>{user.merchant_tnc.link}</span> <i class="i i-external-link" />
+                    <a href={user?.merchant_tnc?.link} target="_blank" rel="noopener noreferrer">
+                      <span>{user?.merchant_tnc?.link}</span> <i className="i i-external-link" />
                     </a>
                   </div>
                 </>

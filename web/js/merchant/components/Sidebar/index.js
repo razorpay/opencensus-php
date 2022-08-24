@@ -199,14 +199,13 @@ export default class Sidebar extends Component {
           <nav>
             {isMerchant && (
               <div className="nav">
-                {!user.isOrgAxis ? (
+                <ShowWhen additionalCondition={() => !isOrgFeatureExist('hide_activation_form')}>
                   <ActivationProgress
                     onSidebarBannerClick={this.onSidebarBannerClick}
                     user={user}
                     config={config}
                   />
-                ) : null}
-
+                </ShowWhen>
                 {user.isPartner() ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} user={user} />
                 ) : (

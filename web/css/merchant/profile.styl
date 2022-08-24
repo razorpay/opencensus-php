@@ -6,12 +6,16 @@ $shadow-black-color = #3A45671E;
 $accent-negative-900 = #D12D2D;
 $accent-neutral-900 = #CD8214;
 $accent-positive-900 = #1F890E;
-$shade-700 = #536582;
-$shade-900 = #162F56;
-$shade-940 = #162F561A;
-$shade-960 = #162F568A;
-$shade-970 = #162F56BD;
+$dark-blue-100 = #536582;
+$blue-900 = #162F56;
+$blue-910 = #162F561A;
+$blue-940 = #162f5661;
+$blue-960 = #162F568A;
+$blue-980 = #162F56BD;
 $primary-900 = #0B70E7;
+$white-110 = #e0e4f91a;
+$blue-100 = #528FF0;
+$white-200 = #E1E5EA;
 
 $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/bank-details-change/";
 
@@ -32,8 +36,8 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     vertical-align: middle;
     font-size: 12px;
     border-radius: 50%;
-    background: rgb(241, 79, 80);
-    color: rgb(255, 255, 255);
+    background: #f14f50;
+    color: $white-color;
   }
 
   .activation-bar-text {
@@ -60,6 +64,14 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
     .help-content {
       vertical-align: text-bottom;
+      padding-left: 4px;
+    }
+  }
+  .terms-and-cond {
+    display: flex;
+    .edit-details-btn {
+      padding: 3px 8px;
+      font-size: 12px;
     }
   }
 }
@@ -90,7 +102,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 }
 
 .help-curr-billing-div {
-  color: rgba(22, 47, 86, 0.38);
+  color: $blue-940;
   margin-top: 16px;
   margin-bottom: 5px;
   font-weight: bold;
@@ -182,14 +194,14 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
   input
     border none
-    border-radius 0px
-    background-color rgba(224, 228, 249, 0.1)
+    border-radius 0
+    background-color $white-110
 
   textarea
     overflow scroll
-    background-color rgba(224, 228, 249, 0.1)
+    background-color $white-110
     border none
-    border-bottom 2px solid rgba(22, 47, 86, 0.1)
+    border-bottom 2px solid $blue-910
 
   textarea.Input-el
     max-height 150px
@@ -201,11 +213,11 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     margin-bottom 9px
     margin-top -7px
     font-size 12px
-    color rgba(22, 47, 86, 0.54)
+    color $blue-960
 
   .note
-    color rgba(22, 47, 86, 0.54)
-    margin 15px 0px
+    color $blue-960
+    margin 15px 0
     font-size 13px
 
   .transactionlimit-fileupload
@@ -237,7 +249,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 .gst-invoice-note
   border-left 3px solid $accent-neutral-900
   padding-left 10px
-  color rgba(22, 47, 86, 0.54)
+  color $blue-960
 
 .gst-opt-out-cta
   display flex
@@ -251,11 +263,11 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     flex-direction row
 
   .address-section span:nth-child(1), .pincode-section span:nth-child(1)
-    padding 10px 0px 0px 15px
+    padding 10px 0 0 15px
     flex .3
 
   .address-section span:nth-child(2), .pincode-section span:nth-child(2)
-    padding 10px 15px 0px 15px
+    padding 10px 15px 0
     flex .7
     align-items end
     display flex
@@ -265,25 +277,25 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   .action span
     display flex
     flex 1
-    padding 10px 15px 0px 15px
+    padding 10px 15px 0
     justify-content flex-end
 
     p
       padding-top 10px
       font-weight bold
       cursor pointer
-      color #528ff0
+      color $blue-100
 
 .btn-highlight, .btn-highlight:hover
-  border 1px solid rgba(11, 112, 231, 0.74)
-  background rgba(11, 112, 231, 0.05)
+  border 1px solid #0b70e7bd
+  background #0b70e70d
   margin-top 15px !important
   color $light-blue-color
 
 .gst-help-block
   padding 1px
   margin-bottom 15px
-  color rgba(22, 47, 86, 0.74)
+  color $blue-980
 
 .gst-confirmation-modal-header
   line-height 25px
@@ -303,21 +315,21 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     margin-top -4px
     margin-bottom 14px
     font-size 12px
-    color rgba(22, 47, 86, 0.38)
+    color $blue-940
     background-color #FAFAFA
 
   input
     margin-bottom 18px
 
   .suggested-address-row
-    padding 5px 0px 5px 10px
-    border-left 3px solid #528FF0
+    padding 5px 0 5px 10px
+    border-left 3px solid $blue-100
     border-radius 2px
     margin-bottom 10px
 
     p{
       display inline
-      color #528FF0
+      color $blue-100
       font-weight 500
       cursor pointer
     }
@@ -343,7 +355,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   .img-container
     display flex
     justify-content center
-    padding 15px 0px
+    padding 15px 0
 
   .content
     display flex
@@ -351,21 +363,21 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     font-size 13px
 
     strong
-      padding 2px 0px 2px 22px
+      padding 2px 0 2px 22px
 
     span ol li
       padding 7px 11px 7px 5px
 
     .note
       background-color #FCF8E5
-      border 1px solid rgba(22, 47, 86, 0.1)
-      margin 0px 22px 5px 22px
-      padding 5px 5px 7px 5px
+      border 1px solid $blue-910
+      margin 0 22px 5px
+      padding 5px 5px 7px
 
   .action
     display flex
     justify-content center
-    padding 10px 0px 22px 0px
+    padding 10px 0 22px
 
     button
       width 87%
@@ -395,8 +407,8 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
   .note
     background-color #FCF8E5
-    border 1px solid rgba(22, 47, 86, 0.1)
-    padding 5px 5px 7px 5px
+    border 1px solid $blue-910
+    padding 5px 5px 7px
     margin-top 20px
 
   .upload-invoice
@@ -435,7 +447,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       .modal-title {
         font-size: 14px;
         line-height: 20px;
-        color: $shade-700;
+        color: $dark-blue-100;
       }
 
       .close {
@@ -459,7 +471,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
         font-weight: bold;
         font-size: 16px;
         line-height: 24px;
-        color: $shade-900;
+        color: $blue-900;
         margin-bottom: 14px;
       }
     }
@@ -483,7 +495,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       font-weight: normal;
       font-size: 12px;
       line-height: 18px;
-      color: $shade-960;
+      color: $blue-960;
       padding-top: 0;
       margin-bottom: 0;
     }
@@ -513,10 +525,10 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
     .material-input {
       height: 36px;
-      background: #E0E4F91A;
-      border-radius: 2px 2px 0px 0px;
+      background: $white-110;
+      border-radius: 2px 2px 0 0;
       border: none;
-      border-bottom: 1px solid $shade-940;
+      border-bottom: 1px solid $blue-910;
     }
 
     .material-input+.input-group-addon {
@@ -585,7 +597,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
   .Alert {
     display: flex;
-    color: $shade-700;
+    color: $dark-blue-100;
 
     &-icon--before {
       align-self: center;
@@ -620,7 +632,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
     .razorpay-support {
       .title {
-        color: $shade-700;
+        color: $dark-blue-100;
         font-weight: bold;
         font-size: 12px;
         line-height: 18px;
@@ -630,7 +642,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
         margin-top: 8px;
         font-size: 13px;
         line-height: 18px;
-        color: $shade-900;
+        color: $blue-900;
       }
     }
 
@@ -647,7 +659,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
 
     .Input--vTop .Input-label {
-      color: $shade-960;
+      color: $blue-960;
       font-weight: normal;
       font-size: 12px;
       line-height: 18px;
@@ -655,14 +667,14 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
     textarea::placeholder {
       /* Chrome, Firefox, Opera, Safari 10.1+ */
-      color: $shade-940;
+      color: $blue-910;
       opacity: 1;
       /* Firefox */
     }
 
     textarea::-ms-input-placeholder {
       /* Microsoft Edge */
-      color: $shade-940;
+      color: $blue-910;
     }
 
     textarea.Input-el {
@@ -698,7 +710,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
       text-align: center;
       font-size: 16px;
       line-height: 20px;
-      color: $shade-970;
+      color: $blue-980;
 
       .sub-title {
         font-weight: bold;
@@ -740,11 +752,11 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     &-muted-text {
       font-size: 12px;
       line-height: 18px;
-      color: $shade-960;
+      color: $blue-960;
     }
 
     hr {
-      background: $shade-940;
+      background: $blue-910;
     }
 
     .bank-details-icon {
@@ -805,7 +817,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     .Alert-icon--close {
       margin-left: 6px;
       cursor: pointer;
-      color: $shade-900;
+      color: $blue-900;
     }
     &--warning {
       background: #CD82141A;
@@ -834,7 +846,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     &-content {
       font-size: 12px;
       line-height: 18px;
-      color: $shade-900;
+      color: $blue-900;
     }
   }
 
@@ -844,7 +856,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
     }
 
     .action-required {
-      color: $shade-970;
+      color: $blue-980;
 
       .title {
         color: $accent-neutral-900;
@@ -877,7 +889,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
 .profile-container {
   .nav-link {
-    color #528ff0
+    color $blue-100
     cursor pointer
   }
   .gray {
@@ -898,7 +910,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   }
 
   .label {
-    color: $shade-960;
+    color: $blue-960;
   }
 
   .select {
@@ -915,17 +927,17 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   }
 
   .files-container {
-    margin: 24px 0px 12px;
+    margin: 24px 0 12px;
 
     .count-label {
-      border-bottom: 1px solid #E1E5EA;
+      border-bottom: 1px solid $white-200;
       padding-bottom: 8px;
-      color: $shade-900;
+      color: $blue-900;
       opacity: 0.54;
     }
 
     .scroll-list {
-      margin: 8px 0px;
+      margin: 8px 0;
       min-height: 25px;
       max-height: 130px;
       overflow-y: auto;
@@ -943,7 +955,7 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
         }
 
         .download-icon {
-          color: #528ff0;
+          color: $blue-100;
           width: 12px;
           height: 10px;
           margin-right: 8px;
@@ -963,8 +975,8 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
   }
 
   .info-container {
-    margin: 24px 0px;
-    border-left: 3px solid #528FF0;
+    margin: 24px 0;
+    border-left: 3px solid $blue-100;
     border-radius: 2px;
     padding-left: 10px;
     opacity: 0.9;
@@ -1008,9 +1020,9 @@ $bank-account-update-assets = "https://cdn.razorpay.com/static/assets/profile/ba
 
   textarea
     overflow scroll
-    background-color rgba(224, 228, 249, 0.1)
+    background-color $white-110
     border none
-    border-bottom 2px solid rgba(22, 47, 86, 0.1)
+    border-bottom 2px solid $blue-910
 
   textarea.Input-el
     max-height 150px

@@ -80,12 +80,23 @@ class Profile extends Component {
     //by default this feature is not available
     isBankAccountChangeAllowed: null,
     isWebsiteInWorkflow: null,
+    isAdminAsMerchant: false,
   };
 
   static contextType = TwoFactorVerificationContext;
 
   UNSAFE_componentWillMount() {
-    this.props.fetchUser().then((reponse) => {
+    const {
+      fetchUser,
+      fetchBankAccount,
+      fetchSettlementAmount,
+      user,
+      fetchBankAccountChangeStatus,
+      fetchAddWebsiteWorkflowStatus,
+      fetchIsAdminAsMerchant,
+      showNotification,
+    } = this.props;
+    fetchUser().then((reponse) => {
       const user = reponse.data;
       if (!user.current) {
         this.setState({
@@ -94,16 +105,15 @@ class Profile extends Component {
         });
       }
     });
-    this.props.fetchBankAccount();
-    this.refreshUser(this.props.user);
+    fetchBankAccount();
+    this.refreshUser(user);
 
-    this.props.fetchSettlementAmount();
+    fetchSettlementAmount();
 
     // fetch status whether the merchant can change their bank account details or not
     // Only allowed for role types `owner` & `admin`
     if (this.isAdminOrOwner()) {
-      this.props
-        .fetchBankAccountChangeStatus(this.props.user.id) //user.id is merchant_id not user_id
+      fetchBankAccountChangeStatus(user.id) //user.id is merchant_id not user_id
         .then(({ data }) => {
           this.setState({
             //if api response is true then the request is still in workflow
@@ -115,11 +125,24 @@ class Profile extends Component {
         });
     }
 
-    this.props.fetchAddWebsiteWorkflowStatus().then(({ data }) => {
+    fetchAddWebsiteWorkflowStatus().then(({ data }) => {
       this.setState({
         isWebsiteInWorkflow: data,
       });
     });
+
+    fetchIsAdminAsMerchant()
+      .then(({ data }) => {
+        this.setState({
+          isAdminAsMerchant: data?.is_admin_as_merchant,
+        });
+      })
+      .catch((err) => {
+        showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
   }
 
   async openNeedsClarificationModal() {
@@ -632,6 +655,7 @@ class Profile extends Component {
     const { user, profile, settlement_amount } = this.props;
     const { bankAccount } = profile;
     const invitations = user.user.invitations;
+    const { isAdminAsMerchant, isWebsiteInWorkflow } = this.state;
 
     if (!user.isAuthenticated) {
       return (
@@ -690,8 +714,9 @@ class Profile extends Component {
                   user={user}
                   changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
                   changeBillingLabel={!!this.isAdminOrOwner() && this.openChangeBillingLabel}
-                  isWebsiteInWorkflow={this.state.isWebsiteInWorkflow}
+                  isWebsiteInWorkflow={isWebsiteInWorkflow}
                   onWebsiteAdd={this.onWebsiteAdd}
+                  isAdminAsMerchant={isAdminAsMerchant}
                 />
               </TriggerOnQueryParamMatch>
             ) : null}

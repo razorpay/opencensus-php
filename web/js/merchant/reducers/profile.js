@@ -15,6 +15,7 @@ const CHECK_PASSWORD = 'CHECK_PASSWORD';
 const INVALID_MERCHANT_CALL = 'INVALID_MERCHANT_CALL';
 const GET_FIRC_DETAILS = 'GET_FIRC_DETAILS';
 const SAVE_FIRC_DETAILS = 'SAVE_FIRC_DETAILS';
+const IS_ADMIN_AS_MERCHANT = 'IS_ADMIN_AS_MERCHANT';
 
 export const fetchBankAccount = () => {
   if (!window.rzp_user) {
@@ -156,6 +157,15 @@ export const fetchAddWebsiteWorkflowStatus = () => {
     payload: merchantFetch({
       url: `merchant/activation/websites/status`,
       mode: 'live',
+    }),
+  };
+};
+
+export const fetchIsAdminAsMerchant = () => {
+  return {
+    type: IS_ADMIN_AS_MERCHANT,
+    payload: merchantFetch({
+      url: `merchant/is_admin_as_merchant`,
     }),
   };
 };
