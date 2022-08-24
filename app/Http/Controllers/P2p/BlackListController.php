@@ -33,5 +33,7 @@ class BlackListController extends Controller
         $input = $this->request()->all();
 
         $response = $this->service->fetchAll($input);
+
+        return $this->response($response);
     }
 }

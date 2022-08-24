@@ -205,7 +205,7 @@ final class P2pRoute
             ],
         Requests::P2P_MERCHANT_BLACKLIST_FETCH_ALL =>
             [
-                'post',
+                'get',
                 'merchant/blacklist',
                 'BlackListController@fetchAll'
             ],

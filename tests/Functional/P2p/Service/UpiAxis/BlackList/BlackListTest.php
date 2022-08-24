@@ -49,15 +49,45 @@ class BlackListTest extends \RZP\Tests\P2p\Service\UpiAxis\TestCase
         $response  = $helper->remove();
     }
 
-    public function testFetch()
+    public function testFetchAll()
     {
+        $helper = $this->getVpaHelper();
+
+        $helper->withSchemaValidated();
+
+        $vpas = $helper->fetchAllVpa();
+
+        $vpa = $vpas['items'][0];
+
+        $this->createBlackList($vpa);
+
         $helper = $this->getBlackListHelper()->setMerchantOnAuth(true);
 
-        $this->expectExceptionMessage(RuntimeException::class);
-
-        $this->expectExceptionMessage("Not implemented, service Implementation is on the way");
-
         $response = $helper->fetchAll();
+
+        $expectedId = Entity::verifyIdAndSilentlyStripSign($vpa[Entity::ID]);
+
+        $this->assertEquals($expectedId, $response['items'][0][BlackListEntity::ENTITY_ID]);
+
+        $this->assertEquals($vpa[Entity::ENTITY], $response['items'][0][BlackListEntity::TYPE]);
+    }
+
+
+    protected function createBlackList($vpa)
+    {
+
+        $helper = $this->getBlackListHelper()->setMerchantOnAuth(true);
+
+        $input = array(
+            'type'              => 'vpa',
+            'username'          => $vpa[Entity::USERNAME],
+            'handle'            => $vpa[Entity::HANDLE],
+            'account_number'    => '',
+            'ifsc'              => '',
+            'beneficiary_name'  => '',
+        );
+
+        $helper->create($input);
     }
 
     public function testEntity()

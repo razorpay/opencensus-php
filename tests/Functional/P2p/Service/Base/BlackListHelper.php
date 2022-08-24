@@ -43,8 +43,6 @@ class BlackListHelper extends P2pHelper
 
         $request = $this->request('blacklist');
 
-        $this->content($request);
-
-        return $this->post($request);
+        return $this->get($request);
     }
 }

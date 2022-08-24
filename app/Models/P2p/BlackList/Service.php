@@ -20,11 +20,9 @@ class Service extends Base\Service
 
     public function fetchAll(array $input): array
     {
-        // TODO: $response = $this->processor->fetchAll($input);
+         $response = $this->processor->fetchAll($input);
 
-        // TODO: return $response;
-
-        throw new RuntimeException("Not implemented, service Implementation is on the way");
+         return $response;
     }
 
     public function remove(array $input): array
