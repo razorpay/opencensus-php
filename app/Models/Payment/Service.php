@@ -5187,6 +5187,19 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findOrFail($paymentId);
 
+        if (($payment !== null) and
+            ($payment->getAmount() !== (int) $input['payment']['amount']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                Error\PublicErrorDescription::BAD_REQUEST_AMOUNT_MISMATCH,
+                Payment\Entity::AMOUNT,
+                [
+                    'payment_entity_amount' => $payment->getAmount(),
+                    'input_amount'          => $input['payment']['amount'],
+                    'payment_id'            => $payment->getId(),
+                ]);
+        }
+
         if (($input['meta']['force_auth_payment'] === true) and
             ($this->isForceAuthAllowed($gateway) ===true))
         {
