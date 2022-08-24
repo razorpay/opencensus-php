@@ -14,9 +14,9 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
       {!isLoading ? (
         <p className="metrics-card__title">
           {title}
-          {helpText && (
+          {isActive && helpText && (
             <small className="help-content">
-              <i class="i i-info-outline" />
+              <i class="i i-help-outline" />
               <Popover align="top">
                 <PopoverBody>
                   <div>{helpText}</div>

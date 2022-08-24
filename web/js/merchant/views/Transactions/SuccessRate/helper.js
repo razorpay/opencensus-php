@@ -20,7 +20,7 @@ export const getInterval = (startDate, endDate) => {
     return DEFAULT_INTERVAL;
   } else if (diff > 1 && diff <= 24) {
     return 24 * 60; // 1 day ie., 24 hours * 60 minutes
-  } else if (diff > 24 && diff <= 60) {
+  } else if (diff > 24) {
     return 7 * 24 * 60; // 1 week ie., 7 days * 24 hours * 60 minutes
   }
   return DEFAULT_INTERVAL;
@@ -305,7 +305,7 @@ export const getMerchantErrorsPayload = () => {
 
 //Returns a list of initial set of filters for each method.
 export const getInitialGroupings = (methodFilters) => {
-  reduce(
+  return reduce(
     methodFilters,
     (acc, tabFilters, key) => {
       acc[key] = [

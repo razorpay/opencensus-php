@@ -10,7 +10,7 @@ import GraphIntervals from './GraphIntervals';
 import ChartArea from './ChartArea';
 
 import { updateGraphInterval, fetchBreakdownIntervals } from 'merchant/reducers/successRate';
-import { breakdownInterval, chartStyle, defaultLineStyle } from '../constants';
+import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
 import { queryFilters } from '../helper';
 
 const initTagList = ['Overall'];
@@ -47,7 +47,7 @@ const GraphPanel = (props) => {
             x: +moment.unix(obj?.from).format('x'),
             y: obj.sr,
           })),
-          ...(chartStyle[tagIndex] ?? defaultLineStyle),
+          ...(chartStyle[tagIndex] ?? defaultChartStyle),
         };
         chart.data.datasets.push(newDataset);
       }
@@ -82,7 +82,13 @@ const GraphPanel = (props) => {
       error={error}
     >
       <PanelTopbar className="graph-panel__topbar">
-        <TagGroup isLoading={isLoading} tags={tags} selectedTags={tagList} onSelect={handleTags} />
+        <TagGroup
+          isLoading={isLoading}
+          activeTab={activeTab}
+          tags={tags}
+          selectedTags={tagList}
+          onSelect={handleTags}
+        />
         <div className="panel-actions">
           <GraphIntervals
             selected={selectedInterval}

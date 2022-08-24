@@ -9,7 +9,7 @@ import StyledHeader from '../components/StyledHeader';
 import NoDataMessage from '../components/NoDataMessage';
 import { pieChartOptions as options, piePlugins as plugins } from '../chartConfig';
 import { getPieChartData } from '../helper';
-import { TAG_MAP } from '../constants';
+import { TAG_MAP, TAG_OVERALL_MAP } from '../constants';
 
 const renderInfoCard = ({ name = '--', successful, total, sr } = {}, index) => {
   if (name === 'others' && !sr) return null;
@@ -30,7 +30,7 @@ const renderInfoCard = ({ name = '--', successful, total, sr } = {}, index) => {
 };
 
 const VolumePieWidget = (props) => {
-  const { isLoading, tab = {} } = props;
+  const { isLoading, activeTab, tab = {} } = props;
   const { group_by, data } = tab;
   const groupData = data?.groups?.[group_by] ?? [];
   const pieChartData = getPieChartData(groupData);
@@ -65,7 +65,7 @@ const VolumePieWidget = (props) => {
                 {isLoading ? (
                   <PlaceholderLoader style={{ marginBottom: '10px' }} />
                 ) : (
-                  <StyledHeader text="Overall" />
+                  <StyledHeader text={TAG_OVERALL_MAP[activeTab]} />
                 )}
                 {isLoading ? (
                   <PlaceholderLoader />

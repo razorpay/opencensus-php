@@ -48,7 +48,7 @@ const SucessRateFilter = (props) => {
   return (
     <div className="filter">
       <div className="datepicker-group">
-        <label>Duration</label>
+        <label>Date Range</label>
         {/* For m-web we want to show only one month to support mweb view */}
         <DateRangePicker
           defaultPreset={DEFAULT_PRESET}

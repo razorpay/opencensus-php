@@ -28,9 +28,19 @@ export const DEFAULT_GROUP_BY = {
 
 export const TAG_MAP = {
   upi: 'UPI',
-  card: 'Card',
+  card: 'Cards',
   netbanking: 'Netbanking',
+  credit: 'Credit',
+  debit: 'Debit',
+  prepaid: 'Prepaid',
   others: 'Others',
+};
+
+export const TAG_OVERALL_MAP = {
+  Overall: 'All payment methods',
+  UPI: 'All apps',
+  Card: 'All cards types',
+  Netbanking: 'All banks',
 };
 
 /**************************************** Graph Widget Variables ****************************************/
@@ -38,17 +48,21 @@ export const TAG_MAP = {
 export const tabsOrder = ['Overall', 'UPI', 'Card', 'Netbanking'];
 
 export const tabsTitleMap = {
-  Overall: 'Overall Success Rate',
-  UPI: 'UPI Success Rate',
-  Card: 'Card Success Rate',
-  Netbanking: 'Netbanking Success Rate',
+  Overall: 'All payment methods',
+  UPI: 'UPI',
+  Card: 'Cards',
+  Netbanking: 'Netbanking',
 };
 
 export const tabsHelpTextMap = {
-  Overall: '',
-  UPI: '',
-  Card: '',
-  Netbanking: '',
+  Overall:
+    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
+  UPI:
+    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
+  Card:
+    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
+  Netbanking:
+    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
 };
 
 export const tabMeta = {
@@ -172,32 +186,37 @@ export const defaultChartStyle = {
   borderColor: namedColors['black.500'],
 };
 
-export const defaultLineStyle = {
-  ...defaultChartStyle,
-  borderColor: namedColors['black.500'],
-};
-
 export const chartStyle = [
   {
     ...defaultChartStyle,
     borderColor: namedColors['black.500'],
     borderDash: [10, 5],
+    pointHoverBackgroundColor: namedColors['black.500'],
+    pointHoverBorderColor: namedColors['black.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['orange.500'],
+    pointHoverBackgroundColor: namedColors['orange.500'],
+    pointHoverBorderColor: namedColors['orange.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['blue.500'],
+    pointHoverBackgroundColor: namedColors['blue.500'],
+    pointHoverBorderColor: namedColors['blue.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['green.500'],
+    pointHoverBackgroundColor: namedColors['green.500'],
+    pointHoverBorderColor: namedColors['green.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['pink.500'],
+    pointHoverBackgroundColor: namedColors['pink.500'],
+    pointHoverBorderColor: namedColors['pink.500'],
   },
 ];
 
@@ -237,10 +256,10 @@ export const ERROR_CATEGORIES = {
 };
 
 export const ERROR_CATEGORIES_VS_DISPLAY_TEXT = {
-  [ERROR_CATEGORIES.CUSTOMER]: 'Customer drop-offs',
-  [ERROR_CATEGORIES.BANKING]: 'Banking failures',
-  [ERROR_CATEGORIES.BUSINESS]: 'Business failures',
-  [ERROR_CATEGORIES.OTHER]: 'Other failures',
+  [ERROR_CATEGORIES.CUSTOMER]: 'Customer-related',
+  [ERROR_CATEGORIES.BANKING]: 'Banking-related',
+  [ERROR_CATEGORIES.BUSINESS]: 'Business-related',
+  [ERROR_CATEGORIES.OTHER]: 'Other',
 };
 
 export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
@@ -274,7 +293,9 @@ export const CARD_GROUPING_DATA = [
 ];
 
 export const SR_FILTERS = {
+  UPI: [],
   Card: [CARD_GROUPING_DATA],
+  Netbanking: [],
 };
 
 /******************************************************************************************/

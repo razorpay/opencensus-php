@@ -51,7 +51,7 @@ const GraphWidget = (props) => {
     if (tab.name === activeTab) return;
     setActiveTab(tab.name);
     setSelectedGroupings(initialGroupings);
-    setGroupTypeFilter(initialGroupings[tab?.name]?.[0]?.value || DEFAULT_GROUP_BY?.[tab?.name]);
+    setGroupTypeFilter(initialGroupings[tab?.name]?.[0]?.value ?? DEFAULT_GROUP_BY?.[tab?.name]);
     const payload = queryFilters();
     fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
@@ -100,14 +100,13 @@ const GraphWidget = (props) => {
         {tabPane.map((tab, idx) => {
           return (
             <TabPane key={`${tab.name}-${idx}`}>
-              {!(isLoading || tabLoading) && Object.keys(methodFilters).includes(tab.name) && (
-                <MethodFilter
-                  activeTab={activeTab}
-                  filtersList={methodFilters[activeTab]}
-                  handleGroupingChange={handleGroupingChange(tab?.name)}
-                  selectedGrouping={selectedGroupings?.[tab?.name]}
-                />
-              )}
+              <MethodFilter
+                activeTab={activeTab}
+                disabled={isLoading || tabLoading}
+                filtersList={methodFilters[activeTab] ?? []}
+                handleGroupingChange={handleGroupingChange(tab?.name)}
+                selectedGrouping={selectedGroupings?.[tab?.name]}
+              />
               <GraphPanel />
             </TabPane>
           );

@@ -1,6 +1,6 @@
 import React from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { defaultTagStyle, tagStyles } from '../constants';
+import { defaultTagStyle, tagStyles, TAG_MAP, TAG_OVERALL_MAP } from '../constants';
 
 export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
   const { backgroundColor, borderColor, borderStyle, borderWidth } = tagStyle;
@@ -10,7 +10,7 @@ export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
   return (
     <div
       className="tags-group__tag"
-      id={tag}
+      id={tag.value}
       onClick={onClick}
       style={{
         ...(backgroundColor && isActive && { backgroundColor }),
@@ -19,22 +19,32 @@ export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
         ...(borderWidth && { borderWidth }),
       }}
     >
-      {tag}
+      {tag.name || '--'}
     </div>
   );
 };
 
-const TagGroup = ({ isLoading, tags, selectedTags = [], onSelect }) => {
-  if (isLoading) return <PlaceholderLoader style={{ width: '45%' }} />;
+const TagGroup = ({ isLoading, activeTab, tags, selectedTags = [], onSelect }) => {
+  if (isLoading) {
+    return (
+      <div className="tags-loader">
+        <PlaceholderLoader />
+        <PlaceholderLoader style={{ width: '45%' }} />
+      </div>
+    );
+  }
+
   if (!tags?.length) return null;
 
   return (
     <div className="tags-group">
       {tags?.map((tag, idx) => {
+        let name = TAG_MAP[tag] ?? tag;
+        if (tag === 'Overall') name = TAG_OVERALL_MAP[activeTab];
         return (
           <Tag
             key={`${tag}__${idx}`}
-            tag={tag}
+            tag={{ name, value: tag }}
             onSelect={onSelect}
             isActive={selectedTags.indexOf(tag) > -1}
             tagStyle={tagStyles[idx] ?? defaultTagStyle}

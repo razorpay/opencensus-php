@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { chartFontColor, gridLineColor } from './constants';
+import { chartFontColor, gridLineColor, TAG_MAP } from './constants';
 import { getSuitableY } from './helper';
 
 /**************************************** Overview Chart Config ****************************************/
@@ -40,6 +40,8 @@ export const overviewGraphOptions = {
         offset: true,
         ticks: {
           beginAtZero: true,
+          min: 0,
+          max: 100,
         },
       },
     ],
@@ -62,11 +64,14 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
         bottom: 0,
       },
     },
+    elements: { point: { radius: 0, hoverRadius: 4 } },
     tooltips: {
       enabled: true,
       callbacks: {
         label: (tooltipItem, data) => {
-          return `${data?.datasets[tooltipItem?.datasetIndex]?.label}: ${tooltipItem?.yLabel}%`;
+          const label = data?.datasets[tooltipItem?.datasetIndex]?.label;
+          const labelText = TAG_MAP[label] ?? label;
+          return `${labelText}: ${tooltipItem?.yLabel}%`;
         },
       },
     },
