@@ -77,7 +77,6 @@ class CapitalCardsController extends Controller
 
         $this->trace->info(TraceCode::CAPITAL_CARDS_WEBHOOK_REQUEST, [
             'request' => $url,
-            'body'    => $body,
         ]);
 
         $headers = [
