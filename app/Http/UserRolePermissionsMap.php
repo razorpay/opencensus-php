@@ -172,6 +172,12 @@ class UserRolePermissionsMap
                  Permission::CREATE_LOW_BALANCE_ALERTS,
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
+                 Permission::VIEW_ROLE,
+                 Permission::CREATE_ROLE,
+                 Permission::DELETE_ROLE,
+                 Permission::EDIT_ROLE,
+                 Permission::VIEW_PRIVILEGES,
+                 Permission::VIEW_ALL_ROLES
              ],
 
              BankingRole::ADMIN => [
