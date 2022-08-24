@@ -74,4 +74,13 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     {
         return $row[ReconciliationFields::APAC_ID] ?? null;
     }
+
+    protected function getInputForForceAuthorize($row)
+    {
+        return [
+            'acquirer' => [
+                'reference2' => $this->getGatewayTransactionId($row),
+            ]
+        ];
+    }
 }
