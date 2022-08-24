@@ -54,6 +54,8 @@ class MandateTest extends TestCase
     {
         $helper = $this->getMandateHelper();
 
+        $gatewayMandateId = str_random(35);
+
         $request = [
             Fields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
             Fields::AMOUNT                  => 100,
@@ -64,6 +66,7 @@ class MandateTest extends TestCase
             Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
             Fields::TRANSACTION_NOTE        => 'UPI',
             Fields::RECUR                   => 'DAILY',
+            Fields::TRANSACTION_REFERENCE   => $gatewayMandateId,
         ];
 
         $content = [
@@ -73,7 +76,7 @@ class MandateTest extends TestCase
         $response = $helper->callback($this->gateway, $content);
         $this->assertTrue($response['success']);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $expectedMandateSubset = [
             Entity::AMOUNT      => $request[Fields::AMOUNT],
@@ -83,7 +86,7 @@ class MandateTest extends TestCase
             Entity::DESCRIPTION => $request[Fields::TRANSACTION_NOTE],
         ];
 
-        $actualMandateSubset = array_only($lastMandate, array_keys($expectedMandateSubset));
+        $actualMandateSubset = array_only($lastMandate->toArrayPublic(), array_keys($expectedMandateSubset));
 
         $this->assertEquals($expectedMandateSubset, $actualMandateSubset);
 
@@ -100,16 +103,16 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
-        $request = $helper->initiateAuthorize(substr($mandateId, 5), []);
+        $request = $helper->initiateAuthorize($mandateId, []);
 
         $this->handleNpciClRequest(
             $request,
             'getCredential',
-            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE, [$mandateId]),
+            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE, [Entity::getSignedId($mandateId)]),
             [],
             null);
     }
@@ -122,9 +125,9 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $request = $helper->initiateReject($mandateId, []);
 
@@ -133,7 +136,7 @@ class MandateTest extends TestCase
             ['time' => $this->fixtures->device->getCreatedAt()],
             $this->expectedCallback(
                 Requests::P2P_CUSTOMER_MANDATE_AUTHORIZE,
-                [$mandateId],
+                [Entity::getSignedId($mandateId)],
                 ['f' => 'initiateReject']),
             $request);
     }
@@ -146,19 +149,19 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $lastMandate[Entity::PAUSE_START] = 1646721840;
         $lastMandate[Entity::PAUSE_END]   = 1646921840;
 
-        $request = $helper->initiatePause(substr($mandateId, 5), $lastMandate);
+        $request = $helper->initiatePause($mandateId, $lastMandate->toArray());
 
         $this->handleNpciClRequest(
             $request,
             'getCredential',
-            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_PAUSE, [$mandateId]),
+            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_PAUSE, [Entity::getSignedId($mandateId)]),
             [],
             null);
 
@@ -172,14 +175,14 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $lastMandate[Entity::PAUSE_START] = 1646721840;
         $lastMandate[Entity::PAUSE_END]   = 1646921840;
 
-        $request = $helper->initiatePause($mandateId, $lastMandate);
+        $request = $helper->initiatePause($mandateId, $lastMandate->toArrayPublic());
 
         $helper->pauseMandate($request['callback'], []);
 
@@ -188,7 +191,7 @@ class MandateTest extends TestCase
         $this->handleNpciClRequest(
             $request,
             'getCredential',
-            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_UNPAUSE, [$mandateId]),
+            $this->expectedCallback(Requests::P2P_CUSTOMER_MANDATE_UNPAUSE, [Entity::getSignedId($mandateId)]),
             [],
             null);
     }
@@ -201,9 +204,9 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $request = $helper->initiateRevoke($mandateId, []);
 
@@ -212,7 +215,7 @@ class MandateTest extends TestCase
             ['time' => $this->fixtures->device->getCreatedAt()],
             $this->expectedCallback(
                 Requests::P2P_CUSTOMER_MANDATE_REVOKE,
-                [$mandateId],
+                [Entity::getSignedId($mandateId)],
                 ['f' => 'initiateRevoke']),
             $request);
 
@@ -226,11 +229,11 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $lastMandate[Entity::ID];
+        $mandateId = $lastMandate->toArray()['id'];
 
-        $amount = $lastMandate[Entity::AMOUNT];
+        $amount = $lastMandate->toArray()[Entity::AMOUNT];
 
         $request = $helper->initiateAuthorize($mandateId, []);
 
@@ -250,11 +253,11 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $lastMandate[Entity::ID];
+        $mandateId = $lastMandate->toArray()['id'];
 
-        $amount = $lastMandate[Entity::AMOUNT];
+        $amount = $lastMandate->toArray()[Entity::AMOUNT];
 
         $request = $helper->initiateReject($mandateId, []);
 
@@ -284,14 +287,19 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $lastMandate[Entity::PAUSE_START] = 1646721840;
         $lastMandate[Entity::PAUSE_END]   = 1646921840;
 
-        $request = $helper->initiatePause($mandateId, $lastMandate);
+        $request = $helper->initiatePause($mandateId, $lastMandate->toArrayPublic());
+
+        $lastMandate[Entity::PAUSE_START] = 1646721840;
+        $lastMandate[Entity::PAUSE_END]   = 1646921840;
+
+        $request = $helper->initiatePause($mandateId, $lastMandate->toArrayPublic());
 
         $response = $helper->pauseMandate($request['callback'], []);
 
@@ -309,14 +317,14 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $lastMandate[Entity::PAUSE_START] = 1646721840;
         $lastMandate[Entity::PAUSE_END]   = 1646921840;
 
-        $request = $helper->initiatePause($mandateId, $lastMandate);
+        $request = $helper->initiatePause($mandateId, $lastMandate->toArrayPublic());
 
         $helper->pauseMandate($request['callback'], []);
 
@@ -337,13 +345,13 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
 
-        $response = $helper->fetchAll();
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
-        $mandateId = $response['items'][0]['id'];
+        $mandateId = $lastMandate->toArray()['id'];
 
         $request = $helper->initiateRevoke($mandateId, []);
 
-        $response = $helper->revokeMandate($request['callback'], []);
+        $response = $helper->revokeMandate($request['callback'], $lastMandate->toArrayPublic());
 
         $this->assertArraySubset([
             'status'    => 'revoked',

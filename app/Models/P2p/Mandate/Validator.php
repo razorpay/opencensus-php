@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Mandate;
 
 use Carbon\Carbon;
 use RZP\Models\P2p\Base;
+use phpDocumentor\Reflection\Types\Parent_;
 
 /**
  * Class Validator
@@ -12,6 +13,10 @@ use RZP\Models\P2p\Base;
  */
 class Validator extends Base\Validator
 {
+
+    protected static $fetchAllRules;
+    protected static $fetchRules;
+
     /**
      * Common rules for Mandate entity attributes
      *
@@ -145,7 +150,7 @@ class Validator extends Base\Validator
     private function getPauseEndRule()
     {
         $pauseEndRule = 'min:' . Carbon::today()->getTimestamp() ;
-        
+
         return $pauseEndRule;
     }
 
@@ -156,9 +161,11 @@ class Validator extends Base\Validator
             Entity::TYPE                         => 'required',
             Entity::FLOW                         => 'required',
             Entity::MODE                         => 'required',
-            Entity::PAYER_ID                     => 'required',
-            Entity::PAYEE_ID                     => 'required',
-            Entity::BANK_ACCOUNT_ID              => 'required',
+            Entity::PAYER                        => 'sometimes',
+            Entity::PAYEE                        => 'sometimes',
+            Entity::PAYER_ID                     => 'sometimes',
+            Entity::PAYEE_ID                     => 'sometimes',
+            Entity::BANK_ACCOUNT_ID              => 'sometimes',
             Entity::AMOUNT                       => 'required',
             Entity::AMOUNT_RULE                  => 'required',
             Entity::CURRENCY                     => 'required',
@@ -175,7 +182,26 @@ class Validator extends Base\Validator
             Entity::END_DATE                     => 'sometimes',
             Entity::GATEWAY_DATA                 => 'sometimes',
             Entity::ACTION                       => 'sometimes',
-            Entity::CYCLES_COMPLETED             => 'required',
+            Entity::CYCLES_COMPLETED             => 'sometimes',
+            Entity::HANDLE                       => 'sometimes',
         ]);
+    }
+
+    public function makeFetchAllRules()
+    {
+        $parentRule = parent::makeFetchAllRules();
+
+        $rules = $this->makeRules([
+                  Entity::STATUS   => 'sometimes',
+                ]);
+
+        return $this->makeRules(array_merge($rules, $parentRule));
+    }
+
+    public function makeFetchRules()
+    {
+        $rules = $this->makePublicIdRules();
+
+        return $rules;
     }
 }

@@ -400,6 +400,7 @@ class Entity
     const P2P_CLIENT             = 'p2p_client';
     const P2P_MANDATE            = 'p2p_mandate';
     const P2P_UPI_MANDATE        = 'p2p_upi_mandate';
+    const P2P_MANDATES_PATCH     = 'p2p_mandates_patch';
     const P2P_BLACKLIST          = 'p2p_blacklist';
 
     // P2P Gateways
@@ -910,6 +911,8 @@ class Entity
         Entity::P2P_REGISTER_TOKEN,
         Entity::P2P_TRANSACTION,
         Entity::P2P_UPI_TRANSACTION,
+        Entity::P2P_MANDATE,
+        Entity::P2P_UPI_MANDATE,
         Entity::PAYSECURE,
         Entity::PAYTM,
         Entity::PLAN,
@@ -1267,6 +1270,8 @@ class Entity
         self::P2P_CONCERN           => \RZP\Models\P2p\Transaction\Concern::class,
         self::P2P_CLIENT            => \RZP\Models\P2p\Client::class,
         self::P2P_MANDATE           => \RZP\Models\P2p\Mandate::class,
+        self::P2P_UPI_MANDATE       => \RZP\Models\P2p\Mandate\UpiMandate::class,
+        self::P2P_MANDATES_PATCH    => \RZP\Models\P2p\Mandate\Patch::class,
         self::P2P_BLACKLIST         => \RZP\Models\P2p\BlackList::class,
 
         self::P2P_UPI_SHARP         => \RZP\Gateway\P2p\Upi::class,

@@ -136,10 +136,10 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                            Mandate\Entity::MANDATE => $mandate,
                            Mandate\Entity::UPI     => $upi,
                            Mandate\Entity::CONTEXT => $context,
-                ]); 
-                
+                ]);
+
                 return;
-                
+
             case UpiAction::MANDATE_STATUS_UPDATE:
 
                 $upiMandateTransformer = new UpiMandateTransformer($content, $type);
@@ -229,7 +229,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
                     ]);
                 }
                 break;
-
+                
             default:
                 throw $this->p2pGatewayException(ErrorMap::INVALID_CALLBACK, [
                     'input' => $input->toArray(),

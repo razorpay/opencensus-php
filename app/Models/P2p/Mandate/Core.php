@@ -5,6 +5,7 @@ namespace RZP\Models\P2p\Mandate;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\P2p\BankAccount;
 use RZP\Exception\LogicException;
 use RZP\Exception\RuntimeException;
@@ -16,232 +17,147 @@ use RZP\Exception\BadRequestException;
  */
 class Core extends Base\Core
 {
-    private $pspxMandate;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->pspxMandate = $this->app['pspx_mandate'];
-    }
-
     /**
-     * @param $mandateInput
-     * @param $upiInput
+     * This is the method to create mandate entity
+     * @param array $input
      *
      * @return Entity
-     * @throws RuntimeException
      */
-    public function create($mandateInput, $upiInput): Entity
+    public function create(Properties $properties, array $input): Entity
     {
-        $this->build($mandateInput);
+        $mandate = $this->build($input);
 
-        (new UpiMandate\Core)->build($upiInput);
+        $properties->attachToMandate($mandate);
 
-        $pspxInput = [
-            Entity::MANDATE => $mandateInput,
-            Entity::UPI     => $upiInput,
-        ];
+        $this->repo->saveOrFail($mandate);
 
-        $mandateArray = $this->pspxMandate->create($this->context(), $pspxInput);
+        return $mandate;
+    }
 
-        $mandate = new Entity($mandateArray);
 
-        $this->fillProperties($mandate, $mandateArray);
+    /**
+     * This is the method to update the mandate entity
+     * @param Entity $mandate
+     * @param array  $input
+     *
+     * @return Entity
+     */
+    public function update(Entity $mandate, array $input): Entity
+    {
+        $this->repo->saveOrFail($mandate);
 
         return $mandate;
     }
 
     /**
      * @param Entity $mandate
+     * @param string $action
      * @param array  $input
-     * This is the method to update mandate entity
-     *
-     * @return Base\Entity
-     * @throws RuntimeException
+     * This is the method to build upi for mandates
+     * @return UpiMandate\Entity
      */
-    public function update(Entity $mandate, array $input): Base\Entity
+    public function buildUpi(Entity $mandate, string $action, array $input): UpiMandate\Entity
     {
-        // update the mandate in the system
-        $updatedMandateData = $this->pspxMandate->update($this->context(), $input);
+        $refId                = $this->context()->getRequestId();
+        $networkTransactionId = $this->context()->handlePrefix() . $this->app['request']->getId();
 
-        // if id is not found in the system
-        if (sizeof($updatedMandateData) === 0)
+        $default = [
+            UpiMandate\Entity::NETWORK_TRANSACTION_ID   => $networkTransactionId,
+            UpiMandate\Entity::REF_ID                   => $refId,
+        ];
+
+        $cleaned = $this->cleanUpiInput(array_merge($default, $input));
+
+        $defined = [
+            UpiMandate\Entity::STATUS                   => $mandate->getInternalStatus(),
+            UpiMandate\Entity::ACTION                   => $action,
+        ];
+
+        $upi = (new UpiMandate\Core)->build(array_merge($cleaned, $defined));
+
+        return $upi;
+    }
+
+    /***
+     * @param array $input
+     * This is the method to find all upis which are associated with upi
+     * @return PublicCollection
+     * @throws LogicException
+     */
+    public function findAllUpi(array $input): PublicCollection
+    {
+        if (isset($input[UpiMandate\Entity::ACTION]) === false)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_ID, null,
-                $input);
+            throw $this->logicException('Action is required', $input);
         }
 
-        // construct the mandate object and return it
-        $updatedMandate = null;
+        $defined = array_only($input, UpiMandate\Entity::ACTION);
 
-        try
+        $mandateId = $input[UpiMandate\Entity::MANDATE_ID] ?? null;
+        $networkTransactionId = $input[UpiMandate\Entity::NETWORK_TRANSACTION_ID] ?? null;
+
+        $this->trace()->info(TraceCode::P2P_CALLBACK_TRACE,[
+            'action'                    => $defined[UpiMandate\Entity::ACTION],
+            'rrn'                       => $input[UpiMandate\Entity::RRN] ?? null,
+            'mandate_id'                => $mandateId,
+            'network_transaction_id'    => $networkTransactionId
+        ]);
+
+        if (empty($networkTransactionId) === false)
         {
-            $updatedMandate = new Entity($updatedMandateData);
-
-            $this->fillProperties($updatedMandate, $updatedMandateData);
+            $defined[UpiMandate\Entity::NETWORK_TRANSACTION_ID] = $networkTransactionId;
         }
-        catch (\Exception $e)
+        else if (empty($mandateId) === false)
         {
-            throw new RuntimeException('Unable to update mandate ' . $updatedMandateData);
+            $defined[UpiMandate\Entity::MANDATE_ID] = $mandateId;
+        }
+        else
+        {
+            throw $this->logicException('Invalid find parameters', $input);
         }
 
-        return $updatedMandate;
+        $upi = (new UpiMandate\Core)->findAll($defined);
+
+        return $upi;
     }
 
     /**
-     * @param string $id
-     * @param false  $withTrashed
-     * This is the method to fetch mandates from the system
-     *
-     * @return Entity
-     * @throws RuntimeException
+     * @param UpiMandate\Entity $upi
+     * @param array             $input
+     * This is the method to update upi data
+     * @return UpiMandate\Entity
      */
-    public function fetch(string $id, $withTrashed = false): Base\Entity
+    public function updateUpi(UpiMandate\Entity $upi, array $input)
     {
-        Entity::verifyIdAndSilentlyStripSign($id);
+        $cleaned = $this->cleanUpiInput($input);
 
-        // construct a payload id to fetch mandate for
-        $content = [Entity::ID => $id];
+        $upi = (new UpiMandate\Core)->update($upi, $cleaned);
 
-        // fetch mandate by id
-        $mandateData = $this->pspxMandate->fetch($this->context(), $content);
-
-        if (sizeof($mandateData) === 0)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $id);
-        }
-
-        // type cast to entity object
-        try
-        {
-            $mandate = new Entity($mandateData);
-
-            $this->fillProperties($mandate, $mandateData);
-        }
-        catch (\Exception $e)
-        {
-            throw new RuntimeException('Invalid mandate data ' . $mandate);
-        }
-
-        return $mandate;
-    }
-
-
-    /**
-     * @param string $umn
-     * @param false  $withTrashed
-     * This is the method to fetch mandates from the system by Umn
-     *
-     * @return Entity
-     * @throws RuntimeException
-     */
-    public function fetchByUMN(string $umn, $withTrashed = false): Base\Entity
-    {
-
-        // construct a payload id to fetch mandate for
-        $content = [Entity::UMN => $umn];
-
-        // fetch mandate by id
-        $mandateData = $this->pspxMandate->fetchByUMN($this->context(), $content);
-
-        if (sizeof($mandateData) === 0)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $umn);
-        }
-
-        // type cast to entity object
-        try
-        {
-            $mandate = new Entity($mandateData);
-
-            $this->fillProperties($mandate, $mandateData);
-        }
-        catch (\Exception $e)
-        {
-            throw new RuntimeException('Invalid mandate data ' . $mandate);
-        }
-
-        return $mandate;
+        return $upi;
     }
 
     /**
      * @param array $input
-     * This is the method to fetch all the mandates data that are stored
-     *
-     * @return PublicCollection
-     * @throws LogicException
+     *  This is the method to clean upi input
+     * @return array
      */
-    public function fetchAll(array $input): PublicCollection
+    protected function cleanUpiInput(array $input): array
     {
-        $mandateList = $this->pspxMandate->fetchAll($this->context(), $input);
+        unset($input[UpiMandate\Entity::MANDATE_ID],
+            $input[UpiMandate\Entity::ACTION],
+            $input[UpiMandate\Entity::HANDLE],
+            $input[UpiMandate\Entity::MANDATE]);
 
-        // initialize public collection and add mandate data
-        $collection = new PublicCollection();
-
-        $output[PublicCollection::ENTITY] = 'collection';
-        $output[PublicCollection::COUNT]  = 0;
-        $output[PublicCollection::ITEMS]  = [];
-
-        // if no mandate exists in the system , then return empty collection
-        if ($mandateList == null or count($mandateList) <= 0)
-        {
-            return $collection;
-        }
-
-        // populate mandate data into collection object
-        foreach ($mandateList as $mandateData)
-        {
-            try
-            {
-                $mandate = new Entity($mandateData);
-
-                $this->fillProperties($mandate, $mandateData);
-
-                $collection->push($mandate);
-            }
-            catch (\Exception $e)
-            {
-                throw new RuntimeException('Invalid mandate data ' . $mandateData);
-            }
-        }
-
-        $output[PublicCollection::COUNT] = $collection->count();
-        $output[PublicCollection::ITEMS] = $collection->toArray();
-
-        return $collection;
+        return $input;
     }
 
     /**
-     * Set the non fillable properties to mandate entity from pspx response array
-     *
-     * @param Entity $mandate
-     * @param array $mandateArray
+     * @param string $input
+     * This is the method to find mandate by umn
+     * @return mixed
      */
-    private function fillProperties(Entity $mandate, array $mandateArray)
+    public function findByUMN(string $input)
     {
-        $mandate->setId($mandateArray[Entity::ID]);
-
-        $mandate->setCreatedAt($mandateArray[Entity::CREATED_AT]);
-
-        $vpaCore = new Vpa\Core;
-        $payer = ($vpaCore)->find($mandateArray[Entity::PAYER_ID], false);
-        $payee = ($vpaCore)->find($mandateArray[Entity::PAYEE_ID], false);
-
-        $baCore = new BankAccount\Core;
-        $bankAccount = ($baCore)->find($mandateArray[Entity::BANK_ACCOUNT_ID], false);
-
-        $customer = $this->context()->getDevice()->customer;
-
-        $upi = new UpiMandate\Entity($mandateArray[Entity::UPI]);
-
-        $upi->associateMandate($mandate);
-
-        $mandate->setUpi($upi);
-        $mandate->setPayee($payee);
-        $mandate->setPayer($payer);
-        $mandate->setBankAccount($bankAccount);
-        $mandate->setCustomer($customer);
+        return $this->repo->findByUMN($input);
     }
 }

@@ -719,6 +719,12 @@ return [
 
     E::P2P_CONCERN => [],
 
+    E::P2P_MANDATE => [],
+
+    E::P2P_UPI_MANDATE => [],
+
+    E::P2P_MANDATES_PATCH => [],
+
     E::CUSTOMER => [],
 
     E::CREDITNOTE => [],

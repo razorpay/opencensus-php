@@ -6,7 +6,6 @@ use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
 use RZP\Models\Customer;
 use RZP\Models\P2p\BankAccount;
-use RZP\Models\P2p\Mandate\Status;
 
 /**
  * Class Entity
@@ -59,6 +58,8 @@ class Entity extends Base\Entity
     const CYCLES_COMPLETED    = 'cycles_completed';
     const PAUSE_START         = 'pause_start';
     const PAUSE_END           = 'pause_end';
+    const PAYER_TYPE          = 'payer_type';
+    const PAYEE_TYPE          = 'payee_type';
 
     /************** Input  Properties ************/
 
@@ -68,13 +69,13 @@ class Entity extends Base\Entity
     const PAYEE              = 'payee';
     const BANK_ACCOUNT       = 'bank_account';
     const UPI                = 'upi';
-    const IS_PENDING_COLLECT = 'is_pending_collect';
-
-    protected static $sign = 'cmdt';
 
     /************** Entity Properties ************/
 
-    protected $entity = 'p2p_mandate';
+    protected $entity               = 'p2p_mandate';
+    protected static $sign          = 'cmdt';
+    protected $generateIdOnCreate   = true;
+    protected static $generators    = [];
 
     protected $dates = [
         Entity::START_DATE,
@@ -89,6 +90,7 @@ class Entity extends Base\Entity
     ];
 
     protected $fillable = [
+        Entity::NAME,
         Entity::TYPE,
         Entity::FLOW,
         Entity::MODE,
@@ -97,6 +99,8 @@ class Entity extends Base\Entity
         Entity::CURRENCY,
         Entity::PAYER_ID,
         Entity::PAYEE_ID,
+        Entity::PAYER_TYPE,
+        Entity::PAYEE_TYPE,
         Entity::BANK_ACCOUNT_ID,
         Entity::RECURRING_TYPE,
         Entity::RECURRING_VALUE,
@@ -111,10 +115,14 @@ class Entity extends Base\Entity
         Entity::DESCRIPTION,
         Entity::GATEWAY,
         Entity::GATEWAY_DATA,
-        Entity::IS_PENDING_COLLECT,
         Entity::COMPLETED_AT,
         Entity::REVOKED_AT,
         Entity::CYCLES_COMPLETED,
+        Entity::PAUSE_START,
+        Entity::PAUSE_END,
+        Entity::ERROR_CODE,
+        Entity::INTERNAL_ERROR_CODE,
+        Entity::ERROR_DESCRIPTION,
         Entity::PAUSE_START,
         Entity::PAUSE_END,
     ];
@@ -130,6 +138,8 @@ class Entity extends Base\Entity
         Entity::GATEWAY,
         Entity::PAYER_ID,
         Entity::PAYEE_ID,
+        Entity::PAYER_TYPE,
+        Entity::PAYEE_TYPE,
         Entity::BANK_ACCOUNT_ID,
         Entity::CUSTOMER,
         Entity::PAYER,
@@ -149,7 +159,6 @@ class Entity extends Base\Entity
         Entity::ACTION,
         Entity::DESCRIPTION,
         Entity::GATEWAY_DATA,
-        Entity::IS_PENDING_COLLECT,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
         Entity::INTERNAL_ERROR_CODE,
@@ -159,6 +168,8 @@ class Entity extends Base\Entity
         Entity::CYCLES_COMPLETED,
         Entity::PAUSE_START,
         Entity::PAUSE_END,
+        Entity::CREATED_AT,
+        Entity::UPDATED_AT,
     ];
 
     protected $public = [
@@ -167,8 +178,10 @@ class Entity extends Base\Entity
         Entity::AMOUNT,
         Entity::AMOUNT_RULE,
         Entity::CURRENCY,
-        Entity::PAYER,
-        Entity::PAYEE,
+        Entity::PAYER_ID,
+        Entity::PAYEE_ID,
+        Entity::PAYER_TYPE,
+        Entity::PAYEE_TYPE,
         Entity::TYPE,
         Entity::FLOW,
         Entity::RECURRING_TYPE,
@@ -181,7 +194,6 @@ class Entity extends Base\Entity
         Entity::START_DATE,
         Entity::END_DATE,
         Entity::DESCRIPTION,
-        Entity::IS_PENDING_COLLECT,
         Entity::ERROR_CODE,
         Entity::ERROR_DESCRIPTION,
         Entity::UMN,
@@ -190,6 +202,53 @@ class Entity extends Base\Entity
         Entity::PAUSE_START,
         Entity::PAUSE_END,
     ];
+
+
+    protected $defaults = [
+        Entity::NAME                => '',
+        Entity::AMOUNT_RULE         => '',
+        Entity::PAYER_ID            => '',
+        Entity::PAYEE_ID            => '',
+        Entity::PAYER_TYPE          => '',
+        Entity::PAYEE_TYPE          => '',
+        Entity::STATUS              => '',
+        Entity::GATEWAY             => '',
+        Entity::UMN                 => '',
+    ];
+
+    protected $casts = [
+        Entity::ID                   => 'string',
+        Entity::MERCHANT_ID          => 'string',
+        Entity::CUSTOMER_ID          => 'string',
+        Entity::PAYER_TYPE           => 'string',
+        Entity::PAYER_ID             => 'string',
+        Entity::PAYEE_TYPE           => 'string',
+        Entity::PAYEE_ID             => 'string',
+        Entity::BANK_ACCOUNT_ID      => 'string',
+        Entity::TYPE                 => 'string',
+        Entity::FLOW                 => 'string',
+        Entity::MODE                 => 'string',
+        Entity::AMOUNT               => 'int',
+        Entity::CURRENCY             => 'string',
+        Entity::DESCRIPTION          => 'string',
+        Entity::GATEWAY              => 'string',
+        Entity::STATUS               => 'string',
+        Entity::INTERNAL_STATUS      => 'string',
+        Entity::ERROR_CODE           => 'string',
+        Entity::ERROR_DESCRIPTION    => 'string',
+        Entity::INTERNAL_ERROR_CODE  => 'string',
+        Entity::RECURRING_TYPE       => 'string',
+        Entity::RECURRING_RULE       => 'string',
+        Entity::RECURRING_VALUE      => 'int',
+        Entity::COMPLETED_AT         => 'int',
+        Entity::EXPIRE_AT            => 'int',
+        Entity::REVOKED_AT           => 'int',
+        Entity::CYCLES_COMPLETED     => 'int',
+        Entity::PAUSE_START          => 'int',
+        Entity::PAUSE_END            => 'int',
+        Entity::CREATED_AT           => 'int',
+        Entity::UPDATED_AT           => 'int',
+        ];
 
     /**
      * @return \RZP\Models\P2p\Mandate\Entity
@@ -295,6 +354,14 @@ class Entity extends Base\Entity
     public function markPaused()
     {
         $this->setInternalStatus(Status::PAUSED);
+    }
+
+    /**
+     * This is the method to mark the internal status of mandate to be paused
+     */
+    public function markRequested()
+    {
+        $this->setInternalStatus(Status::REQUESTED);
     }
     /**
      * @return $this
@@ -405,16 +472,66 @@ class Entity extends Base\Entity
 
         $array[self::UPI] = $this->upi->toArrayPublic();
 
-        if (isset($array[self::PAYER]))
-        {
-            $array[self::PAYER] = $this->payer->toArrayBeneficiary();
-        }
+        $array[self::PAYER] = $this->payer->toArrayBeneficiary();
 
-        if (isset($array[self::PAYEE]))
-        {
-            $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
-        }
+        $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
 
         return $array;
+    }
+
+    /**
+     * This is the method to get customer
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function customer()
+    {
+        return $this->belongsTo(Customer\Entity::class);
+    }
+
+    /**
+     * This is the method to asscociate customer association
+     * @param Customer\Entity $handle
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function associateCustomer(Customer\Entity $handle)
+    {
+        return $this->customer()->associate($handle);
+    }
+
+    /***
+     * This is the method to get payer details
+     * @return mixed
+     */
+    public function payer()
+    {
+        return $this->morphTo(self::PAYER)->withTrashed();
+    }
+
+    /**
+     * This is the method to get payee details
+     * @return mixed
+     */
+    public function payee()
+    {
+        return $this->morphTo(self::PAYEE)->withTrashed();
+    }
+
+    /**
+     * This is the method to get bank account details
+     * @return mixed
+     */
+    public function bankAccount()
+    {
+        return $this->belongsTo(BankAccount\Entity::class)->withTrashed();
+    }
+
+    /**
+     * This is the method to get upi details
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function upi()
+    {
+        return $this->hasOne(UpiMandate\Entity::class, UpiMandate\Entity::MANDATE_ID);
     }
 }

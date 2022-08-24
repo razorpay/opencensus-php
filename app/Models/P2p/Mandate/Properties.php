@@ -31,10 +31,18 @@ class Properties
      */
     protected $input;
 
+    /**
+     * @var ArrayBag
+     */
+    protected $relations;
+
+
     public function __construct(Context $context, string $action, ArrayBag $input)
     {
         $this->action   = $action;
         $this->input    = $input;
+
+        $this->relations   = new ArrayBag;
 
         $this->initialize($context);
     }
@@ -44,8 +52,11 @@ class Properties
      */
     protected function initialize(Context $context)
     {
+        $this->input->put(Entity::GATEWAY, $context->getHandle()->getAcquirer());
+
         $payer = null;
         $payee = null;
+        $bankAccount = null;
 
         switch ($this->action)
         {
@@ -72,10 +83,17 @@ class Properties
                 break;
         }
 
+        $this->relations->putMany([
+              Entity::PAYER           => $payer,
+              Entity::PAYEE           => $payee,
+              Entity::BANK_ACCOUNT    => $bankAccount,
+              Entity::CUSTOMER        => $context->getDevice()->customer
+        ]);
+
         $this->input->forget([
             Entity::PAYER,
             Entity::PAYEE,
-            Entity::HANDLE,
+            Entity::BANK_ACCOUNT,
         ]);
     }
 
@@ -186,5 +204,32 @@ class Properties
         }
 
         return $expireAt;
+    }
+
+    /**
+     * Attach to mandate relation
+     * @param Entity $mandate
+     */
+    public function attachToMandate(Entity $mandate)
+    {
+        if ($this->relations->has(Entity::PAYEE) === true)
+        {
+            $mandate->payee()->associate($this->relations->get(Entity::PAYEE));
+        }
+
+        if ($this->relations->has(Entity::PAYER) === true)
+        {
+            $mandate->payer()->associate($this->relations->get(Entity::PAYER));
+        }
+
+        if ($this->relations->has(Entity::BANK_ACCOUNT) === true)
+        {
+            $mandate->bankAccount()->associate($this->relations->get(Entity::BANK_ACCOUNT));
+        }
+
+        if ($this->relations->has(Entity::CUSTOMER) === true)
+        {
+            $mandate->customer()->associate($this->relations->get(Entity::CUSTOMER));
+        }
     }
 }

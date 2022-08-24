@@ -22,6 +22,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
         switch ($type)
         {
             case UpiAction::INCOMING_MANDATE_CREATE:
+                $content[Mandate\Entity::STATUS]          = Mandate\Status::REQUESTED;
+                $content[Mandate\Entity::INTERNAL_STATUS] = Mandate\Status::REQUESTED;
                 $context = $this->transformIncomingMandateContext();
                 $mandate = $this->transformMandate($content);
                 $upi     = $this->transformUpiMandate($content);
@@ -122,7 +124,8 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             Mandate\Entity::RECURRING_VALUE         => $content[Fields::RECUR_VALUE] ?? '',
             Mandate\Entity::START_DATE              => $content[Fields::VALIDITY_START],
             Mandate\Entity::END_DATE                => $content[Fields::VALIDITY_END],
-
+            Mandate\Entity::STATUS                  => $content[Fields::STATUS],
+            Mandate\Entity::INTERNAL_STATUS         => $content[Fields::STATUS],
             Mandate\Entity::PAYER                   => $this->toUsernameHandle($content[Fields::PAYER_VPA]),
             Mandate\Entity::PAYEE                   => $this->toUsernameHandle($content[Fields::PAYEE_VPA]),
         ];

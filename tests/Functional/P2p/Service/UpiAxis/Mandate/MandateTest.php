@@ -33,6 +33,7 @@ class MandateTest extends TestCase
         $gatewayMandateId = str_random(35);
 
         $callback = [
+            Fields::NAME                    => 'test mandates',
             Fields::AMOUNT                  => '1.00',
             Fields::AMOUNT_RULE             => 'EXACT',
             Fields::MANDATE_TYPE            => 'CREATE',
@@ -63,7 +64,7 @@ class MandateTest extends TestCase
             Fields::SHARE_TO_PAYEE          => 'true',
             Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
             Fields::TYPE                    => 'CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED',
-            Fields::UMN                     => 'uniqueMandateNumber@bank',
+            Fields::UMN                     => 'b3cecfd8c7654c66af13fc439aca1256@bajaj',
             Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
             Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
         ];
@@ -90,16 +91,16 @@ class MandateTest extends TestCase
             UpiMandate\Entity::NETWORK_TRANSACTION_ID => $callback[Fields::GATEWAY_MANDATE_ID],
         ];
 
-        $collection = $helper->fetchAll();
+        $mandate = $this->fixtures->getDbLastMandate();
 
-        $this->assertSame(1, $collection['count']);
-
-        $actualMandate = array_only($collection['items'][0], array_keys($expectedMandateSubset));
+        $actualMandate = array_only($mandate->toArrayPublic(), array_keys($expectedMandateSubset));
         $this->assertEquals($expectedMandateSubset, $actualMandate);
 
-        $actualUpiMandate = array_only($collection['items'][0][Entity::UPI], array_keys($expectedUpiMandateSubset));
+        $actualUpiMandate = array_only($mandate->toArrayPublic()[Entity::UPI], array_keys($expectedUpiMandateSubset));
         $this->assertEquals($expectedUpiMandateSubset, $actualUpiMandate);
     }
+
+
 
     /**
      * Test incoming mandate collect request from gateway.
@@ -112,7 +113,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $this->mockSdk()->setCallback('CUSTOMER_INCOMING_MANDATE_UPDATE_REQUEST_RECEIVED', [
             Fields::ACCOUNT_REFERENCE_ID                  => $lastMandate[Entity::BANK_ACCOUNT_ID],
@@ -133,7 +134,7 @@ class MandateTest extends TestCase
 
         $this->assertTrue($response['success']);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();;
 
         $this->assertEquals($lastMandate[Entity::AMOUNT], 9000);
     }
@@ -149,7 +150,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $gatewayMandateId = str_random(35);
 
@@ -186,7 +187,7 @@ class MandateTest extends TestCase
             Fields::SHARE_TO_PAYEE          => 'true',
             Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
             Fields::TYPE                    => 'CUSTOMER_INCOMING_MANDATE_PAUSE_REQUEST_RECEIVED',
-            Fields::UMN                     => 'uniqueMandateNumber@bank',
+            Fields::UMN                     => $lastMandate->toArray()[Entity::UMN],
             Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
             Fields::VALIDITY_START          => $timeNow,
             Fields::PAUSE_START             => $timeNow,
@@ -201,7 +202,7 @@ class MandateTest extends TestCase
 
         $this->assertTrue($response['success']);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $this->assertEquals($lastMandate[Entity::PAUSE_START], $timeNow);
     }
@@ -214,7 +215,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $gatewayMandateId = str_random(35);
 
@@ -250,7 +251,7 @@ class MandateTest extends TestCase
             Fields::SHARE_TO_PAYEE          => 'true',
             Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
             Fields::TYPE                    => 'MANDATE_STATUS_UPDATE',
-            Fields::UMN                     => 'uniqueMandateNumber@bank',
+            Fields::UMN                     => $lastMandate->toArray()[Fields::UMN],
             Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
             Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
             Fields::PAUSE_START             => Carbon::now()->getTimestamp(),
@@ -265,9 +266,47 @@ class MandateTest extends TestCase
 
         $this->assertTrue($response['success']);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $this->assertEquals($lastMandate[Entity::STATUS],Status::PAUSED);
+    }
+
+
+    public function testFetchAll()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+
+        $collection = $helper->fetchAll([
+                        'expand'    => ['payer', 'payee']
+                      ]);
+
+        $this->assertCollection($collection, 1, [
+            [
+                'status'    => 'requested',
+                'type'      => 'collect',
+                'flow'      => 'debit',
+            ],
+        ]);
+    }
+
+    public function testFetch()
+    {
+        $helper = $this->getMandateHelper();
+
+        $request = $helper->getCreateMandatePayload($this->gateway);
+
+        $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $mandate = $helper->fetch($lastMandate[Entity::ID]);
+
+        $this->assertStringContainsString($mandate[Entity::STATUS], Status::REQUESTED);
     }
 
     public function testInitiateAuthorize()
@@ -278,7 +317,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
 
@@ -294,7 +333,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
 
@@ -315,7 +354,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $request = $helper->initiateReject($lastMandate[Entity::ID], []);
 
@@ -330,7 +369,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $request = $helper->initiateReject($lastMandate[Entity::ID], []);
 
@@ -351,7 +390,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
@@ -369,7 +408,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
@@ -393,7 +432,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
@@ -421,7 +460,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
@@ -453,7 +492,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $request = $helper->initiateRevoke($lastMandate[Entity::ID], []);
 
@@ -468,7 +507,7 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->getPspxLastMandate(Fixtures::DEVICE_1);
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $coproto = $helper->initiateRevoke($lastMandate[Entity::ID], []);
 

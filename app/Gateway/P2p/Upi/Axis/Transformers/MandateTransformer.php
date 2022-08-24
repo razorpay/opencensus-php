@@ -35,6 +35,7 @@ class MandateTransformer extends TransactionTransformer
                     Entity::TYPE                => Type::COLLECT,
                     Entity::FLOW                => Flow::DEBIT,
                     Entity::INTERNAL_STATUS     => Status::REQUESTED,
+                    Entity::STATUS              => Status::REQUESTED,
                 ];
                 break;
 
@@ -43,6 +44,7 @@ class MandateTransformer extends TransactionTransformer
                     Entity::TYPE                => Type::COLLECT,
                     Entity::FLOW                => Flow::DEBIT,
                     Entity::INTERNAL_STATUS     => Status::UPDATED,
+                    Entity::STATUS              => Status::REQUESTED,
                 ];
                 break;
 
@@ -58,6 +60,7 @@ class MandateTransformer extends TransactionTransformer
                     Entity::TYPE                => Type::COLLECT,
                     Entity::FLOW                => Flow::DEBIT,
                     Entity::INTERNAL_STATUS     => Status::PAUSED,
+                    Entity::STATUS              => Status::PAUSED,
                 ];
                 break;
 

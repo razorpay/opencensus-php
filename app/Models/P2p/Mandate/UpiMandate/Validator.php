@@ -11,6 +11,8 @@ use RZP\Models\P2p\Base;
  */
 class Validator extends Base\Validator
 {
+    protected static $editRules;
+
     /**
      * Common rules for Mandate entity attributes
      *
@@ -64,6 +66,31 @@ class Validator extends Base\Validator
             Entity::PAYER_ACCOUNT_NUMBER         => 'sometimes',
             Entity::PAYER_IFSC_CODE              => 'sometimes',
         ]);
+
+        return $rules;
+    }
+
+    public function makeEditRules()
+    {
+        $rules = $this->makeRules([
+                  Entity::MANDATE_ID                   => 'sometimes',
+                  Entity::GATEWAY_DATA                 => 'sometimes',
+                  Entity::ACTION                       => 'sometimes',
+                  Entity::STATUS                       => 'sometimes',
+                  Entity::HANDLE                       => 'sometimes',
+                  Entity::NETWORK_TRANSACTION_ID       => 'sometimes',
+                  Entity::GATEWAY_TRANSACTION_ID       => 'sometimes',
+                  Entity::GATEWAY_REFERENCE_ID         => 'sometimes',
+                  Entity::RRN                          => 'sometimes',
+                  Entity::REF_ID                       => 'sometimes',
+                  Entity::REF_URL                      => 'sometimes',
+                  Entity::MCC                          => 'sometimes',
+                  Entity::GATEWAY_ERROR_CODE           => 'sometimes',
+                  Entity::GATEWAY_ERROR_DESCRIPTION    => 'sometimes',
+                  Entity::RISK_SCORES                  => 'sometimes',
+                  Entity::PAYER_ACCOUNT_NUMBER         => 'sometimes',
+                  Entity::PAYER_IFSC_CODE              => 'sometimes',
+                ]);
 
         return $rules;
     }

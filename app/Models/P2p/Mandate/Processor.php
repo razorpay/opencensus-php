@@ -2,14 +2,16 @@
 
 namespace RZP\Models\P2p\Mandate;
 
+use App;
 use Carbon\Carbon;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\Error;
+use RZP\Trace\TraceCode;
 use RZP\Error\P2p\ErrorCode;
-use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Actions;
 use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
+use RZP\Models\P2p\Upi\ExpectedHardFailures;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -29,9 +31,7 @@ class Processor extends Base\Processor
         $mandateInput = $this->input->bag(Entity::MANDATE);
         $upiInput     = $this->input->bag(Entity::UPI);
 
-        new Properties($this->context(), $this->action, $mandateInput);
-
-        $mandate = $this->core->create($mandateInput->toArray(), $upiInput->toArray());
+        $mandate = $this->createMandate($this->action, $mandateInput, $upiInput);
 
         return $mandate->toArrayPublic();
     }
@@ -48,7 +48,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::INCOMING_UPDATE, $input);
 
         // get the existing mandate
-        $mandate = $this->core->fetchByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
+        $mandate = $this->core->findByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
 
         // update only specific fields (not all the fields are allowed to override)
         $mandate[Entity::AMOUNT]     = $this->input->bag(Entity::MANDATE)->get(Entity::AMOUNT);
@@ -71,10 +71,10 @@ class Processor extends Base\Processor
         $this->initialize(Action::INCOMING_UPDATE, $input);
 
         // get the existing mandate
-        $mandate = $this->core->fetchByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
+        $mandate = $this->core->findByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
 
         $pauseStart = $this->input->bag(Entity::MANDATE)->get(Entity::PAUSE_START);
-        $pauseEnd = $this->input->bag(Entity::MANDATE)->get(Entity::PAUSE_END);
+        $pauseEnd   = $this->input->bag(Entity::MANDATE)->get(Entity::PAUSE_END);
 
         // if pause start is greater than pause end throw exception
         if($pauseStart > $pauseEnd)
@@ -85,7 +85,7 @@ class Processor extends Base\Processor
         $mandate[Entity::PAUSE_START]     = $pauseStart;
         $mandate[Entity::PAUSE_END]       = $pauseEnd;
 
-        return $this->core->update($mandate,$mandate->toArray())->toArrayPublic();
+        return $this->core->update($mandate, $input)->toArrayPublic();
     }
 
 
@@ -100,7 +100,7 @@ class Processor extends Base\Processor
         $this->initialize(Action::MANDATE_STATUS_UPDATE, $input);
 
         // get the existing mandate
-        $mandate = $this->core->fetchByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
+        $mandate = $this->core->findByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
 
 
         $mandate[Entity::STATUS]                = $this->input->bag(Entity::MANDATE)->get(Entity::STATUS);
@@ -162,9 +162,11 @@ class Processor extends Base\Processor
 
         $mandateInput = $this->input->bag(Entity::MANDATE);
 
+        $upiInput = $this->input->bag(Entity::MANDATE)[Entity::UPI];
+
         $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
 
-        $this->updateMandateStatus($mandate, $mandateInput);
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
 
         return $mandate->toArrayPublic();
     }
@@ -255,9 +257,11 @@ class Processor extends Base\Processor
 
         $mandateInput = $this->input->bag(Entity::MANDATE);
 
-        $mandate = $this->core->fetch($this->input->bag(Entity::MANDATE)->get(Entity::ID));
+        $upiInput = $this->input->bag(Entity::MANDATE)[Entity::UPI];
 
-        $this->updateMandateStatus($mandate, $mandateInput);
+        $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
+
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
 
         return $mandate->toArrayPublic();
     }
@@ -319,9 +323,11 @@ class Processor extends Base\Processor
 
         $mandateInput = $this->input->bag(Entity::MANDATE);
 
-        $mandate = $this->core->fetch($this->input->bag(Entity::MANDATE)->get(Entity::ID));
+        $upiInput = $this->input->bag(Entity::MANDATE)[Entity::UPI];
 
-        $this->updateMandateStatus($mandate, $mandateInput);
+        $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
+
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
 
         return $mandate->toArrayPublic();
     }
@@ -378,9 +384,11 @@ class Processor extends Base\Processor
 
         $mandateInput = $this->input->bag(Entity::MANDATE);
 
-        $mandate = $this->core->fetch($this->input->bag(Entity::MANDATE)->get(Entity::ID));
+        $upiInput = $this->input->bag(Entity::MANDATE)[Entity::UPI];
 
-        $this->updateMandateStatus($mandate, $mandateInput);
+        $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
+
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
 
         return $mandate->toArrayPublic();
     }
@@ -436,6 +444,10 @@ class Processor extends Base\Processor
 
             case Status::FAILED:
                 $this->setMandateFailed($mandate, $input);
+                break;
+
+            case Status::REQUESTED:
+                $this->setMandateRequested($mandate, $input);
                 break;
 
             default:
@@ -603,4 +615,130 @@ class Processor extends Base\Processor
         $mandate->setErrorDescription($error->getDescription());
     }
 
+
+    /**
+     * @param Entity   $mandate
+     * @param ArrayBag $input
+     * This is the method to set mandate status to be requested
+     *
+     * @throws \RZP\Exception\LogicException
+     */
+    protected function setMandateRequested(Entity $mandate, ArrayBag $input)
+    {
+        // if the mandate creation has already failed throw the error
+        if ($mandate->isFailed() === true)
+        {
+            throw $this->logicException('mandate cannot be marked as requested state as the mandate has already failed', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        // if the mandate is in revoked state throw the error
+        if ($mandate->isRevoked() === true)
+        {
+            throw $this->logicException('mandate cannot be marked as requested state as the mandate has already been revoked', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        // if the mandate is not in an completed state throw the error
+        if ($mandate->isCompleted() === true)
+        {
+            throw $this->logicException('mandate cannot be marked as requested state as the mandate has already been completed', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
+        $mandate->markRequested();
+    }
+
+    /**
+     * @param string   $action
+     * @param ArrayBag $input
+     * @param ArrayBag $upiInput
+     * This is the method to create mandate and create upi and store it in the system
+     * @return Entity
+     * @throws \RZP\Exception\LogicException
+     * @throws \RZP\Exception\P2p\BadRequestException
+     * @throws \RZP\Exception\RuntimeException
+     */
+    protected function createMandate(string $action, ArrayBag $input, ArrayBag $upiInput): Entity
+    {
+        $mandateInput = clone $input;
+
+        $properties = new Properties($this->context(), $this->action, $input);
+        
+        $mandate = $this->core->build($mandateInput->toArray());
+
+        $properties->attachToMandate($mandate);
+
+        $upi = $this->core->buildUpi($mandate, $action, $upiInput->toArray());
+
+        $lock = $upi->getAction() . $upi->getNetworkTransactionId();
+
+        return $this->app['api.mutex']->acquireAndRelease($lock,
+            function() use ($mandate, $input, $upi) {
+                return $this->repo()->transaction(function() use ($mandate, $input, $upi) {
+
+                    $this->checkForDuplicate($upi);
+
+                    $this->updateMandateStatus($mandate, $input);
+
+                    $upi->associateMandate($mandate);
+
+                    $this->core->updateUpi($upi, []);
+
+                    return $mandate;
+                });
+            });
+    }
+
+    /**
+     * @param Entity   $mandate
+     * @param ArrayBag $input
+     * @param ArrayBag $upiInput
+     * Update the mandate data which is coming in from gateway
+     * @return mixed
+     * @throws \RZP\Exception\LogicException
+     * @throws \RZP\Exception\RuntimeException
+     */
+    protected function updateMandate(Entity $mandate, ArrayBag $input, ArrayBag $upiInput)
+    {
+        $lock = $mandate->upi->getAction() . $mandate->upi->getNetworkTransactionId();
+
+        return $this->app['api.mutex']->acquireAndRelease($lock,
+            function() use ($mandate, $input, $upiInput) {
+                $mandate->reload();
+
+                return $this->repo()->transaction(function() use ($mandate, $input, $upiInput) {
+                    $actions = $this->updateMandateStatus($mandate, $input);
+
+                    $this->core->updateUpi($mandate->upi, $upiInput->toArray());
+
+                    return $mandate;
+                });
+            }
+        );
+    }
+
+    /**
+     * @param UpiMandate\Entity $upi
+     * This is the method to check for the duplicate upi mandate data before proceeding
+     * @throws \RZP\Exception\LogicException
+     * @throws \RZP\Exception\P2p\BadRequestException
+     */
+    protected function checkForDuplicate(UpiMandate\Entity $upi)
+    {
+        $existing = $this->core->findAllUpi($upi->toArray());
+
+        if ($existing->count() > 0)
+        {
+            throw $this->badRequestException(ErrorCode::BAD_REQUEST_DUPLICATE_TRANSACTION, [
+                Entity::UPI => $upi,
+            ]);
+        }
+    }
 }

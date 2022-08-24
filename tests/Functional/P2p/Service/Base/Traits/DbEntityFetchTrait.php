@@ -118,6 +118,23 @@ trait DbEntityFetchTrait
         return $this->getDbLastEntity(Entity::P2P_CLIENT, $this->dbEntityFetchMode);
     }
 
+    /*********************************** Mandate **********************************/
+
+    public function getDbLastMandate(): P2p\Mandate\Entity
+    {
+        return $this->getDbLastEntity(Entity::P2P_MANDATE, $this->dbEntityFetchMode);
+    }
+
+    public function getDbMandateById(string $id): P2p\Mandate\Entity
+    {
+        return $this->getDbEntityById(Entity::P2P_MANDATE, $id, $this->dbEntityFetchMode);
+    }
+
+    public function getDbMandates(array $where): PublicCollection
+    {
+        return $this->getDbEntities(Entity::P2P_MANDATE, $where, $this->dbEntityFetchMode);
+    }
+
     /****************************** Blacklist *************************************/
     
     public function getDbLastBlacklist(): P2p\BlackList\Entity

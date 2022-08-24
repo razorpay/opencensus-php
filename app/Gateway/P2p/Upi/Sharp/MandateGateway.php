@@ -187,6 +187,14 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
                UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
                Entity::PAUSE_START                      => $this->input->get(Entity::MANDATE)->get(Entity::PAUSE_START),
                Entity::PAUSE_END                        =>  $this->input->get(Entity::MANDATE)->get(Entity::PAUSE_END),
+               Entity::UPI                  => [
+                   UpiMandate::NETWORK_TRANSACTION_ID       => '123456',
+                   UpiMandate::GATEWAY_TRANSACTION_ID       => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                   UpiMandate::GATEWAY_REFERENCE_ID         => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                   UpiMandate::RRN                          => (string) random_integer(12),
+                   UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+                   UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
+                ],
            ],
        ]);
     }
@@ -214,7 +222,15 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
                    UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
                    Entity::INTERNAL_STATUS                  => array_get($callback, 's', $codes[0]),
                    Entity::INTERNAL_ERROR_CODE              => $codes[1],
-                   Entity::UNPAUSED_AT                      => Carbon::now()->getTimestamp()
+                   Entity::UNPAUSED_AT                      => Carbon::now()->getTimestamp(),
+                   Entity::UPI                  => [
+                       UpiMandate::NETWORK_TRANSACTION_ID       => '123456',
+                       UpiMandate::GATEWAY_TRANSACTION_ID       => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                       UpiMandate::GATEWAY_REFERENCE_ID         => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                       UpiMandate::RRN                          => (string) random_integer(12),
+                       UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+                       UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
+                   ],
                ],
         ]);
     }
@@ -240,7 +256,15 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
                    UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
                    Entity::INTERNAL_STATUS                  => array_get($callback, 's', $codes[0]),
                    Entity::INTERNAL_ERROR_CODE              => $codes[1],
-                   Entity::REVOKED_AT                       =>  Carbon::now()->getTimestamp()
+                   Entity::REVOKED_AT                       =>  Carbon::now()->getTimestamp(),
+                   Entity::UPI                  => [
+                       UpiMandate::NETWORK_TRANSACTION_ID       => '123456',
+                       UpiMandate::GATEWAY_TRANSACTION_ID       => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                       UpiMandate::GATEWAY_REFERENCE_ID         => 'SRP' . $this->input->get(Entity::PAYER)[Entity::ID],
+                       UpiMandate::RRN                          => (string) random_integer(12),
+                       UpiMandate::GATEWAY_ERROR_CODE           => $codes[2],
+                       UpiMandate::GATEWAY_ERROR_DESCRIPTION    => $codes[1],
+                   ],
                ],
         ]);
     }

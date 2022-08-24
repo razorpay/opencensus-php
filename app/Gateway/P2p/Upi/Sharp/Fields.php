@@ -27,4 +27,5 @@ class Fields
     const RECUR_VALUE               = 'recurvalue';
     const VALIDITY_START            = 'validitystart';
     const VALIDITY_END              = 'validityend';
+    const STATUS                    = 'status';
 }

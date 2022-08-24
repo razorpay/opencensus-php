@@ -12,6 +12,7 @@ use RZP\Models\P2p\Mandate;
  */
 class Entity extends Base\Entity
 {
+    use Base\Traits\HasDevice;
 
     const MANDATE_ID                = 'mandate_id';
     const DEVICE_ID                 = 'device_id';
@@ -32,14 +33,37 @@ class Entity extends Base\Entity
     const GATEWAY_DATA              = 'gateway_data';
 
     /************** Entity Properties ************/
+    const MANDATE                   = 'mandate';
+    protected $entity               = 'p2p_upi_mandate';
 
-    protected $entity     = 'p2p_upi_mandate';
+    protected $primaryKey           = Entity::MANDATE_ID;
 
-    protected $primaryKey = Entity::MANDATE_ID;
 
-    protected $dates      = [];
+    protected $generateIdOnCreate   = false;
+    protected static $generators    = [Entity::REF_ID];
 
-    protected $fillable   = [
+    protected $dates                = [];
+
+    protected $fillable = [
+        Entity::MANDATE_ID,
+        Entity::ACTION,
+        Entity::STATUS,
+        Entity::NETWORK_TRANSACTION_ID,
+        Entity::GATEWAY_TRANSACTION_ID,
+        Entity::GATEWAY_REFERENCE_ID,
+        Entity::RRN,
+        Entity::REF_ID,
+        Entity::REF_URL,
+        Entity::MCC,
+        Entity::GATEWAY_ERROR_CODE,
+        Entity::GATEWAY_ERROR_DESCRIPTION,
+        Entity::RISK_SCORES,
+        Entity::PAYER_ACCOUNT_NUMBER,
+        Entity::PAYER_IFSC_CODE,
+        Entity::GATEWAY_DATA,
+    ];
+
+    protected $visible = [
         Entity::MANDATE_ID,
         Entity::DEVICE_ID,
         Entity::ACTION,
@@ -59,27 +83,7 @@ class Entity extends Base\Entity
         Entity::GATEWAY_DATA,
     ];
 
-    protected $visible    = [
-        Entity::MANDATE_ID,
-        Entity::DEVICE_ID,
-        Entity::ACTION,
-        Entity::STATUS,
-        Entity::NETWORK_TRANSACTION_ID,
-        Entity::GATEWAY_TRANSACTION_ID,
-        Entity::GATEWAY_REFERENCE_ID,
-        Entity::RRN,
-        Entity::REF_ID,
-        Entity::REF_URL,
-        Entity::MCC,
-        Entity::GATEWAY_ERROR_CODE,
-        Entity::GATEWAY_ERROR_DESCRIPTION,
-        Entity::RISK_SCORES,
-        Entity::PAYER_ACCOUNT_NUMBER,
-        Entity::PAYER_IFSC_CODE,
-        Entity::GATEWAY_DATA,
-    ];
-
-    protected $public     = [
+    protected $public = [
         Entity::RRN,
         Entity::REF_ID,
         Entity::REF_URL,
@@ -124,6 +128,13 @@ class Entity extends Base\Entity
         Entity::GATEWAY_DATA              => 'array',
     ];
 
+    protected static $unsetEditInput = [
+        Entity::DEVICE_ID,
+        Entity::ACTION,
+        Entity::MANDATE,
+        Entity::MANDATE_ID,
+    ];
+
     /***************** RELATIONS *****************/
 
     public function mandate()
@@ -134,5 +145,41 @@ class Entity extends Base\Entity
     public function associateMandate(Mandate\Entity $entity)
     {
         $this->mandate()->associate($entity);
+    }
+
+    protected function generateRefId($input)
+    {
+        return $this->setAttribute(self::REF_ID, gen_uuid());
+    }
+    /**
+     * @return string self::ACTION
+     */
+    public function getMandateId()
+    {
+        return $this->getAttribute(self::MANDATE_ID);
+    }
+
+    /**
+     * @return string self::ACTION
+     */
+    public function getAction()
+    {
+        return $this->getAttribute(self::ACTION);
+    }
+
+    /**
+     * @return \RZP\Models\P2p\Mandate\UpiMandate\Entity
+     */
+    public function setNetworkTransactionId(string $networkTransactionId)
+    {
+        return $this->setAttribute(self::NETWORK_TRANSACTION_ID, $networkTransactionId);
+    }
+
+    /**
+     * @return string self::NETWORK_TRANSACTION_ID
+     */
+    public function getNetworkTransactionId()
+    {
+        return $this->getAttribute(self::NETWORK_TRANSACTION_ID);
     }
 }

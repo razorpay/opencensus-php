@@ -22,23 +22,24 @@ class MandateHelper extends P2pHelper
         switch($gateway)
         {
             case 'p2p_upi_sharp':
+                $gatewayMandateId = str_random(35);
                 $request = [
-                    SharpFields::TYPE                    => UpiAction::INCOMING_MANDATE_CREATE,
-                    SharpFields::AMOUNT                  => 100,
-                    SharpFields::AMOUNT_RULE             => 'MAX',
-                    SharpFields::PAYER_VPA               => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
-                    SharpFields::PAYEE_VPA               => 'username@randompsp',
-                    SharpFields::VALIDITY_START          => Carbon::now()->getTimestamp(),
-                    SharpFields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
-                    SharpFields::TRANSACTION_NOTE        => 'UPI',
-                    SharpFields::RECUR                   => 'DAILY',
+                    SharpFields::TYPE                                        => UpiAction::INCOMING_MANDATE_CREATE,
+                    SharpFields::AMOUNT                                      => 100,
+                    SharpFields::AMOUNT_RULE                                 => 'MAX',
+                    SharpFields::PAYER_VPA                                   => $this->fixtures->vpa(Fixtures::DEVICE_1)->getAddress(),
+                    SharpFields::PAYEE_VPA                                   => 'username@randompsp',
+                    SharpFields::VALIDITY_START                              => Carbon::now()->getTimestamp(),
+                    SharpFields::VALIDITY_END                                => Carbon::now()->addDays(365)->getTimestamp(),
+                    SharpFields::TRANSACTION_NOTE                            => 'UPI',
+                    SharpFields::RECUR                                       => 'DAILY',
+                    SharpFields::TRANSACTION_REFERENCE                       => $gatewayMandateId,
                 ];
 
                return $request;
 
             case 'p2p_upi_axis':
                 $gatewayMandateId = str_random(35);
-
                 $callback = [
                     Fields::AMOUNT                  => '1.00',
                     Fields::AMOUNT_RULE             => 'EXACT',
@@ -70,7 +71,7 @@ class MandateHelper extends P2pHelper
                     Fields::SHARE_TO_PAYEE          => 'true',
                     Fields::TRANSACTION_TYPE        => 'UPI_MANDATE',
                     Fields::TYPE                    => 'CUSTOMER_INCOMING_MANDATE_CREATE_REQUEST_RECEIVED',
-                    Fields::UMN                     => 'uniqueMandateNumber@bank',
+                    Fields::UMN                     => 'b3cecfd8c7654c66af13fc439aca1256@bajaj',
                     Fields::VALIDITY_END            => Carbon::now()->addDays(365)->getTimestamp(),
                     Fields::VALIDITY_START          => Carbon::now()->getTimestamp(),
                 ];
