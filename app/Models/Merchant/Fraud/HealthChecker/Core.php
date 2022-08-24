@@ -214,21 +214,33 @@ class Core extends Base\Core
             Merchant\RazorxTreatment::MERCHANT_RISK_FACT_MIGRATION,
             Mode::LIVE);
 
-        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
+        $isMerchantRiskFactMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
 
         $merchantIdList          = [];
 
-        if($eventType === Constants::MILESTONE_CHECKER_EVENT and  $isDruidMigrationEnabled === true)
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            Merchant\RazorxTreatment::DRUID_MIGRATION,
+            Mode::LIVE);
+
+        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        if($eventType === Constants::MILESTONE_CHECKER_EVENT and $isMerchantRiskFactMigrationEnabled === true)
         {
             $dataLakeQuery              = Constants::EVENT_TYPE_QUERY_MAP[$eventType];
 
             $merchantIdList             = $this->getMerchantListFromDataLake($dataLakeQuery);
         }
+        elseif ($eventType === Constants::RISK_SCORE_CHECKER_EVENT and $isDruidMigrationEnabled === true )
+        {
+            $pinotQuery                 = Constants::EVENT_TYPE_QUERY_MAP[$eventType];
+
+            $merchantIdList             = $this->getMerchantListFromPinot($pinotQuery);
+        }
         else
         {
-            $query          = Constants::EVENT_TYPE_DRUID_QUERY_MAP[$eventType];
+            $query                      = Constants::EVENT_TYPE_DRUID_QUERY_MAP[$eventType];
 
-            $merchantIdList = $this->getMerchantListFromDruid($query);
+            $merchantIdList             = $this->getMerchantListFromDruid($query);
         }
 
         $this->trace->info(
@@ -383,6 +395,28 @@ class Core extends Base\Core
 
             );
 
+            return [];
+        }
+
+        return array_pluck($res, 'merchants_id');
+    }
+
+
+    private function getMerchantListFromPinot(string $query): array
+    {
+        $pinotClient = $this->app['eventManager'];
+
+        try
+        {
+            $res = $pinotClient->getDataFromPinot(
+                [
+                    'query' => $query
+                ]
+            );
+        }
+        catch(\Throwable $e)
+        {
+            // No need to trace error as its harvester client already logs it.
             return [];
         }
 

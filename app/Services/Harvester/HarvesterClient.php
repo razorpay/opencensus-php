@@ -202,6 +202,11 @@ class HarvesterClient extends AbstractEventClient
 
     protected function getParsedValueOfColumnForPinotTable(array $tableSchema, string $columnName, $value)
     {
+        if (empty($tableSchema[$columnName]) === true)
+        {
+            return $value;
+        }
+
         $columnType     =  $tableSchema[$columnName];
 
         $defaultValue   = Constants::PINOT_DATA_TYPE_DEFAULT_MAPPING[$columnType];

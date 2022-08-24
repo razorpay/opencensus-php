@@ -123,6 +123,10 @@ class Constants
         'SELECT merchants_id FROM druid.risk_scoring_fact ' .
         'where Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score >= ' . self::TRANSACTION_DEDUPE_RISK_SCORE;
 
+    const RISK_SCORE_MERCHANT_LIST_PINOT_QUERY =
+        'SELECT merchants_id FROM pinot.risk_scoring_fact ' .
+        'where Transacting_Dedupe_Merchant_Risk_Scoring_Transacting_Dedupe_Merchant_Risk_Score >= ' . self::TRANSACTION_DEDUPE_RISK_SCORE;
+
     const EVENT_TYPE_DRUID_QUERY_MAP = [
         self::MILESTONE_CHECKER_EVENT  => self::MILESTONE_MERCHANT_LIST_DRUID_QUERY,
         self::RISK_SCORE_CHECKER_EVENT => self::RISK_SCORE_MERCHANT_LIST_DRUID_QUERY,
@@ -130,7 +134,7 @@ class Constants
 
     const EVENT_TYPE_QUERY_MAP = [
         self::MILESTONE_CHECKER_EVENT  => self::MILESTONE_MERCHANT_LIST_DATALAKE_QUERY,
-        self::RISK_SCORE_CHECKER_EVENT => self::RISK_SCORE_MERCHANT_LIST_DRUID_QUERY,
+        self::RISK_SCORE_CHECKER_EVENT => self::RISK_SCORE_MERCHANT_LIST_PINOT_QUERY,
     ];
 
 

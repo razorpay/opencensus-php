@@ -6,6 +6,7 @@ use App;
 use Illuminate\Support\Str;
 use Mail;
 use Config;
+use RZP\Models\Base\UniqueIdEntity;
 use Throwable;
 use ApiResponse;
 use Carbon\Carbon;
@@ -7227,29 +7228,70 @@ class Core extends Base\Core
 
     public function getMerchantRiskData(string $merchantId): array
     {
-        $query = sprintf(Constants::MERCHANT_RISK_SCORE_DATA_DRUID_QUERY, $merchantId);
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            Merchant\RazorxTreatment::DRUID_MIGRATION,
+            Mode::LIVE);
 
-        list($error, $res) = $this->app['druid.service']->getDataFromDruid(['query' => $query]);
+        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
 
-        if (empty($error) === false)
+        $pinotClient             = $this->app['eventManager'];
+
+        $queryResult             = [];
+
+        if ($isDruidMigrationEnabled === true)
         {
-            $this->trace->info(TraceCode::GET_MERCHANT_RISK_DATA_DRUID_ERROR, ['error' => $error]);
-            return ['error' => $error, 'status' => 503];
-        }
+            try
+            {
+                $query = sprintf(Constants::MERCHANT_RISK_SCORE_DATA_PINOT_QUERY, $merchantId);
 
-        if (is_null($res) === true || count($res) === 0)
+                $res = $pinotClient->getDataFromPinot(
+                    [
+                        'query' => $query
+                    ]
+                );
+
+                if (empty($res) === true || count($res) === 0)
+                {
+                    return ['status' => 404];
+                }
+
+                $queryResult = $res[0];
+            }
+            catch(\Throwable $e)
+            {
+                // No need to trace error as its harvester client already logs it.
+                return ['error' => $e->getMessage(), 'status' => 503];
+            }
+
+            $queryResult = $pinotClient->parsePinotDefaultType($queryResult, 'risk_scoring_fact');
+        }
+        else
         {
-            return ['status' => 404];
-        }
+            $query = sprintf(Constants::MERCHANT_RISK_SCORE_DATA_DRUID_QUERY, $merchantId);
 
-        $druidResult = $res[0];
+            list($error, $res) = $this->app['druid.service']->getDataFromDruid(['query' => $query]);
+
+            if (empty($error) === false)
+            {
+                $this->trace->info(TraceCode::GET_MERCHANT_RISK_DATA_DRUID_ERROR, ['error' => $error]);
+                return ['error' => $error, 'status' => 503];
+            }
+
+            if (is_null($res) === true || count($res) === 0)
+            {
+                return ['status' => 404];
+            }
+
+            $queryResult = $res[0];
+        }
 
         $returnArray = ['status' => 200];
-        foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $druidKey => $returnKey)
+
+        foreach (Constants::MERCHANT_RISK_SCORE_DRUID_KEY_MAPPING as $key => $returnKey)
         {
-            if (array_key_exists($druidKey, $druidResult) === true)
+            if (array_key_exists($key, $queryResult) === true)
             {
-                $returnVal = $druidResult[$druidKey];
+                $returnVal = $queryResult[$key];
 
                 if (empty($returnVal) === false &&
                     in_array($returnKey, Constants::MERCHANT_RISK_SCORE_DATA_MONEY_FIELDS))

@@ -2434,7 +2434,7 @@ return [
                 'user_role'                       => 'owner',
                 'first_transaction_timestamp'     => null,
                 'user_days_till_last_transaction' => 30,
-                'merchant_lifetime_gmv'           => 100,
+                'merchant_lifetime_gmv'           => '100',
                 'average_monthly_gmv'             => 10,
                 'primary_product_used'            => 'payment_links',
                 'ppc'                             => 1,

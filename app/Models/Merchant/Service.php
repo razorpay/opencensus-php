@@ -2760,7 +2760,7 @@ class Service extends Base\Service
             self::SEGMENT_DATA_USER_ROLE                       => $this->app['basicauth']->getUserRole(),
             self::SEGMENT_DATA_FIRST_TRANSACTION_TIMESTAMP     => $firstTransactionTimeStamp,
             self::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION => $data[self::SEGMENT_DATA_USER_DAYS_TILL_LAST_TRANSACTION] ?: null,
-            self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV          => $data[self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV] ?: null,
+            self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV          => (empty($data[self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV]) === false ) ? (string)$data[self::SEGMENT_DATA_MERCHANT_LIFE_TIME_GMV]: null,
             self::SEGMENT_DATA_AVERAGE_MONTHLY_GMV             => $data[self::SEGMENT_DATA_AVERAGE_MONTHLY_GMV] ?: null,
             self::SEGMENT_DATA_PRIMARY_PRODUCT_USED            => $data[ self::SEGMENT_DATA_PRIMARY_PRODUCT_USED] ?: null,
             self::SEGMENT_DATA_PPC                             => $data[self::SEGMENT_DATA_PPC] ?: null,
