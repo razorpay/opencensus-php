@@ -614,6 +614,8 @@ class Core extends Base\Core
 
                 $previousBasId = $insertionDetails[Entity::ID];
 
+                $counter = 1;
+
                 foreach ($groupOfStatements as $statement)
                 {
                     $statementAfterDedupe = $processor->checkForDuplicateTransactions([$statement], $channel, $accountNumber, $merchant);
@@ -630,7 +632,7 @@ class Core extends Base\Core
                         continue;
                     }
 
-                    $nextId = $this->generateNextUnUsedIdForEntity($previousBasId, Constants\Entity::BANKING_ACCOUNT_STATEMENT);
+                    $nextId = $this->generateNextUnUsedIdForEntity($previousBasId, $counter, Constants\Entity::BANKING_ACCOUNT_STATEMENT);
 
                     $basEntity = (new Entity)->build($statement);
 
@@ -669,6 +671,7 @@ class Core extends Base\Core
                             'previous_bas_id'       => $insertionDetails[Entity::ID],
                             'dry_run_mode'          => $this->isDryRunModeActiveForStatementFix,
                             'inserted_bas_entity'   => $basEntity->toArray(),
+                            'counter'               => $counter,
                         ]);
 
                     $insertedBasEntities[] = $basEntity;
@@ -677,8 +680,10 @@ class Core extends Base\Core
 
                     $previousBasId = $nextId;
 
+                    $generateTransactionId = $this->generateNextUnUsedIdForEntity($insertionDetails[Entity::TRANSACTION_ID], $counter, Constants\Entity::TRANSACTION);
+
                     $this->previousBasTransactionDetails = [
-                        Transaction\Entity::ID         => $insertionDetails[Entity::TRANSACTION_ID],
+                        Transaction\Entity::ID         => $generateTransactionId,
                         Transaction\Entity::CREATED_AT => $insertionDetails['transaction_created_at'],
                     ];
 
@@ -716,6 +721,8 @@ class Core extends Base\Core
 
                         throw $exception;
                     }
+
+                    $counter = $counter + 1;
                 }
             }
 
@@ -786,7 +793,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function generateNextUnUsedIdForEntity(string $id, string $entityName)
+    protected function generateNextUnUsedIdForEntity(string $id, string $counter, string $entityName)
     {
         $attempts = self::RETRY_COUNT_FOR_ID_GENERATION;
 
@@ -805,6 +812,12 @@ class Core extends Base\Core
                     break;
             }
 
+            // $counter is decremented so that consecutive missing records are not assigned same bas or txns ids
+            if ($idExists === false)
+            {
+                $counter = $counter - 1;
+            }
+
             $attempts -= 1;
 
             if ($attempts < 0)
@@ -813,10 +826,11 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_ERROR,
                     null,
                     null,
-                    'cannot generate new Id for '.$entityName);
+                    'cannot generate new Id for ' . $entityName);
             }
-        }
-        while($idExists === true);
+
+        } while (($idExists === true) or
+                 ($counter > 0));
 
         return $id;
     }
@@ -860,9 +874,7 @@ class Core extends Base\Core
 
     protected function modifyTransactionEntityForMissingStatement(Entity $basEntity, Base\PublicEntity $sourceEntity)
     {
-        $previousTransactionId = $this->previousBasTransactionDetails[Transaction\Entity::ID];
-
-        $transactionId = $this->generateNextUnUsedIdForEntity($previousTransactionId, Constants\Entity::TRANSACTION);
+        $transactionId = $this->previousBasTransactionDetails[Transaction\Entity::ID];
 
         $previousTransactionCreatedAt = $this->previousBasTransactionDetails[Transaction\Entity::CREATED_AT];
 
