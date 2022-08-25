@@ -12,6 +12,10 @@ class Status
     const DEBIT_INITIAL_REJECT  = '2';
     const DEBIT_PENDING         = '3';
 
+    const PAYMENT_SUCCESS   = 'success';
+    const PAYMENT_FAILED    = 'failed';
+    const PAYMENT_PENDING   = 'pending';
+
     const DEBIT_FILE_STATUSES = [
         self::DEBIT_SUCCESS,
         self::DEBIT_REJECT,
@@ -55,5 +59,28 @@ class Status
         }
 
         return (($status === self::DEBIT_REJECT) or ($status === self::DEBIT_INITIAL_REJECT));
+    }
+
+    public static function bankMappedStatus($status): string
+    {
+        if (in_array($status, self::DEBIT_FILE_STATUSES) === false)
+        {
+            return "";
+        }
+
+        if ($status === self::DEBIT_SUCCESS)
+        {
+            return self::PAYMENT_SUCCESS;
+        }
+        else if (($status === self::DEBIT_REJECT) or ($status === self::DEBIT_INITIAL_REJECT))
+        {
+            return self::PAYMENT_FAILED;
+        }
+        else if ($status === self::DEBIT_PENDING)
+        {
+            return self::PAYMENT_PENDING;
+        }
+
+        return "";
     }
 }

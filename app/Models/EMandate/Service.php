@@ -4,6 +4,7 @@ namespace RZP\Models\EMandate;
 
 use App;
 
+use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Models\Base;
 use RZP\Models\Batch;
@@ -14,6 +15,7 @@ use RZP\Trace\TraceCode;
 use RZP\Jobs\NachBatchProcess;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Jobs\ResposeFileBatchInstrumentation;
 
 class Service extends Base\Service
 {
@@ -34,8 +36,23 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function processBatchRequest(array $input)
+    public function processBatchRequest(array $input, string $batchId)
     {
+        // This is for the instrumentation of nach/emandate debit response file
+        if (($this->isExperimentEnabledForInstrumentationBank($input['gateway']) === true) and
+            ($this->isExperimentEnabledForInstrumentationRamp() === true))
+        {
+            try
+            {
+                ResposeFileBatchInstrumentation::dispatch($this->mode, $batchId, $input);
+
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException($ex, Logger::ERROR, TraceCode::EMANDATE_INSTRUMENTATION_ERROR_SQS_PUSH_FAILED);
+            }
+        }
+
         $namespaceKeys = [
             Batch\Entity::TYPE,
             Batch\Entity::SUB_TYPE,
@@ -71,6 +88,11 @@ class Service extends Base\Service
         unset($input[Batch\Entity::SUB_TYPE]);
         unset($input[Batch\Entity::GATEWAY]);
 
+        if (isset($input["response_file_name"]) === true)
+        {
+            unset($input["response_file_name"]);
+        }
+
         return $processor->batchProcessEntries($input);
     }
 
@@ -84,7 +106,7 @@ class Service extends Base\Service
             return $this->processNachBatchRequestAsync($input, $batchId);
         }
 
-        return $this->processBatchRequest($input);;
+        return $this->processBatchRequest($input, $batchId);
     }
 
     public function processNachBatchRequestAsync(array $input, string $batchId): array
@@ -106,6 +128,21 @@ class Service extends Base\Service
             $data['Error Code'] = ErrorCode::SERVER_ERROR;;
             $data['Error Description'] = "queue push failed";
         }
+
+        if (($this->isExperimentEnabledForInstrumentationBank($input['gateway']) === true) and
+            ($this->isExperimentEnabledForInstrumentationRamp() === true))
+        {
+            try
+            {
+                ResposeFileBatchInstrumentation::dispatch($this->mode, $batchId, $input);
+
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException($ex, Logger::ERROR, TraceCode::EMANDATE_INSTRUMENTATION_ERROR_SQS_PUSH_FAILED);
+            }
+        }
+
         return $data;
     }
 
@@ -140,5 +177,61 @@ class Service extends Base\Service
         $status = $app['razorx']->getTreatment($key, RazorxTreatment::EMANDATE_ASYNC_PAYMENT_PROCESSING_ENABLED, $mode);
 
         return (strtolower($status) === 'on');
+    }
+
+    public function isExperimentEnabledForInstrumentationBank($key): bool
+    {
+        try
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $key,
+                RazorxTreatment::EMANDATE_DEBIT_RESPONSE_FILE_INSTRUMENTATION_BANK,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMANDATE_INSTRUMENTATION_RESPONSE_RAZORX_FAIL
+            );
+        }
+
+        return false;
+    }
+
+    public function isExperimentEnabledForInstrumentationRamp(): bool
+    {
+        try
+        {
+            $key = Carbon::now()->getTimestamp();
+
+            $variant = $this->app['razorx']->getTreatment(
+                $key,
+                RazorxTreatment::EMANDATE_DEBIT_RESPONSE_FILE_INSTRUMENTATION_RAMP,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::EMANDATE_INSTRUMENTATION_RESPONSE_RAZORX_FAIL
+            );
+        }
+
+        return false;
     }
 }

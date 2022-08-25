@@ -20,6 +20,7 @@ class EnachRbl extends Base
     {
         $row = array_map('trim', $row);
 
+
         return [
             self::PAYMENT_ID            => $row[Headings::REFNO],
             self::AMOUNT                => $row[Headings::AMOUNT],
@@ -78,6 +79,11 @@ class EnachRbl extends Base
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {
         unset($payloadEntry[Headings::BENEFICIARYACNO]);
+    }
+
+    protected function getBankStatus($status): string
+    {
+        return Rbl\Status::bankMappedStatus($status);
     }
 
     public function shouldSendToBatchService(): bool

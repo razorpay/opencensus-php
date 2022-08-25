@@ -193,6 +193,11 @@ class NachCiti extends Base
         return ErrorCode::getDebitPublicErrorDescription($content[self::GATEWAY_ERROR_CODE]);
     }
 
+    protected function getBankStatus($status): string
+    {
+        return Status::bankMappedStatus($status);
+    }
+
     public function shouldSendToBatchService(): bool
     {
         return true;

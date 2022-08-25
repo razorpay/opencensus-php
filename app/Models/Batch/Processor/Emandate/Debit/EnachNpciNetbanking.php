@@ -80,6 +80,11 @@ class EnachNpciNetbanking extends Base
         unset($payloadEntry[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_BANK_ACC]);
     }
 
+    protected function getBankStatus($status): string
+    {
+        return Netbanking\DebitFileStatus::bankMappedStatus($status);
+    }
+
     public function shouldSendToBatchService(): bool
     {
         return true;

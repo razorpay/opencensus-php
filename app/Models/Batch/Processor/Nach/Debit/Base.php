@@ -292,4 +292,45 @@ class Base extends BaseProcessor
 
         return $entries;
     }
+
+    public function batchInstrumentation(array $entry, array & $instrumentationData)
+    {
+        $content = $this->getDataFromRow($entry);
+
+        try
+        {
+            $payment = $this->getPayment($content);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::EMANDATE_INSTRUMENTATION_PAYMENT_FETCH_FAIL,
+                [
+                    'gateway' => $this->gateway,
+                    'content' => $content,
+                    'mode'    => $this->mode,
+                ]
+            );
+
+            $payment = null;
+        }
+
+        $instrumentationData["payment_id"]              = $content[self::PAYMENT_ID];
+        $instrumentationData["method"]                  = empty($payment) ? null : $payment->getMethod();
+        $instrumentationData["amount"]                  = $content[self::AMOUNT];
+        $instrumentationData["payment_status"]          = $this->getBankStatus($content[self::GATEWAY_RESPONSE_CODE]);
+        $instrumentationData["gateway"]                 = $this->gateway;
+        $instrumentationData["response_code"]           = $content[self::GATEWAY_RESPONSE_CODE];
+        $instrumentationData["error_code"]              = $content[self::GATEWAY_ERROR_CODE] ?? null;
+        $instrumentationData["response_description"]    = $content[self::GATEWAY_ERROR_MESSAGE] ?? null;
+        $instrumentationData["api_error_code"]          = null;
+
+        if ($instrumentationData["payment_status"] === 'failed')
+        {
+            $instrumentationData["response_description"]    = isset($content[self::GATEWAY_ERROR_MESSAGE]) ? $instrumentationData["response_description"] : $this->getGatewayErrorDesc($content);
+            $instrumentationData["api_error_code"]          = $this->getApiErrorCode($content);
+        }
+    }
 }

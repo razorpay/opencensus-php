@@ -57,7 +57,7 @@ class EMandateController extends Controller
         $batchId = Request::header(RequestHeader::X_Batch_Id);
 
         $data = Tracer::inSpan(['name' => HyperTrace::EMANDATE_DEBIT_PAYMENT_PROCESSING_BATCH_REQUEST], function () use ($batchId){
-            return $this->service()->processBatchRequest($this->input);
+            return $this->service()->processBatchRequest($this->input, $batchId);
         });
 
         $this->trace->info(

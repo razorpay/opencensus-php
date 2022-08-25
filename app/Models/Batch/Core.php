@@ -3,6 +3,7 @@
 namespace RZP\Models\Batch;
 
 use Mail;
+use SplFileInfo;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Invoice;
@@ -58,6 +59,8 @@ class Core extends Base\Core
         $batch->getValidator()->validateAuthForBatchType();
 
         $processor = Processor\Factory::get($batch);
+
+        $this->emandateResponseFileInstrumentationIfApplicable($input, $processor);
 
         $ufhFile = $processor->storeInputFileAndSaveBatchWithSettings($input);
 
@@ -437,5 +440,30 @@ class Core extends Base\Core
         Mail::send($mail);
 
         return ['success' => true];
+    }
+
+    protected function emandateResponseFileInstrumentationIfApplicable(& $input, $processor)
+    {
+        if((isset($input["type"]) === true) and
+           (($input["type"] === "nach") or ($input["type"] === "emandate")) and
+           (isset($input["sub_type"]) === true) and
+           ($input["sub_type"] === "debit") and
+           ($processor->shouldSendToBatchService() === true))
+        {
+            try
+            {
+                $input["config"]["response_file_name"] = (new SplFileInfo($input["file"]))->getFilename();
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::EMANDATE_INSTRUMENTATION_FILE_NAME_ADDITION_FAIL,
+                    [
+                        'input' => $input
+                    ]);
+            }
+        }
     }
 }

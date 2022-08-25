@@ -18,6 +18,10 @@ class DebitFileStatus
         self::PENDING,
     ];
 
+    const PAYMENT_SUCCESS   = 'success';
+    const PAYMENT_FAILED    = 'failed';
+    const PAYMENT_PENDING   = 'pending';
+
     public static function isDebitSuccess($status, $content)
     {
         $status = strtolower($status);
@@ -34,6 +38,31 @@ class DebitFileStatus
         self::throwInvalidResponseErrorIfCodeNotMapped($status, self::DEBIT_STATUS, $content);
 
         return ($status === self::REJECTED);
+    }
+
+    public static function bankMappedStatus($status)
+    {
+        $status = strtolower($status);
+
+        if (in_array($status, self::DEBIT_STATUS) === false)
+        {
+            return "";
+        }
+
+        if ($status === self::ACCEPTED)
+        {
+            return self::PAYMENT_SUCCESS;
+        }
+        else if ($status === self::REJECTED)
+        {
+            return self::PAYMENT_FAILED;
+        }
+        else if ($status === self::PENDING)
+        {
+            return self::PAYMENT_PENDING;
+        }
+
+        return "";
     }
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($status, array $mapping, array $content)

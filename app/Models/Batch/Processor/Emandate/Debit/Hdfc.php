@@ -66,6 +66,11 @@ class Hdfc extends Base
         unset($payloadEntry[Headings::ACCOUNT_NO]);
     }
 
+    protected function getBankStatus($status): string
+    {
+        return Netbanking\Hdfc\Status::bankMappedStatus($status);
+    }
+
     public function shouldSendToBatchService(): bool
     {
         $result = false;

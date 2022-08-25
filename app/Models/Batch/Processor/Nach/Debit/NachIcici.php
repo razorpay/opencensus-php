@@ -13,7 +13,7 @@ use RZP\Gateway\Enach\Npci\Combined\Icici\Debit\DebitFileHeadings as Headings;
 
 class NachIcici extends Base
 {
-    protected $gateway = Gateway::NACH_CITI;
+    protected $gateway = Gateway::NACH_ICICI;
 
     protected function getDataFromRow(array & $row): array
     {
@@ -189,5 +189,10 @@ class NachIcici extends Base
     protected function getGatewayErrorDesc(array $content): string
     {
         return ErrorCode::getDebitPublicErrorDescription($content[self::GATEWAY_ERROR_CODE]);
+    }
+
+    protected function getBankStatus($status): string
+    {
+        return Status::bankMappedStatus($status);
     }
 }

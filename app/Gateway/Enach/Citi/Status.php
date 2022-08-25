@@ -19,6 +19,10 @@ class Status
     const REGISTRATION_PENDING          = 'pending';
     const REGISTRATION_PENDING_BANK     = 'pending for confirmation from destination bank';
 
+    const PAYMENT_SUCCESS   = 'success';
+    const PAYMENT_FAILED    = 'failed';
+    const PAYMENT_PENDING   = 'pending';
+
     const REGISTRATION_FILE_STATUSES = [
         self::REGISTRATION_SUCCESS,
         self::REGISTRATION_FAILURE,
@@ -114,5 +118,28 @@ class Status
         }
 
         return (($status === self::DEBIT_REJECT) or ($status === self::DEBIT_INITIAL_REJECT));
+    }
+
+    public static function bankMappedStatus($status): string
+    {
+        if (in_array($status, self::DEBIT_FILE_STATUSES) === false)
+        {
+            return "";
+        }
+
+        if ($status === self::DEBIT_SUCCESS)
+        {
+            return self::PAYMENT_SUCCESS;
+        }
+        else if (($status === self::DEBIT_REJECT) or ($status === self::DEBIT_INITIAL_REJECT))
+        {
+            return self::PAYMENT_FAILED;
+        }
+        else if ($status === self::DEBIT_PENDING)
+        {
+            return self::PAYMENT_PENDING;
+        }
+
+        return "";
     }
 }

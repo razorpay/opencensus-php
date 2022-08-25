@@ -2,15 +2,17 @@
 
 namespace RZP\Jobs;
 
+use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Services\KafkaProducer;
 use RZP\Exception\LogicException;
 
-class NachBatchProcess extends Job
+class ResposeFileBatchInstrumentation extends Job
 {
-    const QUEUE_NAME_KEY  = 'nach_batch_process';
+    const QUEUE_NAME_KEY  = 'emandate_files_instrumentation';
 
     protected $params;
 
@@ -34,7 +36,7 @@ class NachBatchProcess extends Job
         parent::handle();
 
         $this->trace->info(
-            TraceCode::BATCH_JOB_RECEIVED,
+            TraceCode::EMANDATE_RESPONSE_INSTRUMENTATION_JOB_STARTED,
             [
                 'sub_type' => $this->params[Batch\Entity::SUB_TYPE],
                 'gateway'  => $this->params[Batch\Entity::GATEWAY],
@@ -73,24 +75,57 @@ class NachBatchProcess extends Job
 
             $processor = new $processor;
 
+            $instrumentationData = [];
+
+            $instrumentationData["batch_id"] = $this->id;
+
+            if (isset($this->params["response_file_name"]) === true)
+            {
+                $instrumentationData["file_name"] = $this->params["response_file_name"];
+                unset($this->params["response_file_name"]);
+            }
+            else
+            {
+                $instrumentationData["file_name"] = null;
+            }
+
             unset($this->params[Batch\Entity::TYPE]);
             unset($this->params[Batch\Entity::SUB_TYPE]);
             unset($this->params[Batch\Entity::GATEWAY]);
 
-            if (isset($this->params["response_file_name"]) === true)
-            {
-                unset($this->params["response_file_name"]);
-            }
+            $processor->batchInstrumentation($this->params['data'], $instrumentationData);
 
+            $app = \App::getFacadeRoot();
 
-            $processor->batchProcessEntries($this->params);
+            $event = [
+                "event_name"         => "FILE.RESPONSE.EVENT",
+                "event_type"         => "file-response-debit-events",
+                "version"            => "v1",
+                "event_timestamp"    => Carbon::now()->timestamp,
+                "producer_timestamp" => Carbon::now()->timestamp,
+                "source"             => "file_response",
+                "mode"               => $this->mode,
+                "context"            => ['request_id' => $app['request']->getId(),
+                                         'task_id'    => $app['request']->getTaskId()],
+                "properties"         => $instrumentationData,
+            ];
+
+            $topic = 'events.emandate-file-processing-debit.' . $event["version"] . '.' . $this->mode;
+
+            (new KafkaProducer($topic, stringify($event)))->Produce();
+
+            $this->trace->info(
+                TraceCode::EMANDATE_INSTRUMENTATION_KAFKA_PRODUCER_SUCCESS,
+                [
+                    "event" => $event,
+                ]);
         }
         catch (\Throwable $ex)
         {
             $this->trace->traceException(
                 $ex,
                 Logger::CRITICAL,
-                TraceCode::BATCH_FILE_PROCESSING_ERROR);
+                TraceCode::EMANDATE_RESPONSE_INSTRUMENTATION_JOB_FAILED);
         }
     }
 }

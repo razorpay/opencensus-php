@@ -16,6 +16,9 @@ class Status
     const REGISTRATION_SUCCESS = 'active';
     const REGISTRATION_FAILURE = 'rejected';
 
+    const PAYMENT_SUCCESS   = 'success';
+    const PAYMENT_FAILED    = 'failed';
+
     protected static $registrationStatuses = [
         self::REGISTRATION_SUCCESS,
         self::REGISTRATION_FAILURE,
@@ -58,6 +61,27 @@ class Status
         self::throwInvalidResponseErrorIfCodeNotMapped($status, self::$debitStatuses, $content);
 
         return ($status === self::DEBIT_REJECT);
+    }
+
+    public static function bankMappedStatus($status)
+    {
+        $status = strtolower($status);
+
+        if (in_array($status, self::$debitStatuses) === false)
+        {
+            return "";
+        }
+
+        if ($status === self::DEBIT_SUCCESS)
+        {
+            return self::PAYMENT_SUCCESS;
+        }
+        else if ($status === self::DEBIT_REJECT)
+        {
+            return self::PAYMENT_FAILED;
+        }
+
+        return "";
     }
 
     protected static function throwInvalidResponseErrorIfCodeNotMapped($status, array $mapping, array $content)
