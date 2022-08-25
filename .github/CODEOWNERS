@@ -67,6 +67,8 @@ app/Models/Key/                                        nemo@razorpay.com
 app/Models/LineItem/                                   praveen.patlola@razorpay.com
 app/Models/Merchant/                                   vivek.kumar@razorpay.com
 app/Models/Merchant/Balance/LowBalanceConfig/          @razorpay/Payouts-core
+app/Models/Merchant/Checkout.php                       @razorpay/checkout-backend-leads
+app/Models/Merchant/CheckoutExperiment.php             @razorpay/checkout-backend-leads
 app/Models/Merchant/Credits/Balance/                   @razorpay/Payouts-core
 app/Models/Merchant/Credits/                           sunny.aggrawal@razorpay.com
 app/Models/Merchant/Invoice/                           sunny.aggrawal@razorpay.com
@@ -99,6 +101,7 @@ app/Models/Terminal/Selector.php                       @razorpay/TechRulesRoutin
 app/Models/Terminal/Category.php                       @razorpay/TechRulesRouting
 app/Models/Transaction/                                prashanth.yv@razorpay.com                               sunny.aggrawal@razorpay.com
 app/Models/Transfer/                                   soutreya.kundu@razorpay.com
+app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Models/User/                                       pankaj.kumar@razorpay.com                               vivek.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
@@ -155,6 +158,11 @@ tests/Functional/Gateway/                              @razorpay/TechPgIntegrati
 
 app/Services/UpiPayment/                               @razorpay/techupicore
 
+#
+# Jobs
+#
+
+app/Jobs/TrustedBadge.php                              @razorpay/checkout-backend-leads
 
 #
 # Misc
