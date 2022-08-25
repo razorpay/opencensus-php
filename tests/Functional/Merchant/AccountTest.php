@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
+use RZP\Services\Mock\ApachePinotClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
@@ -26,8 +27,24 @@ class AccountTest extends TestCase
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
         $this->ba->privateAuth();
+
+        $this->mockApachePinot();
+
     }
 
+    private function mockApachePinot()
+    {
+        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+                             ->setConstructorArgs([$this->app])
+                             ->onlyMethods(['getDataFromPinot'])
+                             ->getMock();
+
+        $this->app->instance('apache.pinot', $pinotService);
+
+        $pinotService->method('getDataFromPinot')
+                     ->willReturn(null);
+    }
+    
     public function testCreateLinkedAccountForInactiveMerchantInTestMode()
     {
         $this->createLinkedAccount(Mode::TEST, false);

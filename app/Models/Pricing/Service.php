@@ -585,7 +585,7 @@ class Service extends Base\Service
 
     public function getPricingPlansSummary(array $input = []): array
     {
-        $this->trace->info(TraceCode::PRICING_PLAN_FETCH_ATTEMPT);
+        $this->trace->info(TraceCode::PRICING_PLAN_FETCH_ATTEMPT,$input);
 
         // updated limit to fetch all records by default.
         $input[Fetch::COUNT] = $input[Fetch::COUNT] ?? 150000;

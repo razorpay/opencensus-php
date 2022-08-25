@@ -3783,7 +3783,8 @@ class Core extends Base\Core
                 $response[$url] = $merchantBusinessDetails[BusinessDetailEntity::APP_URLS][$url] ?? '';
             }
 
-            $mtuTransacted = $this->isMtuTransacted($merchant);
+            $mtuTransacted = (new \RZP\Models\Payment\Repository)
+                ->hasMerchantTransacted($merchant->getId());
 
             $response['isTransacted'] = $mtuTransacted;
 
@@ -3838,32 +3839,6 @@ class Core extends Base\Core
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchant);
 
         return array_column($statusChangeLogs->toArray(), 'name');
-    }
-
-    private function isMtuTransacted(Merchant\Entity $merchant)
-    {
-        $query = "select count(merchant_id) as transacted from payments_v1 where created_at between %s and %s and base_amount>%s and merchant_id='%s'";
-
-        $query = sprintf($query, $merchant->getCreatedAt(), Carbon::now()->getTimestamp(), 0, $merchant->getId());
-
-        // fetch if transactions are done
-        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
-
-        $this->trace->info(TraceCode::APACHE_PINOT_RESPONSE, [
-            'response'    => $queryResponse,
-            'merchant_id' => $merchant->getId()
-        ]);
-
-        if (empty($queryResponse) === false)
-        {
-            $resultCount = $queryResponse[0]["transacted"];
-
-            if ($resultCount > 0)
-            {
-                return true;
-            }
-        }
-        return false;
     }
 
     private function isEligibleForMtuPopup(Merchant\Entity $merchant, bool $mtu): bool

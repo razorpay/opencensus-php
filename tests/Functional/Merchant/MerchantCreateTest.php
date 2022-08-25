@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Redis;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Methods\Entity;
+use RZP\Services\Mock\ApachePinotClient;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Mail\User\LinkedAccountUserAccess;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -65,6 +66,21 @@ class MerchantCreateTest extends TestCase
 
         $this->app->make(Factory::class)->load($factoryPath);
 
+        $this->mockApachePinot();
+
+    }
+
+    private function mockApachePinot()
+    {
+        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+                             ->setConstructorArgs([$this->app])
+                             ->onlyMethods(['getDataFromPinot'])
+                             ->getMock();
+
+        $this->app->instance('apache.pinot', $pinotService);
+
+        $pinotService->method('getDataFromPinot')
+                     ->willReturn(null);
     }
 
     public function testCreateMerchantWithDuplicateEmail()

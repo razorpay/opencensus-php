@@ -2961,6 +2961,16 @@ EOT;
             ->toArray();
     }
 
+    public function hasMerchantTransacted(string $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::MERCHANT_ID, "=", $merchantId)
+                    ->where(Entity::BASE_AMOUNT, ">", 0)
+                    ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
+                    ->limit(1)
+                    ->count() > 0;
+    }
+
     public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())

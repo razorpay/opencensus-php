@@ -8,6 +8,6 @@ class ApachePinotClient extends BaseApachePinotClient
 {
     public function getDataFromPinot($query, $associate = true)
     {
-        return [];
+        return null;
     }
 }

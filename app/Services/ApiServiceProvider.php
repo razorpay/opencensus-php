@@ -457,7 +457,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->app->singleton('apache.pinot', function ($app)
         {
-            $apachePinotServiceMock = $app['config']->get('services.pinot.mock');
+            $apachePinotServiceMock = $app['config']->get('services.apache_pinot.mock');
 
             if ($apachePinotServiceMock === true)
             {
