@@ -439,6 +439,10 @@ class Validator extends Base\Validator
         'meta.version'                  => 'required',
     ];
 
+    protected static $updateB2BInvoiceDetailsRules = [
+        'document_id'                       => 'required',
+    ];
+
     protected function validateRange(array $input)
     {
         //Only query for last 7 days
@@ -651,6 +655,7 @@ class Validator extends Base\Validator
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
             Payment\Method::OFFLINE,
+            Payment\Method::INTL_BANK_TRANSFER,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
@@ -1255,6 +1260,7 @@ class Validator extends Base\Validator
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
             Payment\Method::OFFLINE,
+            Payment\Method::INTL_BANK_TRANSFER
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and

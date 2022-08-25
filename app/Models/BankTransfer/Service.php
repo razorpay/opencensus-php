@@ -2,8 +2,10 @@
 
 namespace RZP\Models\BankTransfer;
 
+use App;
 use Cache;
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
@@ -16,11 +18,13 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Batch;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Models\QrPayment;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -33,6 +37,8 @@ use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Jobs\BankTransferCreateProcess;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
+use RZP\Models\Merchant\InternationalIntegration;
+use function GuzzleHttp\default_ca_bundle;
 
 class Service extends Base\Service
 {
@@ -45,6 +51,11 @@ class Service extends Base\Service
 
     // Seconds in 15 minutes
     const FIFTEEN_MINUTES = 900;
+
+    //notification type
+    const FUNDS_ARRIVED_NOTIFICATION = 'funds_arrived_notification';
+    const PAYMENT_RELEASED_NOTIFICATION = 'payment_released_notification';
+    const TRANSFER_COMPLETED_NOTIFICATION = 'transfer_completed_notification';
 
     /**
      * Service constructor. Sets provider from app auth, and
@@ -904,4 +915,332 @@ class Service extends Base\Service
             }
         }
     }
+
+    public function createAccountForCurrencyCloud($input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        if (!$this->merchant->isInternational() || !$this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_B2B_ACTIVATION) || !$input['accept_b2b_tnc'])
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,null,[
+                'international'         => $this->merchant->isInternational(),
+                'allow_b2b_activation'  => $this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_B2B_ACTIVATION),
+                't&c'                   => $input['accept_b2b_tnc'],
+            ]);
+        }
+
+        $mutex_key = "create_account_cc_" . $merchantId;
+
+        $this->mutex->acquireAndRelease($mutex_key,
+            function () use ($merchantId)
+            {
+                $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+                    $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+                if(isset($mii))
+                {
+                    $this->trace->info(TraceCode::MERCHANT_INTERNATIONAL_VA_ALREADY_EXISTS, [
+                        'merchant_id' => $merchantId,
+                        'mii_id'      => $mii->getId(),
+                    ]);
+                }
+                else{
+                    try {
+                        $requestBody = $this->createRequestBodyForAccountCreation($merchantId);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,[
+                            'error_desc' => $e->getMessage(),
+                            'error_code' => $e->getCode(),
+                        ]);
+                    }
+
+                    $responseBody = $this->app->mozart->sendMozartRequest('onboarding',Constants\Entity::CURRENCY_CLOUD,'account_create',$requestBody);
+
+                    $merchantInternationalIntegrations = [
+                        InternationalIntegration\Entity::MERCHANT_ID        => $merchantId,
+                        InternationalIntegration\Entity::INTEGRATION_ENTITY => Constants\Entity::CURRENCY_CLOUD,
+                        InternationalIntegration\Entity::INTEGRATION_KEY    => $responseBody['data']['account_id'],
+                        InternationalIntegration\Entity::REFERENCE_ID       => $responseBody['data']['contact_id'],
+                    ];
+
+                    (new InternationalIntegration\Core)->createMerchantInternationalIntegration($merchantInternationalIntegrations);
+
+                    $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+                        $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+                    (new Merchant\Service)->addFeatureFlag(
+                        [
+                            Feature\Constants::ENABLE_B2B_EXPORT
+                        ], true
+                    );
+
+                    $this->trace->info(TraceCode::B2B_FEATURE_FLAG_ADDED,[
+                        'merchant_id' => $merchantId,
+                        'feature_flag' => Feature\Constants::ENABLE_B2B_EXPORT,
+                    ]);
+
+                    $mii = $this->updateBankAccountDetails($merchantId,$mii);
+                }
+            },20,
+            ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
+
+            return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId,Constants\Entity::CURRENCY_CLOUD);
+    }
+
+    public function updateBankAccountDetails($merchantId, $merchantInternationalIntegrations)
+    {
+        $bankAccount = array();
+
+        foreach (Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES as $currency)
+        {
+            $request = [
+                'payment_type'      => 'regular',
+                'account_id'        => $merchantInternationalIntegrations->getIntegrationKey(),
+                'contact_id'        => $merchantInternationalIntegrations->getReferenceId(),
+                'currency'          => $currency,
+            ];
+
+            $bankAccountCurrency = $this->getBankAccountDetailsCurrency($request);
+
+            array_push($bankAccount,$bankAccountCurrency);
+        }
+
+        $mii = [
+            InternationalIntegration\Entity::MERCHANT_ID        => $merchantId,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Constants\Entity::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY    => $merchantInternationalIntegrations->getIntegrationKey(),
+            InternationalIntegration\Entity::REFERENCE_ID       => $merchantInternationalIntegrations->getReferenceId(),
+            InternationalIntegration\Entity::BANK_ACCOUNT       => json_encode($bankAccount)
+        ];
+
+        return (new InternationalIntegration\Core)->editMerchantInternationalIntegrations($mii);
+
+    }
+
+    protected function getBankAccountDetailsCurrency($request)
+    {
+        $response = $this->app->mozart->sendMozartRequest('onboarding',Constants\Entity::CURRENCY_CLOUD,'get_funding_account',$request);
+
+        return [
+            'account_number'      => $response['data']['account_number'],
+            'routing_type'        => $response['data']['routing_code_type'],
+            'routing_code'        => $response['data']['routing_code'],
+            'va_currency'         => $response['data']['currency'],
+            'beneficiary_name'    => $response['data']['account_holder_name']
+        ];
+    }
+
+    protected function createRequestBodyForAccountCreation($merchantId)
+    {
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+        $name = explode(' ',$merchantDetail->getPromoterPanName(),2);
+
+        $address = [
+            'street' => $merchantDetail->getBusinessRegisteredAddress(),
+            'city'   => $merchantDetail->getBusinessRegisteredCity(),
+            'state'  => $merchantDetail->getBusinessRegisteredState(),
+            'country'=> $merchantDetail->getBusinessRegisteredCountry() ?? "IN",
+            'pin'    => $merchantDetail->getBusinessRegisteredPin(),
+        ];
+
+        $contact = [
+            'first_name' => $name[0],
+            'last_name'  => isset($name[1]) ? $name[1] : "_",
+            'email'      => $merchantDetail->getContactEmail(),
+            'phone'      => $merchantDetail->getContactMobile(),
+        ];
+
+        $requestBody = [
+            'account_name' => $this->merchant->getName(),
+            'address'      => $address,
+            'contact'      => $contact,
+        ];
+
+        return $requestBody;
+    }
+
+    public function notificationsFromCurrencyCloud($input, $header)
+    {
+        $this->trace->info(TraceCode::CURRENCY_CLOUD_NOTIFICATION_REQUEST,[
+            'input'  => $input,
+            'header' => $header,
+        ]);
+
+        if($this->app['env'] != Environment::TESTING)
+        {
+            $this->app['rzp.mode']=Mode::LIVE;
+        }
+
+        switch($header)
+        {
+            case self::FUNDS_ARRIVED_NOTIFICATION:
+                $this->fundsArrivedFlowFromCurrencyCloud($input);
+                break;
+
+            case self::PAYMENT_RELEASED_NOTIFICATION:
+                $this->paymentReleasedFlowFromCurrencyCloud($input);
+                break;
+
+            case self::TRANSFER_COMPLETED_NOTIFICATION:
+                $this->transferCompletedFlowFromCurrencyCloud($input);
+                break;
+
+            default:
+                $this->trace->info(TraceCode::CURRENCY_CLOUD_INVALID_NOTIFICATION,[
+                    'header' => $header,
+                    'input' => $input,
+                ]);
+                break;
+        }
+
+        return [];
+    }
+
+
+    public function captureCronForB2BPayments($input)
+    {
+        if($this->app['env'] != Environment::TESTING)
+        {
+            $this->app['rzp.mode']=Mode::LIVE;
+        }
+
+        $limit = isset($input['limit']) ? $input['limit'] : 10;
+
+        $payments =  $this->repo->payment->getPaymentsWithReferenceId(Constants\Entity::CURRENCY_CLOUD,Payment\Status::AUTHORIZED, $limit);
+
+        foreach ($payments as $payment)
+        {
+            $merchantId = $payment->getMerchantId();
+
+            $merchant = $this->repo->merchant->find($merchantId);
+
+            // Transfer_id which we get from CC is stored in Reference16 attribute
+            if($payment->getReference16() != null or !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B))
+            {
+                $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETION_PENDING,[
+                    'payment_id'                => $payment->getId(),
+                    'payment_transfer_id'       => $payment->getReference16(),
+                    'settlement_flow_by_risk'   => $merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B),
+                ]);
+
+                continue;
+            }
+
+            $merchantInternationalIntegration  = (new \RZP\Models\Merchant\InternationalIntegration\Repository)->getByMerchantIdAndIntegrationEntity($merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+            $parentRZPAccountId = $this->app['config']->get('gateway.currency_cloud.rzp_parent_account_id');
+
+            $request = [
+                'currency'      => $payment->getCurrency(),
+                'amount'        => strval($payment->getAmount()/100),
+                'reason'        => $payment->getId(),
+                'destination_account_id'=> $parentRZPAccountId,
+                'source_account_id' => $merchantInternationalIntegration->getIntegrationKey(),
+            ];
+
+            $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'create_transfer',$request);
+
+            $payment->setReference16($response['data']['id']);
+
+            $this->repo->payment->saveOrFail($payment);
+
+            $this->trace->info(TraceCode::B2B_SETTLEMENT_TO_RZP_PARENT_ACCOUNT,[
+               'payment_id'          => $payment->getId(),
+               'payment_transfer_id' => $response['data']['id'],
+               'amount'              => $response['data']['amount'],
+               'currency'            => $response['data']['currency'],
+            ]);
+        }
+    }
+
+    public function settlementFromCurrencyCloud()
+    {
+        $this->app['rzp.mode']=Mode::LIVE;
+
+        foreach (Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES as $currency)
+        {
+            $request = [
+                "currency" => $currency,
+                ];
+            $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_balance',$request);
+
+            if(!isset($response['data']['amount']))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,[
+                    'gateway' => Payment\Gateway::CURRENCY_CLOUD,
+                    'data'    => $response['data'],
+                ]);
+            }
+
+            $request = [
+                'currency'      => $currency,
+                'amount'        => $response['data']['amount'],
+                'reason'        => 'For Settling Money from RZP House account to Merchants',
+                'reference'     => $response['data']['id'],
+                'beneficiary_id'=> $this->getBeneficiaryIdForCurrency($currency),
+            ];
+
+            $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'payment_create',$request);
+        }
+
+    }
+
+    protected function fundsArrivedFlowFromCurrencyCloud($input)
+    {
+
+        $mii = (new \RZP\Models\Merchant\InternationalIntegration\Repository)->getByIntegrationEntityAndKey(Constants\Entity::CURRENCY_CLOUD,$input['account_number']);
+
+        if(isset($mii)==false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_DATA_TAMPERED,null,[
+                'txn_id'        => $input['id'],
+                'account_id'    => $input['account_number']
+            ]);
+        }
+
+        $merchantId = $mii->getMerchantId();
+
+        $request = [
+            'txn_id'     => $input['id'],
+            'contact_id' => $mii->getReferenceId(),
+        ];
+
+        $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_sender_detail',$request);
+
+        $payment = $this->core->createAndAuthorizePaymentForB2B($response['data'],$merchantId);
+
+        return [
+            'success' => 'true',
+            'payment_id'=> $payment->getId(),
+        ];
+    }
+
+    protected function transferCompletedFlowFromCurrencyCloud($input)
+    {
+
+        $payment = $this->repo->payment->findOrFail($input['reason']);
+
+        $payment->setGatewayCaptured(true);
+
+        $this->repo->payment->saveOrFail($payment);
+
+        $payment = $this->core->capturePaymentForB2B($input,$payment);
+    }
+
+    protected function paymentReleasedFlowFromCurrencyCloud($input)
+    {
+        $this->trace->info(TraceCode::B2B_PAYMENTS_SETTLED_WITH_BANKING_PARTNER,$input);
+    }
+
+    protected function getBeneficiaryIdForCurrency($currency)
+    {
+        $configValue = strtolower($currency).'_beneficiary_id';
+        $beneficiaryId = $this->app['config']->get('gateway.currency_cloud.'.$configValue);
+
+        return $beneficiaryId;
+    }
+
 }

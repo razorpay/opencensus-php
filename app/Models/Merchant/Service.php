@@ -5041,6 +5041,12 @@ class Service extends Base\Service
         }
     }
 
+    public function addFeatureFlag(array $featureNames, bool $shouldSync = false)
+    {
+        $this->addFeatures($featureNames,$shouldSync);
+    }
+
+
     private function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;

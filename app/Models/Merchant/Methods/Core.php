@@ -302,25 +302,26 @@ class Core extends Base\Core
     public function getFormattedMethods(Merchant\Entity $merchant)
     {
         $data = [
-            'entity'                     => E::METHODS,
-            Payment\Method::CARD         => true,
-            Entity::DEBIT_CARD           => true,
-            Entity::CREDIT_CARD          => true,
-            Entity::PREPAID_CARD         => true,
-            Entity::CARD_NETWORKS        => [],
-            Entity::CARD_SUBTYPE         => [],
-            Payment\Gateway::AMEX        => false,
-            Payment\Method::NETBANKING   => [],
-            Payment\Method::WALLET       => [],
-            Payment\Method::EMI          => false,
-            Payment\Method::UPI          => false,
-            Payment\Method::CARDLESS_EMI => [],
-            Payment\Method::PAYLATER     => [],
-            Entity::GOOGLE_PAY_CARDS     => false,
-            Payment\Method::APP          => [],
-            Entity::GPAY                 => false,
-            Entity::EMI_TYPES            => [],
-            Entity::DEBIT_EMI_PROVIDERS  => [],
+            'entity'                            => E::METHODS,
+            Payment\Method::CARD                => true,
+            Entity::DEBIT_CARD                  => true,
+            Entity::CREDIT_CARD                 => true,
+            Entity::PREPAID_CARD                => true,
+            Entity::CARD_NETWORKS               => [],
+            Entity::CARD_SUBTYPE                => [],
+            Payment\Gateway::AMEX               => false,
+            Payment\Method::NETBANKING          => [],
+            Payment\Method::WALLET              => [],
+            Payment\Method::EMI                 => false,
+            Payment\Method::UPI                 => false,
+            Payment\Method::CARDLESS_EMI        => [],
+            Payment\Method::PAYLATER            => [],
+            Entity::GOOGLE_PAY_CARDS            => false,
+            Payment\Method::APP                 => [],
+            Entity::GPAY                        => false,
+            Entity::EMI_TYPES                   => [],
+            Entity::DEBIT_EMI_PROVIDERS         => [],
+            Payment\Method::INTL_BANK_TRANSFER  => [],
         ];
 
         $methods = $this->getMethods($merchant);
@@ -398,7 +399,6 @@ class Core extends Base\Core
         {
             $data['upi_intent'] = true;
         }
-
 
         if ($merchant->isFeatureEnabled(Constants::UPI_OTM) === true)
         {
@@ -1286,6 +1286,4 @@ class Core extends Base\Core
 
         return $provider;
     }
-
 }
-

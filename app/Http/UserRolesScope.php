@@ -1139,6 +1139,9 @@ class UserRolesScope
             'merchant_features_edit'                              => [Role::OWNER],
             'enable_non_3ds_self_serve'                           => [Role::OWNER],
             'get_non_3ds_details'                                 => Role::ALL_ROLES,
+            'fetch_international_virtual_accounts'                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            'payment_update_b2b_invoice'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            'create_international_virtual_accounts'               => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
         ];
 
         /*

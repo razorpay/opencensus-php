@@ -36,6 +36,7 @@ class Constants
     const DISPUTE_EVIDENCE                  = 'dispute_evidence';
     const INTERNATIONAL_ENABLEMENT          = 'international_enablement';
     const MERCHANT_WORKFLOW_CLARIFICATION   = 'merchant_workflow_clarification';
+    const B2B_EXPORT_INVOICE                = 'b2b_export_invoice';
     const APM_ONBOARDING                    = 'apm_onboarding';
 
     const PURPOSE_TYPE = [
@@ -44,6 +45,7 @@ class Constants
         self::DISPUTE_EVIDENCE,
         self::INTERNATIONAL_ENABLEMENT,
         self::MERCHANT_WORKFLOW_CLARIFICATION,
+        self::B2B_EXPORT_INVOICE,
         self::APM_ONBOARDING
     ];
 }

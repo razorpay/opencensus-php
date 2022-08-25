@@ -9,6 +9,7 @@ use Event;
 use Redis;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\TrustedBadge\Entity as TrustedBadge;
 use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
@@ -83,6 +84,7 @@ use RZP\Models\Merchant\Methods\Repository as MethodRepo;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\InstrumentRequest\StatusNotify as StatusNotifyMail;
+use RZP\Models\Merchant\InternationalIntegration;
 
 use function Clue\StreamFilter\fun;
 use function foo\func;
@@ -2951,5 +2953,83 @@ class CheckoutPreferencesTest extends TestCase
         );
 
         $this->session($data);
+    }
+
+
+    public function testGetCheckoutPersonalisationForNonLoggedInUnitedStatesUsers()
+    {
+        $this->ba->publicAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
+
+    public function testGetCheckoutPreferencesForCurrencyCloudEnabledWithPL()
+    {
+        $this->fixtures->merchant->addFeatures(['enable_b2b_export']);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response['methods']['intl_bank_transfer']);
+        $this->assertEquals(count(Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES), count($response['methods']['intl_bank_transfer']));
+    }
+
+    public function testGetCheckoutPreferencesForCurrencyCloudEnabledWithoutPL()
+    {
+        $this->fixtures->merchant->addFeatures(['enable_b2b_export']);
+        // product type is not 'payment_link_v2'
+        $order = $this->fixtures->order->create(['product_type' => 'payment_page']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotNull($response['methods']['intl_bank_transfer']);
+        $this->assertEquals(0, count($response['methods']['intl_bank_transfer']));
+    }
+
+    public function testGetCheckoutPreferencesForCurrencyCloudNotEnabled()
+    {
+        $this->ba->publicAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['methods']['intl_bank_transfer']);
+        $this->assertEquals(0, count($response['methods']['intl_bank_transfer']));
+    }
+
+    private function getBankAccountMockData(){
+        return '[{"routing_code":"routing_code","routing_type":"ACH","account_number":"1234567889","beneficiary_name":"GemsGems","va_currency":"USD"}]';
     }
 }

@@ -23,6 +23,7 @@ use RZP\Models\Admin\Service;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Refund;
 use RZP\Services\RazorXClient;
+use RZP\Services\Mock\Mozart;
 use RZP\Models\Payment\Status;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Admin\ConfigKey;
@@ -9234,4 +9235,275 @@ class BankTransferTest extends TestCase
 
         $this->assertEquals($requestData['payer_name'], $bankTransfer['payer_name']);
     }
+
+    public function testCreateAccountForCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->addFeatures('allow_b2b_activation',$merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(count(Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES),$content);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertEquals($merchantDetail['merchant_id'],$mii['merchant_id']);
+
+        $this->assertEquals("currency_cloud",$mii['integration_entity']);
+
+        $this->assertNotNull($mii['integration_key']);
+
+        $this->assertNotNull($mii['reference_id']);
+
+        $this->assertNotNull($mii['bank_account']);
+
+        foreach($content as $account){
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name"]);
+        }
+
+    }
+
+    protected function mockMozartResponseForCurrencyCloud()
+    {
+        $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendMozartRequest'])
+            ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->will($this->returnCallback(
+                              function ($namespace,$gateway,$action,$data)
+                              {
+                                  if($action == 'account_create')
+                                  {
+                                      return [
+                                          'data' =>[
+                                              'account_id'    => "66f51c98-1ef8-4e48-97de-aac0353ba2b4",
+                                              'account_status'=> "enabled",
+                                              'contact_id'    => "67df28b4-766a-405d-b6ad-2972fd50be18",
+                                              'contact_status'=> "enabled",
+                                              'status'        => "account_creation_successful",
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'get_funding_account')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'id'                => "1d36c99f-8932-4922-a26a-6390624973e4",
+                                              'account_id'        => "2d693293-0a82-4a70-bc56-85e67cf16e87",
+                                              'account_number'    => "GB01TCCL66412720599341",
+                                              'account_number_type'=> "iban",
+                                              'account_holder_name'=> "abc",
+                                              'bank_name'         => "The Currency Cloud Limited",
+                                              'bank_address'      => "12 Steward Street, The Steward Building, London, E1 6FQ, GB",
+                                              'bank_country'      => "GB",
+                                              'currency'          => $data['currency'],
+                                              'payment_type'      => "regular",
+                                              'routing_code'      => "TCCLGB31",
+                                              'routing_code_type' => "bic_swift",
+                                              'status'            => "successful"
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'get_sender_detail')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'id'                      => "e68301d3-5b04-4c1d-8f8b-13a9b8437040",
+                                              'amount'                  => "47",
+                                              'currency'                => "USD",
+                                              'additional_information'  => "USTRD-0001",
+                                              'value_date'              => "2018-07-04T00:00:00+00:00",
+                                              'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, BN1 2NW;GB;1111111111;;00000000",
+                                              'receiving_account_number'=> null,
+                                              "receiving_account_iban"  => "GB99OXPH94665099600083",
+                                              "created_at"              => "2018-07-04T14:57:38+00:00",
+                                              "updated_at"              => "2018-07-04T14:57:39+00:00",
+                                              "status"                  => "successful"
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'create_transfer')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'id' => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040',
+                                              'amount' => $data['amount'],
+                                              'currency' => $data['currency']
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'get_balance')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'id'     => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040',
+                                              'currency' => $data['currency'],
+                                              'amount' => "100.00"
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'payment_create')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'currency' => $data['currency'],
+                                              'amount'   => $data['amount'],
+                                          ]
+                                      ];
+                                  }
+                              }
+                          ));
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function testFailCreateAccountForCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->enableInternational($merchantDetail['merchant_id']);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->startTest();
+    }
+
+    public function testFundsArrivedNotificationForCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+        $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
+        $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
+    }
+
+    public function testTransferCompletedNotificationFromCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->edit($merchantDetail['merchant_id'], ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->pricing->create([
+            'plan_id'        => 'IntbnkTrnsfrId',
+            'payment_method' => 'intl_bank_transfer',
+            'feature'             => 'payment',
+            'percent_rate'    => 300,
+        ]);
+
+        $this->merchantAssignPricingPlan('IntbnkTrnsfrId', $merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $firstRequest = $this->testData['testFundsArrivedNotificationForCurrencyCloud']['request'];
+        $firstResponse = $this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+
+        Payment::verifyIdAndStripSign($paymentEntity['id']);
+
+        $secondRequest['content']['reason'] = $paymentEntity['id'];
+
+        $secondResponse = $this->sendRequest($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($updatedPaymentEntity['status'],'captured');
+    }
+
+    public function testCaptureCronForB2BPayments()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $firstRequest = $this->testData['testFundsArrivedNotificationForCurrencyCloud']['request'];
+        $firstResponse = $this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->fixtures->edit('payment',$paymentEntity['id'],[
+            'reference2' => 'doc_10000011111112'
+        ]);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b',$merchantDetail['merchant_id']);
+
+        $this->ba->cronAuth();
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+        $secondResponse = $this->sendRequest($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment(true);
+
+        $this->assertNotNull($updatedPaymentEntity['reference16']);
+    }
+
+    public function testSettlementCronForB2BPayments()
+    {
+        $this->ba->cronAuth();
+        $this->mockMozartResponseForCurrencyCloud();
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+    }
+
+
+
 }

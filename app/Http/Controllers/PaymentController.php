@@ -791,4 +791,13 @@ class PaymentController extends Controller
 
         return $response;
     }
+
+    public function updateB2BInvoiceDetails($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateB2BInvoiceDetails($id,$input);
+
+        return ApiResponse::json($data);
+    }
 }

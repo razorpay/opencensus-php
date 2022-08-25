@@ -27,4 +27,12 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function  getByIntegrationEntityAndKey($integrationEntity, $integrationKey)
+    {
+        return $this->newQuery()
+            ->where(Entity::INTEGRATION_KEY,$integrationKey)
+            ->where(Entity::INTEGRATION_ENTITY,$integrationEntity)
+            ->first();
+    }
+
 }

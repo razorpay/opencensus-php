@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
@@ -307,6 +308,11 @@ class Fee extends Base\Core
             $pricingPlan = $this->addDefaultCoDPricingRules($pricingPlan);
         }
 
+        if ($pricingPlan->hasMethod(Payment\Method::INTL_BANK_TRANSFER) === false)
+        {
+            $pricingPlan = $this->addDefaultIntlBankTransferPricingRules($pricingPlan);
+        }
+
         $pricingPlan = $this->addBankingFallbackRulesIfApplicable($pricingPlan, $entity);
 
         return $pricingPlan;
@@ -350,6 +356,29 @@ class Fee extends Base\Core
 
         $pricingPlan = $pricingPlan->merge($codPricing);
 
+        return $pricingPlan;
+    }
+
+    protected function addDefaultIntlBankTransferPricingRules($pricingPlan)
+    {
+        if($this->app['env'] === Environment::TESTING)
+        {
+            $id = $this->app['config']->get('pricing.IntlBankTransfer.default_rule_id');
+
+            if (empty(($id)))
+            {
+                return $pricingPlan;
+            }
+
+            $intlBankTransferPricing = $this->repo->getPricingPlanByIdWithoutOrgId($id);
+
+            if ($intlBankTransferPricing === null)
+            {
+                return  $pricingPlan;
+            }
+
+            $pricingPlan = $pricingPlan->merge($intlBankTransferPricing);
+        }
         return $pricingPlan;
     }
 

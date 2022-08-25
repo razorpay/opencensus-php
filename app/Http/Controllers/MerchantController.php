@@ -3348,4 +3348,25 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getInternationalVirtualAccounts()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->getInternationalVirtualAccounts($input);
+            
+        return ApiResponse::json($response);
+    }
+
+    public function getInternationalVirtualAccountByVACurrency($va_currency)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->getInternationalVirtualAccountByVACurrency($input,$va_currency);
+            
+        return ApiResponse::json($response);
+    }
+
+    
 }

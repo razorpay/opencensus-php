@@ -84,7 +84,7 @@ trait Refund
 
         if (($payment->getGateway() === Payment\Gateway::BHARAT_QR) or
             ($payment->isCoD() === true) or
-            ($payment->isOffline() === true))
+            ($payment->isOffline() === true) or ($payment->getMethod() === Method::INTL_BANK_TRANSFER))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,null, ['method' => $payment->getMethod()]);

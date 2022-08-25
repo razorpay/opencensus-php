@@ -14,6 +14,8 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID                       = "merchant_id";
     const INTEGRATION_ENTITY                = "integration_entity";
     const INTEGRATION_KEY                   = "integration_key";
+    const REFERENCE_ID                      = "reference_id";
+    const BANK_ACCOUNT                      = "bank_account";
     const NOTES                             = "notes";
     const PAYMENT_METHODS                   = "payment_methods";
     const CREATED_AT                        = "created_at";
@@ -30,6 +32,8 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_KEY,
         self::NOTES,
         self::PAYMENT_METHODS,
+        self::REFERENCE_ID,
+        self::BANK_ACCOUNT,
         self::UPDATED_AT,
         self::DELETED_AT,
     ];
@@ -41,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_KEY,
         self::NOTES,
         self::PAYMENT_METHODS,
+        self::REFERENCE_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -55,6 +60,7 @@ class Entity extends Base\PublicEntity
     protected $defaults     = [
         self::NOTES           => [],
         self::PAYMENT_METHODS => [],
+        self::REFERENCE_ID    => null,
         self::UPDATED_AT      => null,
         self::DELETED_AT      => null,
     ];
@@ -76,6 +82,16 @@ class Entity extends Base\PublicEntity
     public function getIntegrationKey()
     {
         return $this->getAttribute(self::INTEGRATION_KEY);
+    }
+
+    public function getReferenceId()
+    {
+        return $this->getAttribute(self::REFERENCE_ID);
+    }
+
+    public function getBankAccount()
+    {
+        return $this->getAttribute(self::BANK_ACCOUNT);
     }
 
     public function getPaymentMethods()

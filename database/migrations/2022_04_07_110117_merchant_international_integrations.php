@@ -24,9 +24,13 @@ class MerchantInternationalIntegrations extends Migration
 
             $table->string(Entity::INTEGRATION_ENTITY, 20)->nullable();
 
-            $table->string(Entity::INTEGRATION_KEY, 20)->nullable();
+            $table->string(Entity::INTEGRATION_KEY, 50)->nullable();
 
             $table->json(Entity::NOTES)->nullable();
+
+            $table->json(Entity::BANK_ACCOUNT)->nullable();
+
+            $table->string(Entity::REFERENCE_ID,50)->nullable();
 
             $table->json(Entity::PAYMENT_METHODS)->nullable();
 
@@ -37,6 +41,10 @@ class MerchantInternationalIntegrations extends Migration
             $table->integer(Entity::DELETED_AT)->nullable();
 
             $table->index([Entity::MERCHANT_ID, Entity::INTEGRATION_ENTITY], 'mii_index');
+
+            $table->index(Entity::INTEGRATION_KEY);
+
+            $table->index(Entity::REFERENCE_ID);
 
         });
     }

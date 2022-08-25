@@ -2355,6 +2355,16 @@ EOT;
         $query->whereNotNull(Entity::RECEIVER_ID);
     }
 
+    protected function addQueryParamIntlBankTransfer($query, $params)
+    {
+        if ($params[Entity::INTL_BANK_TRANSFER] !== '1')
+        {
+            return;
+        }
+
+        $query->where(Entity::METHOD,Entity::INTL_BANK_TRANSFER);
+    }
+
     /**
      * @param $query
      */
@@ -3139,6 +3149,18 @@ EOT;
             ->first();
     }
 
+    public function getPaymentsWithReferenceId($gateway, $status, $limit)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::GATEWAY, $gateway)
+            ->status($status)
+            ->whereNotNull(Entity::REFERENCE2)
+            ->whereNull(Entity::REFERENCE16)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
+    }
+    
     //select * from `payments`
     // where `payments`.`token_id` = JtXT7fDRwqDzP3
     // and `payments`.`token_id` is not null

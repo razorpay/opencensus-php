@@ -10,6 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Locale\Core as Locale;
+use RZP\Models\Order\ProductType;
 use Session;
 use Razorpay\Trace\Logger as Trace;
 
@@ -82,30 +83,33 @@ class Checkout
      * @var array[]
      */
     private $alternatePaymentInstrumentCountryMapping = array(
-        Payment\Gateway::TRUSTLY => [
+        Payment\Gateway::POLI       => [Country::AU],
+        Payment\Gateway::VA_USD     => [Country::US],
+        Payment\Gateway::TRUSTLY    => [
             Country::AT,Country::BE,Country::CZ,Country::DK,
             Country::EE,Country::FI,Country::DE,Country::LV,
             Country::LT,Country::NL,Country::NO,Country::PL,
             Country::SK,Country::ES,Country::SE,Country::GB
         ],
-        Payment\Gateway::POLI => [Country::AU],
     );
 
     /**
      * @var array[]
      */
     private $instrumentMethodMapping = array(
-        Payment\Gateway::TRUSTLY=>Payment\Method::APP,
-        Payment\Gateway::POLI=>Payment\Method::APP,
-        Payment\Gateway::PAYPAL=>Payment\Method::WALLET);
+        Payment\Gateway::TRUSTLY    => Payment\Method::APP,
+        Payment\Gateway::POLI       => Payment\Method::APP,
+        Payment\Gateway::PAYPAL     => Payment\Method::WALLET,
+        Payment\Gateway::VA_USD     => Payment\Method::INTL_BANK_TRANSFER,);
 
     /**
      * @var array
      */
     private $instrumentPriority = array(
-        1=>Payment\Gateway::TRUSTLY,
-        2=>Payment\Gateway::POLI,
-        3=> Payment\Gateway::PAYPAL);
+        1 => Payment\Gateway::TRUSTLY,
+        2 => Payment\Gateway::POLI,
+        3 => Payment\Gateway::VA_USD ,
+        4 => Payment\Gateway::PAYPAL);
 
     public function __construct()
     {
@@ -457,11 +461,34 @@ class Checkout
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
+        $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = $this->addCurrencyBasedIntlVirtualAccounts($merchant, $order);
+
         $configId = (isset($order->checkout_config_id) === true) ? Payment\Config\Entity::getSignedId($order->checkout_config_id) : null;
 
         (new Config\Core())->getFormattedConfigForCheckout($configId, $merchant->getId(), $data);
 
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
+    }
+
+    private function addCurrencyBasedIntlVirtualAccounts($merchant, $order)
+    {
+        $result = [];
+
+        // Only show international bank transfer methods if feature flag is enabled and
+        // request comes from the payment link
+        $productType = $order->getProductType();
+        if (!$merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT) or $productType != ProductType::PAYMENT_LINK_V2)
+        {
+            return $result;
+        }
+
+        foreach(Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES as $va_currency)
+        {
+            $method = "va_" . strtolower($va_currency);
+            $result[$method] = 1;
+        }
+
+        return $result;
     }
 
     protected function checkNachStatus(Order\Entity $order, Merchant\Entity $merchant)
@@ -1820,19 +1847,27 @@ class Checkout
     private function enrichPznRespForInternational(& $preferences,$contact,$input)
     {
         $result = array();
-        if(isset($input['country_code']) === true) {
+
+        if(isset($input['country_code']) === true)
+        {
             $countryCode = strtolower($input['country_code']);
-            if ($this->isNativeCountryCode($countryCode)) {
+
+            if ($this->isNativeCountryCode($countryCode))
+            {
                 return $preferences;
             }
+
             $result = $this->getPreferredAPMForInternationalNumbers($preferences, $countryCode);
-        } else {
+
+        }
+        else {
             // for backward compatibility
             if(empty($contact) === true ||
                 strpos($contact,'+') !== 0 ||
                 strpos($contact,'+91') === 0) {
                 return $preferences;
             }
+
             $this->removePaymentMethod($preferences,Payment\Gateway::PAYPAL,
                 (string)$this->instrumentMethodMapping[Payment\Gateway::PAYPAL]);
 
@@ -1842,9 +1877,11 @@ class Checkout
             ]);
         }
 
-        if(empty($result) !== true) {
+        if(empty($result) !== true)
+        {
             $preferences = array_merge($result,$preferences);
         }
+
         return $preferences;
     }
 
@@ -1859,10 +1896,12 @@ class Checkout
     private function getPreferredAPMForInternationalNumbers(&$preferences, $countryCode) : array
     {
         $paymentList = array();
-        foreach($this->instrumentPriority as $order=>$paymentInstrument) {
-            if(($paymentInstrument === Payment\Gateway::PAYPAL||
-                    in_array($countryCode, $this->alternatePaymentInstrumentCountryMapping[$paymentInstrument]))) {
 
+        foreach($this->instrumentPriority as $order=>$paymentInstrument)
+        {
+            if(($paymentInstrument === Payment\Gateway::PAYPAL ||
+                    in_array($countryCode, $this->alternatePaymentInstrumentCountryMapping[$paymentInstrument])))
+            {
                 $this->removePaymentMethod($preferences,
                     $paymentInstrument, (string)$this->instrumentMethodMapping[$paymentInstrument]);
 

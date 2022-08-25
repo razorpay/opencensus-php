@@ -2570,4 +2570,105 @@ return [
             ],
         ],
     ],
+
+    'testCreateAccountForCurrencyCloud' => [
+      'request' => [
+          'url' => '/international/virtual_accounts',
+          'method' => 'post',
+          'content' => [
+              'accept_b2b_tnc' => 1,
+          ],
+      ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testFailCreateAccountForCurrencyCloud' => [
+      'request' => [
+          'url' => '/international/virtual_accounts',
+          'method' => 'post',
+          'content' => [
+              'accept_b2b_tnc' => 0,
+          ]
+      ],
+      'response' => [
+          'content'     => [
+              'error' => [
+                  'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                  'description'   => PublicErrorDescription::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+              ],
+          ],
+          'status_code' => 400,
+      ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+        ],
+    ],
+
+    'testFundsArrivedNotificationForCurrencyCloud' => [
+        'request' => [
+            'url' => '/international/virtual_accounts/payment/create',
+            'method' => 'post',
+            'headers' => [
+                'notification_type' => 'funds_arrived_notification'
+            ],
+            'content' => [
+                'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                'account_number' => '15b78101-0142-44a1-9758-8f7262429e9b',
+                'currency' => 'USD',
+                'amount' => '47'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testTransferCompletedNotificationFromCurrencyCloud' => [
+        'request' => [
+            'url' => '/international/virtual_accounts/payment/create',
+            'method' => 'post',
+            'headers' => [
+                'notification_type' => 'transfer_completed_notification'
+            ],
+            'content' => [
+                'reason' => '',
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testCaptureCronForB2BPayments' => [
+        'request' => [
+            'url' => '/b2b/payments/capture',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testSettlementCronForB2BPayments' => [
+        'request' => [
+            'url' => '/b2b/payments/settlement',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ]
 ];

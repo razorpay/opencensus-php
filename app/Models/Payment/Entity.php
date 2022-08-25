@@ -228,6 +228,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const VIRTUAL_ACCOUNT_ID     = 'virtual_account_id';
     const VIRTUAL_ACCOUNT        = 'virtual_account';
 
+    const INTL_BANK_TRANSFER     = 'intl_bank_transfer';
+
     const ERROR_SOURCE           = 'error_source';
 
     const ERROR_STEP             = 'error_step';
@@ -311,6 +313,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // cancellation reasons for unintended payments.
     const UNINTENDED_PAYMENT_OPT_OUT         = 'unintended_payment_opt_out';
     const UNINTENDED_PAYMENT_EXPIRED         = 'unintended_payment_expired';
+
+    const B2BExportInvoice                   = "b2b_export_invoice";
 
     protected static $sign      = 'pay';
 
@@ -1160,6 +1164,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         $isInternational = $this->isMethodCardOrEmi() ? $this->card->isInternational() : ($this->isMethodInternationalApp() ? true : false);
+
+        if ($this->isB2BExportCurrencyCloudPayment())
+        {
+            $isInternational = true;
+        }
 
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
@@ -5243,6 +5252,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::RECEIVER_TYPE] = $this->getReceiverType();
         }
 
+        if($this->isB2BExportCurrencyCloudPayment() === true){
+            $data[self::B2BExportInvoice] = $this->getReference2();
+        }
+
         return $data;
     }
 
@@ -5274,6 +5287,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($merchantCore->isShowReceiverTypeFeatureEnabled($this->merchant) === true)
         {
             $data[self::RECEIVER_TYPE] = $this->getReceiverType();
+        }
+
+        if($this->isB2BExportCurrencyCloudPayment() === true){
+            $data[self::B2BExportInvoice] = $this->getReference2();
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);
@@ -5772,5 +5789,17 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ($status === Payment\Status::PENDING)) or
             (($method !== Payment\Method::COD) and
             (in_array($status, [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED]) === true)));
+    }
+
+    public function isB2BExportCurrencyCloudPayment(){
+
+        $method = $this->getMethod();
+        $gateway = $this->getGateway();
+
+        if($method == Payment\Method::INTL_BANK_TRANSFER && $gateway == Gateway::CURRENCY_CLOUD){
+            return true;
+        }
+
+        return false;
     }
 }

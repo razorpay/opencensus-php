@@ -758,6 +758,22 @@ class Constants
      */
     const SETTLEMENTS_SMS_STOP = 'settlements_sms_stop';
 
+    /**
+     * Enables Currency_cloud for B2B export transactions
+     */
+    const ENABLE_B2B_EXPORT = 'enable_b2b_export';
+
+    /**
+     * Enables Settlement Flow for B2B export Transactions
+     * Done by Risk Team
+     */
+    const ENABLE_SETTLEMENT_FOR_B2B = 'enable_settlement_for_b2b';
+
+    /**
+     * Allows the dashboard to show the B2B account creation for merchants
+     */
+    const ALLOW_B2B_ACTIVATION = 'allow_b2b_activation';
+
     /*
      * Enable feature to appear/disappear support url at org level
     */
@@ -2076,6 +2092,9 @@ class Constants
         self::DEDUPE_CONTACT_ON_REPLICA       => true,
         self::INTER_ACCOUNT_TEST_PAYOUT       => true,
         self::CART_API_AMOUNT_CHECK           => true,
+        self::ENABLE_B2B_EXPORT               => true,
+        self::ALLOW_B2B_ACTIVATION            => true,
+        self::ENABLE_SETTLEMENT_FOR_B2B       => true,
         self::ONE_CLICK_OVERRIDE_THEME        => true,
         self::PP_CUSTOM_DOMAIN                => true,
         self::TOKEN_INTEROPERABILITY          => true,

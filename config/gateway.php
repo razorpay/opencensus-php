@@ -142,6 +142,7 @@ return [
         'netbanking_ujjivan',
         'hdfc_ezetap',
         'offline_hdfc',
+        'currency_cloud',
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -321,6 +322,11 @@ return [
         'cert_dir_name'                     => env('FIRST_DATA_CERT_DIR_NAME'),
         'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
         'client_certificate'                => env('FIRST_DATA_CLIENT_CERTIFICATE'),
+    ],
+
+    'currency_cloud' => [
+        'usd_beneficiary_id'        => env('CURRENCY_CLOUD_USD_BENEFICIARY_ID'),
+        'rzp_parent_account_id'     => env('CURRENCY_CLOUD_RZP_PARENT_ACCOUNT_ID')
     ],
 
     'amex' => [

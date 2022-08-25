@@ -5383,6 +5383,15 @@ class Processor
             return $response;
         }
 
+        if ($payment->getMethod() === Method::INTL_BANK_TRANSFER)
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::INTL_BANK_TRANSFER_PAYMENT;
+
+            return $response;
+        }
+
         //
         // Post payment authorization payment link's payments are actually auto captured but there is more logic in
         // the flow and in handling capture failures etc which is all done in specific method(easy to move out to a

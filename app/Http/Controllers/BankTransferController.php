@@ -545,6 +545,51 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createAccountForCurrencyCloud()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createAccountForCurrencyCloud($input);
+
+        return ApiResponse::json($response);
+
+    }
+
+    public function notificationsFromCurrencyCloud()
+    {
+        $input = Request::all();
+
+        try {
+            $header = getallheaders()['notification_type'];
+        }
+        catch (\Throwable $e)
+        {
+            $header = Request::header('notification-type');
+        };
+
+        $response = $this->service()->notificationsFromCurrencyCloud($input,$header);
+
+        return ApiResponse::json($response);
+    }
+
+    public function captureCronForB2BPayments()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->captureCronForB2BPayments($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function settlementFromCurrencyCloud()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->settlementFromCurrencyCloud($input);
+
+        return ApiResponse::json($response);
+    }
+
     private function getIciciResponse(array $input, string $failureReason, int $statusCode = 200)
     {
         $input = $input['Virtual_Account_Number_Verification_IN'][0];

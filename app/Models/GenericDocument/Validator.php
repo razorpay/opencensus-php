@@ -38,6 +38,10 @@ class Validator extends Base\Validator
         Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
     ];
 
+    protected static $b2bExportInvoiceMimeRules = [
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+    ];
+
     protected static $apmOnboardingMimeRules = [
         Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
     ];
@@ -48,6 +52,7 @@ class Validator extends Base\Validator
         Constants::DISPUTE_EVIDENCE                 => 'dispute_evidence_mime',
         Constants::INTERNATIONAL_ENABLEMENT         => 'ie_mime',
         Constants::MERCHANT_WORKFLOW_CLARIFICATION  => 'merchant_workflow_clarification_mime',
+        Constants::B2B_EXPORT_INVOICE               => 'b2b_export_invoice_mime',
         Constants::APM_ONBOARDING                   => 'apm_onboarding_mime',
     ];
 

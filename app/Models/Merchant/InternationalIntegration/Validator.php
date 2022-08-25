@@ -11,6 +11,8 @@ class Validator extends Base\Validator
         Entity::INTEGRATION_ENTITY     => 'required|string',
         Entity::INTEGRATION_KEY        => 'required|string',
         Entity::NOTES                  => 'sometimes',
+        Entity::BANK_ACCOUNT           => 'sometimes',
+        Entity::REFERENCE_ID           => 'sometimes',
         Entity::PAYMENT_METHODS        => 'sometimes'
     ];
 
@@ -19,7 +21,14 @@ class Validator extends Base\Validator
         Entity::INTEGRATION_ENTITY     => 'required|string',
         Entity::INTEGRATION_KEY        => 'required|string',
         Entity::NOTES                  => 'sometimes',
+        Entity::BANK_ACCOUNT           => 'sometimes',
+        Entity::REFERENCE_ID           => 'sometimes',
         Entity::PAYMENT_METHODS        => 'sometimes'
+    ];
+
+    protected static $getInternationalVirtualAccountByVACurrencyRules = [
+        'currency'                  => 'required_with:amount|string|size:3',
+        'amount'                    => 'required_with:currency|integer|min:100'
     ];
 
     protected static $postEmerchantpayRequestDataRules = [

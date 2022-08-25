@@ -5460,6 +5460,80 @@ class Service extends Base\Service
         ];
     }
 
+    public function updateB2BInvoiceDetails($id,$input)
+    {
+        try{
+            (new Validator)->validateInput("updateB2BInvoiceDetails", $input);
+        }
+        catch (\Throwable $e)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILED,null,[
+                'error_description' => $e->getMessage(),
+                'error_code'        => $e->getCode(),
+            ]);
+        }
+
+        $response = [];
+
+        if (isset($id) === false)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_B2B_INVOICE,
+                [
+                    'payment_id' => $id
+                ]);
+
+            $response['b2b_invoice_updated'] = false;
+
+            return $response;
+        }
+
+        $document_id = $input["document_id"];
+
+        $merchant = $this->merchant;
+
+        $isB2BInvoiceUpdated = $this->mutex->acquireAndRelease($id,
+            function() use ($id,$document_id,$merchant)
+            {
+                $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $merchant);
+
+                if (isset($payment) === true)
+                {
+                    if(!$payment->isB2BExportCurrencyCloudPayment())
+                        {
+                            throw new Exception\BadRequestException(
+                                Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
+                        }
+
+                    $payment->setReference2($document_id);
+
+                    $this->repo->saveOrFail($payment);
+
+                    $this->trace->info(TraceCode::PAYMENT_UPDATED_WITH_B2B_INVOICE,
+                        [
+                            'payment_id' => $id,
+                            'b2b_invoice_document_id' => $document_id
+                        ]);
+
+                    return true;
+                }
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_B2B_INVOICE,
+                    [
+                        'payment_id' => $id
+                    ]);
+
+                return false;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $response['b2b_invoice_updated'] = $isB2BInvoiceUpdated;
+
+        return $response;
+    }
+
     private function moveTimedoutRecurringNachPaymentTokensToRejectedState($payment)
     {
         $nachToken = $this->repo->token->findByIdAndMerchantId($payment->getTokenId(), $payment->getMerchantId());

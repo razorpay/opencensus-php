@@ -224,7 +224,7 @@ class Payment extends Base
         // Transfer method, CoD method doesn't have terminal associated
         //
         if (($payment->getMethod() === PaymentModel\Method::TRANSFER) or
-            ($payment->isCoD() === true))
+            ($payment->isCoD() === true) or ($payment->getMethod() === PaymentModel\Method::INTL_BANK_TRANSFER))
         {
             return $rules;
         }
@@ -734,7 +734,7 @@ class Payment extends Base
         // Transfer method, CoD method doesn't have terminal associated
         //
         if (($payment->getMethod() === PaymentModel\Method::TRANSFER) or
-            ($payment->isCoD() === true))
+            ($payment->isCoD() === true) or ($payment->getMethod() === PaymentModel\Method::INTL_BANK_TRANSFER))
         {
             return false;
         }

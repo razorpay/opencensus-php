@@ -523,4 +523,25 @@ class Service extends Base\Service
             'integration_entity'      => $mii->getIntegrationEntity()
         ]);
     }
+
+    public function editMerchantInternationalIntegrations($input)
+    {
+        return (new Core())->editMerchantInternationalIntegrations($input);
+    }
+
+    public function getInternationalVirtualAccounts($input)
+    {
+        $merchantId = $this->merchant->getMerchantId();
+
+        return (new Core())->getInternationalVirtualAccounts($merchantId);
+    }
+
+    public function getInternationalVirtualAccountByVACurrency($input, $va_currency)
+    {
+        $merchantId = $this->merchant->getMerchantId();
+
+        (new Validator)->validateInput('getInternationalVirtualAccountByVACurrency',$input);
+
+        return (new Core())->getInternationalVirtualAccountByVACurrency($input, $merchantId, $va_currency);
+    }
 }

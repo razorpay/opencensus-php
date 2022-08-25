@@ -1626,4 +1626,33 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(false, $response['reference6_updated']);
     }
+
+    public function testUpdateB2BInvoiceDetailsToPaymentInReference2()
+    {
+        $payment = $this->fixtures->create('payment:authorized', [
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+        ]);
+
+        $merchantID = $payment->merchant->getId();
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantID);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantID , $merchantUser['id']);
+
+        $request = [
+            'url'    => '/payment/'.$payment->getPublicId().'/update_b2b_invoice_details',
+            'method' => 'patch',
+            'content' => [
+                'document_id' => "doc_1234567890"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['b2b_invoice_updated']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals("doc_1234567890",$payment['reference2']);
+    }
 }

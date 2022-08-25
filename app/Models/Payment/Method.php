@@ -22,6 +22,7 @@ class Method
     const COD                   = 'cod';
     const OFFLINE               = 'offline';
     const UNSELECTED            = 'unselected';
+    const INTL_BANK_TRANSFER    = 'intl_bank_transfer';
 
     protected static $methods = [
         self::CARD                  => 'Card',
@@ -38,7 +39,8 @@ class Method
         self::NACH                  => 'nach',
         self::APP                   => 'App',
         self::COD                   => 'Cash on Delivery',
-        self::OFFLINE               => 'Offline'
+        self::OFFLINE               => 'Offline',
+        self::INTL_BANK_TRANSFER    => 'Intl Bank Transfer'
     ];
 
     protected static $nonEsAutomaticMethods = [

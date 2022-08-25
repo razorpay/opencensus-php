@@ -2034,6 +2034,16 @@ class Route
         'user_delete_incorrect_password_count'     => ['post',     'users/incorrect_password_count',                 'UserController@removeIncorrectPasswordCount'                       ],
         'user_fetch_by_verified_contact_internal'  => ['post',     'users_internal/fetch_by_verified_contact',       'UserController@getUserByVerifiedContact'                           ],
 
+        //b2b flow
+        'create_international_virtual_accounts'             => ['post',     'international/virtual_accounts',                 'BankTransferController@createAccountForCurrencyCloud'          ],
+        'fetch_international_virtual_accounts'              => ['get',      'international/virtual_accounts',                 'MerchantController@getInternationalVirtualAccounts'            ],
+        'fetch_international_virtual_account_by_vacurrency' => ['get',      'international/virtual_account/{va_currency}',   'MerchantController@getInternationalVirtualAccountByVACurrency' ],
+        'payment_update_b2b_invoice'                        => ['patch',    'payment/{id}/update_b2b_invoice_details',        'PaymentController@updateB2BInvoiceDetails'                     ],
+
+        'capture_cron_for_b2b_payments'        => ['post',     'b2b/payments/capture',                              'BankTransferController@captureCronForB2BPayments'                   ],
+        'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
+        'settlement_cron_for_b2b_payments'     => ['post',     'b2b/payments/settlement',                           'BankTransferController@settlementFromCurrencyCloud'                               ],
+
         //actor info
         'fetch_actor_info_internal'                => ['get',      'actor_info_internal/{user_id}',                  'UserController@getActorInfo'                                       ],
 
@@ -3791,6 +3801,7 @@ class Route
     ];
 
     public static $public = [
+        'fetch_international_virtual_account_by_vacurrency',
         '1cc_shopify_checkout',
         '1cc_shopify_checkout_preflight',
         '1cc_shopify_checkout_options',
@@ -4385,6 +4396,8 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'merchant_onboarding_crons',
+        'capture_cron_for_b2b_payments',
+        'settlement_cron_for_b2b_payments',
         'setl_adj_add',
         'merchant_la_fetch',
         'collect_info_merchant_details_internal',
@@ -5272,6 +5285,9 @@ class Route
     //
 
     public static $proxy = [
+        'payment_update_b2b_invoice',
+        'fetch_international_virtual_accounts',
+        'create_international_virtual_accounts',
         'mob_fetch_multiple_intents',
         'mob_fetch_intent',
         'mob_fetch_multiple_applications',
@@ -8963,6 +8979,7 @@ class Route
     ];
 
     public static $direct = [
+        'notifications_for_b2b',
         'merchant_website_section_download',
         'public_merchant_website_section_page_load',
         'public_merchant_website_section_pages',
@@ -9300,6 +9317,9 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'fetch_international_virtual_accounts',
+            'create_international_virtual_accounts',
+            'payment_update_b2b_invoice',
             'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',
             'mob_fetch_intent',
@@ -12772,6 +12792,8 @@ class Route
         ],
 
         'cron' => [
+            'capture_cron_for_b2b_payments',
+            'settlement_cron_for_b2b_payments',
             'merchant_onboarding_crons',
             'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',

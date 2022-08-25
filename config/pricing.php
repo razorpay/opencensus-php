@@ -18,4 +18,8 @@ return [
     'cod'  => [
         'default_rule_id' => env('COD_DEFAULT_RULE_ID', 'I6L2fFrSUiyfZD'),
     ],
+
+    'IntlBankTransfer' => [
+        'default_rule_id' => env('INTLTRANSFER_DEFAULT_RULE_ID','IntbnkTrnsfrId')
+    ]
 ];

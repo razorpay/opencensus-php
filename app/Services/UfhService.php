@@ -22,6 +22,7 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Constants\Entity as EntityConstants;
 
 use Razorpay\Ufh\Client as UfhClient;
+use RZP\Models\GenericDocument\Constants as GenericDocumentConstants;
 
 class UfhService
 {
@@ -288,6 +289,11 @@ class UfhService
             $type !== FileStore\Type::APM_ONBOARD_REQUEST_FILE)
         {
             $storageFileName = strtolower($storageFileName);
+        }
+
+        if($type === GenericDocumentConstants::B2B_EXPORT_INVOICE)
+        {
+            $storageFileName = "b2b_export_invoices/" . $storageFileName;
         }
 
         $movedFile = $file->move(storage_path('files/filestore'), $storageFileName . '.' . $ext);

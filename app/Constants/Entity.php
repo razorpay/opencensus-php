@@ -384,6 +384,7 @@ class Entity
     const EMERCHANTPAY           = 'emerchantpay';
     const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_DBS         = 'netbanking_dbs';
+    const CURRENCY_CLOUD         = 'currency_cloud';
 
     // P2P Service Entities
     const P2P_VPA                = 'p2p_vpa';
@@ -1232,6 +1233,7 @@ class Entity
         self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
         self::EMERCHANTPAY           => \RZP\Gateway\Mozart::class,
         self::BT_RBL                 => \RZP\Gateway\Mozart::class,
+        self::CURRENCY_CLOUD         => \RZP\Gateway\Mozart::class,
 
         // heimdall
         self::ORG                          => \RZP\Models\Admin\Org::class,

@@ -12645,6 +12645,10 @@ return [
                     '+338888888888' => [
                         'instruments' => [
                             [
+                                'instrument' => 'va_usd',
+                                'method'     => 'intl_bank_transfer',
+                            ],
+                            [
                                 'instrument' => 'paypal',
                                 'method'     => 'wallet',
                             ],
@@ -12862,10 +12866,97 @@ return [
         ],
     ],
 
+    'testGetCheckoutPersonalisationForNonLoggedInUnitedStatesUsers' => [
+        'request'  => [
+            'url'     => '/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id' => 'null',
+                'contact'  => '+18888888888',
+                'country_code'=>'us'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+18888888888' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'va_usd',
+                                'method'     => 'intl_bank_transfer',
+                            ],
+                            [
+                                'instrument' => 'paypal',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                    ],
+                ]
+            ]
+        ]
+      ],
+
     'testGetWorkflowDetailsForInternationalNon3ds' => [
         'request' => [
             'url' => '/merchant/get_non_3ds_details',
             'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCurrencyCloudEnabledWithPL' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCurrencyCloudEnabledWithoutPL' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCurrencyCloudNotEnabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
         ],
         'response' => [
             'content' => [

@@ -3,13 +3,14 @@
 namespace RZP\Models\BankTransfer;
 
 use Config;
-
+use App;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Address;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -900,4 +901,143 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function createAndAuthorizePaymentForB2B($input,$merchantId)
+    {
+        try {
+            $payment = $this->createPaymentEntityForB2B($input,$merchantId);
+
+            $this->createAddressEntityForB2B($input,$payment);
+
+            $this->authorizePaymentForB2B($payment);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null,
+            [
+                'input'       => $input,
+                'merchant_id' => $merchantId,
+                'gateway'     => Payment\Gateway::CURRENCY_CLOUD,
+            ]);
+        }
+
+        return $payment;
+    }
+
+    protected function createPaymentEntityForB2B($request, $merchantId)
+    {
+        $input = [
+            Payment\Entity::AMOUNT      => ((float)$request['amount'])*100,
+            Payment\Entity::CURRENCY    => $request['currency'],
+            Payment\Entity::METHOD      => Payment\Method::INTL_BANK_TRANSFER,
+        ];
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $this->merchant = $repo->merchant->find($merchantId);
+
+        $payment = new \RZP\Models\Payment\Entity;
+
+        $payment->generateId();
+
+        $payment->merchant()->associate($this->merchant);
+
+        $payment->build($input);
+
+        $payment->setReference1($request['id']);
+
+        $this->paymentCurrencyConversions($payment);
+
+        $this->repo->saveOrFail($payment);
+
+        return $payment;
+    }
+
+    protected function paymentCurrencyConversions($payment)
+    {
+        $amount = $payment->getAmount();
+
+        $currency = $payment->getCurrency();
+
+        $baseAmount = (new \RZP\Models\Currency\Core)->getBaseAmount($amount, $currency);
+
+        // if gateway is doing currency conversions, actual rate used by gateway
+        // will use lower than current rates hence we also use 1.5 percentage lower
+        // values
+        if ($payment->getConvertCurrency() === false ||
+            ($currency !== Currency::INR && $payment->getConvertCurrency() === null))
+        {
+            $baseAmount = (int) ceil($baseAmount * 0.985);
+        }
+
+        $payment->setBaseAmount($baseAmount);
+    }
+
+    protected function createAddressEntityForB2B($response, $payment)
+    {
+        $senderDetails = explode(';',$response['sender']);
+        $address = explode(',',$senderDetails[1]);
+
+        if(!isset($address))
+        {
+            $this->trace->info(TraceCode::RAW_ADDRESS_CREATE_REQUEST,[
+                'sender_details' => $senderDetails,
+            ]);
+        }
+
+        $billingAddressFromInput['type']    = Address\Type::BILLING_ADDRESS;
+        $billingAddressFromInput['name']    = $senderDetails[0];
+        $billingAddressFromInput['zipcode'] = last($address);
+        $billingAddressFromInput['line1']   = $senderDetails[1];
+        $billingAddressFromInput['city']    = $address[1];
+        $billingAddressFromInput['country'] = $senderDetails[2];
+
+        $this->trace->info(TraceCode::ADDRESS_CREATE_REQUEST,[
+            'billing_address' => $billingAddressFromInput,
+        ]);
+
+        (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
+
+    }
+
+    protected function authorizePaymentForB2B($payment)
+    {
+        $payment->setGateway(Constants\Entity::CURRENCY_CLOUD);
+
+        $payment->setInternational();
+
+        $payment->setStatus(Payment\Status::AUTHORIZED);
+
+        $payment->setAuthenticatedTimestamp();
+
+        $this->repo->payment->saveOrFail($payment);
+
+    }
+
+    public function capturePaymentForB2B($input,$payment)
+    {
+            if($payment->isAuthorized())
+            {
+                $merchantId = $payment->getMerchantId();
+
+                $merchant = $this->repo->merchant->find($merchantId);
+
+                $paymentProcessor = new PaymentProcessor($merchant);
+
+                $values = [
+                    Payment\Entity::AMOUNT => $payment->getAmount(),
+                    Payment\Entity::CURRENCY => $payment->getCurrency(),
+                ];
+
+                $paymentProcessor->capture($payment,$values);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::B2B_PAYMENT_CAPTURE_FAILURE,[
+                    'payment_id' => $payment->getId(),
+                    'reason'     => 'Payment Not Authorized yet',
+                ]);
+            }
+    }
+
 }

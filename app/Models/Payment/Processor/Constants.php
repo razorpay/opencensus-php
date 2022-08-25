@@ -82,6 +82,7 @@ class Constants
     const UPI_OTM_PAYMENT                           = 'UPI OTM Payment';
     const BANK_TRANSFER_PAYMENT                     = 'Bank Transfer Payment';
     const PAYMENT_STATUS_AUTHENTICATED              = 'Payment Status Authenticated';
+    const INTL_BANK_TRANSFER_PAYMENT                = 'International Bank Transfer Payment';
     const UPI_TRANSFER_PAYMENT                      = 'UPI Transfer Payment';
     const PAYMENT_LINK_WITH_FEATURE                 = 'Payment Link with Merchant Feature PAYMENT_PAGES_NO_CAPTURE enabled';
     const PAYMENT_STATUS_NOT_AUTHORIZED             = 'Payment should be in authorized status.';

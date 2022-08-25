@@ -200,6 +200,9 @@ class Gateway
     // Debit emi gateways
     const HDFC_DEBIT_EMI     = 'hdfc_debit_emi';
     const KOTAK_DEBIT_EMI    = 'kotak_debit_emi';
+    const CURRENCY_CLOUD     = 'currency_cloud';
+
+    const VA_USD             = 'va_usd';
 
 
     //
@@ -474,8 +477,15 @@ class Gateway
      * address and name is collected on basis of feature flag address_name_required
      * ADDRESS_REQUIRED_APPS Map Contains apps which comes under gateway emerchantpay
      */
+
+    /* Exceptionally Address will be collected from gateway via API Call for Currency Cloud
+     * since its a Bank Transfer and we will know details of Sender from gateway directly and
+     * we will store in address table
+     */
+
     const ADDRESS_NAME_REQUIRED_GATEWAYS = [
-        self::EMERCHANTPAY
+        self::EMERCHANTPAY,
+        self::CURRENCY_CLOUD
     ];
 
     /**
@@ -1376,6 +1386,7 @@ class Gateway
     const GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING = [
         self::CHECKOUT_DOT_COM => [Currency::USD],
         self::EMERCHANTPAY => [Currency::EUR,Currency::GBP,Currency::AUD],
+        self::CURRENCY_CLOUD => [Currency::USD],
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -3475,6 +3486,10 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM
     ];
 
+    const INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES = [
+        Currency::USD,
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);
@@ -4678,6 +4693,11 @@ class Gateway
         }
 
         return self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway][0];
+    }
+
+    public static function isCurrencySupportedForInternationalBankTransfer($currency) : bool
+    {
+        return (in_array($currency, self::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES, true));
     }
 
 }

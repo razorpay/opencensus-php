@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Methods;
 use RZP\Models\Base;
 use RZP\Models\Bank\Bank;
 use RZP\Models\Card\Network;
+use RZP\Models\Feature;
 use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
@@ -667,6 +668,11 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
+    }
+
+    public function isIntlBankTransferEnabled()
+    {
+        return $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT);
     }
 
     public function isNachEnabled()
