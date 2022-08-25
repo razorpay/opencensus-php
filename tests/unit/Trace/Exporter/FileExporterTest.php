@@ -29,12 +29,12 @@ class FileExporterTest extends TestCase
     private $tracer;
     private $filename;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->filename = tempnam(sys_get_temp_dir(), 'traces');
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         @unlink($this->filename);
     }

@@ -257,7 +257,7 @@ abstract class AbstractTracerTest extends TestCase
         $this->assertCount(1, $spans);
         $spanData = $spans[0];
 
-        $this->assertInternalType('array', $spanData->stackTrace());
+        $this->assertIsArray( $spanData->stackTrace());
         $this->assertEmpty($spanData->stackTrace());
     }
 
@@ -272,7 +272,7 @@ abstract class AbstractTracerTest extends TestCase
         $this->assertCount(1, $spans);
         $spanData = $spans[0];
 
-        $this->assertInternalType('array', $spanData->attributes());
+        $this->assertIsArray( $spanData->attributes());
         $this->assertEmpty($spanData->attributes());
     }
 
@@ -287,7 +287,7 @@ abstract class AbstractTracerTest extends TestCase
         $this->assertCount(1, $spans);
         $spanData = $spans[0];
 
-        $this->assertInternalType('array', $spanData->links());
+        $this->assertIsArray( $spanData->links());
         $this->assertEmpty($spanData->links());
     }
 
@@ -302,7 +302,7 @@ abstract class AbstractTracerTest extends TestCase
         $this->assertCount(1, $spans);
         $spanData = $spans[0];
 
-        $this->assertInternalType('array', $spanData->timeEvents());
+        $this->assertIsArray( $spanData->timeEvents());
         $this->assertEmpty($spanData->timeEvents());
     }
 

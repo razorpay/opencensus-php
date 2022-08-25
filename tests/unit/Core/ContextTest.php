@@ -19,19 +19,18 @@ namespace OpenCensus\Tests\Unit\Core;
 
 use OpenCensus\Core\Context;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_Error_Warning as Warning;
-
+use PHPUnit\Framework\Error\Warning;
 /**
  * @group core
  */
 class ContextTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         Context::reset();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Context::reset();
     }

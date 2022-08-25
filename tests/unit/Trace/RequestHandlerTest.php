@@ -41,7 +41,7 @@ class RequestHandlerTest extends TestCase
 {
     private $exporter;
 
-    public function setUp()
+    public function setUp(): void
     {
         if (extension_loaded('opencensus')) {
             opencensus_trace_clear();

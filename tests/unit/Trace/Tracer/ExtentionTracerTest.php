@@ -25,7 +25,7 @@ use OpenCensus\Trace\Tracer\TracerInterface;
  */
 class ExtensionTracerTest extends AbstractTracerTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         if (!extension_loaded('opencensus')) {
             $this->markTestSkipped('Must have the opencensus extension installed to run this test.');

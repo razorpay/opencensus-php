@@ -24,12 +24,12 @@ class WordpressTest extends TestCase
 {
     private static $outputFile;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         self::$outputFile = sys_get_temp_dir() . '/spans.json';
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         if (file_exists(self::$outputFile)) {
@@ -49,7 +49,7 @@ class WordpressTest extends TestCase
             ]
         ]);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertContains('Hello world!', $response->getBody()->getContents());
+        $this->assertStringContainsString('Hello world!', $response->getBody()->getContents());
 
         $spans = json_decode(file_get_contents(self::$outputFile), true);
         $this->assertNotEmpty($spans);

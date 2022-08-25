@@ -31,7 +31,7 @@ class TracerTest extends TestCase
 {
     private $exporter;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exporter = new NullExporter();
     }
