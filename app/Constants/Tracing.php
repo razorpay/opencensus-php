@@ -65,6 +65,7 @@ class Tracing
 
             // used by payout-links service
             'payout_create_internal',
+            'payout_create_2FA_internal',
             'payout_fetch_multiple_internal',
             'payout_purpose_validate_internal',
             'contact_get_internal',

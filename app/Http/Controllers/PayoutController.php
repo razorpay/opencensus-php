@@ -112,6 +112,15 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postFundAccountPayout2faForIciciCa()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fundAccountPayout2faForIciciCa($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postApproveFundAccountPayout(string $id)
     {
         $response = $this->service()->approveFundAccountPayout($id, $this->input);

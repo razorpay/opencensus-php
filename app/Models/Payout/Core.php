@@ -58,8 +58,10 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\PartnerBankHealth\Events;
 use RZP\Jobs\PayoutServiceDataMigration;
+use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Constants\Entity as EntityConstant;
@@ -358,6 +360,77 @@ class Core extends Base\Core
         $this->postCreationForPayouts($payout);
 
         return $payout;
+    }
+
+    /**
+     * Creates a payout entity and triggers an ICICI OTP creation request via FTS
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws BadRequestException
+     */
+    public function createPayoutAndTriggerIciciOtp(array $input, Merchant\Entity $merchant): Entity
+    {
+        $amountInfo = $this->getAmountInfoFromInput($input);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_2FA_CREATE_REQUEST,
+            [
+                'input'       => $input,
+                'merchant_id' => $merchant->getId(),
+                'amount_info' => $amountInfo
+            ]);
+
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($merchant)
+                       ->createPayoutEntityWithoutDownstreamProcessing($input);
+
+        try
+        {
+            $this->triggerIciciOtpForPayoutViaFts($payout);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::FTS_OTP_CREATION_FAILED,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $merchant->getId(),
+                ]);
+
+            // Suppress the exception as we don't want to return an error if OTP creation fails.
+            // The user will retry OTP creation using the send_otp route.
+        }
+
+        return $payout;
+    }
+
+    public function triggerIciciOtpForPayoutViaFts(Entity $payout): array
+    {
+        $ftsFundAccountId = (int) $payout->getSourceFtsFundAccountId();
+
+        /** @var \RZP\Services\FTS\FundTransfer $transferService */
+        $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+        $input = [
+            Attempt\Entity::SOURCE_ID         => $payout->getId(),
+            Attempt\Entity::SOURCE_TYPE       => Entity::PAYOUT,
+            Attempt\Entity::SOURCE_ACCOUNT_ID => $ftsFundAccountId,
+            Entity::MODE                      => $payout->getMode(),
+            Entity::AMOUNT                    => $payout->getAmount()
+        ];
+
+        $this->trace->info(TraceCode::FTS_OTP_CREATION_REQUEST_PAYLOAD, $input);
+
+        $transferService->setRequestTimeout(1000);
+
+        $ftsResponse = $transferService->requestOtpCreate($input);
+
+        return $ftsResponse;
     }
 
     protected function getAmountInfoFromInput(array $input)
@@ -6502,5 +6575,46 @@ class Core extends Base\Core
         }
 
         return $transformedData;
+    }
+
+    /**
+     * Checks if a merchant is allowed to make a ICICI direct account payout with ICICI 2FA
+     *
+     * @param Balance\Entity $balance
+     * @param Merchant\Entity $merchant
+     *
+     * @return null
+     * @throws BadRequestException
+     */
+    public static function checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa(Balance\Entity $balance, Merchant\Entity $merchant)
+    {
+        $balanceType = $balance->getType();
+        $accountType = $balance->getAccountType();
+        $channel = $balance->getChannel();
+        $isFeatureEnabled = $merchant->isFeatureEnabled(FeatureConstants::ICICI_2FA);
+
+        $trace = App::getFacadeRoot()['trace'];
+
+        $trace->info(TraceCode::PAYOUT_2FA_ICICI_CA_CHECK,
+            [
+                'balance_type'     => $balanceType,
+                'account_type'     => $accountType,
+                'channel'          => $channel,
+                'isFeatureEnabled' => $isFeatureEnabled,
+            ]
+        );
+
+        if ($balanceType !== Balance\Type::BANKING or $accountType !== Balance\AccountType::DIRECT or
+            $channel !== Channel::ICICI or $isFeatureEnabled !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ENABLED_FOR_2FA_PAYOUT,
+                null,
+                null,
+                'merchant is not enabled for ICICI 2FA payout flow'
+            );
+        }
+
+        return null;
     }
 }

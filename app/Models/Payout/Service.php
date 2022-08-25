@@ -887,6 +887,33 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Creates a payout in the pending state and initiates only an OTP request to FTS for
+     * ICICI CA payouts. The transfer request to FTS is not initiated.
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function fundAccountPayout2faForIciciCa(array $input): array
+    {
+        // Only allowed for Rx payouts, mandates account number
+        $this->processAccountNumber($input);
+
+        (new Validator)->setStrictFalse()
+            ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+        if (isset($input[Entity::ORIGIN]) === false)
+        {
+            $input[Entity::ORIGIN] = Entity::DASHBOARD;
+        }
+
+        $payout = $this->core->createPayoutAndTriggerIciciOtp($input, $this->merchant);
+
+        return $payout->toArrayPublic();
+    }
+
     private function shouldCreateUndoablePayout()
     {
         if ($this->auth->isXDashboardApp() === false) {

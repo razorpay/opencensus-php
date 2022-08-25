@@ -3909,6 +3909,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_LINKS_MS_ROUTE                                 = 'PAYOUT_LINKS_MS_ROUTE';
     const PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT         = 'PAYOUT_LINKS_BATCH_PROCESSING_FOR_EMPTY_INPUT';
 
+    // Payouts 2FA flow logs
+    const PAYOUT_2FA_CREATE_REQUEST                             = 'PAYOUT_2FA_CREATE_REQUEST';
+    const FTS_OTP_CREATION_REQUEST_PAYLOAD                      = 'FTS_OTP_CREATION_REQUEST_PAYLOAD';
+    const FTS_OTP_CREATION_FAILED                               = 'FTS_OTP_CREATION_FAILED';
+    const PAYOUT_2FA_ICICI_CA_CHECK                             = 'PAYOUT_2FA_ICICI_CA_CHECK';
+
     const VENDOR_PAYMENT_REQUEST                                = 'VENDOR_PAYMENT_REQUEST';
     const VENDOR_PAYMENT_RESPONSE                               = 'VENDOR_PAYMENT_RESPONSE';
 

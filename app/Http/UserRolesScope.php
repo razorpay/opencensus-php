@@ -838,6 +838,7 @@ class UserRolesScope
             'payout_cancel'                                        => [Role::OWNER, Role::ADMIN],
             'payout_create'                                        => [Role::OWNER, Role::ADMIN],
             'payout_create_with_otp'                               => [Role::OWNER, Role::ADMIN],
+            'payout_create_2FA'                                    => [Role::OWNER, Role::ADMIN],
             'payout_update_attachments'                            => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::VIEW_ONLY],
             'payout_upload_attachment'                             => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE],
             'payout_get_attachment_signed_url'                     => [Role::OWNER, Role::ADMIN, Role::FINANCE, Role::OPERATIONS, Role::FINANCE, Role::VIEW_ONLY],

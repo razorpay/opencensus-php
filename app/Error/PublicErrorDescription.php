@@ -46,6 +46,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ERROR                                                     = 'Something went wrong, please try again after sometime.';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_PAYOUTS_NOT_ALLOWED_CURRENTLY                             = 'Payouts are temporarily blocked. Please contact support.';
+    const BAD_REQUEST_MERCHANT_NOT_ENABLED_FOR_2FA_PAYOUT                       = 'ICICI 2FA payout is not enabled.';
     const BAD_REQUEST_BLOCKING_RX_ACTIVATIONS                                   = 'RazorpayX activations are currently blocked';
     const BAD_REQUEST_FAV_NOT_ALLOWED_CURRENTLY                                 = 'Fund Account Validations are temporarily blocked. Please contact support.';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLOWED                               = 'Password Change is not allowed for this Org';

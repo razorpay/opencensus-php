@@ -1518,7 +1518,7 @@ class Constants
      * Feature flag to configure report for CAMS
      */
     const CAMS_MERCHANT_REPORT = 'cams_merchant_report';
-    
+
      /**
      * Feature flag to configure report for BSE
      */
@@ -1527,7 +1527,7 @@ class Constants
     /**
      * Feature flag for enabling 2FA payout flows for ICICI CA merchants;
      */
-    const ICICI_2FA = 'ICICI_2FA';
+    const ICICI_2FA = 'icici_2fa';
 
 
     public static $recurringFeatures = [

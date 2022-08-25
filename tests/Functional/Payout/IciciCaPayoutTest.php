@@ -1725,4 +1725,66 @@ class IciciCaPayoutTest extends TestCase
         // Assert that one free payout has been consumed
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
     }
+
+
+    public function testPayoutCreateWithIcici2FaMerchantNotAllowedFeatureNotEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        $this->liveSetUp();
+
+        $this->startTest();
+    }
+
+    public function testPayoutCreateWithIcici2FaInvalidPayoutPayload()
+    {
+        $this->ba->proxyAuth();
+
+        $this->liveSetUp();
+
+        $this->startTest();
+    }
+
+    public function testPayoutCreateWithIcici2FaSuccess()
+    {
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('pending', $payout->getStatus());
+    }
+
+    public function testPayoutCreateWithIcici2FaSuccessInternalRoute()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('pending', $payout->getStatus());
+    }
+
+    public function testPayoutCreateWithIcici2FaSuccessInternalRouteWithIdempotency()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('pending', $payout->getStatus());
+
+        $response = $this->startTest();
+
+        $this->assertEquals($payout->getPublicId(), $response['id']);
+    }
 }

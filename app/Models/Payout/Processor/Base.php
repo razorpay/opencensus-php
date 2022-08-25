@@ -64,6 +64,7 @@ use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
@@ -385,6 +386,70 @@ class Base extends BaseCore
 
         //TODO: Handle for ledger failures
         $this->fireEventForPayoutStatus($payout);
+
+        return $payout;
+    }
+
+    /**
+     * Creates a payout entity without any downstream processing (FTA creation, FTS transfer, etc)
+     *
+     * @throws BadRequestException
+     */
+    public function createPayoutEntityWithoutDownstreamProcessing(array $input): Payout\Entity
+    {
+        $this->setPayoutBalance($input);
+
+        Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant);
+
+        $this->preValidations();
+
+        // Workflow is enabled by default for this flow
+        $this->isWorkflowEnabled = true;
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->repo->transaction(function () use ($input)
+        {
+            $payout = $this->handleWorkflowsIfApplicable(function() use ($input)
+            {
+                return $this->createPayoutEntity($input);
+            }, $input);
+
+            $sourceDetails = $payout->getInputSourceDetails();
+
+            $this->isPayoutInitiatedByPartner($payout);
+
+            if ($this->workflowActivated === true)
+            {
+                if (empty($sourceDetails) === false)
+                {
+                    $this->processSourceDetails($sourceDetails, $payout);
+                }
+
+                return $payout;
+            }
+
+            if ($this->mode == MODE::TEST)
+            {
+                // For test mode, workflow will fail, hence set to pending here
+                $payout->setStatus(Status::PENDING);
+            }
+
+            if (empty($sourceDetails) === false)
+            {
+                $this->processSourceDetails($sourceDetails, $payout);
+            }
+
+            $this->repo->saveOrFail($payout);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_CREATED,
+                [
+                    'input'       => $input,
+                    'payout'      => $payout->toArray(),
+                ]);
+
+            return $payout;
+        });
 
         return $payout;
     }

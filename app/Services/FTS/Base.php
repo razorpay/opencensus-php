@@ -135,6 +135,8 @@ class Base
 
     const FTS_KEY_VALUE_STORE_POST_URL = '/key_value_store';
 
+    const FTS_OTP_CREATE = '/otp/send';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';
@@ -372,6 +374,10 @@ class Base
         {
             return $this->mockUpdateSourceAccountResponse();
         }
+        if ($endpoint === self::FTS_OTP_CREATE)
+        {
+            return $this->mockCreateOtpRequestResponse();
+        }
     }
 
     public function mockCreateFundTransferResponse()
@@ -450,6 +456,22 @@ class Base
                                    Constants::STATUS  => 'updated',
                                    Constants::MESSAGE => 'source account updated at FTS',
                                ]);
+
+        $response->body = $content;
+
+        return $response;
+    }
+
+    public function mockCreateOtpRequestResponse()
+    {
+        $response = new Requests_Response();
+
+        $response->status_code = 200;
+
+        $content = json_encode([
+            Constants::STATUS  => 'successful',
+            Constants::MESSAGE => 'OTP was successfully generated',
+        ]);
 
         $response->body = $content;
 

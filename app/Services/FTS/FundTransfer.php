@@ -194,6 +194,13 @@ class FundTransfer extends Base
         return $response;
     }
 
+    public function requestOtpCreate(array $input): array
+    {
+        $response = $this->createAndSendRequest(parent::FTS_OTP_CREATE, 'POST', $input);
+
+        return $response;
+    }
+
     /**
      * @return string
      * @throws LogicException
