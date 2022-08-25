@@ -47,9 +47,9 @@ class Base
     const GET_NEXT_SETTLEMENT_AMOUNT    = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetNextSettlementAmount';
     const GET_SETTLEMENT_TIMELINE_MODAL = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetSettlementTimelineModal';
 
-    const SETTLEMENT_INSERT_EXTERNAL_TRANSACTIONS = 'twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/InsertExternalTransaction';
-    const SETTLEMENT_UPDATE_TRANSACTIONS_COUNT    = 'twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/UpdateTransactionCountOfExecution';
-    const SETTLEMENT_UPDATE_EXECUTION_STATUS      = 'twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/UpdateStatusofOptimiserExecution';
+    const SETTLEMENT_INSERT_EXTERNAL_TRANSACTIONS = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/InsertExternalTransaction';
+    const SETTLEMENT_UPDATE_TRANSACTIONS_COUNT    = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/UpdateTransactionCountOfExecution';
+    const SETTLEMENT_UPDATE_EXECUTION_STATUS      = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/UpdateStatusofOptimiserExecution';
 
 
     protected $trace;
