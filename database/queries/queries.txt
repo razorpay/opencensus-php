@@ -1,3 +1,22 @@
+CREATE TABLE linked_account_reference_data (
+  id char(14) COLLATE utf8mb4_bin NOT NULL,
+  account_name varchar(255) NOT NULL,
+  account_email varchar(255) NOT NULL,
+  business_name varchar(255) NOT NULL,
+  business_type varchar(255) NOT NULL,
+  account_number varchar(40) NOT NULL,
+  beneficiary_name varchar(120) NOT NULL,
+  category varchar(60) NOT NULL,
+  dashboard_access tinyint NOT NULL DEFAULT '0',
+  customer_refund_access tinyint NOT NULL DEFAULT '0',
+  is_active tinyint NOT NULL DEFAULT '1',
+  ifsc_code char(11) NOT NULL,
+  created_at int NOT NULL,
+  updated_at int DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY la_reference_data_category_index (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8_bin;
+
 ALTER TABLE payouts
     ADD COLUMN status_details_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;
 
