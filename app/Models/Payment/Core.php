@@ -494,24 +494,28 @@ class Core extends Base\Core
             $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
 
             $data = [
-                'mode' => $this->mode,
-                'merchant_id' => $payment->getMerchantId(),
-                'push_time' => Carbon::now()->unix(),
-                'payment' => [
-                    'id' => $payment->getId(),
-                    'internal_error_code' => $payment->getInternalErrorCode(),
-                    'contact' => $payment->getContact(),
-                    'email' => $payment->getEmail(),
-                    'integration' => $pa != null ? $pa->getIntegration() : null,
-                ],
-                'order' => [
-                    'id' =>  $payment->order->getId(),
-                    'product_type' => $payment->order->getProductType(),
-                    'is_invoice_order' => !empty($payment->order->invoice),
-                    'is_partial_payment_allowed' => $payment->order->isPartialPaymentAllowed(),
-                    'amount' => $payment->order->getAmount(),
-                    'currency' => $payment->order->getCurrency(),
-                    'notes' => $payment->order->getNotes(),
+                'queueId' => 'standard',
+                'channelType' => 'payment_failed_retry',
+                'request' => [
+                    'mode' => $this->mode,
+                    'merchant_id' => $payment->getMerchantId(),
+                    'push_time' => Carbon::now()->unix(),
+                    'payment' => [
+                        'id' => $payment->getId(),
+                        'internal_error_code' => $payment->getInternalErrorCode(),
+                        'contact' => $payment->getContact(),
+                        'email' => $payment->getEmail(),
+                        'integration' => $pa != null ? $pa->getIntegration() : null,
+                    ],
+                    'order' => [
+                        'id' =>  $payment->order->getId(),
+                        'product_type' => $payment->order->getProductType(),
+                        'is_invoice_order' => !empty($payment->order->invoice),
+                        'is_partial_payment_allowed' => $payment->order->isPartialPaymentAllowed(),
+                        'amount' => $payment->order->getAmount(),
+                        'currency' => $payment->order->getCurrency(),
+                        'notes' => $payment->order->getNotes(),
+                    ]
                 ]
             ];
 
