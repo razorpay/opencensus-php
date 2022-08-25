@@ -119,6 +119,8 @@ class Service extends Base\Service
         $data['options']['theme']['color'] = $this->merchant->getBrandColor();
 
         $data['options']['image'] = $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE);
+
+        $data['options']['white_label'] = $this->merchant->isFeatureEnabled(Features::AFFORDABILITY_WIDGET_WHITE_LABEL);
     }
 
     /**

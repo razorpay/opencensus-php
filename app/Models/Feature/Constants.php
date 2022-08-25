@@ -1353,6 +1353,8 @@ class Constants
 
     const ACCEPT_LOWER_AMOUNT = 'accept_lower_amount';
 
+    const AFFORDABILITY_WIDGET_WHITE_LABEL = 'aff_widget_white_label';
+
     /**
      * Feature flag to allow the transition from older flow to newer flow
      * for payouts to cards tokenisation
@@ -2024,6 +2026,7 @@ class Constants
         self::ENABLE_IFSC_VALIDATION          => true,
         self::PUBLIC_SETTERS_VIA_OAUTH        => true,
         self::AFFORDABILITY_WIDGET            => true,
+        self::AFFORDABILITY_WIDGET_WHITE_LABEL => true,
         self::ENABLE_GRANULAR_DOWNTIMES       => true,
         self::EDIT_SINGLE_VA_EXPIRY           => true,
         self::ADDRESS_NAME_REQUIRED           => true,
