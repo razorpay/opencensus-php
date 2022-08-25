@@ -244,9 +244,11 @@ class Service extends Base\Service
             $input['x_onboarding_category'] = 'self_serve';
         }
 
-        $xChannelDefinitionService = new XChannelDefinition\Service;
-        $xChannelDefinitionService->storeChannelDetails($this->merchant, $input);
-        $xChannelDefinitionService->addChannelDetailsInSFPayload($this->merchant, $input);
+        if ($this->auth->isProductBanking()) {
+            $xChannelDefinitionService = new XChannelDefinition\Service;
+            $xChannelDefinitionService->storeChannelDetails($this->merchant, $input);
+            $xChannelDefinitionService->addChannelDetailsInSFPayload($this->merchant, $input);
+        }
 
         // Putting in a try catch block so that any error here does not disrupt
         // the main signup flow. This will be removed once X flow simplifies the payload for salesforce

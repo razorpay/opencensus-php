@@ -158,7 +158,7 @@ class Channels
                 Constants::SUBCHANNEL_PRIORITY        => 3,
             ],
             self::PG_DIRECT_RAZORPAY           => [
-                Constants::LAST_CLICK_SOURCE_CATEGORY => [Constants::LCS_CATEGORY_PG_DASHBOARD],
+                Constants::LAST_CLICK_SOURCE_CATEGORY => [],
                 Constants::FINAL_UTM_CAMPAIGN         => [],
                 Constants::REF_WEBSITE                => [
                     '/razorpay.com\/$/',

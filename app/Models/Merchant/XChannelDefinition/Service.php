@@ -174,6 +174,11 @@ class Service extends Base\Service
             "existing_channel" => $existingChannel,
         ]);
 
+        // If existing channel is Unmapped, we can override it
+        if ($existingChannel === Channels::UNMAPPED) {
+            $existingChannel = null;
+        }
+
         try
         {
             // Check if channel is not present
