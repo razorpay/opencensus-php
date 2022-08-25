@@ -3604,7 +3604,8 @@ class Processor
             'id'            => $payment->getId(),
             'status'        => $payment->getStatus(),
             'description'   => $payment->getDescription(),
-            'vpa' => $payment->getVpa(),
+            'vpa'           => $payment->getVpa(),
+            'method'        => $payment->getMethod(),
         ];
 
         $terminal = $payment->terminal;
