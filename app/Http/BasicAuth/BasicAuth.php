@@ -1180,6 +1180,17 @@ class BasicAuth
     }
 
     /**
+     * enforce merchant key to be passed in auth header
+     * disables keyless authentication
+     */
+    public function p2pPublicAuth()
+    {
+        $this->setType(Type::PUBLIC_AUTH);
+
+        return $this->keyPublicAuth();
+    }
+
+    /**
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
      */

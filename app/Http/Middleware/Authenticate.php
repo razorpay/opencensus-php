@@ -214,7 +214,7 @@ class Authenticate
         }
         else if (in_array($route, P2pRoute::$public, true) === true)
         {
-            $ret = $this->ba->publicAuth();
+            $ret = $this->ba->p2pPublicAuth();
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
