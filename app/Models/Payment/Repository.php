@@ -3128,4 +3128,21 @@ EOT;
             ->whereIn(Payment\Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
             ->first();
     }
+
+    //select * from `payments`
+    // where `payments`.`token_id` = JtXT7fDRwqDzP3
+    // and `payments`.`token_id` is not null
+    // and `method` = nach
+    // limit 5
+
+    public function getPaymentCountByToken($tokenId)
+    {
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+            ->select($this->dbColumn('*'))
+            ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+            ->WhereNotNull(Payment\Entity::TOKEN_ID)
+            ->where(Payment\Entity::METHOD, Payment\Method::NACH)
+            ->limit(5);
+    }
+
 }

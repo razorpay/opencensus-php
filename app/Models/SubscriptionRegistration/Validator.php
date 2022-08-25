@@ -392,6 +392,10 @@ class Validator extends Base\Validator
 
     public function validateTokenToRetry(Token\Entity $token)
     {
+        $app = App::getFacadeRoot();
+
+        $this->repo = $app['repo'];
+
         if ($token->getRecurringStatus() !== Token\RecurringStatus::REJECTED)
         {
             throw new BadRequestValidationFailureException(
@@ -406,7 +410,9 @@ class Validator extends Base\Validator
             );
         }
 
-        if (count($token->nachPayments()->get()) !== 1)
+        $tokenId = $token->getId();
+
+        if (count($this->repo->payment->getPaymentCountByToken($tokenId)->get()) !== 1)
         {
             throw new BadRequestValidationFailureException(
                 'token can be retried only if exactly one payment created for it'
