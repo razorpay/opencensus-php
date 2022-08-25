@@ -38,6 +38,7 @@ class VerifyCsrfToken extends BaseVerifier
         // Register Route
         '/user/register',
         '/user/register_unbounce',
+        '/user/salesforce_event',
 
         // Aggregation requests
         '/test/analytics/aggregations/day',
