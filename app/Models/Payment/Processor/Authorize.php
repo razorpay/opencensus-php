@@ -3365,8 +3365,7 @@ trait Authorize
          * 3. Paypal
          */
 
-        if(($payment->merchant->isDCCEnabledInternationalMerchant() === false)  or
-            $payment->merchant->isCustomerFeeBearerAllowedOnInternational() === false)
+        if(($payment->merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return;
         }
@@ -4322,7 +4321,9 @@ trait Authorize
          * And remove fee for the calculation of base amount, as fee calculation is done on base :-)
          */
 
-        if ($payment->isInternational() and $merchant->isFeeBearerCustomerOrDynamic())
+        if ($payment->isInternational() and
+            $currency !== Currency\Currency::INR and
+            $merchant->isFeeBearerCustomerOrDynamic())
         {
             if($merchant->isCustomerFeeBearerAllowedOnInternational())
             {
@@ -4357,7 +4358,9 @@ trait Authorize
          * Strange workarounds eh? Things you have to do for NR (Ask your product manager about it)
          */
 
-        if ($payment->isInternational() and $merchant->isFeeBearerCustomerOrDynamic())
+        if ($payment->isInternational() and
+            $currency !== Currency\Currency::INR and
+            $merchant->isFeeBearerCustomerOrDynamic())
         {
             if($merchant->isCustomerFeeBearerAllowedOnInternational())
             {
