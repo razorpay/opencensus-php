@@ -57,9 +57,7 @@ class Gstin_with_business_pan_for_no_doc extends BaseConfig
                 "rule_type" => "string_comparison_rule",
                 "rule_def"  => [
                     "===" => [
-                        [
-                            "var"=> "artefact.details.compliance_status.is_any_delay.value"
-                        ],
+                        "false",
                         [
                             "var"=> "enrichments.online_provider.details.compliance_status.is_any_delay.value"
                         ]
@@ -70,9 +68,7 @@ class Gstin_with_business_pan_for_no_doc extends BaseConfig
                 "rule_type" => "string_comparison_rule",
                 "rule_def"  => [
                     "===" => [
-                        [
-                            "var"=> "artefact.details.compliance_status.is_defaulter.value"
-                        ],
+                        "false",
                         [
                             "var"=> "enrichments.online_provider.details.compliance_status.is_defaulter.value"
                         ]

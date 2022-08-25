@@ -36,14 +36,6 @@ class GstinAuth extends Base
             ],
         ];
 
-        if ($this->merchant->isNoDocOnboardingEnabled() === true)
-        {
-            $requestPayload[Constant::COMPLIANCE_STATUS] = [
-                Constant::IS_ANY_DELAY => false,
-                Constant::IS_DEFAULTER => false,
-            ];
-        }
-
         return $requestPayload;
     }
 
