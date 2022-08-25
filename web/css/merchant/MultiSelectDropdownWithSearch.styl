@@ -1,0 +1,81 @@
+$white = #ffffff
+$royalBlue = #2b83ea
+$lightGray = #e2e2e2
+
+.multi-select-dropdown-with-search-block
+  margin 24px 0 8px
+  
+  .selected-options-block
+    display block
+    background $white
+    padding 6px 12px
+    border 1px solid $lightGray
+    border-radius: 2px
+    overflow-y hidden
+    max-height 37px
+    cursor pointer
+    min-height 37px
+
+    .placeholder
+      opacity 0.5
+    
+    .i.i-chevron-up, .i.i-chevron-down
+      position absolute
+      right 25px
+      top 35px
+      font-size: 20px
+    
+    .option-pill
+      color $white
+      background-color $royalBlue
+      margin 0 5px 9px 0
+      
+      .i.i-close
+        vertical-align sub
+        margin-left 2px
+    
+    .option-pill-disabled
+      opacity 0.5
+    
+    .count-pill
+      color $white
+      background-color $royalBlue
+      margin 0 5px 9px
+      min-width 30px
+  
+  .selected-options-block.remove-border-bottom
+    border-bottom none
+    
+  .options-block
+    padding 10px 12px
+    border 1px solid $lightGray
+    background $white
+    border-top none
+    animation drop-in 500ms ease 100ms backwards;
+
+    @keyframes drop-in
+      from
+        opacity 0
+        transform translateY(-10px)
+      to
+        opacity 1
+        transform translate(0px)
+
+    .Input.Input--vLeft
+      margin 0
+      .Input-el.Input-el--after
+        border-radius 20px
+      .Input-addons.Input-addons--after
+        background none
+    
+    .row
+      padding 0
+      margin-top 12px
+      .col-xs-12
+        padding 0
+        .col-xs-6
+          padding 0 12px
+          .Input.Input--checkbox
+            margin 0 0 12px
+            label
+              margin 0

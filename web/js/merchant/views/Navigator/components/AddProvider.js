@@ -183,6 +183,20 @@ export default class AddProvider extends React.Component {
           num++;
         }
       });
+
+      // Paytm by default enable wallets
+      if (
+        provider === 'paytm' &&
+        prevState.providers?.paytm?.['Payment Methods']?.data_value?.indexOf('wallet') !== -1
+      ) {
+        provider_st.Gateway_details['Payment Methods'] = ['wallet'];
+        provider_st.Gateway_details.wallet_metadata = {
+          wallets:
+            prevState.providers?.[provider]?.['Payment Methods']?.meta_data?.wallet_metadata
+              ?.wallets || [],
+        };
+      }
+
       return { selectedProvider: provider, provider: provider_st };
     });
   };
@@ -319,13 +333,19 @@ export default class AddProvider extends React.Component {
         isValid = false;
       }
     });
+    if (
+      provider?.Gateway_details?.['Payment Methods'].indexOf('wallet') !== -1 &&
+      provider?.Gateway_details?.wallet_metadata?.wallets?.length <= 0
+    ) {
+      isValid = false;
+    }
     return isValid;
   };
 
   changeGatewayDetails = (event, item) => {
     const { type, checked, value } = event.target;
     this.setState((prevState) => {
-      const { provider } = prevState;
+      const { provider, providers } = prevState;
       if (type === 'checkbox') {
         const val = checked;
         if (val) {
@@ -333,18 +353,49 @@ export default class AddProvider extends React.Component {
             ...provider?.Gateway_details?.['Payment Methods'],
             item,
           ];
+          if (item === 'wallet') {
+            const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+            provider.Gateway_details.wallet_metadata = {
+              wallets: [
+                ...providers?.[selectedProviderWithAcquirer]?.['Payment Methods']?.meta_data
+                  ?.wallet_metadata?.wallets,
+              ],
+            };
+          }
         } else if (provider?.Gateway_details?.['Payment Methods']) {
           const index = provider.Gateway_details['Payment Methods'].indexOf(item);
           provider.Gateway_details['Payment Methods'] = [
             ...provider.Gateway_details['Payment Methods'].slice(0, index),
             ...provider.Gateway_details['Payment Methods'].slice(index + 1),
           ];
+          if (item === 'wallet') {
+            delete provider.Gateway_details.wallet_metadata;
+          }
         }
       } else {
         const val = value;
         provider.Gateway_details[item] = val;
         this.validateGatewayDetails(item);
       }
+      return { provider };
+    });
+  };
+
+  changeGatewayWallets = (event, wallet) => {
+    const { checked } = event.target;
+    this.setState((prevState) => {
+      const { provider } = prevState;
+      let prevSelectedWallets = provider?.Gateway_details?.wallet_metadata?.wallets || [];
+      if (checked) {
+        prevSelectedWallets = [...prevSelectedWallets, wallet];
+      } else {
+        const index = prevSelectedWallets.indexOf(wallet);
+        prevSelectedWallets = [
+          ...prevSelectedWallets.slice(0, index),
+          ...prevSelectedWallets.slice(index + 1),
+        ];
+      }
+      provider.Gateway_details.wallet_metadata.wallets = prevSelectedWallets;
       return { provider };
     });
   };
@@ -678,6 +729,7 @@ export default class AddProvider extends React.Component {
                           provider={provider}
                           validationErrors={validationErrors}
                           changeGatewayDetails={this.changeGatewayDetails}
+                          changeGatewayWallets={this.changeGatewayWallets}
                         />
                       </div>
 

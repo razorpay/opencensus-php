@@ -39,6 +39,7 @@ export default class ProviderDetails extends Component {
     const provider = providers.filter((item) => item.Terminal_id === this.props.id)[0];
     if (provider) {
       const detailsKeys = Object.keys(provider.Gateway_details);
+      const wallets = provider.Gateway_details?.wallet_metadata?.wallets || [];
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
           {this.props.provider_detail_loading ? (
@@ -91,6 +92,11 @@ export default class ProviderDetails extends Component {
                       value={() => provider.Gateway_details['Payment Methods'].join(', ')}
                     />
                   </div>
+                  {wallets?.length > 0 && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow label="Wallets Enabled" value={() => wallets.join(', ')} />
+                    </div>
+                  )}
                   <div className="list-group details-row-container">
                     <EntityDetailRow
                       label="Production API Details"
