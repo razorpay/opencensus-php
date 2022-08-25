@@ -245,6 +245,9 @@
             <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
             <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
         </testsuite>
+        <testsuite name="ES Ondemand Test Suite">
+            <directory>./tests/Functional/Settlement/SettlementOndemand</directory>
+        </testsuite>
     </testsuites>
     <listeners>
         <listener class="\Symfony\Bridge\PhpUnit\SymfonyTestsListener">
