@@ -3767,6 +3767,15 @@ class Processor
         return $returnData;
     }
 
+    public function failInvalidRecurringTokenCardAutoRecurringPayment(Payment\Entity $payment, $exception)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::RECURRING_TOKEN_DELETED_OR_EXPIRED;
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     public function failNotificationVerifyFailedCardAutoRecurringPayment(Payment\Entity $payment, $exception)
     {
         $this->payment = $payment;

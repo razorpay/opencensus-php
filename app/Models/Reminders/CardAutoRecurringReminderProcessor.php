@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Reminders;
 
+use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Exception;
 use RZP\Models\CardMandate\CardMandateNotification;
 
 class CardAutoRecurringReminderProcessor extends ReminderProcessor
@@ -38,6 +41,23 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         if ($verified === false)
         {
+            return [];
+        }
+
+        try
+        {
+            $this->validateRecurringToken($payment);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::RECURRING_TOKEN_DELETED_OR_EXPIRED
+            );
+
+            $processor->failInvalidRecurringTokenCardAutoRecurringPayment($payment, $e);
+
             return [];
         }
 
@@ -170,5 +190,37 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
                 ],
             ]
         );
+    }
+
+    protected function validateRecurringToken($payment)
+    {
+        $tokenId = $payment->localToken->getId();
+
+        $token = $this->app['repo']->token->find($tokenId);
+
+        if ($token === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_ABSENT_FOR_RECURRING_PAYMENT,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'token_id'   => $tokenId
+                ]);
+        }
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if (($token->getExpiredAt() !== null) and ($token->getExpiredAt() < $currentTime) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RECURRING_TOKEN_EXPIRED,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'token_id'   => $token->getId(),
+                    'expired_at' => $token->getExpiredAt(),
+                ]);
+        }
     }
 }

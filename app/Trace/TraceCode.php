@@ -7773,6 +7773,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GLOBAL_CREATE_ADDRESS_ERROR                                 = 'GLOBAL_CREATE_ADDRESS_ERROR';
 
     const FAILED_TO_FETCH_WHATSAPP_STATUS                             = 'FAILED_TO_FETCH_WHATSAPP_STATUS';
+    const RECURRING_TOKEN_DELETED_OR_EXPIRED                          = 'RECURRING_TOKEN_DELETED_OR_EXPIRED';
 
     const IFSC_MAPPING_MISSING_FOR_INVALID_IFSC                       = 'IFSC_MAPPING_MISSING_FOR_INVALID_IFSC';
 
