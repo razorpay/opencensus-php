@@ -1703,6 +1703,13 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertEquals('razor.pay@sbi', $updatedPayment['vpa']);
 
         $this->assertNotEmpty($updatedPayment['transaction_id']);
+
+        $this->assertEquals(true, $response['success']);
+
+        // explicitly capturing the payment to stimulate the auto capture in case DS merchants
+        $this->capturePayment('pay_'.$updatedPayment['id'], 50000);
+
+        $this->assertEquals(true, $response['success']);
     }
 
     /**
@@ -1961,6 +1968,13 @@ class UpiSbiGatewayTest extends TestCase
 
         // asset the late authorized flag for authorizing via verify
         $this->assertTrue($updatedPayment['late_authorized']);
+
+        $this->assertEquals(true, $response['success']);
+
+        // explicitly capturing the payment to stimulate the auto capture in case DS merchants
+        $this->capturePayment('pay_'.$updatedPayment['id'], 50000);
+
+        $this->assertEquals(true, $response['success']);
 
         $this->assertNotEmpty($updatedPayment['transaction_id']);
     }
