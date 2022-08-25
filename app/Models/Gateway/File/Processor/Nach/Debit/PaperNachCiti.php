@@ -7,6 +7,7 @@ use Cache;
 use Carbon\Carbon;
 
 use RZP\Gateway\Enach;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -29,6 +30,7 @@ use RZP\Services\Beam\Service as BeamService;
 use RZP\Models\Gateway\File\Processor\Nach\Debit;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
+use RZP\Jobs\FileGenerationInstrumentation as FileInstrumentJob;
 
 class PaperNachCiti extends Debit\Base
 {
@@ -204,6 +206,8 @@ class PaperNachCiti extends Debit\Base
                 [
                     'target' => $this->gatewayFile->getTarget(),
                 ]);
+
+            $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_CITI");
         }
         catch (\Throwable $e)
         {

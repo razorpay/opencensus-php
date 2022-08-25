@@ -12,6 +12,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
@@ -92,6 +93,9 @@ class EnachRbl extends Base
                 [
                     'target' => $this->gatewayFile->getTarget(),
                 ]);
+
+            $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_RBL");
+
         }
         catch (\Throwable $e)
         {

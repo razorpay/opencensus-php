@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor;
 use App;
 
 use RZP\Exception;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
@@ -16,6 +17,8 @@ use RZP\Models\Gateway\File\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Jobs\FileGenerationInstrumentation;
+
 
 /**
  * Base processor class defines the steps which need to be performed for processing
@@ -349,5 +352,42 @@ abstract class Base extends Core
         $this->gatewayFile->setStatus(Status::FILE_SENT);
 
         $this->gatewayFile->setFileSentAt(time());
+    }
+
+    /**
+     * Process the file_generation_instrumentation entity via queue
+     *
+     * @param string $gatewayFileId
+     * @param string|null $gateway
+     */
+    protected function fileGenerationProcessAsync(string $gatewayFileId, string $gateway = null)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::FILE_GENERATE_RAZORX,
+                [
+                    "gateway_id" => $gatewayFileId,
+                    "gateway"    => $gateway
+                ]);
+
+            $variant = $this->app['razorx']->getTreatment(
+                $gateway,
+                'emandate_file_generation_instrumentation',
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                FileGenerationInstrumentation::dispatch($gatewayFileId, $this->mode);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::FILE_INSTRUMENTATION_DISPATCH_ERROR,
+                                [
+                                    File\Entity::ID => $gatewayFileId,
+                                    "error" => $ex
+                                ]);
+        }
     }
 }

@@ -116,6 +116,9 @@ class CombinedNachIcici extends Debit\Base
             $this->fileStore = $fileStoreIds;
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
+
+            $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_ICICI");
+
         }
         catch (\Throwable $e)
         {

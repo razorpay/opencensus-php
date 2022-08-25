@@ -122,6 +122,8 @@ class EnachNbIcici extends Debit\Base
                 [
                     'target' => $this->gatewayFile->getTarget(),
                 ]);
+
+            $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_NB_ICICI");
         }
         catch (\Throwable $e)
         {

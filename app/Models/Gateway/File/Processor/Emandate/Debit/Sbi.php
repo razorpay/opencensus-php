@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\File;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Sbi\Emandate\DebitFileHeadings as Headings;
@@ -159,6 +160,9 @@ class Sbi extends Base
                 [
                     'target' => $this->gatewayFile->getTarget(),
                 ]);
+
+            $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_SBI");
+
         }
         catch (\Throwable $e)
         {

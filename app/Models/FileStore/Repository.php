@@ -49,4 +49,12 @@ class Repository extends Base\Repository
             ->pluck(Entity::ID)
             ->toArray();
     }
+
+    public function getFilesBasedOnEntity(string $entityId)
+    {
+        return $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $entityId)
+            ->get()
+            ->toArray();
+    }
 }

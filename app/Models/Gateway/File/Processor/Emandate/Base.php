@@ -62,6 +62,7 @@ abstract class Base extends Processor\Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
+            $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "OTHER_BANKS");
         }
         catch (\Throwable $e)
         {
