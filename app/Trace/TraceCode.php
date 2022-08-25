@@ -6465,6 +6465,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const EXTERNAL_REPO_REQUEST_FAILURE                         = 'EXTERNAL_REPO_REQUEST_FAILURE';
     const PERFORM_ACTION_OBSERVER_DATA                          = 'PERFORM_ACTION_OBSERVER_DATA';
+    const ACTION_OBSERVER_TRACE                                 = 'ACTION_OBSERVER_TRACE';
     const GET_OBSERVER_DATA                                     = 'GET_OBSERVER_DATA';
     const UPDATE_OBSERVER_DATA                                  = 'UPDATE_OBSERVER_DATA';
 

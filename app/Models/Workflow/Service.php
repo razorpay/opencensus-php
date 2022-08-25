@@ -190,6 +190,9 @@ class Service extends Base\Service
             $workflowRequestData = (new DifferService)->fetchRequest($actionId);
         }
         catch (\Throwable $err) {
+            $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
+                'exception_caught' => $actionId
+            ]);
             // Data not found in ES, assign the fallback payload
             if (empty($workflowData) === true)
             {
@@ -217,15 +220,25 @@ class Service extends Base\Service
 
         $routeName = $workflowRequestData[DifferEntity::ROUTE];
 
+        $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
+            'route_name' => $routeName
+        ]);
+
         $observerClass = $this->getWorkflowObserverClassName($routeName);
 
         if (empty($observerClass) === true)
         {
+            $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
+                'empty_observer_class' => 'empty_observer_class'
+            ]);
             return;
         }
 
         if (key_exists($routeName,Observer\Constants::ROUTE_VS_RAZORX_EXPERIMENT) === true)
         {
+            $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
+                'experiment_check' => $actionId
+            ]);
             $variant  = $this->app['razorx']->getTreatment(
                 $actionId,
                 Observer\Constants::ROUTE_VS_RAZORX_EXPERIMENT[$routeName],
@@ -233,10 +246,17 @@ class Service extends Base\Service
 
             if ($variant === 'control')
             {
+                $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
+                    'experiment_failure' => $actionId
+                ]);
                 return;
             }
         }
 
+        $this->trace->info(TraceCode::ACTION_OBSERVER_TRACE, [
+            'state' => $state
+        ]);
+        
         $observerData = $workflowRequestData[DifferEntity::WORKFLOW_OBSERVER_DATA] ?? [];
         // action id at times is not present in $workflowRequestData, pass it explicitly
         $observerData[DifferEntity::ACTION_ID] = $actionId;
