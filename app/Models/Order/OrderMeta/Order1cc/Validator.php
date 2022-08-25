@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         Fields::COD_FEE          => 'sometimes|integer',
         Fields::PROMOTIONS       => 'sometimes|array|custom',
         Fields::CUSTOMER_DETAILS => 'sometimes|array|custom',
+        Fields::COD_INTELLIGENCE => 'sometimes|array',
     ];
 
     protected static $editCustomerDetailsRules = [

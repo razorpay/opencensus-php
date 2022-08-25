@@ -491,7 +491,7 @@ class PGRouter
         return $this->forceFillOrderFromResponse($response);
     }
 
-    public function updateInternalOrder(array $input, $orderId, $merchantId, bool $throwExceptionOnFailure = false)
+    public function updateInternalOrder(array $input, $orderId, $merchantId, bool $throwExceptionOnFailure = false, $timeout = self::DEFAULT_REQUEST_TIMEOUT)
     {
         $endpoint = 'v1/internal/orders/' . $orderId;
 
@@ -500,7 +500,7 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
-        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
+        $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, $timeout, true);
 
         return $this->forceFillOrderFromResponse($response);
     }

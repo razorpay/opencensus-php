@@ -82,7 +82,10 @@ class Service extends Base\Service
 
             $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
-            $orderMeta = $this->repo->order_meta->findByPublicOrderIdAndType($orderId, FeatureConstants::ONE_CLICK_CHECKOUT);
+            $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
+            {
+                return $orderMeta->getType() === \RZP\Models\Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+            });
 
             if($orderMeta === null)
             {

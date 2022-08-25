@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Order\OrderMeta;
 
+use RZP\Services\Mutex;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -17,6 +19,26 @@ use RZP\Models\Feature\Constants as FeatureConstants;
  */
 class Core extends Base\Core
 {
+    const MUTEX_PREFIX_1CC = "1cc_order_m:";
+
+    protected $mutex_expiry_ttl;
+    protected $mutex_1cc_retries;
+    protected $pg_router_ttl;
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+        $this->mutex_1cc_retries = $this->app['config']->get('app.magic_checkout.magic_pg_order_mutex_retries');
+        $this->mutex_expiry_ttl  = $this->app['config']->get('app.magic_checkout.magic_pg_order_mutex_ttl');
+        $this->pg_router_ttl     = $this->app['config']->get('app.magic_checkout.magic_pg_order_call_ttl');
+    }
+
     /**
      * @param Order\Entity $order
      * @param array        $input
@@ -37,7 +59,7 @@ class Core extends Base\Core
             return null;
         }
 
-        list($order1ccData, $orderInput) = $this->extract1ccFields($input);
+        [$order1ccData, $orderInput] = $this->extract1ccFields($input);
         if (empty($order1ccData))
         {
             // In case 1CC enabled merchant is creating non-1cc order.
@@ -54,6 +76,18 @@ class Core extends Base\Core
         ];
 
         return $this->saveOrderMeta($orderMetaInput);
+    }
+
+    protected function acquireAndRelease1ccOrderMutex($orderId, callable $callback)
+    {
+        $mutexKey = $this->get1ccOrderMutex($orderId);
+        return $this->mutex->acquireAndReleaseStrict(
+            $mutexKey,
+            $callback,
+            $this->mutex_expiry_ttl,
+            ErrorCode::SERVER_ERROR_MUTEX_RESOURCE_NOT_ACQUIRED,
+            $this->mutex_1cc_retries
+        );
     }
 
     public function extract1ccFields(array $input): array
@@ -225,63 +259,98 @@ class Core extends Base\Core
      * @param string $orderId
      * @param array $orderMetaInput
      * @return array
+     * @throws ServerErrorException
      */
     public function update1CCOrder(string $orderId, array $orderMetaInput): array
     {
         (new Order1cc\Validator())->validateInput('edit1CCOrder', $orderMetaInput);
 
-        $orderMeta = $this->repo->transaction(function () use ($orderId, $orderMetaInput)
-        {
-            $orderId = Order\Entity::verifyIdAndSilentlyStripSign($orderId);
-            $orderMeta = $this->repo->order_meta->findByOrderIdAndType($orderId, Type::ONE_CLICK_CHECKOUT);
-            $value = $orderMeta->getValue();
+        $orderId = Order\Entity::verifyIdAndSilentlyStripSign($orderId);
 
-            foreach ($orderMetaInput as $key => $val)
+        // Transaction is not required while reading $order,$orderMeta since we acquired mutex.
+        // 1cc orders will not get updated in flows outside 1cc other than payment flow.
+        // This code only executes before a payment begins.
+        // $order, $orderMeta are updated as required here and saved later.
+        // Total Timeout = read [2s] + write [2s] = 4s
+        // Mutex TTL = 5s
+        $action = function () use ($orderId, $orderMetaInput)
+        {
+            [$order, $orderMeta] = (function () use ($orderId, $orderMetaInput)
             {
-                if ($key === Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS) {
-                    foreach($val as $k => $v) {
-                        $value[$key][$k] = $v;
+                $order = $this->repo->order->findByIdAndMerchant($orderId, $this->merchant);
+                $orderMeta = array_first($order->orderMetas, function ($orderMeta)
+                {
+                    return $orderMeta->getType() === Type::ONE_CLICK_CHECKOUT;
+                });
+
+                $value = $orderMeta->getValue();
+
+                foreach ($orderMetaInput as $key => $val)
+                {
+                    if ($key === Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS)
+                    {
+                        foreach ($val as $k => $v)
+                        {
+                            $value[$key][$k] = $v;
+                        }
+                        continue;
                     }
-                    continue;
+                    $value[$key] = $val;
                 }
-                $value[$key] = $val;
+
+                $value = $this->calculateAndUpdateNetPrice($value);
+                $orderMeta->setValue($value);
+                $order->setAmount($value[Order1cc\Fields::NET_PRICE]);
+                return [$order, $orderMeta];
+            })();
+
+            if ($order->isExternal() === true)
+            {
+                $pgRouterInput = [
+                    "amount"      => $order->getAmount(),
+                    "order_metas" => [
+                        $orderMeta->toArrayPublic(),
+                    ],
+                ];
+                // throws exception on failure. 4 secs timeout
+                $this->app['pg_router']->updateInternalOrder($pgRouterInput, $orderId, $this->merchant->getId(), true, $this->pg_router_ttl);
+            }
+            else
+            {
+                $this->repo->transaction(function () use ($order, $orderMeta)
+                {
+                    $this->repo->order_meta->saveOrFail($orderMeta);
+                    $this->repo->saveOrFail($order);
+                });
             }
 
-            $value = $this->calculateAndUpdateNetPrice($value);
-            $orderMeta->setValue($value);
-            $this->repo->order_meta->saveOrFail($orderMeta);
+            return [$order, $orderMeta];
+        };
 
-            $order = $this->repo->order->findByIdAndMerchant($orderId, $this->merchant);
-            $order->setAmount($value[Order1cc\Fields::NET_PRICE]);
-            $this->repo->saveOrFail($order);
-
-            return $orderMeta;
-        });
+        /*
+         * Acquiring and releasing mutex with
+         * 1. Mutex TTL = 5s
+         * 2. Retry = 10 tries
+         * 3. Retry Min delay = 100ms
+         * 4. Retry Max delay = 200ms
+         * Max Request Timeout delay = 200 * 10 ms = 2s
+         * PG-Router internal order update latecy: https://vajra.razorpay.com/d/ncy_6U5Mz/pg-router-metrics?viewPanel=76&orgId=1&refresh=30s
+         * Metric Snapshot https://vajra.razorpay.com/dashboard/snapshot/LH2WV8rspObPRfmF2dWu1G5N5TGIHZSW
+         * */
+        [$order, $orderMeta] = $this->acquireAndRelease1ccOrderMutex($orderId, $action);
 
         return array_merge(
             $orderMeta->getValue(),
-            [Order\Entity::AMOUNT => $orderMeta->getValue()[Order1cc\Fields::NET_PRICE]]);
+            [Order\Entity::AMOUNT => $order->getAmount()]);
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public function updateCODIntelligence(string $orderId, array $codIntelligenceInput): array
     {
-        $orderMeta = $this->repo->transaction(function () use ($orderId, $codIntelligenceInput)
-        {
-            $orderId = Order\Entity::verifyIdAndSilentlyStripSign($orderId);
-            $orderMeta = $this->repo->order_meta->findByOrderIdAndType($orderId, Type::ONE_CLICK_CHECKOUT);
-            if ($orderMeta === null)
-            {
-                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
-            }
-            $value = $orderMeta->getValue();
-            $value[Order\OrderMeta\Order1cc\Fields::COD_INTELLIGENCE] = $codIntelligenceInput;
-            $orderMeta->setValue($value);
-            $this->repo->order_meta->saveOrFail($orderMeta);
-
-            return $orderMeta;
-        });
-
-        return $orderMeta->getValue();
+        $input = [Order1cc\Fields::COD_INTELLIGENCE => $codIntelligenceInput];
+        return $this->update1CCOrder($orderId, $input);
     }
 
     public function validateOfflineAdditionalInfo(array $offlineInfo)
@@ -319,5 +388,10 @@ class Core extends Base\Core
         $value[Order1cc\Fields::SUB_TOTAL] = $subTotal;
 
         return $value;
+    }
+
+    protected function get1ccOrderMutex(string $orderId) : string
+    {
+        return self::MUTEX_PREFIX_1CC . $orderId;
     }
 }
