@@ -359,9 +359,16 @@ class Service extends Base\Service
 
         $shopifyOrderName = strval($shopifyOrder['order']['name']);
 
-        $rzpOrder->setReceipt($shopifyOrderName);
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_RECEIPT_UPDATE,
+            [
+                'step'     => 'update_receipt',
+                'order_id' => $rzpOrder->getId(),
+                'receipt'  => $shopifyOrderName,
+                'external' => $rzpOrder->isExternal()
+        ]);
 
-        $this->repo->saveOrFail($rzpOrder);
+        (new Order\Core)->updateReceipt($rzpOrder, $shopifyOrderName);
     }
 
     // returns list of coupons, filter out personal and shipping coupons

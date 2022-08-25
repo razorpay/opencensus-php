@@ -984,4 +984,31 @@ class Core extends Base\Core
 
         return $publicKey;
     }
+
+    /**
+     * update receipt for 1cc orders
+     *
+     * @param Entity $order
+     *
+     * @return void
+     */
+    public function updateReceipt(Entity $order, string $receipt): void
+    {
+        $order->setReceipt($receipt);
+
+        if ($order->isExternal() === true)
+        {
+            $this->app['pg_router']->updateInternalOrder(
+                [
+                    'receipt' => $order->getReceipt(),
+                ],
+                $order->getId(),
+                $order->getMerchantId(),
+                true);
+        }
+        else
+        {
+            $this->repo->saveOrFail($order);
+        }
+    }
 }
