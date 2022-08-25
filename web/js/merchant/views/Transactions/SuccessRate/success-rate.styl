@@ -152,9 +152,19 @@ $spacer = 8px
 
 .sr-dashboard .panel.dasboard-home-panel
   padding: $spacer * 3 $spacer * 1.5
+  div.panel-actions
+    margin-left: auto
+    .panel-action-item
+      margin-left: 0
 
 .sr-dashboard .alert-danger
   padding: $spacer
+
+.sr-dashboard .row
+  display: flex
+  flex-wrap: wrap
+  margin-left: -15px
+  margin-right: -15px
 
 .sr-dashboard .box-widget
   position: relative
@@ -235,19 +245,17 @@ $spacer = 8px
 .sr-metrics .graph-panel
   &__topbar
     display: flex
-    align-items: center
     justify-content: space-between
     padding-right: $spacer * 2
     padding-left: $spacer * 3
-    .panel-actions
-      margin-left: auto
+
   div.chart-container
     position: relative
     height: 265px
 
 /************************************************************/
 
-/********** Success rate pill buttons **********/
+/********** Success rate graph widget tags **********/
 
 .sr-metrics
   .tags-loader
@@ -255,7 +263,8 @@ $spacer = 8px
   .tags-group
     display: flex
     align-items: center
-    flex-wrap: nowrap
+    flex-wrap: wrap
+    flex-basis: 60%
     &__tag
       display: flex
       align-items: center
@@ -266,6 +275,7 @@ $spacer = 8px
       border: 1px solid $pill-color
       border-radius: 16px
       margin-inline: 4px
+      margin-bottom: $spacer
       cursor: pointer
 
 /************************************************************/
@@ -275,19 +285,11 @@ $spacer = 8px
 .sr-dashboard .volume-container
   display: flex
   flex-direction: column
-  .row
-    margin-left: -15px
-    margin-right: -15px
   .chart-col .pie-chart
     width: 100%
     height: 250px
-  .info-col
-    width: 100%
-    display: flex
-    flex-wrap: wrap
   .info-card
-    padding-inline: $spacer * 2
-    padding-bottom: $spacer * 4
+    margin-bottom: $spacer * 4
     .styled-header
       margin-bottom: $spacer * 2
     &__label
@@ -324,10 +326,6 @@ $spacer = 8px
       padding-inline: 0
       text-align: start
     .rp-grid
-      display: flex
-      flex-wrap: wrap
-      margin-right: -15px
-      margin-left: -15px
       margin-top: $spacer * 4
       &__item
         margin-bottom: $spacer * 4

@@ -11,11 +11,11 @@ import { pieChartOptions as options, piePlugins as plugins } from '../chartConfi
 import { getPieChartData } from '../helper';
 import { TAG_MAP, TAG_OVERALL_MAP } from '../constants';
 
-const renderInfoCard = ({ name = '--', successful, total, sr } = {}, index) => {
+const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
   if (name === 'others' && !sr) return null;
-  const label = TAG_MAP[name] ?? name;
+  const label = (TAG_MAP[name] ?? name) || '--';
   return (
-    <div key={`${name}___${index}`} className="info-card">
+    <div key={`${name}___${index}`} className="col-md-4 info-card">
       <StyledHeader text={label} />
       <div className="info-card__label">
         <p className="label-text">Successful / Total Attempts</p>
@@ -59,9 +59,9 @@ const VolumePieWidget = (props) => {
           </div>
         </div>
         <div className="col-sm-12 col-md-7">
-          <div className="info-col">
-            {!isLoading && data?.sr ? (
-              <div className="info-card">
+          <div className="row info-col">
+            {!isLoading && data?.sr && (
+              <div className="col-md-4 info-card">
                 {isLoading ? (
                   <PlaceholderLoader style={{ marginBottom: '10px' }} />
                 ) : (
@@ -86,7 +86,7 @@ const VolumePieWidget = (props) => {
                   </div>
                 )}
               </div>
-            ) : undefined}
+            )}
             {!isEmpty(groupData) && groupData?.map(renderInfoCard)}
           </div>
         </div>

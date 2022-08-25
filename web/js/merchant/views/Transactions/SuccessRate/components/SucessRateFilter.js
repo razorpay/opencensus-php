@@ -41,8 +41,12 @@ const SucessRateFilter = (props) => {
   };
 
   const onReset = async () => {
-    const payload = initialFilters();
+    const initialValue = initialFilters();
+    updateDateRange(initialValue);
+    const payload = queryFilters();
     await fetchSuccessRate(payload);
+    const errorsPaylod = getMerchantErrorsPayload();
+    await fetchMerchantErrors(errorsPaylod);
   };
 
   return (
