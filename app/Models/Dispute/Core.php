@@ -963,7 +963,7 @@ class Core extends Base\Core
             'extension'     => 'pdf',
             'msg_type'      => 'DOCUMENT',
             'is_cta_template' => true,
-            'button_url_param' => 'signin?screen=sign_in',
+            'button_url_param' => 'app/disputes',
         ];
 
         $this->sendWhatsappMessage($merchant, DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE_NAME,
