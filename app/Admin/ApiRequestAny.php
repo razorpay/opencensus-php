@@ -161,6 +161,10 @@ class ApiRequestAny
 
         $headers = array_merge($defaultHeaders, $headers);
 
+        if (empty(Request::header('ledger-tenant')) === false) {
+            $headers['ledger-tenant'] = Request::header('ledger-tenant'); // only add the header if it exists
+        }
+
         // === Request options
 
         $this->options = [
