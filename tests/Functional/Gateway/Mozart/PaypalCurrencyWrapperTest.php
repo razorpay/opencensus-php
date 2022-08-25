@@ -126,4 +126,17 @@ class PaypalCurrencyWrapperTest extends TestCase
 
         return $this->submitPaymentCallbackRequest($data);
     }
+
+    public function testPaypalSupportedCurrencies()
+    {
+        $payment = $this->payment;
+        $payment['dcc_currency'] = Currency::NGN;
+        $payment['currency_request_id'] = "currencyRequestId";
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
 }

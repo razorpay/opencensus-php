@@ -124,4 +124,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DCC_INVALID_REQUEST_ID
         ],
     ],
+
+    'testPaypalSupportedCurrencies' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Currency is not supported',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED
+        ],
+    ],
 ];

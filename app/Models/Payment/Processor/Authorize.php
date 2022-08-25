@@ -4169,6 +4169,19 @@ trait Authorize
         {
             $dccCurrency = $input['dcc_currency'];
 
+            if (in_array($dccCurrency, Gateway\Constants::PAYPAL_SUPPORTED_CURRENCIES) === false) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                    null,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'dccCurrency' => $dccCurrency,
+                        'wallet' => Wallet::PAYPAL,
+                        'currency' => $input['currency'],
+                    ]
+                );
+            }
+                                
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             // markup of 5 is hardcoded at org-level
