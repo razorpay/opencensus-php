@@ -160,16 +160,21 @@ export default class Support extends Component {
         this.setState({ notifyCount: response.count });
       });
     }
-    const chatBotInt = setInterval(() => {
-      if (window.chatBotCloseIcon) {
-        this.setState({ botIsLoaded: true });
-        window.chatBotCloseIcon.onclick = () => {
-          window.chatbotToggle();
-          this.handleVisibility(false);
-        };
-        clearInterval(chatBotInt);
-      }
-    }, 500);
+
+    const { user = {} } = this.props;
+
+    if (user.isChatbotLive && !user.isFreshChatbotLive) {
+      const chatBotInt = setInterval(() => {
+        if (window.chatBotCloseIcon) {
+          this.setState({ botIsLoaded: true });
+          window.chatBotCloseIcon.onclick = () => {
+            window.chatbotToggle();
+            this.handleVisibility(false);
+          };
+          clearInterval(chatBotInt);
+        }
+      }, 500);
+    }
   };
 
   disableScrolling = () => {
@@ -208,7 +213,7 @@ export default class Support extends Component {
 
   handleChat = () => {
     const { user = {} } = this.props;
-    if (user.isChatbotLive) {
+    if (user.isChatbotLive && !user.isFreshChatbotLive) {
       if (window.chatbotToggle) {
         window.chatbotToggle();
       }

@@ -221,7 +221,7 @@ class App extends Component {
         });
         this.redirectToRoute(role);
         this.setLiveTransactionDone(user);
-        if (user.isChatbotLive) {
+        if (user.isChatbotLive && !user.isFreshChatbotLive) {
           initChatbot(user);
         } else {
           setTimeout(() => {

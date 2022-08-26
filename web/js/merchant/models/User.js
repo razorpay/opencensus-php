@@ -711,6 +711,9 @@ export default class User {
   get isChatbotLive() {
     return this.getExpStatus('razorpay_chat_bot');
   }
+  get isFreshChatbotLive() {
+    return this.getExpStatus('is_freshchat_chatbot_enabled');
+  }
 
   get isMobileSignupCareActive() {
     return this.getExpStatus('mobile_signup_care_changes_active');

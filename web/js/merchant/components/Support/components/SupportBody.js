@@ -306,7 +306,7 @@ class SupportBody extends Component {
   };
 
   chatWithUsTracking = ({ showChat } = {}) => {
-    const { user: { isChatbotLive } = {} } = this.props;
+    const { user: { isChatbotLive, isFreshChatbotLive } = {} } = this.props;
 
     analyticsTrack({
       objectName: 'chat with us',
@@ -315,6 +315,7 @@ class SupportBody extends Component {
       properties: {
         isChatbot: isChatbotLive,
         isAvailable: showChat,
+        isContextual: isFreshChatbotLive,
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...getCommonSupportProperties(),
       },
