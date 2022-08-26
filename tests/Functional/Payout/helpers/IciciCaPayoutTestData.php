@@ -618,4 +618,78 @@ return [
             ],
         ],
     ],
+
+    'testPayout2faOtpSend' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/2fa/send_otp',
+            'content' => ['payout_id' => 'pout_FUj82QLoJgRcM0'],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testPayout2faOtpSendInvalidPayload' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/2fa/send_otp',
+            'content' => ['abc' => 'def'],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'abc is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testPayout2faOtpSendPayoutNotInPendingState' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/2fa/send_otp',
+            'content' => ['payout_id' => 'pout_FUj82QLoJgRcM0'],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'ICICI 2FA payout OTP creation is not allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_TO_TRIGGER_2FA_OTP,
+        ],
+    ],
+
+    'testPayout2faOtpSendMerchantNotEnabled' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts/2fa/send_otp',
+            'content' => ['payout_id' => 'pout_FUj82QLoJgRcM0'],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'ICICI 2FA payout OTP creation is not allowed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_TO_TRIGGER_2FA_OTP,
+        ],
+    ],
 ];

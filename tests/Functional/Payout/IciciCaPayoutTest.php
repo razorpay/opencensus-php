@@ -1787,4 +1787,78 @@ class IciciCaPayoutTest extends TestCase
 
         $this->assertEquals($payout->getPublicId(), $response['id']);
     }
+
+    public function testPayout2faOtpSend()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'pending'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testPayout2faOtpSendInvalidPayload()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'created'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testPayout2faOtpSendPayoutNotInPendingState()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'created'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testPayout2faOtpSendMerchantNotEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->create('payout', [
+            'id' => 'FUj82QLoJgRcM0',
+            'merchant_id' => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount' => 100,
+            'balance_id' => $this->bankingBalance->getId(),
+            'status' => 'created'
+        ]);
+
+        $this->startTest();
+    }
 }

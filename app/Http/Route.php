@@ -1632,6 +1632,7 @@ class Route
         'payout_create_with_otp'                   => ['post',     'payouts_with_otp',                               'PayoutController@postFundAccountPayoutWithOtp'                     ],
         'payout_create_2FA'                        => ['post',     'payouts/2fa/create',                             'PayoutController@postFundAccountPayout2faForIciciCa'               ],
         'payout_create_2FA_internal'               => ['post',     'payouts/2fa/create_internal',                    'PayoutController@postFundAccountPayout2faForIciciCa'               ],
+        'payout_send_2FA_otp'                      => ['post',     'payouts/2fa/send_otp',                           'PayoutController@payout2faOtpSendForIciciCa'                       ],
         'orphan_payouts_count_cron'                => ['post',     'payout_outbox/orphan_payouts/count',             'PayoutOutboxController@getOrphanedPayouts'                         ],
         'orphan_payouts_delete'                    => ['post',     'payout_outbox/orphan_payouts/delete',            'PayoutOutboxController@deleteOrphanedPayouts'                      ],
         'payout_approve_bulk'                      => ['post',     'payouts/approve/bulk',                           'PayoutController@bulkApproveFundAccountPayouts'                    ],
@@ -5188,6 +5189,7 @@ class Route
         'user_verify_through_mode',
         'payout_create_with_otp',
         'payout_create_2FA',
+        'payout_send_2FA_otp',
         'undo_payout_creation',
         'resume_payout_creation',
         'payout_validate',
@@ -5686,6 +5688,7 @@ class Route
         'user_verify_email',
         'payout_create_with_otp',
         'payout_create_2FA',
+        'payout_send_2FA_otp',
         'payout_update_attachments',
         'payout_download_attachments',
         'payout_report_get_attachment_signed_url',
@@ -8083,6 +8086,7 @@ class Route
         'payouts_batch_create'                     => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                   => Permission::CREATE_PAYOUT,
         'payout_create_2FA'                        => Permission::CREATE_PAYOUT,
+        'payout_send_2FA_otp'                      => Permission::CREATE_PAYOUT,
         'undo_payout_creation'                     => Permission::CREATE_PAYOUT,
         'resume_payout_creation'                   => Permission::CREATE_PAYOUT,
 
@@ -8651,6 +8655,7 @@ class Route
         'payouts_batch_create'                         => Permission::CREATE_PAYOUT,
         'payout_create_with_otp'                       => Permission::CREATE_PAYOUT,
         'payout_create_2FA'                            => Permission::CREATE_PAYOUT,
+        'payout_send_2FA_otp'                          => Permission::CREATE_PAYOUT,
         'undo_payout_creation'                         => Permission::CREATE_PAYOUT,
         'resume_payout_creation'                       => Permission::CREATE_PAYOUT,
         'payout_get_holiday_details'                   => Permission::CREATE_PAYOUT,
@@ -10104,6 +10109,7 @@ class Route
             'payout_validate',
             'payout_create_with_otp',
             'payout_create_2FA',
+            'payout_send_2FA_otp',
             'payout_update_attachments',
             'payout_download_attachments',
             'payout_report_get_attachment_signed_url',
@@ -11864,6 +11870,7 @@ class Route
             'payout_validate',
             'payout_create_with_otp',
             'payout_create_2FA',
+            'payout_send_2FA_otp',
             'undo_payout_creation',
             'resume_payout_creation',
             'payout_fetch_by_id',
@@ -13850,6 +13857,7 @@ class Route
         'payout_update_status'                 => [Feature::PAYOUT],
         'payout_create_with_otp'               => [Feature::PAYOUT],
         'payout_create_2FA'                    => [Feature::PAYOUT],
+        'payout_send_2FA_otp'                  => [Feature::PAYOUT],
         'undo_payout_creation'                 => [Feature::PAYOUT],
         'resume_payout_creation'               => [Feature::PAYOUT],
         'payout_fetch_by_id'                   => [Feature::PAYOUT],
@@ -14337,6 +14345,7 @@ class Route
         'payouts_batch_create',
         'payout_create_with_otp',
         'payout_create_2FA',
+        'payout_send_2FA_otp',
         'undo_payout_creation',
         'resume_payout_creation',
         'payout_bulk_create',
@@ -14637,6 +14646,7 @@ class Route
         'banking_accounts_list',
         'user_fetch_self',
 //        'payout_create_2FA'    // TODO: check if this is needed
+//        'payout_send_2FA_otp'  // TODO: check if this is needed
     ];
 
     public static $routesWithV2Prefix = [

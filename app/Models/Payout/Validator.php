@@ -105,6 +105,8 @@ class Validator extends Base\Validator
     const PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON    = 'payouts_service_create_failure_processing_cron';
     const PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON    = 'payouts_service_update_failure_processing_cron';
 
+    const PAYOUT_2FA_OTP_SEND_REQUEST  =  'payout_2fa_otp_send_request';
+
     const AMOUNT_REGEX = '/[^0-9]/';
 
     const TDS_CATEGORY_ID_CACHE_KEY = 'tds_category_id_list';
@@ -469,6 +471,10 @@ class Validator extends Base\Validator
     protected static $dataConsistencyCheckerPayoutsDetailFetchRules = [
         Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_DATA_CONSISTENCY_CHECKER_PAYOUT_IDS,
         Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
+    ];
+
+    protected static $payout2faOtpSendRequestRules = [
+        Payout\Entity::PAYOUT_ID  => 'required|filled|string'
     ];
 
     protected function validateMethod($attribute, $method)

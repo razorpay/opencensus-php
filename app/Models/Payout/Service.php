@@ -914,6 +914,66 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
+    /**
+     * Sends an OTP creation request to FTS for ICICI 2FA payouts
+     *
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     */
+
+    public function otpSendForIciciCa2fa(array $input): array
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_2FA_OTP_SEND_REQUEST, $input);
+
+        $payoutId = $input[Payout\Entity::PAYOUT_ID];
+
+        $this->trace->info(TraceCode::PAYOUT_2FA_OTP_SEND_REQUEST,
+            [
+                Entity::PAYOUT_ID   => $payoutId,
+                Entity::MERCHANT_ID => $this->merchant->getId()
+            ]);
+
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
+
+        if ($payout->getStatus() !== Payout\Status::PENDING)
+        {
+            $this->trace->info(TraceCode::PAYOUT_2FA_OTP_REQUEST_NOT_ALLOWED,
+                [
+                    Entity::PAYOUT_ID    => $payoutId,
+                    Entity::STATUS       => $payout->getStatus(),
+                    Entity::MERCHANT_ID  => $this->merchant->getId()
+                ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ALLOWED_TO_TRIGGER_2FA_OTP,
+                null,
+                null,
+                'Merchant is not allowed to trigger OTP for 2FA payout'
+            );
+        }
+
+        Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($payout->balance, $this->merchant);
+
+        try
+        {
+            $this->core->triggerIciciOtpForPayoutViaFts($payout);
+        }
+        catch (Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::PAYOUT_2FA_OTP_REQUEST_TO_FTS_FAILED,
+                [
+                    Entity::PAYOUT_ID   => $payoutId,
+                    Entity::MERCHANT_ID => $this->merchant->getId()
+                ]);
+        }
+
+        return ['success' => true];
+    }
+
     private function shouldCreateUndoablePayout()
     {
         if ($this->auth->isXDashboardApp() === false) {

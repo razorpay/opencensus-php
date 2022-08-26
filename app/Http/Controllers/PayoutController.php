@@ -831,4 +831,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function payout2faOtpSendForIciciCa()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->otpSendForIciciCa2fa($input);
+
+        return ApiResponse::json($response);
+    }
 }
