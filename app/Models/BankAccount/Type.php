@@ -14,7 +14,6 @@ class Type
     const CONTACT         = 'contact';
     const QR_CODE         = 'qr_code';
     const ORG_SETTLEMENT  = 'org_settlement';
-    const ORG             = 'org';
 
     public static function validateType($type)
     {

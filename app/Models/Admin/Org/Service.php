@@ -6,9 +6,6 @@ use RZP\Models\Base;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Admin;
-use RZP\Models\BankAccount;
-use RZP\Exception\BadRequestException;
-use RZP\Error\ErrorCode;
 use Config;
 
 class Service extends Base\Service
@@ -55,64 +52,6 @@ class Service extends Base\Service
         });
 
         return $org->toArrayPublic();
-    }
-
-    public function createOrgBankAccount($input)
-    {
-        if (isset($input[Entity::TYPE]) === false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_BANK_ACCOUNT_TYPE_NOT_FOUND);
-        }
-
-        if ($input[Entity::TYPE] != BankAccount\Type::ORG)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_BANK_ACCOUNT_TYPE_MISMATCH);
-        }
-
-        if (isset($input[BankAccount\Entity::ENTITY_ID]) == false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_BANK_ACCOUNT_ENTITY_ID_NOT_PRESENT);
-        }
-
-        $orgId = $input[BankAccount\Entity::ENTITY_ID];
-
-        $type = $input[Entity::TYPE];
-
-        $oldBankAccount = $this->repo->bank_account->getOrgBankAccount($orgId,$type);
-
-        if ($oldBankAccount !== null)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ORG_BANK_ACCOUNT_ALREADY_EXISTS);
-        }
-
-        $ba = (new BankAccount\Core)->createOrOrgBankAccount($input);
-
-        return $ba;
-    }
-
-    public function updateOrgBankAccount($id, $input)
-    {
-        $oldBankAccount = $this->repo->bank_account->getOrgBankAccount($id);
-
-        if ($oldBankAccount === null)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ORG_NO_BANK_ACCOUNT_FOUND);
-        }
-
-        return (new BankAccount\Core)->editOrgBankAccount($oldBankAccount, $input)->toArray();
-    }
-
-    public function getOrgBankAccount($entity_id)
-    {
-        $ba = $this->repo->bank_account->getOrgBankAccount($entity_id);
-
-        if ($ba === null)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ORG_NO_BANK_ACCOUNT_FOUND);
-        }
-
-        return $ba->toArray();
     }
 
     /*

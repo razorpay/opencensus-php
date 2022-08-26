@@ -116,11 +116,6 @@ class Api extends Base
         return $this->makeRequest(self::BANK_ACCOUNT_CREATE, $req, self::SERVICE_API, $mode);
     }
 
-    public function forwardCustomSettlementFileReadRequest($input, $mode = null)
-    {
-        return $this->makeRequest(self::PROCESS_CUSTOM_SETTLEMENTS_FILE, $input, self::SERVICE_API, $mode);
-    }
-
     /**
      * ledgerCronActiveMtuCheck used to check if merchant is already added as ledger cron active mtu
      * @param array $input

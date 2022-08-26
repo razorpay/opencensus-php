@@ -86,7 +86,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_account';
 
     protected $fillable = [
-        self::ENTITY_ID,
         self::IFSC,
         self::IFSC_CODE,
         self::MOBILE_BANKING_ENABLED,
@@ -591,14 +590,6 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENTITY_ID] = $merchant->getId();
 
         $this->attributes[self::TYPE] = $type ?? Type::MERCHANT;
-    }
-
-    public function associateOrg($orgId,$type=null)
-    {
-
-        $this->attributes[self::ENTITY_ID] = $orgId;
-
-        $this->attributes[self::TYPE] = $type ?? Type::ORG;
     }
 
     public function getRedactedAccountNumber()

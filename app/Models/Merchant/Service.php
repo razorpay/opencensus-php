@@ -8013,8 +8013,7 @@ class Service extends Base\Service
             "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
             "global_hold_status"   => $merchant->getHoldFunds(),
             "global_hold_reason"   => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
-            "settle_to_org"        => $this->getMerchantOrgSettleValue($merchant),
-            "org_id"               => $merchant->getOrgId()
+            "settle_to_org"        => $this->getMerchantOrgSettleValue($merchant)
         ];
     }
 

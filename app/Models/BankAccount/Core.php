@@ -48,17 +48,6 @@ class Core extends Base\Core
 
     const BANK_ACCOUNT_UPDATE_WORKFLOW_COMMENT_FOR_DEDUPE = 'dedupe_status: true, matchedMIDs = {%s}';
 
-    public function createOrOrgBankAccount($input)
-    {
-        $newBankAccount = $this->buildOrgBankAccount($input, $this->mode);
-
-        $this->repo->saveOrFail($newBankAccount);
-
-        app('settlements_dashboard')->createBankAccount($newBankAccount, $this->mode, true);
-
-        return $newBankAccount;
-    }
-
     public function createOrChangeBankAccount($input,
                                               $merchant,
                                               $isWorkflowRequired = true,
@@ -218,23 +207,6 @@ class Core extends Base\Core
                         'add_fund_account_bank_account');
 
         return $ba;
-    }
-
-    public function  editOrgBankAccount(BankAccount\Entity $bankAccount, array $input)
-    {
-        $this->trace->info(
-            TraceCode::BANK_ACCOUNT_EDIT,
-            [
-                'org_id' => $bankAccount->getEntityId(),
-            ]);
-
-        $newBankAccount = $bankAccount->edit($input);
-
-        $this->repo->saveOrFail($newBankAccount);
-
-        app('settlements_dashboard')->orgBankAccountUpdate($newBankAccount);
-
-        return $newBankAccount;
     }
 
     public function editBankAccount(Entity $bankAccount, array $input)
@@ -550,19 +522,6 @@ class Core extends Base\Core
         $ba->getValidator()->validateIfscCode($input, $mode);
 
         $ba->merchant()->associate($merchant);
-
-        return $ba;
-    }
-
-    protected function buildOrgBankAccount($input, $mode)
-    {
-        $ba = new BankAccount\Entity;
-
-        $ba = $ba->build($input);
-
-        $ba->getValidator()->validateIfscCode($input, $mode);
-
-        $ba->merchant_id = '100000Razorpay';
 
         return $ba;
     }
