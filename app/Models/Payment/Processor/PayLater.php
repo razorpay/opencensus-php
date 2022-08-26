@@ -44,6 +44,12 @@ class PayLater
         ]
     ];
 
+    public static $defaultDisabledBanks = [
+        self::FLEXMONEY => [
+            IFSC::KKBK
+        ]
+    ];
+
     public static function exists($provider)
     {
         if (self::isMultilenderProvider($provider) === true)
@@ -94,5 +100,10 @@ class PayLater
     public static function getSupportedBanksForMultilenderProvider($provider)
     {
         return self::$supportedBanks[$provider];
+    }
+
+    public static function getDefaultDisabledBanksForMultilenderProvider($provider)
+    {
+        return self::$defaultDisabledBanks[$provider];
     }
 }

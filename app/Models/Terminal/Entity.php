@@ -1460,7 +1460,13 @@ class Entity extends Base\PublicEntity
         }
         elseif ($paylater === 1)
         {
-            $enabledBanks = Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+            $supportedBanks = Payment\Processor\Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+
+            $disabledBanks = Payment\Processor\Paylater::getDefaultDisabledBanksForMultilenderProvider($gatewayAquirer);
+
+            $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+            $enabledBanks = array_values($enabledBanks);
         }
         elseif ($cardlessEmi === 1)
         {

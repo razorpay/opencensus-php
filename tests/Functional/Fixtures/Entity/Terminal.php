@@ -72,7 +72,13 @@ class Terminal extends Base
         }
         elseif ($paylater === 1)
         {
-            $enabledBanks = Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+            $supportedBanks = Paylater::getSupportedBanksForMultilenderProvider($gatewayAquirer);
+
+            $disabledBanks = Paylater::getDefaultDisabledBanksForMultilenderProvider($gatewayAquirer);
+
+            $enabledBanks = array_diff($supportedBanks, $disabledBanks);
+
+            $enabledBanks = array_values($enabledBanks);
         }
 
         $attributes['enabled_banks'] = $enabledBanks;
