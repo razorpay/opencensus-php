@@ -113,6 +113,7 @@ class Tracing
             'vendor_payment_get_by_id',
             'vendor_payment_verify_otp',
             'vendor_payment_execute',
+            'vendor_payment_execute_2fa',
             'vendor_payment_get_tds_categories',
             'vendor_payment_edit',
             'vendor_payment_cancel',

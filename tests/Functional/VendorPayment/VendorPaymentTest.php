@@ -688,4 +688,19 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('getVendorBalance');
     }
+
+    public function testExecuteVendorPayment2faRouteCallsServiceMethod()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('executeVendorPayment2fa')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('executeVendorPayment2fa');
+    }
 }

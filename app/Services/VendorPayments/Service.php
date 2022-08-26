@@ -30,6 +30,7 @@ class Service
     const PUSH_PAYOUT_STATUS_UPDATE     = 'PayoutStatusChange';
     const GET_VENDOR_PAYMENT            = 'GetVendorPayment';
     const EXECUTE_VENDOR_PAYMENT        = 'ExecuteVendorPayment';
+    const EXECUTE_VENDOR_PAYMENT_2FA    = 'ExecuteVendorPaymentWith2Fa';
     const EXECUTE_VENDOR_PAYMENT_BULK   = 'ExecuteVendorPaymentBulk';
     const CREATE_CONTACT                = 'CreateContact';
     const UPDATE_CONTACT                = 'UpdateContactById';
@@ -391,6 +392,25 @@ class Service
                             Entity $user = null)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EXECUTE_VENDOR_PAYMENT);
+
+        $input['id'] = $vendorPaymentId;
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function executeVendorPayment2fa(MerchantEntity $merchant,
+                            string $vendorPaymentId,
+                            array $input,
+                            Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EXECUTE_VENDOR_PAYMENT_2FA);
 
         $input['id'] = $vendorPaymentId;
 

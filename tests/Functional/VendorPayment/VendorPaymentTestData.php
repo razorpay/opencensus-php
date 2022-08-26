@@ -787,4 +787,18 @@ return [
             'content' => []
         ]
     ],
+    'testExecuteVendorPayment2faRouteCallsServiceMethod' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/vdpm_123/2fa/execute',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

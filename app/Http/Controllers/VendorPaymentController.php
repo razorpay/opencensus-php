@@ -138,6 +138,11 @@ class VendorPaymentController extends Controller
         return $this->service->execute($this->ba->getMerchant(), $vendorPaymentId, $this->input, $this->ba->getUser());
     }
 
+    public function executeVendorPayment2fa(string $vendorPaymentId)
+    {
+        return $this->service->executeVendorPayment2fa($this->ba->getMerchant(), $vendorPaymentId, $this->input, $this->ba->getUser());
+    }
+
     public function vendorSettlementSingle()
     {
         return $this->service->vendorSettlementSingle($this->ba->getMerchant(),$this->input, $this->ba->getUser());
