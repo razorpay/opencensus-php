@@ -18,21 +18,30 @@ const DEFAULT_PERIOD = 'yesterday';
 
 const DATE_DISPLAY_FORMAT = 'll';
 
+const getInitialState = (defaultPeriod) => ({
+  values: {
+    selectedPeriod: defaultPeriod ?? DEFAULT_PERIOD,
+    selectedMonth: DEFAULT_SELECTED_MONTH,
+    selectedDate: DEFAULT_SELECTED_DATE,
+    selectedStartAt: DEFAULT_SELECTED_START_AT,
+    selectedEndAt: DEFAULT_SELECTED_END_AT,
+    selectedCustomConfigMonth: DEFAULT_SELECTED_MONTH,
+  },
+});
+
 export default class SelectPeriod extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      values: {
-        selectedPeriod: props.defaultPeriod || DEFAULT_PERIOD,
-        selectedMonth: DEFAULT_SELECTED_MONTH,
-        selectedDate: DEFAULT_SELECTED_DATE,
-        selectedStartAt: DEFAULT_SELECTED_START_AT,
-        selectedEndAt: DEFAULT_SELECTED_END_AT,
-        selectedCustomConfigMonth: DEFAULT_SELECTED_MONTH,
-      },
-    };
+    this.state = getInitialState(props.defaultPeriod);
   }
+
+  reset = () => {
+    const { defaultPeriod, onDateRangeChanges } = this.props;
+    const initialState = getInitialState(defaultPeriod);
+    this.setState(initialState);
+    const { selectedStartAt, selectedEndAt } = initialState.values;
+    onDateRangeChanges(selectedStartAt, selectedEndAt);
+  };
 
   onChange = ({ target }) => {
     const { name, value, checked } = target;
@@ -170,9 +179,16 @@ export default class SelectPeriod extends React.Component {
     );
   }
 
-  render() {
-    const { selectedPeriod, withTime, ...defaults } = this.state.values;
+  componentDidUpdate(prevProps) {
+    const { selectedConfig } = this.props;
+    if (prevProps.selectedConfig?.id != selectedConfig?.id) {
+      this.reset();
+    }
+  }
 
+  render() {
+    const { values } = this.state;
+    const { selectedPeriod, withTime, ...defaults } = values;
     const {
       avlblPeriodOptions = [],
       isCustomConfig,
@@ -195,6 +211,7 @@ export default class SelectPeriod extends React.Component {
               onChange={this.onChange}
               disabled={isFormDisabled}
               defaultValue={defaultPeriod}
+              value={values?.selectedPeriod}
             />
             {!isFormDisabled && <PredefinedPeriodDurations selectedPeriod={selectedPeriod} />}
 

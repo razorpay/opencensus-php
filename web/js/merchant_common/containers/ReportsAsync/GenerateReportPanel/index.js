@@ -79,8 +79,10 @@ export default class GenerateReportPanel extends React.PureComponent {
   };
 
   onDateRangeChanges = (startAt, endAt) => {
+    const { selectedConfig } = this.state;
+    const isAggregatedPartnerReport = selectedConfig?.template?.referred_accounts === 'all';
     this.setState({
-      dateRangeError: getDateRangeError(startAt, endAt),
+      dateRangeError: getDateRangeError(startAt, endAt, isAggregatedPartnerReport),
     });
   };
 
@@ -183,14 +185,7 @@ export default class GenerateReportPanel extends React.PureComponent {
   };
 
   render() {
-    const {
-      configs,
-      customConfigs,
-      accounts,
-      emailReportOptions,
-      showSelectAccount,
-      onlyDailyOptionsInReferredAccounts,
-    } = this.props;
+    const { configs, customConfigs, accounts, emailReportOptions, showSelectAccount } = this.props;
     const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     let allConfigs = [...configs.items, ...customConfigs];
 
@@ -205,10 +200,15 @@ export default class GenerateReportPanel extends React.PureComponent {
     const isCustomConfig = (selectedConfig || {}).type === 'custom';
     const isFormDisabled = !selectedConfig;
 
-    const avlblPeriodOptions = getAvlblPeriodOptions({
-      onlyDailyOptionsInReferredAccounts,
-      selectedConfig,
-    });
+    const avlblPeriodOptions = [
+      { label: 'Today', name: 'today' },
+      { label: 'Yesterday', name: 'yesterday' },
+      { label: 'Last 7 days', name: 'last_7_days' },
+      { label: 'Last Month', name: 'last_month' },
+      { label: 'Daily', name: 'daily' },
+      { label: 'Monthly', name: 'monthly' },
+      { label: 'Custom', name: 'dateRange' },
+    ];
 
     return configs.loading ? (
       <div className="page-spinner-container">
@@ -284,34 +284,13 @@ export default class GenerateReportPanel extends React.PureComponent {
   }
 }
 
-const defaultPeriodOptions = [
-  { label: 'Today', name: 'today' },
-  { label: 'Yesterday', name: 'yesterday' },
-  { label: 'Last 7 days', name: 'last_7_days' },
-  { label: 'Last Month', name: 'last_month' },
-  { label: 'Daily', name: 'daily' },
-  { label: 'Monthly', name: 'monthly' },
-  { label: 'Custom', name: 'dateRange' },
-];
-
-const dailyPeriodOptions = [
-  { label: 'Today', name: 'today' },
-  { label: 'Yesterday', name: 'yesterday' },
-  { label: 'Daily', name: 'daily' },
-];
-
-function getAvlblPeriodOptions({ onlyDailyOptionsInReferredAccounts, selectedConfig = {} }) {
-  const isReferredAccountsAll = (selectedConfig.template || {}).referred_accounts === 'all';
-  if (onlyDailyOptionsInReferredAccounts && isReferredAccountsAll) {
-    return dailyPeriodOptions;
-  }
-  return defaultPeriodOptions;
-}
-
-function getDateRangeError(startAt, endAt) {
+function getDateRangeError(startAt, endAt, aggregatedPartnerReport) {
   const difference = endAt.diff(startAt, 'days');
   if (difference < 0) {
     return "Start at date can't exceed end at date";
+  }
+  if (difference > 31 && aggregatedPartnerReport) {
+    return 'You can only select up to 31 days for this report.';
   }
   return false;
 }
