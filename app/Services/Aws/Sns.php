@@ -40,6 +40,12 @@ class Sns
             ],
         ];
 
+        //change the sns endpoint to localstack when the app mode is devserve
+        if (env('APP_MODE') === 'devserve')
+        {
+            $args['endpoint'] = 'https://localstack-services.dev.razorpay.in';
+        }
+
         $this->client = $sdk->createClient('sns', $args);
 
         $this->trace = $app['trace'];
