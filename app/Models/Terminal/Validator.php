@@ -546,7 +546,8 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_ACQUIRER           => 'required|in:ratn,axis',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
-        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string'
     ];
 
     protected static $amexTerminalRules = [
