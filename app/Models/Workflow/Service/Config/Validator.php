@@ -14,7 +14,8 @@ class Validator extends Base\Validator
     const WORKFLOW_CONFIG_UPDATE = 'workflow_config_update';
 
     protected static $workflowConfigCreateRules = [
-        Entity::TEMPLATE             => 'required|array',
+        Entity::TEMPLATE             => 'required_if:asl_template,null|array',
+        Entity::ASL_TEMPLATE         => 'required_if:template,null|array',
         Entity::VERSION              => 'required|numeric',
         Entity::TYPE                 => 'required|string|max:20',
         Entity::NAME                 => 'required|string|max:255',

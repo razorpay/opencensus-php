@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const NAMESPACE              = 'namespace';
     const NAME                   = 'name';
     const TEMPLATE               = 'template';
+    const ASL_TEMPLATE           = 'asl_template';
     const VERSION                = 'version';
     const CONTEXT                = 'context';
     const SERVICE                = 'service';
