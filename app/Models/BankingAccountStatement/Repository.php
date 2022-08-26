@@ -162,7 +162,7 @@ class Repository extends Base\Repository
 
     public function checkIfIdExists(string $id)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQuery()
                     ->where(Entity::ID, $id)
                     ->exists();
     }

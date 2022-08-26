@@ -112,7 +112,7 @@ class Core extends Base\Core
      *
      * @var array
      */
-    protected $previousBasTransactionDetails = null;
+    protected $insertedBasTransactionDetails = null;
 
      /**
       * This is used to check if the current process is just dry run or not
@@ -595,9 +595,10 @@ class Core extends Base\Core
 
             $groupedMissingStatements = $missingStatementsCollection->groupBy('posted_date');
 
-            $insertedBasEntities = [];
-
-            $insertedStatements = [];
+            $insertedBasEntities    = [];
+            $insertedStatements     = [];
+            $insertedBasIds         = [];
+            $insertedTransactionIds = [];
 
             foreach ($groupedMissingStatements as $postedDate => $groupOfStatements)
             {
@@ -613,8 +614,6 @@ class Core extends Base\Core
                     ]);
 
                 $previousBasId = $insertionDetails[Entity::ID];
-
-                $counter = 1;
 
                 foreach ($groupOfStatements as $statement)
                 {
@@ -632,7 +631,9 @@ class Core extends Base\Core
                         continue;
                     }
 
-                    $nextId = $this->generateNextUnUsedIdForEntity($previousBasId, $counter, Constants\Entity::BANKING_ACCOUNT_STATEMENT);
+                    $nextId = $this->generateNextUnUsedIdForEntity($previousBasId,
+                                                                   $insertedBasIds,
+                                                                   Constants\Entity::BANKING_ACCOUNT_STATEMENT);
 
                     $basEntity = (new Entity)->build($statement);
 
@@ -660,6 +661,8 @@ class Core extends Base\Core
                         $this->repo->saveOrFail($basEntity);
                     }
 
+                    $insertedBasIds[] = $nextId;
+
                     $this->trace->info(TraceCode::BAS_INSERTED_ENTITY,
                         [
                             'bank_txn_id'           => $statement[Entity::BANK_TRANSACTION_ID],
@@ -671,7 +674,6 @@ class Core extends Base\Core
                             'previous_bas_id'       => $insertionDetails[Entity::ID],
                             'dry_run_mode'          => $this->isDryRunModeActiveForStatementFix,
                             'inserted_bas_entity'   => $basEntity->toArray(),
-                            'counter'               => $counter,
                         ]);
 
                     $insertedBasEntities[] = $basEntity;
@@ -680,9 +682,11 @@ class Core extends Base\Core
 
                     $previousBasId = $nextId;
 
-                    $generateTransactionId = $this->generateNextUnUsedIdForEntity($insertionDetails[Entity::TRANSACTION_ID], $counter, Constants\Entity::TRANSACTION);
+                    $generateTransactionId = $this->generateNextUnUsedIdForEntity($insertionDetails[Entity::TRANSACTION_ID],
+                                                                                  $insertedTransactionIds,
+                                                                                  Constants\Entity::TRANSACTION);
 
-                    $this->previousBasTransactionDetails = [
+                    $this->insertedBasTransactionDetails = [
                         Transaction\Entity::ID         => $generateTransactionId,
                         Transaction\Entity::CREATED_AT => $insertionDetails['transaction_created_at'],
                     ];
@@ -703,7 +707,7 @@ class Core extends Base\Core
                             [
                                 'account_number'                   => $accountNumber,
                                 'channel'                          => $channel,
-                                'previous_bas_transaction_details' => $this->previousBasTransactionDetails,
+                                'previous_bas_transaction_details' => $this->insertedBasTransactionDetails,
                                 'dry_run_mode'                     => $this->isDryRunModeActiveForStatementFix,
                             ]);
                     }
@@ -722,7 +726,7 @@ class Core extends Base\Core
                         throw $exception;
                     }
 
-                    $counter = $counter + 1;
+                    $insertedTransactionIds[] = $generateTransactionId;
                 }
             }
 
@@ -793,7 +797,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function generateNextUnUsedIdForEntity(string $id, string $counter, string $entityName)
+    protected function generateNextUnUsedIdForEntity(string $id, array $insertedIds, string $entityName)
     {
         $attempts = self::RETRY_COUNT_FOR_ID_GENERATION;
 
@@ -804,18 +808,14 @@ class Core extends Base\Core
             switch ($entityName)
             {
                 case Constants\Entity::BANKING_ACCOUNT_STATEMENT :
-                    $idExists = $this->repo->banking_account_statement->checkIfIdExists($id);
+                    $idExists = (($this->repo->banking_account_statement->checkIfIdExists($id) === true) or
+                                 (array_key_exists($id, $insertedIds) === true));
                     break;
 
                 case Constants\Entity::TRANSACTION :
-                    $idExists = $this->repo->transaction->checkIfIdExists($id);
+                    $idExists = (($this->repo->transaction->checkIfIdExists($id) === true) or
+                                 (array_key_exists($id, $insertedIds) === true));
                     break;
-            }
-
-            // $counter is decremented so that consecutive missing records are not assigned same bas or txns ids
-            if ($idExists === false)
-            {
-                $counter = $counter - 1;
             }
 
             $attempts -= 1;
@@ -829,8 +829,7 @@ class Core extends Base\Core
                     'cannot generate new Id for ' . $entityName);
             }
 
-        } while (($idExists === true) or
-                 ($counter > 0));
+        } while ($idExists === true);
 
         return $id;
     }
@@ -874,9 +873,9 @@ class Core extends Base\Core
 
     protected function modifyTransactionEntityForMissingStatement(Entity $basEntity, Base\PublicEntity $sourceEntity)
     {
-        $transactionId = $this->previousBasTransactionDetails[Transaction\Entity::ID];
+        $transactionId = $this->insertedBasTransactionDetails[Transaction\Entity::ID];
 
-        $previousTransactionCreatedAt = $this->previousBasTransactionDetails[Transaction\Entity::CREATED_AT];
+        $previousTransactionCreatedAt = $this->insertedBasTransactionDetails[Transaction\Entity::CREATED_AT];
 
         $transaction = $sourceEntity->transaction;
 
@@ -891,8 +890,6 @@ class Core extends Base\Core
         $sourceEntity->transaction()->associate($transaction);
 
         $this->repo->saveOrFail($sourceEntity);
-
-        $this->previousBasTransactionDetails[Transaction\Entity::ID] = $transactionId;
     }
 
     public function correctBalanceForStatementsEffectedByMissingStatements(array $input)
