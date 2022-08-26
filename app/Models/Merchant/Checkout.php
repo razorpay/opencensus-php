@@ -326,7 +326,7 @@ class Checkout
      */
     protected function fillCheckoutExperiments(array &$data): void
     {
-        $data['experiments']['checkout_redesign_v1_5'] = (new CheckoutExperiment())->shouldDisplayCheckoutRedesign();
+        $data['experiments'] = (new CheckoutExperiment())->getCheckoutExperimentsResults();
     }
 
     protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)
