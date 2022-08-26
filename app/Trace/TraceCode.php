@@ -7273,6 +7273,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHIPPING_SERVICE_RESPONSE                    = 'SHIPPING_SERVICE_RESPONSE';
     const SHIPPING_SERVICE_ERROR                       = 'SHIPPING_SERVICE_ERROR';
 
+    const ONE_CC_VERIFY_OTP_REQUEST                          = 'ONE_CC_VERIFY_OTP_REQUEST';
+    const ONE_CC_VERIFY_OTP_REQUEST_ERROR                    = 'ONE_CC_VERIFY_OTP_REQUEST_ERROR';
+
     const RTO_PREDICTION_SERVICE_REQUEST                     = 'RTO_PREDICTION_SERVICE_REQUEST';
     const RTO_PREDICTION_SERVICE_RESPONSE                    = 'RTO_PREDICTION_SERVICE_RESPONSE';
     const RTO_PREDICTION_SERVICE_ERROR                       = 'RTO_PREDICTION_SERVICE_ERROR';

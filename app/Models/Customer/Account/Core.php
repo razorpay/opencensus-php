@@ -24,6 +24,7 @@ use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Metric as AddressMetric;
 use RZP\Models\Locale\Core as Locale;
+use RZP\Models\Merchant\Metric;
 
 class Core extends Base\Core
 {
@@ -321,36 +322,96 @@ class Core extends Base\Core
      */
     public function verifyOtp1cc($input, $merchant): array
     {
-        $response = $this->verifyOtp($input, $merchant);
+        $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_COUNT);
+        $response = [];
+        $ex = [];
+        try {
 
-        if (empty($response) === false && $response['success'] === 1){
+            $response = $this->verifyOtp($input, $merchant);
 
-            $customer = $this->getOrCreateGlobalCustomer($input);
+            if (empty($response) === false && $response['success'] === 1) {
 
-            // record address consented details
-            if ((empty($input['address_consent']) === false) and
-                (empty($input['address_consent']['device_id']) === false))
+                $customer = $this->getOrCreateGlobalCustomer($input);
+
+                // record address consented details
+                if ((empty($input['address_consent']) === false) and
+                    (empty($input['address_consent']['device_id']) === false)) {
+                    $addressConsentInput = [
+                        'device_id' => $input['address_consent']['device_id'],
+                    ];
+
+                    (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
+
+                }
+                if (empty($response['addresses']) === false) {
+                    $rzpAddresses = $response['addresses'];
+                } else {
+                    $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+                }
+                $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
+                $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
+                $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
+
+                $response['addresses'] = $addresses;
+                $response['1cc_consent_banner_views'] = $addressConsentView;
+            }
+            return $response;
+        } catch (\Throwable $e) {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INCORRECT_OTP)
             {
-                $addressConsentInput = [
-                    'device_id'   => $input['address_consent']['device_id'],
-                ];
-
-                (new Address\Core)->recordAddressConsent1cc($addressConsentInput, $customer);
-
+                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_ERROR_COUNT);
             }
-            if(empty($response['addresses']) === false){
-                $rzpAddresses = $response['addresses'];
-            }else {
-                $rzpAddresses = (new Customer\Core)->fetchRzpAddressesFor1CC($customer);
+            else {
+                $this->trace->count(Metric::ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT);
             }
-            $addressConsentView = (new Customer\Core)->fetchAddressConsentViewsFor1CC($customer);
-            $thirdPartyAddresses = (new Customer\Core)->fetchThirdPartyAddressesFor1cc($customer);
-            $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
-
-            $response['addresses'] = $addresses;
-            $response['1cc_consent_banner_views'] = $addressConsentView;
+            $ex = $e;
+            throw $e;
+        } finally {
+            $this->logVerify1ccOtpTrace($input, $response, $ex);
         }
-        return $response;
+    }
+
+    protected function logVerify1ccOtpTrace($input, $response, $ex) {
+        if (empty($ex) === true){
+            $this->trace->info(TraceCode::ONE_CC_VERIFY_OTP_REQUEST,
+                [
+                    'request' =>  $this->maskVerificationDetailsDetails($input),
+                    'response'=>  $response,
+                    'exception'=> $ex
+                ]
+            );
+        }else {
+            $this->trace->error(TraceCode::ONE_CC_VERIFY_OTP_REQUEST_ERROR,
+                [
+                    'request' =>  $this->maskVerificationDetailsDetails($input),
+                    'response'=>  $response,
+                    'exception'=> $ex->getTrace()
+                ]
+            );
+        }
+    }
+
+    protected function maskVerificationDetailsDetails($input) {
+        $maskedRequest =[];
+        if (empty($input['contact']) === false) {
+            $maskedRequest = array_merge($maskedRequest,
+                [
+                    'contact' => mask_phone($input['contact'])
+                ]);
+        }
+        if (empty($input['email']) === false) {
+            $maskedRequest = array_merge($maskedRequest,
+                [
+                    'email' => mask_email($input['email'])]
+            );
+        }
+        if (empty($input['otp']) === false) {
+            $maskedRequest = array_merge($maskedRequest,
+                [
+                    'otp' => mask_by_percentage($input['otp'])]
+            );
+        }
+        return $maskedRequest;
     }
 
     public function fetchRzpAddressesFor1CC($customer)

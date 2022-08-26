@@ -165,6 +165,10 @@ final class Metric
     const AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_SUCCESS = 'aggregate_settlement_unlinking_request_success';
     const AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_FAILURE = 'aggregate_settlement_unlinking_request_failure';
 
+    const ONE_CC_VERIFY_OTP_REQUEST_COUNT = 'one_cc_verify_otp_request_count';
+    const ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT = 'one_cc_verify_otp_request_fault_count';
+    const ONE_CC_VERIFY_OTP_REQUEST_ERROR_COUNT = 'one_cc_verify_otp_request_error_count';
+    
     const AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL   = 'agg_settlement_subm_multiple_partner_link_request_success';
     const AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_FAILURE_TOTAL   = 'agg_settlement_subm_multiple_partner_link_request_failure';
 
