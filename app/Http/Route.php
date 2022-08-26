@@ -461,7 +461,8 @@ class Route
         'internal_balance_fetch_by_id'             => ['get',      'internal_balances/{id}',                         'BalanceController@fetchBalanceByIdAndParams'                       ],
         'merchant_balance_fetch_by_id'             => ['get',      'balance/{id}',                                   'BalanceController@fetchBalanceById'                                ],
         'internal_balance_fetch_multiple_by_ids'   => ['get',      'internal_balances_multiple',                     'BalanceController@fetchBalanceMultiple'                            ],
-        'internal_balances_queued'                 => ['get',      'internal_balances_queued',                       'BalanceController@fetchBalancesForBalanceIds'                     ],
+        'internal_balances_queued'                 => ['get',      'internal_balances_queued',                       'BalanceController@fetchBalancesForBalanceIds'                      ],
+        'internal_balances_fetch_by_merchant_ids'  => ['get',      'internal_balances',                    'BalanceController@fetchBalancesFoMerchantIds'                      ],
         'merchant_balance_create'                  => ['post',     'capital_balances',                               'BalanceController@createCapitalBalance'                            ],
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -4788,6 +4789,9 @@ class Route
 
         // Capital LOC
         'feature_delete_entity_internal',
+
+        //Capital ES
+        'internal_balances_fetch_by_merchant_ids',
 
         'vault_migrate_token_bulk',
 
@@ -13213,6 +13217,7 @@ class Route
         ],
 
         'capital_early_settlements' => [
+            'internal_balances_fetch_by_merchant_ids'
         ],
 
         'leegality' => [

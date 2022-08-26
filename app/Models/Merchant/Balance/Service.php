@@ -104,6 +104,39 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function fetchBalancesForMerchantIds(array $input)
+    {
+        $this->trace->info(TraceCode::FETCH_MULTIPLE_MERCHANT_BALANCE_REQUEST, [
+            'input'     => $input,
+        ]);
+
+        (new JitValidator)->rules([
+            'merchant_ids'    => 'required|array',
+            'merchant_ids.*'  => 'required|string|size:14',
+            'balance_type'    => 'required|in:primary,banking'
+        ])->validate($input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $result = new Base\PublicCollection;
+
+        $balances = $this->repo->balance->getBalancesForMerchantIds($merchantIds, $input['balance_type']);
+
+        foreach($balances as $merchantId => $balance) {
+            $result->push([
+                'merchant_id'=> stringify($merchantId),
+                'balance'    => $balance
+            ]);
+        }
+
+        $response = (object) [
+            Payout\Entity::BALANCES => $result
+        ];
+
+        return $response;
+
+    }
+
     public function updateFreePayout($id, $input)
     {
         Base\UniqueIdEntity::verifyUniqueId($id, true);

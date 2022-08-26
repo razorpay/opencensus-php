@@ -403,6 +403,15 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function getBalancesForMerchantIds(array $merchantIds, $balanceType)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->where(Entity::TYPE, $balanceType)
+                    ->pluck(Entity::BALANCE, Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function getBalanceByIdFromWhatsappDB(string $id)
     {
         $idColumn = $this->dbColumn(Entity::ID);

@@ -415,4 +415,33 @@ return [
             ],
         ],
     ],
+
+    'testGetBalanceForMerchantIds' => [
+        'request' => [
+            'url'     => '/internal_balances',
+            'method'  => 'get',
+            'content' => [
+                'merchant_ids' => [
+                    '10000000000000',
+                    '10000000000001',
+                ],
+                'balance_type' => 'primary'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'balances'=>[
+                        [
+                            'merchant_id' => '10000000000000',
+                            'balance'     => 1000000,
+                        ],
+                        [
+                            'merchant_id' => '10000000000001',
+                            'balance'     => 200000,
+                        ],
+                    ]
+            ],
+        ],
+    ],
+
 ];

@@ -114,6 +114,24 @@ class BalanceTest extends TestCase
         $this->assertEquals(100000, array_values($response['balances'])[0]);
     }
 
+    public function testGetBalanceForMerchantIds()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->create('balance', [
+            Balance::MERCHANT_ID => '10000000000001',
+            Balance::TYPE        => Type::PRIMARY,
+            Balance::BALANCE     => 200000,
+            Balance::CURRENCY    => 'INR'
+        ]);
+
+        $this->startTest();
+    }
+
     public function testCreateCapitalBalance()
     {
         $collectionsServiceConfig = \Config::get('applications.capital_collections_client');

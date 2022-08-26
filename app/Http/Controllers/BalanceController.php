@@ -58,4 +58,13 @@ class BalanceController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchBalancesFoMerchantIds()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchBalancesForMerchantIds($input);
+
+        return ApiResponse::json($response);
+    }
 }
