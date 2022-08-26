@@ -4,10 +4,18 @@ namespace RZP\Models\VirtualAccount;
 
 class Constant
 {
-    // in days
-    const ECMS_CHALLAN_DEFAULT_EXPIRY = 3;
+    // in hours
+    /*
+     * Special org level default expiry for ECMS org
+     */
+    const ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS = 3*24;
 
-    const ECMS_VA_EXPIRY_OFFSET_SETTING_KEY = 'va_expiry_offset';
+    /*
+     * Special merchant level default expiry for HDFC LIFE
+     */
+    const HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS = 5 * 24;
+
+    const VA_EXPIRY_OFFSET = 'va_expiry_offset';
 
     const FETCH_LIMIT = 100;
     const IDEMPOTENCY_KEY             = 'idempotency_key';

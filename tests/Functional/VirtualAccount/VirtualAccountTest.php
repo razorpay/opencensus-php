@@ -128,8 +128,11 @@ class VirtualAccountTest extends TestCase
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
 
-        $closeBy = Carbon::today(Timezone::IST)->addDays(Constant::ECMS_CHALLAN_DEFAULT_EXPIRY)->getTimestamp();
-        $this->assertEquals($closeBy, $virtualAccount['close_by']);
+        $closeBy = Carbon::now(Timezone::IST)->addHours(Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS)->toDateString();
+
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+
+        $this->assertEquals($closeBy, $vaCloseByDate);
 
         // Test create ecms VA with merchant level VA expiry setting
         $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
@@ -147,8 +150,13 @@ class VirtualAccountTest extends TestCase
         $expiryOffset = $this->testData['testVirtualAccountExpirySetting']['request']['content']['va_expiry_offset'];
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
-        $closeBy = Carbon::today(Timezone::IST)->addDays($expiryOffset)->getTimestamp();
-        $this->assertEquals($closeBy, $virtualAccount['close_by']);
+
+        $closeBy =  Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
+
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+
+
+        $this->assertEquals($closeBy, $vaCloseByDate);
     }
 
     public function testVirtualAccountExpirySetting()
@@ -174,7 +182,7 @@ class VirtualAccountTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(5, $response);
+        $this->assertEquals(24, $response);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -3541,4 +3549,76 @@ class VirtualAccountTest extends TestCase
                    return 'control';
                });
     }
+
+    public function testCreateVirtualAccountWithDefaultExpiry()
+    {
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::SET_VA_DEFAULT_EXPIRY,
+            'entity_id' => '10000000000035',
+            'entity_type' => 'merchant',
+        ]);
+
+        $key = $this->fixtures->create('key', ['merchant_id' => '10000000000035']);
+
+        $order = $this->fixtures->create('order', ['merchant_id' => '10000000000035']);
+
+        $this->ba->publicAuth($key->getPublicId());
+
+        $response = $this->createVirtualAccountForOrder($order);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+        $this->assertEquals($order->getAmountDue(), $virtualAccount['amount_expected']);
+        $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
+        $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
+        $this->assertEquals('order', $virtualAccount['entity_type']);
+
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
+
+        $closeBy = Carbon::now(Timezone::IST)->addHours(Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS)->toDateString();
+
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+
+        $this->assertEquals($closeBy, $vaCloseByDate);
+
+        // Test create hdfc life VA with merchant level VA expiry setting
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
+
+        $this->ba->proxyAuth('rzp_test_10000000000035', $merchantUser['id']);
+
+        //setting expiry to 24 hours
+        $this->runRequestResponseFlow($this->testData['testUpdateVirtualAccountExpirySettingForHDFCLife']);
+
+        $order = $this->fixtures->create('order', ['merchant_id' => '10000000000035']);
+
+        $this->ba->publicAuth($key->getPublicId());
+
+        $this->createVirtualAccountForOrder($order);
+
+        $expiryOffset = $this->testData['testUpdateVirtualAccountExpirySettingForHDFCLife']['request']['content']['va_expiry_offset'];
+
+        $virtualAccount = $this->getLastEntity('virtual_account', true);
+
+        $closeBy = Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
+
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+        $this->assertEquals($closeBy, $vaCloseByDate);
+    }
+
+    /*
+     * Setting expiry to 10 hours
+     */
+    public function testUpdateVirtualAccountExpirySettingForHDFCLife()
+    {
+        $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000035');
+
+        $this->ba->proxyAuth('rzp_test_10000000000035', $merchantUser['id']);
+
+        $this->startTest();
+    }
+
 }

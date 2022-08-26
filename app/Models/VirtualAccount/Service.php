@@ -201,15 +201,28 @@ class Service extends Base\Service
 
     private function addCloseBy(&$createArray, $input)
     {
-        if ($this->merchant->org->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY) === true)
+        $setVADefaultExpiryFeatureForMerchant = $this->merchant->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
+        $setVADefaultExpiryFeatureForORG      = $this->merchant->org->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
+        if (($setVADefaultExpiryFeatureForMerchant == true) or ($setVADefaultExpiryFeatureForORG == true))
         {
-            $expirySetting = $this->getMerchantDefaultVirtualAccountExpiry();
+            $expirySettingInHours = $this->getMerchantDefaultVirtualAccountExpiry();
 
-            $expirySetting = $expirySetting === -1 ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY : $expirySetting;
+            if($expirySettingInHours === -1)
+            {
+                $expirySettingInHours = $setVADefaultExpiryFeatureForORG == true ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS : Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS;
+            }
 
-            $createArray[Entity::CLOSE_BY] = Carbon::today(Timezone::IST)
-                                                   ->addDays($expirySetting)
+            $createArray[Entity::CLOSE_BY] = Carbon::now(Timezone::IST)
+                                                   ->addHours($expirySettingInHours)
                                                    ->getTimestamp();
+
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_DEFAULT_CLOSE_BY,
+                               [
+                                   'setVADefaultExpiryFeatureForMerchant'   => $setVADefaultExpiryFeatureForMerchant,
+                                   'setVADefaultExpiryFeatureForORG' => $setVADefaultExpiryFeatureForORG,
+                                   'expirySettingInHours' => $expirySettingInHours,
+                                   'close by' => $createArray[Entity::CLOSE_BY],
+                               ]);
         }
         else if (isset($input[Entity::CLOSE_BY]) === true)
         {
@@ -1268,7 +1281,7 @@ class Service extends Base\Service
         try
         {
             $response = (new Settings\Service())->get(Module::VIRTUAL_ACCOUNT,
-                                                      Constant::ECMS_VA_EXPIRY_OFFSET_SETTING_KEY);
+                                                      Constant::VA_EXPIRY_OFFSET);
         }
         catch (\Exception $ex)
         {

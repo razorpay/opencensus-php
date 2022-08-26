@@ -230,7 +230,7 @@ return [
             'url'     => '/virtual_accounts/setting/expiry',
             'method'  => 'post',
             'content' => [
-                'va_expiry_offset'  => 5
+                'va_expiry_offset'  => 24
             ]
         ],
         'response' => [
@@ -246,7 +246,7 @@ return [
             'method'  => 'get'
         ],
         'response' => [
-            'content' => 5,
+            'content' => 24,
         ],
     ],
 
@@ -1819,6 +1819,35 @@ return [
                     'property_id' => '12345',
                     'property_value' => 'abc',
                 ],
+            ],
+        ],
+    ],
+    'testCreateVirtualAccountWithDefaultExpiry' => [
+        'entity'          => 'virtual_account',
+        'status'          => 'active',
+        'amount_expected' => 1000000,
+        'amount_paid'     => 0,
+        'customer_id'     => null,
+        'receivers'       => [
+            [
+                'entity'         => 'bank_account',
+                'ifsc'           => 'HDFC0000113',
+                'bank_name'      => 'HDFC Bank',
+            ],
+        ],
+    ],
+
+    'testUpdateVirtualAccountExpirySettingForHDFCLife' => [
+        'request'  => [
+            'url'     => '/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset'  => 24
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
             ],
         ],
     ],
