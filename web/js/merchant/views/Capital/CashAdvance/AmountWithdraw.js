@@ -877,8 +877,10 @@ export default class AmountWithdraw extends React.Component {
     return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.MONTHLY;
   };
 
-  isRepaymentFrequencyCustom = () => {
-    return this.getRepaymentFrequency() === REPAYMENT_FREQUENCY_TYPES.CUSTOM;
+  isRepaymentFrequencyCustomORDays90 = () => {
+    return [REPAYMENT_FREQUENCY_TYPES.CUSTOM, REPAYMENT_FREQUENCY_TYPES.DAYS_90].includes(
+      this.getRepaymentFrequency(),
+    );
   };
 
   isFungibleLimitProductType = () => {
@@ -887,7 +889,8 @@ export default class AmountWithdraw extends React.Component {
 
   getDueDate = () => {
     switch (this.getRepaymentFrequency()) {
-      case REPAYMENT_FREQUENCY_TYPES.CUSTOM: {
+      case REPAYMENT_FREQUENCY_TYPES.CUSTOM:
+      case REPAYMENT_FREQUENCY_TYPES.DAYS_90: {
         return moment(this.state.selectedDueDate);
       }
       case REPAYMENT_FREQUENCY_TYPES.BIMONTHLY: {
@@ -1233,18 +1236,16 @@ export default class AmountWithdraw extends React.Component {
   };
 
   getRepaymentHelperText = () => {
-    const {
-      withdrawalConfigurationDetails: {
-        data: { configuration },
-      },
-    } = this.props;
+    const { withdrawalConfigurationDetails = {} } = this.props;
     const showFirstTimeRepaymentPreference = this.showFirstTimeRepaymentPreference();
     const showSettings = this.showSettings();
     const collectionMethod = showSettings && (
       <>
         in{' '}
         <strong>
-          {configuration?.auto_collection ? 'automatic daily deductions.' : 'manual repayment.'}
+          {withdrawalConfigurationDetails?.data?.configuration?.auto_collection
+            ? 'automatic daily deductions.'
+            : 'manual repayment.'}
         </strong>
       </>
     );
@@ -1257,7 +1258,6 @@ export default class AmountWithdraw extends React.Component {
         Change Preference
       </NavLink>
     );
-
     if (this.isInterestTypeReducing()) {
       return (
         <span>
@@ -1459,7 +1459,7 @@ export default class AmountWithdraw extends React.Component {
             <div>
               <div
                 className={`flex automated-popover-container-wrapper ${
-                  this.isRepaymentFrequencyCustom() ? 'custom-frequency' : ''
+                  this.isRepaymentFrequencyCustomORDays90() ? 'custom-frequency' : ''
                 }`}
               >
                 {user.isAutomatedLOCEligible && automated_loc && (
@@ -1493,7 +1493,7 @@ export default class AmountWithdraw extends React.Component {
                   )}
                   {user.isAutomatedLOCEligible &&
                     !automated_loc &&
-                    this.isRepaymentFrequencyCustom() && (
+                    this.isRepaymentFrequencyCustomORDays90() && (
                       <div className="automated-withdrawal flex">
                         <div className="automated-withdrawal-wrapper">
                           <div style={{ fontSize: 14 }}>Automate your withdrawals</div>
@@ -1690,7 +1690,7 @@ export default class AmountWithdraw extends React.Component {
             </div>
           )}
         </div>
-        {this.isRepaymentFrequencyCustom() && !this.isFungibleLimitProductType() && (
+        {this.isRepaymentFrequencyCustomORDays90() && !this.isFungibleLimitProductType() && (
           <Input.ToCalendar
             required={false}
             className="Input--vTop no-margin"

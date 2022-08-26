@@ -31,6 +31,7 @@ import { checkifDateExpired, getProductType } from 'merchant/views/Capital/utils
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import moment from 'moment';
 import Settings from './views/Settings';
+import { showSettings } from './utils';
 
 const Loader = () => {
   return (
@@ -276,7 +277,7 @@ class CashAdvance extends React.Component {
   };
 
   showSettings = () => {
-    return Boolean(!this.props?.user?.isCashOnCardEnabled && this.isRepaymentFrequencyCustom());
+    return showSettings(this.props.user, this.getRepaymentFrequency());
   };
 
   renderSection() {
