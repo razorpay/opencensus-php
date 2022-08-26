@@ -119,39 +119,54 @@ export default class RefundStatusTimeline extends React.Component {
   };
 
   render() {
-    const mileStones = this.getMilestones(this.props.refund);
+    const { refund } = this.props;
+    const mileStones = this.getMilestones(refund);
 
     return (
-      <ul class="refund-timeline">
+      <ul className="refund-timeline">
         {mileStones.map((item, idx) => {
           if (item.status) {
+            const showProcessingTooltip =
+              refund?.status === 'processing' && item.status === 'processing' && idx === 0;
+
             return (
               <li key={idx}>
-                <div class="refund-timeline-status">
+                <div className="refund-timeline-status">
                   <RefundStatusLabel status={item.status} />
+                  {showProcessingTooltip && (
+                    <span>
+                      <i className="i i-help refund-status-help" />
+                      <PopoverComponent align="top">
+                        <PopoverBody>
+                          The refund has been initiated. Once the refund is completed, the status of
+                          the refund will change to &#39;Processed&#39;.
+                        </PopoverBody>
+                      </PopoverComponent>
+                    </span>
+                  )}
                 </div>
-                <p class="refund-timeline-mode">
+                <p className="refund-timeline-mode">
                   {item.mode}
                   {item.infoText && (
                     <span className="status-infotext">
-                      <i class="i i-help" />
+                      <i className="i i-help" />
                       <PopoverComponent align="top" theme="dark">
                         <PopoverBody>{item.infoText}</PopoverBody>
                       </PopoverComponent>
                     </span>
                   )}
                 </p>
-                <p class="refund-timeline-timestamp">
+                <p className="refund-timeline-timestamp">
                   <ShowTime time={item.timeStamp} />
                 </p>
               </li>
             );
           } else {
             return (
-              <li key={idx} class="hide-after">
-                <div class="refund-timeline-text">{item.text}</div>
+              <li key={idx} className="hide-after">
+                <div className="refund-timeline-text">{item.text}</div>
                 {item.timeStamp && (
-                  <p class="refund-timeline-timestamp">
+                  <p className="refund-timeline-timestamp">
                     <ShowTime time={item.timeStamp} />
                   </p>
                 )}
