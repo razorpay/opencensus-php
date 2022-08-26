@@ -17,46 +17,6 @@ use RZP\Reconciliator\Base\InfoCode;
 class Core extends Base\Core
 {
     /**
-     * Refunds of the the merchant ids listed here will be expose the public status
-     * Refunds of only the merchant ids with true will be directed to scrooge to fetch the public status
-     *
-     * @var array
-     */
-    public static $refundsPublicStatusMerchantsViaScrooge = [
-        '9DZkE60krEG4wq' => true,
-        '9ncOh0EZ8sC9z9' => true,
-        '9hefgkvGhT18Q9' => true,
-        'BbaYzzPW541Aut' => true,
-        '80oXBj51MHGmwH' => true,
-        '94tLpgbojcR85O' => true,
-        'C1fjEduvEkBUEK' => true,
-        'C1fmOZYiZiezoD' => true,
-        'C1fnUMHBmitlPB' => true,
-        'C1fo6ARXco94tP' => true,
-        'C1fp6DAnDH4YUz' => true,
-        'C1fq8jgl8NRKnh' => true,
-        'CToqTdhmF5b4bx' => true,
-        'CTq2cnNAs3Qxeo' => true,
-        'CTqJ4as5l5X6iQ' => true,
-        'CTqQPHMDvKRab6' => true,
-        'CUt2G8y6WttO2g' => true,
-        'CUsPNux3ZRGMEO' => true,
-        'CUsSCFbU2Rg4zr' => true,
-        'CUsroOupiUIEK2' => true,
-        'CUsv44mEYn5oyV' => true,
-        'CUszQfJSmGEXwH' => true,
-        'BoE6Rycqadwtvh' => false,
-        'CBcPtPwFgpjdUp' => false,
-        'ByWbZS28NK9CeG' => false,
-        'BREsAWr9hzga0n' => false,
-        'Ba2to8xoI5kO2x' => false,
-        'Cc057xzfWMnyBn' => false,
-        'DafY7CuC98D8mK' => false,
-        'DwoYjQ5IFWvyJP' => false,
-        'DwprllSF0aWzBO' => false,
-    ];
-
-    /**
      * Updates refund entity status after FTA recon
      *
      * @param Entity $refund
@@ -132,66 +92,6 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($entity);
         }
-    }
-
-    public static function getRefundsPublicStatusMerchantsViaScrooge(): array
-    {
-        return self::$refundsPublicStatusMerchantsViaScrooge;
-    }
-
-    /**
-     * This function checks if a given merchant is to be shown refund's Public status.
-     *
-     * @param $merchantId
-     * @return bool
-     *
-     */
-    public static function isRefundsPublicStatusMerchant(string $merchantId): bool
-    {
-        return array_key_exists($merchantId, self::getRefundsPublicStatusMerchantsViaScrooge());
-    }
-
-    /**
-     * This function checks if a given refund's public status must be fetched from scrooge,
-     * default is true (since there is a feature flag as well),
-     * unless mentioned false in the $refundsPublicStatusMerchants
-     *
-     * @param $merchantId
-     * @return bool
-     *
-     */
-    public static function fetchPublicStatusFromScrooge(string $merchantId): bool
-    {
-        $fetchPublicStatusFromScrooge = false;
-
-        if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
-            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === true))
-        {
-            $fetchPublicStatusFromScrooge = true;
-        }
-
-        return $fetchPublicStatusFromScrooge;
-    }
-
-    /**
-     * This function checks if a given refund's public status is fetched from api
-     * checks if merchant id exists and is mapped to false in the $refundsPublicStatusMerchants
-     *
-     * @param $merchantId
-     * @return bool
-     *
-     */
-    public static function fetchPublicStatusFromApi(string $merchantId): bool
-    {
-        $fetchPublicStatusFromScrooge = false;
-
-        if ((self::isRefundsPublicStatusMerchant($merchantId) === true) and
-            (self::getRefundsPublicStatusMerchantsViaScrooge()[$merchantId] === false))
-        {
-            $fetchPublicStatusFromScrooge = true;
-        }
-
-        return $fetchPublicStatusFromScrooge;
     }
 
     public function reconcileNetbankingRefunds(array $data)

@@ -228,34 +228,14 @@ class Repository extends Base\Repository
         // We are disabling filtering for merchants like flipkart for which we are
         // modifying public status based on some buisness logics and is not stored in API DB
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-            Refund\Constants::RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX, Mode::LIVE);
-
-        if (strtolower($variant) === 'on')
-        {
-            $disableStatusFilter =  $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
-        }
-        else
-        {
-            $disableStatusFilter = Refund\Core::fetchPublicStatusFromScrooge($this->merchant->getId());
-        }
+        $disableStatusFilter =  $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
 
         if ($disableStatusFilter === true)
         {
             return;
         }
 
-        $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-            Refund\Constants::RAZORX_KEY_REFUND_PENDING_STATUS_FIX, Mode::LIVE);
-
-        if (strtolower($variant) === 'on')
-        {
-            $showApiRefundStatus = $this->merchant->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS);;
-        }
-        else
-        {
-            $showApiRefundStatus = Refund\Core::fetchPublicStatusFromApi($this->merchant->getId());
-        }
+        $showApiRefundStatus = $this->merchant->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS);;
 
         switch($params[Entity::PUBLIC_STATUS])
         {

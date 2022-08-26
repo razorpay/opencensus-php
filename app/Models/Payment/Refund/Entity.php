@@ -1534,8 +1534,7 @@ class Entity extends Base\PublicEntity
 
         $eligibleForScroogeCall = ($response[self::STATUS] === Status::PENDING) and ($this->isScrooge() === true);
 
-        $callScroogeForStatus = (($refundPublicStatusFeatureEnabled === true) or
-                                 (Payment\Refund\Core::fetchPublicStatusFromScrooge($this->getMerchantId()) === true));
+        $callScroogeForStatus = ($refundPublicStatusFeatureEnabled === true);
 
         if (($eligibleForScroogeCall === true) and
             (($callScroogeForStatus === true) or ($callScroogeForSpeed === true)))
@@ -1587,8 +1586,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        if ((Payment\Refund\Core::isRefundsPublicStatusMerchant($this->getMerchantId()) === false) and
-            ($refundPublicStatusFeatureEnabled === false) and
+        if (($refundPublicStatusFeatureEnabled === false) and
             ($refundPendingStatusFeatureEnabled === false) and
             ($response[self::STATUS] === Status::PENDING) and
             ($response[self::SPEED_PROCESSED] === Speed::NORMAL))

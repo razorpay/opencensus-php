@@ -93,6 +93,7 @@ class RefundStatusTest extends TestCase
         $merchantId = 'BbaYzzPW541Aut';
 
         $this->fixtures->merchant->createAccount($merchantId);
+        $this->fixtures->merchant->addFeatures('show_refund_public_status', $merchantId);
 
         $this->fixtures->on('live')->merchant->edit($merchantId, ['activated' => true, 'live' => true]);
         $this->fixtures->on('live')->merchant->edit($merchantId, ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
@@ -193,6 +194,7 @@ class RefundStatusTest extends TestCase
         $merchantId = 'ByWbZS28NK9CeG';
 
         $this->fixtures->merchant->createAccount($merchantId);
+        $this->fixtures->merchant->addFeatures('refund_pending_status', $merchantId);
 
         $this->fixtures->on('live')->merchant->edit($merchantId, ['activated' => true, 'live' => true]);
         $this->fixtures->on('live')->merchant->edit($merchantId, ['pricing_plan_id' => Fee::DEFAULT_PRICING_PLAN_ID]);
@@ -994,6 +996,7 @@ class RefundStatusTest extends TestCase
         $merchantId = 'CBcPtPwFgpjdUp';
 
         $this->fixtures->merchant->createAccount($merchantId, false);
+        $this->fixtures->merchant->addFeatures('refund_pending_status', $merchantId);
 
         $this->fixtures->refund->edit($refund['id'], ['merchant_id' => $merchantId]);
         $this->fixtures->payment->edit($refund['payment_id'], ['merchant_id' => $merchantId]);
@@ -1149,6 +1152,7 @@ class RefundStatusTest extends TestCase
         $merchantId = '9hefgkvGhT18Q9';
 
         $this->fixtures->merchant->createAccount($merchantId, false);
+        $this->fixtures->merchant->addFeatures('show_refund_public_status', $merchantId);
 
         $this->fixtures->refund->edit($refund['id'], ['merchant_id' => $merchantId]);
         $this->fixtures->payment->edit($refund['payment_id'], ['merchant_id' => $merchantId]);

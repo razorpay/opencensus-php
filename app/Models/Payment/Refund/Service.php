@@ -1392,20 +1392,10 @@ class Service extends Base\Service
      */
     public function refundsPublicStatusMerchant(Entity $refund): bool
     {
-        $pendingStatusVariant = $this->app->razorx->getTreatment($refund->merchant->getId(),
-            Refund\Constants::RAZORX_KEY_REFUND_PENDING_STATUS_FIX, $this->mode);
+        $refundPublicStatusFeature = $refund->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
+        $refundPendingStatusFeature = $refund->merchant->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS);
 
-        $publicStatusVariant = $this->app->razorx->getTreatment($refund->merchant->getId(),
-            Refund\Constants::RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX, $this->mode);
-
-        if ($pendingStatusVariant === "on" && $publicStatusVariant === "on") {
-            $refundPublicStatusFeature = $refund->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
-            $refundPendingStatusFeature = $refund->merchant->isFeatureEnabled(Feature\Constants::REFUND_PENDING_STATUS);
-            $isRefundsPublicStatusMerchant = $refundPublicStatusFeature || $refundPendingStatusFeature;
-        } else {
-            $isRefundsPublicStatusMerchant = RefundCore::isRefundsPublicStatusMerchant($this->merchant->getId());
-        }
-        return $isRefundsPublicStatusMerchant;
+        return $refundPublicStatusFeature || $refundPendingStatusFeature;
     }
 
     protected function getExtraDataIfscCode(Entity $refund)
@@ -3895,17 +3885,7 @@ class Service extends Base\Service
     {
         $processedAt = $refund->getProcessedAt();
 
-        $variant = $this->app->razorx->getTreatment($refund->merchant->getId(),
-            Refund\Constants::RAZORX_KEY_REFUND_PUBLIC_STATUS_FIX, $this->mode);
-
-        if (strtolower($variant) === 'on')
-        {
-            $fetchPublicStatusFromScrooge =  $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
-        }
-        else
-        {
-            $fetchPublicStatusFromScrooge = RefundCore::fetchPublicStatusFromScrooge($this->merchant->getId());
-        }
+        $fetchPublicStatusFromScrooge =  $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
 
         if ($fetchPublicStatusFromScrooge === true)
         {
@@ -3987,12 +3967,10 @@ class Service extends Base\Service
      */
     public function getRefundStatusFilterFlagForMerchantDashboard(string $merchantId) : bool
     {
-        $displayRefundPublicStatus = Payment\Refund\Core::fetchPublicStatusFromScrooge($merchantId);
         $refundPublicStatusFeatureEnabled =
             $this->merchant->isFeatureEnabled(Feature\Constants::SHOW_REFUND_PUBLIC_STATUS);
 
-        if (($displayRefundPublicStatus === true) or
-            ($refundPublicStatusFeatureEnabled === true))
+        if ($refundPublicStatusFeatureEnabled === true)
         {
             return false;
         }
