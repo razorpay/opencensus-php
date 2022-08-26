@@ -84,22 +84,22 @@ class Constants
         'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
         'AND merchant_details_gst_present = TRUE';
 
-    // Data lake queries
+    // Pinot queries
 
-    const DATALAKE_QUERY_AOV =
-        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+    const PINOT_QUERY_AOV =
+        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
         'WHERE merchant_fact_txn_count_ltd >= 20 ' .
         'AND merchant_fact_txn_count_lt_yesterday < 20 ' .
         'AND aov_table_cov > 1.0 ' .
         'AND aov_table_aov_reported = \'1\'';
 
-    const DATALAKE_QUERY_HIGH_GMV =
-        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+    const PINOT_QUERY_HIGH_GMV =
+        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 10000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 10000000';
 
-    const DATALAKE_QUERY_MYSTERY_SHOPPING =
-        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+    const PINOT_QUERY_MYSTERY_SHOPPING =
+        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
         'WHERE ' .
         '( ' .
         'merchant_fact_overall_gmv_ltd >= 200000 ' .
@@ -113,20 +113,20 @@ class Constants
         'AND merchant_details_apps_exempt_risk_check = 1 ' .
         ')';
 
-    const DATALAKE_QUERY_GSTIN_SOFT_BLOCK =
-        'SELECT merchants_id FROM hive.warehouse.merchant_risk  ' .
+    const PINOT_QUERY_GSTIN_SOFT_BLOCK =
+        'SELECT merchants_id FROM pinot.merchant_risk_fact  ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 3000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 3000000 ' .
         'AND merchant_details_gst_present = 0';
 
-    const DATALAKE_QUERY_GSTIN_HARD_BLOCK =
-        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+    const PINOT_QUERY_GSTIN_HARD_BLOCK =
+        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 4000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
         'AND merchant_details_gst_present = 0';
 
-    const DATALAKE_QUERY_GSTIN_OFFLINE_VERIFICATION =
-        'SELECT merchants_id FROM hive.warehouse.merchant_risk ' .
+    const PINOT_QUERY_GSTIN_OFFLINE_VERIFICATION =
+        'SELECT merchants_id FROM pinot.merchant_risk_fact ' .
         'WHERE merchant_fact_overall_gmv_ltd >= 4000000 ' .
         'AND merchant_fact_overall_gmv_lt_yesterday < 4000000 ' .
         'AND merchant_details_gst_present = 1';
@@ -142,14 +142,14 @@ class Constants
         ],
     ];
 
-    const DATALAKE_QUERY_GROUPED_BY_EVENT_CATEGORY = [
+    const PINOT_QUERY_GROUPED_BY_EVENT_CATEGORY = [
         self::RAS_EVENT_TYPE_MILESTONE_CHECKER => [
-            self::RAS_CATEGORY_AOV                        => self::DATALAKE_QUERY_AOV,
-            self::RAS_CATEGORY_HIGH_GMV                   => self::DATALAKE_QUERY_HIGH_GMV,
-            self::RAS_CATEGORY_MYSTERY_SHOPPING           => self::DATALAKE_QUERY_MYSTERY_SHOPPING,
-            self::RAS_CATEGORY_GSTIN_SOFT_BLOCK           => self::DATALAKE_QUERY_GSTIN_SOFT_BLOCK,
-            self::RAS_CATEGORY_GSTIN_HARD_BLOCK           => self::DATALAKE_QUERY_GSTIN_HARD_BLOCK,
-            self::RAS_CATEGORY_GSTIN_OFFLINE_VERIFICATION => self::DATALAKE_QUERY_GSTIN_OFFLINE_VERIFICATION,
+            self::RAS_CATEGORY_AOV                        => self::PINOT_QUERY_AOV,
+            self::RAS_CATEGORY_HIGH_GMV                   => self::PINOT_QUERY_HIGH_GMV,
+            self::RAS_CATEGORY_MYSTERY_SHOPPING           => self::PINOT_QUERY_MYSTERY_SHOPPING,
+            self::RAS_CATEGORY_GSTIN_SOFT_BLOCK           => self::PINOT_QUERY_GSTIN_SOFT_BLOCK,
+            self::RAS_CATEGORY_GSTIN_HARD_BLOCK           => self::PINOT_QUERY_GSTIN_HARD_BLOCK,
+            self::RAS_CATEGORY_GSTIN_OFFLINE_VERIFICATION => self::PINOT_QUERY_GSTIN_OFFLINE_VERIFICATION,
         ],
     ];
 
@@ -167,9 +167,9 @@ class Constants
         return self::DRUID_QUERY_GROUPED_BY_EVENT_CATEGORY[$eventType][$category];
     }
 
-    public static function getDatalakeQuery(string $category, string $eventType)
+    public static function getPinotQuery(string $category, string $eventType)
     {
-        return self::DATALAKE_QUERY_GROUPED_BY_EVENT_CATEGORY[$eventType][$category];
+        return self::PINOT_QUERY_GROUPED_BY_EVENT_CATEGORY[$eventType][$category];
     }
 
     public static function isValidCategory(string $category, string $eventType)

@@ -87,7 +87,7 @@ class Core extends Base\Core
 
         if ($isDruidMigrationEnabled === true)
         {
-            return $this->getMerchantIdsToProcessFromDataLake($category, $eventType);
+            return $this->getMerchantIdsToProcessFromPinot($category, $eventType);
         }
         else
         {
@@ -95,17 +95,17 @@ class Core extends Base\Core
         }
     }
 
-    private function getMerchantIdsToProcessFromDataLake(string $category, string $eventType): array
+    private function getMerchantIdsToProcessFromPinot(string $category, string $eventType): array
     {
-        $query = Constants::getDatalakeQuery($category, $eventType);
+        $query = Constants::getPinotQuery($category, $eventType);
 
         try{
 
             $startTime = microtime(true);
 
-            $res = $this->app['datalake.presto']->getDataFromDataLake($query);
+            $res = $this->getDataFromPinot($query);
 
-            $this->trace->info(TraceCode::MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME, [
+            $this->trace->info(TraceCode::MERCHANT_RISK_PINOT_QUERY_EXECUTION_TIME, [
                 Merchant\Constants::QUERY_EXECUTION_TIME => microtime(true) - $startTime
             ]);
 
@@ -190,5 +190,26 @@ class Core extends Base\Core
         ];
 
         return $rasAlertRequest;
+    }
+
+    private function getDataFromPinot(string $query): array
+    {
+        $pinotClient = $this->app['eventManager'];
+
+        try
+        {
+            $res = $pinotClient->getDataFromPinot(
+                [
+                    'query' => $query
+                ]
+            );
+        }
+        catch(\Throwable $e)
+        {
+            // No need to trace error as its harvester client already logs it.
+            return [];
+        }
+
+        return $res;
     }
 }

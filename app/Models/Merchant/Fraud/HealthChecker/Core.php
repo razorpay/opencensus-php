@@ -226,9 +226,9 @@ class Core extends Base\Core
 
         if($eventType === Constants::MILESTONE_CHECKER_EVENT and $isMerchantRiskFactMigrationEnabled === true)
         {
-            $dataLakeQuery              = Constants::EVENT_TYPE_QUERY_MAP[$eventType];
+            $pinotQuery                 = Constants::EVENT_TYPE_QUERY_MAP[$eventType];
 
-            $merchantIdList             = $this->getMerchantListFromDataLake($dataLakeQuery);
+            $merchantIdList             = $this->getMerchantListFromPinot($pinotQuery);
         }
         elseif ($eventType === Constants::RISK_SCORE_CHECKER_EVENT and $isDruidMigrationEnabled === true )
         {
@@ -420,32 +420,12 @@ class Core extends Base\Core
             return [];
         }
 
-        return array_pluck($res, 'merchants_id');
-    }
-
-    private function getMerchantListFromDataLake(string $query): array
-    {
-        try{
-            $startTime = microtime(true);
-
-            $res = $this->app['datalake.presto']->getDataFromDataLake($query);
-
-            $this->trace->info(TraceCode::MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME, [
-                Merchant\Constants::QUERY_EXECUTION_TIME => microtime(true) - $startTime
-            ]);
-
-            return array_pluck($res, 'merchants_id');
-
-        }
-        catch(\Throwable $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::HEALTH_CHECKER_DATALAKE_ERROR
-            );
-
+        if (empty($res) === true)
+        {
             return [];
         }
+
+        return array_pluck($res, 'merchants_id');
     }
 
     private function dispatchInQueueOnCheckerType(array $params, string $checkerType)

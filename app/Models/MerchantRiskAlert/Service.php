@@ -23,6 +23,7 @@ use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\Org;
 use RZP\Models\Dispute\Phase;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Services\Harvester\Constants as HarvesterConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Merchant\FreshdeskTicket\Processor\WebsiteCheckerReply as WebsiteCheckerReply;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
@@ -179,14 +180,14 @@ class Service extends Base\Service
 
         if ($druidMigrationEnabled === true)
         {
-            $res             = $this->getRasLifetimePaymentDataFromDatalake($merchantId);
+            $res             = $this->getRasLifetimePaymentDataFromPinot($merchantId);
         }
         else
         {
             $res             = $this->getRasLifetimePaymentDataFromDruid($merchantId);
         }
 
-        if (is_null($res) === true || count($res) === 0)
+        if (empty($res) === true || count($res) === 0)
         {
             return $rasLifeTimeData;
         }
@@ -219,25 +220,36 @@ class Service extends Base\Service
         return $res;
     }
 
-    private function getRasLifetimePaymentDataFromDatalake($merchantId)
+    private function getRasLifetimePaymentDataFromPinot($merchantId)
     {
-        $query = sprintf(Constants::DATALAKE_RAS_QUERY, $merchantId);
+        $query = sprintf(Constants::PINOT_RAS_QUERY, $merchantId);
 
         $startTime = microtime(true);
 
-        try{
+        $pinotClient = $this->app['eventManager'];
 
-            $res = $this->app['datalake.presto']->getDataFromDataLake($query);
-        }
-        catch (\Throwable $e)
+        try
         {
-            // No need to log exeception as datalake takes care of that.
+            $res = $pinotClient->getDataFromPinot(
+                [
+                    'query' => $query
+                ]
+            );
+        }
+        catch(\Throwable $e)
+        {
+            // No need to trace error as its harvester client already logs it.
             return [];
         }
 
-        $this->trace->info(TraceCode::MERCHANT_RISK_DATA_LAKE_QUERY_EXECUTION_TIME, [
+        $this->trace->info(TraceCode::MERCHANT_RISK_PINOT_QUERY_EXECUTION_TIME, [
             Constants::QUERY_EXECUTION_TIME => microtime(true) - $startTime
         ]);
+
+        if (empty($res) === false)
+        {
+            $res[0]  = $pinotClient->parsePinotDefaultType($res[0], HarvesterConstants::PINOT_TABLE_MERCHANT_RISK_FACT);
+        }
 
         return $res;
     }

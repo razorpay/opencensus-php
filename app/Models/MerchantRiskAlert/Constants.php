@@ -26,7 +26,7 @@ class Constants
         self::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT => 'merchant_fact_authorized_payment_count_ltd',
     ];
 
-    const DATALAKE_RAS_QUERY = 'SELECT * FROM hive.warehouse.merchant_risk WHERE merchants_id = \'%s\'';
+    const PINOT_RAS_QUERY    = 'SELECT * FROM pinot.merchant_risk_fact WHERE merchants_id = \'%s\'';
 
     const DRUID_RAS_QUERY    = 'SELECT * FROM druid.merchant_risk_fact WHERE merchants_id = \'%s\'';
 

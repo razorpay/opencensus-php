@@ -23,6 +23,8 @@ class Constants
 
     const PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT  = 'plugin_merchant_fact';
 
+    const PINOT_TABLE_MERCHANT_RISK_FACT         = 'merchant_risk_fact';
+
     const PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT_SCHEMA = [
         'plugin_transactions' => self::PINOT_DATA_TYPE_LONG,
         'total_transactions'  => self::PINOT_DATA_TYPE_LONG,
@@ -128,10 +130,72 @@ class Constants
         'workflows_data_Suspend_workflows'                                                  => self::PINOT_DATA_TYPE_LONG,
     ];
 
+    const PINOT_TABLE_MERCHANT_RISK_FACT_SCHEMA = [
+        'merchants_billing_label'                                                   => self::PINOT_DATA_TYPE_STRING,
+        'merchants_org_id'                                                          => self::PINOT_DATA_TYPE_STRING,
+        'merchants_parent_id'                                                       => self::PINOT_DATA_TYPE_STRING,
+        'merchants_category'                                                        => self::PINOT_DATA_TYPE_STRING,
+        'merchants_category2'                                                       => self::PINOT_DATA_TYPE_STRING,
+        'merchants_international'                                                   => self::PINOT_DATA_TYPE_LONG,
+        'merchants_name'                                                            => self::PINOT_DATA_TYPE_STRING,
+        'merchants_live'                                                            => self::PINOT_DATA_TYPE_LONG,
+        'merchants_website'                                                         => self::PINOT_DATA_TYPE_STRING,
+        'merchants_email'                                                           => self::PINOT_DATA_TYPE_STRING,
+        'merchants_activated_at'                                                    => self::PINOT_DATA_TYPE_LONG,
+        'merchants_suspended_at'                                                    => self::PINOT_DATA_TYPE_LONG,
+        'merchants_pricing_plan_id'                                                 => self::PINOT_DATA_TYPE_STRING,
+        'merchants_id'                                                              => self::PINOT_DATA_TYPE_STRING,
+        'merchants_hold_funds'                                                      => self::PINOT_DATA_TYPE_LONG,
+        'merchant_fact_merchant_id'                                                 => self::PINOT_DATA_TYPE_STRING,
+        'merchant_fact_overall_gmv_ltd'                                             => self::PINOT_DATA_TYPE_DOUBLE,
+        'merchant_fact_overall_gmv_lt_yesterday'                                    => self::PINOT_DATA_TYPE_DOUBLE,
+        'merchant_fact_txn_count_ltd'                                               => self::PINOT_DATA_TYPE_LONG,
+        'merchant_fact_txn_count_lt_yesterday'                                      => self::PINOT_DATA_TYPE_LONG,
+        'merchant_fact_txn_attempt_count_ltd'                                       => self::PINOT_DATA_TYPE_LONG,
+        'merchant_fact_txn_attempt_count_lt_yesterday'                              => self::PINOT_DATA_TYPE_LONG,
+        'merchant_fact_authorized_gmv_ltd'                                          => self::PINOT_DATA_TYPE_DOUBLE,
+        'merchant_fact_authorized_payment_count_ltd'                                => self::PINOT_DATA_TYPE_LONG,
+        'aov_table_aov_merchant_id'                                                 => self::PINOT_DATA_TYPE_STRING,
+        'aov_table_cov'                                                             => self::PINOT_DATA_TYPE_DOUBLE,
+        'aov_table_cov_first20'                                                     => self::PINOT_DATA_TYPE_DOUBLE,
+        'aov_table_aov_reported'                                                    => self::PINOT_DATA_TYPE_STRING,
+        'aov_table_mean_aov'                                                        => self::PINOT_DATA_TYPE_DOUBLE,
+        'aov_table_actual_aov'                                                      => self::PINOT_DATA_TYPE_DOUBLE,
+        'aov_table_pay_count'                                                       => self::PINOT_DATA_TYPE_LONG,
+        'merchant_details_merchant_id'                                              => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_business_type'                                            => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_business_type_desc'                                       => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_gst_present'                                              => self::PINOT_DATA_TYPE_LONG,
+        'merchant_details_apps_exempt_risk_check'                                   => self::PINOT_DATA_TYPE_LONG,
+        'merchant_details_fund_account_validation_id'                               => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_bank_details_verification_status'                         => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_contact_email'                                            => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_contact_mobile'                                           => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_business_name'                                            => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_business_category'                                        => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_business_subcategory'                                     => self::PINOT_DATA_TYPE_STRING,
+        'merchant_details_business_dba'                                             => self::PINOT_DATA_TYPE_STRING,
+        'merchant_dormancy_merchant_id'                                             => self::PINOT_DATA_TYPE_STRING,
+        'merchant_dormancy_max_dormancy_days'                                       => self::PINOT_DATA_TYPE_LONG,
+        'merchant_dormancy_post_dormancy_first_txn_date_for_max_dormancy'           => self::PINOT_DATA_TYPE_STRING,
+        'merchant_dormancy_max_intl_dormancy_days'                                  => self::PINOT_DATA_TYPE_LONG,
+        'merchant_dormancy_post_dormancy_first_intl_txn_date_for_max_intl_dormancy' => self::PINOT_DATA_TYPE_STRING,
+        'ac_owner_merchant_id'                                                      => self::PINOT_DATA_TYPE_STRING,
+        'ac_owner_managing_team'                                                    => self::PINOT_DATA_TYPE_STRING,
+        'ac_owner_owner_name'                                                       => self::PINOT_DATA_TYPE_STRING,
+        'ac_owner_owner_email'                                                      => self::PINOT_DATA_TYPE_STRING,
+        'ac_owner_od_isactive'                                                      => self::PINOT_DATA_TYPE_STRING,
+        'balance_merchant_id'                                                       => self::PINOT_DATA_TYPE_STRING,
+        'balance_pg_balance'                                                        => self::PINOT_DATA_TYPE_DOUBLE,
+        'balance_x_va_balance'                                                      => self::PINOT_DATA_TYPE_DOUBLE,
+        'balance_x_ca_balance'                                                      => self::PINOT_DATA_TYPE_DOUBLE
+    ];
+
     const PINOT_TABLE_SCHEMA_MAP = [
         self::PINOT_TABLE_SEGMENT_FACT                  => self::PINOT_TABLE_SEGMENT_FACT_SCHEMA,
         self::PINOT_TABLE_PAYMNETS_AUTH_FACT            => self::PINOT_TABLE_PAYMENTS_AUTH_FACT_SCHEMA,
         self::PINOT_RISK_SCORING_FACT                   => self::PINOT_TABLE_RISK_SCORING_FACT_SCHEMA,
         self::PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT     => self::PINOT_TABLE_VIEW_PLUGIN_MERCHANT_FACT_SCHEMA,
+        self::PINOT_TABLE_MERCHANT_RISK_FACT            => self::PINOT_TABLE_MERCHANT_RISK_FACT_SCHEMA
     ];
 }
