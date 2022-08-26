@@ -1472,8 +1472,7 @@ export default class User {
     if (this.isPartner('bank', 'fully_managed') || !this.isAllowedView('partner_home')) {
       return false;
     }
-    const variant = getSplitzExperimentVariant('partnership_fux');
-    return variant?.name === 'exposed' && this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isPartnershipNPS() {

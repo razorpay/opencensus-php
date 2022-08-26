@@ -63,9 +63,6 @@ return [
         'ANNOUNCEMENT_TEXT_EXPERIMENT_SPLITZ' => env('ANNOUNCEMENT_TEXT_EXPERIMENT_SPLITZ', ''),
         'WHATSNEW_TEXT_EXPERIMENT_SPLITZ' => env('WHATSNEW_TEXT_EXPERIMENT_SPLITZ', ''),
 
-        // partnership FUX
-        'PARTNERSHIP_FUX' => env('PARTNERSHIP_FUX', ''),
-
         // partnership merchant validation
         'MERCHANT_VALIDATION' => env('MERCHANT_VALIDATION', ''),
 

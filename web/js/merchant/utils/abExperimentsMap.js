@@ -55,13 +55,6 @@ export default {
     // prod experiment ids
     'H7UYFAJIqhQB0X',
   ],
-  partnership_fux: [
-    // beta experiment ids
-    'J2ucKrbcNHVDSI',
-
-    // prod experiment ids
-    'J2uuWrBN9sddsY',
-  ],
   merchant_validation: [
     //beta experiment ids
     'JNwT6Atz4PLiVh',
