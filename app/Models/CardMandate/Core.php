@@ -12,6 +12,7 @@ use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Card\CardVault;
 use RZP\Models\Customer\Token;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
@@ -554,5 +555,28 @@ class Core extends Base\Core
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
         $mandateHub->updateTokenisedCardTokenInMandate($cardMandate, $input);
+    }
+
+    public function storeVaultTokenPan($cardMandate, $input)
+    {
+        if(isset($input['token']['number']) and
+           !empty($input['token']['number']))
+        {
+            try
+            {
+                $vaultTokenPAN = (new CardVault)->getVaultToken(["card" => $input['token']['number']], [], true);
+
+                $cardMandate->setVaultTokenPan($vaultTokenPAN);
+
+                $this->repo->card_mandate->saveOrFail($cardMandate);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                    'errorInStoreVaultTokenPan'      => $e->getMessage(),
+                    'input'                          => $input
+                ]);
+            }
+        }
     }
 }

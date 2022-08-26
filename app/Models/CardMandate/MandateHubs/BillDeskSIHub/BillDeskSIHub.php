@@ -75,6 +75,8 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $billDeskInput = $this->getReportInitialPaymentInput($payment, $cardMandate, $authenticationData, $authorizationData);
 
+        (new CardMandate\Core())->storeVaultTokenPan($cardMandate, $billDeskInput);
+
         return $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB, Payment\Action::REPORT_PAYMENT, $billDeskInput, $this->mode);
     }
 

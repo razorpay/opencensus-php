@@ -8524,17 +8524,25 @@ trait Authorize
                 ]);
     }
 
-    protected function createCardForNetworkToken($card, $input, $merchant=null)
+    protected function createCardForNetworkToken($card, $input, $merchant = null, $recurringTokenNumber = null)
     {
         if ($merchant === null){
             $merchant = $card->merchant;
         }
 
-        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+        $cryptogram = null;
+
+        // for recurring subsequent calls we dont need cryptogram
+        // we are storing tokenPAN in card_mandate table for recurring purposes. so need to make fetchcryptogram
+        // $recurringTokenNumber is passed the value of TokenPAN in recurring use cases
+        if($recurringTokenNumber === null)
+        {
+            $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+        }
 
         $cardCore = new Card\Core;
 
-        $cardInput = $cardCore->getCardInputFromCryptogram($cryptogram, $card, $input);
+        $cardInput = $cardCore->getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber);
 
         return $this->createCardEntity($cardInput, true, $this->merchant, $input);
     }
@@ -8557,6 +8565,37 @@ trait Authorize
         if ((new TokenisationExperiment())->shouldPaymentProcessThroughTokenisedCard($token, $this->merchant) === true)
         {
             $this->logTokenisedCardPaymentRoutingInfo($token, false);
+
+            // we are storing tokenPAN in card_mandate table for recurring purposes. so need to make fetchcryptogram
+            if($token->isRecurring() and
+               $token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
+            {
+                try
+                {
+                    if($token->cardMandate->getVaultTokenPan() === null)
+                    {
+                        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $card->merchant);
+
+                        $recurringTokenNumber = ["token" => ["number" => $cryptogram['token_number']]];
+
+                        (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $recurringTokenNumber);
+
+                        return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+                    }
+                    else
+                    {
+                        $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
+
+                        return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                        'failedRetryStoringPanEntireLogic'     => $e,
+                    ]);
+                }
+            }
 
             $merchant = $card->merchant;
             // using partner merchant for cryptogram api on token_interoperabilty

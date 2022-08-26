@@ -64,6 +64,8 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
     {
         $mandateHqInput = $this->getReportInitialPaymentInput($payment);
 
+        (new CardMandate\Core())->storeVaultTokenPan($cardMandate, $mandateHqInput);
+
         return $this->app->mandateHQ->reportPayment($cardMandate->getMandateId(), $mandateHqInput);
     }
 

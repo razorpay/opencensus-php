@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID                = 'terminal_id';
     const NETWORK_TRANSACTION_ID     = 'network_transaction_id';
     const HAS_INITIAL_TRANSACTION_ID = 'has_initial_transaction_id';
+    const VAULT_TOKEN_PAN            = 'vault_token_pan';
 
     const SKIP_SUMMARY_PAGE          = 'skip_summary_page';
 
@@ -81,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::NETWORK_TRANSACTION_ID,
         self::HAS_INITIAL_TRANSACTION_ID,
+        self::VAULT_TOKEN_PAN
     ];
 
     protected $defaults = [
@@ -203,6 +205,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MANDATE_HUB, $value);
     }
 
+    public function setVaultTokenPan($value)
+    {
+        $this->setAttribute(self::VAULT_TOKEN_PAN, $value);
+    }
+
     public function getMaxAmount()
     {
         return $this->getAttribute(self::MAX_AMOUNT);
@@ -216,6 +223,11 @@ class Entity extends Base\PublicEntity
     public function getMandateId()
     {
         return $this->getAttribute(self::MANDATE_ID);
+    }
+
+    public function getVaultTokenPan()
+    {
+        return $this->getAttribute(self::VAULT_TOKEN_PAN);
     }
 
     public function getStatus()

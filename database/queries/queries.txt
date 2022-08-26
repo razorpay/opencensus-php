@@ -7028,3 +7028,6 @@ ADD COLUMN token_iin_length INT NOT NULL DEFAULT(9);
 
 ALTER TABLE `merchant_business_details`
 ADD COLUMN `onboarding_source` varchar(255) DEFAULT NULL;
+
+ALTER TABLE card_mandates
+    ADD COLUMN vault_token_pan varchar(50) DEFAULT NULL;

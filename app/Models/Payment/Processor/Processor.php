@@ -6908,8 +6908,15 @@ class Processor
         }
     }
 
-    public function createCardForNetworkTokenCardMandate($card, $input)
+    public function createCardForNetworkTokenCardMandate($card, $token, $input)
     {
+        if($token->cardMandate->getVaultTokenPan()!==null)
+        {
+            $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
+
+            return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+        }
+
         return $this->createCardForNetworkToken($card, $input);
     }
 

@@ -21,11 +21,18 @@ class CardVault extends Base\Core
         $this->cardVault = $this->app['card.cardVault'];
     }
 
-    public function getCardNumber($vaultToken,array $input = [],$gateway=null)
+    public function getCardNumber($vaultToken,array $input = [],$gateway=null,$recurringPanStore = false)
     {
         $vaultEx = null;
         $buNamespace =null;
-        $buNamespace = $this->getBuNamespaceIfApplicable($input,false,$gateway);
+        if($recurringPanStore === true)
+        {
+            $buNamespace = 'payments_token_pan';
+        }
+        else
+        {
+            $buNamespace = $this->getBuNamespaceIfApplicable($input,false,$gateway);
+        }
         try
         {
             $cardNumber = $this->cardVault->detokenize($vaultToken,$buNamespace);
@@ -67,7 +74,7 @@ class CardVault extends Base\Core
         }
     }
 
-    public function getVaultToken($input,$cardArray=[])
+    public function getVaultToken($input,$cardArray=[], $recurringPanStore = false)
     {
         try
         {
@@ -75,9 +82,18 @@ class CardVault extends Base\Core
 
             $input['card'] = $cardNumber;
 
-            $buNamespace =null;
-            $buNamespace = $this->getBuNamespaceIfApplicable($cardArray);
-            $token = $this->cardVault->tokenize($input,$buNamespace);
+            $buNamespace = null;
+
+            if($recurringPanStore === true)
+            {
+                $buNamespace = 'payments_token_pan';
+            }
+            else
+            {
+                $buNamespace = $this->getBuNamespaceIfApplicable($cardArray);
+            }
+
+            $token = $this->cardVault->tokenize($input, $buNamespace);
 
             return $token;
         }

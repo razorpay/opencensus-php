@@ -843,7 +843,7 @@ class Core extends Base\Core
         return false;
     }
 
-    public function getCardInputFromCryptogram($cryptogram, $card, $input)
+    public function getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber = null)
     {
         $input = [
             Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
@@ -861,6 +861,15 @@ class Core extends Base\Core
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
+
+        if($recurringTokenNumber !== null)
+        {
+            $input = array_merge($input, [
+                Card\Entity::NUMBER                 => $recurringTokenNumber,
+                Card\Entity::TOKEN_EXPIRY_MONTH     => $card->getTokenExpiryMonth() ?? null,
+                Card\Entity::TOKEN_EXPIRY_YEAR      => $card->getTokenExpiryYear()?? null,
+            ]);
+        }
 
         if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
         {

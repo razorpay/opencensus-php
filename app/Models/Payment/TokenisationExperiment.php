@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer\Token;
 use RZP\Models\Card;
+use RZP\Models\Reminders\CardAutoRecurringReminderProcessor;
 
 class TokenisationExperiment
 {
@@ -45,6 +46,15 @@ class TokenisationExperiment
      */
     public function shouldPaymentProcessThroughTokenisedCard(Token\Entity $token, Merchant\Entity $merchant): bool
     {
+        if($token->isRecurring() and
+            $token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
+        {
+            $cardAutoProcessor = (new CardAutoRecurringReminderProcessor());
+
+            return ($cardAutoProcessor->isExperimentEnabledForTokenisedCard($merchant->getMerchantId()) and
+                    $cardAutoProcessor->shouldRecurringAutoPaymentGoThroughTokenisedCard($token->card));
+        }
+
         if ($merchant->isTokenisedCardPaymentEnabledForMerchant() === false)
         {
             return false;
