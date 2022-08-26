@@ -15,6 +15,10 @@ use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntit
 
 class Validator extends Base\Validator
 {
+    protected static $migrateReferredSubMToManagedSubMRules = [
+        'partner_id'     => 'required|alpha_num|size:14',
+    ];
+
     protected static $resellerToAggregatorMigrationRules = [
         'merchant_id'     => 'required|alpha_num|size:14',
         'new_auth_create' => 'required|boolean',

@@ -2699,6 +2699,7 @@ class Route
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
+        'update_submerchant_app_mapping'           => ['patch',    'submerchant/app_association',                    'PartnerController@migrateReferredSubMToManagedSubM'      ],
         'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerController@editPartnerActivationDetails'          ],
         'partner_activation_details'               => ['get',      'partner/activation',                             'PartnerController@getPartnerActivationDetails'           ],
         'partner_activation_save'                  => ['post',     'partner/activation',                             'PartnerController@savePartnerActivationDetails'          ],
@@ -4267,6 +4268,7 @@ class Route
         'account_create_v2',
         'account_fetch_v2',
         'change_banking_user_role',
+        'update_submerchant_app_mapping',
         'account_edit_v2',
         'account_delete_v2',
         'subscription_registration_auto_charge',

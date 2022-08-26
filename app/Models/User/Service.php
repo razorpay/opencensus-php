@@ -234,14 +234,7 @@ class Service extends Base\Service
 
         $variant = $response['response']['variant']['name'] ?? null;
 
-        if ($variant === 'enable')
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return $variant === 'enable';
     }
 
     public function changeBankingUserRole(array $input): array
@@ -251,7 +244,7 @@ class Service extends Base\Service
         // and if request came via private auth then other function
         $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
 
-        if ($this->isMerchantAllowedForMigration($merchantId))
+        if ($this->isMerchantAllowedForMigration($merchantId) === false)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);
         }

@@ -6242,7 +6242,7 @@ class UserTest extends TestCase
         $this->ba->privateAuth();
 
         $input = ["experiment_id" => "JuzQGh5pQfqNU9", "id" => '10000000000000'];
-        $output = ["response" => ["variant" => ["name" => 'enabled']]];
+        $output = ["response" => ["variant" => ["name" => 'enable']]];
 
         $this->mockSplitzTreatment($input, $output);
 
@@ -6297,7 +6297,7 @@ class UserTest extends TestCase
         $this->ba->privateAuth();
 
         $input = ["experiment_id" => "JuzQGh5pQfqNU9", "id" => '10000000000000'];
-        $output = ["response" => ["variant" => ["name" => 'enabled']]];
+        $output = ["response" => ["variant" => ["name" => 'enable']]];
 
         $this->mockSplitzTreatment($input, $output);
 

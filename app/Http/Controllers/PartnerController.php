@@ -10,6 +10,17 @@ class PartnerController extends Controller
 {
     protected $service = Partner\Service::class;
 
+    /**
+     * API to migrate referred application based sub-merchants to managed application
+     */
+    public function migrateReferredSubMToManagedSubM() {
+        $input = Request::all();
+
+        $data = $this->service()->migrateReferredSubMToManagedSubM($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function savePartnerActivationDetails()
     {
         $input = Request::all();

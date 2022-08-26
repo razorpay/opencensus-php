@@ -6,12 +6,16 @@ use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Merchant\AccessMap;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Jobs\SubmerchantFirstTransactionEvent ;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 
@@ -38,6 +42,65 @@ class Service extends Base\Service
         $this->partnerActivationValidator = new Activation\Validator();
 
         parent::__construct();
+    }
+
+    /**
+     * @param   string  $merchant_id Merchant id for which need to check if exp enabled
+     *
+     * @return  bool    is experiment enabled
+     */
+    private function isUserRoleMigrationExpEnabled(string $merchant_id): bool
+    {
+        if (empty($merchant_id) === true)
+        {
+            return false;
+        }
+
+        return $this->merchantCore->isSplitzExperimentEnable(
+            [
+                'id'            => $merchant_id,
+                'experiment_id' => $this->app['config']->get('app.user_role_migration_for_x_exp_id'),
+            ],
+            'enable'
+        );
+    }
+
+     /**
+     * Changes the referred application based sub-merchants to managed application sub-merchants
+     *
+     * @param   array  $input  { "partner_id" => <aggregator_partner> }
+     *
+     * @return  array  List of affected sub-merchants
+     */
+    public function migrateReferredSubMToManagedSubM(array $input)
+    {
+        // currently any private auth can also be accessed via partner auth creds too.
+        // incase request is made via partner auth creds, then we need to get merchant_id from different function
+        // and if request came via private auth then other function
+        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        if ($this->isUserRoleMigrationExpEnabled($merchantId) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);
+        }
+
+        $this->trace->info(TraceCode::REFERRED_TO_MANAGED_MIGRATION_START, ['merchant_id' => $merchantId]);
+
+        (new Validator())->validateInput('migrateReferredSubMToManagedSubM', $input);
+
+        $partnerId = $input['partner_id'];
+        $partner = $this->repo->merchant->findOrFail($partnerId);
+        if ($partner->isAggregatorPartner() === false)
+        {
+            return null;
+        }
+
+        $referredAppIds = $this->merchantCore->getPartnerApplicationIds($partner, [MerchantApplications\Entity::REFERRED]);
+        $managedAppIds = $this->merchantCore->getPartnerApplicationIds($partner, [MerchantApplications\Entity::MANAGED]);
+
+        $accessMaps = $this->repo->merchant_access_map->getAllMappingsByEntityIdAndEntityOwnerId($referredAppIds[0], $partnerId);
+        (new AccessMap\Core())->updateApplications($accessMaps, $managedAppIds[0]);
+
+        return $accessMaps->pluck(MerchantEntity::MERCHANT_ID)->toArray();
     }
 
     /**

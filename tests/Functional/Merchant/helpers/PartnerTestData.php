@@ -539,6 +539,19 @@ return [
         ],
     ],
 
+    'testChangeSubmerchantAppAssociation' => [
+        'request'   => [
+            'url'     => '/submerchant/app_association',
+            'method'  => 'PATCH',
+            'content' => [
+                "partner_id" => "10000000000000"
+            ],
+        ],
+        'response'   => [
+            'content' => ['subm1referredX', 'subm2referredX'],
+        ],
+    ],
+
     'testApprovingMarkAsPartnerWebsiteMissingMerchantRequest' => [
         'request'   => [
             'url'     => '/merchant/requests/100000RandomId',
