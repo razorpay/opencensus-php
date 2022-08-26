@@ -626,7 +626,7 @@ class Entity
     const MERCHANT_1CC_CONFIGS          = 'merchant_1cc_configs';
     const ADDRESS_CONSENT_1CC_AUDITS    = 'address_consent_1cc_audits';
     const ADDRESS_CONSENT_1CC           = 'address_consent_1cc';
-
+    const ZIPCODE_DIRECTORY             = 'zipcode_directory';
     const MERCHANT_1CC_COMMENTS          = 'merchant_1cc_comments';
 
     // merchant international integrations
@@ -1382,6 +1382,8 @@ class Entity
 
         self::MERCHANT_OTP_VERIFICATION_LOGS       => \RZP\Models\Merchant\Product\Otp::class,
         self::ADDRESS_CONSENT_1CC               => \RZP\Models\Address\AddressConsent1cc::class,
+
+        self::ZIPCODE_DIRECTORY               => Models\Pincode\ZipcodeDirectory::class,
 
         self::ADDRESS_CONSENT_1CC_AUDITS        => \RZP\Models\Address\AddressConsent1ccAudits::class,
 

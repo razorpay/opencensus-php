@@ -100,6 +100,9 @@ final class Metric
     const MERCHANT_SHIPPING_INFO_CHECK_CALL_COUNT = 'merchant_shipping_info_check_call_count';
     const MERCHANT_SHIPPING_INFO_CALL_INVALID_REQUEST_COUNT = 'shipping_info_call_invalid_request_count';
 
+    const ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT          = 'zip_code_without_address_found_count';
+
+
     const CREATE_API_CHECKOUT_ERROR_COUNT               = 'create_api_checkout_error_count';
 
     const CREATE_SHOPIFY_CHECKOUT_REQUEST_COUNT         = 'create_shopify_checkout_request_count';

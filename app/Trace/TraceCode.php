@@ -2326,6 +2326,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Pincode Serviceability
 
+    const ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST                = 'ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST';
     const GOOGLE_MAP_REQUEST_FAILED                             = 'GOOGLE_MAP_REQUEST_FAILED';
     const PINCODE_SEARCH_ERROR                                  = 'PINCODE_SEARCH_ERROR';
     const FETCH_CITY_STATE_RESULT                               = 'FETCH_CITY_STATE_RESULT';

@@ -2641,6 +2641,9 @@ class Route
         'states_by_country'                        => ['get',      'locations/countries/{countryCode}/states',       'LocationController@getStatesByCountry'],
         'db_meta_query'                            => ['post',     'db_meta_query',                                  'AdminController@dbMetaDataQuery'                                   ],
 
+        'zipcode_add'                              => ['post',      '1cc/zipcodes',                                  'LocationController@add'                                             ],
+        'zipcode_remove'                           => ['post',      '1cc/zipcodes/remove',                           'LocationController@remove'                                          ],
+
         // Deprecated feature routes - maintaining for BC - Remove after dashboard changes
         'feature_get_multiple'                     => ['get',      'features/{entityId}',                            'FeatureController@getMerchantFeatures'                             ],
         'feature_get_multiple_internal'            => ['get',      'internal/features/{entityId}',                   'FeatureController@getMerchantFeatures'                             ],
@@ -4096,6 +4099,9 @@ class Route
         'order_payments',
         'feature_dummy',
         'razorx_dummy',
+
+        'zipcode_add',
+        'zipcode_remove',
         // Routes webhook_create and webhook_edit exist in this list as exception, a merchant i.e. Limetray uses it.
         'webhook_create',
         'webhook_edit',
@@ -4787,7 +4793,8 @@ class Route
         'feature_delete_internal',
 
         'dispute_deduction_reversal_cron',
-
+        'zipcode_add',
+        'zipcode_remove',
         // Capital LOC
         'feature_delete_entity_internal',
 

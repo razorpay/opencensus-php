@@ -734,21 +734,23 @@ class Service extends Base\Service
                 if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
                 {
                     //fetch details from google api
-                    return $this->fetchCityAndStateFromPincodeAndCountry($address['zipcode'], $address['country']);
+                    return $this->app['pincodesearch']->fetchCityAndStateFromPincodeAndCountry($address['zipcode'], $address['country']);
                 }
                 else
                 {
-                    $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
-                        ['pincode' => $address['zipcode'],
-                            'error' => $e->getMessage()]);
+                    $this->trace->count(Metric::ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT);
+                    $this->trace->error(TraceCode::ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST,
+                        ['zipcode' => $address['zipcode'], 'country' => $address['country'], 'error' => $e->getMessage()]
+                    );
                     $response = ['city' => '', 'state' => '', 'state_code' => ''];
                 }
             }
         } catch (Throwable $ex) {
             //to catch the exception from fetchCityAndStateFromPincodeAndCountry google api call
-            $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR,
-                ['pincode' => $address['zipcode'],
-                    'error' => $e->getMessage()]);
+            $this->trace->count(Metric::ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT);
+            $this->trace->error(TraceCode::ZIP_CODE_WITHOUT_ADDRESS_FOUND_REQUEST,
+                ['zipcode' => $address['zipcode'], 'country' => $address['country'], 'error' => $ex->getMessage()]
+            );
             $response = ['city' => '', 'state' => '', 'state_code' => ''];
         }
         $address['city'] = $response['city'];

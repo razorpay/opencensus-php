@@ -163,7 +163,7 @@ class PincodeSearch
             $response);
     }
 
-    protected function fetchCityAndStateFromPincodeAndCountry($pincode, $country): array
+    public function fetchCityAndStateFromPincodeAndCountry($pincode, $country): array
     {
         $key = $this->getCacheKey($pincode, false, $country);
         if ($response = Cache::get($key))

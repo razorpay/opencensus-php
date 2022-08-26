@@ -52,6 +52,7 @@ class Table
     const RAW_ADDRESS                  = 'raw_addresses';
     const ADDRESS_CONSENT_1CC_AUDITS   = 'address_consent_1cc_audits';
     const ADDRESS_CONSENT_1CC          = 'address_consent_1cc';
+    const ZIPCODE_DIRECTORY            = 'zipcode_directory';
     const DISCOUNT                     = 'discounts';
     const MERCHANT                     = 'merchants';
     const PARTNER_ACTIVATION           = 'partner_activation';

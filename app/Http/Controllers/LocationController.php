@@ -3,7 +3,9 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Request;
 use RZP\Models\Location;
+use RZP\Models\Pincode\ZipcodeDirectory\Service;
 use RZP\Services\LocationService;
 
 class LocationController extends Controller
@@ -37,5 +39,19 @@ class LocationController extends Controller
     public function getAddressSuggestions()
     {
         return (new LocationService($this->app))->getAddressSuggestions($this->app['request']->query->all());
+    }
+
+    public function add(): array
+    {
+        $input = Request::all();
+
+        return  (new Service())->add($input);
+    }
+
+    public function remove(): array
+    {
+        $input = Request::all();
+
+        return  (new Service())->remove($input);
     }
 }
