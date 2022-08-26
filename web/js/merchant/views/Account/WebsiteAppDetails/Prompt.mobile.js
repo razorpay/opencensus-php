@@ -18,13 +18,15 @@ function PromptMobile({
 }) {
   const onUpdateClick = () => {
     analyticsTrack({
-      objectName: 'Website wizard modal',
+      objectName: 'Website compliance modal',
       actionName: 'Interacted',
       screen,
       properties: {
         pageTitle: screen,
         websiteCompliance: true,
         bannerTitle: 'Update details about your website/app',
+        modalType: !user.isWebsiteComplianceModalNonDismissible ? 'Dismissable' : 'non-dismissable',
+        ctaName: 'Update or create page',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
@@ -35,19 +37,33 @@ function PromptMobile({
   useEffect(() => {
     // send analytics on modal load
     analyticsTrack({
-      objectName: 'Website wizard modal',
+      objectName: 'Website compliance modal',
       actionName: 'Loaded',
       screen,
       properties: {
         pageTitle: screen,
         websiteCompliance: true,
         bannerTitle: 'Update details about your website/app',
+        modalType: !user.isWebsiteComplianceModalNonDismissible ? 'Dismissable' : 'non-dismissable',
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
   }, []);
 
   const onCloseClick = () => {
+    analyticsTrack({
+      objectName: 'Website compliance modal',
+      actionName: 'Interacted',
+      screen: 'Home page',
+      properties: {
+        pageTitle: 'Home page',
+        websiteCompliance: true,
+        bannerTitle: 'Update details about your website/app',
+        modalType: !user.isWebsiteComplianceModalNonDismissible ? 'Dismissable' : 'non-dismissable',
+        ctaName: 'Close',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
     closeModal();
     const previousViewCount = Number(
       websiteComplianceModalVisibility.data.website_incomplete_soft_nudge_count,

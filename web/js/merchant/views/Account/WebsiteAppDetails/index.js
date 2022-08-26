@@ -20,12 +20,14 @@ import {
 import LoaderDots from 'common/ui/LoaderDots';
 import { websiteComplianceEntryPointsData } from 'merchant/views/Account/WebsiteAppDetails/data';
 import isEmpty from '@universe/utils/isEmpty';
+import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
 
 function WebsiteAppDetails({
   activationData,
   websiteSectionDetailsData,
   showNotification,
   openModal,
+  closeModal,
   fetchActivationDetails,
   fetchMerchantWebsiteDetails,
 }) {
@@ -47,7 +49,7 @@ function WebsiteAppDetails({
       if (typeof data === 'object' && !Array.isArray(data)) status = formatStatus(data.status);
 
       analyticsTrack({
-        objectName: 'Website wizard visit',
+        objectName: 'Website compliance visit',
         actionName: 'Loaded',
         screen: 'Website/App details',
         properties: {
@@ -56,6 +58,9 @@ function WebsiteAppDetails({
           previousPageUrl: document.referrer,
           websiteComplianceStatus: status,
           from: from ? from : 'Merchant dashboard',
+          websiteUrl: activationData.data.business_website || '--',
+          appStoreUrl: activationData.data.appstore_url || '--',
+          playStoreUrl: activationData.data.playstore_url || '--',
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
@@ -127,15 +132,19 @@ function WebsiteAppDetails({
 
   const ctaText = getCTAText();
 
+  const onWebsiteAdd = () => {
+    fetchActivationDetails();
+  };
+
   const onButtonClick = () => {
     analyticsTrack({
-      objectName: 'Website wizard visit',
+      objectName: 'Website compliance visit',
       actionName: 'Clicked',
       screen: 'Website/App details',
       properties: {
         websiteCompliance: true,
         pageTitle: 'Website/App details',
-        CTAName: ctaText,
+        ctaName: ctaText,
         previousPageUrl: document.referrer,
         websiteUrl: businessWebsiteUrl,
         appStoreUrl,
@@ -144,7 +153,15 @@ function WebsiteAppDetails({
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-    window.open(`${window.EASY_ONBOARDING_URL}/website-compliance`, '_self');
+
+    if (isUrlFieldEmpty(activationData.data)) {
+      openModal({
+        size: 'small',
+        component: <EditWebsiteDetailsModal onClose={closeModal} onWebsiteAdd={onWebsiteAdd} />,
+      });
+    } else {
+      window.open(`${window.EASY_ONBOARDING_URL}/website-compliance`, '_self');
+    }
   };
 
   const renderStatus = () => {
@@ -176,7 +193,10 @@ function WebsiteAppDetails({
   );
 
   const showShouldNeedsClarificationComments = () => {
-    if (activationData.data.kyc_clarification_reasons) {
+    if (
+      activationData.data.kyc_clarification_reasons &&
+      activationData?.data?.activation_status === 'needs_clarification'
+    ) {
       if (latestNeedsClarificationComments.length > 0) return true;
       else return false;
     } else {
@@ -223,9 +243,11 @@ function WebsiteAppDetails({
           {showShouldNeedsClarificationComments() ? (
             <div className="comment">
               {latestNeedsClarificationComments[0].reason_code}{' '}
-              <p onClick={onViewClick} style={{ cursor: 'pointer' }}>
-                View more
-              </p>
+              {latestNeedsClarificationComments?.length > 1 ? (
+                <p onClick={onViewClick} style={{ cursor: 'pointer' }}>
+                  View more
+                </p>
+              ) : null}
             </div>
           ) : null}
         </div>

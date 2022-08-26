@@ -51,7 +51,7 @@ function WebsiteAppDetailsNudge({
     // send analytics on nudge load
     if (isMobileResolution && user.isWebsiteComplianceFlowEnabled && shouldShowNudge) {
       analyticsTrack({
-        objectName: 'Website wizard banner',
+        objectName: 'Website compliance banner',
         actionName: 'Loaded',
         screen,
         properties: {
@@ -74,7 +74,7 @@ function WebsiteAppDetailsNudge({
 
   const onUpdateClick = () => {
     analyticsTrack({
-      objectName: 'Website wizard banner',
+      objectName: 'Website compliance banner',
       actionName: 'Interacted',
       screen,
       properties: {
