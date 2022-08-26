@@ -1237,6 +1237,12 @@ class Service extends Base\Service
         {
             $productSwitchOccurence = $this->productSwitchIfApplicable($response, $user);
 
+            $this->trace->info(TraceCode::PRODUCT_SWITCH_REQUEST, [
+                'user_id'                   => $user->getId(),
+                'productSwitch'             => $productSwitch,
+                'productSwitchOccurence'    => $productSwitchOccurence,
+            ]);
+
             if ($productSwitchOccurence === true)
             {
                 $response = $this->core->get($user);
@@ -1263,7 +1269,16 @@ class Service extends Base\Service
      */
     public function productSwitchIfApplicable(array $response, Entity $user): bool
     {
+        $this->trace->info(TraceCode::PRE_PRODUCT_SWITCH_APPLICABLE, [
+            'response'  => $response,
+            'user'      => $user,
+        ]);
+
         $isProductSwitchRequiredResponse = $this->isProductSwitchRequired($response);
+
+        $this->trace->info(TraceCode::POST_PRODUCT_SWITCH_APPLICABLE, [
+            'isProductSwitchRequiredResponse'  => $isProductSwitchRequiredResponse,
+        ]);
 
         if ($isProductSwitchRequiredResponse[Constants::PRODUCT_SWITCH_REQUIRED] === true)
         {
@@ -1326,6 +1341,11 @@ class Service extends Base\Service
         {
             $productSwitchMap[Constants::PRODUCT_SWITCH_REQUIRED] = true;
         }
+
+        $this->trace->info(TraceCode::PRODUCT_SWITCH_REQUIRED, [
+            'productSwitchMap' => $productSwitchMap,
+            'user'             => $user,
+        ]);
 
         return $productSwitchMap;
     }

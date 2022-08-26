@@ -142,6 +142,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_USER_MAPPING                                 = "MERCHANT_USER_MAPPING";
 
     const PRODUCT_SWITCH                                        = 'PRODUCT_SWITCH';
+    const PRODUCT_SWITCH_REQUEST                                = 'PRODUCT_SWITCH_REQUEST';
+    const PRE_PRODUCT_SWITCH_APPLICABLE                         = 'PRE_PRODUCT_SWITCH_APPLICABLE';
+    const POST_PRODUCT_SWITCH_APPLICABLE                        = 'POST_PRODUCT_SWITCH_APPLICABLE';
+    const PRODUCT_SWITCH_REQUIRED                               = 'PRODUCT_SWITCH_REQUIRED';
+
     const UTM_PARAMS                                            = 'UTM_PARAMS';
     const RZP_UTM                                               = 'RZP_UTM';
     // payout links
