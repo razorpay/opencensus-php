@@ -256,6 +256,7 @@ class Service extends Base\Service
             'capital_enable_physical_card',
             'rx_cohesive_invoice',
             'rx_custom_access_control_enabled',
+            'rx_self_serve_workflow',
             'easy_onboarding',
             'capital_virtual_card',
             'capital_addon_cards_status_tracker',
