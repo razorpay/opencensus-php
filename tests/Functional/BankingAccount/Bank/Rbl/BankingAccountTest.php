@@ -2,7 +2,6 @@
 
 use Carbon\Carbon;
 use RZP\Models\Admin;
-use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
@@ -15,7 +14,6 @@ use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
-use RZP\Models\Merchant\Balance;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -36,10 +34,8 @@ use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Services\Segment\XSegmentClient;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
-use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
 use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
@@ -67,7 +63,6 @@ class BankingAccountTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use EventsTrait;
-    use TestsBusinessBanking;
 
     const DefaultMerchantId = '10000000000000';
 
@@ -1770,15 +1765,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertTrue($expectedHubspotCall);
 
-        /** @var Balance\Entity $balance */
         $balance = $this->getDbLastEntity('balance');
-
-        $this->setFreePayoutsCountInAdminKey($balance->getAccountType(), $balance->getChannel());
-
-        $freePayoutAttributes = (new Payout\Core)->getFreePayoutsAttributes($balance->getId());
-
-        // Every activated merchant should have a default 250 free payouts count.
-        $this->assertEquals(250, $freePayoutAttributes[Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT]);
 
         $this->assertEquals('rbl', $balance[RZP\Models\Merchant\Balance\Entity::CHANNEL]);
 

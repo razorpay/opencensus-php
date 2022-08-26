@@ -934,12 +934,7 @@ class Activate extends Base\Core
                 }
             }
 
-            (new Balance\Service)->updateFreePayout(
-                $balance->getId(),
-                [
-                    Balance\FreePayout::FREE_PAYOUTS_COUNT =>
-                        Balance\FreePayout::NEW_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT
-                ]);
+            (new Counter\Core)->fetchOrCreate($balance);
 
             $this->trace->info(
                 TraceCode::MERCHANT_BUSINESS_BANKING_ACCOUNT,

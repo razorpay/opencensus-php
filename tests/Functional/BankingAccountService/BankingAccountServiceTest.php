@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin;
-use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
@@ -22,7 +21,6 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccountService\Constants;
-use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -96,7 +94,6 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        /** @var Balance $balance */
         $balance = $this->getDbEntity('balance',
                                       [
                                               'merchant_id'    => '10000000000000',
@@ -104,13 +101,6 @@ class BankingAccountServiceTest extends TestCase
                                               'account_type'   => 'direct',
                                               'account_number' => '12345678903833',
                                           ]);
-
-        $this->setFreePayoutsCountInAdminKey($balance->getAccountType(), $balance->getChannel());
-
-        $freePayoutAttributes = (new Payout\Core)->getFreePayoutsAttributes($balance->getId());
-
-        // Every activated merchant should have a default 250 free payouts count.
-        $this->assertEquals(250, $freePayoutAttributes[Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT]);
 
         $this->assertNotNull($balance);
 
@@ -376,7 +366,7 @@ class BankingAccountServiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateBankingEntitiesAndAddPayoutFeatureAndAllowHasKeyAccessAndVerifyFreePayoutCount()
+    public function testCreateBankingEntitiesAndAddPayoutFeatureAndAllowHasKeyAccess()
     {
         $schedule = $this->setupDefaultScheduleForFeeRecovery();
 
@@ -415,7 +405,6 @@ class BankingAccountServiceTest extends TestCase
 
         $response = $this->startTest();
 
-        /** @var Balance $balance */
         $balance = $this->getDbEntity('balance',
             [
                 'merchant_id'    => '10000000000000',
@@ -427,13 +416,6 @@ class BankingAccountServiceTest extends TestCase
         $this->assertNotNull($balance);
 
         $this->assertEquals($balance->getId(), $response['balance_id']);
-
-        $this->setFreePayoutsCountInAdminKey($balance->getAccountType(), $balance->getChannel());
-
-        $freePayoutAttributes = (new Payout\Core)->getFreePayoutsAttributes($balance->getId());
-
-        // Every activated merchant should have a default 250 free payouts count.
-        $this->assertEquals(250, $freePayoutAttributes[Merchant\Balance\FreePayout::FREE_PAYOUTS_COUNT]);
 
         $basd = $this->getDbEntity('banking_account_statement_details',
             [

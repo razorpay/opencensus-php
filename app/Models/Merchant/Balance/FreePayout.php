@@ -27,15 +27,6 @@ class FreePayout
     // Default free direct account payouts allowed per merchant in a month for ICICI
     const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI = 500;
 
-    // New free shared account payouts allowed per merchant in a month.
-    const NEW_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT     = 0;
-
-    // New free direct account payouts allowed per merchant in a month for RBL
-    const NEW_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = 250;
-
-    // New free direct account payouts allowed per merchant in a month for ICICI
-    const NEW_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI = 250;
-
     // Count of the number of free shared account payouts allowed per merchant in a month.
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT             = 'free_shared_account_payouts_count';
 
