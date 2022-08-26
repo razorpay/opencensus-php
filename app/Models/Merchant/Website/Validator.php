@@ -74,14 +74,7 @@ class Validator extends Base\Validator
         Constants::SECTION_NAME => 'sometimes|string|in:' . Constants::VALID_ADMIN_SECTIONS,
         Constants::URL_TYPE     => 'required_if:section_name,' . Constants::VALID_ADMIN_SECTIONS . ',' . '|in:' . Constants::VALID_URL_TYPE,
         Constants::URL          => 'required_if:section_name,' . Constants::VALID_ADMIN_SECTIONS . ',' . '|custom:active_url|string|max:255',
-        Constants::SECTION_URL  => 'required_if:section_name,' . Constants::TERMS . ',' .
-                                   Constants::CONTACT_US . ',' .
-                                   Constants::REFUND . ',' .
-                                   Constants::PRIVACY . ',' .
-                                   Constants::SHIPPING . ',' .
-                                   Constants::PRICING . ',' .
-                                   Constants::ABOUT_US . ',' .
-                                   Constants::CANCELLATION . ',' . '|custom:active_url|string|max:255',
+        Constants::SECTION_URL  => 'sometimes|custom:active_url|string|max:255|nullable',
         Constants::COMMENTS     => 'required_if:section_name,comments|string|nullable',
         Entity::GRACE_PERIOD    => 'sometimes|boolean|nullable'
 

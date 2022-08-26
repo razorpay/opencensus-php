@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
+use RZP\Models\Merchant\Cron\Jobs\WebsiteComplianceGracePeriodReminderCronJob;
 
 class Factory
 {
@@ -107,6 +108,8 @@ class Factory
                 return (new AppsflyerUninstallCronJob($input));
             case Constants::MERCHANT_WEBSITE_INCOMPLETE_PAYMENTS_ENABLED_CRON_JOB_NAME:
                 return (new WebsiteCompliancePaymentsEnabledCronJob($input));
+            case Constants::WEBSITE_COMPLIANCE_GRACE_PERIOD_REMINDER_JOB:
+                return (new WebsiteComplianceGracePeriodReminderCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

@@ -33,6 +33,7 @@ class Handler extends BaseHandler
         Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION                    => [Channel::EMAIL,Channel::WHATSAPP ],
         Events::WEBSITE_SECTION_PUBLISHED                            => [Channel::EMAIL, Channel::WHATSAPP ],
         Events::WEBSITE_ADHERENCE_SOFT_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP ],
+        Events::WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER              => [Channel::EMAIL],
         Events::WEBSITE_ADHERENCE_HARD_NUDGE                         => [Channel::EMAIL, Channel::WHATSAPP, Channel::SMS ],
         Events::L1_NOT_SUBMITTED_IN_1_DAY                            => [Channel::SMS, Channel::WHATSAPP],
         Events::L1_NOT_SUBMITTED_IN_1_HOUR                           => [Channel::SMS, Channel::WHATSAPP],

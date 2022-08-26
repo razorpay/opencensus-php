@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant\Website;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\BusinessType;
 
 /**
  * Class Entity
@@ -261,5 +262,25 @@ class Entity extends Base\PublicEntity
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
         return $merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL] ?? null;
+    }
+
+    public function getMerchantLegalEntityName($merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        $name = null;
+
+        switch ($merchantDetails->getBusinessType())
+        {
+            case BusinessType::INDIVIDUAL:
+            case BusinessType::NOT_YET_REGISTERED:
+                $name = $merchant->getBillingLabel();
+                break;
+            default:
+                $name = $merchantDetails->getBusinessName();
+                break;
+        }
+
+        return $name;
     }
 }

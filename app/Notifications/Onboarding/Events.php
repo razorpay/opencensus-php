@@ -4,6 +4,7 @@
 namespace RZP\Notifications\Onboarding;
 
 
+use RZP\Mail\Base\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 
 class Events
@@ -11,7 +12,7 @@ class Events
     const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
     const PARTNER_SUBMERCHANT_EVENTS_PREFIX = 'PARTNER_SUBMERCHANT_';
 
-    const PAYMENTS_ENABLED     = 'PAYMENTS_ENABLED';
+    const PAYMENTS_ENABLED                            = 'PAYMENTS_ENABLED';
     const UNREGISTERED_PAYMENTS_ENABLED               = 'UNREGISTERED_PAYMENTS_ENABLED';
     const UNREGISTERED_SETTLEMENTS_ENABLED            = 'UNREGISTERED_SETTLEMENTS_ENABLED';
     const REGISTERED_PAYMENTS_ENABLED                 = 'REGISTERED_PAYMENTS_ENABLED';
@@ -24,6 +25,7 @@ class Events
     const FUNDS_ON_HOLD                               = 'FUNDS_ON_HOLD';
     const FUNDS_ON_HOLD_REMINDER                      = 'FUNDS_ON_HOLD_REMINDER';
     const WEBSITE_ADHERENCE_SOFT_NUDGE                = "WEBSITE_ADHERENCE_SOFT_NUDGE";
+    const WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER     = "WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER";
     const WEBSITE_ADHERENCE_HARD_NUDGE                = "WEBSITE_ADHERENCE_HARD_NUDGE";
     const DOWNLOAD_MERCHANT_WEBSITE_SECTION           = "DOWNLOAD_MERCHANT_WEBSITE_SECTION";
     const WEBSITE_SECTION_PUBLISHED                   = "WEBSITE_SECTION_PUBLISHED";
@@ -84,15 +86,16 @@ class Events
     ];
 
     const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
-        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
-        self::WEBSITE_SECTION_PUBLISHED                   => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
-        self::WEBSITE_ADHERENCE_HARD_NUDGE                => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_SECTION_PUBLISHED               => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_ADHERENCE_HARD_NUDGE            => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE            => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
+        self::WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
     ];
 
     const WHATSAPP_TEMPLATES_CTA_TEMPLATE = [
-        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'website-compliance',
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'website-compliance',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE => 'app/website-app-detail',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE => 'app/website-app-detail',
     ];
 
     // blade templates
@@ -116,10 +119,10 @@ class Events
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
         self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.first_payment_offer',
 
-        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => 'whatsapp.merchant.onboarding.website_section_downloaded',
-        self::WEBSITE_SECTION_PUBLISHED                   => 'whatsapp.merchant.onboarding.website_section_published',
-        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'whatsapp.merchant.onboarding.website_adherence_hard_nudge',
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'whatsapp.merchant.onboarding.website_adherence_soft_nudge',
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded',
+        self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_hard_nudge',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_soft_nudge',
 
     ];
 
@@ -133,10 +136,11 @@ class Events
         self::FUNDS_ON_HOLD                               => 'emails.merchant.onboarding.funds_on_hold',
         self::FUNDS_ON_HOLD_REMINDER                      => 'emails.merchant.onboarding.funds_on_hold_reminder',
 
-        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => 'emails.merchant.onboarding.website_section_downloaded',
-        self::WEBSITE_SECTION_PUBLISHED                   => 'emails.merchant.onboarding.website_section_published',
-        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'emails.merchant.onboarding.website_adherence_hard_nudge',
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'emails.merchant.onboarding.website_adherence_soft_nudge',
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => 'emails.merchant.onboarding.website_section_downloaded',
+        self::WEBSITE_SECTION_PUBLISHED               => 'emails.merchant.onboarding.website_section_published',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE            => 'emails.merchant.onboarding.website_adherence_hard_nudge',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE            => 'emails.merchant.onboarding.website_adherence_soft_nudge',
+        self::WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER => 'emails.merchant.onboarding.website_adherence_grace_period_reminder',
 
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'partner.submerchant.onboarding.activated_mcc_pending_success',
         self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'partner.submerchant.onboarding.needs_clarification',
@@ -155,16 +159,32 @@ class Events
         self::FUNDS_ON_HOLD                               => '[Urgent] Settlements have been paused for your Razorpay account',
         self::FUNDS_ON_HOLD_REMINDER                      => '[Urgent] Settlements have been paused for your Razorpay account',
 
-        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION           => 'Content for your website/app pages',
-        self::WEBSITE_SECTION_PUBLISHED                   => 'Published links for your website/app pages',
-        self::WEBSITE_ADHERENCE_SOFT_NUDGE                => 'Update your website/app details',
-        self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'Reminder: Update your website/app details',
-
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => 'Content for your website/app pages',
+        self::WEBSITE_SECTION_PUBLISHED               => 'Published links for your website/app pages',
+        self::WEBSITE_ADHERENCE_SOFT_NUDGE            => 'Update your website/app details',
+        self::WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER => 'Update content on your website/app to avoid payment disruption',
+        self::WEBSITE_ADHERENCE_HARD_NUDGE            => 'Reminder: Update your website/app details',
 
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'Your affiliate {merchantName} can now accept payments via Razorpay',
         self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => 'Your affiliate {merchantName}\'s KYC needs action',
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'Your affiliate {merchantName}\'s KYC is approved',
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'Your affiliate {merchantName} can now accept payments via Razorpay',
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'Your affiliate {merchantName} can now accept payments via Razorpay',
+    ];
+
+    const EMAIL_CC = [
+        self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION            => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED          => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::ACTIVATED_MCC_PENDING_SUCCESS                        => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::ACTIVATED_MCC_PENDING_ACTION_REQUIRED                => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH              => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH              => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::FUNDS_ON_HOLD                                        => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::FUNDS_ON_HOLD_REMINDER                               => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION              => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED
     ];
 }

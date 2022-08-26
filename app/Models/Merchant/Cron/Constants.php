@@ -23,6 +23,7 @@ class Constants
     const FRIEND_BUY_SEND_PURCHASE_EVENTS_CRON_JOB_NAME              = "friend-buy-send-purchase-events-cron";
     const MERCHANT_SEGMENT_TYPE_CRON_JOB_NAME                        = 'save-merchant-segment-type-cron';
     const MERCHANT_WEBSITE_INCOMPLETE_PAYMENTS_ENABLED_CRON_JOB_NAME = 'website_incomplete_payments_enabled_cron';
+    const WEBSITE_COMPLIANCE_GRACE_PERIOD_REMINDER_JOB               = 'website_compliance_grace_period_reminder_job';
     const L1_FORM_EMAIL_TRIGGER_CRON_JOB_NAME                        = 'l1_form_email_trigger_cron_job';
     const MERCHANT_FIRST_TRANSACTION_POST_EVENT_CRON                 = 'merchant-first-transaction-post-event-cron';
 

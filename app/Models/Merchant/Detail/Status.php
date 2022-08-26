@@ -51,6 +51,7 @@ class Status
     const PAYMENTS_ENABLED_STATUSES = [
         self::INSTANTLY_ACTIVATED,
         self::ACTIVATED_MCC_PENDING,
-        self::ACTIVATED_KYC_PENDING
+        self::ACTIVATED_KYC_PENDING,
+        self::ACTIVATED
     ];
 }

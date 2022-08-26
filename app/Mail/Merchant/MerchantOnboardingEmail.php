@@ -5,6 +5,7 @@ namespace RZP\Mail\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
+use RZP\Notifications\Onboarding\Events;
 
 class MerchantOnboardingEmail extends Mailable
 {
@@ -14,12 +15,14 @@ class MerchantOnboardingEmail extends Mailable
 
     protected $template;
 
+    protected $event;
+
     /**
      * @var array
      */
     private $files;
 
-    public function __construct(array $data, array $org, string $template, string $subject, $files)
+    public function __construct(array $data, array $org, string $event,string $template, string $subject, $files)
     {
         parent::__construct();
 
@@ -28,6 +31,7 @@ class MerchantOnboardingEmail extends Mailable
         $this->subject  = $subject;
         $this->template = $template;
         $this->files    = $files;
+        $this->event    = $event;
     }
 
     public function getTemplate()
@@ -68,9 +72,11 @@ class MerchantOnboardingEmail extends Mailable
 
     protected function addBcc()
     {
-        if ($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID)
+        if ($this->org[Org\Entity::ID] === Org\Entity::RAZORPAY_ORG_ID and
+            empty($this->event) === false and
+            array_key_exists($this->event, Events::EMAIL_CC) === true)
         {
-            $this->cc(Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK]);
+            $this->cc(Events::EMAIL_CC[$this->event]);
         }
 
         return $this;

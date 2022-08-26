@@ -253,56 +253,64 @@ class Service extends Base\Service
         return $publicTncDetails;
     }
 
-    public function isWebsiteSectionsApplicable(MerchantEntity $merchant)
+    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin=false)
     {
 
         try
         {
-            try
+            $result = true;
 
+            //run experiment from every flow except for admin dashboard
+            if ($admin === false)
             {
-                $response = $this->app['splitzService']->evaluateRequest([
-                                                                             'id'            => $merchant->getId(),
-                                                                             'experiment_id' => $this->app['config']->get('app.merchant_policies_exp_id'),
-                                                                         ]);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+                try
 
-                return false;
-            }
-
-            $variant = $response['response']['variant']['name'] ?? null;
-
-            $result = false;
-
-            if (empty($response['response']['variant']['variables']) === false)
-            {
-                foreach ($response['response']['variant']['variables'] as $variables)
                 {
-
-                    if ($variables['key'] === 'result')
-                    {
-                        $result = $variables['value'] === 'on';
-                    }
-
+                    $response = $this->app['splitzService']->evaluateRequest([
+                                                                                 'id'            => $merchant->getId(),
+                                                                                 'experiment_id' => $this->app['config']->get('app.merchant_policies_exp_id'),
+                                                                             ]);
                 }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+
+                    return false;
+                }
+
+                $variant = $response['response']['variant']['name'] ?? null;
+
+                $result = false;
+
+                if (empty($response['response']['variant']['variables']) === false)
+                {
+                    foreach ($response['response']['variant']['variables'] as $variables)
+                    {
+
+                        if ($variables['key'] === 'result')
+                        {
+                            $result = $variables['value'] === 'on';
+                        }
+
+                    }
+                }
+
+                $businessDetail = optional($merchant->merchantDetail->businessDetail);
+
+                $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
+                                                                       "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
+                                                                       "additional_Website" => $merchant->merchantDetail->getAttribute(DEntity::ADDITIONAL_WEBSITES),
+                                                                       "playstore"          => $businessDetail->getAppstoreUrl(),
+                                                                       "appstore"           => $businessDetail->getPlaystoreUrl(),
+                                                                       "variant"            => $variant,
+                                                                       "result"             => $result,
+                                                                       "response"           => $response
+                ]);
+
+                $result = ($result or ($variant === 'enable'));
             }
 
-            $businessDetail = optional($merchant->merchantDetail->businessDetail);
-
-            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
-                                                                   "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
-                                                                   "additional_Website" => $merchant->merchantDetail->getAttribute(DEntity::ADDITIONAL_WEBSITES),
-                                                                   "playstore"          => $businessDetail->getAppstoreUrl(),
-                                                                   "appstore"           => $businessDetail->getPlaystoreUrl(),
-                                                                   "variant"            => $variant,
-                                                                   "result"             => $result,
-                                                                   "response"           => $response
-            ]);
-
-            if ($variant === 'enable' or $result === true)
+            if ($result === true)
             {
 
                 if ($merchant->isBusinessBankingEnabled() === true)
@@ -316,8 +324,10 @@ class Service extends Base\Service
                     return true;
                 }
 
+                //check additional website only for admin dashboard
                 if (empty($merchant->merchantDetail->getAttribute(
-                        DEntity::ADDITIONAL_WEBSITES)) === false)
+                        DEntity::ADDITIONAL_WEBSITES)) === false and
+                    $admin === true)
                 {
                     return true;
                 }
@@ -573,7 +583,7 @@ class Service extends Base\Service
                         //merchant to have at-least one published url to be eligible for grace period
                         if (isset($sectionData[Constants::PUBLISHED_URL]) and
                             $sectionData[Constants::STATUS] === Constants::SUBMITTED and
-                            (string) $sectionData[Constants::SECTION_STATUS] === 3
+                            $sectionData[Constants::SECTION_STATUS] === 3
                         )
                         {
                             $response["isGracePeriodApplicable"] = true;
@@ -856,7 +866,7 @@ class Service extends Base\Service
                     break;
 
                 case Status::ACTIVATED:
-                    $status = $merchantDetails->getActivationStatus();
+                    $status = 'Approved';
                     break;
 
                 case Status::REJECTED:
@@ -1220,7 +1230,7 @@ class Service extends Base\Service
     //           "terms": {
     //               "status": "submitted",
     //               "updated_at": 1658934264,
-    //               "published_url": "https://sme.np.razorpay.in/compliance/K0obrWayUIqw40/terms",
+    //               "published_url": "https://sme.np.razorpay.in/policy/K0obrWayUIqw40/terms",
     //               "section_status": 3
     //           },
     // }
@@ -1238,7 +1248,7 @@ class Service extends Base\Service
 
             (new ConsentCore())->createMerchantConsents($consentInput);
 
-            $published_url = $this->host . '/compliance/' . $websiteDetail->getId() . '/' . $sectionName;
+            $published_url = $this->host . '/policy/' . $websiteDetail->getId() . '/' . $sectionName;
 
             $publishInput = [
                 Entity::MERCHANT_WEBSITE_DETAILS =>
@@ -1267,7 +1277,7 @@ class Service extends Base\Service
                 'merchant' => $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId()),
                 'params'   => [
                     'section_name'  => Constants::SECTION_DISPLAY_NAME_MAPPING[$sectionName],
-                    'date'          => Carbon::createFromTimestamp($updatedAt)->subDays(Constants::PUBLISH_TIME_LIMIT)->format('Y-m-d'),
+                    'date'          => Carbon::createFromTimestamp($updatedAt)->addDays(Constants::PUBLISH_TIME_LIMIT)->format('Y-m-d'),
                     'published_url' => $published_url
                 ]
             ];
@@ -1330,7 +1340,7 @@ class Service extends Base\Service
         $htmlContent = view('merchant.website.policy',
                             [
                                 "data" => [
-                                    'merchant_legal_entity_name' => $this->getMerchantLegalEntityName($merchant),
+                                    'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
                                     'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
                                     'sectionName'                => $sectionName,
                                     'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
@@ -1348,12 +1358,11 @@ class Service extends Base\Service
 
         $zipFile = $this->getFileName($merchant, $sectionName, 'zip');
 
-        $readmeFile = public_path() . '/files/policies/readme.txt';
+        //$readmeFile = public_path() . '/files/policies/readme.txt';
 
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile"    => $htmlFile,
                                                                "textFile"    => $textFile,
                                                                "zipFile"     => $zipFile,
-                                                               "readmeFile"  => $readmeFile,
                                                                "htmlContent" => $htmlContent
         ]);
 
@@ -1363,13 +1372,13 @@ class Service extends Base\Service
 
         if ($sendCommunication === true)
         {
-            $files = [$htmlFile, $textFile, $readmeFile];
+            $files = [$htmlFile, $textFile];
 
             $emailArgs = [
                 'merchant' => $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId()),
                 'params'   => [
                     'section_name' => Constants::SECTION_DISPLAY_NAME_MAPPING[$sectionName],
-                    'date'         => Carbon::createFromTimestamp($updatedAt)->subDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
+                    'date'         => Carbon::createFromTimestamp($updatedAt)->addDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
                 ]
             ];
 
@@ -1379,7 +1388,7 @@ class Service extends Base\Service
         //if its public auth then download file otherwise just mark the section as complete
         if ($this->app['basicauth']->isProxyAuth() === false)
         {
-            $files = [$htmlFile => true, $textFile => true, $readmeFile => false];
+            $files = [$htmlFile => true, $textFile => true];
 
             return Utility::downloadZip($files, $zipFile);
         }
@@ -1388,7 +1397,7 @@ class Service extends Base\Service
 
     }
 
-    private function getFileName($merchant, $sectionName, $extension)
+    public function getFileName($merchant, $sectionName, $extension)
     {
         $merchantDisplayName = current(
             array_filter([
@@ -1673,7 +1682,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        if ($this->isWebsiteSectionsApplicable($merchant) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant,true) === false)
         {
             return ["isWebsiteSectionsApplicable" => false,
                     "isGracePeriodApplicable"     => false
@@ -1700,7 +1709,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        if ($this->isWebsiteSectionsApplicable($merchant) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant,true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -1708,6 +1717,8 @@ class Service extends Base\Service
         (new Validator())->validateInput('save_admin_section', $input);
 
         $input = $this->validateAdminSaveSection($merchant, $input);
+
+        $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, $input);
 
         $merchantDetails = $merchant->merchantDetail;
 
@@ -1721,7 +1732,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        if ($this->isWebsiteSectionsApplicable($merchant) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant,true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -1943,7 +1954,7 @@ class Service extends Base\Service
         return ["html" => view('merchant.website.policy',
                                [
                                    "data" => [
-                                       'merchant_legal_entity_name' => $this->getMerchantLegalEntityName($this->merchant),
+                                       'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($this->merchant),
                                        'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
                                        'sectionName'                => $sectionName,
                                        'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
@@ -1983,7 +1994,7 @@ class Service extends Base\Service
             return ["html" => view('merchant.website.policy',
                                    [
                                        "data" => [
-                                           'merchant_legal_entity_name' => $this->getMerchantLegalEntityName($merchant),
+                                           'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
                                            'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
                                            'sectionName'                => $sectionName,
                                            'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
@@ -2001,26 +2012,6 @@ class Service extends Base\Service
         }
     }
 
-
-    private function getMerchantLegalEntityName($merchant)
-    {
-        $merchantDetails = $merchant->merchantDetail;
-
-        $name = null;
-
-        switch ($merchantDetails->getBusinessType())
-        {
-            case BusinessType::INDIVIDUAL:
-            case BusinessType::NOT_YET_REGISTERED:
-                $name = $merchant->getBillingLabel();
-                break;
-            default:
-                $name = $merchantDetails->getBusinessName();
-                break;
-        }
-
-        return $name;
-    }
 
     // get all published section pages for public view
     public function getPublicWebsiteSectionPageLinks($id)
@@ -2095,7 +2086,7 @@ class Service extends Base\Service
 
                 if ($sectionStatus === 3 and empty($publishedWebsite) === false)
                 {
-                    $data["merchant_policy"]["url"] = $published_url = $this->host . '/compliance/' . $websiteDetail->getId();
+                    $data["merchant_policy"]["url"] = $published_url = $this->host . '/policy/' . $websiteDetail->getId();
 
                     $data["merchant_policy"]["display_name"] = "About " . (strlen($merchant->getName()) > 15 ? 'Merchant' : $merchant->getName());
 

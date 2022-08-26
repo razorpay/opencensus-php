@@ -114,6 +114,7 @@ class EmailNotificationService extends BaseNotificationService
         {
             $emailInstance = new MerchantOnboardingEmail(
                 $payload, $org->toArray(),
+                $this->event,
                 $this->getTemplateMessage(),
                 $this->getTemplateSubject(),
                 $this->files
