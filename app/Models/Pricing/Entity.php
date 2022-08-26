@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const FEE_BEARER                    = 'fee_bearer';
     const PAYOUTS_FILTER                = 'payouts_filter';
     const IS_BUY_PRICING_ALLOWED        = 'is_buy_pricing_allowed';
+    const FEE_MODEL                     = 'fee_model';
 
     // to configure pricing for internal apps
     const APP_NAME                      = 'app_name';
@@ -132,7 +133,8 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_TYPE,
         self::FEE_BEARER,
         self::PAYOUTS_FILTER,
-        self::AUDIT_ID
+        self::AUDIT_ID,
+        self::FEE_MODEL
     ];
 
     protected $entity = 'pricing';
@@ -170,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::TYPE                      => Type::PRICING,
         self::FEE_BEARER                => FeeBearer::PLATFORM,
         self::PAYOUTS_FILTER            => null,
+        self::FEE_MODEL                 => null
     ];
 
     protected $proxy = [
@@ -192,6 +195,7 @@ class Entity extends Base\PublicEntity
         self::MIN_FEE,
         self::MAX_FEE,
         self::FEE_BEARER,
+        self::FEE_MODEL
     ];
 
     /**
@@ -602,6 +606,11 @@ class Entity extends Base\PublicEntity
     public function getPayoutsFilter()
     {
         return $this->getAttribute(self::PAYOUTS_FILTER);
+    }
+
+    public function getFeeModel()
+    {
+        return $this->getAttribute(self::FEE_MODEL);
     }
 
     public function getChannel()

@@ -62,6 +62,7 @@ class Validator extends Base\Validator
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
         Entity::PAYOUTS_FILTER          => 'sometimes_if:product,banking',
         Entity::IS_BUY_PRICING_ALLOWED  => 'sometimes',
+        Entity::FEE_MODEL               => 'sometimes|nullable|in:prepaid,postpaid',
     ];
 
     protected static $editPlanRuleRules = [
@@ -71,7 +72,8 @@ class Validator extends Base\Validator
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
         Entity::PROCURER            => 'sometimes',
-        Entity::CHANNEL             => 'sometimes'
+        Entity::CHANNEL             => 'sometimes',
+        Entity::FEE_MODEL           => 'sometimes|nullable|in:prepaid,postpaid'
     ];
 
     protected static $pricingPlansSummaryRules = [
