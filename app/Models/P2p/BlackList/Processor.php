@@ -9,6 +9,7 @@ use RZP\Error\P2p\ErrorCode;
 use RZP\Models\P2p\BankAccount;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\P2p\BankAccount\Entity as BankAccountEntity;
 
 /**
  * @property Core $core
@@ -45,7 +46,16 @@ class Processor extends Base\Processor
         {
             case BankAccount\Entity::BANK_ACCOUNT:
 
-                throw new RuntimeException("Not implemented, processor Implementation is on the way");
+                $input[BankAccountEntity::IFSC] = strtoupper($input[BankAccountEntity::IFSC]);
+
+                $bankAccount =(new BankAccount\Core)->findByAccountDetails($input);
+
+                if($bankAccount === null)
+                {
+                    throw $this->badRequestException(ErrorCode::BAD_REQUEST_BANK_ACCOUNT_ID_MISSING);
+                }
+
+                return $bankAccount;
 
             case Vpa\Entity::VPA:
 

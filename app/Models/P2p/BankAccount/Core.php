@@ -147,4 +147,14 @@ class Core extends Base\Core
             }
         }
     }
+
+    /**
+     * @param array $input
+     * This is the method to find bank account by account number and ifsc
+     * @return mixed
+     */
+    public function findByAccountDetails(array $input)
+    {
+        return $this->repo->findByAccountDetails($input[Entity::ACCOUNT_NUMBER], $input[Entity::IFSC]);
+    }
 }
