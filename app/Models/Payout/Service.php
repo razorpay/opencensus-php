@@ -1124,7 +1124,25 @@ class Service extends Base\Service
             return $payouts;
         }
 
-        $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant, $useMasterConnection);
+        // For pending_on_roles filter we are skipping the fetch from old wf system.
+        // Because for the CAC merchants workflow won't be present in old system.
+        // And if the filter applied on custom role this will fail to find role in Admin/Roles table
+        // hence flow will break if we don't skip.
+
+        $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
+                Mode::LIVE) === Workflow\Constants::ON;
+
+        $payouts = new Base\PublicCollection;
+
+        if ((
+            ((isset($input[Payout\Entity::PENDING_ON_ROLES])) ||
+                (isset($input[Entity::PENDING_ON_ME])))
+                && $isCacEnabled === true
+            ) === false)
+        {
+            $payouts = $this->repo->payout->fetchMultiple($input, $this->merchant, $useMasterConnection);
+        }
 
         // Since pending payouts can be on both the api workflow system and workflow service
         // therefore we need to fetch and merge payouts from both systems

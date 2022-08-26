@@ -776,6 +776,34 @@ trait PayoutTrait
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
     }
 
+    protected function setUpExperimentForNWFSAndCAC()
+    {
+        $this->mockRazorxTreatment(
+            'yesbank',
+            'off',
+            'off',
+            'off',
+            'off',
+            'on',
+            'on',
+            'off',
+            'on',
+            'on',
+            'on', // just sey this on, leave everything as default
+            'on',
+            'on',
+            'off',
+            'control',
+            'on',
+            'off',
+            'control',
+            'off',
+            'control',
+            'on',
+            'on'
+        );
+    }
+
     protected function setUpExperimentForNWFS()
     {
         $this->mockRazorxTreatment(

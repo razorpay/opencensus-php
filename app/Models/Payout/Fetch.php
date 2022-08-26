@@ -58,11 +58,11 @@ class Fetch extends BaseFetch
             Entity::PAYOUT_MODE                     => 'sometimes|string|custom',
             Entity::PENDING_ON_ME                   => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES                => 'sometimes|array',
-            Entity::PENDING_ON_ROLES . '.*'         => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            Entity::PENDING_ON_ROLES . '.*'         => 'filled|string',
             // These are not expected from the dashboard, but are set internally via code.
             Entity::PENDING_ON_ME_VIA_WFS           => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES_VIA_WFS        => 'sometimes|array',
-            Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string',
             PayoutSource::SOURCE_ID                 => 'sometimes|string',
             PayoutSource::SOURCE_TYPE               => 'sometimes|string',
             Entity::REVERSAL_ID                     => 'sometimes|public_id|size:20',
@@ -82,11 +82,11 @@ class Fetch extends BaseFetch
             Entity::PRODUCT                         => 'sometimes:balance_id|string|in:banking',
             Entity::PENDING_ON_ME                   => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES                => 'sometimes|array',
-            Entity::PENDING_ON_ROLES . '.*'         => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            Entity::PENDING_ON_ROLES . '.*'         => 'filled|string',
             // These are not expected from the dashboard, but are set internally via code.
             Entity::PENDING_ON_ME_VIA_WFS           => 'sometimes|boolean',
             Entity::PENDING_ON_ROLES_VIA_WFS        => 'sometimes|array',
-            Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string|in:finance_l1,finance_l2,finance_l3,owner,admin',
+            Entity::PENDING_ON_ROLES_VIA_WFS . '.*' => 'filled|string',
             Entity::SOURCE_TYPE_EXCLUDE             => 'sometimes|string|max:255',
         ]
     ];

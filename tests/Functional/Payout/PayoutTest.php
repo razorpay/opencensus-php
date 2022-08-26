@@ -5335,6 +5335,84 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(1, count($payout->items));
     }
 
+    public function testGetPayoutsForPendingOnRolesNWFSWithCAC()
+    {
+        $this->testGetPayoutsForPendingOnRoles();
+        $oldPayout = $this->getDbLastEntity('payout', 'live');
+        // setting time lower thn current time fto verify sorting order
+        $this->fixtures->on('live')->edit('payout', $oldPayout['id'], [
+            'created_at' => (Carbon::now(Timezone::IST)->getTimestamp() - 100)
+        ]);
+        //Given
+
+        //1. I have a Workflow
+        // Sets up Fund Account and Merchant User mapping that may be needed to setup on live
+        $this->setUpExperimentForNWFSAndCAC();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        //2. I Create a Payout
+        $payout           = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $expectedPayoutId = $payout["id"];
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $this->fixtures->on('live')->create('workflow_state_map', ['actor_type_value' => 'FUj82QLoJgRcM0']);
+
+        //Then
+        //When I filter on pending on pending on L2 Role, I shouldn't get anything
+
+        //Assuming the role of merchant for maximum permissions
+        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser['user_id']);
+
+        $request = [
+            'method'  => 'get',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['finance_l2']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout   = json_decode($response->getContent(), true);
+
+        $this->assertEmpty($payout["items"]);
+
+        // But when I filter by owner Role (Which is not approved), I should see the payouts
+
+        $request = [
+            'method'  => 'get',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'product'          => 'banking',
+                'expand'           => ['user'],
+                'pending_on_roles' => ['FUj82QLoJgRcM0']
+            ],
+            'url'     => '/payouts',
+        ];
+
+        $response = $this->sendRequest($request);
+        $payout   = json_decode($response->getContent(), false);
+        $this->assertEquals(1, count($payout->items));
+    }
+
     public function testBulkApprovePayoutWithComment()
     {
         $this->liveSetUp();
