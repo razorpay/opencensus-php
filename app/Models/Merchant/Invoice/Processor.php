@@ -39,7 +39,29 @@ class Processor extends Base\Core
 
     protected $year;
 
-    public function __construct(string $merchantId, int $month, int $year)
+    // this is the Key under which the results are stored in cache this is unique for a merchant per month per year
+    protected $cacheTag;
+
+    // this is the key inside a cacheTag as cacheTag contains many queries
+    const CACHE_KEY_RESOURCE = 'merchant_invoice_%s_%s_%s_%s_%s_%s';
+
+//    Overall cache structure
+//     cache: {
+//        cacheTag: [
+//                {
+//                    cache_key_resource: query result
+//                },
+//                {
+//                    cache_key_resource: query result
+////              },
+//            ]
+//        }
+
+    public $cacheKeyArr = [];
+
+    const CACHE_TTL = 86400; // 24 hours
+
+    public function __construct(string $merchantId, int $month, int $year, string $cacheTag = '')
     {
         parent::__construct();
 
@@ -48,6 +70,8 @@ class Processor extends Base\Core
         $this->month = $month;
 
         $this->year = $year;
+
+        $this->cacheTag = $cacheTag;
 
         $this->initializeVars();
     }
@@ -430,13 +454,13 @@ class Processor extends Base\Core
         if ($type === Type::RX_TRANSACTIONS)
         {
             $bankingPayoutsFeeAmount = $this->repo
-                                           ->payout
-                                           ->fetchFeesAndTaxOfPayoutsForGivenBalanceId(
-                                               $this->merchantId,
-                                               $balanceId,
-                                               $this->beginTimestamp,
-                                               $this->endTimestamp
-                                           );
+                ->payout
+                ->fetchFeesAndTaxOfPayoutsForGivenBalanceId(
+                    $this->merchantId,
+                    $balanceId,
+                    $this->beginTimestamp,
+                    $this->endTimestamp
+                );
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -447,13 +471,13 @@ class Processor extends Base\Core
             );
 
             $bankingFAVsFeeAmount = $this->repo
-                                         ->fund_account_validation
-                                         ->fetchFeesAndTaxForFAVsForGivenBalanceId(
-                                             $this->merchantId,
-                                             $balanceId,
-                                             $this->beginTimestamp,
-                                             $this->endTimestamp
-                                         );
+                ->fund_account_validation
+                ->fetchFeesAndTaxForFAVsForGivenBalanceId(
+                    $this->merchantId,
+                    $balanceId,
+                    $this->beginTimestamp,
+                    $this->endTimestamp
+                );
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -464,7 +488,7 @@ class Processor extends Base\Core
             );
 
             $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoiceTransaction($bankingPayoutsFeeAmount,
-                                                                                            $bankingFAVsFeeAmount);
+                $bankingFAVsFeeAmount);
         }
 
         if ($type === Type::RX_ADJUSTMENTS)
@@ -502,7 +526,7 @@ class Processor extends Base\Core
                 $balanceId
             );
             $formattedFeesForTypeAndBalance = $this->formatFeesForBankingInvoiceAdjustment($bankingFailedPayoutsFeeAmount,
-                                                                                           $bankingReversalsFeeAmount);
+                $bankingReversalsFeeAmount);
         }
 
         return $formattedFeesForTypeAndBalance;
@@ -530,13 +554,33 @@ class Processor extends Base\Core
 
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
-            $paymentFeeAmount = $this->repo
-                                     ->payment
-                                     ->fetchFeesAndTaxForPaymentByType(
-                                         $this->merchantId,
-                                         $this->beginTimestamp,
-                                         $this->endTimestamp,
-                                         $type);
+            // creating the cacheKey
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(
+                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'payment');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                // populating data from cache if it exists
+                $paymentFeeAmount = $cacheResult;
+            }
+            else {
+                // else running the query and storing in cache
+                $paymentFeeAmount = $this->repo
+                    ->payment
+                    ->fetchFeesAndTaxForPaymentByType(
+                        $this->merchantId,
+                        $this->beginTimestamp,
+                        $this->endTimestamp,
+                        $type);
+
+                $this->storeResultsInCache($cacheKey, $paymentFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -550,12 +594,32 @@ class Processor extends Base\Core
 
         if ($type === Type::VALIDATION)
         {
-            $validationFeeAmount = $this->repo
-                                        ->transaction
-                                        ->fetchFeesAndTaxForPrimaryFundAccountValidations(
-                                            $this->merchantId,
-                                            $this->beginTimestamp,
-                                            $this->endTimestamp);
+            // creating the cacheKey
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(
+                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                // populating data from cache if it exists
+                $validationFeeAmount =  $cacheResult;
+            }
+            else {
+                // else running the query and storing in cache
+                $validationFeeAmount = $this->repo
+                    ->transaction
+                    ->fetchFeesAndTaxForPrimaryFundAccountValidations(
+                        $this->merchantId,
+                        $this->beginTimestamp,
+                        $this->endTimestamp);
+
+                $this->storeResultsInCache($cacheKey, $validationFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -569,12 +633,32 @@ class Processor extends Base\Core
 
         if ($type === Type::OTHERS)
         {
-            $transactionFeeAmount = $this->repo
-                                         ->transaction
-                                         ->fetchFeesAndTaxForTransactions(
-                                             $this->merchantId,
-                                             $this->beginTimestamp,
-                                             $this->endTimestamp);
+            // creating the cacheKey
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(
+                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                // populating data from cache if it exists
+                $transactionFeeAmount =  $cacheResult;
+            }
+            else {
+                // else running the query and storing in cache
+                $transactionFeeAmount = $this->repo
+                    ->transaction
+                    ->fetchFeesAndTaxForTransactions(
+                        $this->merchantId,
+                        $this->beginTimestamp,
+                        $this->endTimestamp);
+
+                $this->storeResultsInCache($cacheKey, $transactionFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -588,12 +672,32 @@ class Processor extends Base\Core
 
         if ($this->isInvoiceTypeOfRefund($type) === true)
         {
-            $refundFeeAmount = $this->repo
-                                    ->transaction
-                                    ->fetchFeesAndTaxForRefundByType(
-                                        $this->merchantId,
-                                        $this->beginTimestamp,
-                                        $this->endTimestamp);
+            // creating the cacheKey
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(
+                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'transaction');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                // populating data from cache if it exists
+                $refundFeeAmount =  $cacheResult;
+            }
+            else {
+                // else running the query and storing in cache
+                $refundFeeAmount = $this->repo
+                    ->transaction
+                    ->fetchFeesAndTaxForRefundByType(
+                        $this->merchantId,
+                        $this->beginTimestamp,
+                        $this->endTimestamp);
+
+                $this->storeResultsInCache($cacheKey, $refundFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -610,12 +714,32 @@ class Processor extends Base\Core
         // Hence, the cumulative tax value can be negative
         if ($this->isInvoiceTypeOfRefund($type) === true)
         {
-            $refundReversalFeeAmount = $this->repo
-                                            ->reversal
-                                            ->fetchFeesAndTaxForRefundByType(
-                                                $this->merchantId,
-                                                $this->beginTimestamp,
-                                                $this->endTimestamp);
+            // creating the cacheKey
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(
+                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'reversal');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                // populating data from cache if it exists
+                $refundReversalFeeAmount =  $cacheResult;
+            }
+            else {
+                // else running the query and storing in cache
+                $refundReversalFeeAmount = $this->repo
+                    ->reversal
+                    ->fetchFeesAndTaxForRefundByType(
+                        $this->merchantId,
+                        $this->beginTimestamp,
+                        $this->endTimestamp);
+
+                $this->storeResultsInCache($cacheKey, $refundReversalFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
 
             $this->logMerchantInvoiceResult(
                 $type,
@@ -925,4 +1049,20 @@ class Processor extends Base\Core
         }
         return false;
     }
+
+    public function fetchResultsFromCache(string $cacheKey)
+    {
+        return $this->app['cache']->tags($this->cacheTag)->get($cacheKey);
+    }
+
+    public function storeResultsInCache(string $cacheKey, $result)
+    {
+        $this->app['cache']->tags($this->cacheTag)->put($cacheKey, $result, self::CACHE_TTL);
+    }
+
+    public function getCacheKeyArray()
+    {
+        return $this->cacheKeyArr;
+    }
+
 }

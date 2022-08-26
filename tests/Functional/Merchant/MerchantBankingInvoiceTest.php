@@ -53,12 +53,12 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 100000,
-                                         'account_number' => '2224440041626905',
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 100000,
+                'account_number' => '2224440041626905',
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -1012,25 +1012,25 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $y = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
 
         $z = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -1146,39 +1146,39 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $y = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
 
         $z = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $a = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '100000Razorpay',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '100000Razorpay',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $b = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '100000Razorpay',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '100000Razorpay',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
 
         $this->fixtures->create(
@@ -1306,25 +1306,25 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $y = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
 
         $z = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -1406,25 +1406,25 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $y = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
 
         $z = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -1567,25 +1567,25 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $y = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
 
         $z = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -1727,25 +1727,25 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $x = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 1000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
 
         $y = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'banking',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 10000000,
+            ]);
 
         $z = $this->fixtures->create('balance',
-                                     [
-                                         'merchant_id' => '10000000000000',
-                                         'type'        => 'primary',
-                                         'balance'     => 10000000,
-                                     ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -1997,7 +1997,7 @@ class MerchantBankingInvoiceTest extends TestCase
             'content' => ['month' => $oldDateTime->month + 1, 'year' => $oldDateTime->year],
         ];
 
-       $this->makeRequestAndGetContent($request);
+        $this->makeRequestAndGetContent($request);
 
         $this->ba->proxyAuth();
 
@@ -2016,27 +2016,27 @@ class MerchantBankingInvoiceTest extends TestCase
         ]);
 
         $bankingBalance1 = $this->fixtures->create('balance',
-                                                   [
-                                                       'merchant_id'    => '10000000000000',
-                                                       'type'           => 'banking',
-                                                       'balance'        => 1000000,
-                                                       'account_number' => '12345',
-                                                   ]);
+            [
+                'merchant_id'    => '10000000000000',
+                'type'           => 'banking',
+                'balance'        => 1000000,
+                'account_number' => '12345',
+            ]);
 
         $bankingBalance2 = $this->fixtures->create('balance',
-                                                   [
-                                                       'merchant_id'    => '10000000000000',
-                                                       'type'           => 'banking',
-                                                       'balance'        => 10000000,
-                                                       'account_number' => '1234567',
-                                                   ]);
+            [
+                'merchant_id'    => '10000000000000',
+                'type'           => 'banking',
+                'balance'        => 10000000,
+                'account_number' => '1234567',
+            ]);
 
         $primaryBalance = $this->fixtures->create('balance',
-                                                  [
-                                                      'merchant_id' => '10000000000000',
-                                                      'type'        => 'primary',
-                                                      'balance'     => 10000000,
-                                                  ]);
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
 
         $this->fixtures->create(
             'merchant_detail',
@@ -2088,7 +2088,7 @@ class MerchantBankingInvoiceTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
-     }
+    }
 
     public function testInvoiceNumberFormat()
     {
@@ -2112,7 +2112,7 @@ class MerchantBankingInvoiceTest extends TestCase
         }
 
         $this->assertEquals('10000000000-' . '07' . substr(2019, 2, 2),
-                            $invoiceEntity['invoice_number']);
+            $invoiceEntity['invoice_number']);
 
         Carbon::setTestNow();
     }
