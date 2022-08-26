@@ -3290,6 +3290,9 @@ class ActivationTest extends OAuthTestCase
 
     public function testActivationWithUpdateObserverData()
     {
+        // feature not being used
+        $this->markTestSkipped();
+
         $data = [
             'submitted'             => 1,
             'activation_status'     => 'under_review'
@@ -3379,6 +3382,9 @@ class ActivationTest extends OAuthTestCase
 
     public function testActivationRejectedWithUpdateObserverData()
     {
+        // feature not being used
+        $this->markTestSkipped();
+        
         $data = [
             'submitted'             => 1,
             'activation_status'     => 'under_review'

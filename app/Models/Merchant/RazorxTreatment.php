@@ -362,6 +362,8 @@ final class RazorxTreatment
 
     const M2M_REWARDS_AB_TESTING = 'M2m_rewards_ab_testing';
 
+    const PERFORM_ACTION_ON_INTERNAL_ACTIVATION_STATUS_CHANGE = 'perform_action_on_internal_activation_status_change';
+
     // covid 19 related donation
     const COVID_19_DONATION_SHOW = 'covid_19_donation_show';
 

@@ -62,7 +62,8 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
     public function onApprove(array $observerData)
     {
-        $fdInstance = null;
+        // Not being used
+        /*$fdInstance = null;
 
         $ticket_id = null;
 
@@ -80,7 +81,7 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
                                                            $this->getMerchantId());
 
             $this->fdService->resolveAndAddAutomatedResolvedTagToTicket($fdInstance, $ticket_id);
-        }
+        }*/
     }
 
     public function onClose(array $observerData)

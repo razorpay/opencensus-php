@@ -82,7 +82,7 @@ class Constants
 
         self::EMAIL_CHANGE                   => RazorxTreatment::PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA,
 
-        self::MERCHANT_ACTIVATION_STATUS     => RazorxTreatment::PERFORM_ACTION_ON_WORKFLOW_OBSERVER_DATA,
+        self::MERCHANT_ACTIVATION_STATUS     => RazorxTreatment::PERFORM_ACTION_ON_INTERNAL_ACTIVATION_STATUS_CHANGE,
     ];
 
     const REJECTION_REASON                   = 'rejection_reason';
