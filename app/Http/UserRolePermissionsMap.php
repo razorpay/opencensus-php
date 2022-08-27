@@ -172,6 +172,10 @@ class UserRolePermissionsMap
                  Permission::CREATE_LOW_BALANCE_ALERTS,
                  Permission::VIEW_PAYOUTS_REPORT,
                  Permission::HAS_APP_ACCESS,
+
+                 //self serve workflow
+                 Permission::SELF_SERVE_WORKFLOW_CONFIG,
+
                  Permission::VIEW_ROLE,
                  Permission::CREATE_ROLE,
                  Permission::DELETE_ROLE,

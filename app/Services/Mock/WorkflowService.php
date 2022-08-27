@@ -44,6 +44,18 @@ class WorkflowService extends \RZP\Services\WorkflowService
         {
             return $this->sendCreateMockResponse();
         }
+        elseif ($pathArr[count($pathArr) - 1] === 'CreateV2')
+        {
+            return $this->sendCreateMockResponse();
+        }
+        elseif ($pathArr[count($pathArr) - 1] === 'UpdateV2')
+        {
+            return $this->sendCreateMockResponse();
+        }
+        elseif ($pathArr[count($pathArr) - 1] === 'DeleteV2')
+        {
+            return $this->sendDeleteMockResponse();
+        }
         elseif ($pathArr[count($pathArr) - 1] == 'Update')
         {
             return $this->sendUpdateMockResponse();
@@ -310,6 +322,17 @@ class WorkflowService extends \RZP\Services\WorkflowService
                                 "org_id": "100000razorpay",
                                 "created_at": "1597317215"
                             }';
+
+        $response->status_code = 200;
+
+        return $response;
+    }
+
+    private function sendDeleteMockResponse(): Requests_Response
+    {
+        $response = new Requests_Response();
+
+        $response->body = '{}';
 
         $response->status_code = 200;
 

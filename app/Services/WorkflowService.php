@@ -7,8 +7,10 @@ use Requests_Session;
 use Requests_Response;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ServerErrorException;
 
@@ -145,11 +147,25 @@ class WorkflowService
 
             $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_FAILURE);
 
-            throw new ServerErrorException(
-                "Failed to complete request",
-                ErrorCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
-                $responseInfo,
-                $exception);
+            // Return the response received from workflow service.
+            // Take care of throwing appropriate response in the service layer.
+            // Make this default, and remove throwing default ServerErrorException
+            $isSSWFEnabled = $this->app['razorx']->getTreatment($this->ba->getMerchantId(),
+                    Merchant\RazorxTreatment::RX_SELF_SERVE_WORKFLOW,
+                    Mode::LIVE) === 'on';
+
+            if ($isSSWFEnabled === true)
+            {
+                return $res;
+            }
+            else
+            {
+                throw new ServerErrorException(
+                    "Failed to complete request",
+                    ErrorCode::SERVER_ERROR_WORKFLOW_SERVICE_ERROR,
+                    $responseInfo,
+                    $exception);
+            }
         }
 
         $this->trace->count(self::WORKFLOW_SERVICE_REQUEST_SUCCESS);

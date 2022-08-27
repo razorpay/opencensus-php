@@ -1565,6 +1565,11 @@ class Route
         'auditlog_search'                          => ['get',      'auditlog/search',                                'OrganizationController@auditLogSearch'                             ],
         'admin_logout'                             => ['post',     'admin/logout',                                   'OrganizationController@logoutAdmin'                                ],
 
+        // Self serve workflow
+        'workflow_config_create'                    => ['post',    'workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
+        'workflow_config_update'                    => ['put',    'workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
+        'workflow_config_delete'                    => ['delete',    'workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
+
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
@@ -1705,7 +1710,6 @@ class Route
         'wfs_config_get_admin'                    => ['get',     'wf-service-admin/configs/{id}',                          'WorkflowServiceController@getConfig'                               ],
         'workflow_state_callback'                 => ['post',    'wf-service/state/callback',                        'WorkflowServiceController@createWorkflowStateMap'                  ],
         'workflow_state_callback_update'          => ['patch',   'wf-service/state/{id}/callback',                   'WorkflowServiceController@updateWorkflowStateMap'                  ],
-
 
         //Vendor Payments
         'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                                            'VendorPaymentController@executeVendorPaymentBulk'                  ],
@@ -6108,6 +6112,11 @@ class Route
         'merchant_features_edit',
         'enable_non_3ds_self_serve',
         'get_non_3ds_details',
+
+        // self serve workflow routes
+        'workflow_config_create',
+        'workflow_config_update',
+        'workflow_config_delete',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -8985,7 +8994,12 @@ class Route
         'role_self_get'                                => Permission::VIEW_USER,
         //'delete_cac_role'                              => Permission::DELETE_ROLE,
         'create_cac_role'                              => Permission::CREATE_ROLE,
-        'edit_cac_role'                                => Permission::EDIT_ROLE
+        'edit_cac_role'                                => Permission::EDIT_ROLE,
+
+        // self serve workflow
+        'workflow_config_create'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_update'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_delete'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
     ];
 
     public static $direct = [
@@ -10583,6 +10597,11 @@ class Route
             'merchant_features_edit',
             'enable_non_3ds_self_serve',
             'get_non_3ds_details',
+
+            // self serve workflow
+            'workflow_config_create',
+            'workflow_config_update',
+            'workflow_config_delete',
         ],
 
         'admin_dashboard' => [
@@ -14625,6 +14644,11 @@ class Route
         'payout_report_get_attachment_signed_url',
         'payout_report_get_attachment_details',
         'payout_get_attachment_signed_url',
+
+        // self serve workflow
+        'workflow_config_create',
+        'workflow_config_update',
+        'workflow_config_delete',
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

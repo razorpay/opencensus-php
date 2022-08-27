@@ -357,7 +357,10 @@ class Validator extends Base\Validator
                                  . 'bulk_payout_approve,'
                                  . 'create_bulk_payout_link,'
                                  . 'replace_key,'
-                                 . 'apple_watch_token',
+                                 . 'apple_watch_token,'
+                                 . 'create_workflow_config,'
+                                 . 'update_workflow_config,'
+                                 . 'delete_workflow_config',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.

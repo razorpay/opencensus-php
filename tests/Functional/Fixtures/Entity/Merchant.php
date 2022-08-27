@@ -882,6 +882,16 @@ class Merchant extends Base
                       ->delete();
     }
 
+    public function isFeatureEnabled(array $featureNames, string $id = '10000000000000')
+    {
+        $features = Feature\Entity::where(Feature\Entity::ENTITY_ID, $id)
+            ->where(Feature\Entity::ENTITY_TYPE, 'merchant')
+            ->where(Feature\Entity::NAME, $featureNames)
+            ->get();
+
+        return sizeof($features) > 0;
+    }
+
     public function addDccPaymentConfig($dccMarkupPercent, string $id = '10000000000000')
     {
         $attributes = [

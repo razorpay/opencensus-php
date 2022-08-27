@@ -7,6 +7,7 @@ use Mockery;
 
 use Illuminate\Support\Facades\DB;
 
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Admin\Role\Repository as RoleRepository;
@@ -291,6 +292,78 @@ class WorkflowTest extends TestCase
         $testData['request']['url'] = '/wf-service/state/callback';
 
         $this->startTest();
+    }
+
+    public function testCreateWorkflowConfig()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+
+        $this->assertEquals(true, $workflowConfig['enabled']);
+
+        $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+    }
+
+    public function testUpdateWorkflowConfig()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testDeleteWorkflowConfig()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
     }
 
     public function testCreateWorkflowConfigNWFS()

@@ -5046,8 +5046,7 @@ class Service extends Base\Service
         $this->addFeatures($featureNames,$shouldSync);
     }
 
-
-    private function removeFeatures($featureNames, bool $shouldSync = false)
+    public function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 

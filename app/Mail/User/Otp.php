@@ -167,6 +167,11 @@ class Otp extends Mailable
             case 'x_verify_email':
                 $view = 'emails.user.razorpayx.otp_email_verify';
                 break;
+            case 'update_workflow_config':
+            case 'delete_workflow_config':
+            case 'create_workflow_config':
+                $view = 'emails.user.otp_workflow_config';
+                break;
             // Generic fall back template.
             default:
                 $view = 'emails.user.otp';

@@ -22,6 +22,11 @@ class Client
     const WFS_DIRECT_ACTION_CREATE_ROUTE        = "twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow";
     const WFS_WORKFLOW_CREATE_ROUTE             = "twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create";
 
+    // self serve workflow routes
+    const WORKFLOWS_CONFIG_CREATE_ROUTE         = "twirp/rzp.workflows.config.v1.ConfigAPI/CreateV2";
+    const WORKFLOWS_CONFIG_UPDATE_ROUTE         = "twirp/rzp.workflows.config.v1.ConfigAPI/UpdateV2";
+    const WORKFLOWS_CONFIG_DELETE_ROUTE         = "twirp/rzp.workflows.config.v1.ConfigAPI/DeleteV2";
+
     /** @var $workflowServiceClient WorkflowService */
     protected $workflowServiceClient;
 
@@ -55,6 +60,139 @@ class Client
         }
 
         // todo: save the config mapping in db
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException|Exception\BadRequestException
+     */
+    public function createConfigV2(array $input): array
+    {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request(self::WORKFLOWS_CONFIG_CREATE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            $resBody = json_decode($res->body, true);
+
+            $description = array_pull($resBody, 'msg', "Error occurred");
+
+            if ($res->status_code >= 400 && $res->status_code <= 499)
+            {
+                $this->trace->error(TraceCode::BAD_REQUEST_WORKFLOW_CONFIG_CREATE_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\BadRequestException(
+                    $description,
+                    ErrorCode::BAD_REQUEST_WORKFLOW_CONFIG_CREATE_FAILED
+                );
+            }
+            else
+            {
+                $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\ServerErrorException(
+                    $description,
+                    ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_CREATE_FAILED
+                );
+            }
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException|Exception\BadRequestException
+     */
+    public function updateConfigV2(array $input): array
+    {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request(self::WORKFLOWS_CONFIG_UPDATE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            $resBody = json_decode($res->body, true);
+
+            $description = array_pull($resBody, 'msg', "Error occurred");
+
+            if ($res->status_code >= 400 && $res->status_code <= 499)
+            {
+                $this->trace->error(TraceCode::BAD_REQUEST_WORKFLOW_CONFIG_UPDATE_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\BadRequestException(
+                    $description,
+                    ErrorCode::BAD_REQUEST_WORKFLOW_CONFIG_UPDATE_FAILED
+                );
+            }
+            else
+            {
+                $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\ServerErrorException(
+                    $description,
+                    ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_UPDATE_FAILED
+                );
+            }
+        }
+
+        return json_decode($res->body, true);
+    }
+
+    /**
+     * @param array $input
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     * @throws Exception\BadRequestException
+     */
+    public function deleteConfig(array $input): array
+    {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_SERVICE_TRACE_INFO, $input);
+
+        $res = $this->workflowServiceClient->request(self::WORKFLOWS_CONFIG_DELETE_ROUTE, $input);
+
+        if ($res->status_code !== 200)
+        {
+            $resBody = json_decode($res->body, true);
+
+            $description = array_pull($resBody, 'msg', "Error occurred");
+
+            if ($res->status_code >= 400 && $res->status_code <= 499)
+            {
+                $this->trace->error(TraceCode::BAD_REQUEST_WORKFLOW_CONFIG_DELETE_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\BadRequestException(
+                    $description,
+                    ErrorCode::BAD_REQUEST_WORKFLOW_CONFIG_DELETE_FAILED,
+                    $input);
+            }
+            else
+            {
+                $this->trace->error(TraceCode::SERVER_ERROR_WORKFLOW_CONFIG_DELETE_FAILED,
+                    [
+                        'response' => $res
+                    ]);
+                throw new Exception\ServerErrorException(
+                    $description,
+                    ErrorCode::SERVER_ERROR_WORKFLOW_CONFIG_DELETE_FAILED,
+                    $input);
+            }
+        }
 
         return json_decode($res->body, true);
     }

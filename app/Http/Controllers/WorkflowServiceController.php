@@ -54,6 +54,33 @@ class WorkflowServiceController extends Controller
         return response()->json($response);
     }
 
+    public function createWorkflowConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowConfigService->createWorkflowConfig($input);
+
+        return response()->json($response);
+    }
+
+    public function updateWorkflowConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowConfigService->updateWorkflowConfig($input);
+
+        return response()->json($response);
+    }
+
+    public function deleteWorkflowConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowConfigService->deleteWorkflowConfig($input);
+
+        return response()->json($response);
+    }
+
     public function createWorkflowStateMap()
     {
         $input = Request::all();

@@ -1764,7 +1764,13 @@ class Base extends BaseCore
                         Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
                         Mode::LIVE) === Workflow\Constants::ON;
 
-                if ($isCacEnabled === true)
+                // Remove workflow fallback for self-serve feature
+                // TODO: Make this default (removing the API fallback) for all the flows
+                $isSSWFEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
+                        Merchant\RazorxTreatment::RX_SELF_SERVE_WORKFLOW,
+                        Mode::LIVE) === 'on';
+
+                if ($isCacEnabled === true || $isSSWFEnabled === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,

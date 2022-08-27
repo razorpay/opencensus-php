@@ -430,18 +430,27 @@ class Constants
     const X_SECOND_FACTOR_AUTH_ACTION   = 'x_second_factor_auth';
     const X_LOGIN_OTP_ACTION            = 'x_login_otp';
     const X_VERIFY_USER_ACTION          = 'x_verify_user';
-
+    const CREATE_WORKFLOW_CONFIG        = 'create_workflow_config';
+    const UPDATE_WORKFLOW_CONFIG        = 'update_workflow_config';
+    const DELETE_WORKFLOW_CONFIG        = 'delete_workflow_config';
     const BULK_APPROVE_PAYOUT           = 'bulk_approve_payout';
 
     const SEND_SMS_VIA_STORK            = [
         self::X_SECOND_FACTOR_AUTH_ACTION,
         self::X_LOGIN_OTP_ACTION,
         self::X_VERIFY_USER_ACTION,
+        self::CREATE_WORKFLOW_CONFIG,
+        self::UPDATE_WORKFLOW_CONFIG,
+        self::DELETE_WORKFLOW_CONFIG,
         self::BULK_APPROVE_PAYOUT
     ];
 
     const LOGIN_OTP_ACTION_V2                      = 'login_otp_v2';
     const SIGNUP_OTP_ACTION_V2                     = 'signup_otp_v2';
+
+    const WORKFLOW_SELF_SERVE_ACTION_CREATE = 'create';
+    const WORKFLOW_SELF_SERVE_ACTION_UPDATE = 'update';
+    const WORKFLOW_SELF_SERVE_ACTION_DELETE = 'delete';
 
     const THROW_SMS_EXCEPTION_IN_STORK     = 'THROW_SMS_EXCEPTION_IN_STORK';
 

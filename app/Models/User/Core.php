@@ -3810,6 +3810,7 @@ class Core extends Base\Core
 
         try
         {
+            // Note: Add the actions to SEND_SMS_VIA_STORK since we are migrating sms delivery from raven to stork
             if (in_array($input[Entity::ACTION], Constants::SEND_SMS_VIA_STORK, true) === true)
             {
                 $smsPayload = $this->generateStorkSmsPayload($input, $merchant, $user);
@@ -3823,7 +3824,6 @@ class Core extends Base\Core
 
                 $smsPayload['contentParams'] = array_merge($extraParams, $smsPayload['contentParams']);
 
-                /** @var $stork \RZP\Services\Stork */
                 $stork = $this->app['stork_service'];
 
                 $stork->sendSms($this->mode, $smsPayload);
@@ -3864,6 +3864,48 @@ class Core extends Base\Core
         }
 
         return array_only($otp, 'token');
+    }
+
+    /**
+     * Gets extra attributes in payload for stork sms request if applicable.
+     *
+     * @param array $input
+     * @return array|string[]
+     */
+    protected function getExtraStorkSmsPayload(array $input): array
+    {
+        $payload = [];
+
+        // Note: Existence of various key in $input is(and must be) ensured at validation layer.
+
+        $action = $input[Entity::ACTION];
+
+        switch ($action) {
+            case Constants::CREATE_WORKFLOW_CONFIG:
+                $payload += [
+                    'action' => Constants::WORKFLOW_SELF_SERVE_ACTION_CREATE
+                ];
+                break;
+
+            case Constants::UPDATE_WORKFLOW_CONFIG:
+                $payload += [
+                    'action' => Constants::WORKFLOW_SELF_SERVE_ACTION_UPDATE
+                ];
+                break;
+
+            case Constants::DELETE_WORKFLOW_CONFIG:
+                $payload += [
+                    'action' => Constants::WORKFLOW_SELF_SERVE_ACTION_DELETE
+                ];
+                break;
+
+            case Constants::BULK_APPROVE_PAYOUT:
+                $payload += $this->getExtraStorkPayloadForBulkPayoutAction($input);
+                break;
+
+        }
+
+        return $payload;
     }
 
     public function sendOtpWithContact(array $input, Merchant\Entity $merchant, Entity $user, array $otp = null): array
@@ -4215,6 +4257,24 @@ class Core extends Base\Core
                 'account_number'            => mask_except_last4($input['account_number']),
             ];
         }
+        else if ($action === Constants::CREATE_WORKFLOW_CONFIG)
+        {
+            $payload += [
+                'workflow_action'  => Constants::WORKFLOW_SELF_SERVE_ACTION_CREATE,
+            ];
+        }
+        else if ($action === Constants::UPDATE_WORKFLOW_CONFIG)
+        {
+            $payload += [
+                'workflow_action'  => Constants::WORKFLOW_SELF_SERVE_ACTION_UPDATE,
+            ];
+        }
+        else if ($action === Constants::DELETE_WORKFLOW_CONFIG)
+        {
+            $payload += [
+                'workflow_action'  => Constants::WORKFLOW_SELF_SERVE_ACTION_DELETE,
+            ];
+        }
 
         return $payload;
     }
@@ -4270,6 +4330,14 @@ class Core extends Base\Core
 
             case Constants::BULK_APPROVE_PAYOUT:
                 $this->populateTemplateMetaForBulkPayoutAction($input, $smsPayload);
+                break;
+
+            case Constants::CREATE_WORKFLOW_CONFIG:
+            case Constants::UPDATE_WORKFLOW_CONFIG:
+            case Constants::DELETE_WORKFLOW_CONFIG:
+                $smsPayload['sender'] = 'RZPAYX';
+                $smsPayload['templateName'] = 'sms.user.otp_workflow_config';
+                $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
                 break;
         }
 
@@ -5266,19 +5334,6 @@ class Core extends Base\Core
         $segmentProperties[SegmentConstants::SOURCE] = SegmentConstants::BE;
 
         return [$segmentEventName, $segmentProperties];
-    }
-
-    protected function getExtraStorkSmsPayload(array $input): array
-    {
-        $contentParams = array();
-
-        switch ($input[Entity::ACTION])
-        {
-            case Constants::BULK_APPROVE_PAYOUT:
-                $contentParams = $this->getExtraStorkPayloadForBulkPayoutAction($input);
-        }
-
-        return $contentParams;
     }
 
     protected function getExtraStorkPayloadForBulkPayoutAction(array $input): array

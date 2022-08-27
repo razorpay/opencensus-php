@@ -668,6 +668,9 @@ class Name
     const TALLY_PAYOUT_BULK_CREATE            = 'tally_payout_bulk_create';
     const UPDATE_MERCHANT_DETAILS             = 'update_merchant_details';
 
+    // self serve workflow
+    const SELF_SERVE_WORKFLOW_CONFIG     = 'self_serve_workflow_config';
+
     // merchant preferences
     const UPDATE_MERCHANT_PREFERENCE          = 'update_merchant_preference';
     const VIEW_MERCHANT_PREFERENCE            = 'view_merchant_preference';

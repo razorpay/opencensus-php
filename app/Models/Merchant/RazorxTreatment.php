@@ -574,6 +574,9 @@ final class RazorxTreatment
 
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
+    /* Experiment to enable self serve workflow */
+    public const RX_SELF_SERVE_WORKFLOW = "rx_self_serve_workflow";
+
     // Experiment to ramp up the refund credits fetch mechanism with locking
     public const REFUND_CREDITS_WITH_LOCK = 'refund_credits_with_lock';
 
