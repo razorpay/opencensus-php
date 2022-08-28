@@ -16,6 +16,7 @@ use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 use RZP\Models\Admin\Org;
 use RZP\Constants\Product;
 use RZP\Models\Transaction;
@@ -30,6 +31,7 @@ use RZP\Models\Settlement\Ondemand\Bulk;
 use RZP\Models\Settlement\OndemandPayout;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
 
 class Core extends Base\Core
 {
@@ -37,7 +39,11 @@ class Core extends Base\Core
 
     const RESTRICTED_ES_DATALAKE_QUERY = "select merchant_id from hive.aggregate_pa.es_eligibility_day1";
 
-    public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, $scheduled = false)
+    const ONDEMAND_PAYOUT_PROCESSED_EVENT = 'ondemand_payout.processed';
+
+    const ONDEMAND_PAYOUT_REVERSED_EVENT  = 'ondemand_payout.reversed';
+
+    public function createSettlementOndemand(array $input, Merchant\Entity $merchant, User\Entity $user = null, array $requestDetails = [])
     {
         if ($input[Entity::AMOUNT] > $merchant->primaryBalance->getBalance())
         {
@@ -53,14 +59,15 @@ class Core extends Base\Core
         $this->checkMerchantFundsOnHold();
 
         $input = $input + [
-            Entity::TOTAL_AMOUNT_SETTLED  => 0,
-            Entity::TOTAL_AMOUNT_REVERSED => 0,
-            Entity::STATUS                => Status::CREATED,
-            Entity::CURRENCY              => $input[Entity::CURRENCY] ?? Currency::INR,
-            Entity::MAX_BALANCE           => $input['settle_full_balance'] ?? 0,
-            Entity::NOTES                 => $input[Entity::NOTES] ?? null,
-            Entity::NARRATION             => $input['description'] ?? null,
-            Entity::SCHEDULED             => $scheduled
+            Entity::TOTAL_AMOUNT_SETTLED           => 0,
+            Entity::TOTAL_AMOUNT_REVERSED          => 0,
+            Entity::STATUS                         => Status::CREATED,
+            Entity::CURRENCY                       => $input[Entity::CURRENCY] ?? Currency::INR,
+            Entity::MAX_BALANCE                    => $input['settle_full_balance'] ?? 0,
+            Entity::NOTES                          => $input[Entity::NOTES] ?? null,
+            Entity::NARRATION                      => $input['description'] ?? null,
+            Entity::SCHEDULED                      => isset($requestDetails['scheduled'])?$requestDetails['scheduled']: false,
+            Entity::SETTLEMENT_ONDEMAND_TRIGGER_ID => isset($requestDetails['settlement_ondemand_trigger_id'])?$requestDetails['settlement_ondemand_trigger_id']: null
         ];
 
 
@@ -83,7 +90,7 @@ class Core extends Base\Core
         }
 
         $settlementOndemandPayouts = (new OndemandPayout\Service)
-                                        ->createSettlementOndemandPayout($settlementOndemand);
+                                        ->createSettlementOndemandPayout($settlementOndemand, $requestDetails);
 
         $txn = $this->createTransaction($settlementOndemand);
 
@@ -202,6 +209,13 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($settlementOndemand);
+
+        if ($settlementOndemand->getSettlementOndemandTriggerId() != null && $this->mode === Mode::LIVE)
+        {
+            UpdateOndemandTriggerJob::dispatch($settlementOndemand->getId(),
+                                               self::ONDEMAND_PAYOUT_PROCESSED_EVENT,
+                                               $settlementOndemandPayout->getAmountToBeSettled())->delay(10);
+        }
     }
 
     public function updateOndemandOnPayoutReversal($settlementOndemand, $settlementOndemandPayout)
@@ -236,6 +250,13 @@ class Core extends Base\Core
         $settlementOndemand->deductFromTotalFees($settlementOndemandPayout->getFees());
 
         $this->repo->saveOrFail($settlementOndemand);
+
+        if ($settlementOndemand->getSettlementOndemandTriggerId() != null && $this->mode === Mode::LIVE)
+        {
+            UpdateOndemandTriggerJob::dispatch($settlementOndemand->getId(),
+                                              self::ONDEMAND_PAYOUT_REVERSED_EVENT,
+                                              $settlementOndemandPayout->getAmountToBeSettled())->delay(10);
+        }
 
         return $settlementOndemand;
     }

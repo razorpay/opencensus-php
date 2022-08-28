@@ -14,28 +14,30 @@ use Razorpay\Trace\Logger as Trace;
 
 class Validator extends Base\Validator
 {
-    const SETTLEMENT_ONDEMAND_INPUT         = 'settlement_ondemand_input';
-    const SETTLEMENT_ONDEMAND_FEES_INPUT    = 'settlement_ondemand_fees_input';
-    const FETCH_BY_TIMESTAMP_INPUT          = 'fetch_by_timestamp_input';
-    const MAX_ONDEMAND_AMOUNT               = 2000000000;
-    const MIN_ONDEMAND_AMOUNT               = 100;
-    const MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD = 200000;
-    const MIN_PARTIAL_ES_AMOUNT             = 10000;
+    const SETTLEMENT_ONDEMAND_INPUT                = 'settlement_ondemand_input';
+    const SETTLEMENT_ONDEMAND_FEES_INPUT           = 'settlement_ondemand_fees_input';
+    const FETCH_BY_TIMESTAMP_INPUT                 = 'fetch_by_timestamp_input';
+    const SETTLEMENT_ONDEMAND_LINKED_ACCOUNT_INPUT = 'settlement_ondemand_linked_account_input';
+    const MAX_ONDEMAND_AMOUNT                      = 2000000000;
+    const MIN_ONDEMAND_AMOUNT                      = 100;
+    const MIN_ONDEMAND_AMOUNT_FOR_DASHBOARD        = 200000;
+    const MIN_PARTIAL_ES_AMOUNT                    = 10000;
 
     protected static $createRules = [
-        Entity::AMOUNT                => 'required|integer|custom',
-        Entity::TOTAL_AMOUNT_PENDING  => 'sometimes|integer',
-        Entity::TOTAL_AMOUNT_SETTLED  => 'sometimes|integer',
-        Entity::TOTAL_AMOUNT_REVERSED => 'sometimes|integer',
-        Entity::TOTAL_FEES            => 'sometimes|integer',
-        Entity::TOTAL_TAX             => 'sometimes|integer',
-        Entity::CURRENCY              => 'sometimes|size:3',
-        Entity::NARRATION             => 'sometimes|nullable|string|max:30',
-        Entity::REMARKS               => 'sometimes|nullable|string',
-        Entity::NOTES                 => 'sometimes|nullable|array',
-        Entity::MAX_BALANCE           => 'sometimes|boolean',
-        Entity::SCHEDULED             => 'sometimes|boolean',
-        Entity::STATUS                => 'required',
+        Entity::AMOUNT                         => 'required|integer|custom',
+        Entity::TOTAL_AMOUNT_PENDING           => 'sometimes|integer',
+        Entity::TOTAL_AMOUNT_SETTLED           => 'sometimes|integer',
+        Entity::TOTAL_AMOUNT_REVERSED          => 'sometimes|integer',
+        Entity::TOTAL_FEES                     => 'sometimes|integer',
+        Entity::TOTAL_TAX                      => 'sometimes|integer',
+        Entity::CURRENCY                       => 'sometimes|size:3',
+        Entity::NARRATION                      => 'sometimes|nullable|string|max:30',
+        Entity::REMARKS                        => 'sometimes|nullable|string',
+        Entity::NOTES                          => 'sometimes|nullable|array',
+        Entity::MAX_BALANCE                    => 'sometimes|boolean',
+        Entity::SCHEDULED                      => 'sometimes|boolean',
+        Entity::SETTLEMENT_ONDEMAND_TRIGGER_ID => 'sometimes|nullable|string|size:14',
+        Entity::STATUS                         => 'required',
     ];
 
     protected static $settlementOndemandInputRules = [
@@ -58,6 +60,15 @@ class Validator extends Base\Validator
     public static $settlementOndemandFeesInputRules = [
         Entity::AMOUNT              => 'required|integer|custom',
         Entity::CURRENCY            => 'sometimes|in:INR',
+    ];
+
+    protected static $settlementOndemandLinkedAccountInputRules = [
+        Entity::MERCHANT_ID              => 'required|size:14',
+        'parent_merchant_id'             => 'required|size:14',
+        'settlement_ondemand_trigger_id' => 'required|size:14',
+        'mode'                           => 'required|in:test,live',
+        Entity::AMOUNT                   => 'required|integer'
+
     ];
 
     protected function validateAmount($attribute, $value)

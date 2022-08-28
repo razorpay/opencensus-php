@@ -204,4 +204,13 @@ class SettlementOndemandController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function linkedAccountSettlement()
+    {
+        $input = Request::all();
+
+        $data = $this->service(Entity::SETTLEMENT_ONDEMAND)->createOndemandSettlementForLinkedAccount($input);
+
+        return ApiResponse::json($data);
+    }
 }

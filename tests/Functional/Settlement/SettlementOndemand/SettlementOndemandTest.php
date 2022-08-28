@@ -8,6 +8,7 @@ use Queue;
 use Config;
 use DateTime;
 use Carbon\Carbon;
+use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
 use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -4837,5 +4838,105 @@ class SettlementOndemandTest extends TestCase
             'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'block_es_on_demand']);
 
         $this->startTest();
+    }
+
+    public function testCreateOndemandSettlementForLinkedAccountSuccess()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ondemand_linked']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 1000000,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 0,
+            'total_tax'                      => 0,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 1000000,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'initiated',
+            'transaction_type'               => 'transaction',
+            'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+        ], $settlementOndemand);
+    }
+
+    public function testCreateOndemandSettlementForLinkedAccountValidationError()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+        $this->startTest();
+    }
+
+    public function testCreateOndemandSettlementForLinkedAccountWithMockWebhook()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ondemand_linked']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', true);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', true);
+
+        //set time as banking hour for testing
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 1000000,
+            'total_amount_settled'           => 1000000,
+            'total_fees'                     => 0,
+            'total_tax'                      => 0,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 0,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'processed',
+            'transaction_type'               => 'transaction',
+            'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+        ], $settlementOndemand);
+
     }
 }

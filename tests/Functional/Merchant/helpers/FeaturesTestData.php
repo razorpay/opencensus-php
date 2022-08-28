@@ -497,17 +497,17 @@ return [
                         'value'        => false,
                         'display_name' => 'Smart Collect'
                     ],
-                    145 => array (
+                    147 => array (
                         'feature' => 'view_opfin_sso_announcement',
                         'value' => true,
                         'display_name' => 'View opfin sso announcemnet',
                     ),
-                    146 => array (
+                    148 => array (
                         'feature' => 'view_ssl_banner',
                         'value' => true,
                         'display_name' => 'View SSL banner',
                     ),
-                    147 => array (
+                    149 => array (
                         'feature' => 'view_onboarding_cards',
                         'value' => true,
                         'display_name' => 'View onboarding cards',
@@ -1492,6 +1492,8 @@ return [
                     'updated_imps_ondemand',
                     'es_automatic',
                     'es_automatic_restricted',
+                    'ondemand_linked',
+                    'ondemand_route',
                     'headless_disable',
                     'bepg_disable',
                     'first_data_s2s_flow',
@@ -1609,6 +1611,8 @@ return [
                         'updated_imps_ondemand',
                         'es_automatic',
                         'es_automatic_restricted',
+                        'ondemand_linked',
+                        'ondemand_route',
                         'headless_disable',
                         'bepg_disable',
                         'first_data_s2s_flow',
@@ -1733,6 +1737,8 @@ return [
                     'updated_imps_ondemand',
                     'es_automatic',
                     'es_automatic_restricted',
+                    'ondemand_linked',
+                    'ondemand_route',
                     'headless_disable',
                     'bepg_disable',
                     'first_data_s2s_flow',

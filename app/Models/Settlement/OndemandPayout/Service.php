@@ -20,9 +20,9 @@ class Service extends Base\Service
 
     const MOCK_WEBHOOK_KEY = 'DUMMY_KEY';
 
-    public function createSettlementOndemandPayout($settlementOndemand):array
+    public function createSettlementOndemandPayout($settlementOndemand, $requestDetails):array
     {
-        return $this->core()->createSettlementOndemandPayout($settlementOndemand);
+        return $this->core()->createSettlementOndemandPayout($settlementOndemand, $requestDetails);
     }
 
     public function statusUpdate($input, $headers,  $rawContent):array

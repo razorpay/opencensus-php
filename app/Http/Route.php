@@ -2416,6 +2416,7 @@ class Route
         'settlement_ondemand_full_enable'          => ['post',      'settlements/ondemand/full',                     'SettlementOndemandController@enableFullESFromRestricted'           ],
         'settlement_ondemand_restricted_enable'    => ['post',      'settlements/ondemand/restricted',               'SettlementOndemandController@addOndemandRestrictedFeature'         ],
         'settlement_ondemand_blocked'              => ['get',       'settlements/ondemand/merchant/config',          'SettlementOndemandController@isOndemandBlocked'                    ],
+        'settlement_ondemand_linked_account'       => ['post',      'settlements/ondemand/linked_account_settlements','SettlementOndemandController@linkedAccountSettlement'              ],
 
         // OAuth routes
         'oauth_token_create'                       => ['post',     'oauth/tokens',                                   'OAuthTokenController@create'                                       ],
@@ -2853,6 +2854,7 @@ class Route
         'corporate_card_get'                       => ['get',      'corporate_cards/{id}',                           'CorporateCardController@get'                                       ],
         'corporate_card_list'                      => ['get',      'corporate_cards',                                'CorporateCardController@list'                                      ],
         'corporate_card_iframe_form'               => ['get',      'corporate_cards/iframe/form',                    'CorporateCardController@renderForm'                                ],
+
 
         // Banking statement routes
         'transaction_statement_fetch'              => ['get',      'transactions/{id}',                              'StatementController@get'                                           ],
@@ -4805,6 +4807,7 @@ class Route
 
         //Capital ES
         'internal_balances_fetch_by_merchant_ids',
+        'settlement_ondemand_linked_account',
 
         'vault_migrate_token_bulk',
 
@@ -13253,6 +13256,7 @@ class Route
         ],
 
         'capital_early_settlements' => [
+            'settlement_ondemand_linked_account',
             'internal_balances_fetch_by_merchant_ids'
         ],
 

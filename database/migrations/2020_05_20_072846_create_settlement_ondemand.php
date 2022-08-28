@@ -87,6 +87,9 @@ class CreateSettlementOndemand extends Migration
             $table->boolean(Entity::SCHEDULED)
                   ->default(false);
 
+            $table->char(Entity::SETTLEMENT_ONDEMAND_TRIGGER_ID)
+                  ->nullable();
+
             $table->index(Entity::CREATED_AT);
         });
     }

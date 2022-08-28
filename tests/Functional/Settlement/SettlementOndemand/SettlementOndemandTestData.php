@@ -1971,4 +1971,93 @@ return [
         ],
     ],
 
+    'testCreateOndemandSettlementForLinkedAccountSuccess' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/linked_account_settlements',
+            'method'  => 'post',
+            'content' => [
+                  'merchant_id'                    => '10000000000000',
+                  'parent_merchant_id'             => '10000000000001',
+                  'mode'                           => 'test',
+                  'amount'                         => 1000000,
+                  'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'settlement.ondemand',
+                'amount_requested'    => 1000000,
+                'amount_settled'      => 0,
+                'amount_pending'      => 1000000,
+                'amount_reversed'     => 0,
+                'fees'                => 0,
+                'tax'                 => 0,
+                'currency'            => 'INR',
+                'settle_full_balance' => false,
+                'status'              => 'initiated',
+                'description'         => null,
+                'notes'               => [],
+                'scheduled'           => false
+            ],
+        ],
+    ],
+
+    'testCreateOndemandSettlementForLinkedAccountValidationError' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/linked_account_settlements',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'parent_merchant_id'             => '10000000000001',
+                'mode'                           => 'test',
+                'amount'                         => 1000000,
+                'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_NON_ONDEMAND_ROUTE_MERCHANTS_NOT_ALLOWED',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateOndemandSettlementForLinkedAccountWithMockWebhook' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/linked_account_settlements',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'parent_merchant_id'             => '10000000000001',
+                'mode'                           => 'test',
+                'amount'                         => 1000000,
+                'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'settlement.ondemand',
+                'amount_requested'    => 1000000,
+                'amount_settled'      => 0,
+                'amount_pending'      => 1000000,
+                'amount_reversed'     => 0,
+                'fees'                => 0,
+                'tax'                 => 0,
+                'currency'            => 'INR',
+                'settle_full_balance' => false,
+                'status'              => 'initiated',
+                'description'         => null,
+                'notes'               => [],
+                'scheduled'           => false
+            ],
+        ],
+    ],
+
 ];

@@ -31,27 +31,29 @@ class Entity extends Base\PublicEntity
 
     const TRANSACTION    = 'transaction';
 
-    const ID                     = 'id';
-    const MERCHANT_ID            = 'merchant_id';
-    const USER_ID                = 'user_id';
-    const AMOUNT                 = 'amount';
-    const TOTAL_AMOUNT_SETTLED   = 'total_amount_settled';
-    const TOTAL_FEES             = 'total_fees';
-    const TOTAL_TAX              = 'total_tax';
-    const TOTAL_AMOUNT_REVERSED  = 'total_amount_reversed';
-    const TOTAL_AMOUNT_PENDING   = 'total_amount_pending';
-    const MAX_BALANCE            = 'max_balance';
-    const CURRENCY               = 'currency';
-    const STATUS                 = 'status';
-    const NARRATION              = 'narration';
-    const NOTES                  = 'notes';
-    const REMARKS                = 'remarks';
-    const TRANSACTION_ID         = 'transaction_id';
-    const TRANSACTION_TYPE       = 'transaction_type';
-    const CREATED_AT             = 'created_at';
-    const UPDATED_AT             = 'updated_at';
-    const DELETED_AT             = 'deleted_at';
-    const SCHEDULED              = 'scheduled';
+
+    const ID                             = 'id';
+    const MERCHANT_ID                    = 'merchant_id';
+    const USER_ID                        = 'user_id';
+    const AMOUNT                         = 'amount';
+    const TOTAL_AMOUNT_SETTLED           = 'total_amount_settled';
+    const TOTAL_FEES                     = 'total_fees';
+    const TOTAL_TAX                      = 'total_tax';
+    const TOTAL_AMOUNT_REVERSED          = 'total_amount_reversed';
+    const TOTAL_AMOUNT_PENDING           = 'total_amount_pending';
+    const MAX_BALANCE                    = 'max_balance';
+    const CURRENCY                       = 'currency';
+    const STATUS                         = 'status';
+    const NARRATION                      = 'narration';
+    const NOTES                          = 'notes';
+    const REMARKS                        = 'remarks';
+    const TRANSACTION_ID                 = 'transaction_id';
+    const TRANSACTION_TYPE               = 'transaction_type';
+    const CREATED_AT                     = 'created_at';
+    const UPDATED_AT                     = 'updated_at';
+    const DELETED_AT                     = 'deleted_at';
+    const SCHEDULED                      = 'scheduled';
+    const SETTLEMENT_ONDEMAND_TRIGGER_ID = 'settlement_ondemand_trigger_id';
 
     protected $public = [
         self::ID,
@@ -93,7 +95,8 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::TRANSACTION_ID,
         self::TRANSACTION_TYPE,
-        self::SCHEDULED
+        self::SCHEDULED,
+        self::SETTLEMENT_ONDEMAND_TRIGGER_ID
     ];
 
     public function settlementOnDemandPayouts()
@@ -209,6 +212,11 @@ class Entity extends Base\PublicEntity
     public function getTotalAmountSettled()
     {
         return $this->getAttribute(self::TOTAL_AMOUNT_SETTLED);
+    }
+
+    public function getSettlementOndemandTriggerId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_ONDEMAND_TRIGGER_ID);
     }
 
     public function setTax($tax)

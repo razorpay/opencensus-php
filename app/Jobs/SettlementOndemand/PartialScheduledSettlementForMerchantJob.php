@@ -39,7 +39,13 @@ class PartialScheduledSettlementForMerchantJob extends Job
                 'settle_full_balance' => true
             ];
 
-            $response = (new Ondemand\Service)->create($input, $this->merchantId, true, $this->mode);
+            $requestDetails = [
+                'merchant_id'     => $this->merchantId,
+                'scheduled'       => true,
+                'mode'            => $this->mode,
+            ];
+
+            $response = (new Ondemand\Service)->create($input, $requestDetails);
 
             $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PARTIAL_SCHEDULED_FOR_MERCHANT_RESPONSE, [
                 "merchant_id"   => $this->merchantId,

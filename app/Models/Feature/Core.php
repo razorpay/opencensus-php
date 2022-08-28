@@ -214,7 +214,11 @@ class Core extends Base\Core
         if (($feature->getName() === Feature::ES_ON_DEMAND) && ($feature->getEntityType() === Constants::MERCHANT))
         {
             (new Merchant\Service)->addMerchantToOnDemandEnabledMailingList($feature->getEntityId());
+        }
 
+        if (( ($feature->getName() === Feature::ES_ON_DEMAND) || ($feature->getName() === Feature::ONDEMAND_LINKED))
+            && ($feature->getEntityType() === Constants::MERCHANT))
+        {
             (new OndemandFundAccount\Service)->dispatchSettlementOndemandFundAccountCreateJob($feature->getEntityId());
         }
 

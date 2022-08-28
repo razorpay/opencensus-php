@@ -51,11 +51,11 @@ class Core extends Base\Core
         $this->user = $this->app['basicauth']->getUser();
     }
 
-    public function createSettlementOndemandPayout($settlementOndemand)
+    public function createSettlementOndemandPayout($settlementOndemand, $requestDetails)
     {
         $mode = $this->setMode($settlementOndemand->getAmount(), $settlementOndemand->getScheduled());
 
-        return $this->createPayoutsFromOndemand($settlementOndemand, $mode);
+        return $this->createPayoutsFromOndemand($settlementOndemand, $mode, $requestDetails);
     }
 
     public function setMode($amount, $scheduled = false)
@@ -140,7 +140,7 @@ class Core extends Base\Core
         return false;
     }
 
-    public function createPayoutsFromOndemand($settlementOndemand, $mode): array
+    public function createPayoutsFromOndemand($settlementOndemand, $mode, $requestDetails): array
     {
         $splitAmount = $this->splitAmountBasedOnMode($settlementOndemand->getAmount(), $mode);
 
@@ -168,14 +168,22 @@ class Core extends Base\Core
 
             $settlementOndemandPayout->scheduled = $settlementOndemand->getScheduled();
 
+
             $settlementOndemandPayout->merchant()->associate($this->merchant);
+
 
             if (is_null($settlementOndemand->getUserId()) === false)
             {
                 $settlementOndemand->user()->associate($this->user);
             }
 
-            $this->addOndemandPayoutFees($settlementOndemandPayout);
+            // 0 fees to be deducted from child merchants' settlements as this will follow a postpaid model
+            if (($this->merchant->isFeatureEnabled(Feature\Constants::ONDEMAND_LINKED) === true &&
+                (isset($requestDetails['settlement_type']) === true &&
+                    $requestDetails['settlement_type']  === 'linked_account_settlement')) === false)
+            {
+                $this->addOndemandPayoutFees($settlementOndemandPayout);
+            }
 
             $this->repo->saveOrFail($settlementOndemandPayout);
 

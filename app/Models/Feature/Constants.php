@@ -120,6 +120,8 @@ class Constants
     const UPDATED_IMPS_ONDEMAND           = 'updated_imps_ondemand';
     const ES_AUTOMATIC                    = 'es_automatic';
     const ES_AUTOMATIC_RESTRICTED         = 'es_automatic_restricted';
+    const ONDEMAND_LINKED                 = 'ondemand_linked';
+    const ONDEMAND_ROUTE                  = 'ondemand_route';
     const HEADLESS_DISABLE                = 'headless_disable';
     const BEPG_DISABLE                    = 'bepg_disable';
     const BIN_ISSUER_VALIDATOR            = 'bin_issuer_validator';
@@ -1715,6 +1717,8 @@ class Constants
         self::UPDATED_IMPS_ONDEMAND           => true,
         self::ES_AUTOMATIC                    => true,
         self::ES_AUTOMATIC_RESTRICTED         => true,
+        self::ONDEMAND_LINKED                 => true,
+        self::ONDEMAND_ROUTE                  => true,
         self::HEADLESS_DISABLE                => true,
         self::BEPG_DISABLE                    => true,
         self::FIRST_DATA_S2S_FLOW             => true,
@@ -2257,6 +2261,16 @@ class Constants
         self::ES_AUTOMATIC_RESTRICTED   => [
             'feature'       => self::ES_AUTOMATIC_RESTRICTED,
             'display_name'  => 'Es Automatic Restricted',
+            'documentation' => '',
+        ],
+        self::ONDEMAND_LINKED   => [
+            'feature'       => self::ONDEMAND_LINKED,
+            'display_name'  => 'Ondemand Linked',
+            'documentation' => '',
+        ],
+        self::ONDEMAND_ROUTE   => [
+            'feature'       => self::ONDEMAND_ROUTE,
+            'display_name'  => 'Ondemand Route',
             'documentation' => '',
         ],
         self::LOAN                      => [

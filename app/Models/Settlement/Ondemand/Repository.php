@@ -28,6 +28,14 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function findByMerchantIdAndOndemandTriggerId($merchantId, $settlementOndemandTriggerId)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::SETTLEMENT_ONDEMAND_TRIGGER_ID, $settlementOndemandTriggerId)
+                    ->first();
+    }
+
     public function findSettlementsCountTodayByMerchantId($merchantId)
     {
         return $this->newQuery()

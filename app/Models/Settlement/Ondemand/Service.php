@@ -60,26 +60,69 @@ class Service extends Base\Service
     }
 
     /**
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function createOndemandSettlementForLinkedAccount(array $input)
+    {
+        $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_LINKED_ACCOUNT_CREATE, [
+            'input'       => $input,
+        ]);
+
+        (new Validator)->validateInput(Validator::SETTLEMENT_ONDEMAND_LINKED_ACCOUNT_INPUT, $input);
+
+        $ondemandSettlement = (new Repository)->findByMerchantIdAndOndemandTriggerId($input['merchant_id'], $input['settlement_ondemand_trigger_id']);
+
+        if ($ondemandSettlement != null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONDEMAND_SETTLEMENT_DUPLICATE_REQUEST);
+        }
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $this->validateIfOndemandRouteMerchant($merchant->getParentId());
+
+        $requestDetails = [
+            'merchant_id'                    => $input['merchant_id'],
+            'mode'                           => $input['mode'],
+            'settlement_ondemand_trigger_id' => $input['settlement_ondemand_trigger_id'],
+            'settlement_type'                => 'linked_account_settlement',
+            'scheduled'                      => false,
+        ];
+
+        $ondemandInput = [
+            'amount' => $input['amount'],
+        ];
+
+        return $this->create($ondemandInput,$requestDetails);
+    }
+
+    /**
      * @throws Exception\BadRequestValidationFailureException
      * @throws BadRequestException
      */
-    public function create(array $input, $merchantId = null, $scheduled = false, $mode = null): array
+    public function create(array $input, array $requestDetails = []): array
     {
-        if($scheduled == true && $merchantId != null)
-        {
-            $this->app['basicauth']->setModeAndDbConnection($mode);
-            $merchant = $this->repo->merchant->findOrFail($merchantId);
-            $this->app['basicauth']->setMerchant($merchant);
+        $requestDetails['scheduled'] = isset($requestDetails['scheduled'])?$requestDetails['scheduled']: false;
 
-            $this->mode = $mode;
+        //set basic auth details for scheduled settlements or linked_account settlements
+        if($this->areBasicAuthDetailsToBeSet($requestDetails))
+        {
+            $this->app['basicauth']->setModeAndDbConnection($requestDetails['mode']);
+            $merchant = $this->repo->merchant->findOrFail($requestDetails['merchant_id']);
+            $this->app['basicauth']->setMerchant($merchant);
+            $this->mode     = $requestDetails['mode'];
             $this->merchant = $merchant;
         }
 
         return $this->app['api.mutex']->acquireAndRelease(
         'settlement_ondemand'.$this->merchant->getId(),
-        function() use ($input, $scheduled)
+        function() use ($input, $requestDetails)
         {
-            return $this->repo->transaction(function () use ($input, $scheduled)
+            return $this->repo->transaction(function () use ($input, $requestDetails)
             {
                 $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_CREATE, [
                     'merchant_id' => $this->merchant->getId(),
@@ -103,9 +146,9 @@ class Service extends Base\Service
                 {
                     $featureConfig = (new FeatureConfig\Core)->getFeatureConfigByMerchantId($this->merchant->getId());
 
-                    [$amount, $settleableAmount] = $this->core()->getSettlementAmountAndSettleableAmount($input, $amount, $featureConfig, $scheduled);
+                    [$amount, $settleableAmount] = $this->core()->getSettlementAmountAndSettleableAmount($input, $amount, $featureConfig, $requestDetails['scheduled']);
 
-                    $this->configCheck($featureConfig, $amount, $scheduled, $settleableAmount);
+                    $this->configCheck($featureConfig, $amount, $requestDetails['scheduled'], $settleableAmount);
                 }
 
                 $input[Entity::AMOUNT] = $amount;
@@ -114,7 +157,7 @@ class Service extends Base\Service
                                                                                             $input,
                                                                                             $this->merchant,
                                                                                             $this->user,
-                                                                                            $scheduled);
+                                                                                            $requestDetails);
 
                 if($this->mode === 'live')
                 {
@@ -229,7 +272,8 @@ class Service extends Base\Service
 
     public function validateIfOndemandMerchant()
     {
-        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND) === false &&
+            $this->merchant->isFeatureEnabled(Feature\Constants::ONDEMAND_LINKED) === false)
         {
             throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_NON_ES_ON_DEMAND_MERCHANTS_NOT_ALLOWED);
         }
@@ -256,6 +300,16 @@ class Service extends Base\Service
                     'merchantId'=> $this->merchant->getId(),
                 ],
                 'Ondemand settlement has been blocked for a while');
+        }
+    }
+
+    public function validateIfOndemandRouteMerchant($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONDEMAND_ROUTE) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_NON_ONDEMAND_ROUTE_MERCHANTS_NOT_ALLOWED);
         }
     }
 
@@ -481,5 +535,19 @@ class Service extends Base\Service
         return [
             'blocked' => $ondemandBlocked
         ];
+    }
+
+    public function updateOndemandTrigger($settlementOndemand, $event, $amount)
+    {
+        $capitalESService = $this->app['capital_early_settlements'];
+
+        return $capitalESService->pushSettlementOndemandStatusUpdate($settlementOndemand, $event, $amount);
+    }
+
+    public function areBasicAuthDetailsToBeSet(array $requestDetails): bool
+    {
+        return (isset($requestDetails['settlement_type']) &&
+            ($requestDetails['settlement_type'] === 'linked_account_settlement')) ||
+        (isset($requestDetails['scheduled']) && $requestDetails['scheduled'] === true);
     }
 }

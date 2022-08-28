@@ -850,6 +850,13 @@ return [
         'timeout'       => env('APP_LENDER_TIMEOUT', 90),
     ],
 
+    'capital_es' => [
+        'url'           => env('APP_ES_URL'),
+        'username'      => env('APP_ES_USERNAME'),
+        'secret'        => env('APP_ES_SECRET'),
+        'timeout'       => env('APP_ES_TIMEOUT', 90),
+    ],
+
     'wallet' => [
         'timeout'     => env('APP_WALLET_TIMEOUT', 60),
         'url'         => [
