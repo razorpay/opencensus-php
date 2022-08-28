@@ -68,82 +68,87 @@ class Icici extends Base
 
         foreach ($input['items'] as $emiPayment)
         {
-            $emiPlan = $emiPayment->emiPlan;
+                $emiPlan = $emiPayment->emiPlan;
 
-            $principalAmount = $emiPayment->getAmount()/100;
+                $principalAmount = $emiPayment->getAmount() / 100;
 
-            $totalAmount = $totalAmount + $principalAmount;
+                $totalAmount = $totalAmount + $principalAmount;
 
-            $totalTransactions++;
+                $totalTransactions++;
 
-            $subventionAmount = 'NA';
+                $subventionAmount = 'NA';
 
-            $acquirer = 'NA';
+                $acquirer = 'NA';
 
-            if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT)
-            {
-                $merchantPayback = $emiPlan->getMerchantPayback()/100;
+                if ($emiPlan->getSubvention() === Emi\Subvention::MERCHANT) {
+                    $merchantPayback = $emiPlan->getMerchantPayback() / 100;
 
-                $amount = ($principalAmount * $merchantPayback)/100;
+                    $amount = ($principalAmount * $merchantPayback) / 100;
 
-                $subventionAmount = number_format((float)$amount, 2, '.', '');
+                    $subventionAmount = number_format((float)$amount, 2, '.', '');
+                }
+
+                if (empty($emiPayment->terminal->getGatewayAcquirer()) === false) {
+                    $acquirer = Payment\Gateway::getAcquirerName($emiPayment->terminal->getGatewayAcquirer());
+                }
+
+                $rate = $emiPlan->getRate() / 100;
+
+                $tenure = $emiPlan->getDuration();
+
+                $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
+
+                $issuerPlanId = $emiPlan->getIssuerPlanId();
+
+                $card = $emiPayment->card;
+
+                if (isset($emiPayment->card->trivia) && isset($emiPayment->token))
+                {
+                    $card = $emiPayment->token->card;
+                }
+
+                $data[] = [
+                    'EMI ID' => $emiPayment->getId(),
+                    'Tx Time' => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
+                    'Card PAN' => $this->getCardNumber($card, $emiPayment->getGateway()),
+                    'Amount' => $principalAmount,
+                    'Auth Code' => $this->getAuthCode($emiPayment),
+                    'Scheme Code' => substr($issuerPlanId, 0, 4) . 'P199' . substr($issuerPlanId, -2),
+                    'MID' => '',
+                    'TID' => '',
+                    'Discount/ Cashback Amount' => 'NA',
+                    'Tenure' => $tenure,
+                    'RRN' => '',
+                    'Manufacturer' => 'Bank EMI',
+                    'Merchant Name' => $emiPayment->merchant->getName(),
+                    '<Aggregator> Merchant  Name' => $emiPayment->merchant->getName(),
+                    'Tx Status' => 'Settled',
+                    'Status' => 'Ecom',
+                    'Description' => '',
+                    'Issuer' => 'ICICI Bank',
+                    'Address1' => '',
+                    'Store City' => '',
+                    'Store State' => '',
+                    'Acquirer' => $acquirer,
+                    'Settlement Time' => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
+                    'Subvention Payable to Issuer' => 'NA',
+                    'Subvention Amount (Rs.)' => $subventionAmount,
+                    'Interest Rate' => $rate,
+                    'Customer Processing Fee' => '',
+                    'Customer Processing Amount (Rs.)' => '199',
+                    'Product Category' => '',
+                    'Product Sub-Category 1' => '',
+                    'Product Sub-Category 2' => '',
+                    'Model Name' => '',
+                    'Card Hash' => '',
+                    'EMI Amount' => $emiAmount,
+                    'Loan Amount' => $principalAmount,
+                    'Discount / Cashback %' => 'NA',
+                    'Is New Model' => '',
+                    'Additional Cashback' => '',
+                    'Reward Point' => '',
+                ];
             }
-
-            if (empty($emiPayment->terminal->getGatewayAcquirer()) === false)
-            {
-                $acquirer = Payment\Gateway::getAcquirerName($emiPayment->terminal->getGatewayAcquirer());
-            }
-
-            $rate = $emiPlan->getRate()/100;
-
-            $tenure = $emiPlan->getDuration();
-
-            $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
-
-            $issuerPlanId = $emiPlan->getIssuerPlanId();
-
-            $data[] = [
-                'EMI ID'                           => $emiPayment->getId(),
-                'Tx Time'                          => $this->formattedDateFromTimestamp($emiPayment->getAuthorizeTimestamp()),
-                'Card PAN'                         => $this->getCardNumber($emiPayment->card,$emiPayment->getGateway()),
-                'Amount'                           => $principalAmount,
-                'Auth Code'                        => $this->getAuthCode($emiPayment),
-                'Scheme Code'                      => substr($issuerPlanId, 0, 4).'P199'.substr($issuerPlanId, -2),
-                'MID'                              => '',
-                'TID'                              => '',
-                'Discount/ Cashback Amount'        => 'NA',
-                'Tenure'                           => $tenure,
-                'RRN'                              => '',
-                'Manufacturer'                     => 'Bank EMI',
-                'Merchant Name'                    => $emiPayment->merchant->getName(),
-                '<Aggregator> Merchant  Name'      => $emiPayment->merchant->getName(),
-                'Tx Status'                        => 'Settled',
-                'Status'                           => 'Ecom',
-                'Description'                      => '',
-                'Issuer'                           => 'ICICI Bank',
-                'Address1'                         => '',
-                'Store City'                       => '',
-                'Store State'                      => '',
-                'Acquirer'                         => $acquirer,
-                'Settlement Time'                  => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'Subvention Payable to Issuer'     => 'NA',
-                'Subvention Amount (Rs.)'          => $subventionAmount,
-                'Interest Rate'                    => $rate,
-                'Customer Processing Fee'          => '',
-                'Customer Processing Amount (Rs.)' => '199',
-                'Product Category'                 => '',
-                'Product Sub-Category 1'           => '',
-                'Product Sub-Category 2'           => '',
-                'Model Name'                       => '',
-                'Card Hash'                        => '',
-                'EMI Amount'                       => $emiAmount,
-                'Loan Amount'                      => $principalAmount,
-                'Discount / Cashback %'            => 'NA',
-                'Is New Model'                     => '',
-                'Additional Cashback'              => '',
-                'Reward Point'                     => '',
-            ];
-        }
 
         $this->totalTransactions = $totalTransactions;
 
