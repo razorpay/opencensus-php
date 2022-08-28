@@ -967,7 +967,7 @@ class Core extends Base\Core
         ];
 
         $this->sendWhatsappMessage($merchant, DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE_NAME,
-            DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE, $dataForPDF, $attachmentData);
+            DisputeConstants::RISK_CHARGEBACK_INTIMATION_WITH_ATTACHMENT_TEMPLATE, $dataForPDF, $attachmentData, true);
 
     }
 
@@ -1085,9 +1085,27 @@ class Core extends Base\Core
         $this->app['raven']->sendSms($payload);
     }
 
-    private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params, $attachmentData=[])
+    public function getChargebackPOCMobile($merchant)
     {
-        $receiver = $merchant->merchantDetail->getContactMobile();
+        try
+        {
+            $merchantMobile = (new MerchantEmail\Service)->fetchEmailByType($merchant->getId(), MerchantEmail\Type::CHARGEBACK);
+
+            $merchantMobile = $merchantMobile['phone'];
+        }
+        catch (\Throwable $e)
+        {
+            $merchantMobile = $merchant->merchantDetail->getContactMobile();
+        }
+
+        return $merchantMobile;
+    }
+
+    private function sendWhatsappMessage($merchant, $whatsappTemplateName, $whatappTemplate, $params, $attachmentData=[], $isChargebackPOC=false)
+    {
+        $receiver = $isChargebackPOC === false
+            ? $merchant->merchantDetail->getContactMobile()
+            : $this->getChargebackPOCMobile($merchant);
 
         if (count($attachmentData) > 0)
         {
