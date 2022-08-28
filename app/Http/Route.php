@@ -1171,6 +1171,8 @@ class Route
         'capital_scorecard_dev_admin'              => ['any',      'scorecard/dev_admin/{path?}',                    'CapitalScorecardController@handleDevAdminRequests'                 ],
         'capital_lender_admin'                     => ['any',      'lender/admin/{path?}',                           'CapitalLenderController@handleAdminRequests'                       ],
         'capital_lender_dev_admin'                 => ['any',      'lender/dev_admin/{path?}',                       'CapitalLenderController@handleDevAdminRequests'                    ],
+        'capital_es_service'                       => ['any',      'capital_es/service/{path?}',                     'CapitalESController@handleProxyRequests'                           ],
+
 
         'merchants_risk_service'                   => ['any',      'merchants-risk/service/{path?}',                 'MerchantsRiskController@handleProxyRequests'                       ],
         'merchants_risk_admin'                     => ['any',      'merchants-risk/admin/{path?}',                   'MerchantsRiskController@handleAdminRequests'                       ],
@@ -5396,6 +5398,7 @@ class Route
         'feature_get_all',
         'ufh_upload_file',
         'los_service',
+        'capital_es_service',
         'user_fetch_for_merchant',
         'send_email_for_pl_service',
         'payment_links_payment_by_id',
@@ -9776,6 +9779,7 @@ class Route
             'list_merchant_notification_config',
             'loc_service',
             'los_service',
+            'capital_es_service',
             'mailgun_webhook',
             'merchant_2fa_change_setting',
             'merchant_activation_business_categories',

@@ -252,6 +252,7 @@ class UserRolesScope
             'capital_cards_onboarding'    =>  Role::ALL_ROLES,
             'capital_collections_service' => [Role::OWNER, Role::ADMIN],
             'capital_virtual_cards_generate_token' => [Role::OWNER, Role::ADMIN],
+            'capital_es_service'          => [Role::OWNER, Role::ADMIN],
 
             // Reporting
             'reporting_config_get'        => array_merge(Role::ALL_ROLES,Role::LINKED_ACCOUNT_ROLES, [Role::RBL_SUPERVISOR], BankingRole::getAllRoles()),
