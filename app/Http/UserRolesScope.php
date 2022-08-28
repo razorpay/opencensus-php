@@ -836,6 +836,7 @@ class UserRolesScope
             'payments_downtime_by_id'                              => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
             'payout_approve'                                       => [Role::OWNER, Role::ADMIN],
             'payout_approve_bulk'                                  => [Role::OWNER, Role::ADMIN],
+            'payout_2fa_approve'                                   => [Role::OWNER, Role::ADMIN],
             'payout_cancel'                                        => [Role::OWNER, Role::ADMIN],
             'payout_create'                                        => [Role::OWNER, Role::ADMIN],
             'payout_create_with_otp'                               => [Role::OWNER, Role::ADMIN],

@@ -168,7 +168,60 @@ return [
                 'status'          => 'pending',
                 'purpose'         => 'refund',
                 'mode'            => 'IMPS',
+                ],
+        ],
+    ],
+    'testCreatingPendingPayoutsAndApprovalWithOtp' => [
+        'request' => [
+            'url'     => '/payouts/approve/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'payout_id' => 'fa_100000000000fa',
+                'otp'          => '000777',
             ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreatingPendingPayoutsAndRetryApprovalWithOtp' => [
+        'request' => [
+            'url'     => '/payouts/approve/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'payout_id' => 'fa_100000000000fa',
+                'otp'          => '000777',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testRetryApprovalWhenOtpIsAlreadySubmitted' => [
+        'request' => [
+            'url'     => '/payouts/approve/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'payout_id' => 'fa_100000000000fa',
+                'otp'          => '000777',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payout is not in pending state',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYOUT_INVALID_STATE,
         ],
     ],
 

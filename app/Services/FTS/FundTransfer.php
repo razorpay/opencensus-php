@@ -171,6 +171,7 @@ class FundTransfer extends Base
         $this->payout  = new Payout\Core;
 
         $this->app     = $app;
+
     }
 
     /**
@@ -179,9 +180,9 @@ class FundTransfer extends Base
      * @throws \RZP\Exception\RuntimeException
      * @throws \Throwable
      */
-    public function requestFundTransfer(): array
+    public function requestFundTransfer(string $otp = null): array
     {
-        $input = $this->makeRequestUsingType();
+        $input = $this->makeRequestUsingType($otp);
 
         $this->updateFTAWithResponse();
 
@@ -234,7 +235,7 @@ class FundTransfer extends Base
      * @throws LogicException
      * @throws \Exception
      */
-    public function makeRequestUsingType(): array
+    public function makeRequestUsingType(string $otp = null): array
     {
         $source = $this->fta->source;
 
@@ -306,6 +307,20 @@ class FundTransfer extends Base
             default:
                 throw new LogicException('Account Type is not supported ' . $this->accountType);
         }
+
+        $request = $otp === null ? $request : $this->add2FABlock($request, $otp);
+
+        return $request;
+    }
+
+
+    /**
+     * @param array $request
+     * @return array
+     */
+    protected function add2FABlock(array $request, string $otp): array
+    {
+        $request[Constants::TWO_FACTOR_AUTH][Constants::OTP] = $otp;
 
         return $request;
     }

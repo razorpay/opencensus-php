@@ -336,7 +336,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getFTSAttemptBySourceId(string $sourceId, string $sourceType, bool $isFTS = false): Entity
+    public function getFTSAttemptBySourceId(string $sourceId, string $sourceType, bool $isFTS = false)
     {
         return $this->newQuery()
                     ->where(Entity::SOURCE_ID, $sourceId)

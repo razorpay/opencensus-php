@@ -17,6 +17,7 @@ use RZP\Models\Card\Network;
 use RZP\Models\FeeRecovery;
 use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
+use RZP\Error\PublicErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
@@ -142,6 +143,119 @@ class IciciCaPayoutTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+   //2fa approval flow first attempt with otp
+    public function testCreatingPendingPayoutsAndApprovalWithOtp()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payoutAttrib = [];
+
+        $payoutAttrib['account_number'] = '2224440041626905';
+
+        $this->createPayoutWithWorkflow($payoutAttrib, 'rzp_live_TheLiveAuthKey');
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', null);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_id'] = 'pout_'.$payout['id'];
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('pending_on_otp', $payout['internal_status']);
+        $this->assertEquals('pending', $publicResponse['status']);
+        $this->assertEquals($payout['id'], $fta['source_id']);
+        $this->assertEquals('initiated', $fta['status']);
+    }
+
+    //Retry flow for payout approval once invalid or expired otp is entered.
+    public function testCreatingPendingPayoutsAndRetryApprovalWithOtp()
+    {
+        $this->liveSetUp();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payoutAttrib = [];
+
+        $payoutAttrib['account_number'] = '2224440041626905';
+
+        $this->createPayoutWithWorkflow($payoutAttrib, 'rzp_live_TheLiveAuthKey');
+
+        $payout = $this->getDbLastEntity('payout','live');
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', null);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_id'] = 'pout_'.$payout['id'];
+
+        $this->startTest();
+
+        $oldPayout = $this->getDbLastEntity('payout', 'live');
+
+        $oldFta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $publicResponse = $oldPayout->toArrayPublic();
+
+        $this->assertEquals('pending_on_otp', $oldPayout['internal_status']);
+        $this->assertEquals('pending', $publicResponse['status']);
+        $this->assertEquals($payout['id'], $oldFta['source_id']);
+        $this->assertEquals('initiated', $oldFta['status']);
+
+        //Moving payout back to pending assuming that it was an invalid otp and reattempting
+        $this->fixtures->edit(
+            'payout',
+            $oldPayout->getId(),
+            [
+                'status' => 'pending',
+                'status_code' => 'INVALID_OTP',
+            ]);
+
+        $this->startTest();
+
+        $newPayout = $this->getDbLastEntity('payout', 'live');
+
+        $newFta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $publicResponseNew = $newPayout->toArrayPublic();
+
+        $this->assertEquals('pending_on_otp', $newPayout['internal_status']);
+        $this->assertEquals('pending', $publicResponseNew['status']);
+        $this->assertEquals($oldFta['id'], $newFta['id']);
+        $this->assertEquals($oldPayout['id'], $newPayout['id']);
+        $this->assertEquals('initiated', $newFta['status']);
+    }
+
+    //Reattempt for approval when otp is already submitted and payout is in pending_on_otp state
+    public function testRetryApprovalWhenOtpIsAlreadySubmitted()
+    {
+        $this->testCreatingPendingPayoutsAndApprovalWithOtp();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', null);
+
+        $testData = &$this->testData[__FUNCTION__];
+        $testData['request']['content']['payout_id'] = 'pout_'.$payout['id'];
+
+        $this->startTest();
+
     }
 
     public function testIciciAccountStatementFetchV2()

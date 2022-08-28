@@ -75,6 +75,8 @@ class Validator extends Base\Validator
 
     const APPROVE_PAYOUT_RULES = 'approve_payout';
 
+    const APPROVE_ICICI_CA_PAYOUT_RULES = 'approve_icici_ca_payout';
+
     const CANCEL_PAYOUT = 'cancel_payout';
 
     const PROCESS_QUEUED_PAYOUTS_INITIATE = 'process_queued_payouts_initiate';
@@ -329,6 +331,12 @@ class Validator extends Base\Validator
 
     protected static $approvePayoutRules = [
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
+    ];
+
+    protected static $approveIciciCaPayoutRules = [
+        User\Entity::OTP             => 'required|filled|string|min:6|max:6',
+        Entity::PAYOUT_ID            => 'required|filled|string',
+        ActionChecker::USER_COMMENT  => 'sometimes|nullable|string|max:255',
     ];
 
     protected static $cancelPayoutRules = [

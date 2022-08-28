@@ -749,7 +749,7 @@ class Initiator extends Base\Core
      * @param Entity $fta
      * @return bool
      */
-    public function sendFTSFundTransferRequest(Entity $fta): bool
+    public function sendFTSFundTransferRequest(Entity $fta, string $otp = null): bool
     {
         try
         {
@@ -758,7 +758,7 @@ class Initiator extends Base\Core
                 return true;
             }
 
-            FtsFundTransfer::dispatch($this->mode, $fta->getId());
+            FtsFundTransfer::dispatch($this->mode, $fta->getId(), $otp);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_JOB_DISPATCHED,

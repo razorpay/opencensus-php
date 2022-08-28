@@ -21,6 +21,7 @@ class AccessAuthorizationService
             'payouts_batch_create'                  => ['/v1/payouts_batch', 'post'],
             'payout_validate'                       => ['/v1/validate_payouts', 'post'],
             'payout_approve'                        => ['/v1/payouts/{id}/approve', 'post'],
+            'payout_2fa_approve'                    => ['/v1/payouts/approve/2fa', 'post'],
             'payout_cancel'                         => ['/v1/payouts/{id}/cancel', 'post'],
             'payout_reject'                         => ['/v1/payouts/{id}/reject', 'post'],
             'payout_bulk_create'                    => ['/v1/payouts/bulk', 'post'],

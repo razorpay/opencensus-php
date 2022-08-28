@@ -498,6 +498,27 @@ class Service extends Base\Service
         return $this->auth->isScroogeApp();
     }
 
+    public function approveIciciCaFundAccountPayout(array $input): array
+    {
+        $this->trace->info(TraceCode::PAYOUT_ICICI_CA_APPROVE_REQUEST, ['input' => $input]);
+
+        /** @var Entity $payout */
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($input['payout_id'], $this->merchant);
+
+        Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($payout->balance, $this->merchant);
+
+        $payoutValidator =  $payout->getValidator();
+
+        $payoutValidator->setStrictFalse()->validateInput(Validator::APPROVE_ICICI_CA_PAYOUT_RULES, $input);
+
+        $payoutValidator->validatePayoutStatusForApproveOrReject();
+
+        $payout = (new Core)->approveIciciCAPayout($payout, $input);
+
+        return $payout->toArrayPublic();
+
+    }
+
     public function approveFundAccountPayout(string $id, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_APPROVE_REQUEST, ['id' => $id, 'input' => $input]);

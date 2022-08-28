@@ -2055,6 +2055,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_DISPATCH_SUMMARY                               = 'PAYOUT_DISPATCH_SUMMARY';
     const PAYOUT_WORKFLOW_ACTION_REQUEST                        = 'PAYOUT_WORKFLOW_ACTION_REQUEST';
     const PAYOUT_APPROVE_REQUEST                                = 'PAYOUT_APPROVE_REQUEST';
+    const PAYOUT_ICICI_CA_APPROVE_REQUEST                       = 'PAYOUT_ICICI_CA_APPROVE_REQUEST';
+    const PAYOUT_ICICI_CA_PENDING_PAYOUT_SUBMITTED              = 'PAYOUT_ICICI_CA_PENDING_PAYOUT_SUBMITTED';
+    const PAYOUT_ICICI_CA_PENDING_PAYOUT_PROCESS_FAILED         = 'PAYOUT_ICICI_CA_PENDING_PAYOUT_PROCESS_FAILED';
     const PAYOUT_BULK_APPROVE_REQUEST                           = 'PAYOUT_BULK_APPROVE_REQUEST';
     const PAYOUT_REJECT_REQUEST                                 = 'PAYOUT_REJECT_REQUEST';
     const PAYOUT_FORCE_CLOSE_REQUEST                            = 'PAYOUT_FORCE_CLOSE_REQUEST';

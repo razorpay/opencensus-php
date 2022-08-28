@@ -578,13 +578,22 @@ class Base extends BaseCore
         return $asyncEnabled;
     }
 
-    public function syncFTSFundTransfer(Entity $payout)
+    public function syncFTSFundTransfer(Entity $payout, string $otp = null)
     {
         $fta = $payout->getFta();
 
         if ($fta === null)
         {
-            return;
+            //This is added for retry transfer with otp scenario for ICICI ca.
+            // Since fta is already created in first try second time $this->fta will not be found.
+            if(empty($payout->fundTransferAttempts->first()) === false)
+            {
+                $fta = $payout->fundTransferAttempts->first();
+            }
+            else
+            {
+                return;
+            }
         }
 
         try
@@ -626,7 +635,7 @@ class Base extends BaseCore
 
             $transferService->setRequestTimeout(self::FTS_TRANSFER_TIMEOUT);
 
-            $ftsResponse = $transferService->requestFundTransfer();
+            $ftsResponse = $transferService->requestFundTransfer($otp);
 
             $this->trace->info(
                 TraceCode::SYNC_FTS_FUND_TRANSFER_COMPLETE,
@@ -653,7 +662,7 @@ class Base extends BaseCore
                 ]);
 
             // If any exception is raised while making sync call, we push the fta to queue as fall back.
-            (new Initiator)->sendFTSFundTransferRequest($fta);
+            (new Initiator)->sendFTSFundTransferRequest($fta, $otp);
         }
     }
 
@@ -1552,6 +1561,56 @@ class Base extends BaseCore
             ($payout->merchant->isFeatureEnabled(Features::LEDGER_REVERSE_SHADOW) === false))
         {
             (new Transaction\Core)->dispatchEventForTransactionCreated($payout->transaction);
+        }
+
+        return $payout;
+    }
+
+    public function processIciciCAPendingPayout(Entity $payout, array $input)
+    {
+        try
+        {
+            /** @var Payout\Entity $payout */
+            $payout = $this->repo->transaction(
+                function() use ($payout, $input)
+                {
+                    $this->fundTransferDestination = $payout->fundAccount->account;
+
+                    $payoutType = $this->getPayoutType();
+
+                    $downstreamProcessor = new DownstreamProcessor($payoutType,
+                        $payout,
+                        $this->mode,
+                        $this->fundTransferDestination);
+
+                    $downstreamProcessor->process();
+
+                    $payout->setStatus(Payout\Status::PENDING_ON_OTP);
+
+                    $this->repo->saveOrFail($payout);
+
+                    $this->trace->info(
+                        TraceCode::PAYOUT_ICICI_CA_PENDING_PAYOUT_SUBMITTED,
+                        [
+                            'payout_id'      => $payout->getId(),
+                            'transaction_id' => $payout->getTransactionId(),
+                            'payout_status'  => $payout->getStatus(),
+                        ]);
+
+                    return $payout;
+                });
+
+            $this->syncFTSFundTransfer($payout, $input['otp']);
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->error(
+                TraceCode::PAYOUT_ICICI_CA_PENDING_PAYOUT_PROCESS_FAILED,
+                [
+                    'payout_id'     => $payout->getId(),
+                ]);
+
+            throw $throwable;
         }
 
         return $payout;

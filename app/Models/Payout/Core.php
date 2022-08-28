@@ -1588,6 +1588,32 @@ class Core extends Base\Core
         return $payout;
     }
 
+    public function approveIciciCAPayout(Entity $payout, array $input): Entity
+    {
+        $payoutId = $payout->getId();
+
+        return $this->mutex->acquireAndRelease(
+            $payoutId,
+            function() use ($payoutId, $input)
+            {
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findOrFail($payoutId);
+
+                /** @var Validator $payoutValidator */
+                $payoutValidator = $payout->getValidator();
+
+                $payoutValidator->validateProcessingPendingPayout();
+
+                $payout = $this->getProcessor('fund_account_payout')
+                               ->setMerchant($payout->merchant)
+                               ->processIciciCAPendingPayout($payout,$input);
+
+                return $payout;
+            },
+            self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
     /**
      * @param Entity $payout
      * @return Entity

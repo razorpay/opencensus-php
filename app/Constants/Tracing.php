@@ -355,6 +355,7 @@ class Tracing
             'user_otp_create',
             'payout_reject',
             'payout_approve',
+            'payout_2fa_approve',
             'payout_approve_bulk',
             'payout_reject_bulk',
             'transaction_statement_fetch',

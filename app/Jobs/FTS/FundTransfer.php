@@ -25,6 +25,11 @@ class FundTransfer extends Job
     protected $ftaId;
 
     /**
+     * @var string
+     */
+    protected $otp;
+
+    /**
      * @var int
      */
     public $timeout = 60;
@@ -34,11 +39,13 @@ class FundTransfer extends Job
      */
     protected $queueConfigKey = 'fts_fund_transfer';
 
-    public function __construct(string $mode, string $id)
+    public function __construct(string $mode, string $id , string $otp = null)
     {
         parent::__construct($mode);
 
         $this->ftaId  = $id;
+
+        $this->otp = $otp;
     }
 
     /**
@@ -79,7 +86,7 @@ class FundTransfer extends Job
                 }
             }
 
-            $ftsResponse = $transferService->requestFundTransfer();
+            $ftsResponse = $transferService->requestFundTransfer($this->otp);
 
             $this->trace->info(
                 TraceCode::FTS_FUND_TRANSFER_COMPLETE,

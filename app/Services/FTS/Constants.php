@@ -208,6 +208,10 @@ final class Constants
 
     const BENEFICIARY_BANK_NAME          = "beneficiary_bank_name";
 
+    const TWO_FACTOR_AUTH                = "2fa";
+
+    const OTP                            = "otp";
+
     public static function getProducts(): array
     {
         return [

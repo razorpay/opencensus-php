@@ -62,6 +62,7 @@ class OAuthScopes
         'payout_fetch_multiple'                          => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'payout_reject'                                  => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'payout_approve'                                 => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
+        'payout_2fa_approve'                             => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'user_otp_create'                                => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'activated_banking_accounts_list'                => [self::RX_READ_ONLY, self::RX_READ_WRITE],
         'merchant_balance_fetch'                         => [self::RX_READ_ONLY, self::RX_READ_WRITE],
