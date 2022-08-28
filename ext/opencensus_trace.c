@@ -75,8 +75,8 @@ void opencensus_trace_rshutdown()
 
 	/* cleanup recorded spans */
 	opencensus_trace_clear(0);
-	/* cleanup baggage */
 
+	/* cleanup baggage */
     zend_hash_destroy(OPENCENSUS_G(baggage));
 
     FREE_HASHTABLE(OPENCENSUS_G(baggage));
@@ -105,11 +105,11 @@ static zend_string *span_id_from_options(HashTable *options)
             str = zval_get_string(val);
             break;
         case IS_LONG:
-#if PHP_MAJOR_VERSION < 8
-            str = _php_math_longtobase(val, 16);
-#else
-            str = _php_math_longtobase(Z_LVAL_P(val), 16);
-#endif
+            #if PHP_MAJOR_VERSION < 8
+                        str = _php_math_longtobase(val, 16);
+            #else
+                        str = _php_math_longtobase(Z_LVAL_P(val), 16);
+            #endif
             break;
     }
 
@@ -582,9 +582,9 @@ PHP_FUNCTION(opencensus_trace_context)
         zend_update_property_str(opencensus_trace_context_ce, OPENCENSUS_OBJ_P(return_value), "traceId", sizeof("traceId") - 1, OPENCENSUS_G(trace_id));
     }
     if (OPENCENSUS_G(baggage)) {
-         zval baggage;
-         ZVAL_ARR(&baggage, OPENCENSUS_G(baggage));
-         zend_update_property(opencensus_trace_context_ce, OPENCENSUS_OBJ_P(return_value), "baggageItems", sizeof("baggageItems") - 1, &baggage);
+        zval baggage;
+        ZVAL_ARR(&baggage, OPENCENSUS_G(baggage));
+        zend_update_property(opencensus_trace_context_ce, OPENCENSUS_OBJ_P(return_value), "baggageItems", sizeof("baggageItems") - 1, &baggage);
     }
 
 }

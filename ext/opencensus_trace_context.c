@@ -120,7 +120,7 @@ static PHP_METHOD(OpenCensusTraceContext, baggage) {
         return;
     }
 
-    val = zend_read_property(opencensus_trace_context_ce, getThis(), "baggageItems", sizeof("baggageItems") - 1, 1, &rv);
+    val = zend_read_property(opencensus_trace_context_ce, OPENCENSUS_OBJ_P(getThis()), "baggageItems", sizeof("baggageItems") - 1, 1, &rv);
     if (ZVAL_IS_NULL(val)) {
         array_init(return_value);
         return;
@@ -134,6 +134,7 @@ static zend_function_entry opencensus_trace_context_methods[] = {
     PHP_ME(OpenCensusTraceContext, __construct, arginfo_OpenCensusTraceContext_construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
     PHP_ME(OpenCensusTraceContext, spanId, arginfo_void, ZEND_ACC_PUBLIC)
     PHP_ME(OpenCensusTraceContext, traceId, arginfo_void, ZEND_ACC_PUBLIC)
+    PHP_ME(OpenCensusTraceContext, baggage, arginfo_void, ZEND_ACC_PUBLIC)
     PHP_FE_END
 };
 
@@ -146,6 +147,8 @@ int opencensus_trace_context_minit(INIT_FUNC_ARGS) {
 
     zend_declare_property_null(opencensus_trace_context_ce, "spanId", sizeof("spanId") - 1, ZEND_ACC_PROTECTED);
     zend_declare_property_null(opencensus_trace_context_ce, "traceId", sizeof("traceId") - 1, ZEND_ACC_PROTECTED);
+    zend_declare_property_null(opencensus_trace_context_ce, "baggageItems", sizeof("baggageItems") - 1, ZEND_ACC_PROTECTED);
+
 
     return SUCCESS;
 }

@@ -53,7 +53,6 @@
 #include "Zend/zend_alloc.h"
 
 zend_class_entry* opencensus_trace_message_event_ce = NULL;
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_void, 0, 0, 0)
 ZEND_END_ARG_INFO();
 
