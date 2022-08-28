@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ 7.0, 7.1, 7.2, 7.3, 7.4 ]
+        php: [ 7.4 ]
 
     runs-on: ubuntu-latest
 
@@ -96,7 +96,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.2
+          php-version: 7.4
           extensions: memcached, pdo_mysql, mysqli, pdo_pgsql, pcntl
           ini-values: extension=opencensus.so
 
