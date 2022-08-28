@@ -108,6 +108,27 @@ static PHP_METHOD(OpenCensusTraceContext, traceId) {
     RETURN_ZVAL(val, 1, 0);
 }
 
+/**
+ * Fetch the baggage items
+ *
+ * @return string
+ */
+static PHP_METHOD(OpenCensusTraceContext, baggage) {
+    zval *val, rv;
+
+    if (zend_parse_parameters_none() == FAILURE) {
+        return;
+    }
+
+    val = zend_read_property(opencensus_trace_context_ce, getThis(), "baggageItems", sizeof("baggageItems") - 1, 1, &rv);
+    if (ZVAL_IS_NULL(val)) {
+        array_init(return_value);
+        return;
+    }
+
+    RETURN_ZVAL(val, 1, 0);
+}
+
 /* Declare method entries for the OpenCensus\Trace\SpanContext class */
 static zend_function_entry opencensus_trace_context_methods[] = {
     PHP_ME(OpenCensusTraceContext, __construct, arginfo_OpenCensusTraceContext_construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
