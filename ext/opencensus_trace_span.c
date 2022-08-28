@@ -129,11 +129,11 @@ static PHP_METHOD(OpenCensusTraceSpan, __construct) {
 
 static PHP_METHOD(OpenCensusTraceSpan, __destruct) {
     zval val, *zv;
-    zv = zend_read_property(opencensus_trace_span_ce, OPENCENSUS_OBJ_P(getThis()), "attributes", sizeof("attributes") - 1, 0, &val TSRMLS_CC);
+    zv = zend_read_property(opencensus_trace_span_ce, OPENCENSUS_OBJ_P(getThis()), "attributes", sizeof("attributes") - 1, 0, &val);
     zval_dtor(zv);
-    zv = zend_read_property(opencensus_trace_span_ce, OPENCENSUS_OBJ_P(getThis()), "links", sizeof("links") - 1, 0, &val TSRMLS_CC);
+    zv = zend_read_property(opencensus_trace_span_ce, OPENCENSUS_OBJ_P(getThis()), "links", sizeof("links") - 1, 0, &val);
     zval_dtor(zv);
-    zv = zend_read_property(opencensus_trace_span_ce, OPENCENSUS_OBJ_P(getThis()), "timeEvents", sizeof("timeEvents") - 1, 0, &val TSRMLS_CC);
+    zv = zend_read_property(opencensus_trace_span_ce, OPENCENSUS_OBJ_P(getThis()), "timeEvents", sizeof("timeEvents") - 1, 0, &val);
     zval_dtor(zv);
 }
 
