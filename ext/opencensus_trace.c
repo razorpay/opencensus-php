@@ -549,7 +549,7 @@ PHP_FUNCTION(opencensus_trace_set_context)
 {
     zend_string *trace_id = NULL, *parent_span_id = NULL;
      HashTable *baggage = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|S", &trace_id, &parent_span_id) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|S", &trace_id, &parent_span_id, &baggage) == FAILURE) {
         RETURN_FALSE;
     }
 
