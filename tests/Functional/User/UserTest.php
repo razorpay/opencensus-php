@@ -788,6 +788,72 @@ class UserTest extends TestCase
         $this->assertBankingEntitiesNotNullInLiveMode($merchantDetail);
     }
 
+    public function testGetInXWhenUserOnPgAndAdminInX()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => $user->merchants()->get()[0]->getId(),
+        ]);
+
+        $this->fixtures->edit('merchant', $user->merchants()->get()[0]->getId(), [
+            'activated' => true,
+        ]);
+
+        $this->fixtures->terminal->createRXTerminal();
+
+        $this->testData[__FUNCTION__] = $this->testData['testGet'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $testData['request']['content']['product_switch'] = 'true';
+
+        $testData['response']['content']['merchants'][0]['activated'] = true;
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $user->merchants()->get()[0]->getId(),
+            'role'        => 'admin',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $bankingMerchant = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user->getId())
+            ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
+            ->where('product', '=', 'banking')
+            ->pluck('user_id','merchant_id', 'product');
+
+        $this->assertEquals(count($bankingMerchant), 1);
+
+        $this->assertBankingEntitiesNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+
+        $bankingMerchant = DB::connection('test')->table('merchant_users')
+            ->where('user_id', '=', $user->getId())
+            ->where('merchant_id', '=', $user->merchants()->get()[0]->getId())
+            ->where('product', '=', 'banking')
+            ->pluck('user_id','merchant_id', 'product');
+
+        $this->assertEquals(count($bankingMerchant), 1);
+
+        $this->assertBankingEntitiesNullInTestMode($merchantDetail);
+
+        $this->assertBankingEntitiesNullInLiveMode($merchantDetail);
+    }
+
     public function testGetInPgWhenUserOnX()
     {
         $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner', 'live');

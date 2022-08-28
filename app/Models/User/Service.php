@@ -1316,18 +1316,16 @@ class Service extends Base\Service
         foreach ($merchants as $merchant)
         {
             if (($isBankingRequest === true &&
-                    $merchant[Entity::PRODUCT] === ProductType::BANKING) ||
+                    empty($merchant[Entity::BANKING_ROLE]) === false) ||
                 ($isBankingRequest === false &&
-                    $merchant[Entity::PRODUCT] === ProductType::PRIMARY))
+                    empty($merchant[Entity::ROLE]) === false))
             {
                 $isUserRelatedToCurrentProduct = true;
             }
 
             if (($isBankingRequest === true &&
-                    $merchant[Entity::PRODUCT] === ProductType::PRIMARY &&
                     $merchant[Entity::ROLE] === Entity::OWNER) ||
                 ($isBankingRequest === false &&
-                    $merchant[Entity::PRODUCT] === ProductType::BANKING &&
                     $merchant[Entity::BANKING_ROLE] === Entity::OWNER))
             {
                 $isUserOwnerForSwitchProduct = true;
