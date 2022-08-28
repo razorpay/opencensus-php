@@ -28,6 +28,8 @@
 static void (*opencensus_original_zend_execute_ex) (zend_execute_data *execute_data);
 static void (*opencensus_original_zend_execute_internal) (zend_execute_data *execute_data, zval *return_value);
 
+// Global value to keep the current number of spans in memory
+static int SPAN_COUNT = 0;
 void opencensus_trace_ginit()
 {
     /**
@@ -60,6 +62,8 @@ void opencensus_trace_rinit()
 
     OPENCENSUS_G(current_span) = NULL;
     OPENCENSUS_G(trace_id) = NULL;
+    ALLOC_HASHTABLE(OPENCENSUS_G(baggage));
+    zend_hash_init(OPENCENSUS_G(baggage), 16, NULL, NULL, 0);
     OPENCENSUS_G(trace_parent_span_id) = NULL;
 }
 
@@ -71,6 +75,11 @@ void opencensus_trace_rshutdown()
 
 	/* cleanup recorded spans */
 	opencensus_trace_clear(0);
+	/* cleanup baggage */
+
+    zend_hash_destroy(OPENCENSUS_G(baggage));
+
+    FREE_HASHTABLE(OPENCENSUS_G(baggage));
 
 }
 
@@ -162,6 +171,27 @@ PHP_FUNCTION(opencensus_trace_add_attribute)
     }
 
     RETURN_FALSE;
+}
+
+/**
+ * Removes a span corresponding to key/span_id from hashtable
+ * @param string $key
+ * @return bool
+ */
+PHP_FUNCTION(opencensus_trace_remove_span)
+{
+    zend_string *k;
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S", &k) == FAILURE) {
+        RETURN_FALSE;
+    }
+    // deleting th span assosciated with the given span_id
+    // When inserting the sapn, we also pass the destructor function for span span_dtor, which gets called on zend_hash_del
+    if (zend_hash_del(OPENCENSUS_G(spans), k) != SUCCESS) {
+        RETURN_FALSE
+
+    }
+    RETURN_TRUE;
+
 }
 
 /**
@@ -360,7 +390,7 @@ static opencensus_trace_span_t *opencensus_trace_begin(zend_string *name, zend_e
 
     /* add the span to the list of spans */
     zend_hash_add_ptr(OPENCENSUS_G(spans), span->span_id, span);
-
+    SPAN_COUNT++;
     return span;
 }
 
@@ -468,6 +498,7 @@ void span_dtor(zval *zv)
     opencensus_trace_span_t *span = Z_PTR_P(zv);
     opencensus_trace_span_free(span);
     ZVAL_PTR_DTOR(zv);
+    SPAN_COUNT--;
 }
 
 /**
@@ -514,10 +545,12 @@ PHP_FUNCTION(opencensus_trace_clear)
  *
  * @param string $traceId
  * @param string $parentSpanId
+ * @param array  $baggage
  */
 PHP_FUNCTION(opencensus_trace_set_context)
 {
     zend_string *trace_id = NULL, *parent_span_id = NULL;
+     HashTable *baggage = NULL;
     if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|S", &trace_id, &parent_span_id) == FAILURE) {
         RETURN_FALSE;
     }
@@ -526,7 +559,9 @@ PHP_FUNCTION(opencensus_trace_set_context)
     if (parent_span_id) {
         OPENCENSUS_G(trace_parent_span_id) = zend_string_copy(parent_span_id);
     }
-
+    if (baggage) {
+        zend_hash_copy(OPENCENSUS_G(baggage), baggage, (copy_ctor_func_t) zval_add_ref);
+    }
     RETURN_TRUE;
 }
 
@@ -548,6 +583,12 @@ PHP_FUNCTION(opencensus_trace_context)
     if (OPENCENSUS_G(trace_id)) {
         zend_update_property_str(opencensus_trace_context_ce, OPENCENSUS_OBJ_P(return_value), "traceId", sizeof("traceId") - 1, OPENCENSUS_G(trace_id));
     }
+    if (OPENCENSUS_G(baggage)) {
+         zval baggage;
+         ZVAL_ARR(&baggage, OPENCENSUS_G(baggage));
+         zend_update_property(opencensus_trace_context_ce, OPENCENSUS_OBJ_P(return_value), "baggageItems", sizeof("baggageItems") - 1, &baggage);
+    }
+
 }
 
 /**
@@ -748,4 +789,13 @@ PHP_FUNCTION(opencensus_trace_list)
         opencensus_trace_span_to_zval(trace_span, &span);
         add_next_index_zval(return_value, &span);
     } ZEND_HASH_FOREACH_END();
+}
+/**
+ * Return the count of trace spans that have been collected for this
+ * request
+ * @return long
+ */
+PHP_FUNCTION(opencensus_trace_count)
+{
+    RETURN_LONG(SPAN_COUNT)
 }
