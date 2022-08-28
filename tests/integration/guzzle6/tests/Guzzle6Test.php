@@ -34,7 +34,7 @@ class Guzzle6Test extends TestCase
 {
     private $client;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $stack = new HandlerStack();

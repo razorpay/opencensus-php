@@ -20,7 +20,7 @@ namespace OpenCensus\Tests\Unit\Trace\Propagator;
 use OpenCensus\Trace\SpanContext;
 use OpenCensus\Trace\Propagator\BinaryFormatter;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_Error_Warning as Warning;
+use PHPUnit\Framework\Error\Warning;
 
 /**
  * @group trace

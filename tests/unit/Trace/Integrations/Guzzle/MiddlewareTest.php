@@ -38,7 +38,7 @@ class MiddlewareTest extends TestCase
      */
     private $exporter;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exporter = $this->prophesize(ExporterInterface::class);
         if (extension_loaded('opencensus')) {

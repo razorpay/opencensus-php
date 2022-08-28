@@ -3,7 +3,7 @@ OpenCensus Trace: Root inherits from context
 --FILE--
 <?php
 
-$res = opencensus_trace_set_context('traceid', 1234);
+$res = opencensus_trace_set_context('traceid', 1234, ['rzpctx-key1' => 'value1']);
 echo "Set context: ${res}\n";
 
 opencensus_trace_begin('root', []);
