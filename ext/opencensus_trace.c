@@ -795,5 +795,5 @@ PHP_FUNCTION(opencensus_trace_list)
  */
 PHP_FUNCTION(opencensus_trace_count)
 {
-    RETURN_LONG(SPAN_COUNT)
+    RETURN_LONG(SPAN_COUNT);
 }
