@@ -325,7 +325,7 @@ static void opencensus_free_args(zval *args, int num_args)
  */
 static int opencensus_trace_call_user_function_callback(zval *args, int num_args, zend_execute_data *execute_data, opencensus_trace_span_t *span, zval *callback, zval *callback_result)
 {
-    if (call_user_function(EG(function_table), NULL, callback, callback_result, num_args, args) != SUCCESS) {
+    if (call_user_function_ex(EG(function_table), NULL, callback, callback_result, num_args, args, 0, NULL) != SUCCESS) {
         return FAILURE;
     }
 
@@ -549,7 +549,7 @@ PHP_FUNCTION(opencensus_trace_set_context)
 {
     zend_string *trace_id = NULL, *parent_span_id = NULL;
     HashTable *baggage = NULL;
-    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|S", &trace_id, &parent_span_id, &baggage) == FAILURE) {
+    if (zend_parse_parameters(ZEND_NUM_ARGS(), "S|S|h", &trace_id, &parent_span_id, &baggage) == FAILURE) {
         RETURN_FALSE;
     }
 
