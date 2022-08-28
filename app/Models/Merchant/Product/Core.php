@@ -11,12 +11,14 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Jobs\MerchantProductsConfig;
 use RZP\Models\Merchant\Product;
+use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Product\Util;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Merchant\Product\Config;
 use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Product\Config\PaymentMethods;
+use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
 use RZP\Models\Merchant\Product\BusinessUnit\Constants as BusinessUnit;
 use RZP\Trace\Tracer;
@@ -66,8 +68,17 @@ class Core extends Base\Core
         {
             case Name::PAYMENT_GATEWAY :
             case Name::PAYMENT_LINKS:
+            {
                 $response = $this->createPaymentGatewayConfig($merchant, $merchantProduct, $input);
+
+                if((new AccountV2\Core())->isInstantActivationTagEnabled($merchant->getId()) === true)
+                {
+                    $MerchantDetails = $merchant->merchantDetail;
+                    AutoUpdateMerchantProducts::dispatch(Status::ACCOUNT_SOURCE, $merchant, $MerchantDetails);
+                }
+
                 break;
+            }
         }
 
         return $response;
@@ -394,6 +405,11 @@ class Core extends Base\Core
             {
                 $requirementService = Requirements\Factory::getInstance($productName);
 
+                if ($requirementService->isNonTerminalStatusApplicable($merchantDetails) === true)
+                {
+                    $this->autoUpdateNonTerminalStatus($subMerchant, $merchantDetails);
+                }
+
                 [$requirements, $optionalRequirements] = $requirementService->getRequirements($subMerchant, $merchantDetails, $merchantProduct);
 
                 if (count($requirements) === 0)
@@ -568,5 +584,46 @@ class Core extends Base\Core
         {
             return  $this->otpCore->fetchOtpVerificationLog($merchant);
         }
+    }
+
+    private function preparePayload(Detail\Entity $merchantDetails)
+    {
+        $input = $merchantDetails->toArrayPublic();
+
+        $requiredFields = (new Detail\ValidationFields())->getRequiredFieldsForInstantActV2Apis($merchantDetails->getBusinessType());
+
+        $input = array_only($input, $requiredFields);
+
+        return $input;
+    }
+
+    public function autoUpdateNonTerminalStatus(Merchant\Entity $merchant, Detail\Entity $merchantDetails)
+    {
+        $merchantDetails->setActivationFormMilestone(Detail\Constants::L1_SUBMISSION);
+
+        $input = $this->preparePayload($merchantDetails);
+
+        $merchantDetailsCore = new Detail\Core();
+
+        $this->trace->info(TraceCode::MERCHANT_STATUS_AUTO_UPDATE_ATTEMPTED,[
+            'merchant_id'                 => $merchant->getId(),
+            'attempted_activation_status' => Merchant\Constants::INSTANT_ACTIVATION,
+        ]);
+
+        $response = $merchantDetailsCore->saveInstantActivationDetails($input, $merchant);
+
+        $this->trace->info(TraceCode::UPDATED_SUBMERCHANT_ACTIVATION_STATUS,[
+            'merchant_id'               => $merchant->getId(),
+            'current_activation_status' => $response[Detail\Entity::ACTIVATION_STATUS],
+        ]);
+
+        if($response[Detail\Entity::ACTIVATION_STATUS] === Merchant\Constants::INSTANT_ACTIVATION)
+        {
+            $this->trace->count(Metric::PRODUCT_CONFIG_AUTO_UPDATE_MERCHANT_STATUS, [
+                'updated_activation_status' => Merchant\Constants::INSTANT_ACTIVATION
+            ]);
+        }
+
+        return true;
     }
 }

@@ -241,6 +241,15 @@ class ValidationFields
         Entity::BUSINESS_OPERATION_ADDRESS
     ];
 
+    const L1_FIELDS_IA_V2_APIS = [
+        Entity::CONTACT_MOBILE,
+        Entity::BUSINESS_CATEGORY,
+        Entity::BUSINESS_DBA,
+        Entity::BUSINESS_MODEL,
+        Entity::PROMOTER_PAN,
+        Entity::PROMOTER_PAN_NAME
+    ];
+
 
     protected static $BUSINESS_TYPE_FIELDS = [
         //registered business type
@@ -410,6 +419,22 @@ class ValidationFields
                 return [Entity::PROMOTER_PAN, Entity::PROMOTER_PAN_NAME, Entity::BANK_ACCOUNT_NAME, Entity::BANK_ACCOUNT_NUMBER, Entity::BANK_BRANCH_IFSC];
             default:
                 return [Entity::COMPANY_PAN, Entity::BUSINESS_NAME, Entity::BANK_ACCOUNT_NAME, Entity::BANK_ACCOUNT_NUMBER, Entity::BANK_BRANCH_IFSC];
+        }
+    }
+
+    public static function getRequiredFieldsForInstantActV2Apis(string $businessType) : array
+    {
+        switch ($businessType)
+        {
+            case BusinessType::NOT_YET_REGISTERED:
+            case BusinessType::INDIVIDUAL:
+                return self::L1_FIELDS_IA_V2_APIS;
+
+            case BusinessType::PROPRIETORSHIP:
+                return array_merge(self::L1_FIELDS_IA_V2_APIS, [Entity::BUSINESS_NAME]);
+
+            default:
+                return array_merge(self::L1_FIELDS_IA_V2_APIS, [Entity::BUSINESS_NAME, Entity::COMPANY_PAN]);
         }
     }
 }

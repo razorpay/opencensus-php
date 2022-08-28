@@ -357,6 +357,9 @@ class Core extends Merchant\Core
                 'sub-merchant_id'   => $submerchant->getId(),
                 'tag_name'          => Constants::INSTANT_ACTIVATION_SUBM
             ]);
+            $dimension = $this->getDimensionsForAccountV2Metrics($submerchant->merchantDetail, $this->merchant);
+
+            $this->trace->count(Metric::ACCOUNT_V2_MERCHANT_SIGNUP_INSTANT_ACTIVATION, $dimension);
         }
     }
 

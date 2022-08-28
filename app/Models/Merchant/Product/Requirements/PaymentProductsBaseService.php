@@ -993,4 +993,65 @@ class PaymentProductsBaseService extends Base\Service
             }
         }
     }
+
+    public function validateRequiredFieldsNonEmpty(Detail\Entity $merchantDetails): bool
+    {
+        $requiredFields = (new Detail\ValidationFields())->getRequiredFieldsForInstantActV2Apis($merchantDetails->getBusinessType());
+
+        $this->trace->info(TraceCode::INSTANT_ACTIVATION_FIELDS_REQUIREMENTS,[
+            'business_type'     => $merchantDetails->getId(),
+            'required_fields'   => $requiredFields,
+        ]);
+
+        $missingFields = [];
+
+        foreach ($requiredFields as $field)
+        {
+            if (empty($merchantDetails->getAttribute($field)) === true)
+            {
+                array_push($missingFields, $field);
+            }
+        }
+
+        if (count($missingFields) > 0)
+        {
+            $this->trace->info(TraceCode::MISSING_FIELDS_FOR_INSTANT_ACTIVATION, [
+                'merchant_id'       => $merchantDetails->getMerchantId(),
+                'missing_fields'    => $missingFields,
+            ]);
+            return false;
+        }
+
+        return true;
+    }
+
+    public function isNonTerminalStatusApplicable(Detail\Entity $merchantDetails)
+    {
+        $instantActivationTag = (new AccountV2\Core())->isInstantActivationTagEnabled($merchantDetails->getId());
+
+        if($instantActivationTag === false)
+        {
+            $this->trace->info(TraceCode::MERCHANT_NOT_WHITELISTED_FOR_INSTANT_ACTIVATION,[
+                'merchant_id'       => $merchantDetails->getId(),
+            ]);
+            return false;
+        }
+
+        if ($merchantDetails->getActivationStatus() === Detail\Status::INSTANTLY_ACTIVATED)
+        {
+            $this->trace->info(TraceCode::MERCHANT_ALREADY_INSTANTLY_ACTIVATED,[
+                'merchant_id'       => $merchantDetails->getId(),
+                'activation_status' => $merchantDetails->getActivationStatus()
+            ]);
+
+            return false;
+        }
+
+        if ($this->validateRequiredFieldsNonEmpty($merchantDetails) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
