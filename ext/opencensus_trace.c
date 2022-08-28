@@ -187,11 +187,9 @@ PHP_FUNCTION(opencensus_trace_remove_span)
     // deleting th span assosciated with the given span_id
     // When inserting the sapn, we also pass the destructor function for span span_dtor, which gets called on zend_hash_del
     if (zend_hash_del(OPENCENSUS_G(spans), k) != SUCCESS) {
-        RETURN_FALSE
-
+        RETURN_FALSE;
     }
     RETURN_TRUE;
-
 }
 
 /**
