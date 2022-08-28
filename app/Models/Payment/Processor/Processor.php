@@ -6669,6 +6669,7 @@ class Processor
                     'method'  => 'POST',
                     'content' => $input,
                 ],
+                'payment_id' => $payment->getPublicId(),
                 'image'      => $payment->merchant->getFullLogoUrlWithSize(Merchant\Logo::MEDIUM_SIZE),
                 'theme'      => $payment->merchant->getBrandColorElseDefault(),
                 'merchant'   => $merchant->getDbaName(),
