@@ -101,10 +101,23 @@ class MtuTransactedAction extends BaseAction
 
         if ((new WebsiteService())->isWebsiteSectionsApplicable($merchant) === true)
         {
+            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                'merchant'         => $merchant->getId(),
+                'type'             => 'website_Adherence_applicable',
+                'args'             => $this->args,
+            ]);
+
             $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
             if (empty(optional($websiteDetail)->getStatus()) === true)
             {
+
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'merchant'         => $merchant->getId(),
+                    'type'             => 'website_Adherence_coomunication',
+                    'args'             => $this->args,
+                ]);
+
                 $args = [
                     EscalationConstants::MERCHANT => $merchant,
                     "params"                      => [

@@ -10,7 +10,7 @@ use RZP\Models\Merchant\Cron\Constants;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Cron\Dto\ActionDto;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
-use RZP\Models\Merchant\Escalations\Core as EscalationCore;
+use RZP\Models\Merchant\Website\Constants as WebsiteConstants;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
 class WebsiteComplianceGracePeriodReminderAction extends BaseAction
@@ -42,9 +42,9 @@ class WebsiteComplianceGracePeriodReminderAction extends BaseAction
 
                 $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
-                $files = [];
-
-                foreach (explode(',', \RZP\Models\Merchant\Website\Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+                $files    = [];
+                $sections = [];
+                foreach (explode(',', WebsiteConstants::VALID_MERCHANT_SECTIONS) as $sectionName)
                 {
 
                     $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
@@ -82,6 +82,8 @@ class WebsiteComplianceGracePeriodReminderAction extends BaseAction
                     array_push($files, $htmlFile);
 
                     array_push($files, $textFile);
+
+                    $sections[$sectionName] = true;
                 }
 
                 $filesToDelete = array_merge($filesToDelete, $files);
@@ -89,6 +91,7 @@ class WebsiteComplianceGracePeriodReminderAction extends BaseAction
                 $emailArgs = [
                     'merchant' => $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId()),
                     'params'   => [
+                        'sections' => $sections
                     ]
                 ];
 

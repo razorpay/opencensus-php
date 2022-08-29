@@ -119,8 +119,8 @@ class Events
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
         self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.first_payment_offer',
 
-        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded',
-        self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published',
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded_2',
+        self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published_2',
         self::WEBSITE_ADHERENCE_HARD_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_hard_nudge',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_soft_nudge',
 

@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Utility;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Notifications\Onboarding\Events;
@@ -260,6 +261,8 @@ class Service extends Base\Service
         {
             $result = true;
 
+            $businessDetail = optional($merchant->merchantDetail->businessDetail);
+
             //run experiment from every flow except for admin dashboard
             if ($admin === false)
             {
@@ -294,8 +297,6 @@ class Service extends Base\Service
 
                     }
                 }
-
-                $businessDetail = optional($merchant->merchantDetail->businessDetail);
 
                 $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["banking"            => $merchant->isBusinessBankingEnabled(),
                                                                        "business_Website"   => $merchant->merchantDetail->getAttribute(DEntity::BUSINESS_WEBSITE),
@@ -528,13 +529,10 @@ class Service extends Base\Service
 
             $merchantEmail = (new EmailService())->proxyGetSupportDetails($merchant);
 
-            if (isset($merchantEmail['phone']) === true)
-            {
-                $response[Entity::ADDITIONAL_DATA] = [
-                    Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? '',
-                    Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? ''
-                ];
-            }
+            $response[Entity::ADDITIONAL_DATA] = [
+                Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? '',
+                Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? ''
+            ];
 
         }
         catch (\Exception $e)
@@ -1007,6 +1005,10 @@ class Service extends Base\Service
                 //       }
                 if (in_array($sectionName, explode(',', Constants::VALID_MERCHANT_SECTIONS)) === false)
                 {
+                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                        "error"       => "invalid section ".$sectionName
+                    ]);
+
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                 }
 
@@ -1065,8 +1067,14 @@ class Service extends Base\Service
                                 // verify if the input website link is already provided by merchant in business_Website
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if ($websiteLink !== $merchantDetail->getWebsite())
+                                    if (trim($websiteLink, '/') !== trim($merchantDetail->getWebsite(), '/'))
                                     {
+                                        $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                                            "error"       => "invalid website",
+                                            "websiteLink" => $websiteLink,
+                                            "data"        => $merchantDetail->getWebsite()
+                                        ]);
+
                                         throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                                     }
                                 }
@@ -1078,8 +1086,14 @@ class Service extends Base\Service
 
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if ($websiteLink !== $businessDetails->getPlaystoreUrl())
+                                    if (trim($websiteLink, '/') !== trim($businessDetails->getPlaystoreUrl(), '/'))
                                     {
+                                        $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                                            "error"       => "invalid playstore",
+                                            "websiteLink" => $websiteLink,
+                                            "data"        => $businessDetails->getPlaystoreUrl()
+                                        ]);
+
                                         throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                                     }
 
@@ -1092,8 +1106,14 @@ class Service extends Base\Service
 
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if ($websiteLink !== $businessDetails->getAppstoreUrl())
+                                    if (trim($websiteLink, '/') !== trim($businessDetails->getAppstoreUrl(), '/'))
                                     {
+                                        $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                                            "error"       => "invalid appstore",
+                                            "websiteLink" => $websiteLink,
+                                            "data"        => $businessDetails->getAppstoreUrl()
+                                        ]);
+
                                         throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                                     }
 
@@ -1102,6 +1122,11 @@ class Service extends Base\Service
                                 break;
 
                             default:
+
+                                $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
+                                    "error"       => "default : invalid key",
+                                ]);
+
                                 throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
 
                         }
@@ -1273,16 +1298,23 @@ class Service extends Base\Service
 
         if ($sendCommunication === true)
         {
-            $emailArgs = [
-                'merchant' => $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId()),
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId());
+
+            $communicationArgs = [
+                'merchant' => $merchant,
                 'params'   => [
                     'section_name'  => Constants::SECTION_DISPLAY_NAME_MAPPING[$sectionName],
-                    'date'          => Carbon::createFromTimestamp($updatedAt)->addDays(Constants::PUBLISH_TIME_LIMIT)->format('Y-m-d'),
+                    'date'          => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->addDays(Constants::PUBLISH_TIME_LIMIT)->format('Y-m-d'),
                     'published_url' => $published_url
                 ]
             ];
 
-            (new OnboardingNotificationHandler($emailArgs, null))->sendForEvent(Events::WEBSITE_SECTION_PUBLISHED);
+            if (empty($merchant->getEmail()) === false)
+            {
+                $communicationArgs['params']['email_content'] = " We've also sent you an email with these details.";
+            }
+
+            (new OnboardingNotificationHandler($communicationArgs, null))->sendForEvent(Events::WEBSITE_SECTION_PUBLISHED);
         }
 
         return $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchantDetails);
@@ -1310,6 +1342,14 @@ class Service extends Base\Service
         $merchantDetails = $merchant->merchantDetail;
 
         $sendCommunication = false;
+
+        if ($this->app['basicauth']->isProxyAuth() === false)
+        {
+            if (optional($websiteDetail)->getSectionStatus($sectionName) !== 3)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
+            }
+        }
 
         if (empty($input[Constants::MERCHANT_CONSENT]) === false and $input[Constants::MERCHANT_CONSENT] === true)
         {
@@ -1341,7 +1381,7 @@ class Service extends Base\Service
                             [
                                 "data" => [
                                     'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
-                                    'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
+                                    'updated_at'                 => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->isoFormat('MMM Do YYYY'),
                                     'sectionName'                => $sectionName,
                                     'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
                                     'public'                     => false,
@@ -1362,27 +1402,43 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile"    => $htmlFile,
                                                                "textFile"    => $textFile,
-                                                               "zipFile"     => $zipFile,
-                                                               "htmlContent" => $htmlContent
+                                                               "zipFile"     => $zipFile
         ]);
 
         file_put_contents($htmlFile, $htmlContent);
 
+        if (File::exists($textFile))
+        {
+            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile"    => $htmlFile
+            ]);
+        }
+
         file_put_contents($textFile, Utility::htmlToText($htmlContent));
+
+        if (File::exists($textFile))
+        {
+            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["textFile"    => $textFile,
+            ]);
+        }
 
         if ($sendCommunication === true)
         {
             $files = [$htmlFile, $textFile];
 
-            $emailArgs = [
+            $communicationArgs = [
                 'merchant' => $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId()),
                 'params'   => [
                     'section_name' => Constants::SECTION_DISPLAY_NAME_MAPPING[$sectionName],
-                    'date'         => Carbon::createFromTimestamp($updatedAt)->addDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
+                    'date'         => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->addDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
                 ]
             ];
 
-            (new OnboardingNotificationHandler($emailArgs, $files))->sendForEvent(Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION);
+            if (empty($merchant->getEmail()) === false)
+            {
+                $communicationArgs['params']['email_content'] = " We've also sent you an email with these details.";
+            }
+
+            (new OnboardingNotificationHandler($communicationArgs, $files))->sendForEvent(Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION);
         }
 
         //if its public auth then download file otherwise just mark the section as complete
@@ -1955,7 +2011,7 @@ class Service extends Base\Service
                                [
                                    "data" => [
                                        'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($this->merchant),
-                                       'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
+                                       'updated_at'                 => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->isoFormat('MMM Do YYYY'),
                                        'sectionName'                => $sectionName,
                                        'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
                                        'merchant'                   => $this->merchant->toArray(),
@@ -1995,7 +2051,7 @@ class Service extends Base\Service
                                    [
                                        "data" => [
                                            'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
-                                           'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
+                                           'updated_at'                 => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->isoFormat('MMM Do YYYY'),
                                            'sectionName'                => $sectionName,
                                            'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
                                            'merchant'                   => $merchant->toArray(),

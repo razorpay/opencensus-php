@@ -120,6 +120,12 @@ class WebsiteComplianceGracePeriodReminderDataCollector extends TimeBoundDbDataC
                 continue;
             }
 
+            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                'merchant' => $merchant->getId(),
+                'type'     => 'website_Adherence_applicable',
+                'args'     => $this->args
+            ]);
+
             $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
             if (empty(optional($websiteDetail)->getStatus()) === true)
@@ -133,6 +139,15 @@ class WebsiteComplianceGracePeriodReminderDataCollector extends TimeBoundDbDataC
                 $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
 
                 $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
+
+                $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                    'merchant'         => $merchant->getId(),
+                    'type'             => 'website_Adherence_published',
+                    'args'             => $this->args,
+                    'sectionStatus'    => $sectionStatus,
+                    'sectionName'      => $sectionName,
+                    'publishedWebsite' => $publishedWebsite
+                ]);
 
                 if (($sectionStatus === 3 and empty($publishedWebsite) === false) or
                     $sectionStatus === 2)
