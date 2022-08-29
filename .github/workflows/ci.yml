@@ -79,6 +79,12 @@ jobs:
             echo "Skipping units tests with extension"
           fi
 
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: build/clover.xml
+          verbose: true
+
   integration:
     runs-on: ubuntu-latest
     env:
