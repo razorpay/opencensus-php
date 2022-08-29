@@ -165,66 +165,70 @@ class Service extends Base\Service
         $this->app['rzp.mode'] = Mode::LIVE;
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
 
-        $formInput = $request->getInputFields();
-
-        $ampEmail = $this->repo->amp_email->findByPublicId($request->getToken());
-
-        $merchant = $this->repo->merchant->findByPublicId($ampEmail->getEntityId());
-
-        $this->app['basicauth']->setMerchant($merchant);
-        
-        $success = true;
-
-        try
+        if ($this->validateL1FormToken($request) === true)
         {
 
-            $this->repo->transactionOnLiveAndTest(function() use ($ampEmail, $formInput) {
+            $formInput = $request->getInputFields();
 
-                (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($formInput);
+            $ampEmail = $this->repo->amp_email->findByPublicId($request->getToken());
 
-                $input = [
-                    Entity::STATUS => Constants::CLOSE
-                ];
+            $merchant = $this->repo->merchant->findByPublicId($ampEmail->getEntityId());
 
-                $this->core->edit($ampEmail, $input);
+            $this->app['basicauth']->setMerchant($merchant);
 
-            });
+            $success = true;
 
-        }
-        catch (\Exception $e)
-        {
-            $success = false;
-
-            $this->trace->traceException($e,
-                                         Trace::ERROR,
-                                         TraceCode::MAILMODO_SUBMISSION_VALIDATION_FAILED,
-                                         [
-                                             'request' => $request]);
-
-        }
-
-        $metrics = [
-            "success" => $success
-        ];
-
-        $this->trace->count(Metric::MAILMODO_L1_FORM_SUBMISSION, $metrics);
-
-        $formInput["L1Submission_status"] = $success ? Constants::SUCCESS : Constants::FAILED;
-
-        $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
-            $merchant, $formInput, SegmentEvent::AMP_EMAIL_L1_SUBMISSION);
-
-        if ($success === true)
-        {
-            $input = [MDEntity::ACTIVATION_FORM_MILESTONE => DEConstants::L1_SUBMISSION];
-
-            (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($input);
-
-        }
-        else
-        {
+            try
             {
-                throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+
+                $this->repo->transactionOnLiveAndTest(function() use ($ampEmail, $formInput) {
+
+                    (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($formInput);
+
+                    $input = [
+                        Entity::STATUS => Constants::CLOSE
+                    ];
+
+                    $this->core->edit($ampEmail, $input);
+
+                });
+
+            }
+            catch (\Exception $e)
+            {
+                $success = false;
+
+                $this->trace->traceException($e,
+                                             Trace::ERROR,
+                                             TraceCode::MAILMODO_SUBMISSION_VALIDATION_FAILED,
+                                             [
+                                                 'request' => $request]);
+
+            }
+
+            $metrics = [
+                "success" => $success
+            ];
+
+            $this->trace->count(Metric::MAILMODO_L1_FORM_SUBMISSION, $metrics);
+
+            $formInput["L1Submission_status"] = $success ? Constants::SUCCESS : Constants::FAILED;
+
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
+                $merchant, $formInput, SegmentEvent::AMP_EMAIL_L1_SUBMISSION);
+
+            if ($success === true)
+            {
+                $input = [MDEntity::ACTIVATION_FORM_MILESTONE => DEConstants::L1_SUBMISSION];
+
+                (new \RZP\Models\Merchant\Detail\Service())->saveMerchantDetailsForActivation($input);
+
+            }
+            else
+            {
+                {
+                    throw new GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+                }
             }
         }
     }

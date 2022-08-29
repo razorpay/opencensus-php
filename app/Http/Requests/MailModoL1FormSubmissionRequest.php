@@ -38,7 +38,7 @@ class MailModoL1FormSubmissionRequest extends FormRequest
             'cors' => 'validated'
         ]);
 
-        return (new Service())->validateL1FormToken($this);
+        return true;
     }
 
     /**
