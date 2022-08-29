@@ -545,11 +545,15 @@ class Service extends Base\Service
 
         $bankAccountDetails = $this->extractBankAccountDetails($input);
 
-        (new Merchant\Detail\Core())->saveMerchantDetails($bankAccountDetails, $linkedAccount);
+        $merchantDetailCore = new Merchant\Detail\Core();
+
+        $merchantDetailCore->saveMerchantDetails($bankAccountDetails, $linkedAccount);
 
         $this->repo->reload($linkedAccount);
 
-        $accountStatus = ($linkedAccount->isActivated() === true) ? 'Activated' : 'Not Activated';
+        $accountStatus = $merchantDetailCore->getCombinedActivationStatusForLinkedAccounts($linkedAccount->merchantDetail);
+
+        $accountStatus = Merchant\Account\Constants::LA_ACTIVATION_STATUS_MAPPING[$accountStatus] ?? Merchant\Account\Constants::NOT_ACTIVATED;
 
         $input[BatchHeader::ACCOUNT_ID]         = Merchant\Account\Entity::getSignedId($linkedAccountId);
         $input[BatchHeader::ACCOUNT_STATUS]     = $accountStatus;

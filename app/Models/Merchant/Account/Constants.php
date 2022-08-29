@@ -157,6 +157,14 @@ class Constants
     const VERIFICATION_PENDING  = "verification_pending";
     const VERIFICATION_FAILED   = "verification_failed";
 
+    const NOT_ACTIVATED         = 'Not Activated';
+
+    const LA_ACTIVATION_STATUS_MAPPING = [
+        self::ACTIVATED => 'Activated',
+        self::VERIFICATION_PENDING => 'Verification Pending',
+        self::VERIFICATION_FAILED => 'Verification Failed'
+    ];
+
     public static $validAddressTypes = [
         self::REGISTERED,
         self::OPERATION,
