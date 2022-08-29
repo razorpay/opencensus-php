@@ -169,7 +169,8 @@ class SpanContext
             $this->spanId(),
             $this->enabled(),
             $this->fromHeader(),
-            array_merge($this->baggageItems,[$key=>$value]));
+            array_merge($this->baggageItems, [$key=>$value])
+        );
     }
 
     /**
