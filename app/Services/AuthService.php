@@ -2,11 +2,14 @@
 
 namespace RZP\Services;
 
-use RZP\Http\Request\Requests;
+use Request;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\OAuthCache;
+use RZP\Http\RequestHeader;
+use RZP\Http\Request\Requests;
 
 use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
@@ -217,6 +220,21 @@ class AuthService
         return $this->sendRequest('tokens/' . $id, Requests::PUT, $input);
     }
 
+    public function revokeTokenForMerchantUser(array $input) : array
+    {
+        return $this->sendRequest('revokeTokensForMobileApp', Requests::POST, $input);
+    }
+
+    public function revokeAccessToken(array $input) : array
+    {
+        return $this->sendRequest('revoke', Requests::POST, $input);
+    }
+
+    public function refreshAccessToken(array $input) : array
+    {
+        return $this->sendRequest('token', Requests::POST, $input);
+    }
+
     public function createPartnerToken(string $appId, string $partnerMerchantId, string $subMerchantId) : array
     {
         $input = [
@@ -321,6 +339,7 @@ class AuthService
         }
 
         $headers['Accept'] = 'application/json';
+        $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,

@@ -20,6 +20,7 @@ use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
+use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 
 /**
  * Class Validator
@@ -400,6 +401,12 @@ class Validator extends Base\Validator
         Constants::RECEIVER        => 'required|max:15|contact_syntax',
     ];
 
+    protected static $newAccessTokenRules = [
+        OAuthApplicationConstants::MERCHANT_ID     => 'required|alpha_num|size:14',
+        OAuthApplicationConstants::REFRESH_TOKEN   => 'required',
+        OAuthApplicationConstants::CLIENT_ID       => 'required',
+    ];
+
     protected static $resendOtpRules = [
         Entity::TOKEN           => 'sometimes|unsigned_id',
     ];
@@ -415,6 +422,12 @@ class Validator extends Base\Validator
     protected static $getUserRolesRules = [
         'user_id'     => 'required|alpha_num|size:14',
         'merchant_id' => 'required|alpha_num|size:14',
+    ];
+
+    protected static $switchMerchantRules = [
+        OAuthApplicationConstants::MERCHANT_ID  => 'required|alpha_num|size:14',
+        OAuthApplicationConstants::ACCESS_TOKEN => 'required',
+        OAuthApplicationConstants::CLIENT_ID    => 'required',
     ];
 
     protected static $teamManagementValidators = [

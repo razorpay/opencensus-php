@@ -106,4 +106,6 @@ class RequestHeader
     const X_AMAZON_TLS_VERSION           = 'x-amzn-tls-version';
 
     const X_RAZORPAY_REQUEST_ID          = 'X-Razorpay-Request-Id';
+
+    const X_MOBILE_OAUTH                 = 'x-mobile-oauth';
 }

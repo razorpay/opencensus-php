@@ -33,47 +33,33 @@ class Service extends Base\Service
     }
 
     /**
-     * This method has some code duplicated from OAuthTokenCreate controller
-     * @throws Exception\ServerErrorException
+     * @description This method has some code duplicated from OAuthTokenCreate controller
+     * @param Merchant\Entity $merchant
+     * @param array $metaData
+     * @return array|mixed|null
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\ServerErrorException
      */
-    public function createOrGetApplication(Merchant\Entity $merchant, string $oAuthAppType)
+    public function createOrGetApplication(Merchant\Entity $merchant, array $metaData)
     {
+        $oAuthAppType    = $metaData[Constants::TYPE];
+
+        $oAuthAppName    = $metaData[Constants::NAME];
+
+        $oAuthAppWebsite = $metaData[Constants::WEBSITE];
+
         // Returns empty if type is empty
         // TODO: Instead of hitting AuthDB directly, we should fetch from ID MerchantApplication and then AuthService
-        $oAuthApps = $this->authservice->getMultipleApplications(array('type' => $oAuthAppType), $merchant->getId());
-
-        // auth-service may send 400 response with 200 status
-        if (!array_key_exists('items',$oAuthApps))
-        {
-            throw new Exception\ServerErrorException(
-                'Error completing the request',
-                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE,
-                [
-                    'message' => 'Get Apple Watch OAuth app failed',
-                ]
-            );
-        }
-
-        $validApp = null;
-
-        foreach ($oAuthApps['items'] as $oAuthApp)
-        {
-            if ($oAuthApp['type'] === $oAuthAppType)
-            {
-                $validApp = $oAuthApp;
-                break;
-            }
-        }
+        $validApp = $this->getApplication($merchant, $oAuthAppType);
 
         // Create App if it does not exist
         if (empty($validApp))
         {
-
             $input = [
-                'name'    => Constants::APPLE_WATCH_APP['NAME'],
-                'website' => Constants::APPLE_WATCH_APP['WEBSITE'],
-                'type'    => $oAuthAppType
+                Constants::NAME    => $oAuthAppName,
+                Constants::WEBSITE => $oAuthAppWebsite,
+                Constants::TYPE    => $oAuthAppType,
             ];
 
             $data = $this->authservice->createApplication($input, $merchant->getId());
@@ -96,4 +82,42 @@ class Service extends Base\Service
 
         return $validApp;
     }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string $oAuthAppType
+     * @return mixed|null
+     * @throws Exception\ServerErrorException
+     */
+    public function getApplication(Merchant\Entity $merchant, string $oAuthAppType)
+    {
+        // Returns empty if type is empty
+        $oAuthApps = $this->authservice->getMultipleApplications(['type' => $oAuthAppType], $merchant->getId());
+
+        // auth-service may send 400 response with 200 status
+        if (!array_key_exists(Constants::ITEMS,$oAuthApps))
+        {
+            throw new Exception\ServerErrorException(
+                'Error completing the request',
+                ErrorCode::SERVER_ERROR_AUTH_SERVICE_FAILURE,
+                [
+                    'message' => 'Get OAuth app failed',
+                ]
+            );
+        }
+
+        $validApp = null;
+
+        foreach ($oAuthApps[Constants::ITEMS] as $oAuthApp)
+        {
+            if ($oAuthApp[Constants::TYPE] === $oAuthAppType)
+            {
+                $validApp = $oAuthApp;
+                break;
+            }
+        }
+
+        return $validApp;
+    }
+
 }

@@ -18,6 +18,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use RZP\Models\OAuthToken;
 use RZP\Models\Invitation;
 use Razorpay\Trace\Logger;
 use RZP\Models\Admin\Admin;
@@ -32,11 +33,14 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\BusinessDetail as MBD;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
+
 use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
@@ -976,6 +980,8 @@ class Service extends Base\Service
 
         $this->core->setNewPassword($user, $input);
 
+        $this->revokeTokenOnPasswordChange($user);
+
         return $user->toArrayPublic();
     }
 
@@ -1095,6 +1101,8 @@ class Service extends Base\Service
         {
             $response = $this->core->login($input);
 
+            $response = $this->addOauthTokenIfApplicable($response, $response[Entity::ID]);
+
             return $this->setOtpAuthTokenForBankingRequest($response, $response[Entity::ID]);
         }
         catch (\Throwable $ex)
@@ -1102,6 +1110,146 @@ class Service extends Base\Service
             $this->core->trackOnboardingEvent($input[Entity::EMAIL] ?? '', EventCode::MERCHANT_ONBOARDING_LOGIN_FAILURE, $ex);
 
             throw $ex;
+        }
+    }
+
+    /**
+     * Checks if x-mobile-oauth header is present
+     * @return bool
+     */
+    public function isMobileOAuthRequest(): bool
+    {
+        return $this->app['request']->header(RequestHeader::X_MOBILE_OAUTH) === 'true';
+    }
+
+    /**
+     * Creates oauth app and token for given user
+     * @param array $responseData
+     * @param string $userId
+     * @param string|null $merchantId
+     * @param Entity|null $userEntity
+     * @param int $maxRetryCount
+     * @return array
+     * @throws \Throwable
+     */
+    public function addOauthTokenIfApplicable(array $responseData, string $userId, string $merchantId = null, Entity $userEntity = null, int $maxRetryCount = 1): array
+    {
+        if ($this->isMobileOAuthRequest() === false)
+        {
+            return $responseData;
+        }
+
+        if ($merchantId !== null)
+        {
+            $merchant = $this->repo->merchant->findByPublicId($merchantId);
+        }
+        else
+        {
+            $merchant = $this->core->selectCurrentMerchant($userId, $userEntity);
+        }
+
+        if (empty($merchant) === false)
+        {
+            try
+            {
+                $oAuthTokenService = new OAuthToken\Service();
+
+                $input = [
+                    OAuthApplicationConstants::OAUTH_TOKEN_SCOPE      => OAuthApplicationConstants::RX_MOBILE_TOKEN_SCOPE,
+                    OAuthApplicationConstants::OAUTH_TOKEN_GRANT_TYPE => OAuthApplicationConstants::RX_MOBILE_TOKEN_GRANT_TYPE,
+                    OAuthApplicationConstants::OAUTH_TOKEN_MODE       => OAuthApplicationConstants::RX_MOBILE_TOKEN_MODE,
+                    OAuthApplicationConstants::OAUTH_APP_TYPE         => OAuthApplicationConstants::RX_MOBILE_APP_TYPE,
+                    OAuthApplicationConstants::OAUTH_APP_NAME         => OAuthApplicationConstants::RX_MOBILE_APP_NAME,
+                    OAuthApplicationConstants::OAUTH_APP_WEBSITE      => OAuthApplicationConstants::RX_MOBILE_APP_WEBSITE,
+                ];
+
+                $this->trace->info(TraceCode::MOBILE_OAUTH_REQUEST, $input);
+
+                $responseToken = $oAuthTokenService->createOauthAppAndTokenForMobileApp($userId,
+                    $merchant,
+                    $input,
+                    $maxRetryCount
+                );
+
+                $responseTokenArray = [
+                    OAuthApplicationConstants::X_MOBILE_ACCESS_TOKEN => $responseToken[OAuthApplicationConstants::ACCESS_TOKEN],
+                    OAuthApplicationConstants::X_MOBILE_REFRESH_TOKEN => $responseToken[OAuthApplicationConstants::REFRESH_TOKEN],
+                    OAuthApplicationConstants::X_MOBILE_CLIENT_ID => $responseToken[OAuthApplicationConstants::CLIENT_ID],
+                    OAuthApplicationConstants::CURRENT_MERCHANT_ID => $merchant->getId(),
+                ];
+
+                return array_merge($responseData, $responseTokenArray);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, Logger::ERROR, TraceCode::MOBILE_OAUTH_TOKEN_GENERATION_ERROR);
+            }
+        }
+
+        return $responseData;
+    }
+
+    /**
+     * @param array $responseData
+     * @param MerchantEntity $merchant
+     * @param string $clientId
+     * @param string $accessToken
+     * @return array
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     * @throws \Throwable
+     */
+    public function revokeAccessTokenForExistingMerchant(array $responseData, MerchantEntity $merchant, string $clientId, string $accessToken): array
+    {
+        $oAuthTokenService = new OAuthToken\Service();
+
+        return $oAuthTokenService->revokeAccessTokenForMerchant($responseData, $merchant, $clientId, OAuthApplicationConstants::RX_MOBILE_TOKEN_TYPE, $accessToken);
+    }
+
+    /**
+     * This function generates new access token using refresh token
+     * @param string $merchantId
+     * @param string $clientId
+     * @param string $refreshToken
+     * @param string $product
+     * @return array
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException
+     * @throws \Throwable
+     */
+    public function refreshAccessToken(string $merchantId, string $clientId, string $refreshToken, string $product = Product::BANKING): array
+    {
+        try
+        {
+            $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+            $oAuthTokenService = new OAuthToken\Service();
+
+            if ($product === Product::BANKING)
+            {
+                $responseToken = $oAuthTokenService->refreshAccessTokenForMerchant($merchant,
+                    $clientId,
+                    OAuthApplicationConstants::RX_MOBILE_TOKEN_TYPE,
+                    OAuthApplicationConstants::RX_MOBILE_REFRESH_TOKEN_GRANT_TYPE,
+                    $refreshToken);
+
+                $responseData = [
+                    OAuthApplicationConstants::X_MOBILE_ACCESS_TOKEN     => $responseToken[OAuthApplicationConstants::ACCESS_TOKEN],
+                    OAuthApplicationConstants::X_MOBILE_REFRESH_TOKEN    => $responseToken[OAuthApplicationConstants::REFRESH_TOKEN],
+                    OAuthApplicationConstants::X_MOBILE_CLIENT_ID        => $responseToken[OAuthApplicationConstants::CLIENT_ID],
+                    OAuthApplicationConstants::CURRENT_MERCHANT_ID       => $merchant->getId()
+                ];
+            }
+
+            return $responseData;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e, Logger::ERROR,
+                TraceCode::MOBILE_OAUTH_REFRESH_TOKEN_GENERATION_ERROR,
+                ['merchantId' => $merchantId]);
+
+            throw $e;
         }
     }
 
@@ -1114,9 +1262,11 @@ class Service extends Base\Service
 
     public function verifyLoginOtp(array $input): array
     {
-        $user = $this->core->verifyLoginOtp($input);
+        $response = $this->core->verifyLoginOtp($input);
 
-        return $this->setOtpAuthTokenForBankingRequest($user, $user[Entity::ID]);
+        $response = $this->addOauthTokenIfApplicable($response, $response[Entity::ID]);
+
+        return $this->setOtpAuthTokenForBankingRequest($response, $response[Entity::ID]);
     }
 
     public function loginOtp2faPassword(array $input): array
@@ -1125,8 +1275,9 @@ class Service extends Base\Service
 
         $response = $this->core->loginOtp2faPassword($user, $input);
 
-        return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
+        $response = $this->addOauthTokenIfApplicable($response, $user->getId(), null, $user);
 
+        return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
     }
 
     public function sendVerificationOtp(array $input): array
@@ -1138,9 +1289,11 @@ class Service extends Base\Service
 
     public function verifyVerificationOtp(array $input): array
     {
-        $user = $this->core->verifyVerificationOtp($input);
+        $response = $this->core->verifyVerificationOtp($input);
 
-        return $user;
+        $response = $this->addOauthTokenIfApplicable($response, $response[Entity::ID]);
+
+        return $response;
     }
 
     public function checkUserAccess(array $input)
@@ -1191,6 +1344,8 @@ class Service extends Base\Service
         $user = $this->auth->getUser();
 
         $response = $this->core->verifyUserSecondFactorAuth($user, $input);
+
+        $response = $this->addOauthTokenIfApplicable($response, $response[Entity::ID]);
 
         return $this->setOtpAuthTokenForBankingRequest($response, $user->getId());
     }
@@ -1379,7 +1534,18 @@ class Service extends Base\Service
 
         $this->validator->validateInput('teamManagement', $teamData);
 
-        return $this->updateUserMerchantMapping($userId, $input);
+        $response = $this->updateUserMerchantMapping($userId, $input);
+
+        if ($this->auth->getRequestOriginProduct() === Product::BANKING &&
+            isset($input['action']) === true &&
+            $input['action'] === 'detach')
+        {
+            $oAuthTokenService = new OAuthToken\Service();
+
+            $oAuthTokenService->revokeTokenForMerchantUserPair(app('basicauth')->getMerchant(),OAuthApplicationConstants::RX_MOBILE_TOKEN_TYPE, $userId);
+        }
+
+        return $response;
     }
 
     public function bulkUpdateUserMapping(array $input)
@@ -1852,7 +2018,43 @@ class Service extends Base\Service
             }
         }
 
+        $this->revokeTokenOnPasswordChange($user);
+
         return ['success' => true, 'user_id' => $user->getId()];
+    }
+
+    /**
+     * This is to revoke oauth token for mobile in case password is changed for the user
+     * @param Entity $user
+     * @return void
+     * @throws Exception\ServerErrorException
+     */
+    private function revokeTokenOnPasswordChange(Entity $user)
+    {
+        $bankingMerchants = $user->bankingMerchants()->get();
+
+        $oAuthTokenService = new OAuthToken\Service();
+
+        foreach ($bankingMerchants as $merchant)
+        {
+            $oAuthTokenService->revokeTokenForMerchantUserPair($merchant, OAuthApplicationConstants::RX_MOBILE_TOKEN_TYPE, $user->getId());
+        }
+    }
+
+    public function mobileOauthLogout(array $input): array
+    {
+        return $this->revokeOauthToken($input);
+    }
+
+    private function revokeOauthToken(array $input): array
+    {
+        $merchant = $this->merchant;
+
+        $oAuthTokenService = new OAuthToken\Service();
+
+        $response = $oAuthTokenService->revokeTokenOnLogout($merchant, $input);
+
+        return $response;
     }
 
     /**
@@ -2062,6 +2264,54 @@ class Service extends Base\Service
         }
 
         return $this->user->toArrayPublic();
+    }
+
+
+    public function switchMerchantWithToken(array $input): array
+    {
+        $user = $this->auth->getUser();
+
+        $beforeSwitchMidAccessToken = $input[OAuthApplicationConstants::ACCESS_TOKEN];
+
+        $clientId = $input[OAuthApplicationConstants::CLIENT_ID];
+
+        (new Validator)->validateInput('switch_merchant', $input);
+
+        $afterSwitchMid = $input[OAuthApplicationConstants::MERCHANT_ID];
+
+        $userMapping = $this->repo->merchant->getMerchantUserMapping($afterSwitchMid, $user->getId(), null, $this->auth->getRequestOriginProduct());
+
+        $response = [
+            'access'   => false,
+            'merchant' => $afterSwitchMid,
+        ];
+
+        if (empty($userMapping) === false)
+        {
+            $response['access'] = true;
+        }
+
+        if ($response['access'] === true)
+        {
+            $response = $this->revokeAccessTokenForExistingMerchant($response, $this->merchant, $clientId, $beforeSwitchMidAccessToken);
+
+            $response = $this->addOauthTokenIfApplicable($response, $user->getUserId(), $afterSwitchMid, $user, 2);
+        }
+        return $response;
+    }
+
+
+    public function mobileOauthRefreshToken(array $input): array
+    {
+        $refreshToken   = $input[OAuthApplicationConstants::REFRESH_TOKEN];
+
+        $merchantId     = $input[OAuthApplicationConstants::MERCHANT_ID];
+
+        $clientId       = $input[OAuthApplicationConstants::CLIENT_ID];
+
+        (new Validator)->validateInput('new_access_token', $input);
+
+        return  $this->refreshAccessToken($merchantId, $clientId, $refreshToken);
     }
 
     public function verifyContactForRblIfOwner(array $input)
@@ -2282,11 +2532,13 @@ class Service extends Base\Service
 
     public function oAuthLogin($input): array
     {
-        $data = $this->core->oauthLogin($input);
+        $response = $this->core->oauthLogin($input);
 
         $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::LOGIN_SUCCESS_WITH_GOOGLE);
 
-        return $data;
+        $response = $this->addOauthTokenIfApplicable($response, $response[Entity::ID]);
+
+        return $response;
     }
 
     public function getUserForMerchant(string $userId)

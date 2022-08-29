@@ -15,6 +15,7 @@ use RZP\Models\Invitation;
 use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class Entity extends Base\PublicEntity
 {
@@ -285,6 +286,14 @@ class Entity extends Base\PublicEntity
         return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
                     ->withPivot([self::ROLE, self::PRODUCT])
                     ->wherePivot(self::PRODUCT, 'banking');
+    }
+
+    public function merchantsByProductAndRole($product = ProductType::PRIMARY, $role = \RZP\Models\User\Role::OWNER)
+    {
+        return $this->belongsToMany(Merchant\Entity::class, Table::MERCHANT_USERS)
+            ->withPivot([self::ROLE, self::PRODUCT])
+            ->wherePivot(self::PRODUCT, $product)
+            ->wherePivot(self::ROLE, $role);
     }
 
     public function invitations()

@@ -7,8 +7,6 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
-use RZP\Http\RequestHeader;
-use RZP\Models\Admin\Permission\Name as Permission;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -27,6 +25,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\AuthzAdmin;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
 use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
@@ -47,7 +46,9 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Mail\User\OtpSignup as OtpSignup;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Services\Segment\Constants as SegmentConstants;
@@ -58,6 +59,7 @@ use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
+use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
@@ -1043,6 +1045,11 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * @param Entity $user
+     * @param array|null $browserDetails
+     * @return void
+     */
     private function sendLoginMailToUser(Entity $user, ?array $browserDetails)
     {
         $orgId = $this->app['basicauth']->getOrgId();
@@ -1674,6 +1681,7 @@ class Core extends Base\Core
                         'user_mobile'               => $user->getMaskedContactMobile(),
                         'email'                     => $user->getMaskedEmail(),
                         'confirmed'                 => $user->getConfirmedAttribute(),
+                        'access_token_2fa'          => $this->add2faToken($user)
                     ],
                 ]);
         }
@@ -1684,6 +1692,133 @@ class Core extends Base\Core
 
             $this->trace->count(Metric::LOGIN_ORG_ENFORCED_2FA_SUCCESS);
         }
+    }
+
+
+    /**
+     * @description Creates 2fa token for requests which contains x-mobile-oauth header
+     * @param Entity $user
+     * @return string
+     * @throws BadRequestException
+     * @throws Exception\ServerErrorException|Throwable
+     */
+    public function add2faToken(Entity $user) :? string
+    {
+        $isMobileOauthRequest = $this->app['request']->header(RequestHeader::X_MOBILE_OAUTH) === 'true';
+
+        if ($isMobileOauthRequest === true)
+        {
+            $currentMerchant = $this->selectCurrentMerchant($user->getId(), $user);
+
+            if (empty($currentMerchant) === false)
+            {
+                try
+                {
+                    $oAuthTokenService = new \RZP\Models\OAuthToken\Service();
+
+                    $input = [
+                        OAuthApplicationConstants::OAUTH_TOKEN_SCOPE        => OAuthApplicationConstants::RX_MOBILE_APP_2FA_TOKEN_SCOPE,
+                        OAuthApplicationConstants::OAUTH_TOKEN_GRANT_TYPE   => OAuthApplicationConstants::RX_MOBILE_TOKEN_GRANT_TYPE,
+                        OAuthApplicationConstants::OAUTH_TOKEN_MODE         => OAuthApplicationConstants::RX_MOBILE_TOKEN_MODE,
+                        OAuthApplicationConstants::OAUTH_APP_TYPE           => OAuthApplicationConstants::RX_MOBILE_APP_TYPE,
+                        OAuthApplicationConstants::OAUTH_APP_NAME           => OAuthApplicationConstants::RX_MOBILE_APP_NAME,
+                        OAuthApplicationConstants::OAUTH_APP_WEBSITE        => OAuthApplicationConstants::RX_MOBILE_APP_WEBSITE,
+                    ];
+
+                    $this->trace->info(TraceCode::MOBILE_OAUTH_REQUEST_FOR_2FA_TOKEN, $input);
+
+                    $responseToken = $oAuthTokenService->createOauthAppAndTokenForMobileApp($user->getId(),
+                        $currentMerchant,
+                        $input
+                        );
+
+                    return $responseToken[OAuthApplicationConstants::ACCESS_TOKEN];
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::MOBILE_OAUTH_2FA_TOKEN_GENERATION_ERROR);
+
+                    throw new Exception\ServerErrorException(
+                        "Server Error encountered while generating 2fa token",
+                        ErrorCode::SERVER_ERROR
+                    );
+                }
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND,
+                    null,
+                    [
+                        'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_FOUND
+                    ]);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @description This function returns merchant for a given user based on role and product priority
+     * @param string $userId
+     * @param Entity|null $user
+     * @return MerchantEntity|null
+     */
+    public function selectCurrentMerchant(string $userId, Entity $user=null):?MerchantEntity
+    {
+        if ($user === null)
+        {
+            /** @var Entity $user */
+            $user = $this->repo->user->findByPublicId($userId);
+        }
+
+        $currentProduct = $this->app['basicauth']->getRequestOriginProduct();
+
+        $bankingOwnerMerchant = $user->merchantsByProductAndRole(ProductType::BANKING)->first();
+
+        $primaryOwnerMerchant = $user->merchantsByProductAndRole()->first();
+
+        if ($currentProduct === Product::BANKING)
+        {
+            if (empty($bankingOwnerMerchant) === false)
+            {
+                return $bankingOwnerMerchant;
+            }
+
+            if (empty($primaryOwnerMerchant) === false)
+            {
+                return $primaryOwnerMerchant;
+            }
+
+            $bankingMerchant = $user->bankingMerchants()->first();
+
+            if (empty($bankingMerchant) === false)
+            {
+                return $bankingMerchant;
+            }
+        }
+
+        else
+        {
+            if (empty($primaryOwnerMerchant) === false)
+            {
+                return $primaryOwnerMerchant;
+            }
+
+            if (empty($bankingOwnerMerchant) === false)
+            {
+                return $bankingOwnerMerchant;
+            }
+
+            $primaryMerchant = $user->primaryMerchants()->first();
+
+            if (empty($primaryMerchant) === false)
+            {
+                return $primaryMerchant;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -2705,11 +2840,12 @@ class Core extends Base\Core
                     [
                     'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
                     'user_details'        => [
-                            'user_id'        => $user->getId(),
-                            'account_locked' => $user->isAccountLocked(),
-                            'user_mobile'    => $user->getMaskedContactMobile(),
-                            'email'          => $user->getMaskedEmail(),
-                            'confirmed'      => $user->getConfirmedAttribute(),
+                            'user_id'            => $user->getId(),
+                            'account_locked'     => $user->isAccountLocked(),
+                            'user_mobile'        => $user->getMaskedContactMobile(),
+                            'email'              => $user->getMaskedEmail(),
+                            'confirmed'          => $user->getConfirmedAttribute(),
+                            'access_token_2fa'   => $this->add2faToken($user),
                         ],
                     ]);
     }

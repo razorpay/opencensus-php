@@ -780,11 +780,11 @@ class UserTest extends TestCase
 
         $this->merchantEntityMock->shouldReceive('getEmail')->andReturn('dummy@example.com');
 
-        $this->coreMock->shouldReceive('get')->andReturn([]);
+        $this->coreMock->shouldReceive('get')->andReturn(['id' => '100002Razorpay']);
 
         $response = $this->userService->oAuthLogin($content['userData']);
 
-        $this->assertEquals([Constants::INVALIDATE_SESSIONS => false], $response);
+        $this->assertEquals([Constants::INVALIDATE_SESSIONS => false, 'id' => '100002Razorpay'], $response);
     }
 
     public function testVerifyUserThroughEmail()

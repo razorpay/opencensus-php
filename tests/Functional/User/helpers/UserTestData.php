@@ -623,6 +623,34 @@ return [
         ],
     ],
 
+    'testLoginForMobileOauth' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth' => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'x_mobile_access_token'   => 'access_token',
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testMobileLoginWithPassword' => [
         'request' => [
             'url'     => '/users/login',
@@ -641,6 +669,31 @@ return [
                     ]
                 ]
             ],
+        ],
+    ],
+
+
+    'testFailedLoginForMobileOAuth' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth' => 'true',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_NOT_AUTHENTICATED,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED,
         ],
     ],
 
@@ -1031,6 +1084,141 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testMobileLoginVerifyOtpForMobileOAuth' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '9012345678',
+                'captcha'        => 'faked'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'x_mobile_access_token'   => 'access_token',
+                'x_mobile_refresh_token'  => 'refresh_token',
+                'x_mobile_client_id'      => 'client_id',
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testOauthLogout' => [
+        'request' => [
+            'url'     => '/users/mobile_oauth/logout',
+            'method'  => 'POST',
+            'content' => [
+                'client_id' => 'client_id',
+                'token'     => 'token'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+    ],
+
+    'testOauthSwitchMerchant' => [
+        'request' => [
+            'url'     => '/users/switch_merchant_token',
+            'method'  => 'POST',
+            'content' => [
+                'client_id'    => 'client_id',
+                'access_token' => 'token',
+                'merchant_id'  => '20000000000000'
+            ],
+            'server'  => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'access'                    => true,
+                'merchant'                  => '20000000000000',
+                'x_mobile_access_token'     => 'access_token',
+                'x_mobile_refresh_token'    => 'refresh_token',
+                'x_mobile_client_id'        => 'client_id',
+                'current_merchant_id'       => '20000000000000'
+            ]
+        ],
+    ],
+
+    'testRefreshTokenForMobileOAuth' => [
+        'request' => [
+            'url'     => '/users/mobile_oauth/refresh_token',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'x_mobile_access_token'   => 'new_access_token',
+                'x_mobile_refresh_token'  => 'updated_refresh_token',
+                'x_mobile_client_id'      => 'test_client_id',
+            ],
+        ],
+    ],
+
+    'testRefreshTokenForMobileOAuthWithInvalidClientId' => [
+        'request' => [
+            'url'     => '/users/mobile_oauth/refresh_token',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Incorrect Client Id sent in request'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ]
+    ],
+
+    'testRefreshTokenForMobileOAuthWithEmptyParams' => [
+        'request' => [
+            'url'     => '/users/mobile_oauth/refresh_token',
+            'method'  => 'POST',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
     ],
 
     'testMobileVerifyOtpForXWithNewSmsTemplate' => [
@@ -1590,6 +1778,38 @@ return [
                 'contact_mobile'          => null,
                 'contact_mobile_verified' => false,
                 'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+
+    'testOauthLoginForMobileOAuth' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'content' => [
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth' => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'x_mobile_access_token'   => 'access_token',
+                'x_mobile_refresh_token'  => 'refresh_token',
+                'x_mobile_client_id'      => 'client_id',
                 'merchants'               => [
                     [
                         'activated'    => false,
@@ -2340,6 +2560,31 @@ return [
             'url'     => '/users/login',
             'method'  => 'POST',
             'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testFailedLogin2faEnforcedNoOtpForMobileOAuth' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
         ],
         'response' => [
             'content' => [
@@ -4655,6 +4900,36 @@ return [
         ],
     ],
 
+    'testOtpLoginVerifyWith2FAForMobileOauth' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '9012345678',
+                'captcha'        => 'faked'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth'   => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED,
+        ],
+    ],
+
     'testOtpLoginVerifyWith2FAWithoutPassword' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
@@ -4709,6 +4984,38 @@ return [
         ],
     ],
 
+    'test2faWithPasswordForMobileOauth' => [
+        'request' => [
+            'url'     => '/users/login/otp/2fa',
+            'method'  => 'POST',
+            'content' => [
+                'password'      => 'hello123'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth' => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ],
+                'x_mobile_access_token'  => 'access_token',
+                'x_mobile_refresh_token' => 'refresh_token',
+                'x_mobile_client_id'     => 'client_id',
+            ],
+        ],
+    ],
+
     'test2faWithOtpForXReturnsOtpAuthToken' => [
         'request' => [
             'url'     => '/users/2fa/verify',
@@ -4722,6 +5029,38 @@ return [
                 'contact_mobile'          => '9012345678',
                 'contact_mobile_verified' => true,
                 'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'test2faWithOtpForXReturnsOtpAuthTokenForMobileOAuth' => [
+        'request' => [
+            'url'     => '/users/2fa/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'      => '0007'
+            ],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth' => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => '9012345678',
+                'contact_mobile_verified' => true,
+                'confirmed'               => true,
+                'x_mobile_access_token'   => 'access_token',
+                'x_mobile_refresh_token'  => 'refresh_token',
+                'x_mobile_client_id'      => 'client_id',
                 'merchants'               => [
                     [
                         'activated'    => false,
