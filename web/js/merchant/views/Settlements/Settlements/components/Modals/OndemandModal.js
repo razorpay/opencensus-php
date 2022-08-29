@@ -1,3 +1,4 @@
+import './OndemandModal.styl';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import ModalHeader from 'common/ui/ModalHeader';
@@ -7,6 +8,7 @@ import {
 } from 'merchant_common/reducers/modals';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
+import { classList } from 'common/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
 import {
   trackOndemand,
@@ -35,6 +37,9 @@ import Nudge from './ScheduledModal/components/Nudge';
 import { setEsNudgeSeen } from './ScheduledModal/utils';
 import { NUDGE_TYPES } from './ScheduledModal/constants';
 import UpsellBanners from '../UpsellBanners';
+import SettleToLinkedAccounts from '../SettleToLinkedAccounts';
+import EnableScheduledBanner from '../SettleToLinkedAccounts/EnableScheduledBanner';
+import SettlementSuccessView from '../SettleToLinkedAccounts/SettlementSuccessView';
 
 class OndemandModal extends Component {
   constructor(props) {
@@ -63,6 +68,8 @@ class OndemandModal extends Component {
       tax: 0,
       instantFee: 0,
       prefilledAmountUpdated: false,
+      isLinkedAccountActive: false,
+      linkedAccountsSettlementBalance: 0,
     };
 
     this.updateFeeDebounced = debounce(this.updateFee, 300);
@@ -75,9 +82,9 @@ class OndemandModal extends Component {
   renderConfirmation = () => {
     const { amount } = this.state;
     return (
-      <div class="m-b">
+      <div className="m-b">
         The settlement amount is:{` `}
-        <span class="bold-amount">
+        <span className="bold-amount">
           <Amount value={amount * 100} currency="INR" parentQuerySelector=".modal-body" />
         </span>
       </div>
@@ -150,49 +157,49 @@ class OndemandModal extends Component {
       instantFee,
     } = this.state;
     return (
-      <div class="breakup">
-        <div class={isSaved ? 'dropdown-1' : 'dropdown'}>
+      <div className="breakup">
+        <div className={isSaved ? 'dropdown-1' : 'dropdown'}>
           {isSaved ? (
-            <div class="currency-big-1">
+            <div className="currency-big-1">
               <Amount value={amount * 100} currency="INR" parentQuerySelector=".breakup" />
             </div>
           ) : (
             <span>
-              <p class="percent">{instantFeePercent / 100}</p>
-              <p class="fixed">% Additional Fee </p>
+              <p className="percent">{instantFeePercent / 100}</p>
+              <p className="fixed">% Additional Fee </p>
             </span>
           )}
           <AsyncBtn.Primary
-            class={`drop-button ${isSaved ? 'success-breakup' : ''}`}
+            className={`drop-button ${isSaved ? 'success-breakup' : ''}`}
             disabled={isLoadingBreakup || !validAmount}
             pendingState=""
             onClick={this.fetchBreakup}
           >
             {breakupShow ? (
               <span>
-                Hide Breakup <i class="i i-chevron-up" />
+                Hide Breakup <i className="i i-chevron-up" />
               </span>
             ) : (
               <span>
-                Show Breakup <i class="i i-chevron-down" />
+                Show Breakup <i className="i i-chevron-down" />
               </span>
             )}
           </AsyncBtn.Primary>
         </div>
         <div
-          class={`${breakupShow ? 'dropdown-active' : 'dropdown-closed'} ${
+          className={`${breakupShow ? 'dropdown-active' : 'dropdown-closed'} ${
             !isSaved ? 'dropdown-border' : ''
           }`}
         >
-          <div class="p-b-5">
+          <div className="p-b-5">
             <p>Total Amount</p>
-            <span class="float-right currency">
+            <span className="float-right currency">
               <Amount value={amount * 100} currency="INR" parentQuerySelector=".onmdemand-modal" />
             </span>
           </div>
-          <div class="p-b-5">
+          <div className="p-b-5">
             <p>Instant Fees ({instantFeePercent / 100}%) </p>
-            <span class="float-right currency">
+            <span className="float-right currency">
               {' '}
               <p>-</p>
               <Amount value={instantFee} currency="INR" parentQuerySelector=".onmdemand-modal" />
@@ -200,16 +207,16 @@ class OndemandModal extends Component {
           </div>
           <span>
             <p>Taxes</p>
-            <span class="float-right currency">
+            <span className="float-right currency">
               {' '}
               <p>-</p>
               <Amount value={tax} currency="INR" parentQuerySelector=".onmdemand-modal" />
             </span>
           </span>
         </div>
-        <div class={breakupShow ? 'dropdown-active' : 'dropdown-closed'}>
-          <p class="amount-to-settle">Amount to be settled</p>
-          <span class="float-right currency">
+        <div className={breakupShow ? 'dropdown-active' : 'dropdown-closed'}>
+          <p className="amount-to-settle">Amount to be settled</p>
+          <span className="float-right currency">
             <Amount
               value={amount * 100 - instantFee - tax}
               currency="INR"
@@ -519,30 +526,117 @@ class OndemandModal extends Component {
   successModalHeader = () => {
     return (
       <div>
-        <i class="i i-done-all text-success modal-header-success" />
+        <i className="i i-done-all text-success modal-header-success" />
         Hurray!
       </div>
     );
   };
 
-  renderPreTransaction = () => {
+  renderPreForMainAccount = () => {
     const { isLoadingBreakup, validAmount, errors, isSaving, amount, instantFee, tax } = this.state;
     const { user, settlableAmount, fromWhere, openModal } = this.props;
+
     return (
-      <div class="onmdemand-modal">
+      <>
+        <div className="InputGroup Input Input--vTop">
+          <Input
+            label="Amount to settle now"
+            required={false}
+            addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+            autoFocus={false}
+            name="amount"
+            className="Input Input--Amount"
+            disabled={isSaving}
+            value={amount}
+            validator={this.validateAmount}
+            onChange={(e) => {
+              this.handleChange(e);
+              onDemandModalTrackEvents.trackSettleAmountUpdated(fromWhere);
+            }}
+          />
+        </div>
+        <div>
+          {isLoadingBreakup && validAmount && <div className="loader" />}
+          {!isLoadingBreakup && validAmount && (
+            <div className="grey-border">
+              <div>
+                <p className="after-deduction"> After Deduction </p>
+                <Amount
+                  parentQuerySelector=".onmdemand-modal"
+                  value={amount * 100 - instantFee - tax}
+                  currency="INR"
+                />
+              </div>
+            </div>
+          )}
+          {!validAmount && <div className="error-message">{errors[0]}</div>}
+
+          <Nudge
+            user={user}
+            openModal={openModal}
+            amount={amount}
+            settlableAmount={settlableAmount}
+          />
+
+          <AsyncBtn.Primary
+            className="submit-btn"
+            disabled={isSaving || !validAmount || isLoadingBreakup}
+            pendingState="Requesting"
+            onClick={this.openConfirmSettlement}
+          >
+            Confirm
+          </AsyncBtn.Primary>
+        </div>
+      </>
+    );
+  };
+
+  onLinkedAccountsSettlementSuccess = (amount) => {
+    this.setState({
+      isSaved: true,
+      linkedAccountsSettlementBalance: amount,
+    });
+  };
+
+  renderPreForLinkedAccounts = () => {
+    return (
+      <SettleToLinkedAccounts
+        confirm={this.context.confirm}
+        onLinkedAccountsSettlementSuccess={this.onLinkedAccountsSettlementSuccess}
+      />
+    );
+  };
+
+  renderPreTransaction = () => {
+    const { isLinkedAccountActive } = this.state;
+    const { isOndemandRouteSettlementsEnabled } = this.props.user;
+
+    const renderMainContent = () => {
+      if (isLinkedAccountActive) {
+        return this.renderPreForLinkedAccounts();
+      } else {
+        return this.renderPreForMainAccount();
+      }
+    };
+
+    const handleSettleToMainAccountClick = () => this.setState({ isLinkedAccountActive: false });
+    const handleSettleToLinkedAccountsClick = () => this.setState({ isLinkedAccountActive: true });
+
+    return (
+      <div className="onmdemand-modal">
         <ModalHeader
-          class="header"
+          className="header"
           title="Instant Settlements"
           onCloseClick={() => {
             this.handleCloseModal('Close Modal Screen 1');
             onDemandModalTrackEvents.trackSettleNowCloseClick(this.props.fromWhere);
           }}
         />
-        <div class="modal-body">
+        <div className="modal-body">
           <p>
             Settle to your bank account instantly, <strong>even on Holidays!&nbsp;</strong>
             <a
-              class="btn-link"
+              className="btn-link"
               target="_blank"
               rel="noopener noreferrer"
               href="http://razorpay.com/settlement"
@@ -550,58 +644,41 @@ class OndemandModal extends Component {
               {` `}Learn more
             </a>
           </p>
-          <div class="overflow-box">
-            <div class="InputGroup Input Input--vTop">
-              <Input
-                label="Amount to settle now"
-                required={false}
-                addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
-                autoFocus={false}
-                name="amount"
-                class="Input Input--Amount"
-                disabled={isSaving}
-                value={amount}
-                validator={this.validateAmount}
-                onChange={(e) => {
-                  this.handleChange(e);
-                  onDemandModalTrackEvents.trackSettleAmountUpdated(fromWhere);
-                }}
-              />
-            </div>
-            <div>
-              {isLoadingBreakup && validAmount && <div class="loader" />}
-              {!isLoadingBreakup && validAmount && (
-                <div class="grey-border">
-                  <div>
-                    <p class="after-deduction"> After Deduction </p>
-                    <Amount
-                      parentQuerySelector=".onmdemand-modal"
-                      value={amount * 100 - instantFee - tax}
-                      currency="INR"
-                    />
-                  </div>
-                </div>
-              )}
-              {!validAmount && <div class="error-message">{errors[0]}</div>}
 
-              <Nudge
-                user={user}
-                openModal={openModal}
-                amount={amount}
-                settlableAmount={settlableAmount}
-              />
+          <div
+            className={classList(
+              'overflow-box',
+              isOndemandRouteSettlementsEnabled && 'extended-overflow-box',
+            )}
+          >
+            {isOndemandRouteSettlementsEnabled && (
+              <div className="settlement-options">
+                <p
+                  onClick={handleSettleToMainAccountClick}
+                  className={classList(
+                    'settlement-options__item',
+                    !isLinkedAccountActive && 'active',
+                  )}
+                >
+                  Settle to your account
+                </p>
+                <p
+                  onClick={handleSettleToLinkedAccountsClick}
+                  className={classList(
+                    'settlement-options__item',
+                    isLinkedAccountActive && 'active',
+                  )}
+                >
+                  <span>Settle to linked accounts </span>
+                  <span className="new-badge">NEW</span>
+                </p>
+              </div>
+            )}
 
-              <AsyncBtn.Primary
-                class="submit-btn"
-                disabled={isSaving || !validAmount || isLoadingBreakup}
-                pendingState="Requesting"
-                onClick={this.openConfirmSettlement}
-              >
-                Confirm
-              </AsyncBtn.Primary>
-            </div>
+            {renderMainContent()}
           </div>
-          {this.breakup()}
+
+          {isLinkedAccountActive ? <EnableScheduledBanner /> : this.breakup()}
         </div>
       </div>
     );
@@ -609,34 +686,44 @@ class OndemandModal extends Component {
 
   renderPostTransaction = () => {
     const { closeModal } = this.props;
-    const { hideCloseButton } = this.state;
+    const { hideCloseButton, isLinkedAccountActive, linkedAccountsSettlementBalance } = this.state;
 
     return (
-      <div class="onmdemand-modal">
+      <div className="onmdemand-modal">
         <ModalHeader
           title={this.successModalHeader()}
           onCloseClick={() => this.handleCloseModal('Close Modal Screen 2')}
         />
-        <div class="modal-body">
-          <div class="overflow-box">
-            {this.breakup()}
-            <div class="help-block">
-              The settlement has been initiated and should soon reflect in your bank account.
-            </div>
-            {hideCloseButton ? null : (
-              <Button.Primary
-                class="close-btn"
-                onClick={() => this.handleCloseModal('Close Button')}
-              >
-                Close
-              </Button.Primary>
+        <div className="modal-body">
+          <div className="overflow-box">
+            {isLinkedAccountActive ? (
+              <SettlementSuccessView amount={linkedAccountsSettlementBalance} />
+            ) : (
+              <>
+                {this.breakup()}
+                <div className="help-block">
+                  The settlement has been initiated and should soon reflect in your bank account.
+                </div>
+                {hideCloseButton ? null : (
+                  <Button.Primary
+                    className="close-btn"
+                    onClick={() => this.handleCloseModal('Close Button')}
+                  >
+                    Close
+                  </Button.Primary>
+                )}
+              </>
             )}
           </div>
 
-          <UpsellBanners
-            closeModal={closeModal}
-            hideCloseButton={() => this.setState({ hideCloseButton: true })}
-          />
+          {isLinkedAccountActive ? (
+            <EnableScheduledBanner />
+          ) : (
+            <UpsellBanners
+              closeModal={closeModal}
+              hideCloseButton={() => this.setState({ hideCloseButton: true })}
+            />
+          )}
         </div>
       </div>
     );
@@ -646,7 +733,7 @@ class OndemandModal extends Component {
     const { goBackToInitialModalView, openModal } = this.props;
     const { closeClicked, isSaved } = this.state;
     return (
-      <div class="container-ondemand-modal">
+      <div className="container-ondemand-modal">
         {!closeClicked ? (
           isSaved ? (
             this.renderPostTransaction()

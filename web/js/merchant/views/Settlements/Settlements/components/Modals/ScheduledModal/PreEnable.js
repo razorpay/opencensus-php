@@ -439,7 +439,7 @@ function PreEnable({
       }
 
       default:
-        return null;
+        return window.location.pathname;
     }
   };
 

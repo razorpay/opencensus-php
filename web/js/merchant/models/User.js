@@ -868,6 +868,10 @@ export default class User {
     return this.isFeatureEnabled('ES_ON_DEMAND');
   }
 
+  get isOndemandRouteSettlementsEnabled() {
+    return this.isFeatureEnabled('ondemand_route');
+  }
+
   get isSupportDetails2FAEnabled() {
     return this.getExpStatus('support_details_2FA');
   }

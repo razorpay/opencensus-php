@@ -7,6 +7,7 @@ import Refund from 'merchant/models/Refund';
 import Order from 'merchant/models/Order';
 import Settlement from 'merchant/models/Settlement';
 import InstantSettlement from 'merchant/models/InstantSettlement';
+import RouteOndemandSettlements from 'merchant/models/RouteOndemandSettlements';
 import Reversal from 'merchant/models/Reversal';
 import Transfer from 'merchant/models/Transfer';
 import Dispute from 'merchant/models/Dispute';
@@ -183,6 +184,10 @@ export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
 export const fetchInstantSettlements = (params) =>
   fetchAll(params, InstantSettlement, 'INSTANT_SETTLEMENTS');
 export const instantSettlementsReducer = makeCollectionReducer('INSTANT_SETTLEMENTS');
+
+export const fetchRouteOndemandSettlements = (params) =>
+  fetchAll(params, RouteOndemandSettlements, 'ROUTE_ONDEMAND_SETTLEMENTS');
+export const routeOndemandSettlementsReducer = makeCollectionReducer('ROUTE_ONDEMAND_SETTLEMENTS');
 
 export const fetchDisputes = (params) => fetchAll(params, Dispute, 'DISPUTES');
 export const disputesReducer = makeCollectionReducer('DISPUTES');
