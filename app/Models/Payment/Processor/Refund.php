@@ -2182,30 +2182,22 @@ trait Refund
 
     public function refundAmountValid(Payment\Refund\Entity $refundEntity, Payment\Entity $payment) : bool
     {
-        $variant = $this->app->razorx->getTreatment(
-            $refundEntity->getId(),
-            Merchant\RazorxTreatment::REFUND_AMOUNT_VALIDATION_FROM_REFUND_ENTITY,
-            $this->mode);
+        $sumOfRefundAmount = $payment->refunds()
+            ->whereIn(Payment\Refund\Entity::STATUS, Payment\Refund\Status::REFUND_NON_FAILURE_STATUS)
+            ->sum("amount");
+        $amountUnrefunded = $payment->getAmount() - $sumOfRefundAmount;
 
-        if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
+        if ($amountUnrefunded < $refundEntity->getAmount())
         {
-            $sumOfRefundAmount = $payment->refunds()
-                ->whereIn(Payment\Refund\Entity::STATUS, Payment\Refund\Status::REFUND_NON_FAILURE_STATUS)
-                ->sum("amount");
-            $amountUnrefunded = $payment->getAmount() - $sumOfRefundAmount;
-
-            if ($amountUnrefunded < $refundEntity->getAmount())
-            {
-                $this->trace->info(
-                    TraceCode::REFUND_AMOUNT_NOT_VALID,
-                    [
-                        'refund_id'             => $refundEntity->getId(),
-                        'payment_id'            => $refundEntity->getPaymentId(),
-                        'refund_amount'         => $refundEntity->getAmount(),
-                        'sum_of_refund_amount'  => $sumOfRefundAmount
-                    ]);
-                return false;
-            }
+            $this->trace->info(
+                TraceCode::REFUND_AMOUNT_NOT_VALID,
+                [
+                    'refund_id'             => $refundEntity->getId(),
+                    'payment_id'            => $refundEntity->getPaymentId(),
+                    'refund_amount'         => $refundEntity->getAmount(),
+                    'sum_of_refund_amount'  => $sumOfRefundAmount
+                ]);
+            return false;
         }
 
         return true;
