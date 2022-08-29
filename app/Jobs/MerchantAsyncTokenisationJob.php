@@ -38,8 +38,15 @@ class MerchantAsyncTokenisationJob extends Job
 
     protected $batchSize;
 
-    public function __construct(string $mode, string $merchantId, string $asyncTokenisationJobId, int $batchSize = Token\Entity::GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT)
-    {
+    protected $recurring;
+
+    public function __construct(
+        string $mode,
+        string $merchantId,
+        string $asyncTokenisationJobId,
+        int $batchSize = Token\Entity::GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT,
+        bool $recurring = false
+    ) {
         parent::__construct($mode);
 
         $this->merchantId = $merchantId;
@@ -47,6 +54,8 @@ class MerchantAsyncTokenisationJob extends Job
         $this->asyncTokenisationJobId = $asyncTokenisationJobId;
 
         $this->batchSize = $batchSize;
+
+        $this->recurring = $recurring;
     }
 
     public function init(): void
@@ -98,7 +107,7 @@ class MerchantAsyncTokenisationJob extends Job
              */
             while ($tokensCount === $queryLimit)
             {
-                $tokenIds = $this->tokenCore->fetchConsentReceivedLocalTokenIdsForTokenisation($merchantId, $offset);
+                $tokenIds = $this->tokenCore->fetchConsentReceivedLocalTokenIdsForTokenisation($merchantId, $offset, 0, $this->recurring);
 
                 $this->trace->info(TraceCode::ASYNC_TOKENISATION_TOKEN_FETCH_SUCCESS, [
                     'merchantId'    => $this->merchantId,

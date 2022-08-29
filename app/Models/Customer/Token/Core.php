@@ -2391,13 +2391,14 @@ class Core extends Base\Core
         if(!$onlyRecurring)
         {
             $rawQueryBuilder = " SELECT t.id " .
-                " FROM alluxio.realtime_hudi_api.tokens t " .
-                " INNER JOIN alluxio.realtime_hudi_api.cards c " .
+                " FROM hive.realtime_hudi_api.tokens t " .
+                " INNER JOIN hive.realtime_hudi_api.cards c " .
                 " ON t.card_id = c.id " .
                 " WHERE  t.method = 'card' " .
                 " AND t.acknowledged_at IS NOT NULL " .
                 " AND c.international = 0 " .
                 " AND t.merchant_id = '%s' " .
+                " AND t.recurring = 0 " .
                 " AND c.network IN ('%s') " .
                 " AND c.vault IN ('%s') " .
                 " AND t.deleted_at IS NULL " .
@@ -2407,8 +2408,8 @@ class Core extends Base\Core
         else
         {
             $rawQueryBuilder = " SELECT t.id " .
-                " FROM alluxio.realtime_hudi_api.tokens t " .
-                " INNER JOIN alluxio.realtime_hudi_api.cards c " .
+                " FROM hive.realtime_hudi_api.tokens t " .
+                " INNER JOIN hive.realtime_hudi_api.cards c " .
                 " ON t.card_id = c.id " .
                 " WHERE t.method = 'card' " .
                 " AND t.acknowledged_at IS NOT NULL " .
@@ -2445,7 +2446,7 @@ class Core extends Base\Core
      * @return array
      * @throws \Exception
      */
-    public function fetchConsentReceivedLocalTokenIdsForTokenisation(string $merchantId, int $offset, int $retryCount = 0): array
+    public function fetchConsentReceivedLocalTokenIdsForTokenisation(string $merchantId, int $offset, int $retryCount = 0, bool $recurring = false): array
     {
         try
         {
@@ -2464,15 +2465,7 @@ class Core extends Base\Core
                 );
             }
 
-            $onlyRecurring = true;
-            $featureName = $this->repo->feature->findMerchantWithFeatures($merchantId, [Feature::ASYNC_TOKENISATION]);
-
-            if($featureName !== null and $featureName === 'async_tokenisation')
-            {
-                $onlyRecurring = false;
-            }
-
-            return $this->executeDataLakeQueryToFetchConsentReceivedTokenIds($merchantId, $onboardedNetworkNames, $offset, $onlyRecurring);
+            return $this->executeDataLakeQueryToFetchConsentReceivedTokenIds($merchantId, $onboardedNetworkNames, $offset, $recurring);
         }
         catch (\Exception $ex)
         {
@@ -2485,7 +2478,7 @@ class Core extends Base\Core
             // One retry is made before throwing exception
             if ($retryCount < 1)
             {
-                return $this->fetchConsentReceivedLocalTokenIdsForTokenisation($merchantId, $offset, $retryCount + 1);
+                return $this->fetchConsentReceivedLocalTokenIdsForTokenisation($merchantId, $offset, $retryCount + 1, $recurring);
             }
 
             throw $ex;
@@ -2612,24 +2605,12 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($token->isRecurring() === true)
+        if (($token->isRecurring() === true) and
+            ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
-            $app = \App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($token->merchant->getId(),
-                Merchant\RazorxTreatment::RECURRING_TOKENISATION,
-                $app['rzp.mode']);
-
-            if (strtolower($variant) !== 'on')
-            {
-                return false;
-            }
-
-            if($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
-            {
-                return false;
-            }
+            return false;
         }
+
         $networkCode = $card->getNetworkCode();
 
         if (in_array($networkCode, Card\Network::NETWORKS_SUPPORTING_TOKEN_PROVISIONING, true) === false) {

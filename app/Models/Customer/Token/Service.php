@@ -1079,13 +1079,20 @@ class Service extends Base\Service
         }
     }
 
-    public function localSavedCardAsyncTokenisation(): array
+    public function localSavedCardAsyncTokenisationRecurring(): array
+    {
+        return $this->localSavedCardAsyncTokenisation(true);
+    }
+
+    public function localSavedCardAsyncTokenisation($recurring = false): array
     {
         try
         {
             $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
 
-            $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([Feature\Constants::ASYNC_TOKENISATION, Feature\Constants::ASYNC_TOKENISATION_RECUR]);
+            $featureName = $recurring ? Feature\Constants::ASYNC_TOKENISATION_RECUR : Feature\Constants::ASYNC_TOKENISATION;
+
+            $merchantIds = $this->repo->feature->findMerchantIdsHavingFeatures([$featureName]);
 
             $this->app['diag']->trackTokenisationEvent(EventCode::ASYNC_TOKENISATION_JOB_INITIATED, [
                 'merchant_id_count'         => count($merchantIds),
@@ -1101,7 +1108,13 @@ class Service extends Base\Service
 
             foreach ($merchantIds as $merchantId)
             {
-                MerchantAsyncTokenisationJob::dispatch($this->mode, $merchantId, $asyncTokenisationJobId);
+                MerchantAsyncTokenisationJob::dispatch(
+                    $this->mode,
+                    $merchantId,
+                    $asyncTokenisationJobId,
+                    Token\Entity::GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT,
+                    $recurring
+                );
             }
 
             $this->trace->info(TraceCode::ASYNC_LOCAL_TOKENISATION_DISPATCH_SUCCESS, [

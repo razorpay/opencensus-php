@@ -6998,6 +6998,18 @@ trait Authorize
 
             $core = (new Token\Core());
 
+            if ($token->isRecurring() === true)
+            {
+                $variant = $this->app->razorx->getTreatment($token->merchant->getId(),
+                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
+                    $this->mode);
+
+                if (strtolower($variant) !== 'on')
+                {
+                    return;
+                }
+            }
+
             if ($core->checkIfTokenisationApplicable($token) === false)
             {
                 return;

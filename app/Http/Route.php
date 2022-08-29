@@ -3693,6 +3693,7 @@ class Route
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
+        'tokenisation_local_cards_recurring'      => ['post',        'tokenisation/local_cards/recurring',                       'TokenController@localSavedCardAsyncTokenisationRecurring' ],
         'tokenisation_local_cards_bulk'           => ['post',        'tokenisation/local_cards/bulk',                            'TokenController@localSavedCardBulkTokenisation'           ],
         'tokenisation_global_cards'               => ['post',        'tokenisation/global_cards',                                'TokenController@globalSavedCardAsyncTokenisation'         ],
         'tokenisation_global_customer_local_cards' => ['post',       'tokenisation/global/local_cards',                          'TokenController@globalCustomerLocalSavedCardAsyncTokenisation'],
@@ -4923,6 +4924,7 @@ class Route
         'reward_expire_cron',
         'trusted_badge_eligibility_cron',
         'tokenisation_local_cards',
+        'tokenisation_local_cards_recurring',
         'tokenisation_global_cards',
         'tokenisation_global_customer_local_cards',
         'gateway_downtime_for_payment',
@@ -13045,6 +13047,7 @@ class Route
             'reward_expire_cron',
             'trusted_badge_eligibility_cron',
             'tokenisation_local_cards',
+            'tokenisation_local_cards_recurring',
             'tokenisation_global_cards',
             'tokenisation_global_customer_local_cards',
             'nps_survey_process_scheduled',

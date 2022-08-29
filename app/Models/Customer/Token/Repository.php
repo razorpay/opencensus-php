@@ -874,10 +874,10 @@ class Repository extends Base\Repository
         $firstJune2022 = '2022-06-01';
 
         $rawQueryBuilder =<<<'EOT'
-            SELECT t.id, t.merchant_id, c.network FROM alluxio.realtime_hudi_api.tokens t
-            INNER JOIN alluxio.realtime_hudi_api.cards c
+            SELECT t.id, t.merchant_id, c.network FROM hive.realtime_hudi_api.tokens t
+            INNER JOIN hive.realtime_hudi_api.cards c
                 ON t.card_id = c.id
-            INNER JOIN alluxio.realtime_hudi_api.customers cust
+            INNER JOIN hive.realtime_hudi_api.customers cust
                 ON t.customer_id = cust.id
             WHERE t.method = 'card'
                 AND t.acknowledged_at IS NOT NULL

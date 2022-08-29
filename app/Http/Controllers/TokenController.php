@@ -90,6 +90,13 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function localSavedCardAsyncTokenisationRecurring()
+    {
+        $data = $this->service()->localSavedCardAsyncTokenisationRecurring();
+
+        return ApiResponse::json($data);
+    }
+
     public function localSavedCardBulkTokenisation()
     {
         $input = Request::all();
