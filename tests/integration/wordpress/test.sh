@@ -23,6 +23,7 @@ sed -i "s|dev-master|dev-${BRANCH}|" composer.json
 sed -i "s|https://github.com/razorpay/opencensus-php|${REPO}|" composer.json
 composer install -n --prefer-dist
 cp wp-config.php wordpress
+vendor/bin/wp core install
 vendor/bin/wp install  --admin_user=admin \
                             --admin_password=password \
                             --allow-root \
