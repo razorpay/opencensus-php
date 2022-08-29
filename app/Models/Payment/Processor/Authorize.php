@@ -4180,7 +4180,7 @@ trait Authorize
                     ]
                 );
             }
-                                
+
             $dccCurrencyRequestId = $input['currency_request_id'];
 
             // markup of 5 is hardcoded at org-level
@@ -8592,7 +8592,7 @@ trait Authorize
 
                         (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $recurringTokenNumber);
 
-                        return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+                        return $this->createCardForNetworkToken($card, $input, null, $cryptogram['token_number']);
                     }
                     else
                     {
