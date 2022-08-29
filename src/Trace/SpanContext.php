@@ -164,7 +164,12 @@ class SpanContext
      */
     public function withBaggageItem(string $key, string $value): SpanContext
     {
-        return new self($this->traceId(), $this->spanId(), $this->enabled(), $this->fromHeader(), array_merge($this->baggageItems, [$key => $value]));
+        return new self(
+            $this->traceId(),
+            $this->spanId(), 
+            $this->enabled(),
+            $this->fromHeader(),
+            array_merge($this->baggageItems, [$key => $value]));
     }
 
     /**
