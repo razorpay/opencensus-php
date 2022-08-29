@@ -29,7 +29,7 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
     // send analytics on banner load
     if (shouldShowBanner && user.isWebsiteComplianceFlowEnabled) {
       analyticsTrack({
-        objectName: 'Website wizard banner',
+        objectName: 'Website compliance banner',
         actionName: 'Loaded',
         screen,
         properties: {
@@ -58,7 +58,7 @@ function WebsiteComplianceBanner({ activationData, websiteSectionDetailsData, us
           <Link
             onClick={() => {
               analyticsTrack({
-                objectName: 'Website wizard banner',
+                objectName: 'Website compliance banner',
                 actionName: 'Interacted',
                 screen,
                 properties: {
