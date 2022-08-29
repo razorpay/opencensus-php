@@ -1017,12 +1017,6 @@ class Service extends Base\Service
 
     public function sendUserDetailsToSalesForceEvent(array $input) : array
     {
-        $this->trace->info(
-            TraceCode::CREATE_LEAD_ON_SALESFORCE_REQUEST,
-            [
-                'payload'        => $input,
-            ]);
-
         try
         {
             $response = $this->app->salesforce->sendUserDetailsToSalesforce($input);
@@ -1042,12 +1036,6 @@ class Service extends Base\Service
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SALESFORCE_RETURNED_NON_2XX_RESPONSE);
         }
-
-        $this->trace->info(
-            TraceCode::CREATED_LEAD_ON_SALESFORCE,
-            [
-                'response'       => $response
-            ]);
 
         return ['id' => $response['id']];
     }

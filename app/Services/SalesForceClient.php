@@ -709,7 +709,7 @@ class SalesForceClient
     {
         try
         {
-            $this->trace->info(TraceCode::SALESFORCE_INTEGRATION_API_REQUEST, $this->getTraceableRequest($request));
+            $this->trace->info(TraceCode::SALESFORCE_INTEGRATION_API_REQUEST, $this->getTraceableRequestWithoutPayload($request));
 
             $response = $this->getResponse($request);
 
@@ -721,7 +721,7 @@ class SalesForceClient
                 $ex,
                 Trace::ERROR,
                 TraceCode::SALESFORCE_INTEGRATION_ERROR,
-                $this->getTraceableRequest($request));
+                $this->getTraceableRequestWithoutPayload($request));
 
             throw new Exception\IntegrationException('Fail to fetch Salesforce Data');
         }
@@ -756,6 +756,13 @@ class SalesForceClient
         $request = $this->removeQueryParamsFromUrl($request);
 
         return array_only($request, ['url', 'method', 'content']);
+    }
+
+    public function getTraceableRequestWithoutPayload(array $request): array
+    {
+        $request = $this->removeQueryParamsFromUrl($request);
+
+        return array_only($request, ['url', 'method']);
     }
 
     /**
