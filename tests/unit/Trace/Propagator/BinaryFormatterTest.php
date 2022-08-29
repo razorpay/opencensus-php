@@ -53,7 +53,7 @@ class BinaryFormatterTest extends TestCase
     public function testDeserializeBadData()
     {
         $formatter = new BinaryFormatter();
-        $this->expectException(Warning::class);
+        $this->expectWarning(Warning::class);
         $formatter->deserialize(hex2bin("0012341abc"));
     }
 

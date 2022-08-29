@@ -73,7 +73,7 @@ class ContextTest extends TestCase
         $context = new Context(['foo' => 'bar']);
         $prevContext = $context->attach();
 
-        $this->expectException(Warning::class);
+        $this->expectWarning(Warning::class);
 
         $other = new Context(['foo' => 'bar']);
         $this->assertFalse($prevContext === $other);
