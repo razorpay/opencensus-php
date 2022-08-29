@@ -1936,7 +1936,9 @@ class Service extends Base\Service
         //
         $partial = substr(bin2hex(random_bytes(6)), 0, 5);
 
-        $fileIdentifier = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $fileIdentify = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        $fileIdentifier = preg_replace("/[^\w\-\.]/",'', $fileIdentify);
 
         $fileName = 'api/' . $merchantId . '/' . $partial . '/' . $fileIdentifier;
 
