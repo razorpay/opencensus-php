@@ -38,6 +38,7 @@ ERROR_MODULE_GIT_URL = $(DRONE_ERROR_MODULE_GIT_URL)
 endif
 
 # Change this branch name for local testing
+#TODO :vinita
 ERROR_MODULE_BRANCH := master
 # Do not Change below code till endif
 API_BRANCH := $(shell git for-each-ref --format='%(objectname) %(refname:short)' refs/heads | awk "/^$$(git rev-parse HEAD)/ {print \$$2}")

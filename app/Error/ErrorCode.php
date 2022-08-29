@@ -1649,6 +1649,7 @@ class ErrorCode
     const BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED                                        = 'BAD_REQUEST_NO_ACCOUNTS_ASSOCIATED';
     const BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED                                   = 'BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED';
     const BAD_REQUEST_EMAIL_NOT_VERIFIED                                            = 'BAD_REQUEST_EMAIL_NOT_VERIFIED';
+    const BAD_REQUEST_ACTION_NOT_ALLOWED                                            = 'BAD_REQUEST_ACTION_NOT_ALLOWED';
     const BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED                               = 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_VERIFIED';
     const BAD_REQUEST_EMAIL_ALREADY_VERIFIED                                        = 'BAD_REQUEST_EMAIL_ALREADY_VERIFIED';
     const BAD_REQUEST_ACCOUNT_RECOVERY_PAN_DID_NOT_MATCH                            = 'BAD_REQUEST_ACCOUNT_RECOVERY_PAN_DID_NOT_MATCH';
@@ -2195,6 +2196,7 @@ class ErrorCode
 
     const FRESHDESK_TICKET_ALREADY_EXISTS                                           = 'FRESHDESK_TICKET_ALREADY_EXISTS';
     const FRESHDESK_TICKET_INVALID_ID                                               = 'SUPPORT_TICKET_INVALID_ID';
+    const BAD_REQUEST_FRESHDESK_TICKET_ALREADY_EXISTS                               = 'BAD_REQUEST_FRESHDESK_TICKET_ALREADY_EXISTS';
     const BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND                                    = 'BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND';
     const BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED                                  = 'BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED';
     const BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER                                 = 'BAD_REQUEST_NO_TICKETS_FOUND_FOR_CUSTOMER';

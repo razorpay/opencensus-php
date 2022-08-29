@@ -29,6 +29,9 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middlewareGroups = [
+        'sessionMinimumLifetime' => [
+            Middleware\SessionMinimumLifetime::class,
+        ],
         'web' => [
             Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,

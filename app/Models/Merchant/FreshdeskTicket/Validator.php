@@ -23,6 +23,10 @@ class Validator extends Base\Validator
         Entity::STATUS          => 'sometimes',
     ];
 
+    protected static $emailCompulsoryRules = [
+        'email'                                  => 'required|email',
+    ];
+
     protected static $createCustomerTicketRules = [
         'email'                                  => 'required|email',
         'otp'                                    => 'required|string|min:4|max:6',
@@ -39,6 +43,25 @@ class Validator extends Base\Validator
         'custom_fields.cf_transaction_id'        => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
         'custom_fields.cf_razorpay_payment_id'   => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
         'custom_fields.cf_creation_source'       => 'sometimes|string|custom:custom_field_creation_source',
+        'isPaPgEnable'                           => 'sometimes',
+    ];
+
+    protected static $createCustomerTicketNodalStructureRules = [
+        'email'                                              => 'required|email',
+        'name'                                               => 'required|string|max:100',
+        'phone'                                              => 'sometimes|contact_syntax',
+        'status'                                             => 'sometimes',
+        'description'                                        => 'required|string|max:1000',
+        'subject'                                            => 'required|string|max:500',
+        'attachments'                                        => 'sometimes',
+        'attachments.*'                                      => 'custom:attachment',
+        'custom_fields'                                      => 'required|array',
+        'custom_fields.cf_requester_category'                => 'required|string|max:50',
+        'custom_fields.cf_requester_contact_razorpay_reason' => 'sometimes|string|max:100',
+        'custom_fields.cf_transaction_id'                    => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'custom_fields.cf_razorpay_payment_id'               => 'required_if:custom_fields.cf_requester_category,Customer|string|min:8|max:50',
+        'g_recaptcha_response'                               => 'required|string|custom',
+        'isPaPgEnable'                                       => 'sometimes',
     ];
 
     protected static $createMerchantAccountRecoveryTicketRules = [
@@ -60,12 +83,35 @@ class Validator extends Base\Validator
     ];
 
     protected static $raiseGrievanceRules = [
-        'id'                                  => 'required',
-        'email'                               => 'required|email',
-        'description'                         => 'required|string|max:1000',
-        'attachments'                         => 'sometimes',
-        'attachments.*'                       => 'custom:attachment',
-        'custom_fields'                       => 'sometimes|array',
+        'id'            => 'required',
+        'email'         => 'required|email',
+        'description'   => 'required|string|max:1000',
+        'attachments'   => 'sometimes',
+        'attachments.*' => 'custom:attachment',
+        'custom_fields' => 'sometimes|array',
+        'isPaPgEnable'  => 'sometimes',
+    ];
+
+    protected static $raiseGrievanceNodalStructureRules = [
+        'id'                   => 'required|int',
+        'email'                => 'required|email',
+        'description'          => 'required|string|max:1000',
+        'attachments'          => 'sometimes',
+        'attachments.*'        => 'custom:attachment',
+        'custom_fields'        => 'sometimes|array',
+        'action'               => 'required|string|in:assistant_nodal,nodal',
+        'contact'              => 'required_if:action,assistant_nodal|contact_syntax',
+        'tags'                 => 'sometimes|array',
+        'otp'                  => 'required_if:action,assistant_nodal|string',
+        'g_recaptcha_response' => 'required|string|custom',
+        'isPaPgEnable'         => 'sometimes',
+    ];
+
+    const OTP_RULES = [
+        'email'  => 'required_without:phone|email',
+        'action' => 'sometimes|string|in:assistant_nodal',
+        'phone'  => 'required_without:email|max:15|contact_syntax',
+        'g_recaptcha_response' => 'sometimes|string|custom',
     ];
 
     protected static $addNoteRules = [
@@ -74,14 +120,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $fetchCustomerTicketsRules = [
-        Entity::CUSTOMER_EMAIL  => 'required|email',
-        'otp'                   => 'required',
-        'count'                 => 'sometimes'
+        Entity::CUSTOMER_EMAIL => 'required|email',
+        'otp'                  => 'sometimes',
+        'count'                => 'sometimes',
+        'isPaPgEnable'         => 'sometimes',
     ];
 
     protected static $getSupportDashboardConversationsRules = [
-        Constants::PAGE         => 'required|integer|min:1',
-        Constants::PER_PAGE     => 'required|integer|max:100',
+        Constants::PAGE     => 'required|integer|min:1',
+        Constants::PER_PAGE => 'required|integer|max:100',
     ];
 
     protected static $getSupportDashboardXConversationsRules = [
@@ -187,9 +234,24 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSupportDashboardXTicketReplyRules = [
-        'user_id'       => 'required',
-        'body'          => 'sometimes|string',
-        'attachments'   => 'sometimes',
+        'user_id'     => 'required',
+        'body'        => 'sometimes|string',
+        'attachments' => 'sometimes',
+    ];
+
+    protected static $createCustomerTicketReplyRules = [
+        'body'                 => 'sometimes|string',
+        'attachments'          => 'sometimes',
+        'attachments.*'        => 'custom:attachment',
+        'g_recaptcha_response' => 'required|string|custom',
+    ];
+
+
+    protected static $getCustomerTicketConversationsRules = [
+        'g_recaptcha_response' => 'required|string|custom',
+        Constants::PAGE        => 'required|integer|min:1',
+        Constants::PER_PAGE    => 'required|integer|max:100',
+        'isPaPgEnable'         => 'sometimes',
     ];
 
     protected static $getSupportDashboardTicketsRules = [
@@ -273,14 +335,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $createSupportDashboardXGrievanceRules = [
-        'description'           => 'required|string',
-        'attachments'           => 'sometimes',
+        'description' => 'required|string',
+        'attachments' => 'sometimes',
     ];
 
     protected static $postOtpRules = [
-        'email'                => 'required_without:phone|email',
-        'phone'                => 'required_without:email|max:15|contact_syntax',
+        'email' => 'required_without:phone|email',
+        'phone' => 'required_without:email|max:15|contact_syntax',
         'g_recaptcha_response' => 'required|string|custom',
+        'action' => 'sometimes|string|in:assistant_nodal',
     ];
 
     protected function validateGRecaptchaResponse($attribute, $captchaResponse)
@@ -288,7 +351,7 @@ class Validator extends Base\Validator
         $this->validateInvisibleCaptcha($attribute, $captchaResponse);
     }
 
-    protected function validateInvisibleCaptcha($attribute, $captchaResponse)
+        protected function validateInvisibleCaptcha($attribute, $captchaResponse)
     {
         $app = App::getFacadeRoot();
 

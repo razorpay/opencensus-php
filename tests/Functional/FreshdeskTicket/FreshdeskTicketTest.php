@@ -2,12 +2,14 @@
 
 namespace RZP\Tests\Functional\FreshdeskTicket;
 
+use Carbon\Carbon;
 use Mockery;
 use Illuminate\Http\UploadedFile;
 use Mail;
+use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
-use RZP\Mail\Support\CustomerSupportTicketOtp;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Support\CustomerSupportTicketOtp;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class FreshdeskTicketTest extends TestCase
@@ -27,15 +29,20 @@ class FreshdeskTicketTest extends TestCase
 
     protected function mockRazorxTreatment(string $returnValue = 'On')
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
+        $this->addRazorxInstance();
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn($returnValue);
+                          ->willReturn($returnValue);
+    }
+
+    protected function addRazorxInstance()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
     }
 
     public function testStoreReserveBalanceTicketDetails()
@@ -107,15 +114,31 @@ class FreshdeskTicketTest extends TestCase
 
     public function testOtpGenerateAndSendForMobile()
     {
-        $this->ba->directAuth();
+        $testCases = [
+            [
+                'action' => 'assistant_nodal',
+            ],
+            [
+            ]
+        ];
+        foreach ($testCases as $testCase)
+        {
+            if (empty($testCase['action']) === false)
+            {
+                $this->testData[__FUNCTION__]['request']['content']['action'] = $testCase['action'];
+            }
 
-        $this->mockRaven();
+            $this->ba->directAuth();
 
-        $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.account_recovery_otp', '+919876543210');
+            $this->mockRaven();
 
-        $response = $this->startTest();
+            $this->expectRavenSendSmsRequest($this->ravenMock, 'sms.support.account_recovery_otp', '+919876543210');
 
-        $this->assertEquals(True, $response['success']);
+            $response = $this->startTest();
+
+            $this->assertEquals(true, $response['success']);
+        }
+
     }
 
     public function testOtpGenerateAndSendForMail()
@@ -148,23 +171,63 @@ class FreshdeskTicketTest extends TestCase
 
     public function testPostTicketPaymentId()
     {
-        $this->app['config']->set('applications.freshdesk.mock', true);
+        $testCases = [
+            [
+                'request' =>
+                    [
+                        'otp' => '0007'
+                    ],
+            ],
+            [
+                'request' =>
+                    [
 
-        $payment = $this->fixtures->create('payment:captured');
+                    ],
+            ]
+        ];
+        foreach ($testCases as $testCase)
+        {
+            $testData = &$this->testData['testPostTicketPaymentId'];
 
-        $this->ba->publicAuth();
+            if (empty($testCase['request']['otp']) === false)
+            {
+                $this->generateOtp($testData['request']['content']['email']);
 
-        $testData = &$this->testData['testPostTicketPaymentId'];
+                $testData['request']['content']['otp'] = $testCase['request']['otp'];
+            }
+            else
+            {
+                $this->mockSession([
+                                       'email_verified'  => true,
+                                       'email'           => 'test@gmail.com',
+                                       'ticket_id_array' => [
+                                           '123' => [
+                                               'cf_razorpay_payment_id' => null,
+                                           ]]
+                                   ]);
 
-        $this->generateOtp($testData['request']['content']['email']);
+                $testData['request']['content']['isPaPgEnable'] = "true";
 
-        $id = 'pay_' . $payment->toArray()['id'];
+                $testData['request']['content']['g_recaptcha_response'] = "test";
 
-        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+                unset($testData['request']['content']['otp']);
+            }
 
-        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
+            $this->app['config']->set('applications.freshdesk.mock', true);
 
-        $this->startTest();
+            $payment = $this->fixtures->create('payment:captured');
+
+            $this->ba->publicAuth();
+
+            $id = 'pay_' . $payment->toArray()['id'];
+
+            $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+            $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
+
+            $this->startTest();
+        }
+
     }
 
     public function testPostTicketForAccountRecoveryForEmail()
@@ -203,6 +266,23 @@ class FreshdeskTicketTest extends TestCase
 
     public function testGetFreshdeskTicketsForCustomer()
     {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->generateOtp($testData['request']['content']['email']);
+
+        $this->startTest();
+    }
+
+    public function testGetFreshdeskTicketsForCustomerNodal()
+    {
+        $fixedTime = (new Carbon())->timestamp(1645605902);
+
+        Carbon::setTestNow($fixedTime);
+
         $this->app['config']->set('applications.freshdesk.mock', true);
 
         $this->ba->directAuth();
@@ -261,7 +341,7 @@ class FreshdeskTicketTest extends TestCase
         $this->startTest();
     }
 
-    protected function generateOtpForMobile($phone)
+    protected function generateOtpForMobile($phone, $action = null)
     {
         $request = [
             'url'       => '/freshdesk/tickets/otp',
@@ -271,6 +351,11 @@ class FreshdeskTicketTest extends TestCase
                 'g_recaptcha_response' => '***',
             ]
         ];
+
+        if (empty($action) === false)
+        {
+            $request['content']['action'] = $action;
+        }
 
         $this->ba->directAuth();
 
@@ -363,6 +448,195 @@ class FreshdeskTicketTest extends TestCase
         }
     }
 
+    public function testRaiseGrievanceNodalFlowTicket()
+    {
+        $testcases = [
+            [
+                'request'  => [
+                    'id'      => 9991,
+                    'action'  => 'assistant_nodal',
+                    'otp'     => '0007',
+                    'contact' => '123456789',
+                ],
+                'response' =>
+                    [
+                        'tags'     => ['assistant_nodal', 'tag1'],
+                        'group_id' => 14000000008345,
+                    ]
+            ],
+            [
+                'request'  => [
+                    'id'     => 9992,
+                    'action' => 'nodal',
+                ],
+                'response' =>
+                    [
+                        'tags'     => ['nodal'],
+                        'group_id' => 14000000008346,
+                    ]
+            ],
+        ];
+
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        foreach ($testcases as $testcase)
+        {
+            $this->mockSession([
+                                   'email_verified'    => true,
+                                   'email'             => 'test@gmail.com',
+                                   'ticket_id_array'   => [
+                                       $testcase['request']['id'] => [
+                                           'action' => $testcase['request']['action']
+                                       ]]
+                               ]);
+
+            $this->testData[__FUNCTION__]['request']['content']['id']     = $testcase['request']['id'];
+            $this->testData[__FUNCTION__]['request']['content']['action'] = $testcase['request']['action'];
+
+            if ($testcase['request']['action'] === 'assistant_nodal')
+            {
+                $this->generateOtpForMobile($testcase['request']['contact'], $testcase['request']['action']);
+                $this->testData[__FUNCTION__]['request']['content']['otp']     = $testcase['request']['otp'];
+                $this->testData[__FUNCTION__]['request']['content']['contact'] = $testcase['request']['contact'];
+            }
+
+            $response = $this->startTest();
+
+            $this->assertArraySelectiveEquals($testcase['response']['tags'], $response['tags']);
+
+            $this->assertEquals($testcase['request']['id'], $response['number']);
+        }
+    }
+
+    public function testRaiseGrievanceNodalFlowForWrongAction()
+    {
+        $this->mockSession([
+                               'email_verified'    => true,
+                               'email'             => 'thatemail@razorpay.com',
+                               'ticket_id_array'   => ['9991'=>['action' => 'assistant_nodal']]
+                           ]);
+
+        $this->startTest();
+
+    }
+
+    public function testFetchConversationCustomerTicket()
+    {
+        $this->mockSession([
+                               'email_verified'    => true,
+                               'email'             => 'test@gmail.com',
+                               'ticket_id_array'   => ['9993' => []]
+                           ]);
+
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testNotVerifiedEmailPostCustomerTicket()
+    {
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->ba->publicAuth();
+
+        $id = 'pay_' . $payment->toArray()['id'];
+
+        $testData['request']['content']['custom_fields']['cf_transaction_id'] = $id;
+
+        $testData['request']['content']['custom_fields']['cf_razorpay_payment_id'] = $id;
+
+        $this->startTest();
+    }
+
+    public function testNotVerifiedEmailFetchConversationCustomerTicket()
+    {
+        $testCases = [
+            [
+                'mock_data'  => [
+                    'email_verified'    => true,
+                    'email'             => 'test@gmail.com',
+                ],
+                ],
+            [
+                'mock_data'  =>
+                    [
+                        'email_verified'    => true,
+                        'email'             => 'test1@gmail.com',
+                        'ticket_id_array' => ['9991' => []]
+                    ],
+            ]];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->mockSession($testCase['mock_data']);
+
+            $this->app['config']->set('applications.freshdesk.mock', true);
+
+            $this->ba->directAuth();
+
+            $this->startTest();
+        }
+    }
+
+    public function testPostReplyCustomerTicket()
+    {
+        $this->mockSession([
+                               'email_verified'  => true,
+                               'email'           => 'test@gmail.com',
+                               'ticket_id_array' => [
+                                   '9993' =>
+                                       [
+                                           'requester_id' => '123'
+                                       ]
+                               ]
+                           ]);
+
+        $this->app['config']->set('applications.freshdesk.mock', true);
+
+        $this->ba->directAuth();
+
+        $this->startTest();
+    }
+
+    public function testNotVerifiedPostReplyCustomerTicket()
+    {
+        $testCases = [
+            [
+                'mock_data'  => [
+                    'email_verified'    => true,
+                    'email'             => 'test@gmail.com',
+                ],
+            ],
+            [
+                'mock_data'  =>
+                    [
+                        'email_verified'  => true,
+                        'email'           => 'test1@gmail.com',
+                        'ticket_id_array' => ['9991' => [
+                            'requester_id' => '123'
+                        ]]
+                    ],
+            ]];
+
+        foreach ($testCases as $testCase)
+        {
+            $this->mockSession($testCase['mock_data']);
+
+            $this->app['config']->set('applications.freshdesk.mock', true);
+
+            $this->ba->directAuth();
+
+            $this->startTest();
+        }
+
+    }
+
     public function testRaiseGrievanceAgainstTicketFdIndiaInstance()
     {
         $this->app['config']->set('applications.freshdesk.mock', true);
@@ -428,7 +702,14 @@ class FreshdeskTicketTest extends TestCase
 
         $testData['request']['files']['attachments'] = [$file1];
 
-        $this->mockRazorxTreatment('on');
+        $this->addRazorxInstance();
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function(string $mid, string $feature, string $mode) {
+                    return $feature !== 'pa_pg_nodal_structure' ? 'on' : 'control';
+                }
+            ));
 
         $this->startTest();
     }
@@ -463,7 +744,14 @@ class FreshdeskTicketTest extends TestCase
 
         $this->ba->directAuth();
 
-        $this->mockRazorxTreatment('on');
+        $this->addRazorxInstance();
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function(string $mid, string $feature, string $mode) {
+                    return $feature !== 'pa_pg_nodal_structure' ? 'on' : 'control';
+                }
+            ));
 
         $this->startTest();
     }
@@ -480,7 +768,14 @@ class FreshdeskTicketTest extends TestCase
 
         $this->generateOtp($testData['request']['content']['email']);
 
-        $this->mockRazorxTreatment('on');
+        $this->addRazorxInstance();
+
+        $this->app->razorx->method('getTreatment')->will(
+            $this->returnCallback(
+                function(string $mid, string $feature, string $mode) {
+                    return $feature !== 'pa_pg_nodal_structure' ? 'on' : 'control';
+                }
+            ));
 
         $id = 'pay_' . $payment->toArray()['id'];
 
@@ -497,6 +792,11 @@ class FreshdeskTicketTest extends TestCase
         $this->assertEquals($testData['response']['content']['id'], $response['id']);
 
         $this->assertEquals($testData['response']['content']['description_text'], $response['description_text']);
+    }
+
+    protected function mockSession(array $array)
+    {
+        $this->session($array);
     }
 
     public function testFreshDeskInternalAddNote()

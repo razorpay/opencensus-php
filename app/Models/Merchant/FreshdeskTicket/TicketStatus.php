@@ -21,6 +21,12 @@ class TicketStatus
         7 => self::WAITING_ON_THIRD_PARTY,
     ];
 
+    static $ticketStatusMappingForNodalStructure = [
+        2 => self::OPEN,
+        5 => self::CLOSED,
+        6 => self::WAITING_ON_CUSTOMER,
+    ];
+
     static $dbTicketStatusMapping = [
         2 => self::OPEN,
         3 => self::PENDING,

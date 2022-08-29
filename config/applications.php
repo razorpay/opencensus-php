@@ -440,6 +440,18 @@ return [
             ],
         ],
 
+        'nodal'  => [
+            'rzpind'   =>   [
+                'groupIdGrievance' =>  env('FRESHDESK_CUSTOMER_NODAL_GRIEVANCE_GROUP_ID'),
+            ],
+        ],
+
+        'assistant_nodal'  => [
+            'rzpind'   =>   [
+                'groupIdGrievance' =>  env('FRESHDESK_CUSTOMER_ASSISTANT_NODAL_GRIEVANCE_GROUP_ID'),
+            ],
+        ],
+
         'customer' => [
             'dispute' => [
                 'automation_agent_id'       => env('FRESHDESK_AUTOMATION_AGENT_ID'),

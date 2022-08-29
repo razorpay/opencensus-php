@@ -144,7 +144,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function getTicketConversations(string $ticketId, array $queryParams, $urlKey = 'urlind', $authKey = 'token') : array
+    public function getTicketConversations(string $ticketId, array $queryParams, $urlKey = 'urlind') : array
     {
         $response = [
             [
@@ -309,7 +309,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
      * @param $authKey
      * @return array $response
      */
-    public function postTicketReply(string $ticketId, array $input, $urlKey = 'urlind', $authKey = 'token') : array
+    public function postTicketReply(string $ticketId, array $input, $urlKey = 'urlind') : array
     {
         $response = [
             'id'=> 11128041196,
@@ -532,9 +532,203 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                 ],
                 'created_at'    => '2020-10-28T11:02:50Z',
                 'updated_at'    => '2020-10-28T11:02:51Z'
-            ]
+            ],
         ];
 
+        $successResponseSecondNodal = [
+            [
+                'cc_emails'                => [],
+                'fwd_emails'               => [],
+                'reply_cc_emails'          => [],
+                'ticket_cc_emails'         => [],
+                'fr_escalated'             => false,
+                'spam'                     => false,
+                'email_config_id'          => null,
+                'group_id'                 => 11000003635,
+                'priority'                 => 1,
+                'requester_id'             => 11033774580,
+                'responder_id'             => null,
+                'source'                   => 2,
+                'company_id'               => null,
+                'status'                   => 2,
+                'subject'                  => "",
+                'association_type'         => null,
+                'to_emails'                => null,
+                'product_id'               => null,
+                'id'                       => 9993,
+                'tags'                     => ['tag1'],
+                'type'                     => 'Other',
+                'due_by'                   => "2020-10-13T06:05:31Z",
+                'fr_due_by'                => "2020-10-09T06:05:31Z",
+                'is_escalated'             => false,
+                'description'              => "<div>test<br><b>Contact Number: </b>08095853344<br>\n</div>",
+                'description_text'         => "test Contact Number: 08095853344",
+                'custom_fields'            => [
+                    'cf_category'            => null,
+                    'cf_merchant_id'         => 'CCOhinUeUsT8HN',
+                    'cf_source'              => null,
+                    'cf_transaction_id'      => 'pay_FrTYsVAuCrW8Fm',
+                    'cf_payment_method'      => null,
+                    'cf_product'             => null,
+                    'cf_escalation_reason'   => null,
+                    'cf_platform'            => null,
+                    'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                    'cf_refund_id'           => null,
+                    'cf_order_id'            => null,
+                    'cf_payment_email'       => 'moulikak@razorpay.com',
+                    'cf_payment_phone'       => ''
+                ],
+                'created_at'               => "2022-02-12T11:05:31Z",
+                'updated_at'               => "2022-02-12T11:18:25Z",
+                'associated_tickets_count' => null,
+                'nr_due_by'                => null,
+                'nr_escalated'             => false
+            ],
+            [
+                'cc_emails'                => [],
+                'fwd_emails'               => [],
+                'reply_cc_emails'          => [],
+                'ticket_cc_emails'         => [],
+                'fr_escalated'             => false,
+                'tags'                     => ['assistant_nodal'],
+                'spam'                     => false,
+                'email_config_id'          => null,
+                'group_id'                 => 11000003635,
+                'priority'                 => 1,
+                'requester_id'             => 11033774580,
+                'responder_id'             => null,
+                'source'                   => 2,
+                'company_id'               => null,
+                'status'                   => 5,
+                'subject'                  => "",
+                'association_type'         => null,
+                'to_emails'                => null,
+                'product_id'               => null,
+                'id'                       => 9994,
+                'type'                     => 'Other',
+                'due_by'                   => "2020-10-13T06:05:31Z",
+                'fr_due_by'                => "2020-10-09T06:05:31Z",
+                'is_escalated'             => false,
+                'description'              => "<div>test<br><b>Contact Number: </b>08095853344<br>\n</div>",
+                'description_text'         => "test Contact Number: 08095853344",
+                'custom_fields'            => [
+                    'cf_category'            => null,
+                    'cf_merchant_id'         => 'CCOhinUeUsT8HN',
+                    'cf_source'              => null,
+                    'cf_transaction_id'      => 'pay_FrTYsVAuCrW8Fm',
+                    'cf_payment_method'      => null,
+                    'cf_product'             => null,
+                    'cf_escalation_reason'   => null,
+                    'cf_platform'            => null,
+                    'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                    'cf_refund_id'           => null,
+                    'cf_order_id'            => null,
+                    'cf_payment_email'       => 'moulikak@razorpay.com',
+                    'cf_payment_phone'       => ''
+                ],
+                'created_at'               => "2022-02-12T11:05:31Z",
+                'updated_at'               => "2022-02-12T11:18:25Z",
+                'associated_tickets_count' => null,
+                'nr_due_by'                => null,
+                'nr_escalated'             => false
+            ],
+            [
+                'cc_emails'                => [],
+                'fwd_emails'               => [],
+                'reply_cc_emails'          => [],
+                'tags'                     => [],
+                'ticket_cc_emails'         => [],
+                'fr_escalated'             => false,
+                'spam'                     => false,
+                'email_config_id'          => null,
+                'group_id'                 => 11000003635,
+                'priority'                 => 1,
+                'requester_id'             => 11033774580,
+                'responder_id'             => null,
+                'source'                   => 2,
+                'company_id'               => null,
+                'status'                   => 6,
+                'subject'                  => "",
+                'association_type'         => null,
+                'to_emails'                => null,
+                'product_id'               => null,
+                'id'                       => 9995,
+                'type'                     => 'Other',
+                'due_by'                   => "2020-10-13T06:05:31Z",
+                'fr_due_by'                => "2020-10-09T06:05:31Z",
+                'is_escalated'             => false,
+                'description'              => "<div>test<br><b>Contact Number: </b>08095853344<br>\n</div>",
+                'description_text'         => "test Contact Number: 08095853344",
+                'custom_fields'            => [
+                    'cf_category'            => null,
+                    'cf_merchant_id'         => 'CCOhinUeUsT8HN',
+                    'cf_source'              => null,
+                    'cf_transaction_id'      => 'pay_FrTYsVAuCrW8Fm',
+                    'cf_payment_method'      => null,
+                    'cf_product'             => null,
+                    'cf_escalation_reason'   => null,
+                    'cf_platform'            => null,
+                    'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                    'cf_refund_id'           => null,
+                    'cf_order_id'            => null,
+                    'cf_payment_email'       => 'moulikak@razorpay.com',
+                    'cf_payment_phone'       => ''
+                ],
+                'created_at'               => "2022-02-02T11:05:31Z",
+                'updated_at'               => "2022-02-02T11:18:25Z",
+                'associated_tickets_count' => null,
+                'nr_due_by'                => null,
+                'nr_escalated'             => false
+            ],
+            [
+                'cc_emails'                => [],
+                'fwd_emails'               => [],
+                'reply_cc_emails'          => [],
+                'ticket_cc_emails'         => [],
+                'fr_escalated'             => false,
+                'spam'                     => false,
+                'email_config_id'          => null,
+                'group_id'                 => 11000003635,
+                'priority'                 => 1,
+                'requester_id'             => 11033774580,
+                'responder_id'             => null,
+                'source'                   => 2,
+                'company_id'               => null,
+                'status'                   => 3,
+                'subject'                  => "",
+                'association_type'         => null,
+                'to_emails'                => null,
+                'product_id'               => null,
+                'id'                       => 9996,
+                'type'                     => 'Other',
+                'due_by'                   => "2020-10-13T06:05:31Z",
+                'fr_due_by'                => "2020-10-09T06:05:31Z",
+                'is_escalated'             => false,
+                'description'              => "<div>test<br><b>Contact Number: </b>08095853344<br>\n</div>",
+                'description_text'         => "test Contact Number: 08095853344",
+                'custom_fields'            => [
+                    'cf_category'            => null,
+                    'cf_merchant_id'         => 'CCOhinUeUsT8HN',
+                    'cf_source'              => null,
+                    'cf_transaction_id'      => 'pay_FrTYsVAuCrW8Fm',
+                    'cf_payment_method'      => null,
+                    'cf_product'             => null,
+                    'cf_escalation_reason'   => null,
+                    'cf_platform'            => null,
+                    'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                    'cf_refund_id'           => null,
+                    'cf_order_id'            => null,
+                    'cf_payment_email'       => 'moulikak@razorpay.com',
+                    'cf_payment_phone'       => ''
+                ],
+                'created_at'               => "2022-02-02T11:05:31Z",
+                'updated_at'               => "2022-02-02T11:18:25Z",
+                'associated_tickets_count' => null,
+                'tags'                     => ['assistant_nodal'],
+                'nr_due_by'                => null,
+                'nr_escalated'             => false
+            ],
+        ];
 
         $failureResponse = [
             'description' => "Validation failed",
@@ -545,13 +739,17 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
             ]
         ];
 
-        switch ($queryString) {
+        switch ($queryString)
+        {
             case 'email=success%40gmail.com':
                 if ($urlKey === 'urlind')
                 {
                     return $successResponseSecond;
                 }
+
                 return $successResponse;
+            case 'email=successnodal%40gmail.com':
+                return $successResponseSecondNodal;
             case 'email=failure%40gmail.com':
                 return $failureResponse;
             default:
@@ -574,6 +772,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'subject' => '',
                     'id' => 3328,
                     'type' => null,
+                    'tags' => [],
                     'due_by' => '2020-11-02T11:02:50Z',
                     'fr_due_by' => '2020-10-29T11:02:50Z',
                     'is_escalated' => false,
@@ -612,6 +811,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'source' => 2,
                     'company_id' => null,
                     'status' => 3,
+                    'tags' => [],
                     'subject' => '',
                     'id' => 3331,
                     'type' => null,
@@ -643,8 +843,91 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'created_at' => '2020-10-28T11:02:50Z',
                     'updated_at' => '2020-10-28T11:02:51Z'
                 ];
+            case 9991:
+                return [
+                    'priority' => 4,
+                    'requester_id' => 42020620300,
+                    'source' => 2,
+                    'company_id' => null,
+                    'status' => 2,
+                    'subject' => '',
+                    'id' => 9991,
+                    'description' => 'some description',
+                    'group_id' => 14000000008345,
+                    'type' => null,
+                    'tags' => ['assistant_nodal','tag1'],
+                    'due_by' => '2020-11-02T11:02:50Z',
+                    'fr_due_by' => '2020-10-29T11:02:50Z',
+                    'is_escalated' => false,
+                    'custom_fields' => [
+                        'cf_category' => null,
+                        'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'requester' => [
+                        'id' => 42020620300,
+                        'name' => 'Some name',
+                        'email' => 'thatemail@razorpay.com',
+                        'mobile' => null,
+                        'phone' => null
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+            case 9992:
+                return [
+                    'priority' => 4,
+                    'requester_id' => 42020620300,
+                    'source' => 2,
+                    'company_id' => null,
+                    'status' => 2,
+                    'subject' => '',
+                    'id' => 9992,
+                    'description' => 'some description',
+                    'group_id' => 14000000008346,
+                    'tags' => ['nodal'],
+                    'type' => null,
+                    'due_by' => '2020-11-02T11:02:50Z',
+                    'fr_due_by' => '2020-10-29T11:02:50Z',
+                    'is_escalated' => false,
+                    'custom_fields' => [
+                        'cf_category' => null,
+                        'cf_merchant_id' => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'requester' => [
+                        'id' => 42020620300,
+                        'name' => 'Some name',
+                        'email' => 'thatemail@razorpay.com',
+                        'mobile' => null,
+                        'phone' => null
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
             default:
                 return [
+                    'tags' => [],
                     'priority' => 1,
                     'requester_id' => 42020620300,
                     'source' => 2,
@@ -690,15 +973,83 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
         {
             case 3328:
                 return [
+                    'priority'      => 4,
+                    'requester_id'  => 42020620300,
+                    'source'        => 2,
+                    'company_id'    => null,
+                    'status'        => 2,
+                    'tags'          => [],
+                    'subject'       => '',
+                    'id'            => 3328,
+                    'description'   => 'some description',
+                    'type'          => null,
+                    'due_by'        => '2020-11-02T11:02:50Z',
+                    'fr_due_by'     => '2020-10-29T11:02:50Z',
+                    'is_escalated'  => false,
+                    'custom_fields' => [
+                        'cf_category'            => null,
+                        'cf_merchant_id'         => 'CCOhinUeUsT8HN',
+                        'cf_source' => null,
+                        'cf_transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+            case 3331:
+                return [
+                    'priority'      => 4,
+                    'requester_id'  => 42020620300,
+                    'source'        => 2,
+                    'company_id'    => null,
+                    'status'        => 2,
+                    'subject'       => '',
+                    'id'            => 3331,
+                    'tags'          => [],
+                    'description'   => 'some description',
+                    'type'          => null,
+                    'due_by'        => '2020-11-02T11:02:50Z',
+                    'fr_due_by'     => '2020-10-29T11:02:50Z',
+                    'is_escalated'  => false,
+                    'custom_fields' => [
+                        'cf_category'            => null,
+                        'cf_merchant_id'         => 'CCOhinUeUsT8HN',
+                        'cf_source'              => null,
+                        'cf_transaction_id'      => 'pay_FrTYsVAuCrW8Fm',
+                        'cf_payment_method' => null,
+                        'cf_product' => null,
+                        'cf_escalation_reason' => null,
+                        'cf_platform' => null,
+                        'cf_razorpay_payment_id' => 'FrTYsVAuCrW8Fm',
+                        'cf_refund_id' => null,
+                        'cf_order_id' => null,
+                        'cf_payment_email' => 'moulikak@razorpay.com',
+                        'cf_payment_phone' => ''
+                    ],
+                    'created_at' => '2020-10-28T11:02:50Z',
+                    'updated_at' => '2020-10-28T11:02:51Z'
+                ];
+            case 9991:
+                return [
                     'priority' => 4,
                     'requester_id' => 42020620300,
                     'source' => 2,
                     'company_id' => null,
                     'status' => 2,
                     'subject' => '',
-                    'id' => 3328,
+                    'id' => 9991,
                     'description' => 'some description',
+                    'group_id' => 14000000008345,
                     'type' => null,
+                    'tags' => ['assistant_nodal','tag1'],
                     'due_by' => '2020-11-02T11:02:50Z',
                     'fr_due_by' => '2020-10-29T11:02:50Z',
                     'is_escalated' => false,
@@ -720,7 +1071,7 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'created_at' => '2020-10-28T11:02:50Z',
                     'updated_at' => '2020-10-28T11:02:51Z'
                 ];
-            case 3331:
+            case 9992:
                 return [
                     'priority' => 4,
                     'requester_id' => 42020620300,
@@ -728,8 +1079,10 @@ class FreshdeskTicketClient extends BaseFreshdeskTicketClient
                     'company_id' => null,
                     'status' => 2,
                     'subject' => '',
-                    'id' => 3331,
+                    'id' => 9992,
                     'description' => 'some description',
+                    'group_id' => 14000000008346,
+                    'tags' => ['nodal'],
                     'type' => null,
                     'due_by' => '2020-11-02T11:02:50Z',
                     'fr_due_by' => '2020-10-29T11:02:50Z',

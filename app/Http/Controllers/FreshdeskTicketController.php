@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Models\Merchant\FreshdeskTicket;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshdeskTicketService;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Service as CustomerDisputeFreshdeskTicketService;
 
@@ -61,7 +60,11 @@ class FreshdeskTicketController extends Controller
 
         $response = (new FreshdeskTicketService)->postTicket($input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     /**
@@ -84,7 +87,37 @@ class FreshdeskTicketController extends Controller
 
         $response = (new FreshdeskTicketService)->fetchCustomerTickets($input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function postCustomerTicketReply($id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->postCustomerTicketReply($id, $input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    public function fetchCustomerTicketsConversations($id)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getCustomerTicketConversations($id, $input);
+
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     public function raiseGrievance()
@@ -93,7 +126,11 @@ class FreshdeskTicketController extends Controller
 
         $response = (new FreshdeskTicketService)->raiseGrievance($input);
 
-        return ApiResponse::json($response);
+        $response = ApiResponse::json($response);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
     }
 
     public function postCustomerDispute()
@@ -201,5 +238,12 @@ class FreshdeskTicketController extends Controller
 
         return ApiResponse::json($response);
 
+    }
+
+    private function addCorsHeaders(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Credentials' , 'true');
+
+        $response->headers->set('Access-Control-Allow-Headers', '*');
     }
 }

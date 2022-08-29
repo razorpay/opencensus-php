@@ -3240,6 +3240,8 @@ class Route
         'freshdesk_update_ticket_internal'        => ['patch',     'internal/freshdesk/ticket/{id}',                             'FreshdeskTicketController@patchTicketInternal'               ],
         'freshdesk_otp_send'                      => ['post',      'freshdesk/tickets/otp',                                      'FreshdeskTicketController@postOtp'                           ],
 
+        'freshdesk_post_reply'                    => ['post',      'freshdesk/ticket/customer/{id}/reply',                       'FreshdeskTicketController@postCustomerTicketReply'           ],
+        'freshdesk_fetch_conversations'           => ['post',      'freshdesk/ticket/customer/{id}/conversations',               'FreshdeskTicketController@fetchCustomerTicketsConversations' ],
         'freshdesk_fetch_tickets'                 => ['post',      'freshdesk/tickets/customer',                                 'FreshdeskTicketController@fetchCustomerTickets'              ],
         'freshdesk_raise_grievance'               => ['post',      'freshdesk/grievance',                                        'FreshdeskTicketController@raiseGrievance'                    ],
 
@@ -9165,6 +9167,8 @@ class Route
         'freshdesk_create_ticket',
         'freshdesk_otp_send',
         'freshdesk_fetch_tickets',
+        'freshdesk_post_reply',
+        'freshdesk_fetch_conversations',
         'freshdesk_raise_grievance',
         'freshdesk_account_recovery_create_ticket',
 
@@ -9231,12 +9235,28 @@ class Route
         '1cc_process_webhooks',
     ];
 
+    public static $dynamicLifeTimeSession = [
+        'freshdesk_post_reply',
+        'freshdesk_fetch_conversations',
+        'freshdesk_fetch_tickets',
+        'freshdesk_raise_grievance',
+        'freshdesk_create_ticket',
+    ];
+
     /**
      * List of routes, requiring session changes
      */
     public static $session = [
         'checkout',
         'merchant_checkout_preferences',
+        /*
+         * customer ticket rules for support page
+         */
+        'freshdesk_post_reply',
+        'freshdesk_fetch_conversations',
+        'freshdesk_fetch_tickets',
+        'freshdesk_raise_grievance',
+        'freshdesk_create_ticket',
         'merchant_coupon_validity',
         'internal_merchant_checkout_preferences',
         'otp_verify',
@@ -15646,6 +15666,11 @@ class Route
         //
 
         // We add the web middleware group, conditionally to routes which require cookie / session access.
+        if (in_array($name, self::$dynamicLifeTimeSession, true) === true)
+        {
+            $route->middleware('sessionMinimumLifetime');
+        }
+
         if (in_array($name, self::$session, true) === true)
         {
             $route->middleware('web');

@@ -2,10 +2,12 @@
 
 namespace RZP\Models\Merchant\FreshdeskTicket;
 
+use Carbon\Carbon;
 use Lib\PhoneBook;
 use Illuminate\Support\Str;
 use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -52,14 +54,24 @@ class Service extends Base\Service
         return TicketStatus::$ticketStatusMapping[2];
     }
 
-    public function getReserveBalanceTicketStatus() : array
+    public function getTicketStatusForCustomerNodalStructure(array $response)
+    {
+        if (array_key_exists($response['status'], TicketStatus::$ticketStatusMappingForNodalStructure) === true)
+        {
+            return TicketStatus::$ticketStatusMappingForNodalStructure[$response['status']];
+        }
+
+        return TicketStatus::$ticketStatusMappingForNodalStructure[2];
+    }
+
+    public function getReserveBalanceTicketStatus(): array
     {
         $ticketId = $this->getReserveBalanceTicketId();
 
         if ($ticketId === "")
         {
             return [
-                'ticket_exists'     =>  false,
+                'ticket_exists' => false,
             ];
         }
 
@@ -165,13 +177,7 @@ class Service extends Base\Service
     {
         if (empty($input[Constants::PHONE]) === false)
         {
-            $phoneNumber = $input[Constants::PHONE];
-
-            $phoneNumber = new PhoneBook($phoneNumber);
-
-            $phoneNumber = $phoneNumber->format(PhoneBook::E164);
-
-            (new Core)->verifyOtp($phoneNumber, $input[Constants::OTP]);
+            $this->verifyPhoneNumber($input[Constants::PHONE], $input[Constants::OTP]);
 
             if(empty($input[Constants::DESCRIPTION]) === true)
             {
@@ -235,14 +241,31 @@ class Service extends Base\Service
      */
     public function postTicket(array $input): array
     {
-        $validator = (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('create_customer_ticket', $input);
+        (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('email_compulsory', $input);
+
+        $isNodalStructureFeatureEnabled = $this->isNodalStructureEnabled($input[Constants::IS_PA_PG_ENABLED] ?? false);
+
+        if ($isNodalStructureFeatureEnabled === false)
+        {
+            (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('create_customer_ticket', $input);
+
+            (new Core)->verifyOtp($input['email'], $input['otp']);
+
+            unset($input[Constants::OTP]);
+        }
+        else
+        {
+            $this->checkEmailVerifiedOrNot($input['email']);
+
+            $this->checkDuplicateTicket($input);
+
+            (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('create_customer_ticket_nodal_structure', $input);
+        }
 
         if (empty ($input[Constants::TICKET_STATUS]) === true)
         {
             $input[Constants::TICKET_STATUS] = TicketStatus::getStatusMappingForStatusString(TicketStatus::PROCESSING);
         }
-
-        (new Core)->verifyOtp($input['email'], $input['otp']);
 
         $this->updateStatusFields($input);
 
@@ -251,6 +274,10 @@ class Service extends Base\Service
         $fdInstance = $this->getFdInstanceWhileCreatingTickets($input);
 
         $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, $fdInstance);
+
+        unset($input['g_recaptcha_response']);
+
+        unset($input[Constants::IS_PA_PG_ENABLED]);
 
         unset($input[Constants::FD_INSTANCE]);
 
@@ -279,6 +306,8 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput(__FUNCTION__, $input);
 
+        $action = $input[Constants::ACTION] ?? null;
+
         unset($input[Constants::G_RECAPTCHA_RESPONSE]);
 
         if (empty($input[Constants::PHONE]) === false)
@@ -289,7 +318,7 @@ class Service extends Base\Service
 
             $phoneNumber = $phoneNumber->format(PhoneBook::E164);
 
-            (new Core)->generateAndSendCustomerOtpForMobile($phoneNumber);
+            (new Core)->generateAndSendCustomerOtpForMobile($phoneNumber, $action);
         }
         else
         {
@@ -307,11 +336,34 @@ class Service extends Base\Service
 
         $freshdeskTicketValidator->validateInput('fetch_customer_tickets', $input);
 
-        $otp = $input['otp'];
+        $isNodalStructureFeatureEnabled = $this->isNodalStructureEnabled($input[Constants::IS_PA_PG_ENABLED]??false);
 
-        $email = $input['email'];
+        $skipOtpVerification = false;
 
-        (new Core)->verifyOtp($email, $otp);
+        if ($isNodalStructureFeatureEnabled === true)
+        {
+            try
+            {
+                $this->checkEmailVerifiedOrNot($input[Constants::EMAIL]);
+
+                $skipOtpVerification = true;
+            }
+            catch (BadRequestException $ex)
+            {
+                $this->trace->info(TraceCode::FRESHDESK_CUSTOMER_FLOW_EMAIL_NOT_VERIFIED, ['email' => $input[Constants::EMAIL]]);
+            }
+        }
+
+        $email = $input[Constants::EMAIL];
+
+        if ($skipOtpVerification === false)
+        {
+            $otp = $input['otp'];
+
+            (new Core)->verifyOtp($email, $otp);
+
+            $this->markOtpVerified($email);
+        }
 
         $count = $input['count'] ?? 5;
 
@@ -332,16 +384,79 @@ class Service extends Base\Service
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_TICKET_FETCH_FAILED);
             }
 
-            $response = $this->createTicketResponseFromReceivedArrays($tickets, $count);
+            $response = $this->createTicketResponseFromReceivedArrays($tickets, $count, $isNodalStructureFeatureEnabled);
 
             $mergedResponse = array_merge($mergedResponse, $response);
+        }
+
+        if ($isNodalStructureFeatureEnabled === true)
+        {
+            $this->addTicketIdsToSession($mergedResponse);
         }
 
         return $mergedResponse;
     }
 
+    /**
+     * @param  $id
+     * @param  $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function postCustomerTicketReply($id, $input)
+    {
+        $freshdeskTicketValidator = new FreshdeskTicketValidator;
 
-    protected function createTicketResponseFromReceivedArrays(array $tickets, $count)
+        $freshdeskTicketValidator->validateInput('create_customer_ticket_reply', $input);
+
+        unset($input['g_recaptcha_response']);
+
+        unset($input[Constants::IS_PA_PG_ENABLED]);
+
+        $this->checkTicketBelongsToEmail($id);
+
+        $input[Constants::USER_ID] = $this->getRequesterIdFromSession($id);
+
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, Constants::RZPIND);
+
+        $ticketReplyResponse = $this->app[Constants::FRESHDESK_CLIENT]->postTicketReply($id, $input, $url);
+
+        return $this->filterCustomerResponse($ticketReplyResponse);
+    }
+
+    /**
+     * @param  $id
+     * @param  $input
+     * @throws BadRequestValidationFailureException
+     */
+    public function getCustomerTicketConversations($id, $input)
+    {
+        $input[Constants::PAGE] = $input[Constants::PAGE] ?? 1;
+
+        $input[Constants::PER_PAGE] = $input[Constants::PER_PAGE] ?? 10;
+
+        (new Validator)->validateInput('get_customer_ticket_conversations', $input);
+
+        $this->checkTicketBelongsToEmail($id);
+
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, Constants::RZPIND);
+
+        $queryParams = [
+            Constants::PAGE     => $input[Constants::PAGE],
+            Constants::PER_PAGE => $input[Constants::PER_PAGE]
+        ];
+
+        $conversations = $this->app[Constants::FRESHDESK_CLIENT]->getTicketConversations($id, $queryParams, $url);
+
+        $conversations = $this->rewriteFreshdeskConversationsForCustomerTicket($conversations);
+
+        return [
+            'count' => count($conversations),
+            'items' => $this->rewriteFreshdeskConversationsForCustomerTicket($conversations)
+        ];
+    }
+
+    protected function createTicketResponseFromReceivedArrays(array $tickets, $count, $isNodalStructureFeatureEnabled = false)
     {
 
         $response = [];
@@ -369,7 +484,31 @@ class Service extends Base\Service
                 'updated_at'     => $ticket['updated_at'],
             ];
 
-            $response[] = $ticketResponse;
+            if ($isNodalStructureFeatureEnabled === true)
+            {
+                $ticketResponse[Constants::ACTION] = $this->getActionApplicableForNodalFlow($ticket);
+
+                $ticketResponse[Constants::STATUS] = $this->getTicketStatusForCustomerNodalStructure($ticket);
+
+                $ticketResponse[Constants::TICKET_TAGS] = $ticket[Constants::TICKET_TAGS];
+
+                $ticketResponse[Constants::REQUESTER_ID] = $ticket[Constants::REQUESTER_ID];
+
+                $ticketResponse[Constants::DESCRIPTION] = $ticket['description_text'];
+
+                $ticketResponse[Constants::CF_REQUESTER_CONTACT_RAZORPAY_REASON] = $ticket[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTER_CONTACT_RAZORPAY_REASON] ?? '';
+
+                $ticketResponse[Constants::DUE_BY] = $ticket[Constants::DUE_BY];
+
+                if(empty($ticket[Constants::CUSTOM_FIELDS][Constants::PAYMENT_ID]) === false)
+                {
+                    $response[] = $ticketResponse;
+                }
+            }
+            else
+            {
+                $response[] = $ticketResponse;
+            }
 
             if ($counter >= $count)
             {
@@ -387,9 +526,35 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function raiseGrievance($input)
     {
-        (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('raise_grievance', $input);
+        (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('email_compulsory', $input);
+
+        $isNodalStructureFeatureEnabled = $this->isNodalStructureEnabled($input[Constants::IS_PA_PG_ENABLED]??false);
+
+        if ($isNodalStructureFeatureEnabled === false)
+        {
+            (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('raise_grievance', $input);
+        }
+        else
+        {
+            (new FreshdeskTicketValidator)->setStrictFalse()->validateInput('raise_grievance_nodal_structure', $input);
+
+            unset($input['g_recaptcha_response']);
+
+            unset($input[Constants::IS_PA_PG_ENABLED]);
+
+            $this->checkTicketBelongsToEmail($input[Entity::ID]);
+
+            $this->checkActionAllowed($input[Entity::ID], $input[Constants::ACTION]);
+
+            $function = 'perform' . studly_case($input[Constants::ACTION]) . 'Task';
+
+            $input = $this->$function($input);
+        }
 
         $ticketId = $input['id'];
 
@@ -397,28 +562,21 @@ class Service extends Base\Service
 
         $email = $input['email'];
 
-        $fdInstances = [Constants::RZPIND];
-
-        $urls = [Constants::FRESHDESK_INSTANCES[Type::SUPPORT_DASHBOARD][$fdInstances[0]]];
+        $url = $this->getFreshdeskUrlType(Type::SUPPORT_DASHBOARD, Constants::RZPIND);
 
         $ticketFound = false;
 
-        foreach ($urls as $key => $value)
+        $currentTicket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $url);
+
+        if (isset($currentTicket['id']) === true)
         {
-            $currentTicket = $this->app[Constants::FRESHDESK_CLIENT]->fetchTicketById($ticketId, $value);
+            $ticket = $currentTicket;
 
-            if (isset($currentTicket['id']) === true)
-            {
-                $ticket = $currentTicket;
+            $ticketFound = true;
 
-                $url = $value;
+            $input['group_id'] = $this->getGrievanceGroupIdForCustomerTicket($isNodalStructureFeatureEnabled, $input[Constants::ACTION] ?? null);
 
-                $ticketFound = true;
-
-                $input['group_id'] = $this->app['config']->get('applications.freshdesk.activation')[$fdInstances[$key]]['groupIdGrievance'];
-
-                break;
-            }
+            $input[Constants::TICKET_TAGS] = $this->getTagsForCustomerTicket($currentTicket , $input[Constants::ACTION] ?? null);
         }
 
         if ($ticketFound === false)
@@ -438,11 +596,16 @@ class Service extends Base\Service
 
         $data = $input;
 
-        unset($data['id']);
-        unset($data['description']);
-        unset($data['email']);
-
-        $data['status'] = 2;
+        unset($data[Entity::ID]);
+        unset($data[Constants::DESCRIPTION]);
+        unset($data[Constants::EMAIL]);
+        unset($data[Constants::ACTION]);
+        unset($data[Constants::CONTACT]);
+        unset($data[Constants::OTP]);
+        unset($input['g_recaptcha_response']);
+        unset($input[Constants::IS_PA_PG_ENABLED]);
+        $this->trace->info(TraceCode::FRESHDESK_CREATE_TICKET_INPUT_LOG, $data);
+        $data['status']   = 2;
         $data['priority'] = 4;
 
         if (isset($data['group_id']) === true)
@@ -469,6 +632,8 @@ class Service extends Base\Service
             'subject'        => $ticket['subject'],
             'source'         => $ticket['source'],
             'type'           => $ticket['type'],
+            'tags'           => $ticket['tags'],
+            'due_by'         => $ticket['due_by'],
             'description'    => $ticket['description'],
             'payment_id'     => $ticket['custom_fields']['cf_razorpay_payment_id'],
             'refund_id'      => $ticket['custom_fields']['cf_refund_id'],
@@ -1444,6 +1609,13 @@ class Service extends Base\Service
         }, $conversations)));
     }
 
+    protected function rewriteFreshdeskConversationsForCustomerTicket($conversations)
+    {
+        return array_values(array_filter(array_map(function ($conversation)  {
+            return $this->filterCustomerResponse($conversation);
+        }, $conversations)));
+    }
+
     protected function rewriteFreshdeskConversation($conversation, $ticketEntity)
     {
         if (isset($conversation['id']) === true)
@@ -1451,7 +1623,7 @@ class Service extends Base\Service
             $conversation['id'] = 'redacted';
         }
 
-        if (isset($conversation['ticket_id']) === true)
+        if (isset($conversation['ticket_id']) === true && empty($ticketEntity) === false)
         {
             $conversation['ticket_id'] = $ticketEntity->getId();
         }
@@ -1468,7 +1640,7 @@ class Service extends Base\Service
             $ticketReplyResponse['id'] = 'redacted';
         }
 
-        if (isset($ticketReplyResponse['ticket_id']) === true)
+        if (isset($ticketReplyResponse['ticket_id']) === true && empty($ticketEntity) === false)
         {
             $ticketReplyResponse['ticket_id'] = $ticketEntity->getId();
         }
@@ -2069,6 +2241,209 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    protected function isNodalStructureEnabled($isPaPgEnabled)
+    {
+        return $isPaPgEnabled === "true" OR
+               $isPaPgEnabled === true;
+    }
+
+    protected function checkEmailVerifiedOrNot($email)
+    {
+        $isEmailVerified = $this->app['request']->session()->get(Constants::EMAIL_VERIFIED);
+
+        $verifiedEmail = $this->app['request']->session()->get(Constants::EMAIL);
+
+        if (true === empty($isEmailVerified) OR
+            false === $isEmailVerified OR
+            $verifiedEmail !== $email
+        )
+        {
+            $this->trace->error(TraceCode:: FRESHDESK_CUSTOMER_FLOW_EMAIL_NOT_VERIFIED, [
+                                                                                          'reason' => 'not_verified'
+                                                                                      ]
+            );
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED);
+        }
+
+        return;
+    }
+
+    protected function checkTicketBelongsToEmail($ticketId)
+    {
+        $ticketIdsForTheVerifiedEmail = $this->app['request']->session()->get(Constants::TICKET_ID_ARRAY);
+
+        if (empty($ticketIdsForTheVerifiedEmail) === true ||
+            array_key_exists((int)$ticketId, $ticketIdsForTheVerifiedEmail) === false)
+        {
+            $this->trace->error(TraceCode:: FRESHDESK_CUSTOMER_FLOW_TICKET_DOES_NOT_BELONG_TO_EMAIL, [
+                                                                                                       'ticket_array'          => $ticketIdsForTheVerifiedEmail,
+                                                                                                       'ticket_being_accessed' => $ticketId
+                                                                                                   ]
+            );
+            throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED);
+        }
+    }
+
+    protected function getRequesterIdFromSession($ticketId)
+    {
+        $ticketIdsForTheVerifiedEmail = $this->app['request']->session()->get(Constants::TICKET_ID_ARRAY);
+
+        return $ticketIdsForTheVerifiedEmail[(int)$ticketId][Constants::REQUESTER_ID];
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function checkActionAllowed($ticketId, $action = null)
+    {
+        $ticketIdsForTheVerifiedEmail = $this->app['request']->session()->get(Constants::TICKET_ID_ARRAY);
+
+        if ($ticketIdsForTheVerifiedEmail[$ticketId][Constants::ACTION] !== $action)
+        {
+            $this->trace->error(TraceCode:: ACTION_NOT_ALLOWED, [
+                                                                  'ticket_array'     => $ticketIdsForTheVerifiedEmail,
+                                                                  'action_performed' => $action
+                                                              ]
+            );
+
+            throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_ACTION_NOT_ALLOWED);
+        }
+    }
+
+    protected function markOtpVerified($email)
+    {
+        $this->app['request']->session()->put(Constants::EMAIL_VERIFIED, true);
+
+        $this->app['request']->session()->put(Constants::EMAIL, $email);
+    }
+
+    protected function addTicketIdsToSession($response)
+    {
+        $ticketIds = [];
+
+        foreach ($response as $ticket)
+        {
+            $ticketArr = [
+                Constants::ACTION       => $ticket[Constants::ACTION],
+                Constants::REQUESTER_ID => $ticket[Constants::REQUESTER_ID],
+                Constants::PAYMENT_ID   => $ticket['payment_id']
+            ];
+
+            $ticketIds[$ticket['number']] = $ticketArr;
+        }
+
+        $this->app['request']->session()->put(Constants::TICKET_ID_ARRAY, $ticketIds);
+    }
+
+    protected function filterCustomerResponse($response)
+    {
+        $returnResponse = [];
+
+        foreach ($response as $key => $value)
+        {
+            if (array_search($key, Constants::ALLOWED_CUSTOMER_KEYS) !== false)
+            {
+                $returnResponse[$key] = $value;
+            }
+        }
+
+        return $returnResponse;
+    }
+
+    protected function performNodalTask($input)
+    {
+        return $input;
+    }
+
+    protected function performAssistantNodalTask($input)
+    {
+        if ($input[Constants::ACTION] === Constants::ASSISTANT_NODAL)
+        {
+            $input[Constants::DESCRIPTION] .= ' Call on ' . $input[Constants::CONTACT];
+
+            $this->verifyPhoneNumber($input[Constants::CONTACT], $input[Constants::OTP], $input[Constants::ACTION]);
+        }
+
+        return $input;
+    }
+
+    protected function verifyPhoneNumber($contact, $otp, $action = null): void
+    {
+        $phoneNumber = $contact;
+
+        $phoneNumber = new PhoneBook($phoneNumber);
+
+        $phoneNumber = $phoneNumber->format(PhoneBook::E164);
+
+        (new Core)->verifyOtp($phoneNumber, $otp, $action);
+    }
+
+    protected function getGrievanceGroupIdForCustomerTicket(bool $isNodalStructureFeatureEnabled, $action)
+    {
+        if ($isNodalStructureFeatureEnabled === false)
+        {
+            return $this->app['config']->get('applications.freshdesk.activation')[Constants::RZPIND]['groupIdGrievance'];
+        }
+        else
+        {
+            return $this->app['config']->get('applications.freshdesk.' . $action)[Constants::RZPIND]['groupIdGrievance'];
+        }
+    }
+
+    protected function getActionApplicableForNodalFlow($ticket): string
+    {
+        $created_at_epoch = strtotime($ticket['created_at']);
+
+        $dateDiff = Carbon::now(Timezone::IST)->getTimestamp() - $created_at_epoch;
+
+        $dateDiffInDays = round($dateDiff / (60 * 60 * 24));
+
+        $action = '';
+
+        if ($dateDiffInDays > Constants::MINIMUM_DAYS_FOR_NODAL_ASSISTANT_GRIEVANCE &&
+            (empty($ticket['tags']) === true ||
+                ((array_search(Constants::ASSISTANT_NODAL, $ticket['tags']) === false) &&
+                    array_search(Constants::NODAL, $ticket['tags']) === false)))
+        {
+            $action = Constants::ASSISTANT_NODAL;
+        }
+        if ($dateDiffInDays > Constants::MINIMUM_DAYS_FOR_NODAL_GRIEVANCE &&
+            (empty($ticket['tags']) === true ||
+             array_search(Constants::NODAL, $ticket['tags']) === false))
+        {
+            $action = Constants::NODAL;
+        }
+
+        return $action;
+    }
+
+    protected function checkDuplicateTicket($input)
+    {
+        $ticketIdsForTheVerifiedEmail = $this->app['request']->session()->get(Constants::TICKET_ID_ARRAY);
+
+        foreach ($ticketIdsForTheVerifiedEmail as $id => $ticket)
+        {
+            if (empty($ticket[Constants::PAYMENT_ID]) === false && $ticket[Constants::PAYMENT_ID] === $input[Constants::CUSTOM_FIELDS][Constants::PAYMENT_ID])
+            {
+                $this->trace->error(TraceCode:: FRESHDESK_CUSTOMER_FLOW_DUPLICATE_TICKET, [
+                                                                                            'reason'           => 'duplicate Ticket',
+                                                                                            'old ticket'       => $id,
+                                                                                            'input payment id' => $input[Constants::CUSTOM_FIELDS][Constants::PAYMENT_ID]
+                                                                                        ]
+                );
+
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_ALREADY_EXISTS);
+            }
+        }
+        return;
+    }
+
+    protected function getTagsForCustomerTicket($currentTicket, $action)
+    {
+        return empty($action) ? $currentTicket[Constants::TICKET_TAGS] : array_merge($currentTicket[Constants::TICKET_TAGS],[$action]);
     }
 
     protected function isCapitalExperimentEnabled($merchantId): bool

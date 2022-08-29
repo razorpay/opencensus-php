@@ -116,35 +116,65 @@ return [
                 'mode' => 'test',
                 'otp'  => '0007',
                 'custom_fields' => [
-                    'cf_transaction_id' => '',
-                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id'        => '',
+                    'cf_requester_category'    => 'Customer',
                     'cf_requestor_subcategory' => 'Sub category',
                 ]
             ]
         ],
         'response' => [
             'status_code' => 200,
-            'content' => [
+            'content'     => [
             ]
         ]
     ],
 
-    'testPostTicketPaymentIdInvalidOtp' => [
-        'request' => [
-            'url' => '/freshdesk/tickets',
-            'method' => 'POST',
+    'testNotVerifiedEmailPostCustomerTicket' => [
+        'request'   => [
+            'url'     => '/freshdesk/tickets',
+            'method'  => 'POST',
             'content' => [
-                'name' => 'Test',
-                'subject' => 'Subject',
-                'description' => 'Description',
-                'email' => 'test@gmail.com',
-                'abc' => 'strct',
-                'mode' => 'test',
-                'otp'  => '9999',
+                'name'          => 'Test',
+                'subject'       => 'Subject',
+                'description'   => 'Description',
+                'email'         => 'test@gmail.com',
+                'abc'           => 'strct',
+                'mode'          => 'test',
+                'otp'           => '0007',
+                'isPaPgEnable' => "true",
                 'custom_fields' => [
-                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id'        => '',
+                    'cf_requester_category'    => 'Customer',
                     'cf_requestor_subcategory' => 'Sub category',
-                    'cf_transaction_id' => ''
+                ]
+            ]
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_NOT_VERIFIED,
+        ],
+    ],
+
+    'testPostTicketPaymentIdInvalidOtp' => [
+        'request'   => [
+            'url'     => '/freshdesk/tickets',
+            'method'  => 'POST',
+            'content' => [
+                'name'          => 'Test',
+                'subject'       => 'Subject',
+                'description'   => 'Description',
+                'email'         => 'test@gmail.com',
+                'abc'           => 'strct',
+                'mode'          => 'test',
+                'otp'           => '9999',
+                'custom_fields' => [
+                    'cf_requester_category'    => 'Customer',
+                    'cf_requestor_subcategory' => 'Sub category',
+                    'cf_transaction_id'        => ''
                 ]
             ]
         ],
@@ -320,6 +350,86 @@ return [
         ],
     ],
 
+    'testGetFreshdeskTicketsForCustomerNodal' => [
+        'request' => [
+            'url'     => '/freshdesk/tickets/customer',
+            'method'  => 'POST',
+            'content' => [
+                'email' => 'successnodal@gmail.com',
+                'otp'   => '0007',
+                'isPaPgEnable' => "true",
+            ],
+        ],
+        'response' => [
+            'content'     => [
+               [
+                    'number'         => 9993,
+                    'action'        => 'assistant_nodal',
+                    'tags'      => ['tag1'],
+                    'status'            => 'Open',
+                    'subject'           => '',
+                    'source'            => 2,
+                    'type'              => 'Other',
+                    'payment_id'        => 'FrTYsVAuCrW8Fm',
+                    'refund_id'         => null,
+                    'order_id'          => null,
+                    'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'=> "2022-02-12T11:05:31Z",
+                    'updated_at'=> "2022-02-12T11:18:25Z",
+                    'requester_id'             => 11033774580,
+                ],
+                [
+                    'number'         => 9994,
+                    'tags' => ['assistant_nodal'],
+                    'status'         => 'Closed',
+                    'subject'        => '',
+                    'source'         => 2,
+                    'type' => 'Other',
+                    'payment_id'     => 'FrTYsVAuCrW8Fm',
+                    'refund_id'      => null,
+                    'order_id'       => null,
+                    'transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'=> "2022-02-12T11:05:31Z",
+                    'updated_at'=> "2022-02-12T11:18:25Z",
+                    'requester_id'             => 11033774580,
+                ],
+                [
+                    'number'         => 9995,
+                    'status'         => 'Waiting on Customer',
+                    'tags'   => [],
+                    'action' => 'nodal',
+                    'subject'        => '',
+                    'source'         => 2,
+                    'type' => 'Other',
+                    'payment_id'     => 'FrTYsVAuCrW8Fm',
+                    'refund_id'      => null,
+                    'order_id'       => null,
+                    'transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'=> "2022-02-02T11:05:31Z",
+                    'updated_at'=> "2022-02-02T11:18:25Z",
+                    'requester_id'             => 11033774580,
+                ],
+                [
+                    'number'         => 9996,
+                    'status'         => 'Open',
+                    'tags'   => ['assistant_nodal'],
+                    'action' => 'nodal',
+                    'subject'        => '',
+                    'source'         => 2,
+                    'type' => 'Other',
+                    'payment_id'     => 'FrTYsVAuCrW8Fm',
+                    'refund_id'      => null,
+                    'order_id'       => null,
+                    'transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                    'created_at'=> "2022-02-02T11:05:31Z",
+                    'updated_at'=> "2022-02-02T11:18:25Z",
+                    'requester_id'             => 11033774580,
+                ]
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testGetFreshdeskTicketsForCustomer' => [
         'request' => [
             'url'     => '/freshdesk/tickets/customer',
@@ -427,32 +537,186 @@ return [
         'response' => [
             'status_code' => 200,
             'content'     => [
-                'number'            => 3328,
-                'status'            => 'Processing',
-                'subject'           => '',
-                'source'            => 2,
-                'type'              => null,
-                'payment_id'        => 'FrTYsVAuCrW8Fm',
-                'refund_id'         => null,
-                'order_id'          => null,
-                'transaction_id'    => 'pay_FrTYsVAuCrW8Fm',
-                'created_at'        => '2020-10-28T11:02:50Z',
-                'updated_at'        => '2020-10-28T11:02:51Z',
+                'number'         => 3328,
+                'status'         => 'Processing',
+                'subject'        => '',
+                'source'         => 2,
+                'type'           => null,
+                'payment_id'     => 'FrTYsVAuCrW8Fm',
+                'refund_id'      => null,
+                'order_id'       => null,
+                'transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                'created_at'     => '2020-10-28T11:02:50Z',
+                'updated_at'     => '2020-10-28T11:02:51Z',
             ],
         ],
     ],
 
-    'testRaiseGrievanceAgainstTicketUpdateFailure' => [
-        'request' => [
+    'testRaiseGrievanceNodalFlowForWrongAction' => [
+        'request'  => [
             'url'     => '/freshdesk/grievance',
             'method'  => 'POST',
             'content' => [
-                'id'          => 3329,
-                'description' => 'some description',
-                'email'       => 'thatemail@razorpay.com',
+                'id'                   => 9991,
+                'group_id'             => '123',
+                'email'                => 'thatemail@razorpay.com',
+                'tags'                 => ['tag1'],
+                'description'          => 'tag1',
+                'action'               => 'nodal',
+                'g_recaptcha_response' => 'test',
+                'custom_fields'        => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id'     => ''
+                ],
+                'isPaPgEnable' => "true",
+            ],
+        ],
+            'response'  => [
+                'status_code' => 400,
+                'content'     => [
+                    'error' => [
+                        'description' => 'BAD_REQUEST_ACTION_NOT_ALLOWED',
+                        'code'        => 'BAD_REQUEST_ERROR',
+                    ],
+                ],
+            ],
+            'exception' =>
+                [
+                    'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+    ],
+
+    'testRaiseGrievanceNodalFlowTicket'=> [
+        'request'  => [
+            'url'     => '/freshdesk/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'group_id' => '123',
+                'email' => 'thatemail@razorpay.com',
+                'tags' => ['tag1'],
+                'description' => 'tag1',
+                'g_recaptcha_response' => 'test',
                 'custom_fields' => [
                     'cf_requester_category' => 'Customer',
                     'cf_transaction_id' => ''
+                ],
+                'isPaPgEnable' => "true",
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'status'         => 'Processing',
+                'subject'        => '',
+                'source'         => 2,
+                'type'           => null,
+                'payment_id'     => 'FrTYsVAuCrW8Fm',
+                'refund_id'      => null,
+                'order_id'       => null,
+                'transaction_id' => 'pay_FrTYsVAuCrW8Fm',
+                'created_at'     => '2020-10-28T11:02:50Z',
+                'updated_at'     => '2020-10-28T11:02:51Z',
+            ],
+        ],
+    ],
+
+    'testFetchConversationCustomerTicket' => [
+        'request'  => [
+            'url'     => '/freshdesk/ticket/customer/9993/conversations',
+            'method'  => 'POST',
+            'content' => [
+                'g_recaptcha_response' => 'test'
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'body'      => "<table style=\"margin-left: auto;margin-right: auto\">  <tbody>\n<tr>    <td>      <table style=\"margin:0px auto;background: #f4f8fa;overflow: auto;padding: 0 15px; min-width: 500px; margin: 0px\">          <tbody>\n<tr style=\"border: none\">    <td style=\"padding: 10px 20px;color: #333;color: #3f3f46\">        <div></div>\n<div style=\"padding:0 5px 0 0;font-size:12px; color: #6f7071;margin-left: 33px\">Eloquent Info Solutions Private Limited</div>\n<div></div>        <img src=\"https://images.freshchat.com/30x30/fresh-chat-names/Alphabets/E.png\" style=\"width: 30px;height: 30px;border-radius: 50% 6px 50% 50%;float:left;margin-right: 3px\">        <div style=\"border-radius: 4px 20px 20px;background: #a8ddfd;max-width: 320px;padding: 12px;float: left\"><div>please resolve</div></div>        <div style=\"color: #999999; font-size: 11px; clear: left;margin-left: 33px\">04:58 PM, 07th Jul</div>    </td>\n</tr>\n<tr></tr>\n<tr style=\"border: none\">  <td style=\"padding: 10px 20px;font-size: 13.6px;color: #3f3f46\">        <div style=\"float:right\">\n<div style=\"font-size: 12px;font-weight: 500;float: right; color: #6f7071; margin-right: 30px\">Ashmitha</div>        <img src=\"https://images.freshchat.com/30x30/fresh-chat-names/Alphabets/A.png\" style=\"width: 30px;height: 30px;border-radius: 6px 50% 50% 50%;margin-left:5px;float:right;clear:right\">        <div style=\"float: right;border-radius: 20px 4px 20px 20px;background-color: #ffffff;max-width: 320px;padding: 12px\"><div>Hi</div></div>        <div style=\"color: #999999;font-size: 11px;clear: right\">05:01 PM, 07th Jul</div>\n</div>   </td>\n</tr>\n<tr>       </tr>\n</tbody>\n</table>    </td>  </tr>  <tr>    <td>      <table style=\"margin:10px auto;padding:0 20px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#333;line-height:1.4;margin: 0px;min-width: 100%\">        <tbody>\n<tr><td style=\"text-align: center\"><span style=\"font-size: 13px; color: #999\">View conversation in <a href=\"https://web.freshchat.com/a/153370844780746/open/conversation/374169896285298\" style=\"font-weight: 500; color: #999; text-decoration: none\" rel=\"noreferrer\">Freshchat</a></span></td></tr>      </tbody>\n</table>    </td>  </tr>\n</tbody>\n</table>",
+                        'body_text' => "Eloquent Info Solutions Private Limited                    please resolve           04:58 PM, 07th Jul                   Ashmitha                   Hi           05:01 PM, 07th Jul                                          View conversation in Freshchat",
+                    ]
+                ],
+
+            ],
+        ],
+    ],
+
+    'testNotVerifiedEmailFetchConversationCustomerTicket' => [
+        'request'   => [
+            'url'     => '/freshdesk/ticket/customer/9993/conversations',
+            'method'  => 'POST',
+            'content' => [
+                'g_recaptcha_response' => 'test',
+                'isPaPgEnable' => "true",
+            ],
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [
+                'error' => [
+                    'description' => 'BAD_REQUEST_EMAIL_NOT_VERIFIED',
+                    'code'        => 'BAD_REQUEST_ERROR',
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPostReplyCustomerTicket' => [
+        'request'  => [
+            'url'     => '/freshdesk/ticket/customer/9993/reply',
+            'method'  => 'POST',
+            'content' => [
+                'body'                 => 'test reply',
+                'g_recaptcha_response' => 'test'
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     =>
+                [
+                    'body'      => "<div>123211 fdf3</div>",
+                    'body_text' => "123211 fdf3",
+                ]
+        ]
+    ],
+
+    'testNotVerifiedPostReplyCustomerTicket' => [
+        'request'   => [
+            'url'     => '/freshdesk/ticket/customer/9993/reply',
+            'method'  => 'POST',
+            'content' => [
+                'body'                 => 'test reply',
+                'g_recaptcha_response' => 'test'
+            ],
+        ],
+        'response'  => [
+            'status_code' => 400,
+            'content'     => [],
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRaiseGrievanceAgainstTicketUpdateFailure' => [
+        'request'   => [
+            'url'     => '/freshdesk/grievance',
+            'method'  => 'POST',
+            'content' => [
+                'id'            => 3329,
+                'description'   => 'some description',
+                'email'         => 'thatemail@razorpay.com',
+                'custom_fields' => [
+                    'cf_requester_category' => 'Customer',
+                    'cf_transaction_id'     => ''
                 ],
             ],
         ],

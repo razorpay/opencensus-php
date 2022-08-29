@@ -193,7 +193,7 @@ class FreshdeskTicketClient
     {
         $authKey = $this->getAuthKey($urlKey);
 
-        $url = $this->getUrl(self::LIST_TICKETS . '?' . $queryString, $urlKey);
+        $url = $this->getUrl(self::LIST_TICKETS . '?' . $queryString.'&include=description', $urlKey);
 
         $auth = $this->getAuth($authKey);
 
@@ -568,6 +568,8 @@ class FreshdeskTicketClient
                                    'response' => $responseBody
                                ]
             );
+
+
         }
 
         return $responseBody;

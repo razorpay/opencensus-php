@@ -14,39 +14,42 @@ class Constants
     const OLD_EMAIL = 'old_email';
     const PHONE     = 'phone';
     const OLD_PHONE = 'old_phone';
+    const CONTACT = 'contact';
+    const DUE_BY = 'due_by';
 
     const DEFAULT_ACTIVATION_STATUS = 'undefined';
 
-    const CC_EMAILS                 = 'cc_emails';
+    const CC_EMAILS    = 'cc_emails';
+    const REQUESTER_ID = 'requester_id';
 
-    const CUSTOM_FIELDS             = 'custom_fields';
+    const CUSTOM_FIELDS = 'custom_fields';
     // custom fields
-    const CF_REQUESTOR_CATEGORY         = 'cf_requester_category';
-    const CF_REQUESTOR_SUBCATEGORY      = 'cf_requestor_subcategory';
-    const CF_SUBCATEGORY                = 'cf_subcategory';
-    const CF_REQUESTOR_ITEM             = 'cf_requester_item';
-    const CF_CATEGORY                   = 'cf_category';
-    const TRANSACTION_ID                = 'cf_transaction_id';
-    const PAYMENT_ID                    = 'cf_razorpay_payment_id';
-    const REFUND_ID                     = 'cf_refund_id';
-    const ORDER_ID                      = 'cf_order_id';
-    const CF_MERCHANT_ID                = 'cf_merchant_id';
-    const PAYMENT_CUSTOMER_EMAIL        = 'cf_payment_email';
-    const PAYMENT_CUSTOMER_PHONE        = 'cf_payment_phone';
-    const CF_MERCHANT_ID_DASHBOARD      = 'cf_merchant_id_dashboard';
-    const CF_TICKET_QUEUE               = 'cf_ticket_queue';
-    const CF_PRODUCT                    = 'cf_product';
-    const CF_QUERY                      = 'cf_query';
-    const CF_CREATED_BY                 = 'cf_created_by';
-    const CF_CREATION_SOURCE        = 'cf_creation_source';
-    const CF_MERCHANT_ACTIVATION_STATUS = 'cf_merchant_activation_status';
-    const CF_WORKFLOW_ID                = 'cf_workflow_id';
+    const CF_REQUESTOR_CATEGORY                = 'cf_requester_category';
+    const CF_REQUESTOR_SUBCATEGORY             = 'cf_requestor_subcategory';
+    const CF_SUBCATEGORY                       = 'cf_subcategory';
+    const CF_REQUESTOR_ITEM                    = 'cf_requester_item';
+    const CF_CATEGORY                          = 'cf_category';
+    const TRANSACTION_ID                       = 'cf_transaction_id';
+    const PAYMENT_ID                           = 'cf_razorpay_payment_id';
+    const REFUND_ID                            = 'cf_refund_id';
+    const ORDER_ID                             = 'cf_order_id';
+    const CF_MERCHANT_ID                       = 'cf_merchant_id';
+    const PAYMENT_CUSTOMER_EMAIL               = 'cf_payment_email';
+    const PAYMENT_CUSTOMER_PHONE               = 'cf_payment_phone';
+    const CF_MERCHANT_ID_DASHBOARD             = 'cf_merchant_id_dashboard';
+    const CF_TICKET_QUEUE                      = 'cf_ticket_queue';
+    const CF_REQUESTER_CONTACT_RAZORPAY_REASON = 'cf_requester_contact_razorpay_reason';
+    const CF_PRODUCT                           = 'cf_product';
+    const CF_QUERY                             = 'cf_query';
+    const CF_CREATED_BY                        = 'cf_created_by';
+    const CF_CREATION_SOURCE                   = 'cf_creation_source';
+    const CF_MERCHANT_ACTIVATION_STATUS        = 'cf_merchant_activation_status';
+    const CF_WORKFLOW_ID                       = 'cf_workflow_id';
 
-    const AGENT      = 'agent';
-    const AGENT_ID   = 'agent_id';
-    const FRESHDESK_AGENT_ID   = 'freshdesk_agent_id';
-    const AGENT_NAME = 'agent_name';
-    const CONTACT    = 'contact';
+    const AGENT              = 'agent';
+    const AGENT_ID           = 'agent_id';
+    const FRESHDESK_AGENT_ID = 'freshdesk_agent_id';
+    const AGENT_NAME         = 'agent_name';
 
 
     //Flows
@@ -66,6 +69,7 @@ class Constants
     const OTP_RECEIVER                          = 'receiver';
     const OTP_CUSTOMER_SUPPORT_SOURCE           = 'customer_support';
     const SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY = 'sms.support.account_recovery_otp';
+    const SMS_OTP_ASSISTANT_NODAL_GRIEVANCE     = 'sms.grievance_flow';
     const G_RECAPTCHA_RESPONSE                  = 'g_recaptcha_response';
 
     const GOOGLE_CAPTCHA_VERIFICATION_ENDPOINT = 'https://www.google.com/recaptcha/api/siteverify';
@@ -82,7 +86,6 @@ class Constants
     const FROM_EMAIL    = 'from_email';
     const FR_DUE_BY     = 'fr_due_by';
     const GROUP_ID      = 'group_id';
-    const REQUESTER_ID  = 'requester_id';
 
     const FD_INSTANCE      = 'fd_instance';
     const FRESHDESK_CLIENT = 'freshdesk_client';
@@ -164,8 +167,11 @@ class Constants
     const SUCCESS = 'success';
 
     // razorx flags
-    const RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG            = 'freshdesk_add_plugin_merchant_tag';
-    const RAZORX_FLAG_TO_LIMIT_NO_OF_OPEN_FRESHDESK_TICKETS = 'limit_no_of_open_freshdesk_tickets';
+    const RAZORX_FLAG_SHOULD_MIGRATE_FRESHDESK_IND_MERCHANT           = 'should_migrate_freshdesk_ind_merchant';
+    const RAZORX_FLAG_FRESHDESK_CUSTOMER_TICKET_CREATION_SERVER_PICK  = 'Freshdesk_Customer_Ticket_Creation_Server_Pick';
+    const RAZORX_FLAG_TO_ADD_PLUGIN_MERCHANT_TAG                      = 'freshdesk_add_plugin_merchant_tag';
+    const RAZORX_PA_PG_NODAL_STRUCTURE                                = 'pa_pg_nodal_structure';
+    const RAZORX_FLAG_TO_LIMIT_NO_OF_OPEN_FRESHDESK_TICKETS           = 'limit_no_of_open_freshdesk_tickets';
 
     const CAPITAL_MIGRATION_EXPERIMENT_ID = 'app.capital_migration_experiment_id';
     const ENABLE                          = 'enable';
@@ -197,20 +203,41 @@ class Constants
     const FD_SUB_CATEGORY_INTERNATIONAL_ENABLEMENT  = 'International Enablement';
 
     // Categories
-    const RISK_REPORT_CATEGORY               = 'Risk Report_Merchant';
-    const CHARGEBACKS_CATEGORY               = 'Chargebacks';
+    const RISK_REPORT_CATEGORY = 'Risk Report_Merchant';
+    const CHARGEBACKS_CATEGORY = 'Chargebacks';
 
-    const FRESHDESK_DEFAULT_PAGE_SIZE        = 30;
+    const FRESHDESK_DEFAULT_PAGE_SIZE = 30;
 
+    const MERCHANT_PLUGIN_TAG = 'plugin_merchant';
+
+    /*Session Variables*/
+    const EMAIL_VERIFIED        = 'email_verified';
+    const SESSION_EXPIRY_IN_SEC = 60 * 20;
+
+    const ALLOWED_CUSTOMER_KEYS = ['body', 'body_text', 'created_at', 'updated_at', 'attachments','user_id'];
+    const ACTION                = 'action';
+    const ASSISTANT_NODAL       = 'assistant_nodal';
+    const NODAL                 = 'nodal';
+    const ACCOUNT_RECOVERY      = 'account_recovery';
+    const TICKET_ID_ARRAY       = 'ticket_id_array';
+
+    const MINIMUM_DAYS_FOR_NODAL_ASSISTANT_GRIEVANCE = 10;
+    const MINIMUM_DAYS_FOR_NODAL_GRIEVANCE           = 20;
+
+    const ACTION_VS_TEMPLATE_FOR_OTP = [
+        self::ASSISTANT_NODAL  => Constants::SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY,
+        self::ACCOUNT_RECOVERY => Constants::SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY,
+    ];
     const DEFAULT_CF_CATEGORY = 'New Ticket';
 
     //DASHBOARD URLS
     const SUPPORT_TICKET_DASHBOARD_URL = 'app/ticket-support/%s/%s/agent/conversation';
     const SUPPORT_TICKET_DASHBOARD_BUTTON_URL = '%s/%s/agent/conversation';
 
-    const MERCHANT_PLUGIN_TAG       = 'plugin_merchant';
-
     const TICKET_QUEUE_INTERNAL     = 'Internal';
+
+
+    const IS_PA_PG_ENABLED     = 'isPaPgEnable';
 
     // Ticket Creation Sources
     const FD_TICKET_CREATION_SOURCE_DASHBOARD = 'Dashboard';

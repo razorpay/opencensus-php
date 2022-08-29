@@ -82,11 +82,11 @@ class Core extends Base\Core
         $this->sendOtpForEmail($otpResponse, $email);
     }
 
-    public function generateAndSendCustomerOtpForMobile($phone)
+    public function generateAndSendCustomerOtpForMobile($phone, $action = null)
     {
-        $otpResponse = $this->generateOtp($phone);
+        $otpResponse = $this->generateOtp($phone, $action);
 
-        $this->sendOtpForMobile($otpResponse, $phone);
+        $this->sendOtpForMobile($otpResponse, $phone, $action);
     }
 
     /**
@@ -95,9 +95,9 @@ class Core extends Base\Core
      *
      * @throws BadRequestException
      */
-    protected function generateOtp(string $receiver): array
+    protected function generateOtp(string $receiver, $action = null): array
     {
-        $context = Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $receiver;
+        $context = (Constants::OTP_CUSTOMER_SUPPORT_SOURCE . $receiver). (empty($action) === true ? '' : '_' . $action);
 
         $payload = [
             Constants::OTP_RECEIVER => $receiver,
@@ -138,23 +138,27 @@ class Core extends Base\Core
         return $otpStore;
     }
 
-    protected function getPayloadForMobileOtp($phone, $otpResponse)
+    protected function getPayloadForMobileOtp($phone, $otpResponse, $action = null)
     {
+        if (empty($action))
+        {
+            $action  = Constants::ACCOUNT_RECOVERY;
+        }
         $payload = [
-            'template'      => Constants::SMS_OTP_TEMPLATE_FOR_ACCOUNT_RECOVERY,
-            'receiver'      => $phone,
-            'source'        => Constants::OTP_CUSTOMER_SUPPORT_SOURCE,
-            'params'        => [
-                'otp'        => $otpResponse[Constants::OTP],
+            'template' => Constants::ACTION_VS_TEMPLATE_FOR_OTP[$action],
+            'receiver' => $phone,
+            'source'   => Constants::OTP_CUSTOMER_SUPPORT_SOURCE,
+            'params'   => [
+                'otp' => $otpResponse[Constants::OTP],
             ],
         ];
 
         return $payload;
     }
 
-    protected function sendOtpForMobile($otpResponse, $phone)
+    protected function sendOtpForMobile($otpResponse, $phone, $action = null)
     {
-        $payload = $this->getPayloadForMobileOtp($phone, $otpResponse);
+        $payload = $this->getPayloadForMobileOtp($phone, $otpResponse, $action);
 
         try
         {
@@ -192,9 +196,16 @@ class Core extends Base\Core
      *
      * @throws BadRequestValidationFailureException
      */
-    public function verifyOtp($receiver, $otp): bool
+    public function verifyOtp($receiver, $otp, $action = null): bool
     {
-        $otpResponse = $this->redis->get($this->getRedisKey($receiver));
+        if (empty($action) === true)
+        {
+            $otpResponse = $this->redis->get($this->getRedisKey($receiver));
+        }
+        else
+        {
+            $otpResponse = $this->redis->get($this->getRedisKey($receiver.'_'.$action));
+        }
 
         $errorCode = '';
 

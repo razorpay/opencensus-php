@@ -372,7 +372,11 @@ class RefundController extends Controller
 
         $data = $this->service()->fetchRefundDetailsForCustomer($input);
 
-        return ApiResponse::json($data);
+        $resp = ApiResponse::json($data);
+
+        $this->addCorsHeaders($resp);
+
+        return $resp;
     }
 
     public function getRefundsDetailsForCustomer()
@@ -381,7 +385,11 @@ class RefundController extends Controller
 
         $data = $this->service()->fetchRefundsDetailsForCustomer($input);
 
-        return ApiResponse::json($data);
+        $resp = ApiResponse::json($data);
+
+        $this->addCorsHeaders($resp);
+
+        return $resp;
     }
 
     public function updateProcessedAt()
@@ -470,6 +478,13 @@ class RefundController extends Controller
         $this->service()->cancelRefundsBatch($batchId);
 
         return ApiResponse::json([]);
+    }
+
+    private function addCorsHeaders(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Credentials' , 'true');
+
+        $response->headers->set('Access-Control-Allow-Headers', '*');
     }
 
     public function scroogeFetchRefundEmailData()
