@@ -176,6 +176,8 @@ return array(
         // and it does not work with PHP7
         App\Providers\PasswordStrengthServiceProvider::class,
 
+        App\Providers\RequestOauthServiceProvider::class,
+
         // Package providers follow
         Aws\Laravel\AwsServiceProvider::class,
         'Barryvdh\Debugbar\ServiceProvider',
@@ -268,6 +270,8 @@ return array(
     'campaignhq_url'               => env('CAMPAIGNHQ_URL'),
     'docs_url'                     => env('DOCS_URL'),
     'banking_demo_user_password'   => env('BANKING_DEMO_USER_PASSWORD'),
+
+    'passport_public_key'        => str_replace('\n', PHP_EOL, env('PASSPORT_PUBLIC_KEY')),
 
     'rzp_website_url'     => env('RZP_WEBSITE_URL'),
     'next_rzp_url'        => env('NEXT_WEBSITE_URL'),

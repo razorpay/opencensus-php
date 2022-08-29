@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fd5bb3f02f0b1e83e467e8ea3e112363",
+    "content-hash": "5f324cf1ec90aefcc76ff24080756472",
     "packages": [
         {
             "name": "ackintosh/ganesha",
@@ -1635,32 +1635,29 @@
         },
         {
             "name": "lcobucci/jwt",
-            "version": "3.2.5",
+            "version": "3.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lcobucci/jwt.git",
-                "reference": "82be04b4753f8b7693b62852b7eab30f97524f9b"
+                "reference": "c1123697f6a2ec29162b82f170dd4a491f524773"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lcobucci/jwt/zipball/82be04b4753f8b7693b62852b7eab30f97524f9b",
-                "reference": "82be04b4753f8b7693b62852b7eab30f97524f9b",
+                "url": "https://api.github.com/repos/lcobucci/jwt/zipball/c1123697f6a2ec29162b82f170dd4a491f524773",
+                "reference": "c1123697f6a2ec29162b82f170dd4a491f524773",
                 "shasum": ""
             },
             "require": {
+                "ext-mbstring": "*",
                 "ext-openssl": "*",
-                "php": ">=5.5"
+                "php": "^5.6 || ^7.0"
             },
             "require-dev": {
-                "mdanter/ecc": "~0.3.1",
                 "mikey179/vfsstream": "~1.5",
                 "phpmd/phpmd": "~2.2",
                 "phpunit/php-invoker": "~1.1",
-                "phpunit/phpunit": "~4.5",
+                "phpunit/phpunit": "^5.7 || ^7.3",
                 "squizlabs/php_codesniffer": "~2.3"
-            },
-            "suggest": {
-                "mdanter/ecc": "Required to use Elliptic Curves based algorithms."
             },
             "type": "library",
             "extra": {
@@ -1689,7 +1686,21 @@
                 "JWS",
                 "jwt"
             ],
-            "time": "2018-11-11T12:22:26+00:00"
+            "support": {
+                "issues": "https://github.com/lcobucci/jwt/issues",
+                "source": "https://github.com/lcobucci/jwt/tree/3.3.3"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/lcobucci",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/lcobucci",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2020-08-20T13:22:28+00:00"
         },
         {
             "name": "league/csv",
@@ -3462,6 +3473,51 @@
             ],
             "description": "A polyfill for getallheaders.",
             "time": "2019-03-08T08:55:37+00:00"
+        },
+        {
+            "name": "razorpay/edge-passport-php",
+            "version": "v2.3.1",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/edge-passport-php.git",
+                "reference": "6ce8c3f37970dad0900fb7de6db25ea88967222d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/edge-passport-php/zipball/6ce8c3f37970dad0900fb7de6db25ea88967222d",
+                "reference": "6ce8c3f37970dad0900fb7de6db25ea88967222d",
+                "shasum": ""
+            },
+            "require": {
+                "lcobucci/jwt": "3.3.*",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "php-mock/php-mock": "^2.3",
+                "phpunit/phpunit": "^7.5",
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "tests"
+                ],
+                "psr-4": {
+                    "Razorpay\\Edge\\Passport\\": "src/"
+                }
+            },
+            "authors": [
+                {
+                    "name": "Tools Team",
+                    "email": "tools.pod@razorpay.com"
+                }
+            ],
+            "description": "Passport SDK. To be used by upstream services to consume passport sent by edge service.",
+            "support": {
+                "source": "https://github.com/razorpay/edge-passport-php/tree/v2.3.1",
+                "issues": "https://github.com/razorpay/edge-passport-php/issues"
+            },
+            "time": "2022-06-15T10:04:20+00:00"
         },
         {
             "name": "razorpay/metrics-php",
@@ -5241,5 +5297,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.1.0"
 }

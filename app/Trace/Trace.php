@@ -40,6 +40,11 @@ class Trace extends TraceWriter
 
         $merchant_id = Session::get('current_merchant_id') ?? '';
 
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $merchant_id = app('request.ctx')->getMerchantId();
+        }
+
         $context = $values + ['merchant_id' => $merchant_id];
 
         TraceFields::checkFields($code, array_keys($context));

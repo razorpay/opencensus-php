@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Auth;
 use Input;
 use Cookie;
+use Request;
 use Session;
 use App\User;
 use App\Admin;
@@ -644,7 +645,9 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::USER_LOGIN, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data, $httpCode);
+        $headers = $this->getMobileOauthHeaders($data, $error);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
     }
 
     /**
@@ -763,7 +766,9 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::VERIFY_LOGIN_OTP, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data, $httpCode);
+        $headers = $this->getMobileOauthHeaders($data, $error);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
     }
 
     /**
@@ -784,7 +789,9 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::OTP_LOGIN_2FA_PASSWORD, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        $headers = $this->getMobileOauthHeaders($data, $error);
+
+        return AppResponse::jsonResponse($error, $data, null, $headers);
     }
 
     /**
@@ -831,7 +838,16 @@ class UserController extends Controller
 
         $this->traceDuration($timeTaken, TraceCode::VERIFY_VERIFICATION_OTP_DURATION);
 
-        return AppResponse::jsonResponse($error, $data);
+        $headers = $this->getMobileOauthHeaders($data, $error);
+
+        return AppResponse::jsonResponse($error, $data, null, $headers);
+    }
+
+    public function oauthLogout()
+    {
+        $genericController = new GenericController();
+
+        return $genericController->handleAny('live', 'users/logout/oauth');
     }
 
     public function postOauthSignIn()
@@ -856,7 +872,9 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::USER_OAUTH_LOGIN, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data, $httpCode);
+        $headers = $this->getMobileOauthHeaders($data, $error);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
     }
 
     /**
@@ -877,7 +895,9 @@ class UserController extends Controller
 
         Helper::pushSignUpLoginMetrics(Constants::PASSWORD_LOGIN_2FA_OTP, $input, $error, $timeTaken);
 
-        return AppResponse::jsonResponse($error, $data);
+        $headers = $this->getMobileOauthHeaders($data, $error);
+
+        return AppResponse::jsonResponse($error, $data, null, $headers);
     }
 
     /**

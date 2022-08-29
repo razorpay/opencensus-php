@@ -9,6 +9,7 @@ use Mail;
 use Queue;
 use Trace;
 use Config;
+use Request;
 use Session;
 use Aws\Sdk;
 use Requests;
@@ -196,7 +197,12 @@ class Service extends Base\Service
 
         if ($merchantId === null)
         {
-            $merchantId = $this->merchant->id;
+            if (app('request.ctx')->isOauthRequest() === true)
+            {
+                $merchantId = app('request.ctx')->getMerchantId();
+            }
+
+            $merchantId = $this->merchant->id ?? $merchantId;
         }
 
         Trace::debug('MISC_TRACE_CODE', [
@@ -276,8 +282,10 @@ class Service extends Base\Service
         return self::WEBSITE_URLS;
     }
 
-    public function updateMerchantDetails($data, $merchantId = null, $activated = false)
+    public function updateMerchantDetails($data, $activated = false, $currentMerchant = null, $genericUser = null)
     {
+        $merchantId = $currentMerchant->id ?? null;
+
         $merchantDetails = $this->fetchDetails($merchantId);
 
         $data = $data + $merchantDetails;
@@ -286,12 +294,12 @@ class Service extends Base\Service
 
         $data = $this->updateInstantActivationExperiment($data);
 
-        $data = $this->updatePresignUpData($data, $activated);
+        $data = $this->updatePresignUpData($data, $activated, $currentMerchant, $genericUser);
 
         return $data;
     }
 
-    public function updatePresignUpData($data, $activated)
+    public function updatePresignUpData($data, $activated, $currentMerchant = null, $genericUser = null)
     {
         $user = Auth::user();
 
@@ -301,7 +309,11 @@ class Service extends Base\Service
 
         // We don't show presignup form for user
         // created before this date
-        if ($user->created_at < self::PRE_SIGNUP_TIMESTAMP)
+        // For mobile oauth, since we don't get user from auth,
+        // we are passing genericUser in function parameter
+        if ((app('request.ctx')->isOauthRequest() === true &&
+            $genericUser->created_at < self::PRE_SIGNUP_TIMESTAMP)
+            || $user->created_at < self::PRE_SIGNUP_TIMESTAMP)
         {
             $data['pre_signup_complete'] = true;
         }
@@ -331,7 +343,11 @@ class Service extends Base\Service
 
         $genericUser = Session::get('dashboard_user_payload');
         $currentMerchantId = Session::get('current_merchant_id');
-        $currentMerchant = $genericUser->merchants->where('id', $currentMerchantId)->first();
+
+        if (app('request.ctx')->isOauthRequest() === false)
+        {
+            $currentMerchant = $genericUser->merchants->where('id', $currentMerchantId)->first();
+        }
 
         if (($currentMerchant->role !== 'owner') and
             ($currentMerchant->banking_role !== 'owner'))

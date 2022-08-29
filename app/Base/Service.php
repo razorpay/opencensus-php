@@ -38,6 +38,10 @@ class Service
                 ApiRequest::addHeader('X-Dashboard-User-Role', $currentMerchant->role);
             }
         }
+        else if (app('request.ctx')->isOauthRequest() === true)
+        {
+            ApiRequest::addHeader('X-Dashboard-User-Id', app('request.ctx')->getUserId());
+        }
     }
 
     public function setAdminCredentials($merchant_id = null, $mode = 'live')

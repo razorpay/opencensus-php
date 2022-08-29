@@ -279,3 +279,42 @@ Route::group(['middleware' => ['auth.oauth']], function()
 {
     Route::get('/user/token/{token}/details', 'UserController@getDetailsFromToken');
 });
+
+Route::group(['middleware'  => 'graph_oauth'], function()
+{
+    Route::post('/graph-oauth', 'GraphController@handleRequestForGraph')
+        ->name('graph_oauth');
+});
+
+Route::group(['middleware' => 'web_oauth', 'prefix' => 'oauth'], function()
+{
+    Route::options('/{path?}', 'GenericController@handleAny')
+        ->where(['path' => '.*'])->name('oauth_pre_flight');
+    Route::post('/user/register', 'UserController@postRegister')->name('user_register');
+    Route::post('/user/pre_signup', 'MerchantController@postSignup')->name('user_pre_signup');
+    Route::post('/user/verify_email', 'UserController@verifyEmailOtp')->name('user_verify_email');
+    Route::post('/user/logout', 'UserController@oauthLogout')->name('user_logout');
+    Route::get('/user', 'UserController@getUserDetailsV2')->name('user_details');
+    Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments')->name('merchant_experiments');
+    Route::get('/merchant/features', 'MerchantController@getMerchantFeatures')->name('merchant_features');;
+    Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('merchant_details');
+    Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
+        ->where(['path' => '.*'])
+        ->name('merchant');
+    // Dashboard routes hit by GQL
+    Route::get('/org', 'AdminController@getOrg')->name('get_org');
+    Route::get('/user/keepalive', 'UserController@getKeepAlive')->name('user_keep_alive');
+    Route::any('/user/api/{mode}/{path}', 'GenericController@handleAny')
+        ->where(['path' => '.*'])
+        ->name('user');
+    Route::post('/user/signin/otp', 'UserController@postSendLoginOtp')->name('user_signin_otp');
+    Route::post('/user/oauth-signin', 'UserController@postOauthSignIn')->name('user_oauth_signin');
+    Route::post('/user/signin/otp/verify', 'UserController@postVerifyLoginOtp')->name('user_signin_otp_verify');
+    Route::post('/user/signin', 'UserController@postSignin')->name('user_signin');
+    Route::post('/user/2fa/otp-resend', 'UserController@postResendOtp')->name('user_2fa_otp_resned');
+    Route::post('/user/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp')->name('user_verify_user_otp');
+    Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('user_verify_user_otp_verify');
+    // Partial 2FA
+    Route::post('/user/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('post_setup_2fa_verify_otp');
+    Route::post('/user/signin/otp/2fa', 'UserController@postOtpLogin2faPassword')->name('post_otp_login_2fa_password');
+});

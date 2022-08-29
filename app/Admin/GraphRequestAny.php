@@ -34,6 +34,10 @@ class GraphRequestAny
         'X-Dashboard-User-Id'       => true,
         'X-App-Mode'                => true,
         'X-Org-Id'                  => true,
+        'X-Mobile-Access-Token'     => true,
+        'X-Mobile-Client-Id'        => true,
+        'X-Mobile-Refresh-Token'    => true,
+        'Access-Token-2fa'          => true,
     ];
 
     protected $request;
@@ -74,7 +78,6 @@ class GraphRequestAny
 
         $options = array_merge($options, $this->getDataForOutgoingRequest($this->data));
         $spanOptions = (new ApiRequestSpan($this->request))::getRequestSpanOptions(Config::get('razorpay.graphql.server_url'));
-
         try
         {
             $response = (new ApiRequestSpan($this->request))->wrapRequestInSpan(
@@ -86,6 +89,7 @@ class GraphRequestAny
                 ],
                 $spanOptions
             );
+
             $headersToBeAppended = $this->getWhitelistedHeaders($response->getheaders());
 
             return [$response->json(), $headersToBeAppended];
@@ -127,7 +131,6 @@ class GraphRequestAny
         $this->addDefaultHeaders();
 
         $this->addProxyAuthHeadersIfUserLoggedIn();
-
     }
 
     private function addDefaultHeaders()
@@ -180,6 +183,11 @@ class GraphRequestAny
             'X-Mobile-Debug-Id'                     => $mobileDebugId,
         ];
 
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $defaultHeaders['X-Mobile-Oauth'] = 'true';
+        }
+
         $this->headers = array_merge($defaultHeaders, $this->headers);
     }
 
@@ -230,18 +238,26 @@ class GraphRequestAny
     {
         $user = Auth::guard('user')->user();
 
+        $userId = app('request.ctx')->getUserId();
+
         if ($user)
         {
 
-            $proxyAuthheaders = [
+            $proxyAuthHeaders = [
                 'X-Dashboard-User-Id'           => $user->id,
                 'X-Dashboard-User-Email'        => $user->email,
                 'X-Dashboard-User-Session-Id'   => Session::getId(),
             ];
 
-            $this->headers = array_merge($proxyAuthheaders, $this->headers);
+            $this->headers = array_merge($proxyAuthHeaders, $this->headers);
 
             $this->appendMerchantHeaderIfValid($user);
+        }
+        elseif (empty($userId) === false)
+        {
+            $this->headers['X-Dashboard-User-Id'] = $userId;
+
+            $this->headers['X-Dashboard-Merchant-Id'] = app('request.ctx')->getMerchantId();
         }
     }
 

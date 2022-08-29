@@ -17,6 +17,12 @@ class Helper
     public function getCurrentMerchant(GenericUser $user)
     {
         $sessionMerchantId = Session::get('current_merchant_id');
+
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $sessionMerchantId = app('request.ctx')->getMerchantId();
+        }
+
         $currentMerchant = null;
 
         $isBankingRequest = ApiUrl::isBankingOriginRequest();

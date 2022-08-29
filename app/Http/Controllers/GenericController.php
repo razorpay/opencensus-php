@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App;
 use App\Trace\TraceCode;
 use Auth;
+use Route;
 use Input;
 use Config;
 use Request;
@@ -47,6 +48,12 @@ class GenericController extends Controller
 
     const PATH_VS_COOKIE = [
         'merchant/activation' => ['clientId']
+    ];
+
+    const ACCESS_TOKENS = [
+        'x-mobile-client-id',
+        'x-mobile-access-token',
+        'x-mobile-refresh-token',
     ];
 
     const USERS_RESET_PASSWORD_PATH           = 'users/reset-password-token';
@@ -137,7 +144,9 @@ class GenericController extends Controller
 
         $this->checkAndDeleteUserSessions($path, $data, $httpCode);
 
-        return AppResponse::jsonResponse($error, $data, $httpCode);
+        $headers = $this->getMobileOauthHeaders($data);
+
+        return AppResponse::jsonResponse($error, $data, $httpCode, $headers);
     }
 
     protected function checkAndDeleteUserSessions($path, $data, $httpCode)

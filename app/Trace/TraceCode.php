@@ -174,6 +174,8 @@ class TraceCode
     const JAEGER_SPAN_EXCEPTION                  = 'JAEGER_SPAN_EXCEPTION';
     const JAEGER_INFO                            = 'JAEGER_INFO';
 
+    const EDGE_PRE_AUTHENTICATE_ERROR            = 'EDGE_PRE_AUTHENTICATE_ERROR';
+
     const MERCHANT_EXPERIMENTS                   = 'MERCHANT_EXPERIMENTS';
 
     // Graph Request Trace codes

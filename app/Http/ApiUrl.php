@@ -84,6 +84,7 @@ class ApiUrl
         // Since client is loading the app in iframe we will not get the request with correct product so client is
         // sending extra header.
         $originDomain = Request::server('HTTP_X_ORIGIN_PRODUCT');
+
         if (empty($originDomain) === true)
         {
             // Fallback for origin is referrer.

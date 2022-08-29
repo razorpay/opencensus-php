@@ -64,6 +64,38 @@ class Tracing
         return $routesToInclude;
     }
 
+    // all routes which are to be included from distributed tracing
+    public static function getOauthRoutesToInclude(): array
+    {
+        $routesToInclude = array_merge([
+                'graph_oauth',
+                'user_register',
+                'user_pre_signup',
+                'user_verify_email',
+                'user_logout',
+                'user_details',
+                'merchant_experiments',
+                'merchant_features',
+                'merchant_details',
+                'merchant',
+                'get_org',
+                'user_keep_alive',
+                'user',
+                'user_signin_otp',
+                'user_oauth_signin',
+                'user_signin_otp_verify',
+                'user_signin',
+                'user_2fa_otp_resned',
+                'user_verify_user_otp',
+                'user_verify_user_otp_verify',
+                'post_setup_2fa_verify_otp',
+                'post_otp_login_2fa_password',
+            ]
+        );
+
+        return $routesToInclude;
+    }
+
     public static function getServiceName($app): string
     {
         $app_mode = $app['config']->get('jaeger.app_mode');
@@ -102,6 +134,13 @@ class Tracing
 
     public static function shouldTraceRoute($route): bool
     {
+
+        if (app('request.ctx')->isOauthRequest() === true &&
+            in_array($route->getName(), self::getOauthRoutesToInclude()))
+        {
+            return true;
+        }
+
         if(!(in_array($route->getName(), self::getRoutesToInclude())) or
             in_array($route->getName(), self::getRoutesToExclude()))
         {

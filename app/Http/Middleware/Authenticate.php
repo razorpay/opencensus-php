@@ -38,9 +38,14 @@ class Authenticate {
 	{
         $routeName = $request->route()->getName();
 
-		if ($this->auth->guest() === true)
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            return $next($request);
+        }
+
+        if ($this->auth->guest() === true)
 		{
-		    return AppResponse::unauthorizedResponse('Unauthorized.', $routeName, '/?next='.$request->path());
+            return AppResponse::unauthorizedResponse('Unauthorized.', $routeName, '/?next='.$request->path());
 		}
 		else
 		{

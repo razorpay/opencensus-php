@@ -37,7 +37,8 @@ class GraphRequestAuthCheck
         'accountVerificationOtpResend',
         'resendTwoFactorLoginOtp',
         'loginTwoFactorPassword',
-        'accountVerificationOtp'
+        'accountVerificationOtp',
+        'refreshToken'
     ];
 
     public function handle($request, Closure $next)
@@ -46,7 +47,13 @@ class GraphRequestAuthCheck
 
         $user = Auth::guard('user')->user();
 
-        if (empty($user) === true)
+        $isOauthRequest = app('request.ctx')->isOauthRequest();
+
+        $userId = app('request.ctx')->getUserId();
+
+        if ((empty($user) === true) &&
+            ($isOauthRequest === true &&
+             empty($userId) === true))
         {
             $input = Request::all();
 
@@ -54,7 +61,7 @@ class GraphRequestAuthCheck
             {
                 return Response::json(
                     $this->getErrorResponseForInvalidQuery(),400);
-            } 
+            }
 
             if ($this->isValidQuerySelector($input['query']) === false)
             {
@@ -148,7 +155,7 @@ class GraphRequestAuthCheck
             'data'      => null,
         ];
     }
-    
+
     private function getErrorResponseForInvalidQuery()
     {
         return [

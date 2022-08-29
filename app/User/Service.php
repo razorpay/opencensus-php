@@ -331,6 +331,18 @@ class Service extends Base\Service
 
         $userIdFromSession = Session::get('user_id', "");
 
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $userIdFromSession = app('request.ctx')->getUserId();
+        }
+
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $userId = app('request.ctx')->getUserId();
+
+            $this->options['headers']['X-Dashboard-User-Id'] = $userId;
+        }
+
         $logged_in_via = Session::get('logged_in_via', null);
 
         if (empty($userFromGuard) === false)
@@ -729,7 +741,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);
 
-        return [$error, $res, $httpCode];
+        return [$error, $this->addAccessTokenAndMidToResponse($res, $genericUser), $httpCode];
     }
 
     protected function handleOauthLoginResponse($error, $genericUser, $logged_in_via=null, $httpCode = null)
@@ -809,7 +821,23 @@ class Service extends Base\Service
 
         $this->deleteSessionsIfApplicable($genericUser);
 
-        return [$error, $res, $httpCode];
+        return [$error, $this->addAccessTokenAndMidToResponse($res, $genericUser), $httpCode];
+    }
+
+    protected function addAccessTokenAndMidToResponse($res, $genericUser)
+    {
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $res['x_mobile_access_token'] = $genericUser->x_mobile_access_token ?? null;
+
+            $res['x_mobile_refresh_token'] = $genericUser->x_mobile_refresh_token ?? null;
+
+            $res['x_mobile_client_id'] = $genericUser->x_mobile_client_id ?? null;
+
+            $res['currentMerchantId'] = $genericUser->current_merchant_id ?? null;
+        }
+
+        return $res;
     }
 
     public function deleteSessionsIfApplicable(GenericUser $genericUser)
@@ -1081,12 +1109,22 @@ class Service extends Base\Service
 
         $user = Auth::user();
 
-        if (!$user)
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $userId = app('request.ctx')->getUserId();
+        }
+
+        if (!$user &&
+            empty($userId) === true)
         {
             return [['Not logged in'], null];
         }
+        else if (empty($userId) === true)
+        {
+            $userId = $user->id;
+        }
 
-        list($error, $genericUser) = $this->getUserFromApi($user->id);
+        list($error, $genericUser) = $this->getUserFromApi($userId);
 
         if (empty($error) === false)
         {
@@ -1162,10 +1200,11 @@ class Service extends Base\Service
                     $activated = true;
                 }
             }
+
             // Fetch merchant details for current merchant
             if($fetchMerchantDetails === "1")
             {
-                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $currentMerchantId, $activated);
+                $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $activated, $currentMerchant, $genericUser);
             }
 
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
@@ -1668,6 +1707,11 @@ class Service extends Base\Service
             $genericUser = (new Helper)->createdGenericUser($data);
 
             $currentMerchantId = Session::get('current_merchant_id');
+
+            if (app('request.ctx')->isOauthRequest() === true)
+            {
+                $currentMerchantId = app('request.ctx')->getMerchantId();
+            }
 
             // In case of admin doing login as merchant and if merchants-email is associated with > 1000 merchants,
             // There is a chance that current merchant stored in session would not be available in /user/{id} API (limit is 1000)

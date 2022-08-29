@@ -36,7 +36,7 @@ class AppResponse
      */
     const EXCEL_TRIGGER_CHARS = ['=', '-', '+'];
 
-    public static function jsonResponse($errors, $data = null, $httpCode = null)
+    public static function jsonResponse($errors, $data = null, $httpCode = null, $headers = null)
     {
         $response = array();
 
@@ -60,6 +60,11 @@ class AppResponse
             $response += array('success' => false, 'errors' => $errors);
         }
         self::pushDownstreamMetrics($response);
+
+        if (empty($headers) === false)
+        {
+            return Response::json($response, 200, $headers);
+        }
 
         return Response::json($response);
     }

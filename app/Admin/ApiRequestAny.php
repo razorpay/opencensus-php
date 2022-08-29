@@ -157,6 +157,11 @@ class ApiRequestAny
             Headers::X_RAZORPAY_REQUEST_ID => Request::header(Headers::X_RAZORPAY_REQUEST_ID),
         ];
 
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $defaultHeaders['X-Mobile-Oauth'] = 'true';
+        }
+
         $headers = $options['headers'] ?? [];
 
         $headers = array_merge($defaultHeaders, $headers);
@@ -259,6 +264,15 @@ class ApiRequestAny
                     ]);
 
                 }
+                else
+                {
+                    if (app('request.ctx')->isOauthRequest() === true)
+                    {
+                        $userId = app('request.ctx')->getUserId();
+
+                        $this->options['headers']['X-Dashboard-User-Id'] = $userId;
+                    }
+                }
 
                 $accountId = Request::header(self::RAZORPAY_ACCOUNT_HEADER);
 
@@ -267,7 +281,14 @@ class ApiRequestAny
                     $this->options['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
                 }
 
-                $baUser = $this->mode . '_' . $currentMerchant->id;
+                if (app('request.ctx')->isOauthRequest() === true)
+                {
+                    $mid = app('request.ctx')->getMerchantId();
+                }
+
+                $currenMerchantId = $currentMerchant->id ?? $mid;
+
+                $baUser = $this->mode . '_' . $currenMerchantId;
 
                 $pass = Config::get('api.auth_pass');
             }
@@ -310,10 +331,15 @@ class ApiRequestAny
 
                 $user = Auth::guard('user')->user();
 
+                if (app('request.ctx')->isOauthRequest() === true)
+                {
+                    $userId = app('request.ctx')->getUserId();
+
+                    $this->options['headers']['X-Dashboard-User-Id'] = $userId;
+                }
+
                 if (empty($user) === false)
                 {
-                    $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
-
                     $this->options['headers']['X-Dashboard-User-Id'] = $user->id;
 
                     $this->options['headers']['X-Dashboard-User-Email'] = $user->email;
