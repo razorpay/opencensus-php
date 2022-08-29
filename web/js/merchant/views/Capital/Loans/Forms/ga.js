@@ -156,3 +156,10 @@ export const trackTermsOrPolicy = (MID, name) => {
     eventLabel: `Check Loan Eligibility | Promoter Details ${name} | ${MID}`,
   });
 };
+
+export const trackApplyNowCTACashAdvanceV2 = () => {
+  trackSegmentEvent({
+    objectName: 'Apply Now V2',
+    actionName: EVENT_TYPES.CLICKED,
+  });
+};
