@@ -370,7 +370,20 @@ class EdgeThrottleController extends Controller
     protected function constructQueryParam(): string
     {
         $input = Request::all();
-        return isset($input['offset']) ? '?offset=' . urlencode($input['offset']) : '';
+        $params = '';
+        if (isset($input['size']) === true)
+        {
+            $params .= '?size=' . $input['size'];
+            if (isset($input['offset']))
+            {
+                $params .= '&offset=' . urlencode($input['offset']);
+            }
+        }
+        else if (isset($input['offset']))
+        {
+            $params .= '?offset=' . urlencode($input['offset']);
+        }
+        return $params;
     }
 
     /**
