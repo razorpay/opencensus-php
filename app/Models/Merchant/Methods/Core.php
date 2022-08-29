@@ -1137,6 +1137,8 @@ class Core extends Base\Core
             $enabledProviders = array_map('strtolower', $enabledBanks);
 
             $providers = array_merge($providers, $enabledProviders);
+
+            $this->sortPaylaterProviders($providers);
         }
 
         if ($method === Payment\Method::CARDLESS_EMI)
@@ -1173,6 +1175,23 @@ class Core extends Base\Core
         }
 
         return $provider;
+    }
+
+    /**
+     * Sorts the providers in the given order. If a provider is not present in
+     * the order array then it gets pushed to the end of the provider array.
+     *
+     * @param array $provider
+     * @param array $order
+     * @return void
+     */
+    protected function sortPaylaterProviders(array &$provider, array $order = PayLater::CHECKOUT_DISPLAY_ORDER): void
+    {
+        $order = array_flip($order);
+        $lastPosition = count($order);
+        usort($provider, static function ($provider1, $provider2) use ($order, $lastPosition) {
+            return ($order[$provider1] ?? $lastPosition) <=> ($order[$provider2] ?? $lastPosition);
+        });
     }
 
     public function checkPaypalTerminalForCurrency($merchant, $currency)

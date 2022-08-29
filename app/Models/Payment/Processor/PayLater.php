@@ -24,6 +24,15 @@ class PayLater
         self::KKBK     => 200000, // Rs. 2000
     ];
 
+    /** @var string[] The order in which pay later providers should be displayed on checkout */
+    public const CHECKOUT_DISPLAY_ORDER = [
+        self::GETSIMPL,
+        self::LAZYPAY,
+        self::ICICI,
+        self::HDFC,
+        self::KKBK,
+    ];
+
     public static $fullName = [
         self::EPAYLATER    => 'ePayLater',
         self::GETSIMPL     => 'getsimpl',
