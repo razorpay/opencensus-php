@@ -9,6 +9,7 @@ $border-blue = #336CD5
 $widget-border = #E8EAEB
 $pill-color = #132644
 $spacer = 8px
+font-size = 14px
 
 .sr-dashboard
   background-color: $bg-white
@@ -116,14 +117,16 @@ $spacer = 8px
   border: 1px solid $border-grey
   border-radius: 2px
   &__title
-    margin: 0
+    display: flex
+    align-items: center
+    p.display-text
+      margin: 0
     small.help-content
-      display: inline-block
       margin-left: 4px
-      color: $default-grey
-      cursor: pointer
-      > i
+      > i.i-help-outline
         color: $text-grey
+        font-size: 14px
+        vertical-align: middle
   > h1
     color: $font-color
     margin: $spacer 0
@@ -157,8 +160,12 @@ $spacer = 8px
     .panel-action-item
       margin-left: 0
 
-.sr-dashboard .alert-danger
-  padding: $spacer
+.sr-dashboard
+  .alert-danger
+    padding: $spacer
+    padding-right: 35px
+  .alert-dismissable .close
+    top: 2px
 
 .sr-dashboard .row
   display: flex
@@ -300,7 +307,7 @@ $spacer = 8px
         font-size: 14px
         color: $text-grey
       > span.info-icon
-        padding-left: $spacer
+        padding-left: 4px
     &__value
       display: flex
       align-items: center
@@ -325,6 +332,8 @@ $spacer = 8px
     div.no-data
       padding-inline: 0
       text-align: start
+      &__title
+        font-size: 16px
     .rp-grid
       margin-top: $spacer * 4
       &__item
@@ -372,9 +381,10 @@ $spacer = 8px
           color: $text-grey
           font-size: 14px
         span.info-icon
-          padding-left: $spacer
+          padding-left: "calc(%s / 2)" % $spacer
         > span > i.i-info-outline
           font-size: 12px
+          vertical-align: middle
     > i.i-chevron-right
       color: #3370DF
       font-size: 24px

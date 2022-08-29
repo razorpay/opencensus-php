@@ -19,7 +19,7 @@ const renderErrorDetails = ({ count, reason }, index) => (
   </div>
 );
 
-const ReasonsPanel = ({ isLoading, heading, data = [] }) => {
+const ReasonsPanel = ({ isLoading, title = '', heading = '', data = [] }) => {
   if (isLoading) return LoadingState;
   return (
     <div className="rp-panel">
@@ -27,7 +27,9 @@ const ReasonsPanel = ({ isLoading, heading, data = [] }) => {
       {data?.length > 0 ? (
         <div className="row rp-grid">{data.slice(0, 5).map(renderErrorDetails)}</div>
       ) : (
-        <NoDataMessage title="No data available." />
+        <NoDataMessage
+          title={`No ${title.toLowerCase()} payment failures were reported in the selected duration`}
+        />
       )}
     </div>
   );

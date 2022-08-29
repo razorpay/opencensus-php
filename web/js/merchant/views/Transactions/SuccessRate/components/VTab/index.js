@@ -23,7 +23,12 @@ function VTab(props) {
         id={`vtab__tabContent-${selectedTab}`}
         controlledBy={`vtab__tabPane-${selectedTab}`}
       >
-        <ReasonsPanel isLoading={isLoading} heading={`Payment failures: ${title}`} data={content} />
+        <ReasonsPanel
+          isLoading={isLoading}
+          title={title}
+          heading={`Payment failures: ${title}`}
+          data={content}
+        />
       </TabContent>
     </div>
   );

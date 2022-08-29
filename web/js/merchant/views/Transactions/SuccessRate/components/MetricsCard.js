@@ -5,26 +5,26 @@ import { getFixedNumber } from 'common/utils/rzp-utils';
 import OverviewGraph from './OverviewGraph';
 
 const MetricsCard = ({ isLoading, metric, isActive }) => {
-  const { title = '', helpText = '', sr = '', overviewHistogram } = metric;
+  const { title = '', helpText = '', sr = '', overviewHistogram = {} } = metric;
   const { datasets = [] } = overviewHistogram;
   const noData = !isLoading && datasets?.length === 0;
 
   return (
     <div className={`metrics-card ${isActive ? 'active' : ''}`}>
       {!isLoading ? (
-        <p className="metrics-card__title">
-          {title}
+        <div className="metrics-card__title">
+          <p className="display-text">{title}</p>
           {isActive && helpText && (
             <small className="help-content">
               <i class="i i-help-outline" />
-              <Popover align="top">
+              <Popover align="right">
                 <PopoverBody>
                   <div>{helpText}</div>
                 </PopoverBody>
               </Popover>
             </small>
           )}
-        </p>
+        </div>
       ) : (
         <PlaceholderLoader />
       )}

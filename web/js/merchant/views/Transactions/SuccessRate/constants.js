@@ -21,7 +21,7 @@ export const DEFAULT_METHOD = {
 
 export const DEFAULT_GROUP_BY = {
   Overall: 'method',
-  UPI: 'upi_provider',
+  UPI: 'upi_type',
   Card: 'network',
   Netbanking: 'bank',
 };
@@ -30,6 +30,8 @@ export const TAG_MAP = {
   upi: 'UPI',
   card: 'Cards',
   netbanking: 'Netbanking',
+  collect: 'Collect',
+  intent: 'Intent',
   credit: 'Credit',
   debit: 'Debit',
   prepaid: 'Prepaid',
@@ -37,10 +39,13 @@ export const TAG_MAP = {
 };
 
 export const TAG_OVERALL_MAP = {
-  Overall: 'All payment methods',
-  UPI: 'All apps',
-  Card: 'All cards types',
-  Netbanking: 'All banks',
+  method: 'All payment methods',
+  upi_provider: 'All apps',
+  upi_type: 'All flows',
+  network: 'All networks',
+  issuer: 'All banks',
+  type: 'All cards type',
+  bank: 'All banks',
 };
 
 /**************************************** Graph Widget Variables ****************************************/
@@ -182,7 +187,6 @@ export const tagStyles = [
 export const defaultChartStyle = {
   fill: false,
   borderWidth: 2,
-  lineTension: 0.1,
   borderColor: namedColors['black.500'],
 };
 
@@ -190,31 +194,41 @@ export const chartStyle = [
   {
     ...defaultChartStyle,
     borderColor: namedColors['black.500'],
-    borderDash: [10, 5],
+    borderDash: [5, 5],
+    pointBackgroundColor: namedColors['black.500'],
+    pointBorderColor: namedColors['black.500'],
     pointHoverBackgroundColor: namedColors['black.500'],
     pointHoverBorderColor: namedColors['black.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['orange.500'],
+    pointBackgroundColor: namedColors['orange.500'],
+    pointBorderColor: namedColors['orange.500'],
     pointHoverBackgroundColor: namedColors['orange.500'],
     pointHoverBorderColor: namedColors['orange.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['blue.500'],
+    pointBackgroundColor: namedColors['blue.500'],
+    pointBorderColor: namedColors['blue.500'],
     pointHoverBackgroundColor: namedColors['blue.500'],
     pointHoverBorderColor: namedColors['blue.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['green.500'],
+    pointBackgroundColor: namedColors['green.500'],
+    pointBorderColor: namedColors['green.500'],
     pointHoverBackgroundColor: namedColors['green.500'],
     pointHoverBorderColor: namedColors['green.500'],
   },
   {
     ...defaultChartStyle,
     borderColor: namedColors['pink.500'],
+    pointBackgroundColor: namedColors['pink.500'],
+    pointBorderColor: namedColors['pink.500'],
     pointHoverBackgroundColor: namedColors['pink.500'],
     pointHoverBorderColor: namedColors['pink.500'],
   },

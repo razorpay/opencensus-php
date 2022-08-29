@@ -86,6 +86,14 @@ export const queryFilters = () => {
   return payload;
 };
 
+export const getErrorMessage = (error) => {
+  let message = error?.errors?.[0] ?? error?.message;
+  if (error?.status_code === 500) {
+    message = 'Internal server error';
+  }
+  return message;
+};
+
 export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown, tagIndex }) => {
   const dataset = {
     label: tabsOrder[tagIndex],

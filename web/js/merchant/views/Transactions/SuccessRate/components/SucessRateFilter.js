@@ -16,12 +16,19 @@ const SucessRateFilter = (props) => {
   const { endDate, fetchSuccessRate, fetchMerchantErrors, updateDateRange } = props;
 
   const isOutsideRange = useCallback((day) => {
-    const currentDay = moment();
-    const pastDay = currentDay.clone().subtract(90, 'days');
-    return day.isAfter(currentDay) || day.isBefore(pastDay);
+    const now = moment();
+    const pastDay = now.clone().startOf('day').subtract(90, 'days');
+    return day.isAfter(now) || day.isBefore(pastDay);
   }, []);
 
   const onDatesChange = (from, to, preset) => {
+    const now = moment();
+    const isSame = to.isSame(now, 'day');
+    if (isSame) {
+      const diff = to.diff(now, 'seconds');
+      to = to.clone().subtract(diff, 'seconds');
+      from = to.clone().subtract(preset.value, 'seconds');
+    }
     const start_date = from.clone().startOf('hour');
     const end_date = to.clone().endOf('hour');
     const interval = getInterval(start_date, end_date);
@@ -33,11 +40,11 @@ const SucessRateFilter = (props) => {
     });
   };
 
-  const onSearch = () => {
+  const onSearch = async () => {
     const payload = queryFilters();
-    fetchSuccessRate(payload);
+    await fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
-    fetchMerchantErrors(errorsPaylod);
+    await fetchMerchantErrors(errorsPaylod);
   };
 
   const onReset = async () => {

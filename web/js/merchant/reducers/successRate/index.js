@@ -9,6 +9,7 @@ import {
   onFetchSR,
   getMetricsData,
   setBreakdownInterval,
+  getErrorMessage,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   DEFAULT_ACTIVE_TAB,
@@ -85,7 +86,7 @@ export const fetchSuccessRate = (payload) => async (dispatch) => {
   } catch (error) {
     dispatch({
       type: `${FETCH_SUCCESS_RATE}::ERROR`,
-      payload: { error: error?.errors?.[0] ?? error?.message },
+      payload: getErrorMessage(error),
     });
   }
 };
@@ -143,7 +144,7 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
   } catch (error) {
     dispatch({
       type: `${FETCH_INTERVALS}::ERROR`,
-      payload: { error: error?.errors?.[0] ?? error?.message },
+      payload: getErrorMessage(error),
     });
   }
 };

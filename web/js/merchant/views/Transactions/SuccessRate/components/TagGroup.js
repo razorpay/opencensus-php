@@ -24,7 +24,7 @@ export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
   );
 };
 
-const TagGroup = ({ isLoading, activeTab, tags, selectedTags = [], onSelect }) => {
+const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect }) => {
   if (isLoading) {
     return (
       <div className="tags-loader">
@@ -40,7 +40,7 @@ const TagGroup = ({ isLoading, activeTab, tags, selectedTags = [], onSelect }) =
     <div className="tags-group">
       {tags?.map((tag, idx) => {
         let name = TAG_MAP[tag] ?? tag;
-        if (tag === 'Overall') name = TAG_OVERALL_MAP[activeTab];
+        if (tag === 'Overall') name = TAG_OVERALL_MAP[groupBy];
         return (
           <Tag
             key={`${tag}__${idx}`}

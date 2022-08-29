@@ -84,9 +84,9 @@ const GraphPanel = (props) => {
       <PanelTopbar className="graph-panel__topbar">
         <TagGroup
           isLoading={isLoading}
-          activeTab={activeTab}
           tags={tags}
           selectedTags={tagList}
+          groupBy={group_by}
           onSelect={handleTags}
         />
         <div className="panel-actions">

@@ -30,8 +30,8 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
 };
 
 const VolumePieWidget = (props) => {
-  const { isLoading, activeTab, tab = {} } = props;
-  const { group_by, data } = tab;
+  const { isLoading, tab = {} } = props;
+  const { group_by = '', data } = tab;
   const groupData = data?.groups?.[group_by] ?? [];
   const pieChartData = getPieChartData(groupData);
   const compactData = compact(pieChartData?.datasets?.[0]?.data);
@@ -65,7 +65,7 @@ const VolumePieWidget = (props) => {
                 {isLoading ? (
                   <PlaceholderLoader style={{ marginBottom: '10px' }} />
                 ) : (
-                  <StyledHeader text={TAG_OVERALL_MAP[activeTab]} />
+                  <StyledHeader text={TAG_OVERALL_MAP[group_by]} />
                 )}
                 {isLoading ? (
                   <PlaceholderLoader />

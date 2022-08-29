@@ -8,7 +8,7 @@ import {
 } from '../../constants';
 
 const TabPane = (props) => {
-  const { isLoading, ariaLabel, selectedTab, onTabChange, tabData } = props;
+  const { isLoading, ariaLabel, selectedTab, onTabChange, tabData = {} } = props;
 
   const onChange = useCallback((e) => onTabChange(Number(e?.currentTarget?.id)), [onTabChange]);
 
@@ -18,7 +18,8 @@ const TabPane = (props) => {
         const isActive = idx === selectedTab;
         const title = ERROR_CATEGORIES_VS_DISPLAY_TEXT[tabKey];
         const infoText = TOOLTIP_TEXT_VS_ERROR_CATEGORIES[tabKey];
-        const totalCount = tabData[tabKey]?.reduce((count, data) => count + data?.count, 0);
+        const totalCount =
+          tabData?.[tabKey]?.reduce((count, data) => count + (data?.count ?? 0), 0) ?? 0;
 
         return (
           <button
@@ -48,7 +49,7 @@ const TabPane = (props) => {
                     {infoText && (
                       <span className="info-icon">
                         <i className="i i-info-outline" />
-                        <Popover align="top">
+                        <Popover align="right">
                           <PopoverBody>
                             <div>{infoText}</div>
                           </PopoverBody>

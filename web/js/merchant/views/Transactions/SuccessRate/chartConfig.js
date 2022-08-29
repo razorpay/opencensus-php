@@ -64,7 +64,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
         bottom: 0,
       },
     },
-    elements: { point: { radius: 0, hoverRadius: 4 } },
+    elements: { point: { radius: 2, hoverRadius: 4 } },
     tooltips: {
       enabled: true,
       callbacks: {
