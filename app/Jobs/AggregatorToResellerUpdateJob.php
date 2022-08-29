@@ -43,7 +43,7 @@ class AggregatorToResellerUpdateJob extends Job
         foreach ($this->merchantIds as $merchantId) {
             try
             {
-                $core->updateAggregatorToReseller($merchantId);
+                $core->migrateAggregatorToReseller($merchantId);
             }
             catch (\Throwable $e) {
                 $this->trace->traceException(

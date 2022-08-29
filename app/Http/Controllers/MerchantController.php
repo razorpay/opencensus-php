@@ -3203,15 +3203,23 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function bulkConvertAggregatorToResellerPartner()
+    public function bulkMigrateAggregatorToResellerPartner()
     {
         $input = Request::all();
 
-        $this->service()->bulkConvertAggregatorToResellerPartner($input);
+        $this->service()->bulkMigrateAggregatorToResellerPartner($input);
 
         return ApiResponse::json([]);
     }
 
+    public function migrateAggregatorToResellerPartner()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->migrateAggregatorToResellerPartner($input);
+
+        return ApiResponse::json([$response]);
+    }
     public function createFraudBatch()
     {
         RuntimeManager::setMemoryLimit('1024M');

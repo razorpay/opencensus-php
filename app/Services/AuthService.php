@@ -127,7 +127,7 @@ class AuthService
         return $this->sendRequest('applications', Requests::GET, $input);
     }
 
-    public function deleteApplication(string $id, string $merchantId) : array
+    public function deleteApplication(string $id, string $merchantId, bool $deletePartnerMappings = true) : array
     {
         $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
@@ -139,13 +139,14 @@ class AuthService
             ]
         );
         $result = $this->sendRequest('applications/' . $id, Requests::PUT, $input);
+        if ($deletePartnerMappings === true)
+        {
+            // deletes the access mapping for the application
+            (new AccessMap\Core)->deleteAccessMapByApplicationId($id);
 
-        // deletes the access mapping for the application
-        (new AccessMap\Core)->deleteAccessMapByApplicationId($id);
-
-        // delete merchant and application mapping
-        (new MerchantApplications\Core)->deleteByApplication($id);
-
+            // delete merchant and application mapping
+            (new MerchantApplications\Core)->deleteByApplication($id);
+        }
         return $result;
     }
 

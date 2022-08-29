@@ -6,6 +6,7 @@ use App;
 use Hash;
 
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\PublicCollection;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base;
@@ -45,6 +46,7 @@ use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow\InternationalActivationFlow;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\VirtualAccount\Entity as VAEntity;
@@ -661,6 +663,15 @@ class Validator extends Base\Validator
         "from"      => 'required|int|min:0',
         "duration"  => 'required|int|min:0|max:86400',
         "limit"     => 'sometimes|int|min:1'
+    ];
+
+    protected static $aggregatorToResellerMigrationRules = [
+        'merchant_id'     => 'required|alpha_num|size:14',
+    ];
+
+    protected static $bulkAggregatorToResellerMigrationRules = [
+        'merchant_ids'     => 'required|array',
+        'batch_size'       => 'required|int|min:1',
     ];
 
     public function validateSmartDashboardMerchantEditInput(array $input)
@@ -3066,5 +3077,31 @@ class Validator extends Base\Validator
                 );
             }
         }
+    }
+
+    /**
+     * Validates applications count and types for aggregator partner
+     *
+     * @param PublicCollection $applications array of applications
+     *
+     * @return bool
+     */
+    public function validateAggregatorApplications(PublicCollection $applications) : bool
+    {
+        $appTypeDiff = array_diff(
+            array_column($applications->toArray(), MerchantApplicationsEntity::TYPE),
+            [MerchantApplicationsEntity::MANAGED, MerchantApplicationsEntity::REFERRED]
+        );
+        if(count($applications) != 2 or empty($appTypeDiff) == false )
+        {
+            $this->trace->info(
+                TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_APPLICATION,
+                [
+                    '$applications' => $applications,
+                ]
+            );
+            return false;
+        }
+        return true;
     }
 }

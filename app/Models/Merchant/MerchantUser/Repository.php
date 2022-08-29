@@ -4,17 +4,20 @@ namespace RZP\Models\Merchant\MerchantUser;
 
 use RZP\Constants;
 use RZP\Models\Base;
-use RZP\Constants\Table;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Role;
 use RZP\Exception\LogicException;
+use RZP\Constants\Table;
 use RZP\Models\User\Entity as UserEntity;
+use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
+    use RepositoryUpdateTestAndLive;
+
     protected $entity = Constants\Entity::MERCHANT_USER;
 
     //
@@ -272,7 +275,6 @@ class Repository extends Base\Repository
             throw new LogicException("Data is not synced on Live and Test DB");
         }
     }
-
     public function getBankingUsersForMerchantRoles(array $merchantIdToRolesMapping): Base\PublicCollection
     {
         /*

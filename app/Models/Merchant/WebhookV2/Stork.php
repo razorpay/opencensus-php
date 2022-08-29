@@ -388,9 +388,9 @@ class Stork
         }
     }
 
-    public function updateOwnerForWebhooks(string $existingOwnerId, string $ownerId)
+    public function deleteWebhooksByOwnerId(string $ownerId)
     {
-        $webhooks = $this->list($existingOwnerId)['items'];
+        $webhooks = $this->list($ownerId)['items'];
 
         $this->trace->info(
             TraceCode::STORK_INVALIDATE_AFFECTED_OWNERS_CACHE_REQ,
@@ -399,25 +399,7 @@ class Stork
 
         foreach ($webhooks as $webhook)
         {
-            $events = [];
-
-            foreach ($webhook['subscriptions'] as $value)
-            {
-                if (array_key_exists($value['eventmeta']['name'], $events) === true)
-                {
-                    $events[$value['eventmeta']['name']] = true;
-                }
-            }
-
-            $input = [
-                'owner_id' => $ownerId,
-                'owner_type' => 'application',
-                'url' => $webhook['url'],
-                'events' => $events
-            ];
-
-            $this->delete($webhook['id'], $existingOwnerId);
-//            $this->create($input);
+            $this->delete($webhook['id'], $ownerId);
         }
     }
 }

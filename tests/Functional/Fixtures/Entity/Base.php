@@ -50,6 +50,7 @@ class Base
         'merchant_access_map'   => \RZP\Models\Merchant\AccessMap\Entity::class,
         'partner_config'        => \RZP\Models\Partner\Config\Entity::class,
         'merchant_application'  => \RZP\Models\Merchant\MerchantApplications\Entity::class,
+        'merchant_user'         => \RZP\Models\Merchant\MerchantUser\Entity::class,
         'terminal'              => \RZP\Models\Terminal\Entity::class,
         'transfer'              => \RZP\Models\Transfer\Entity::class,
         'schedule'              => \RZP\Models\Schedule\Entity::class,
@@ -118,6 +119,7 @@ class Base
         'merchant_application',
         'merchant_access_map',
         'partner_config',
+        'merchant_user'
     ];
 
     public function create(array $attributes = [])

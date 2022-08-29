@@ -165,15 +165,20 @@ final class Metric
     const AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_SUCCESS = 'aggregate_settlement_unlinking_request_success';
     const AGGREGATE_SETTLEMENT_UNLINKING_REQUEST_FAILURE = 'aggregate_settlement_unlinking_request_failure';
 
+    const AGGREGATOR_TO_RESELLER_MIGRATION_SUCCESS = 'aggregator_to_reseller_migration_success';
+    const AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE = 'aggregator_to_reseller_migration_failure';
+    const RESELLER_TO_AGGREGATOR_MIGRATION_SUCCESS = 'reseller_to_aggregator_migration_success';
+    const RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE = 'reseller_to_aggregator_migration_failure';
+
     const UPDATE_CUSTOMERS_DETAILS_REQUEST_COUNT = 'update_customers_details_request_count';
     const UPDATE_CUSTOMERS_DETAILS_ERROR_COUNT   = 'update_customers_details_error_count';
     const UPDATE_CUSTOMERS_DETAILS_REQUEST_FAULT_COUNT = 'update_customers_details_request_fault_count';
     const UPDATE_CUSTOMERS_DETAILS_TIME_MILLIS = 'update_customers_details_time_millis';
-    
+
     const ONE_CC_VERIFY_OTP_REQUEST_COUNT = 'one_cc_verify_otp_request_count';
     const ONE_CC_VERIFY_OTP_REQUEST_FAULT_COUNT = 'one_cc_verify_otp_request_fault_count';
     const ONE_CC_VERIFY_OTP_REQUEST_ERROR_COUNT = 'one_cc_verify_otp_request_error_count';
-    
+
     const AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_SUCCESS_TOTAL   = 'agg_settlement_subm_multiple_partner_link_request_success';
     const AGG_SETTLEMENT_SUBM_MULTIPLE_PARTNER_LINK_REQUEST_FAILURE_TOTAL   = 'agg_settlement_subm_multiple_partner_link_request_failure';
 

@@ -4,6 +4,7 @@
 namespace Functional\Merchant;
 
 use RZP\Constants\Mode;
+use RZP\Exception\LogicException as LogicException;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\MerchantApplications;
@@ -40,28 +41,37 @@ class MerchantCoreTest extends OAuthTestCase
 
     public function testAggregatorToResellerPartnerTypeUpdate()
     {
-        list($merchantId, $submerchantId, $newAppId, $client) = $this->createAggregatorPartnerAndSubmerchantAndFetchMocks();
+        list($merchantId, $submerchantId, $newAppId, $client, $app) = $this->createAggregatorPartnerAndSubmerchantAndFetchMocks();
+
+        $this->setUpAuthServiceMocks($merchantId, $client->getApplicationId(), $app->getId(), $newAppId);
 
         $this->fixtures->create('referrals');
 
         $this->createCommissionForPartner($merchantId, $submerchantId, $newAppId);
 
-        $this->core->updateAggregatorToReseller($merchantId);
+        $this->core->migrateAggregatorToReseller($merchantId);
 
         // partner type should be updated as reseller
         $merchant = $this->getDbEntityById('merchant', $merchantId);
         $this->assertEquals('reseller', $merchant->getPartnerType());
 
         // new merchant application with referred type should be created
-        $updatedApplications = $this->getDbEntities('merchant_application',
-            ['application_id' => '8ckeirnw84ifke'])->toArray();
-        $this->assertCount(1, $updatedApplications);
-        $this->assertEquals('referred', $updatedApplications[0]['type']);
+        $updatedApplicationsOnLive = $this->getDbEntities('merchant_application',
+            ['application_id' => '8ckeirnw84ifke'],'live')->toArray();
+        $updatedApplicationsOnTest = $this->getDbEntities('merchant_application',
+            ['application_id' => '8ckeirnw84ifke'],'test')->toArray();
+        $this->assertCount(1, $updatedApplicationsOnLive);
+        $this->assertEquals('referred', $updatedApplicationsOnLive[0]['type']);
+        $this->assertCount(1, $updatedApplicationsOnTest);
+        $this->assertEquals('referred', $updatedApplicationsOnTest[0]['type']);
 
         // all existing applications for partner should be deleted
-        $oldApplications = $this->getDbEntities('merchant_application',
-            ['application_id' => $client->getApplicationId()])->toArray();
-        $this->assertCount(0, $oldApplications);
+        $oldApplicationsOnLive = $this->getDbEntities('merchant_application',
+            ['application_id' => $client->getApplicationId()],'live')->toArray();
+        $oldApplicationsOnTest = $this->getDbEntities('merchant_application',
+            ['application_id' => $client->getApplicationId()],'test')->toArray();
+        $this->assertCount(0, $oldApplicationsOnLive);
+        $this->assertCount(0, $oldApplicationsOnTest);
 
         // referral link data should not be deleted
         $referrals = $this->getDbEntity('referrals',
@@ -69,14 +79,47 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertNotEmpty($referrals->getReferralLink());
 
         // merchant access map should be updated with new application id
-        $accessMaps = $this->getDbEntities('merchant_access_map',
-            ['entity_type' => 'application', 'entity_owner_id' => $merchantId])->toArray();
-        $this->assertCount(2, $accessMaps);
-        $this->assertEquals($newAppId, $accessMaps[0]['entity_id']);
+        $accessMapsOnLive = $this->getDbEntities('merchant_access_map',
+            ['entity_type' => 'application', 'entity_owner_id' => $merchantId],'live')->toArray();
+        $accessMapsOnTest = $this->getDbEntities('merchant_access_map',
+            ['entity_type' => 'application', 'entity_owner_id' => $merchantId],'test')->toArray();
+        $this->assertCount(2, $accessMapsOnLive);
+        $this->assertEquals($newAppId, $accessMapsOnLive[0]['entity_id']);
+        $this->assertCount(2, $accessMapsOnTest);
+        $this->assertEquals($newAppId, $accessMapsOnTest[0]['entity_id']);
 
         // commissions data should not be deleted for partner
         $commission = $this->getDbEntities("commission", ["partner_id" => $merchantId]);
         $this->assertCount(1, $commission);
+
+        $partnerPGUserOnLive = $this->getDbEntities(
+            'merchant_user',
+            ['merchant_id' =>$submerchantId, 'role' => 'owner', 'product' => 'primary'],'live');
+        $partnerPGUserOnTest = $this->getDbEntities(
+            'merchant_user',
+            ['merchant_id' =>$submerchantId, 'role' => 'owner', 'product' => 'primary'],'test');
+        $this->assertCount(0, $partnerPGUserOnLive);
+        $this->assertCount(0, $partnerPGUserOnTest);
+    }
+
+    public function testAggregatorToResellerPartnerTypeUpdateException()
+    {
+        list($merchantId, $submerchantId, $newAppId, $client) = $this->createAggregatorPartnerAndSubmerchantAndFetchMocks();
+
+        $this->fixtures->create('referrals');
+
+        $this->createCommissionForPartner($merchantId, $submerchantId, $newAppId);
+
+        $oldApplications = $this->getDbEntities('merchant_application',
+            ['application_id' => $client->getApplicationId()],'live');
+
+        $oldApplications[0]->delete();
+
+        $this->expectException(LogicException::class);
+
+        $this->expectErrorMessage("Data is not synced on Live and Test DB");
+
+        $this->core->migrateAggregatorToReseller($merchantId);
     }
 
     public function testDeleteSwitchMerchantAccessForPartner()
@@ -216,9 +259,7 @@ class MerchantCoreTest extends OAuthTestCase
 
         $this->ba->adminAuth();
 
-        $this->setUpAuthServiceMocks($merchantId, $client->getApplicationId(), $app->getId(), $newAppId);
-
-        return [$merchantId, $submerchantId, $newAppId, $client];
+        return [$merchantId, $submerchantId, $newAppId, $client, $app];
     }
 
     private function createSubmerchantMappingForReferredApp(string $merchantId, string $submerchantId)
@@ -265,12 +306,12 @@ class MerchantCoreTest extends OAuthTestCase
             ->method('sendRequest')
             ->withConsecutive(
                 ['applications', 'POST',
-                    [
-                        'name' => 'et',
-                        'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod',
-                        'merchant_id' => $merchantId,
-                        'type' => 'partner'
-                    ]
+                 [
+                     'name' => 'et',
+                     'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod',
+                     'merchant_id' => $merchantId,
+                     'type' => 'partner'
+                 ]
                 ],
                 ['applications/'.$managedApp, 'PUT', ['merchant_id' => $merchantId]
                 ],

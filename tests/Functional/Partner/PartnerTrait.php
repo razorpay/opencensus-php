@@ -425,7 +425,7 @@ trait PartnerTrait
     {
         $client = $this->markMerchantAsNonPurePlatformPartner($partnerId, MerchantConstants::AGGREGATOR);
 
-        $user = $this->fixtures->user->createUserForMerchant($partnerId, [], Role::OWNER, Mode::LIVE);
+        $user = $this->fixtures->user->createUserForMerchantONLiveAndTest($partnerId, [], Role::OWNER);
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 

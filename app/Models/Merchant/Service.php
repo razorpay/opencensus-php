@@ -9864,12 +9864,45 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function bulkConvertAggregatorToResellerPartner(array $input)
+    public function bulkMigrateAggregatorToResellerPartner(array $input)
     {
-        $merchantIds = $input['merchant_ids'];
+        if ($this->isPartnerTypeMigrationExperimentEnabled() === false)
+        {
+            return ['success' => true, 'errorMessage' => null];
+        }
 
-        return $this->core()->bulkConvertAggregatorToResellerPartner($merchantIds);
+        return $this->core()->bulkMigrateAggregatorToResellerPartner($input);
     }
+
+    public function migrateAggregatorToResellerPartner(array $input)
+    {
+        if ($this->isPartnerTypeMigrationExperimentEnabled() === false)
+        {
+            return ['success' => true, 'errorMessage' => null];
+        }
+        $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_REQUEST, $input);
+
+        (new Validator())->validateInput('aggregatorToResellerMigration', $input);
+
+        $result = null;
+
+        $merchantId = $input['merchant_id'];
+
+        try {
+            $result = $this->core()->migrateAggregatorToReseller($merchantId);
+
+            $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, $input);
+
+            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_SUCCESS);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR, $input);
+            throw $e;
+        }
+        return ['success' => $result, 'errorMessage' => null];
+    }
+
 
     public function trackBalanceEvent($input)
     {
@@ -10125,6 +10158,17 @@ class Service extends Base\Service
         );
 
         return ['success' => true];
+    }
+
+    private function isPartnerTypeMigrationExperimentEnabled()
+    {
+        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.partner_type_migration_exp_id'),
+        ];
+
+        return $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 
     private function getMerchantTransactionsInLastMonth()

@@ -7802,19 +7802,27 @@ class Core extends Base\Core
         return !$isSubMerchant;
     }
 
-    public function bulkConvertAggregatorToResellerPartner(array $merchantIds)
+    public function bulkMigrateAggregatorToResellerPartner(array $input)
     {
-        $traceInfo = ['merchant_ids' => $merchantIds];
+        (new Validator())->validateInput('bulkAggregatorToResellerMigration', $input);
 
-        $this->trace->info(TraceCode::BULK_CONVERT_AGGREGATOR_TO_RESELLER_REQUEST, $traceInfo);
+        $traceInfo = ['merchant_ids' => $input['merchant_ids']];
 
-        AggregatorToResellerUpdateJob::dispatch($merchantIds);
+        $this->trace->info(TraceCode::BULK_MIGRATE_AGGREGATOR_TO_RESELLER_REQUEST, $traceInfo);
 
-        $this->trace->info(TraceCode::BULK_CONVERT_AGGREGATOR_TO_RESELLER_SUCCESS, $traceInfo);
+        $batches = array_chunk($input['merchant_ids'], $input['batch_size']);
+
+        foreach ($batches as $batch)
+        {
+            AggregatorToResellerUpdateJob::dispatch($batch);
+        }
+
+        $this->trace->info(TraceCode::BULK_MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, $traceInfo);
     }
 
-    public function updateAggregatorToReseller(string $merchantId)
+    public function migrateAggregatorToReseller(string $merchantId)
     {
+
         $mutex = App::getFacadeRoot()['api.mutex'];
 
         $mutexKey = Constants::AGGREGATOR_TO_RESELLER_UPDATE.$merchantId;
@@ -7823,13 +7831,13 @@ class Core extends Base\Core
             $mutexKey,
             function() use ($merchantId)
             {
-                return $this->processUpdateAggregatorToReseller($merchantId);
+                return $this->processMigrateAggregatorToReseller($merchantId);
             },
             Constants::AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_AGGREGATOR_TO_RESELLER_MIGRATION_IN_PROGRESS);
     }
 
-    private function processUpdateAggregatorToReseller(string $merchantId)
+    private function processMigrateAggregatorToReseller(string $merchantId)
     {
         $this->trace->info(
             TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_REQUEST,
@@ -7842,89 +7850,156 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_PARTNER,
                 ['merchant_id' => $merchantId]);
-
+            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,['code' => TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_PARTNER]);
             return;
         }
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant)
-        {
-            $merchantApplicationsCore = new MerchantApplicationsCore();
-
-            $managedAppId = $merchantApplicationsCore->getMerchantAppIds($merchant->getId(), [MerchantApplicationsEntity::MANAGED])[0];
-
-            $existingAppIds = $merchantApplicationsCore->getMerchantAppIds($merchant->getId());
-
-            $app = $this->createPartnerApp($merchant);
-
-            $this->createMerchantApplication($merchant, $app[OAuthApp\Entity::ID], MerchantApplicationsEntity::REFERRED);
-
-            $this->trace->info(TraceCode::AGGREGATOR_TO_RESELLER_APPLICATION_CREATED, [
-                    'old_application_ids' => $existingAppIds,
-                    'new_application_id' => $app[OAuthApp\Entity::ID]
-                ]
-            );
-
-            foreach ($existingAppIds as $existingAppId)
-            {
-                $managedApp = ($managedAppId === $existingAppId);
-
-                $this->updateExistingApplicationMappings($merchant->getId(), $existingAppId, $app[OAuthApp\Entity::ID], $managedApp);
-            }
-
-            $merchant->setPartnerType(Constants::RESELLER);
-
-            $this->repo->merchant->saveOrFail($merchant);
-
-            $this->deletePartnerAppForIds($merchant->getId(), $existingAppIds);
-        });
-
-        $this->trace->info(
-            TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_SUCCESS,
-            ['merchant_id' => $merchantId]);
+        return $this->validateAndUpdateAggregatorToResellerEntities($merchant);
     }
 
-    private function updateExistingApplicationMappings(string $merchantId, string $existingAppId, string $updatedAppId, bool $managedApp = false)
+    private function updateExistingApplicationMappings(string $existingAppId, string $updatedAppId, Base\PublicCollection $accessMaps, bool $managedApp = false )
     {
         if ($managedApp === true)
         {
             (new PartnerConfigCore())->updateApplicationsForPartnerConfigs($existingAppId, $updatedAppId);
         }
 
-        $accessMaps = $this->repo->merchant_access_map->getAllMappingsByEntityIdAndEntityOwnerId($existingAppId, $merchantId);
-
         (new AccessMap\Core())->updateApplications($accessMaps, $updatedAppId);
 
-        $this->updateWebhooksForApplication($existingAppId, $updatedAppId);
+        $this->deleteWebhooksForApplication($existingAppId);
     }
 
-    private function updateWebhooksForApplication(string $existingAppId, string $updatedAppId)
+    private function deleteWebhooksForApplication(string $ownerId)
     {
-        (new Stork('live'))->updateOwnerForWebhooks($existingAppId, $updatedAppId);
+        (new Stork('live'))->deleteWebhooksByOwnerId($ownerId);
 
-        (new Stork('test'))->updateOwnerForWebhooks($existingAppId, $updatedAppId);
+        (new Stork('test'))->deleteWebhooksByOwnerId($ownerId);
     }
 
-    private function deletePartnerAppForIds(string $merchantId, array $appIds)
+
+    /**
+     * Validates existing entities on live and test DB and creates supporting entities to migrate aggregator to reseller
+     * @param Merchant\Entity $partner aggregator partner
+     *
+     * @return bool
+     *
+     * @throws Exception\LogicException
+     * @throws Throwable
+     */
+    private function validateAndUpdateAggregatorToResellerEntities(Merchant\Entity $partner) : bool
     {
-        foreach ($appIds as $appId)
+        try
         {
-            try
-            {
-                app('authservice')->deleteApplication($appId, $merchantId);
-            }
-            catch (BadRequestValidationFailureException $e)
-            {
-                (new AccessMap\Core)->deleteAccessMapByApplicationId($appId);
+            $applications = $this->repo->merchant_application->fetchMerchantAppInSyncOrFail($partner->getId());
+            $accessMaps[] = $subMerchants[] = new Base\PublicCollection();
 
-                // delete merchant and application mapping
-                (new MerchantApplications\Core)->deleteByApplication($appId);
+            $this->repo->merchant_user->fetchMerchantUsersByMerchantIdsAndRoles([$partner->primaryOwner()->getId()], [Role::OWNER]);
 
-                $this->trace->info(
-                    TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_SUCCESS,
-                    ['merchant_id' => $merchantId, 'app_id' => $appId]);
+            if ((new Merchant\Validator())->validateAggregatorApplications($applications) === false)
+            {
+                return false;
             }
+            $managedAppId = $applications->where(MerchantApplicationsEntity::TYPE, MerchantApplicationsEntity::MANAGED)
+                                         ->pluck(MerchantApplicationsEntity::APPLICATION_ID)->first();
+
+            $existingAppIds = $applications->pluck(MerchantApplicationsEntity::APPLICATION_ID)->toArray();
+
+            foreach ($existingAppIds as $existingAppId)
+            {
+                $configs = $this->repo->partner_config->fetchAllConfigsInSyncOrFail([$existingAppId]);
+
+                $accessMaps[$existingAppId] = $this->repo->merchant_access_map->fetchAccessMapsInSyncOrFail(
+                    $existingAppId, $partner->getId()
+                );
+
+                $subMerchants[$existingAppId] = $this->repo->merchant->getSubMerchantsForPartnerAndAppInSyncOrFail($existingAppId, $partner->getId());
+            }
+
+            return $this->createAndUpdateAggregatorToResellerEntities(
+                $partner, $managedAppId, $existingAppIds, $accessMaps, $subMerchants
+            );
+        }
+        catch (Exception\LogicException $e)
+        {
+            $this->trace->error(TraceCode::AGGREGATOR_TO_RESELLER_DATA_MISMATCH);
+            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,['code' => TraceCode::AGGREGATOR_TO_RESELLER_DATA_MISMATCH]);
+            throw $e;
         }
     }
+
+    /**
+     * Creates new application for reseller.
+     * Updates existing application mappings.
+     * delete submerchants dashboard access to reseller partners.
+     * Deletes old app and Merchant application for aggregator partner.
+     *
+     * @param Merchant\Entity       $partner aggregator partner
+     * @param string                $managedAppId partner app of type managed
+     * @param array                 $existingAppId partner app ids
+     * @param array                 $accessMaps partner sub merchant maps
+     * @param array                 $subMerchants array of partner submerchants
+     *
+     * @return bool
+     *
+     * @throws Exception\LogicException
+     * @throws Throwable
+     */
+    private function createAndUpdateAggregatorToResellerEntities(
+        Merchant\Entity $partner, string $managedAppId, array $existingAppIds,
+        array $accessMaps, array $subMerchants) : bool
+    {
+        $app = $this->createPartnerApp($partner);
+        try
+        {
+            $this->repo->transactionOnLiveAndTest(function() use ($partner, $app, $existingAppIds, $accessMaps, $subMerchants, $managedAppId)
+            {
+                $this->createMerchantApplication($partner, $app[OAuthApp\Entity::ID], MerchantApplicationsEntity::REFERRED);
+
+                $this->trace->info(TraceCode::AGGREGATOR_TO_RESELLER_APPLICATION_CREATED, [
+                        'old_application_ids' => $existingAppIds,
+                        'new_application_id' => $app[OAuthApp\Entity::ID]
+                    ]
+                );
+
+                foreach ($existingAppIds as $existingAppId)
+                {
+                    $managedApp = ($managedAppId === $existingAppId);
+
+                    $this->updateExistingApplicationMappings($existingAppId, $app[OAuthApp\Entity::ID], $accessMaps[$existingAppId], $managedApp);
+
+                    // delete merchant and application mapping
+                    (new MerchantApplications\Core)->deleteByApplication($existingAppId);
+                }
+
+                $partner->setPartnerType(Constants::RESELLER);
+
+                $this->repo->merchant->saveOrFail($partner);
+
+                $this->deletePartnerDashboardAccessOnSubmerchants($partner, $subMerchants[$managedAppId]);
+
+                foreach ($existingAppIds as $existingAppId)
+                {
+                    app('authservice')->deleteApplication($existingAppId, $partner->getId(), false);
+                }
+            });
+
+            $this->trace->info(
+                TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_SUCCESS,
+                ['merchant_id' => $partner->getId()]);
+        } catch (\Throwable $e)
+        {
+            app('authservice')->deleteApplication($app[OAuthApp\Entity::ID], $partner->getId(), false);
+
+            $this->trace->error(
+                TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR,
+                [ 'error' => $e ]
+            );
+            $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_FAILURE,['code' => TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_ERROR]);
+            throw $e;
+        }
+        return true;
+    }
+
 
     public function get1ccMerchantPreferences(Merchant\Entity $merchant): array
     {
