@@ -64,7 +64,6 @@ class Validator extends Base\Validator
 
     protected static $settlementOndemandLinkedAccountInputRules = [
         Entity::MERCHANT_ID              => 'required|size:14',
-        'parent_merchant_id'             => 'required|size:14',
         'settlement_ondemand_trigger_id' => 'required|size:14',
         'mode'                           => 'required|in:test,live',
         Entity::AMOUNT                   => 'required|integer'

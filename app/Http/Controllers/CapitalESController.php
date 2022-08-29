@@ -95,7 +95,7 @@ class CapitalESController extends Controller
             $url .= '?' . http_build_query($body);
         }
 
-        $response = $this->sendRequestAndParseResponse($url, $body, $headers, $request->method());
+        $response = $this->sendRequestAndParseResponse($url, $request->method(), $body, $headers);
 
         return $response;
     }

@@ -13299,7 +13299,8 @@ class Route
 
         'capital_early_settlements' => [
             'settlement_ondemand_linked_account',
-            'internal_balances_fetch_by_merchant_ids'
+            'internal_balances_fetch_by_merchant_ids',
+            'merchant_la_fetch'
         ],
 
         'leegality' => [

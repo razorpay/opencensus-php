@@ -1977,7 +1977,6 @@ return [
             'method'  => 'post',
             'content' => [
                   'merchant_id'                    => '10000000000000',
-                  'parent_merchant_id'             => '10000000000001',
                   'mode'                           => 'test',
                   'amount'                         => 1000000,
                   'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
@@ -2008,7 +2007,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'merchant_id'                    => '10000000000000',
-                'parent_merchant_id'             => '10000000000001',
                 'mode'                           => 'test',
                 'amount'                         => 1000000,
                 'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
@@ -2035,7 +2033,6 @@ return [
             'method'  => 'post',
             'content' => [
                 'merchant_id'                    => '10000000000000',
-                'parent_merchant_id'             => '10000000000001',
                 'mode'                           => 'test',
                 'amount'                         => 1000000,
                 'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
