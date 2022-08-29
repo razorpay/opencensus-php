@@ -587,6 +587,7 @@ class SupportBody extends Component {
               shouldOpenExistingTicketsOnNewTab={!isWebView}
               onRequestFollowUp={this.onRequestFollowUp}
               analyticsInstance={this.handleCareAnalytics}
+              isOpened={isOpened}
             />
           )}
           <SupportActions

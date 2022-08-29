@@ -372,7 +372,6 @@ export default class Conversations extends React.Component {
     if (!isWorkflow || !workflow?.id) {
       return 8;
     }
-
     const createdAt = moment(parseInt(workflow?.created_at, 10));
     const dueDate = moment(parseInt(workflow?.due_date, 10));
     const duration = moment.duration(dueDate.diff(createdAt));
@@ -380,6 +379,11 @@ export default class Conversations extends React.Component {
 
     return hours;
   };
+  getPopoverMessage(is_escalated, has_callback) {
+    if (is_escalated) return 'We are working on resolving this as soon as possible.';
+    if (has_callback) return 'We will resolve this query over call';
+    return 'You can expect reply within working hours.';
+  }
   render() {
     let total_conversations = [];
     const {
@@ -410,7 +414,7 @@ export default class Conversations extends React.Component {
       total_conversations.push(...conversations?.data?.[k]);
     });
     total_conversations = total_conversations.filter(this.shouldBeVisible);
-    let message, popup;
+    let message;
     const MESSAGE = getResponseArrivalType(ticket, workflow);
     const STATUS = getTicketStatus(ticket, workflow);
     const responseFormatTime = moment(
@@ -612,19 +616,7 @@ export default class Conversations extends React.Component {
                             {!can_be_escalated ? (
                               <Popover align="bottom" theme="dark">
                                 <PopoverBody>
-                                  {popup ? (
-                                    popup
-                                  ) : (
-                                    <span>
-                                      {has_callback
-                                        ? is_escalated
-                                          ? `You can expect reply before: ${responseFormatTime}`
-                                          : `We will resolve this query over call`
-                                        : is_escalated
-                                        ? `You can expect reply before: ${responseFormatTime}`
-                                        : `You can expect reply within working hours.`}
-                                    </span>
-                                  )}
+                                  <span>{this.getPopoverMessage(is_escalated, has_callback)}</span>
                                 </PopoverBody>
                               </Popover>
                             ) : null}

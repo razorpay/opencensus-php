@@ -16,6 +16,7 @@ import { COMDEL_URL } from './constants';
 import getMobileDetect from 'common/utils/mobileDetect';
 import SupportLoader from 'merchant/components/Support/components/Loader';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 const SupportBody = lazy(() => import('merchant/components/Support/components/SupportBody'));
 @withRouter
@@ -195,9 +196,16 @@ export default class Support extends Component {
 
     if (!isOpened) {
       trackSupportButton();
-      this.disableScrolling();
-    } else {
-      this.enableScrolling();
+    }
+
+    const isMobile = isMobileDevice(1020);
+
+    if (isMobile) {
+      if (!isOpened) {
+        this.disableScrolling();
+      } else {
+        this.enableScrolling();
+      }
     }
 
     this.setState({

@@ -26,6 +26,7 @@ const initFreshchat = (data) => {
       locked: data.locked,
       submitted: data.submitted,
       role,
+      MerchantID: data?.id,
       userEmail: data.user.email,
       mid: data.id,
       activationStatus: data.activation_status,
