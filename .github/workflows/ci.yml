@@ -137,8 +137,7 @@ jobs:
 # Skipped this as well dependency incompatibility between "cache/adapter-common" and "psr/cache".
 #      - name: Symfony 4 test
 #        run: tests/integration/symfony4/test.sh
-#        env:
-#          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+
 
     services:
       mysql:
