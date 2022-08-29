@@ -19,9 +19,25 @@ class Utils
 
         foreach ($items as $item)
         {
+            $properties = $item['properties'];
+
+            $attributes = [];
+
+            if ($properties !== null)
+            {
+                foreach ($properties as $key => $value)
+                {
+                    $attributes[] = [
+                        'key'   => $key,
+                        'value' => $value
+                    ];
+                }
+            }
+
             $lineItems[] = [
-              'variant_id' => $item['variant_id'],
-              'quantity'   => (int)$item['quantity']
+              'variant_id'          => $item['variant_id'],
+              'quantity'            => (int)$item['quantity'],
+              'customAttributes'    => $attributes
             ];
         }
 
@@ -36,7 +52,8 @@ class Utils
         {
             $lineItems[] = [
               'variantId' => $this->convertToBase64($item['variant_id'], 'variant'),
-              'quantity'   => $item['quantity']
+              'quantity'   => $item['quantity'],
+              'customAttributes' => $item['customAttributes']
             ];
         }
         return ['lineItems' => $lineItems];

@@ -25,6 +25,10 @@ class Mutations
                 zip
               }
               note
+              customAttributes {
+                key
+                value
+              }
               paymentDue
               paymentDueV2 {
                 amount

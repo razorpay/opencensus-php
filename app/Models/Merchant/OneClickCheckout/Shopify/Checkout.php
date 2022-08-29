@@ -348,7 +348,7 @@ class Checkout extends Base\Core
 
             $checkoutUrl = $this->getMagicCheckoutUrl($input);
 
-            $this->updateCheckoutWithUrl($checkoutUrl, $input['checkout_id']);
+            $this->updateCheckoutWithUrl($checkoutUrl, $input);
         }
         catch (\Throwable $e)
         {
@@ -367,9 +367,13 @@ class Checkout extends Base\Core
         return 'https://' . $input['shop_id'] . '.myshopify.com/cart?magic_order_id=' . $input['order_id'];
     }
 
-    protected function updateCheckoutWithUrl(string $checkoutUrl, string $checkoutId)
+    protected function updateCheckoutWithUrl(string $checkoutUrl, array $input)
     {
         $client = $this->getShopifyClientByMerchant();
+
+        $checkoutId = $input['checkout_id'];
+
+        $cartNotes = $input['cart_note'];
 
         $mutation = (new Mutations)->checkoutAttributesUpdateMutation();
 
@@ -380,8 +384,12 @@ class Checkout extends Base\Core
                 'input'      => [
                     'customAttributes' => [
                         [
-                          'key'   => 'magic_checkout_url',
-                          'value' => $checkoutUrl
+                            'key'   => 'magic_checkout_url',
+                            'value' => $checkoutUrl
+                        ],
+                        [
+                            'key'   => 'order_notes',
+                            'value' => $cartNotes
                         ]
                     ]
                 ]

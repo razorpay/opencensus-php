@@ -1090,17 +1090,50 @@ class Core extends Base\Core
             ]
         ];
 
+        $noteAttributes =  $checkout['customAttributes'];
+
+        if(!empty($noteAttributes))
+        {
+            foreach ($noteAttributes as $noteAttribute)
+            {
+                if ($noteAttribute['key'] === 'order_notes')
+                {
+                    $order['note'] = $noteAttribute['value'];
+                }
+            }
+        }
+
         if (empty($checkout['lineItems']['edges']) === false)
         {
             $lineItems = [];
 
-            foreach ($checkout['lineItems']['edges'] as $value)
+            $items = $checkout['lineItems']['edges'];
+
+            foreach ($items as $item)
             {
+
+                $attributes = $item['node']['customAttributes'];
+
+                $properties = [];
+
+                if($attributes !== null)
+                {
+                    foreach ($attributes as $attribute)
+                    {
+                        $properties[] = [
+                            'name'  => $attribute['key'],
+                            'value' => $attribute['value']
+                        ];
+                    }
+                }
+
                 $lineItems[] = [
-                  'variant_id' => str_replace('gid://shopify/ProductVariant/', '', base64_decode($value['node']['variant']['id'])),
-                  'quantity'   => $value['node']['quantity']
-                ];
+                    'variant_id' => str_replace('gid://shopify/ProductVariant/', '', base64_decode($item['node']['variant']['id'])),
+                    'quantity'   => $item['node']['quantity'],
+                    'properties' => $properties
+                  ];
             }
+
             $order['line_items'] = $lineItems;
         }
 
