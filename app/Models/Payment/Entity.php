@@ -1714,7 +1714,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if ($this->isExternal() === true)
         {
-            $this->setAmountTransferred($this->getAmountTransferred() - $amount);
+            $newAmount = $this->getAmountTransferred() - $amount;
+
+            if ($newAmount < 0 ) 
+            {
+                 throw new Exception\LogicException(
+                    'Amount transferred is going negative',
+                    ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+                    [
+                        'payment_id'        => $this->getId(),
+                        'amount'            => $amount,
+                    ]);
+            }
+
+            $this->setAmountTransferred($newAmount);
+
             return;
         }
 

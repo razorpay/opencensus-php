@@ -55,11 +55,6 @@ trait Reversal
 
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);    
             
-            if ($sourcePayment->isExternal() === true)
-            {
-                $this->repo->saveOrFail($sourcePayment);
-            }
-            
         }
         else if ($transfer->getSourceType() === E::ORDER)
         {
@@ -135,7 +130,10 @@ trait Reversal
 
         $baseAmount = $refund->getBaseAmount();
 
-        $payment = $this->repo->payment->lockForUpdate($payment->getKey());
+        if ($payment->isExternal() === false)
+        {
+            $payment = $this->repo->payment->lockForUpdate($payment->getKey());    
+        }
 
         $payment->refundAmount($amount, $baseAmount);
 
