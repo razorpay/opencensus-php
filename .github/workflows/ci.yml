@@ -138,6 +138,12 @@ jobs:
 #      - name: Symfony 4 test
 #        run: tests/integration/symfony4/test.sh
 
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+            files: build/clover.xml
+            verbose: true
+
 
     services:
       mysql:
