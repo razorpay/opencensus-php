@@ -22,6 +22,7 @@ import { createPaymentPage, editPaymentPage, setReceiptDetails } from '../model'
 import track from './track';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import debounce from 'common/utils/debounce';
+import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 
 import {
   autoPrefixUrls,
@@ -70,6 +71,7 @@ const ERROR = {
     mode: state.session.mode,
     org: state.session.org,
     config: state.config.config,
+    isWebView: state.app.isWebView,
     ...state.wysiwyg,
   }),
   {
@@ -274,6 +276,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     document.head.appendChild(script);
 
     document.getElementById('paymentpage-container').classList.add('theme-desktop');
+
+    //dispatching event to tell mobile app to hide header in creation flow
+    this.props.isWebView && dispatchWebViewEvent({ eventType: 'HIDE_HEADER' });
   }
 
   componentWillUnmount() {
@@ -292,6 +297,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     this.props.closeModal();
 
     window.removeEventListener('resize', this.debouncedHandleModalPosition);
+
+    //dispatching event to tell mobile app to show header again as exiting creation flow
+    this.props.isWebView && dispatchWebViewEvent({ eventType: 'SHOW_HEADER' });
   }
 
   fetchMerchantDetails = () => {

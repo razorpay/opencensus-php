@@ -1,6 +1,8 @@
 import { set } from 'common/utils/immutable';
 import { merchantFetch } from 'merchant/utils/ajax';
 
+import getMobileDetect from 'common/utils/mobileDetect';
+
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
 const LOCATION_UPDATE = 'LOCATION_UPDATE';
@@ -8,9 +10,6 @@ const ENTITY_UPDATE = 'ENTITY_UPDATE';
 const SEC_ENTITY_UPDATE = 'SEC_ENTITY_UPDATE';
 const SET_ACTIVE_PAGE_NAME = 'SET_ACTIVE_PAGE_NAME';
 const TOGGLE_MOBILE_MENU = 'TOGGLE_MOBILE_MENU';
-const SET_WINDOW_WIDTH = 'SET_WINDOW_WIDTH';
-const SET_WINDOW_HEIGHT = 'SET_WINDOW_HEIGHT';
-const SET_MOBILE_RES = 'SET_MOBILE_RES';
 const RESIZE_WINDOW = 'RESIZE_WINDOW';
 
 const isMobileResolution = (width) => {
@@ -28,11 +27,12 @@ export const updateMerchantLiveTransactionFlag = (id) => {
   });
 };
 
-let initialState = {
+const initialState = {
   luminateRowId: null,
   windowWidth: window.innerWidth,
   windowHeight: window.outerHeight,
   isMobileResolution: isMobileResolution(window.innerWidth),
+  isWebView: getMobileDetect().isWebView(),
 };
 
 export const setBaseLocation = (location) => {
@@ -96,7 +96,7 @@ export const luminateRow = (id) => {
   };
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case ENTITY_UPDATE:
       return set(state, 'activeEntityId', action.payload);
@@ -119,7 +119,7 @@ export default function (state = initialState, action) {
     case TOGGLE_MOBILE_MENU:
       return set(state, 'showMobileMenu', !state.showMobileMenu);
 
-    case RESIZE_WINDOW:
+    case RESIZE_WINDOW: {
       const { windowWidth, windowHeight, isMobileResolution } = action.payload;
 
       state = set(state, 'windowWidth', windowWidth);
@@ -129,8 +129,9 @@ export default function (state = initialState, action) {
       // forcing not to show mobile menu in desktop resolution
       state = set(state, 'showMobileMenu', !isMobileResolution ? false : state.showMobileMenu);
       return state;
+    }
 
     default:
       return state;
   }
-}
+};

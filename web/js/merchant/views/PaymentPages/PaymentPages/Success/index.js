@@ -23,6 +23,7 @@ import ShiprocketImage from '../../../../../../css/assets/payment_pages/shiprock
 
 import { autoPrefixUrls, getErrorMessageFromResponse } from 'common/utils/rzp-utils';
 import { sendLink, editPaymentPage, setReceiptDetails } from '../model';
+import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import track from '../Wysiwyg/track';
 
 @connect(
@@ -30,6 +31,7 @@ import track from '../Wysiwyg/track';
     user: state.session.user,
     mode: state.session.mode,
     isMobileResolution: state.app.isMobileResolution,
+    isWebView: state.app.isWebView,
     ...state.wysiwyg,
   }),
   {
@@ -130,24 +132,33 @@ class Success extends React.Component {
 
   openShareView = () => {
     const { paymentPageEntity } = this.props;
-    // trackDetailViewEdits('Click Share');
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <ShareView
-          handleClose={this.props.closeModal}
-          openModal={this.props.openModal}
-          handleAction={sendLink.bind(null, paymentPageEntity.id)}
-          showNotification={this.props.showNotification}
-          title={paymentPageEntity.title}
-          description={paymentPageEntity.description}
-          trackerFn={() => {}}
-          // trackerFn={trackShareActions}
-          // openEmbedButton={this.openEmbedButtonView}
-          url={paymentPageEntity.short_url}
-        />
-      ),
-    });
+
+    // if opened in webview (mobile app), sending native event with required data
+    if (this.props.isWebView) {
+      dispatchWebViewEvent({
+        eventType: 'SHARE',
+        data: {
+          url: paymentPageEntity.short_url,
+          title: paymentPageEntity.title,
+        },
+      });
+    } else {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <ShareView
+            handleClose={this.props.closeModal}
+            openModal={this.props.openModal}
+            handleAction={sendLink.bind(null, paymentPageEntity.id)}
+            showNotification={this.props.showNotification}
+            title={paymentPageEntity.title}
+            description={paymentPageEntity.description}
+            trackerFn={() => {}}
+            url={paymentPageEntity.short_url}
+          />
+        ),
+      });
+    }
   };
 
   handleViewPage = () => {
@@ -288,19 +299,7 @@ class Success extends React.Component {
                   <div id="hero-box--action-buttons">
                     <CustomClipboard
                       value={paymentPageEntity.short_url}
-                      // value={url}
                       onCopy={() => {
-                        // analyticsTrack({
-                        //     objectName: 'copy hyperlink',
-                        //     actionName: 'button',
-                        //     screen: 'create payment page',
-                        //     properties: {
-                        //         ...getCommonAnalyticsProperties(window.rzp_user),
-                        //     },
-                        // });
-                        const ele = document.getElementsByName('short_url');
-                        ele?.[0].focus();
-                        // this.props.trackerFn('Click Copy URL');
                         track.success.clickCopyUrl();
                       }}
                     >

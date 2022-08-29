@@ -1147,6 +1147,7 @@ export default compose(
       let u = {};
       if (user && user.user) {
         const device_type = isMobileDevice() ? 'mweb' : 'dweb';
+        const is_web_view = getMobileDetect().isWebView();
         u = {
           email_id: user.user.email,
           user_id: user.user.id,
@@ -1161,6 +1162,7 @@ export default compose(
           user_business_category: user.business_category,
           user_business_sub_category: user.business_subcategory,
           device_type,
+          is_web_view,
         };
       }
       if (query.merchant) {

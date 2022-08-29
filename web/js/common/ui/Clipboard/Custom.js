@@ -1,10 +1,17 @@
 import { Component } from 'react';
-import { findDOMNode } from 'react-dom';
-import { Field } from 'redux-form';
+import { connect } from 'react-redux';
 
+import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
+
+@connect(
+  (state) => ({
+    isWebView: state.app.isWebView,
+  }),
+  null,
+)
 export default class Clipboard extends Component {
-  constructor() {
-    super(...arguments);
+  constructor(props) {
+    super(props);
     this.state = {};
     this.copyToClipboard = ::this.copyToClipboard;
     this.selectValue = ::this.selectValue;
@@ -23,8 +30,16 @@ export default class Clipboard extends Component {
   }
 
   copyToClipboard() {
-    this.selectValue();
-    document.execCommand('copy');
+    if (this.props.isWebView) {
+      dispatchWebViewEvent({
+        eventType: 'COPY',
+        data: this.props.value,
+      });
+    } else {
+      this.selectValue();
+      document.execCommand('copy');
+    }
+
     this.props.onCopy && this.props.onCopy(this.props.value);
   }
 
@@ -39,14 +54,10 @@ export default class Clipboard extends Component {
           value={this.props.value}
           class="ClipboardCustom__Input"
           readOnly={true}
-          ref={textarea => (this.textarea = textarea)}
+          ref={(textarea) => (this.textarea = textarea)}
           onFocus={this.selectValue}
         />
-        <div
-          onClick={this.copyToClipboard}
-          data-tip="Copied"
-          data-event="active"
-        >
+        <div onClick={this.copyToClipboard} data-tip="Copied" data-event="active">
           {this.props.children}
         </div>
       </div>

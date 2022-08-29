@@ -59,6 +59,7 @@ const initialState = {
   invoices: [],
   paymentPages: [],
   count: 0,
+  blacklistQueryParams: ['source'],
 };
 
 export default (state = initialState, action) => {

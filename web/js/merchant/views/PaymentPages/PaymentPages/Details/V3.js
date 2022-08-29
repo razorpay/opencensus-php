@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 
 import { classList } from 'common/utils/rzp-utils';
+import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
@@ -67,6 +68,7 @@ const trackShare = (eventName, data) => {
     mode: state.session.mode,
     reportConfigs: state.reports.reportConfigs,
     isMobileResolution: state.app.isMobileResolution,
+    isWebView: state.app.isWebView,
   }),
   {
     showNotification,
@@ -191,22 +193,33 @@ export default class PaymentPagesV3Entity extends React.Component {
   openShareView = () => {
     const { paymentPageEntity } = this.props;
 
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <ShareView
-          handleClose={this.props.closeModal}
-          openModal={this.props.openModal}
-          handleAction={sendLink.bind(null, paymentPageEntity.id)}
-          showNotification={this.props.showNotification}
-          title={paymentPageEntity.title}
-          description={paymentPageEntity.description}
-          trackerFn={trackShare}
-          openEmbedButton={this.openEmbedButtonView}
-          url={paymentPageEntity.short_url}
-        />
-      ),
-    });
+    // if opened in webview (mobile app), sending native event with required data
+    if (this.props.isWebView) {
+      dispatchWebViewEvent({
+        eventType: 'SHARE',
+        data: {
+          url: paymentPageEntity.short_url,
+          title: paymentPageEntity.title,
+        },
+      });
+    } else {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <ShareView
+            handleClose={this.props.closeModal}
+            openModal={this.props.openModal}
+            handleAction={sendLink.bind(null, paymentPageEntity.id)}
+            showNotification={this.props.showNotification}
+            title={paymentPageEntity.title}
+            description={paymentPageEntity.description}
+            trackerFn={trackShare}
+            openEmbedButton={this.openEmbedButtonView}
+            url={paymentPageEntity.short_url}
+          />
+        ),
+      });
+    }
 
     trackDetailViewEdits('Click Share');
     track.share();
