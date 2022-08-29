@@ -168,7 +168,9 @@ class SpanContext
             $this->traceId(),
             $this->spanId(),
             $this->enabled(),
-            $this->fromHeader(), array_merge($this->baggageItems, [$key => $value]));
+            $this->fromHeader(),
+            array_merge(
+                $this->baggageItems,[$key => $value]));
     }
 
     /**
