@@ -271,21 +271,23 @@ class Service extends Base\Service
     //Auto Loads Credits and Balances from current
     private function ledgerPGAccountCreateRequest($merchant)
     {
-        // Fetch Merchant balance. Required to generate request body for account creation on ledger
-        $balance = $this->repo->balance->getMerchantBalanceByType(
-            $merchant->getId(),
-            BalanceType::PRIMARY,
-            $this->mode);
+        $this->repo->transaction(function () use ($merchant)
+        {
+            $merchantId = $merchant->getId();
 
-        //fetches fee and amount credits from credits table
-        $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCredits($merchant->getId());
+            // Fetch Merchant balance. Required to generate request body for account creation on ledger
+            $balance = $this->repo->balance->getBalanceLockForUpdate($merchantId);
 
-        (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
-            $merchant,
-            $this->mode,
-            $balance->getBalance(),
-            $creditBalances
-        );
+            //fetches fee, amount and refund credits from credits table
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchantId);
+
+            (new Merchant\Balance\Ledger\Core)->createPGLedgerAccount(
+                $merchant,
+                $this->mode,
+                $balance->getBalance(),
+                $creditBalances
+            );
+        });
     }
 
     private function ledgerPGGatewayAccountCreateRequest(string $merchantId, string $gateway)

@@ -14,6 +14,7 @@ use RZP\Models\Admin;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Terminal;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
@@ -36,6 +37,8 @@ use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Admin\Permission\Name as Permission;
+
 
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 use function Clue\StreamFilter\fun;
@@ -49,6 +52,7 @@ class FeaturesTest extends OAuthTestCase
     use CustomBrandingTrait;
     use PaymentTrait;
     use TestsBusinessBanking;
+    use WorkflowTrait;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -3217,6 +3221,35 @@ Regards,
         $this->assertNotContains('ledger_journal_writes', $featuresArray);
     }
 
+    public function testOnboardMerchantOnPGSuccess()
+    {
+        $this->fixtures->merchant->addFeatures(['ledger_journal_writes']);
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+        $featuresArray = $this->getDbEntity('feature',
+            [
+                'entity_id' => '10000000000000',
+                'entity_type' => 'merchant'
+            ])->pluck('name')->toArray();
+
+        $this->assertContains('pg_ledger_journal_writes', $featuresArray);
+    }
+    public function testOnboardMerchantOnPGFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_journal_writes']);
+        $this->addPermissionToBaAdmin(Permission::PG_LEDGER_ACTIONS);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
     public function testHighTpsCompositePayoutFeatureAdditionWhenLedgerReverseShadowIsEnabled()
     {
         $this->fixtures->merchant->addFeatures(['ledger_reverse_shadow']);

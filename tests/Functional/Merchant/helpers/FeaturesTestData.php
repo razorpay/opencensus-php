@@ -3122,6 +3122,60 @@ return [
         ]
     ],
 
+    'testOnboardMerchantOnPGSuccess' => [
+        'request'  => [
+            'content' => [
+                    'merchant_ids'     => ['10000000000000']
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     =>  [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'status'            => 'success',
+                        'feature'           => 'pg_ledger_journal_writes',
+                        'message'           => 'merchant onboarded'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testOnboardMerchantOnPGFailure' => [
+        'request'  => [
+            'content' => [
+                    'merchant_ids'     => ['10000000000000',"Jz6THQeX9RAYWH"]
+            ],
+            'url'     => '/pg_ledger/merchant/onboard',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     =>  [
+                    [
+                        'merchant_id'       => '10000000000000',
+                        'status'            => 'failure',
+                        'feature'           => 'pg_ledger_journal_writes',
+                        'message'           => 'merchant feature already enabled'
+                    ],
+                    [
+                        'merchant_id'       => 'Jz6THQeX9RAYWH',
+                        'status'            => 'failure',
+                        'feature'           => 'pg_ledger_journal_writes',
+                        'message'           => 'The id provided does not exist'
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'test1CCReportingTestFeature' => [
         'request'  => [
             'url'     => '/features',
