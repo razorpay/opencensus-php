@@ -31,6 +31,7 @@ import {
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import { getNoOfDaysAfterEsPartialEnable } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import { trackSettlementsPageRendered } from './Settlements/components/Modals/ScheduledModal/analytics';
+import RouteOndemandSettlements from './RouteOndemandSettlements';
 
 const Settlements = ({
   user,
@@ -178,6 +179,11 @@ const Settlements = ({
               Ondemand Settlements
             </NavLink>
           )}
+          {user.isOndemandRouteSettlementsEnabled && (
+            <NavLink to="/routeinstantsettlements">
+              <i className="i i-early-settlement settle-icon mr-5" /> Ondemand Route Settlements
+            </NavLink>
+          )}
           {showViewUnlockStatus && (
             <AsyncBtn.Transparent
               style={{
@@ -193,6 +199,7 @@ const Settlements = ({
         <content>
           <ErrorBoundary resetOnProps>
             <Switch>
+              <Route path="/routeinstantsettlements" component={RouteOndemandSettlements} />
               <Route
                 path="/instantsettlements"
                 render={() => (

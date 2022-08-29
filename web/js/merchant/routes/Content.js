@@ -328,6 +328,14 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('settlements')}
           />
           <ShowWhenRoute
+            path="/routeinstantsettlements"
+            exact
+            component={Settlements}
+            additionalCondition={(user) =>
+              user.isAllowedView('early_settlement') && user.isOndemandRouteSettlementsEnabled
+            }
+          />
+          <ShowWhenRoute
             path="/instantsettlement_details/:id"
             component={InstantSettlementPayoutDetails}
             additionalCondition={(user) => user.isAllowedView('early_settlement')}
