@@ -51,8 +51,8 @@ const Pincodes = ({
         })
         .catch(() => {
           showNotification({
-            type: 'success',
-            message: 'Something went wrong, please try agai',
+            type: 'error',
+            message: 'Something went wrong, please try again',
           });
           closeModal();
         });

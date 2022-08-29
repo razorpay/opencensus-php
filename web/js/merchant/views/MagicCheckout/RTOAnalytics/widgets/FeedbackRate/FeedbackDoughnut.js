@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react';
 import { Doughnut } from 'react-chartjs-2';
-import { feedbackDataFormatter } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FlaggedReasons/utils';
+import { feedbackDataFormatter } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate/utils';
 
 const chartOptions = {
   cutoutPercentage: 75,
@@ -64,12 +64,12 @@ const chartPlugins = [
   },
 ];
 
-const FeedbackDoughnut = ({ feedbackRateData }) => {
+const FeedbackDoughnut = ({ feedbackPercentage }) => {
   const [feedbackData, setFeedbackData] = useState(null);
 
   useEffect(() => {
-    setFeedbackData(feedbackDataFormatter(feedbackRateData));
-  }, [setFeedbackData, feedbackRateData]);
+    setFeedbackData(feedbackDataFormatter(feedbackPercentage));
+  }, [setFeedbackData, feedbackPercentage]);
 
   return (
     <div className="chart-container">

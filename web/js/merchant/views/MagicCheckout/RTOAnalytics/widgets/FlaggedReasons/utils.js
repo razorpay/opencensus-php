@@ -42,22 +42,3 @@ export function getOtherReasonsObj(otherReasonsList) {
     { percentage: 0 },
   );
 }
-
-/**
- * @param {Array} feedbackData feedback object having feedback precentange
- * @returns {object} object of formatted data that can be fed directly to the charts
- */
-export function feedbackDataFormatter(feedbackData) {
-  const { feedback_percentage } = feedbackData ? feedbackData[0] : { feedback_percentage: 0 };
-  const precised_percentage = parseFloat(feedback_percentage).toFixed(1);
-
-  const datasets = [
-    {
-      data: [precised_percentage, 100 - precised_percentage],
-      borderAlign: 'inner',
-      backgroundColor: ['#5A7AAA', '#E8E8E8'],
-    },
-  ];
-
-  return { datasets };
-}

@@ -22,19 +22,19 @@ const CumulativeOrders = ({ data }) => {
       <div className="order-count">
         <span className="total-color" />
         <span className="title total">Total orders</span>
-        <span className="number">{data ? data[0].total_order : '--'}</span>
+        <span className="number">{data ? data[0].total_order ?? 0 : '--'}</span>
       </div>
       <VerticalPartition />
       <div className="order-count">
         <span className="risky-color" />
         <span className="title risky">Risky orders</span>
-        <span className="number">{data ? data[0].risky_order : '--'}</span>
+        <span className="number">{data ? data[0].risky_order ?? 0 : '--'}</span>
       </div>
       <VerticalPartition />
       <div className="order-count">
         <span className="safe-color" />
         <span className="title safe">Safe orders</span>
-        <span className="number">{data ? data[0].safe_order : '--'}</span>
+        <span className="number">{data ? data[0].safe_order ?? 0 : '--'}</span>
       </div>
     </div>
   );

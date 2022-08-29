@@ -10,27 +10,26 @@ import {
   FEEDBACKRATE_INFO_TEXTS,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const FeedbackRate = ({ feedbackRate_data, isloading }) => {
-  const { feedback_percentage } = feedbackRate_data
-    ? feedbackRate_data[0]
-    : { feedback_percentage: 0 };
-  const feedback_footer_status =
-    feedback_percentage === 100 ? 'complete' : feedback_percentage === 0 ? 'empty' : 'partial';
+const FeedbackRate = ({ feedbackRateData, isloading }) => {
+  const { feedbackPercentage } =
+    feedbackRateData && !Array.isArray(feedbackRateData[0])
+      ? feedbackRateData[0]
+      : { feedbackPercentage: 0 };
+  const footerStatus =
+    feedbackPercentage === 100 ? 'complete' : feedbackPercentage === 0 ? 'empty' : 'partial';
 
-  const feedback_info_status = feedback_footer_status === 'complete' ? 'complete' : 'incomplete';
+  const infoStatus = footerStatus === 'complete' ? 'complete' : 'incomplete';
 
   return (
     <div className="feedbackRate-container col-md-3">
       <GenericPanel className="feedbackRate-panel" isLoading={isloading}>
         <PanelTopbar>Order data availability</PanelTopbar>
         <PanelBody>
-          <div className="feedbackRate-panel-info">
-            {FEEDBACKRATE_INFO_TEXTS[feedback_info_status]}
-          </div>
-          <FeedbackDoughnut feedbackRateData={feedbackRate_data} />
+          <div className="feedbackRate-panel-info">{FEEDBACKRATE_INFO_TEXTS[infoStatus]}</div>
+          <FeedbackDoughnut feedbackPercentage={feedbackPercentage} />
         </PanelBody>
-        <PanelFooter className={`feedbackRate-${feedback_footer_status}-info`}>
-          {FEEDBACKRATE_FOOTER_TEXTS[feedback_footer_status]}
+        <PanelFooter className={`feedbackRate-${footerStatus}-info`}>
+          {FEEDBACKRATE_FOOTER_TEXTS[footerStatus]}
         </PanelFooter>
       </GenericPanel>
     </div>
@@ -38,7 +37,7 @@ const FeedbackRate = ({ feedbackRate_data, isloading }) => {
 };
 
 const mapStateToProps = (state) => ({
-  feedbackRate_data: state.magicRTOAnalytics.feedback_rate.data,
+  feedbackRateData: state.magicRTOAnalytics.feedback_rate.data,
   isloading: state.magicRTOAnalytics.feedback_rate.loading,
 });
 
