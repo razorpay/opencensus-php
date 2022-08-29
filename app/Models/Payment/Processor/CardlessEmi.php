@@ -19,7 +19,6 @@ class CardlessEmi
     const FLEXMONEY    = 'flexmoney';
     const WALNUT369    = 'walnut369';
     const SEZZLE       = 'sezzle';
-    const AXIO         = 'Axio';
 
     const HDFC = 'hdfc';
     const KKBK = 'kkbk';
@@ -51,7 +50,7 @@ class CardlessEmi
         self::EARLYSALARY  => 'EarlySalary',
         self::ZESTMONEY    => 'ZestMoney',
         self::FLEXMONEY    => 'FlexMoney',
-        self::WALNUT369    => 'Axio',
+        self::WALNUT369    => 'Walnut369',
         self::SEZZLE       => 'Sezzle',
     ];
 
