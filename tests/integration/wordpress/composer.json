@@ -5,7 +5,7 @@
         "ext-opencensus": "*"
     },
     "require-dev": {
-        "wp-cli/wp-cli": "2.5.0",
+        "wp-cli/wp-cli": "2.6.0",
         "phpunit/phpunit": "^9.0",
         "guzzlehttp/guzzle": "~6.0"
     },
