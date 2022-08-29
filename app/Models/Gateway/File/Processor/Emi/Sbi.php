@@ -195,120 +195,123 @@ class Sbi extends Base
          */
         foreach ($data['items'] as $emiPayment)
         {
-            try
-            {
-                $emiPlan = $emiPayment->emiPlan;
-
-                $merchantDetail = $emiPayment->merchant->merchantDetail;
-
-                $terminal = $this->repo->terminal->getByMerchantIdAndGateway(
-                    $emiPayment->getMerchantId(),
-                    Payment\Gateway::EMI_SBI
-                );
-
-                if ($terminal === null)
+                try
                 {
-                    throw new LogicException(
-                        'No SBI MID found for merchant',
-                        null,
-                        [
-                            'gateway'       => 'emi_sbi',
-                            'gateway_file'  => $this->gatewayFile->getId(),
-                            'payment_id'    => $emiPayment['id'],
-                            'merchant_id'   => $merchantDetail[Detail\Entity::MERCHANT_ID],
-                        ]);
+                    $emiPlan = $emiPayment->emiPlan;
+
+                    $merchantDetail = $emiPayment->merchant->merchantDetail;
+
+                    $terminal = $this->repo->terminal->getByMerchantIdAndGateway(
+                        $emiPayment->getMerchantId(),
+                        Payment\Gateway::EMI_SBI
+                    );
+
+                    if ($terminal === null) {
+                        throw new LogicException(
+                            'No SBI MID found for merchant',
+                            null,
+                            [
+                                'gateway' => 'emi_sbi',
+                                'gateway_file' => $this->gatewayFile->getId(),
+                                'payment_id' => $emiPayment['id'],
+                                'merchant_id' => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                            ]);
+                    }
+
+                    $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+
+                    $tid = $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
+
+                    if ($mid === null or
+                        $tid === null) {
+                        throw new LogicException(
+                            'MID and TID can not be null',
+                            null,
+                            [
+                                'gateway' => 'emi_sbi',
+                                'payment_id' => $emiPayment['id'],
+                                'merchant_id' => $merchantDetail[Detail\Entity::MERCHANT_ID],
+                                'terminal_id' => $terminal->getId(),
+                            ]);
+                    }
+
+                    $totalTransactions++;
+
+                    $uniqueReferenceNum++;
+
+                    try {
+                        $redisKey = sprintf(self::REDIS_KEY_FMT, $emiPayment->getId());
+
+                        $this->cache->set($redisKey, $uniqueReferenceNum, self::REDIS_KEY_TTL);
+
+                    } catch (\Exception $e) {
+                        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['cache_val_set_error' => $uniqueReferenceNum]);
+                    }
+
+
+                    $principalAmount = $emiPayment->getAmount();
+
+                    $rate = $emiPlan->getRate() / 100;
+
+                    $tenure = $emiPlan->getDuration();
+
+                    $businessName = $this->getBusinessName($merchantDetail);
+
+                    $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
+
+                    $card = $emiPayment->card;
+
+                    if (isset($emiPayment->card->trivia) && isset($emiPayment->token))
+                    {
+                        $card = $emiPayment->token->card;
+                    }
+
+                    $body[] =
+                        'DD' .    // record type always DD
+                        'R' . $this->numpad($uniqueReferenceNum, 14) .
+                        $this->strpad('Razor Pay', 40) .
+                        $this->numpad($this->getCardNumber($card, $emiPayment->getGateway()), 19) .
+                        $this->numpad($principalAmount, 17) .
+                        $this->numpad($tenure, 3) .
+                        $this->strpad($this->getAuthCode($emiPayment), 6) .
+                        Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
+                        $this->strpad('Razor Pay', 40) .
+                        $this->numpad($mid, 16) .
+                        $this->strpad($businessName, 40) .
+                        $this->strpad($tid, 8) .
+                        str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
+                        $this->strpad('', 40) .
+                        $this->numpad($principalAmount, 17) .
+                        'F' .
+                        '0' .
+                        'A' .
+                        $this->numpad('9900', 7) .
+                        $this->strpad('GG0001' . substr($mid, -4), 20) .
+                        $this->numpad('0', 17) .
+                        $this->numpad($emiAmount, 17) .
+                        $this->strpad('', 108);
+
+                    $rowLength = strlen(end($body));
+
+                    if ($rowLength !== 450) {
+                        throw new LogicException(
+                            'Row not formatted properly',
+                            null,
+                            [
+                                'gateway' => 'emi_sbi',
+                                'length' => $rowLength,
+                                'payment_id' => $emiPayment['id'],
+                            ]);
+                    }
+
+                    // If a row is not added in the file, then that row's principal amount
+                    // must not be added to the total amount
+                    $totalAmount = $totalAmount + $principalAmount;
                 }
-
-                $mid = $terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-
-                $tid = $terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
-
-                if ($mid === null or
-                    $tid === null)
+                catch (\Exception $e)
                 {
-                    throw new LogicException(
-                        'MID and TID can not be null',
-                        null,
-                        [
-                            'gateway'     => 'emi_sbi',
-                            'payment_id'  => $emiPayment['id'],
-                            'merchant_id' => $merchantDetail[ Detail\Entity::MERCHANT_ID ],
-                            'terminal_id' => $terminal->getId(),
-                        ]);
+                    $this->trace->traceException($e);
                 }
-
-                $totalTransactions++;
-
-                $uniqueReferenceNum++;
-
-                try {
-                    $redisKey = sprintf(self::REDIS_KEY_FMT, $emiPayment->getId());
-
-                    $this->cache->set($redisKey, $uniqueReferenceNum, self::REDIS_KEY_TTL);
-
-                } catch (\Exception $e)
-                {
-                    $this->trace->info(TraceCode::MISC_TRACE_CODE, ['cache_val_set_error' => $uniqueReferenceNum]);
-                }
-
-
-                $principalAmount = $emiPayment->getAmount();
-
-                $rate = $emiPlan->getRate() / 100;
-
-                $tenure = $emiPlan->getDuration();
-
-                $businessName = $this->getBusinessName($merchantDetail);
-
-                $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
-
-                $body[] =
-                    'DD' .    // record type always DD
-                    'R' . $this->numpad($uniqueReferenceNum, 14) .
-                    $this->strpad('Razor Pay', 40) .
-                    $this->numpad($this->getCardNumber($emiPayment->card,$emiPayment->getGateway()), 19) .
-                    $this->numpad($principalAmount, 17) .
-                    $this->numpad($tenure, 3) .
-                    $this->strpad($this->getAuthCode($emiPayment), 6) .
-                    Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
-                    $this->strpad('Razor Pay', 40) .
-                    $this->numpad($mid, 16) .
-                    $this->strpad($businessName, 40) .
-                    $this->strpad($tid, 8) .
-                    str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
-                    $this->strpad('', 40) .
-                    $this->numpad($principalAmount, 17) .
-                    'F' .
-                    '0' .
-                    'A' .
-                    $this->numpad('9900', 7) .
-                    $this->strpad('GG0001' . substr($mid, -4), 20) .
-                    $this->numpad('0', 17) .
-                    $this->numpad($emiAmount, 17) .
-                    $this->strpad('', 108);
-
-                $rowLength = strlen(end($body));
-
-                if ($rowLength !== 450)
-                {
-                    throw new LogicException(
-                        'Row not formatted properly',
-                        null,
-                        [
-                            'gateway'       => 'emi_sbi',
-                            'length'        => $rowLength,
-                            'payment_id'    => $emiPayment['id'],
-                        ]);
-                }
-
-                // If a row is not added in the file, then that row's principal amount
-                // must not be added to the total amount
-                $totalAmount = $totalAmount + $principalAmount;
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e);
-            }
         }
 
         $header = [
