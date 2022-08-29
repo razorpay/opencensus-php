@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import moment from 'moment';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { analyticsTrack } from 'common/utils/analytics';
 import GenericPanel, { PanelTopbar, PanelBody } from 'merchant/components/Home/GenericPanel';
 import TagGroup from './TagGroup';
 import GraphIntervals from './GraphIntervals';
@@ -12,6 +13,7 @@ import ChartArea from './ChartArea';
 import { updateGraphInterval, fetchBreakdownIntervals } from 'merchant/reducers/successRate';
 import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
 import { queryFilters } from '../helper';
+import { methodIntervalClick, methodTagsClick } from '../ga';
 
 const initTagList = ['Overall'];
 
@@ -56,14 +58,14 @@ const GraphPanel = (props) => {
   };
 
   const handleTags = (tag) => {
-    setTagList((prevState) => {
-      const tagsClone = [...prevState];
-      const tagIndex = tagsClone.indexOf(tag);
-      if (tagIndex > -1 && tagsClone.length > 1) tagsClone.splice(tagIndex, 1);
-      else if (tagIndex < 0) tagsClone.push(tag);
-      updateDatasets(tag, tagIndex);
-      return tagsClone;
-    });
+    const tagsClone = [...tagList];
+    const tagIndex = tagsClone.indexOf(tag);
+    if (tagIndex > -1 && tagsClone.length > 1) tagsClone.splice(tagIndex, 1);
+    else if (tagIndex < 0) tagsClone.push(tag);
+    updateDatasets(tag, tagIndex);
+    setTagList(tagsClone);
+
+    analyticsTrack(methodTagsClick({ selectedTags: tagsClone }));
   };
 
   const handleBreakdown = (breakdown) => {
@@ -72,6 +74,8 @@ const GraphPanel = (props) => {
     payload.interval = breakdownInterval[breakdown];
     props.fetchBreakdownIntervals(breakdown, payload);
     setTagList(initTagList);
+
+    analyticsTrack(methodIntervalClick({ breakdown }));
   };
 
   return (

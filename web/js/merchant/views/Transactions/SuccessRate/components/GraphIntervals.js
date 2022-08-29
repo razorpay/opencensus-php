@@ -19,7 +19,7 @@ const GraphIntervals = (props) => {
         if (!isEnabled) btnProps.className = `${btnProps.className} disabled`;
 
         return (
-          <Btn key={`${item}_${index}`} {...btnProps}>
+          <Btn key={`${item.value}_${index}`} {...btnProps}>
             <span>{item.title}</span>
             {!isEnabled && <GenericTooltip align="bottom">{item.disabledText}</GenericTooltip>}
           </Btn>

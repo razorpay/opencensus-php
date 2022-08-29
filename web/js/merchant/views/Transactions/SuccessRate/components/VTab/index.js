@@ -1,14 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ERROR_CATEGORIES, ERROR_CATEGORIES_VS_DISPLAY_TEXT } from '../../constants';
 import TabPane from './TabPane';
 import TabContent from './TabContent';
 import ReasonsPanel from '../ReasonsPanel';
+import { analyticsTrack } from 'common/utils/analytics';
+import { methodFailureReasonClick } from '../../ga';
 
 function VTab(props) {
   const { selectedTab, isLoading, onTabChange, ariaLabel, tabData } = props;
   const selectedKey = Object.values(ERROR_CATEGORIES)[selectedTab];
   const title = ERROR_CATEGORIES_VS_DISPLAY_TEXT[selectedKey] ?? '--';
   const content = tabData?.[selectedKey] ?? [];
+
+  useEffect(() => {
+    analyticsTrack(methodFailureReasonClick({ tabName: selectedKey }));
+  }, [selectedKey]);
 
   return (
     <div className="vtab" aria-label={ariaLabel}>

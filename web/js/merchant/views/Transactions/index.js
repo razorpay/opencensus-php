@@ -336,7 +336,22 @@ class TransactionsContainer extends Component {
               </div>
             ) : null}
             <ShowWhen additionalCondition={(usr) => mode === 'live' && usr.findTag('success_rate')}>
-              <NavLink to="/success-rate">Success Rate</NavLink>
+              <NavLink
+                to="/success-rate"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'succes rate',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
+                Success Rate
+              </NavLink>
             </ShowWhen>
           </header>
 

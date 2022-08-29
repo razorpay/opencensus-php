@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import { analyticsTrack } from 'common/utils/analytics';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 import MetricsCard from '../components/MetricsCard';
 import GraphPanel from '../components/GraphPanel';
@@ -16,6 +17,7 @@ import {
 } from 'merchant/reducers/successRate';
 import { queryFilters, getMerchantErrorsPayload, getInitialGroupings } from '../helper';
 import { SR_FILTERS, DEFAULT_GROUP_BY } from '../constants';
+import { methodTabClick } from '../ga';
 
 const GraphWidget = (props) => {
   const {
@@ -56,6 +58,8 @@ const GraphWidget = (props) => {
     fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
     fetchMerchantErrors(errorsPaylod);
+
+    analyticsTrack(methodTabClick({ tabName: tab.name }));
   };
 
   const handleGroupingChange = (tabName) => (index) => ({ option }) => {

@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 import moment from 'moment';
 import AsyncButton from 'react-async-button';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import { analyticsTrack } from 'common/utils/analytics';
 import {
   updateDateRange,
   fetchSuccessRate,
@@ -11,6 +12,7 @@ import {
 } from 'merchant/reducers/successRate';
 import { getInterval, initialFilters, queryFilters, getMerchantErrorsPayload } from '../helper';
 import { DATE_RANGE_PRESETS, DEFAULT_PRESET } from '../constants';
+import { clearFilterSuccessRate, filterSuccessRate } from '../ga';
 
 const SucessRateFilter = (props) => {
   const { endDate, fetchSuccessRate, fetchMerchantErrors, updateDateRange } = props;
@@ -44,7 +46,9 @@ const SucessRateFilter = (props) => {
     const payload = queryFilters();
     await fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
-    await fetchMerchantErrors(errorsPaylod);
+    fetchMerchantErrors(errorsPaylod);
+
+    analyticsTrack(filterSuccessRate(payload));
   };
 
   const onReset = async () => {
@@ -54,6 +58,8 @@ const SucessRateFilter = (props) => {
     await fetchSuccessRate(payload);
     const errorsPaylod = getMerchantErrorsPayload();
     await fetchMerchantErrors(errorsPaylod);
+
+    analyticsTrack(clearFilterSuccessRate(payload));
   };
 
   return (
