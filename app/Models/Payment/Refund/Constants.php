@@ -58,6 +58,7 @@ class Constants
     const LATE_AUTH                = 'late_auth';
     const REFUND_ID                = 'refund_id';
     const PAYMENT_ID               = 'payment_id';
+    const ROUTE_NAME               = 'route_name';
     const FAILED_AGED              = 'failed_aged';
     const MERCHANT_ID              = 'merchant_id';
     const MERCHANT_NAME            = 'merchant_name';

@@ -39,6 +39,8 @@ class Scrooge
 
     protected $auth;
 
+    protected $route;
+
     const RefundBaseURL = 'refund';
     const RefundsBaseURL = 'refunds';
     const PaymentsBaseURL = 'payments';
@@ -91,6 +93,8 @@ class Scrooge
     Const X_USER_EMAIL      = 'X-USER-EMAIL';
     Const X_IS_CRON         = 'X-IS-CRON';
     Const X_IS_DASHBOARD    = 'X-IS-DASHBOARD';
+    Const ROUTE_NAME        = 'route-name';
+    Const IS_BATCH          = 'is-batch';
 
     const REQUEST_TIMEOUT = 60;
 
@@ -130,6 +134,8 @@ class Scrooge
         $this->secret = $this->config['scrooge_secret'];
 
         $this->auth = $app['basicauth'];
+
+        $this->route = $app['api.route'];
 
         $this->setHeaders();
     }
@@ -578,6 +584,8 @@ class Scrooge
         // send passport token to Scrooge
         $this->enablePassport();
 
+        $isBatch = (($this->auth->isBatchFlow() === true) or ($this->auth->isBatchApp() === true));
+
         //TODO check this in case of refund on boarding to edge
         $customheader = [
             RequestHeader::X_Creator_Id         => $this->request->header(RequestHeader::X_Creator_Id) ?? null,
@@ -586,6 +594,8 @@ class Scrooge
             self::X_USER_EMAIL                  => $this->getUserEmail(),
             self::X_IS_CRON                     => $this->auth->isCron(),
             self::X_IS_DASHBOARD                => $this->auth->isDashboardApp(),
+            self::ROUTE_NAME                    => $this->route->getCurrentRouteName(),
+            self::IS_BATCH                      => $isBatch,
         ];
 
         if (isset($input['payment_page']) === true)
