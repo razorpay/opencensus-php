@@ -1867,6 +1867,7 @@ class Route
         'direct_tax_payments_create'                    => ['post',   'tax-payments/direct',                              'TaxPaymentController@createDirectTaxPayment'                      ],
         'direct_tax_payments_create_options'            => ['options','tax-payments/direct',                              'TaxPaymentController@allowCors'                                   ],
         'direct_tax_payments_pg_webhook'                => ['post',   'tax-payments/direct/pg-webhook',                   'TaxPaymentController@webHookHandler'                              ],
+        'direct_tax_payments_config'                    => ['get',    'tax-payments/direct/config',                       'TaxPaymentController@getDTPConfig'                                ],
         'direct_tax_payments_downtime_schedule_public'  => ['get',    'tax-payments/direct/downtime_schedule',            'TaxPaymentController@getDowntimeSchedulePublic'                   ],
         'direct_tax_payments_downtime_schedule_opt'     => ['options','tax-payments/direct/downtime_schedule',            'TaxPaymentController@allowCors'                                   ],
 
@@ -9200,6 +9201,7 @@ class Route
         'direct_tax_payments_tds_category_opt',
         'direct_tax_payments_create_options',
         'direct_tax_payments_pg_webhook',
+        'direct_tax_payments_config',
         'direct_tax_payments_downtime_schedule_public',
         'direct_tax_payments_downtime_schedule_opt',
 

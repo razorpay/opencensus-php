@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 
 return [
     'testSettingsInternalApiAddOrUpdate'                                  => [
@@ -1027,6 +1028,30 @@ return [
         'response' => [
             'content' => []
         ]
+    ],
+    'testGetDTPConfig'                                        => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/direct/config',
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetDTPConfigErrorCase'                                        => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/tax-payments/direct/config',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
     ],
     'testDowntimeScheduleByModule'                                        => [
         'request'  => [

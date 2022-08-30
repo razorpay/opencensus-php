@@ -53,6 +53,7 @@ class Service
     const CANCEL_MANUAL_TAX_PAYMENT           = 'CancelManualTaxPayment';
     const GET_TDS_CATEGORIES                  = 'GetTdsCategories';
     const GET_INVALID_TAN_STATUS              = 'GetInvalidTanStatus';
+    const GET_DTP_CONFIG                      = 'GetDTPConfig';
     const GET_DOWNTIME_SCHEDULE_BY_MODULE     = 'GetDowntimeScheduleByModule';
     const GET_DOWNTIME_SCHEDULE               = 'GetDowntimeSchedule';
     const ICICI_RETRY_CALLBACK                = 'IciciRetryCallback';
@@ -501,6 +502,13 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_INVALID_TAN_STATUS);
 
         return $this->makeRequest($merchant, $url, ['timestamp' => now()]);
+    }
+
+    public function getDTPConfig()
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_DTP_CONFIG);
+
+        return $this->makeRequest(null, $url, ['timestamp' => now()]);
     }
 
     public function getDowntimeSchedule(string $module)

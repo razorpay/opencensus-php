@@ -7,6 +7,8 @@ use Mockery;
 use App;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Type;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Purpose;
@@ -934,6 +936,36 @@ class TaxPaymentsTest extends TestCase
         $this->startTest();
 
         $tpMock->shouldHaveReceived('listDowntimeSchedule');
+    }
+
+    public function testGetDTPConfig()
+    {
+        $this->ba->directAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('getDTPConfig')->andReturn([]);
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getDTPConfig');
+    }
+
+    public function testGetDTPConfigErrorCase()
+    {
+        $this->ba->directAuth();
+
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tpMock->shouldReceive('getDTPConfig')->andThrow(new BadRequestException(ErrorCode::BAD_REQUEST_VENDOR_PAYMENT_MICRO_SERVICE_FAILED));
+
+        $this->app->instance('tax-payments', $tpMock);
+
+        $this->startTest();
+
+        $tpMock->shouldHaveReceived('getDTPConfig');
     }
 
     public function testDowntimeScheduleByModule()

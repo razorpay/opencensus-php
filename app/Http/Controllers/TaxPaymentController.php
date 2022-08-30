@@ -242,6 +242,28 @@ class TaxPaymentController extends Controller
         return $this->service->getDowntimeSchedule($module);
     }
 
+    public function getDTPConfig()
+    {
+        try
+        {
+            $response = $this->service->getDTPConfig();
+
+            $code = 200;
+        }
+        catch (\Exception $e)
+        {
+            $response = $e->getError()->toPublicArray();
+
+            $code = 500;
+        }
+
+        $response = ApiResponse::json($response, $code);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
     public function getDowntimeSchedulePublic()
     {
         try
