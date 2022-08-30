@@ -27,8 +27,8 @@ class Events
     const WEBSITE_ADHERENCE_SOFT_NUDGE                = "WEBSITE_ADHERENCE_SOFT_NUDGE";
     const WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER     = "WEBSITE_ADHERENCE_GRACE_PERIOD_REMINDER";
     const WEBSITE_ADHERENCE_HARD_NUDGE                = "WEBSITE_ADHERENCE_HARD_NUDGE";
-    const DOWNLOAD_MERCHANT_WEBSITE_SECTION           = "DOWNLOAD_MERCHANT_WEBSITE_SECTION";
-    const WEBSITE_SECTION_PUBLISHED                   = "WEBSITE_SECTION_PUBLISHED";
+    const DOWNLOAD_MERCHANT_WEBSITE_SECTION           = "WEBSITE_SECTION_DOWNLOADED_3";
+    const WEBSITE_SECTION_PUBLISHED                   = "WEBSITE_SECTION_PUBLISHED_3";
     const ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH';
     const ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH     = 'ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH';
     const ACTIVATED_MCC_PENDING_SUCCESS               = 'ACTIVATED_MCC_PENDING_SUCCESS';
@@ -119,8 +119,8 @@ class Events
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
         self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.first_payment_offer',
 
-        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded_2',
-        self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published_2',
+        self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded',
+        self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published',
         self::WEBSITE_ADHERENCE_HARD_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_hard_nudge',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE      => 'whatsapp.merchant.onboarding.website_adherence_soft_nudge',
 

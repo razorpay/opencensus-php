@@ -1311,7 +1311,7 @@ class Service extends Base\Service
 
             if (empty($merchant->getEmail()) === false)
             {
-                $communicationArgs['params']['email_content'] = " We've also sent you an email with these details.";
+                $communicationArgs['params']['email_content'] = " We have also sent you an email with these details.";
             }
 
             (new OnboardingNotificationHandler($communicationArgs, null))->sendForEvent(Events::WEBSITE_SECTION_PUBLISHED);
@@ -1435,7 +1435,7 @@ class Service extends Base\Service
 
             if (empty($merchant->getEmail()) === false)
             {
-                $communicationArgs['params']['email_content'] = " We've also sent you an email with these details.";
+                $communicationArgs['params']['email_content'] = " We have also sent you an email with these details.";
             }
 
             (new OnboardingNotificationHandler($communicationArgs, $files))->sendForEvent(Events::DOWNLOAD_MERCHANT_WEBSITE_SECTION);
