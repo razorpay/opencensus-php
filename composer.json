@@ -28,7 +28,9 @@
         "twig/twig": "~2.0 || ~1.35",
         "symfony/yaml": "^3.3",
         "phpspec/phpspec": "^6.0 || ^7.0",
+        "php-http/guzzle6-adapter": "^2.0",
         "guzzlehttp/guzzle": "^5 || ^6",
+        "jcchavezs/httptest": "~0.2",
         "guzzlehttp/psr7": "^1.4"},
     "conflict": {
         "ext-opencensus": "< 0.1.0"

@@ -1,6 +1,6 @@
 {
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.0",
         "opencensus/opencensus": "dev-master",
         "guzzlehttp/guzzle": "^6.0",
         "ext-opencensus": "*"
