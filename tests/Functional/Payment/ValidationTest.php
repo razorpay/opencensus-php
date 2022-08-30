@@ -49,6 +49,11 @@ class PaymentValidationTest extends TestCase
         $this->startTest();
     }
 
+    public function testMinAmountCheckNonInr()
+    {
+        $this->startTest();
+    }
+
     public function testInvalidCardExpiryDate()
     {
         // if (date('n') === '1')

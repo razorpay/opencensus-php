@@ -1084,6 +1084,18 @@ class Validator extends Base\Validator
                 'amount',
                 ['amount' => $amount]);
         }
+        // check for min amount >1 Rupee for non-inr
+        if ( $currency != Currency::INR && ($baseAmount < 100) === true)
+        {
+            $this->trace->count(Metric::PAYMENT_CREATION_AMOUNT_VALIDATION_FAILURE_COUNT, [
+                'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? '',
+            ]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'The amount must be atleast INR 1.00.',
+                'amount',
+                ['amount' => $baseAmount]);
+        }
     }
 
     public function validatePosPaymentCreation($input)
