@@ -32,6 +32,9 @@ import AccountDetailsSummary from '../components/Modals/AccountDetailsSummary';
 import VPAPrefixModal from './VPAPrefixModal';
 import ConfigureBankAccountsModal from '../components/Modals/ConfigureBankAccounts';
 
+import BankImage from 'assets/bank.svg';
+import UpiImage from 'assets/upi.svg';
+
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
   DESCRIPTOR_LENGTH_VPA,
@@ -551,7 +554,7 @@ export default class CreateVirtualAccount extends React.Component {
                     defaultChecked={_internals.hasBankAccount}
                     label={
                       <div>
-                        <img src="/dist/css/assets/bank.svg" /> Bank Transfers (NEFT, RTGS, IMPS)
+                        <img src={BankImage} /> Bank Transfers (NEFT, RTGS, IMPS)
                       </div>
                     }
                     description={
@@ -605,7 +608,7 @@ export default class CreateVirtualAccount extends React.Component {
                       defaultChecked={_internals.hasVPA}
                       label={
                         <div>
-                          <img src="/dist/css/assets/upi.svg" /> UPI Transfers (GPay, PhonePe, etc.)
+                          <img src={UpiImage} /> UPI Transfers (GPay, PhonePe, etc.)
                         </div>
                       }
                       description={

@@ -140,6 +140,10 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js', '.web.js', '.desktop.js', '.mobile.js'],
         moduleDirectory: ['node_modules', 'js/'],
       },
+      alias: {
+        map: [['assets', './web/css/assets']],
+        extensions: ['.js'],
+      },
     },
   },
 };
