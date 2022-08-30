@@ -2,13 +2,18 @@ const { printMessage, universeUsage } = require('./utils');
 const { PR_AUTOMATED_CHECKS } = require('./constants');
 
 const adheredToGuidelinesRegex = /[ \S]*(?=Have you adhered to)/;
+const checkboxRegex = /\[x\]/i;
+const emojiCheckboxRegex = /\u2705/;
+
 function checkAdheredToGuidelines(body) {
   // - [] Have you adhered to [Dashboard PR review guidelines]
   // - [x] Have you adhered to [Dashboard PR review guidelines]
+  // - ✅ Have you adhered to [Dashboard PR review guidelines]
   let isChecked = false;
   const guidelinesLine = body.match(adheredToGuidelinesRegex);
   if (guidelinesLine) {
-    isChecked = !!guidelinesLine[0].match(/\[x\]/);
+    isChecked =
+      !!guidelinesLine[0].match(checkboxRegex) || !!guidelinesLine[0].match(emojiCheckboxRegex);
   }
   if (!isChecked) {
     const type = 'fail';
