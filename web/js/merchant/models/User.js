@@ -715,6 +715,10 @@ export default class User {
     return this.getExpStatus('is_freshchat_chatbot_enabled');
   }
 
+  get isWorkboxEnable() {
+    return this.getExpStatus('enable_workbox');
+  }
+
   get isMobileSignupCareActive() {
     return this.getExpStatus('mobile_signup_care_changes_active');
   }

@@ -37,6 +37,8 @@ COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/mod
 
 COPY --chown=nginx:nginx . /app/
 
+COPY --chown=nginx:nginx ./public/dist/sw-utils/sw.js ./public/sw.js
+
 # This step can't run without some classes from above step
 RUN composer dump-autoload -o
 

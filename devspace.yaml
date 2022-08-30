@@ -17,6 +17,16 @@ dev:
       initialSync: preferLocal
       uploadExcludePaths:
         - node_modules/
+    # For Using SW in local
+    # - labelSelector:
+    #     name: ${APP_NAME}-${DEVSTACK_LABEL}
+    #   localSubPath: ./public/dist/sw-utils
+    #   containerPath: /app/public
+    #   namespace: ${NAMESPACE}
+    #   disableDownload: true
+    #   initialSync: preferLocal
+    #   uploadExcludePaths:
+    #     - node_modules/
   logs:
     showLast: 200
     sync: true

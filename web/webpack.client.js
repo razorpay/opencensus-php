@@ -7,6 +7,7 @@ const isProd = process.env.STAGE !== 'development';
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const projectConfigJs = require('./config')[process.env.STAGE];
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const WorkbboxWebpackPlugin = require('workbox-webpack-plugin');
 
 const fontsToProjectMap = {
   pokedex: 'merchant',
@@ -157,15 +158,24 @@ module.exports = ({ config, project }) => {
           ${require(`./entry/${project}-entry`)()}})()`;
       },
     }),
-    new webpack.DefinePlugin({
-      'process.env.PROJECT': JSON.stringify(project),
-    }),
   );
   config.plugins.shift(); //removed cleanup plugin as outputpath is common for each build
 
   if (isProd) {
     config.plugins.splice(4, 1); //removing compress plugin as we have files othe than dist folder
   }
+
+  config.plugins.push(
+    new WorkbboxWebpackPlugin.InjectManifest({
+      exclude: [/\.map$/, /asset-manifest\.json$/, /\.(png|jpg|jpeg|svg|gif|html)?$/],
+      swSrc: './utils/customWorkbox.js',
+      swDest: 'sw-utils/sw.js',
+    }),
+    new webpack.DefinePlugin({
+      'process.env.PROJECT': JSON.stringify(project),
+      'process.env.PUBLIC_ENV': JSON.stringify(process.env.STAGE),
+    }),
+  );
 
   return config;
 };

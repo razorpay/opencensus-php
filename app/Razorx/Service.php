@@ -278,7 +278,8 @@ class Service extends Base\Service
             'capital_loc_x_migration_reroute',
             'capital_cards_nach_payment',
             'rx_vendor_balances_rollout',
-            '1cc_shopify_magic_enable'
+            '1cc_shopify_magic_enable',
+            'enable_workbox'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
