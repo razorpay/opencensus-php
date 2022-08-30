@@ -1716,7 +1716,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         {
             $newAmount = $this->getAmountTransferred() - $amount;
 
-            if ($newAmount < 0 ) 
+            if ($newAmount < 0 )
             {
                  throw new Exception\LogicException(
                     'Amount transferred is going negative',
@@ -3355,6 +3355,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::EMANDATE:
                 return [$method, $this->getBankName()];
             case Method::CARDLESS_EMI:
+                /** Change the Walnut369 to Axio provider name in mail */
+                if($this->getWallet() === Processor\CardlessEmi::WALNUT369)
+                {
+                    return [$method, Processor\CardlessEmi::AXIO];
+                }
                 return [$method, Processor\CardlessEmi::getName($this->getWallet())];
             case Method::PAYLATER:
                 return [$method, Processor\PayLater::getName($this->getWallet())];

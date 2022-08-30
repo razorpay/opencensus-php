@@ -19,6 +19,7 @@ class CardlessEmi
     const FLEXMONEY    = 'flexmoney';
     const WALNUT369    = 'walnut369';
     const SEZZLE       = 'sezzle';
+    const AXIO         = 'Axio';
 
     const HDFC = 'hdfc';
     const KKBK = 'kkbk';
