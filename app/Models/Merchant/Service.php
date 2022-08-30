@@ -6703,6 +6703,11 @@ class Service extends Base\Service
 
         (new Validator)->validateLinkedAccount($merchant);
 
+        if (empty($input['email']) === false)
+        {
+            $input['email'] = mb_strtolower($input['email']);
+        }
+
         $merchant = $this->core()->editEmail($merchant, $input);
 
         $product = $this->auth->getRequestOriginProduct();
