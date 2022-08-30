@@ -7,6 +7,7 @@ use RZP\Models\P2p\Base;
 class Entity extends Base\Entity
 {
     use Base\Traits\HasHandle;
+    use Base\Traits\SoftDeletes;
     use Base\Traits\HasBankAccount;
 
     const ENTITY_ID     = 'entity_id';
@@ -32,6 +33,7 @@ class Entity extends Base\Entity
         Entity::ENTITY_ID,
         Entity::CLIENT_ID,
         Entity::CREATED_AT,
+        Entity::DELETED_AT,
     ];
 
     protected $visible = [
@@ -40,6 +42,7 @@ class Entity extends Base\Entity
         Entity::ENTITY_ID,
         Entity::TYPE,
         Entity::CREATED_AT,
+        Entity::DELETED_AT,
     ];
 
     protected $public = [
@@ -48,6 +51,7 @@ class Entity extends Base\Entity
         Entity::ENTITY_ID,
         Entity::TYPE,
         Entity::CREATED_AT,
+        Entity::DELETED_AT,
     ];
 
     protected $casts = [
@@ -63,7 +67,6 @@ class Entity extends Base\Entity
     protected $defaults = [
         Entity::CLIENT_ID       => '',
         Entity::MERCHANT_ID     => '',
-        Entity::DELETED_AT      => 0,
     ];
 
     /***************** GETTERS *****************/
@@ -91,4 +94,12 @@ class Entity extends Base\Entity
         return $this;
     }
 
+    /**
+     * This is the method to set deleted at as null
+     * @param $deletedAt
+     */
+    public function setDeletedAt($deletedAt)
+    {
+        $this->setAttribute(self::DELETED_AT, $deletedAt);
+    }
 }

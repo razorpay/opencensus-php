@@ -725,6 +725,8 @@ return [
 
     E::P2P_MANDATE_PATCH => [],
 
+    E::P2P_BLACKLIST => [],
+
     E::CUSTOMER => [],
 
     E::CREDITNOTE => [],

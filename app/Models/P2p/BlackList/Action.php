@@ -7,9 +7,9 @@ use RZP\Models\P2p\Base;
 
 class Action extends Base\Action
 {
-    const ADD       = 'add';
+    const ADD_BLACKLIST       = 'add_blacklist';
 
-    const REMOVE    = 'remove';
+    const REMOVE_BLACKLIST    = 'remove_blacklist';
 
-    const FETCH_ALL = 'fetch_all';
+    const FETCH_ALL           = 'fetch_all';
 }

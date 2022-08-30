@@ -19,11 +19,19 @@ use RZP\Models\P2p\BankAccount\Entity as BankAccountEntity;
  */
 class Processor extends Base\Processor
 {
+    /**
+     * This is the method to add blacklist entry
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\P2p\BadRequestException
+     * @throws RuntimeException
+     */
     public function add(array $input): array
     {
-        $this->initialize(Action::ADD, $input, true);
+        $this->initialize(Action::ADD_BLACKLIST, $input, true);
 
-        $blackList = $this->findEntityId($this->input->get(Entity::TYPE), $input);
+        $blackList = $this->findEntityIdByType($this->input->get(Entity::TYPE), $input);
 
         $input = [
             Entity::TYPE => $blackList->getP2pEntityName(),
@@ -35,12 +43,36 @@ class Processor extends Base\Processor
         return $entity->toArrayPublic();
     }
 
-    public function remove(array $input): array
+    /**
+     * This is the method to remove the black list entry
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\P2p\BadRequestException
+     */
+    public function remove(array $input):array
     {
-        throw new RuntimeException("Not implemented, processor Implementation is on the way");
+        $this->initialize(Action::REMOVE_BLACKLIST, $input, true);
+
+        $entity = $this->findEntityIdByType($this->input->get(Entity::TYPE), $input);
+
+        $blackList = $this->core->findByEntityData([Entity::ENTITY_ID => $entity[Entity::ID]]);
+
+        $this->core->delete($blackList);
+
+        return $blackList->toArrayPublic();
     }
 
-    protected function findEntityId(string $type, array $input)
+    /**
+     * This is the method to find the entity by type and input
+     * @param string $type
+     * @param array  $input
+     *
+     * @return mixed
+     * @throws Exception\P2p\BadRequestException
+     */
+    protected function findEntityIdByType(string $type, array $input)
     {
         switch ($type)
         {
