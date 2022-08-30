@@ -81,7 +81,8 @@ class SqsRawJob extends SqsJob
      */
     protected function makeCommand(string $commandName, array $body): string
     {
-        if($commandName == 'RZP\\Jobs\\MerchantFirsDocuments')
+        if($commandName == 'RZP\\Jobs\\MerchantFirsDocuments' or
+            $commandName == 'RZP\\Jobs\\ArtReconProcess')
         {
             $payload = $body;
         }

@@ -15,6 +15,7 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
 use RZP\Metro\MetroHandler;
 use RZP\Models\Payment\Refund;
+use RZP\Gateway\Upi\Base\Entity;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
@@ -1220,5 +1221,120 @@ class Service extends Base\Service
         $data  = $service->getReconFilesCount($input);
 
         return $data;
+    }
+
+    /**
+     * Update Upi gateway entity for refund recon from ART
+     * @param array $input
+     * @throws \Exception
+     */
+    public function updateUpiGatewayData(array $input)
+    {
+        foreach ($input as $gatewayData)
+        {
+            $refundId = $gatewayData['refund_id'];
+
+            $gatewayRefund = $this->getGatewayRefund($refundId);
+
+            if ($gatewayRefund === null)
+            {
+                $this->trace->info(
+                    TraceCode::ART_RECON_UPDATE_GATEWAY_ENTITY_NOT_FOUND,
+                    $gatewayData
+                );
+            }
+            else
+            {
+                try
+                {
+                    $this->persistNpciReferenceId($gatewayRefund, $gatewayData);
+
+                    $this->persistNpciTransactionId($gatewayRefund,$gatewayData);
+
+                    $this->repo->saveOrFail($gatewayRefund);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::ART_RECON_UPDATE_GATEWAY_DATA_FAILED,
+                        [
+                            'refundId' => $refundId,
+                            'gateway' => $gatewayRefund->getGateway(),
+                        ]
+                    );
+
+                }
+            }
+        }
+    }
+
+    /**
+     * Fetches the gateway entity against refundID
+     * @param string $refundId
+     * @return mixed
+     */
+    protected function getGatewayRefund(string $refundId)
+    {
+        $gatewayRefunds = $this->repo->upi->findByRefundIdAndAction($refundId, 'refund');
+
+        return $gatewayRefunds->first();
+    }
+
+    /** Persist Npci Reference Id post refund recon through ART
+     * @param Entity $gatewayRefund
+     * @param array $gatewayData
+     */
+    protected function persistNpciReferenceId(Entity $gatewayRefund, array $gatewayData)
+    {
+        if ((empty($gatewayRefund->getNpciReferenceId()) === false) and
+            ($gatewayData['npci_reference_id'] !== $gatewayRefund->getNpciReferenceId()))
+        {
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'               => InfoCode::DATA_MISMATCH,
+                    'message'                 => 'Reference number in db is not same as in recon',
+                    'refund_id'               => $gatewayRefund->getRefundId(),
+                    'amount'                  => $gatewayRefund->getAmount(),
+                    'payment_id'              => $gatewayRefund->getPaymentId(),
+                    'db_reference_number'     => $gatewayRefund->getNpciReferenceId(),
+                    'recon_reference_number'  => $gatewayData['npci_reference_id'],
+                    'gateway'                 => $gatewayRefund->getGateway(),
+                ]);
+        }
+        else
+        {
+            $gatewayRefund->setNpciReferenceId($gatewayData['npci_reference_id']);
+        }
+    }
+
+    /** Persist Npci Txn Id post refund recon through ART
+     * @param Entity $gatewayRefund
+     * @param array $gatewayData
+     */
+    protected function persistNpciTransactionId(Entity $gatewayRefund, array $gatewayData)
+    {
+        if ((empty($gatewayRefund->getNpciTransactionId()) === false) and
+            ($gatewayData['npci_txn_id'] !== $gatewayRefund->getNpciTransactionId()))
+        {
+            $this->trace->info(
+                TraceCode::RECON_MISMATCH,
+                [
+                    'info_code'             => InfoCode::DATA_MISMATCH,
+                    'message'               => 'Reference number in db is not same as in recon',
+                    'refund_id'             => $gatewayRefund->getRefundId(),
+                    'amount'                => $gatewayRefund->getAmount(),
+                    'payment_id'            => $gatewayRefund->getPaymentId(),
+                    'db_reference_number'   => $gatewayRefund->getNpciTransactionId(),
+                    'recon_reference_number'=> $gatewayData['npci_txn_id'],
+                    'gateway'               => $gatewayRefund->getGateway(),
+                ]);
+        }
+        else
+        {
+            $gatewayRefund->setNpciTransactionId($gatewayData['npci_txn_id']);
+        }
     }
 }

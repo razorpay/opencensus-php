@@ -239,6 +239,16 @@ class Validator extends Base\Core
         'reconciled_at'                 => 'required|filled|epoch',
     ];
 
+    const UPDATE_REFUND_RECON_DATA_RULES = [
+        'refunds'                   => 'required|array',
+        'upi'                       => 'sometimes',
+        'mode'                      => 'required|string',
+        'source'                    => 'required|string',
+        'should_force_update_arn'   => 'required|boolean',
+        'art_request_id'            => 'required',
+        'gateway'                   => 'required',
+    ];
+
     public function filterEmails(array $emailDetails)
     {
         $from = $emailDetails[RequestProcessor\Mailgun::FROM];
@@ -972,6 +982,14 @@ class Validator extends Base\Core
     public function validateUpdateUpiReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_UPI_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+    public function validateUpdateRefundReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_REFUND_RECON_DATA_RULES)
             ->caller($this)
             ->input($input)
             ->validate();

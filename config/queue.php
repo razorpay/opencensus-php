@@ -507,6 +507,11 @@ return [
         'live'       => env('AWS_EMANDATE_FILES_INSTRUMENTATION_LIVE_QUEUE'),
     ],
 
+
+    'art_recon_entity_update'  => [
+        'test'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
+        'live'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
+    ],
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings
@@ -527,6 +532,9 @@ return [
 
         env('AWS_FIRS_DOCUMENT_TEST_QUEUE') => 'RZP\\Jobs\\MerchantFirsDocuments',
         env('AWS_FIRS_DOCUMENT_LIVE_QUEUE') => 'RZP\\Jobs\\MerchantFirsDocuments',
+
+        //mapping for ART refund recon entity update job
+        env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE') => 'RZP\\Jobs\\ArtReconProcess',
     ],
 
     /*
