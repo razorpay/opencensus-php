@@ -107,7 +107,7 @@ class PanStatusUpdater extends DefaultStatusUpdater
            if (empty($gstDetailsFromPan) === false)
            {
                $fieldMap = [
-                   'gstin' => $gstDetailsFromPan
+                   'gstin' => [$gstDetailsFromPan]
                ];
 
                $dedupeResponse = $merchantDetailCore->triggerStrictDedupeForNoDocOnboarding($this->merchantDetails, $fieldMap, $noDocData, []);

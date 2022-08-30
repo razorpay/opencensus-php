@@ -4,6 +4,7 @@ namespace Unit\Models\Merchant\Detail;
 
 use App;
 use Config;
+use ReflectionClass;
 use Carbon\Carbon;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
@@ -2772,5 +2773,31 @@ class CoreTest extends TestCase
         ]);
 
 
+    }
+
+    public function testCreatePayloadForDedupeCheckForGstin ()
+    {
+        $detailCore = (new DetailCore());
+
+        $reflection = new ReflectionClass($detailCore);
+
+        $method = $reflection->getMethod('prepareRequestForNoDocDedupeCheck');
+        $method->setAccessible(true);
+
+        $fieldMap = [
+            'gstin' => ['ABCDEFGH']
+        ];
+
+        $expectedpayload =[
+            'field' => 'gstin',
+            'list' => 'xpress-onboarding',
+            'value' => 'ABCDEFGH'
+        ];
+
+        $noDocConfig = [];
+
+        $result = $method->invokeArgs($detailCore, [$fieldMap, & $noDocConfig]);
+
+        $this->assertEquals ($expectedpayload['value'], $result[0]['value']);
     }
 }

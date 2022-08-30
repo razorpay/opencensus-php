@@ -7427,16 +7427,22 @@ class Core extends Base\Core
         $fieldList = [];
         foreach ($fieldMap as $field => $values)
         {
-            if ($this->isDedupeCheckRequired($field,  $noDocConfig, $input) === true)
+            $shouldTriggerDedupeCheck = true;
+            if ($field !== Entity::GSTIN)
+            {
+                $shouldTriggerDedupeCheck =  $this->isDedupeCheckRequired($field,  $noDocConfig, $input);
+            }
+
+            if ($shouldTriggerDedupeCheck === true)
             {
                 foreach ($values as $value)
                 {
-                    $field = [
+                    $fieldArr = [
                         'field' => $field,
                         'list'  => DedupeConstants::XPRESS_ONBOARDING_CLIENT_TYPE,
                         'value' => $value
                     ];
-                    array_push($fieldList, $field);
+                    array_push($fieldList, $fieldArr);
                 }
             }
         }
