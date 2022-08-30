@@ -16,6 +16,7 @@ import { getActivationState } from 'merchant/components/Activation/ActivationUti
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
+import VideoModal from 'merchant/components/VideoModal';
 
 @connect(
   (state) => ({
@@ -25,6 +26,13 @@ import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Inst
 )
 @RTracking(() => window.rzpQ.component('InstantActivationAnnouncements'))
 export default class InstantActivationAnnouncements extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showVideoModal: false,
+    };
+  }
+
   trackEvent = (eventOrigin) => {
     const { tracking } = this.props;
     tracking.trackEvent(
@@ -112,20 +120,30 @@ export default class InstantActivationAnnouncements extends Component {
         });
 
         return (
-          <div>
-            Congratulations! You are now all set and can start receiving payments from your
-            customers up to INR 15,000. Complete your KYC Details to enable benefits like
-            settlements and to extend this limit further!{' '}
-            <a
-              href="https://youtu.be/FM2P1D-yjOU"
-              target="_blank"
-              rel="noreferrer noopener"
-              onClick={() => handleVideoClick()}
-            >
-              Click here
-            </a>{' '}
-            to watch a simple video on how to start accepting payments.
-          </div>
+          <>
+            <div>
+              Congratulations! You are now all set to start receiving payments up to INR 15,000.
+              Please complete your KYC to enable settlements and extend your limit.{' '}
+              <a
+                rel="noreferrer noopener"
+                onClick={() => {
+                  this.setState({ showVideoModal: true });
+                  handleVideoClick();
+                }}
+                className="btn-link"
+              >
+                Click here
+              </a>{' '}
+              to watch a short video that will take you through your next steps.
+            </div>
+            <VideoModal
+              visible={this.state.showVideoModal}
+              width={853}
+              height={505}
+              onClose={() => this.setState({ showVideoModal: false })}
+              src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
+            />
+          </>
         );
       } else
         return (

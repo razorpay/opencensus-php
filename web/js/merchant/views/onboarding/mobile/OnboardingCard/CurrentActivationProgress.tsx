@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -19,6 +19,7 @@ import { useApp } from 'common/context/App';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { IReferee } from '../Screens/Home';
 import { EASY_ONBOARDING } from '../Constants/OnboardingConstants';
+import VideoModal from 'merchant/components/VideoModal';
 
 const InlineText = styled.span`
   color: #162f5661;
@@ -37,6 +38,8 @@ const CurrentActivationProgress: React.FC<
   const isReferredMerchant = referee?.status === 'signup';
   const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+
+  const [shouldShowVideoModal, setShouldShowVideoModal] = useState(false);
 
   const onCTAClick = () => {
     if (submerchantId) {
@@ -485,14 +488,21 @@ const CurrentActivationProgress: React.FC<
                 <div>
                   {Messages.PAYMENT_ACTIVATED.description}{' '}
                   <a
-                    href="https://youtu.be/FM2P1D-yjOU"
-                    target="_blank"
                     rel="noreferrer noopener"
-                    onClick={() => handleVideoClick()}
+                    onClick={() => {
+                      handleVideoClick();
+                      setShouldShowVideoModal(true);
+                    }}
                   >
-                    Click here{' '}
+                    <strong>Click here</strong>{' '}
                   </a>
                   to watch a simple video on how to start accepting payments.{' '}
+                  <VideoModal
+                    visible={shouldShowVideoModal}
+                    maskClosable={true}
+                    onClose={() => setShouldShowVideoModal(false)}
+                    src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
+                  />
                 </div>
               ) : (
                 Messages.PAYMENT_ACTIVATED.description

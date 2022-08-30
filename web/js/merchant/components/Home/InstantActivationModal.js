@@ -22,6 +22,7 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import * as EventActions from 'merchant/reducers/trackEvents';
+import VideoModal from 'merchant/components/VideoModal';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
@@ -53,6 +54,7 @@ const InstantActivationModal = ({
   const [counter, setCounter] = useState(5);
   const [isProgressStarted, setProgress] = useState(false);
   const [animationStart, setAnimationStart] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const recommendProductName = RECOMMANDED_PRODUCT_LIST[getLandingProduct]?.name || '';
   const trackEvent = tracking.trackEvent;
   const commonProperty = { auto_pl_product: getLandingProduct };
@@ -352,75 +354,89 @@ const InstantActivationModal = ({
   }, [isInstantActivationVideoEnabled]);
 
   return (
-    <ModalMask>
-      <Modal
-        className="instant-activations-success"
-        onClose={() => {
-          trackEvents({
-            objectName: 'Pop Up',
-            actionName: 'Closed',
-            screen: 'home page',
-            properties: {
-              'Pop-up Label': 'Congratulations! You are ready to accept payments now',
-            },
-          });
-          onClose();
-        }}
-        showCloseBtn={!isPaymentLinkRecommendedProduct}
-      >
-        <div className="modal-header">
-          <SuspenseWithLoader>
-            <CustomLottie
-              animationData={InstantActivation}
-              autoplay={animationStart}
-              loop={0}
-              eventListeners={eventListeners}
-              isStopped={false}
-            />
-          </SuspenseWithLoader>
-        </div>
-        <div className="modal-body">
-          <div className="modal-description">
-            <div className="title">
-              Congratulations! <br /> You are ready to accept payments now
+    <>
+      <ModalMask>
+        <Modal
+          className="instant-activations-success"
+          onClose={() => {
+            trackEvents({
+              objectName: 'Pop Up',
+              actionName: 'Closed',
+              screen: 'home page',
+              properties: {
+                'Pop-up Label': 'Congratulations! You are ready to accept payments now',
+              },
+            });
+            onClose();
+          }}
+          showCloseBtn={!isPaymentLinkRecommendedProduct}
+        >
+          <div className="modal-header">
+            <SuspenseWithLoader>
+              <CustomLottie
+                animationData={InstantActivation}
+                autoplay={animationStart}
+                loop={0}
+                eventListeners={eventListeners}
+                isStopped={false}
+              />
+            </SuspenseWithLoader>
+          </div>
+          <div className="modal-body">
+            <div className="modal-description">
+              <div className="title">
+                Congratulations! <br /> You are now all set to start receiving payments up to INR
+                15,000
+              </div>
+
+              {isInstantActivationVideoEnabled && (
+                <>
+                  <p>
+                    <a
+                      rel="noreferrer noopener"
+                      onClick={() => {
+                        setShowVideoModal(true);
+                        handleVideoClick();
+                      }}
+                      className="btn-link"
+                    >
+                      {' '}
+                      <strong>Click here</strong>{' '}
+                    </a>{' '}
+                    to watch a short video that will take you through your next steps.
+                  </p>
+                </>
+              )}
+
+              <p>
+                Complete your KYC to get settlements to your bank account and receive more than INR
+                15,000
+              </p>
             </div>
-            <p>
-              You are now all set and can start receiving payments from your customers up to INR
-              15,000. Complete your KYC Details to enable benefits like settlements and to extend
-              this limit further!
-            </p>
-            <p>We have switched you to live mode, go ahead and accept your first payment!</p>
-            {isInstantActivationVideoEnabled && (
-              <>
-                <a
-                  href="https://youtu.be/FM2P1D-yjOU"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  onClick={() => handleVideoClick()}
-                >
-                  {' '}
-                  Click here{' '}
-                </a>{' '}
-                to watch a simple video on how to start accepting payments.{' '}
-              </>
+            {currentButton()}
+            {isPaymentLinkRecommendedProduct && (
+              <p className="redirect-counter">Redirecting you to payment links in {counter}.</p>
             )}
           </div>
-          {currentButton()}
           {isPaymentLinkRecommendedProduct && (
-            <p className="redirect-counter">Redirecting you to payment links in {counter}.</p>
+            <ProgressBar
+              className="redirect-progress"
+              type={isProgressStarted ? 'animation' : ''}
+              max={100}
+              min={0}
+              color="#2B83EA"
+            />
           )}
-        </div>
-        {isPaymentLinkRecommendedProduct && (
-          <ProgressBar
-            className="redirect-progress"
-            type={isProgressStarted ? 'animation' : ''}
-            max={100}
-            min={0}
-            color="#2B83EA"
-          />
-        )}
-      </Modal>
-    </ModalMask>
+        </Modal>
+      </ModalMask>
+      <VideoModal
+        visible={showVideoModal}
+        width={853}
+        height={505}
+        onClose={() => setShowVideoModal(false)}
+        src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
+      />
+    </>
   );
 };
 export default compose(

@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import styled from 'styled-components';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
@@ -16,6 +16,7 @@ import PaymentPaused from './icons/PaymentPaused.svg';
 import * as Message from './Constant';
 import { SAMPLE_TICKET } from '../Constants/OnboardingConstants';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import VideoModal from 'merchant/components/VideoModal';
 
 export type ModalTypeT =
   | 'dedupe'
@@ -58,6 +59,7 @@ export const getModalContent = (
   const isPaymentLimitRemoved =
     !statusLog.includes('needs_clarification') && !!activationData?.activated;
 
+  const [shouldShowVideoModal, setShouldShowVideoModal] = useState(false);
   const openCustomerSupport = () => {
     analyticsTrack({
       objectName: 'SignUp',
@@ -115,14 +117,21 @@ export const getModalContent = (
         <div>
           {' '}
           <a
-            href="https://youtu.be/FM2P1D-yjOU"
-            target="_blank"
             rel="noreferrer noopener"
-            onClick={() => handleVideoClick()}
+            onClick={(): void => {
+              setShouldShowVideoModal(true);
+              handleVideoClick();
+            }}
           >
             Click here
           </a>{' '}
           to watch a simple video on how to start accepting payments.
+          <VideoModal
+            visible={shouldShowVideoModal}
+            maskClosable={true}
+            onClose={() => setShouldShowVideoModal(false)}
+            src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
+          />
         </div>
       );
     } else return null;
