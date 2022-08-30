@@ -69,3 +69,48 @@ jobs:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           base: origin/${{ github.base_ref }}
+
+      - name: Get changed Stylus files
+        id: changed-stylus-files
+        uses: tj-actions/changed-files@v9.3
+        with:
+          files: |
+            .(styl)$
+
+      - name: Stylelint PR Check
+        id: stylelint-check
+        continue-on-error: true
+        # Don't run check on revert PRs
+        if: |
+          !(
+            startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
+            startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
+          ) &&
+          steps.changed-stylus-files.outputs.all_modified_files != ''
+        run: |
+          echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
+          npm ci
+          npx stylelint \
+          --custom-formatter stylelint-formatter.js \
+          --config .stylelintrc-stylus.js \
+          -o stylelint-report.json \
+          ${{ steps.changed-stylus-files.outputs.all_modified_files }}
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Annotate Stylus Linting Results
+        uses: ataylorme/eslint-annotate-action@v2
+        id: stylus-annotator
+        if: steps.changed-stylus-files.outputs.all_modified_files != ''
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: "stylelint-report.json"
+          check-name: "Stylelint Analysis"
+
+      - name: Comment Stylus document link
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: always() && failure() && steps.stylus-annotator.conclusion == 'failure'
+        with:
+          recreate: true
+          message: Found Stylelint CSS Errors - Refer to [Stylelint Document](https://docs.google.com/document/d/1IC_vWC9EePW6Tnilufg6jQvYgOOs0FyccXM4NmZuEHg/edit)

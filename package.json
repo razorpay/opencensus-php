@@ -25,7 +25,9 @@
     "test:jest-watch-changed": "cd web && npm run test:jest-watch-changed",
     "test:jest-watch": "cd web && npm run test:jest-watch",
     "lint": "bash lint.sh",
-    "validate-lint": "bash validate-eslint.sh $base"
+    "validate-lint": "bash validate-eslint.sh $base",
+    "lint:css": "stylelint --config .stylelintrc-stylus.js",
+    "fix:css": "stylelint --config .stylelintrc-stylus.js --fix"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.4",
@@ -51,6 +53,9 @@
     "lint-staged": "^10.2.11",
     "nodemon": "^2.0.7",
     "prettier": "^2.0.5",
+    "stylelint": "14.0.0",
+    "stylelint-config-standard": "24.0.0",
+    "stylelint-stylus": "0.16.1",
     "typescript": "3.9.5"
   },
   "config": {
