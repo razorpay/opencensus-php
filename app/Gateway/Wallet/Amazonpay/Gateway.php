@@ -512,14 +512,17 @@ class Gateway extends Base\Gateway
     {
         $throwException = false;
 
-        if (isset($response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]) === true)
+        if ((isset($response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]) === true) and
+        (strtolower($response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE]) == Status::PENDING))
         {
-            $refundState = $response[ResponseFields::REFUND_STATUS][ResponseFields::REFUND_STATE];
-
-            if (Status::matches($status, $refundState) === true)
-            {
-                return true;
-            }
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_TRANSACTION_PENDING,
+                Status::PENDING,
+                null,
+                [
+                    Payment\Gateway::GATEWAY_RESPONSE   => json_encode($response),
+                    Payment\Gateway::GATEWAY_KEYS       => $this->getGatewayData($response)
+                ]);
         }
 
         throw new GatewayErrorException(

@@ -448,7 +448,7 @@ class AmazonpayGatewayTest extends TestCase
         // Amazonpay refunds are not processed via scrooge, so is_scrooge will be false
         $this->assertTrue($refund->isScrooge());
 
-        $this->assertTrue($refund->isProcessed());
+        $this->assertTrue($refund->IsCreated());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -511,7 +511,7 @@ class AmazonpayGatewayTest extends TestCase
 
         $refund = $this->getDbLastRefund();
 
-        $this->assertSame(Refund\Status::PROCESSED, $refund->getStatus());
+        $this->assertSame(Refund\Status::CREATED, $refund->getStatus());
 
         $wallet = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
 
@@ -523,20 +523,26 @@ class AmazonpayGatewayTest extends TestCase
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $refund = $this->getDbLastRefund(ConstantsEntity::REFUND);
-        $this->assertEquals(Refund\Status::PROCESSED, $refund->getStatus());
+        $this->assertEquals(Refund\Status::CREATED, $refund->getStatus());
 
         $gatewayHit = false;
 
         $this->mockServerContentFunction(
-            function(& $content) use (& $gatewayHit, $refund)
+            function(& $content, $action = null) use (& $gatewayHit, $refund)
             {
-                $gatewayHit = true;
+                if ($action === 'verify_refund')
+                {
+                    $gatewayHit = true;
+                    $content['data']['{{reference_id}}'] = $refund->getId();
+                    $content['data']['{{refund_state}}'] = 'Completed';
+                }
             });
 
         // Since the refund is processed, we are checking the gateway is not hit.
         // TODO: We may need to change this to verify refund
         $this->retryFailedRefund($refund->getPublicId(), 'pay_' . $refund->getPaymentId(), [], ['status'=> $refund->getStatus()]);
-        $this->assertFalse($gatewayHit);
+
+        $this->assertTrue($gatewayHit);
 
         $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
     }
@@ -546,7 +552,7 @@ class AmazonpayGatewayTest extends TestCase
         $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $refund = $this->getDbLastRefund(ConstantsEntity::REFUND);
-        $this->assertEquals(Refund\Status::PROCESSED, $refund->getStatus());
+        $this->assertEquals(Refund\Status::CREATED, $refund->getStatus());
 
         $refund->setStatus(Refund\Status::FAILED);
         $refund->save();
@@ -568,7 +574,7 @@ class AmazonpayGatewayTest extends TestCase
 
         $this->assertTrue($gatewayHit);
 
-        $this->assertEquals(Refund\Status::PROCESSED, $refund->reload()->getStatus());
+        $this->assertEquals(Refund\Status::FAILED, $refund->reload()->getStatus());
     }
 
     public function testPaymentMultipleRefundsInitiated()
@@ -578,7 +584,7 @@ class AmazonpayGatewayTest extends TestCase
         $payment = $this->getDbLastPayment();
         $refund1 = $this->getDbLastRefund();
 
-        $this->assertTrue($refund1->isProcessed());
+        $this->assertTrue($refund1->isCreated());
         $this->assertTrue($payment->isPartiallyRefunded());
 
         $wallet1 = $this->getDbLastEntityPublic(ConstantsEntity::WALLET);
@@ -605,7 +611,7 @@ class AmazonpayGatewayTest extends TestCase
 
         $payment->reload();
         $refund2 = $this->getDbLastRefund();
-        $this->assertSame(Refund\Status::PROCESSED, $refund2->getStatus());
+        $this->assertSame(Refund\Status::CREATED, $refund2->getStatus());
 
         $this->assertSame(30000, $payment->getAmountRefunded());
         $this->assertNotEquals($refund1->getId(), $refund2->getId());
