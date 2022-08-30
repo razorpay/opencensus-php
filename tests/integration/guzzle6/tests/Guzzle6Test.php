@@ -17,7 +17,6 @@
 
 namespace OpenCensus\Tests\Integration\Trace;
 
-use Http\Adapter\Guzzle6\Client as GuzzleClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use HttpTest\HttpTestServer;
@@ -41,7 +40,7 @@ class Guzzle6Test extends TestCase
         $stack = new HandlerStack();
         $stack->setHandler(\GuzzleHttp\choose_handler());
         $stack->push(new Middleware());
-        $this->client = new GuzzleClient(new Client(['handler' => $stack]));
+        $this->client = new Client(['handler' => $stack]);
     }
 
     /**
