@@ -136,7 +136,7 @@ trait DbEntityFetchTrait
     }
 
     /****************************** Blacklist *************************************/
-    
+
     public function getDbLastBlacklist(): P2p\BlackList\Entity
     {
         return $this->getDbLastEntity(Entity::P2P_BLACKLIST, $this->dbEntityFetchMode);
@@ -145,5 +145,22 @@ trait DbEntityFetchTrait
     public function getDbBlacklists(array $where): PublicCollection
     {
         return $this->getDbEntities(Entity::P2P_BLACKLIST, $where, $this->dbEntityFetchMode);
+    }
+
+    /*********************************** Mandate Patch**********************************/
+
+    public function getDbLastPatch(): P2p\Mandate\Patch\Entity
+    {
+        return $this->getDbLastEntity(Entity::P2P_MANDATE_PATCH, $this->dbEntityFetchMode);
+    }
+
+    public function getDbPatchById(string $id): P2p\Mandate\Patch\Entity
+    {
+        return $this->getDbEntityById(Entity::P2P_MANDATE_PATCH, $id, $this->dbEntityFetchMode);
+    }
+
+    public function getDbPatches(array $where): PublicCollection
+    {
+        return $this->getDbEntities(Entity::P2P_MANDATE_PATCH, $where, $this->dbEntityFetchMode);
     }
 }

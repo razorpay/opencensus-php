@@ -7,11 +7,13 @@ use RZP\Models\P2p\Mandate\Status;
 use RZP\Models\P2p\Mandate\Entity;
 use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Models\P2p\Mandate\UpiMandate;
+use RZP\Models\P2p\Mandate\Patch\Action;
 use RZP\Tests\P2p\Service\UpiAxis\TestCase;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 use RZP\Tests\P2p\Service\Base\Traits\MandateTrait;
 use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
+use RZP\Models\P2p\Mandate\Patch\Entity as PatchEntity;
 
 /**
  * Class MandateTest
@@ -98,9 +100,11 @@ class MandateTest extends TestCase
 
         $actualUpiMandate = array_only($mandate->toArrayPublic()[Entity::UPI], array_keys($expectedUpiMandateSubset));
         $this->assertEquals($expectedUpiMandateSubset, $actualUpiMandate);
+
+        $patch = $this->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID],$mandate->toArray()[Entity::ID]);
     }
-
-
 
     /**
      * Test incoming mandate collect request from gateway.
@@ -112,6 +116,16 @@ class MandateTest extends TestCase
         $request = $helper->getCreateMandatePayload($this->gateway);
 
         $this->createMandateOnMock($helper, $request);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
 
         $lastMandate = $this->fixtures->getDbLastMandate();
 
@@ -137,6 +151,10 @@ class MandateTest extends TestCase
         $lastMandate = $this->fixtures->getDbLastMandate();;
 
         $this->assertEquals($lastMandate[Entity::AMOUNT], 9000);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate->getId());
     }
 
     /**
@@ -151,6 +169,12 @@ class MandateTest extends TestCase
         $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
 
         $gatewayMandateId = str_random(35);
 
@@ -205,6 +229,10 @@ class MandateTest extends TestCase
         $lastMandate = $this->fixtures->getDbLastMandate();
 
         $this->assertEquals($lastMandate[Entity::PAUSE_START], $timeNow);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate->getId());
     }
 
     public function testMandateStatusUpdate()
@@ -216,6 +244,12 @@ class MandateTest extends TestCase
         $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
 
         $gatewayMandateId = str_random(35);
 
@@ -269,6 +303,10 @@ class MandateTest extends TestCase
         $lastMandate = $this->fixtures->getDbLastMandate();
 
         $this->assertEquals($lastMandate[Entity::STATUS],Status::PAUSED);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate->getId());
     }
 
 
@@ -344,6 +382,10 @@ class MandateTest extends TestCase
         $this->assertArraySubset([
              Entity::STATUS => Status::APPROVED,
          ], $response);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate->getId());
     }
 
     public function testInitiateReject()
@@ -380,6 +422,10 @@ class MandateTest extends TestCase
         $this->assertArraySubset([
                 Entity::STATUS => Status::REJECTED,
          ], $response);
+
+        $patch = $this ->fixtures->getDbLastPatch();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate->toArray()[Entity::ID]);
     }
 
     public function testInitiatePause()
@@ -391,6 +437,14 @@ class MandateTest extends TestCase
         $this->createMandateOnMock($helper, $request);
 
         $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->authorizeMandate($request['callback'], $content);
+
+        $this->assertArraySubset([Entity::STATUS => Status::APPROVED], $response);
 
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
@@ -410,18 +464,32 @@ class MandateTest extends TestCase
 
         $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
+
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
 
         $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
 
         $content = $this->handleSdkRequest($request);
 
         $response = $helper->pauseMandate($request['callback'], $content);
 
         $this->assertArraySubset([
-                Entity::STATUS    => Status::PAUSED,
+            Entity::STATUS    => Status::PAUSED,
          ], $response);
+
+        $patch = $this ->fixtures->getDbLastPatch();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate[Entity::ID]);
     }
 
     public function testInitiateUnpause()
@@ -434,18 +502,28 @@ class MandateTest extends TestCase
 
         $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
+
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
 
         $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
+
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
 
         $content = $this->handleSdkRequest($request);
 
         $response = $helper->pauseMandate($request['callback'], $content);
 
         $this->assertArraySubset([
-                Entity::STATUS => Status::PAUSED,
-         ], $response);
+                 Entity::STATUS    => Status::PAUSED,
+                ], $response);
 
         $request = $helper->initiateUnPause($lastMandate[Entity::ID], $lastMandate);
 
@@ -462,18 +540,26 @@ class MandateTest extends TestCase
 
         $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
+
         $lastMandate[Entity::PAUSE_START] = Carbon::now()->getTimestamp();
         $lastMandate[Entity::PAUSE_END]   = Carbon::now()->getTimestamp();
 
         $request = $helper->initiatePause($lastMandate[Entity::ID], $lastMandate);
 
+        $this->assertStringContainsString($lastMandate[Entity::ID], $request['callback']);
+
         $content = $this->handleSdkRequest($request);
 
         $response = $helper->pauseMandate($request['callback'], $content);
 
-        $this->assertArraySubset([
-                Entity::STATUS    => Status::PAUSED,
-         ], $response);
+        $this->assertArraySubset([Entity::STATUS  => Status::PAUSED], $response);
 
         $request = $helper->initiateUnPause($lastMandate[Entity::ID], $lastMandate);
 
@@ -482,6 +568,10 @@ class MandateTest extends TestCase
         $this->assertArraySubset([
                 Entity::STATUS   => Status::APPROVED,
          ], $response);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate[Entity::ID]);
     }
 
     public function testInitiateRevoke()
@@ -492,7 +582,13 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->fixtures->getDbLastMandate();
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
+
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $helper->authorizeMandate($request['callback'], $content);
 
         $request = $helper->initiateRevoke($lastMandate[Entity::ID], []);
 
@@ -507,17 +603,27 @@ class MandateTest extends TestCase
 
         $this->createMandateOnMock($helper, $request);
 
-        $lastMandate = $this->fixtures->getDbLastMandate();
+        $lastMandate = $this->fixtures->getDbLastMandate()->toArray();
 
-        $coproto = $helper->initiateRevoke($lastMandate[Entity::ID], []);
+        $request = $helper->initiateAuthorize($lastMandate[Entity::ID], []);
 
-        $content = $this->handleSdkRequest($coproto);
+        $content = $this->handleSdkRequest($request);
 
-        $response = $helper->revokeMandate($coproto['callback'], $content);
+        $helper->authorizeMandate($request['callback'], $content);
+
+        $request = $helper->initiateRevoke($lastMandate[Entity::ID], []);
+
+        $content = $this->handleSdkRequest($request);
+
+        $response = $helper->revokeMandate($request['callback'], $content);
 
         $this->assertArraySubset([
                  Entity::STATUS   => Status::REVOKED,
              ], $response);
+
+        $patch = $this ->fixtures->getDbLastPatch()->toArray();
+
+        $this->assertEquals($patch[PatchEntity::MANDATE_ID], $lastMandate[Entity::ID]);
     }
 
     private function createMandateOnMock($helper, $callback)

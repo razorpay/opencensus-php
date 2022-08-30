@@ -12,6 +12,7 @@ use RZP\Models\P2p\Mandate\Actions;
 use RZP\Exception\BadRequestException;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Models\P2p\Upi\ExpectedHardFailures;
+use RZP\Models\P2p\Mandate\Patch\Entity as PatchEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 
 /**
@@ -55,6 +56,8 @@ class Processor extends Base\Processor
         $mandate[Entity::END_DATE]   = $this->input->bag(Entity::MANDATE)->get(Entity::END_DATE);
         $mandate[Entity::UPDATED_AT] = Carbon::now()->getTimestamp();
 
+        $this->updatePatchStatusAccordingToMandateAction($mandate, $this->action);
+
         return $this->core->update($mandate, $mandate->toArray())->toArrayPublic();
     }
 
@@ -68,7 +71,7 @@ class Processor extends Base\Processor
     public function incomingPause(array $input): array
     {
         // TODO :- avoid direct state update - use patch to store data
-        $this->initialize(Action::INCOMING_UPDATE, $input);
+        $this->initialize(Action::INCOMING_PAUSE, $input);
 
         // get the existing mandate
         $mandate = $this->core->findByUMN($this->input->bag(Entity::MANDATE)->get(Entity::UMN));
@@ -84,6 +87,8 @@ class Processor extends Base\Processor
 
         $mandate[Entity::PAUSE_START]     = $pauseStart;
         $mandate[Entity::PAUSE_END]       = $pauseEnd;
+
+        $this->updatePatchStatusAccordingToMandateAction($mandate , $this->action);
 
         return $this->core->update($mandate, $input)->toArrayPublic();
     }
@@ -105,6 +110,8 @@ class Processor extends Base\Processor
 
         $mandate[Entity::STATUS]                = $this->input->bag(Entity::MANDATE)->get(Entity::STATUS);
         $mandate[Entity::INTERNAL_STATUS]       = $this->input->bag(Entity::MANDATE)->get(Entity::INTERNAL_STATUS);
+
+        $this->updatePatchStatusAccordingToMandateAction($mandate, $this->action);
 
         return $this->core->update($mandate, $mandate->toArray())->toArrayPublic();
     }
@@ -166,7 +173,7 @@ class Processor extends Base\Processor
 
         $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
 
-        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput), $this->action);
 
         return $mandate->toArrayPublic();
     }
@@ -261,7 +268,7 @@ class Processor extends Base\Processor
 
         $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
 
-        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput), $this->action);
 
         return $mandate->toArrayPublic();
     }
@@ -327,7 +334,7 @@ class Processor extends Base\Processor
 
         $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
 
-        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput), $this->action);
 
         return $mandate->toArrayPublic();
     }
@@ -388,7 +395,7 @@ class Processor extends Base\Processor
 
         $mandate = $this->core->fetch($this->input->get(Entity::MANDATE)[Entity::ID]);
 
-        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput));
+        $this->updateMandate($mandate, $mandateInput , new ArrayBag($upiInput), $this->action);
 
         return $mandate->toArrayPublic();
     }
@@ -670,7 +677,7 @@ class Processor extends Base\Processor
         $mandateInput = clone $input;
 
         $properties = new Properties($this->context(), $this->action, $input);
-        
+
         $mandate = $this->core->build($mandateInput->toArray());
 
         $properties->attachToMandate($mandate);
@@ -680,8 +687,8 @@ class Processor extends Base\Processor
         $lock = $upi->getAction() . $upi->getNetworkTransactionId();
 
         return $this->app['api.mutex']->acquireAndRelease($lock,
-            function() use ($mandate, $input, $upi) {
-                return $this->repo()->transaction(function() use ($mandate, $input, $upi) {
+            function() use ($mandate, $input, $upi , $action) {
+                return $this->repo()->transaction(function() use ($mandate, $input, $upi, $action) {
 
                     $this->checkForDuplicate($upi);
 
@@ -690,6 +697,10 @@ class Processor extends Base\Processor
                     $upi->associateMandate($mandate);
 
                     $this->core->updateUpi($upi, []);
+
+                    $actionInput = [Entity::ACTION => $action, Entity::STATUS => Status::REQUESTED, PatchEntity::ACTIVE => false];
+
+                    $this->createPatch($mandate, $actionInput);
 
                     return $mandate;
                 });
@@ -700,23 +711,27 @@ class Processor extends Base\Processor
      * @param Entity   $mandate
      * @param ArrayBag $input
      * @param ArrayBag $upiInput
+     * @param String   $action
      * Update the mandate data which is coming in from gateway
      * @return mixed
      * @throws \RZP\Exception\LogicException
      * @throws \RZP\Exception\RuntimeException
      */
-    protected function updateMandate(Entity $mandate, ArrayBag $input, ArrayBag $upiInput)
+    protected function updateMandate(Entity $mandate, ArrayBag $input, ArrayBag $upiInput ,String $action)
     {
         $lock = $mandate->upi->getAction() . $mandate->upi->getNetworkTransactionId();
 
         return $this->app['api.mutex']->acquireAndRelease($lock,
-            function() use ($mandate, $input, $upiInput) {
+            function() use ($mandate, $input, $upiInput , $action) {
                 $mandate->reload();
 
-                return $this->repo()->transaction(function() use ($mandate, $input, $upiInput) {
+                return $this->repo()->transaction(function() use ($mandate, $input, $upiInput , $action) {
+
                     $actions = $this->updateMandateStatus($mandate, $input);
 
                     $this->core->updateUpi($mandate->upi, $upiInput->toArray());
+
+                    $this->updatePatchStatusAccordingToMandateAction($mandate, $action);
 
                     return $mandate;
                 });
@@ -740,5 +755,107 @@ class Processor extends Base\Processor
                 Entity::UPI => $upi,
             ]);
         }
+    }
+
+    /**
+     * Create patch with given status
+     * @param Entity $mandate
+     * @param string $action
+     * @param string $status
+     * @param bool   $active
+     */
+    protected function createPatch(Entity $mandate, Array $input)
+    {
+        $patch = $this->getPatchObject($mandate, $input);
+
+        $patch = (new Patch\Core)->build($patch);
+
+        return (new Patch\Core)->update($patch, []);
+    }
+
+    /**
+     *
+     * @param Entity $mandate
+     * @param String $action
+     */
+    protected function updatePatchStatusAccordingToMandateAction(Entity $mandate, String $action)
+    {
+        switch($action)
+        {
+            case Action::AUTHORIZE_MANDATE_SUCCESS:
+
+                $existingPatch = $this->core->findPatchByMandateIdAndActive($mandate->getId(), false);
+
+                (new Patch\Core)->updatePatchStatus($mandate , $existingPatch , true);
+
+                break;
+
+            // these are user flows which are sent in by merchant directly and does not require update request
+            /**
+             * create a new patch for the belowing flow and make the old patch inactive for the below flows
+             */
+            case Action::INCOMING_UPDATE:
+            case Action::INCOMING_PAUSE:
+            case Action::PAUSE_SUCCESS:
+            case Action::UNPAUSE_SUCCESS:
+            case Action::REVOKE_SUCCESS:
+            case Action::MANDATE_STATUS_UPDATE:
+
+                $actionInput = [Entity::ACTION => $action, Entity::STATUS => $mandate->getInternalStatus(), PatchEntity::ACTIVE => false];
+
+                $newPatch = $this->createPatch($mandate, $actionInput);
+
+                $oldPatch = $this->core->findPatchByMandateIdAndActive($mandate->getId(), true);
+
+                // make the old patch in active
+
+                $oldPatch->setActive(false);
+
+                (new Patch\Core)->update($oldPatch, []);
+
+                // make the new patch active
+                (new Patch\Core)->updatePatchStatus($mandate , $newPatch , true);
+
+                break;
+        }
+    }
+
+    /**
+     * @param Entity $mandate
+     * @param string $action
+     * @param string $status
+     * @param string $active
+     * This is the method to get patch object
+     * @return patch object related to mandate
+     */
+    public function getPatchObject(Entity $mandate, Array $input)
+    {
+        $details = $this->getDetails($mandate);
+
+        $default = [
+            Patch\Entity::MANDATE_ID               => $mandate->getId(),
+            Patch\Entity::STATUS                   => $input[Entity::STATUS],
+            Patch\Entity::ACTION                   => (new Patch\Action())->getAction($input[Entity::ACTION]),
+            Patch\Entity::ACTIVE                   => $input[PatchEntity::ACTIVE],
+            Patch\Entity::DETAILS                  => $details,
+            Patch\Entity::EXPIRY                   => $mandate->getExpiry(),
+            Patch\Entity::REMARKS                  => $mandate->getDescription()
+        ];
+
+        return $default;
+    }
+
+    /**
+     * This is the method to get mandate details
+     * @param Entity $mandate
+     */
+    public function getDetails(Entity $mandate)
+    {
+        return  [
+            Entity::AMOUNT          => $mandate->getAmount(),
+            Entity::AMOUNT_RULE     => $mandate->getAmountRule(),
+            Entity::START_DATE      => $mandate->getStartDate(),
+            Entity::END_DATE        => $mandate->getEndDate(),
+        ];
     }
 }

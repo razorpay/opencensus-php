@@ -335,7 +335,7 @@ class Table
     const P2P_UPI_TRANSACTION   = 'p2p_upi_transactions';
     const P2P_MANDATE           = 'p2p_mandates';
     const P2P_UPI_MANDATE       = 'p2p_upi_mandates';
-    const P2P_MANDATE_PATCHES   = 'p2p_mandate_patches';
+    const P2P_MANDATE_PATCH     = 'p2p_mandate_patch';
     const P2P_BLACKLIST         = 'p2p_blacklist';
 
     const SETTLEMENT_ONDEMAND          = 'settlement_ondemands';

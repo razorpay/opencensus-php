@@ -13,6 +13,7 @@ class Fetch extends Base\Fetch
             Entity::MANDATE_ID          => 'sometimes|string',
             Entity::DEVICE_ID           => 'sometimes|string',
             Entity::STATUS              => 'sometimes|string',
+            Entity::ACTIVE              => 'sometimes|string',
         ],
     ];
 
@@ -27,5 +28,10 @@ class Fetch extends Base\Fetch
             Entity::DEVICE_ID,
             Entity::STATUS,
         ],
+        AuthType::DEVICE_AUTH => [
+            Entity::STATUS,
+            Entity::MANDATE_ID,
+            Entity::ACTIVE,
+        ]
     ];
 }

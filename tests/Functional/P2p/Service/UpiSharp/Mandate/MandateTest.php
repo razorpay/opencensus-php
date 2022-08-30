@@ -179,6 +179,16 @@ class MandateTest extends TestCase
 
         $mandateId = $lastMandate->toArray()['id'];
 
+        $amount = $lastMandate->toArray()[Entity::AMOUNT];
+
+        $request = $helper->initiateAuthorize($mandateId, []);
+
+        $response = $helper->authorizeMandate($request['callback'], []);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $mandateId = $lastMandate->toArray()['id'];
+
         $lastMandate[Entity::PAUSE_START] = 1646721840;
         $lastMandate[Entity::PAUSE_END]   = 1646921840;
 
@@ -281,11 +291,24 @@ class MandateTest extends TestCase
 
     public function testPauseMandate()
     {
+
         $helper = $this->getMandateHelper();
 
         $request = $helper->getCreateMandatePayload($this->gateway);
 
         $this->createMandateOnMock($helper ,$this->gateway, $request);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $mandateId = $lastMandate->toArray()['id'];
+
+        $amount = $lastMandate->toArray()[Entity::AMOUNT];
+
+        $request = $helper->initiateAuthorize($mandateId, []);
+
+        $response = $helper->authorizeMandate($request['callback'], []);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
 
         $lastMandate = $this->fixtures->getDbLastMandate();
 
@@ -321,6 +344,16 @@ class MandateTest extends TestCase
 
         $mandateId = $lastMandate->toArray()['id'];
 
+        $amount = $lastMandate->toArray()[Entity::AMOUNT];
+
+        $request = $helper->initiateAuthorize($mandateId, []);
+
+        $response = $helper->authorizeMandate($request['callback'], []);
+
+        $lastMandate = $this->fixtures->getDbLastMandate();
+
+        $mandateId = $lastMandate->toArray()['id'];
+
         $lastMandate[Entity::PAUSE_START] = 1646721840;
         $lastMandate[Entity::PAUSE_END]   = 1646921840;
 
@@ -348,6 +381,14 @@ class MandateTest extends TestCase
         $lastMandate = $this->fixtures->getDbLastMandate();
 
         $mandateId = $lastMandate->toArray()['id'];
+
+        $amount = $lastMandate->toArray()[Entity::AMOUNT];
+
+        $request = $helper->initiateAuthorize($mandateId, []);
+
+        $response = $helper->authorizeMandate($request['callback'], []);
+
+        $lastMandate = $this->fixtures->getDbLastMandate(); 
 
         $request = $helper->initiateRevoke($mandateId, []);
 

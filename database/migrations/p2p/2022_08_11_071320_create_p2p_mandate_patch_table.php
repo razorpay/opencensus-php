@@ -16,7 +16,7 @@ class CreateP2pMandatePatchTable extends Migration
      */
     public function up()
     {
-        Schema::create(Table::P2P_MANDATE_PATCHES, function(Blueprint $table)
+        Schema::create(Table::P2P_MANDATE_PATCH , function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -31,7 +31,7 @@ class CreateP2pMandatePatchTable extends Migration
 
             $table->string(Entity::STATUS, 50);
 
-            $table->integer(Entity::EXPIRE_AT)
+            $table->integer(Entity::EXPIRY)
                   ->nullable();
 
             $table->string(Entity::ACTIVE, 50);
@@ -59,7 +59,7 @@ class CreateP2pMandatePatchTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists(Table::P2P_MANDATE_PATCHES);
+        Schema::dropIfExists(Table::P2P_MANDATE_PATCH);
     }
 }
 

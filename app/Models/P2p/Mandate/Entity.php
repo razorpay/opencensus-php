@@ -13,6 +13,7 @@ use RZP\Models\P2p\BankAccount;
  * @property Vpa\Entity $payer
  * @property Vpa\Entity $payee
  * @property UpiMandate\Entity $upi
+ * @property Patch\Entity $patch
  *
  * @package RZP\Models\P2p\Mandate
  */
@@ -67,6 +68,7 @@ class Entity extends Base\Entity
     const CUSTOMER           = 'customer';
     const PAYER              = 'payer';
     const PAYEE              = 'payee';
+    const PATCH              = 'patch';
     const BANK_ACCOUNT       = 'bank_account';
     const UPI                = 'upi';
 
@@ -248,7 +250,7 @@ class Entity extends Base\Entity
         Entity::PAUSE_END            => 'int',
         Entity::CREATED_AT           => 'int',
         Entity::UPDATED_AT           => 'int',
-        ];
+    ];
 
     /**
      * @return \RZP\Models\P2p\Mandate\Entity
@@ -476,6 +478,8 @@ class Entity extends Base\Entity
 
         $array[self::PAYEE] = $this->payee->toArrayBeneficiary();
 
+        $array[self::PATCH] = $this->patch->toArrayPublic();
+
         return $array;
     }
 
@@ -533,5 +537,70 @@ class Entity extends Base\Entity
     public function upi()
     {
         return $this->hasOne(UpiMandate\Entity::class, UpiMandate\Entity::MANDATE_ID);
+    }
+
+    /**
+     * @return string self::Amount
+     */
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    /**
+     * @return string self::AmountRule
+     */
+    public function getAmountRule()
+    {
+        return $this->getAttribute(self::AMOUNT_RULE);
+    }
+
+    /**
+     * @return string self::Start date
+     */
+    public function getStartDate()
+    {
+        return $this->getAttribute(self::START_DATE);
+    }
+
+    /**
+     * @return string self::end date
+     */
+    public function getEndDate()
+    {
+        return $this->getAttribute(self::START_DATE);
+    }
+
+    /**
+     * @return string self::Expireat
+     */
+    public function getExpiry()
+    {
+        return $this->getAttribute(self::EXPIRE_AT);
+    }
+
+    /**
+     * @return string self::Expireat
+     */
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    /**
+     * @return string self::Action
+     */
+    public function getAction()
+    {
+        return $this->getAttribute(self::ACTION);
+    }
+
+    /**
+     * This is the method to get upi details
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function patch()
+    {
+        return $this->hasMany(Patch\Entity::class, Patch\Entity::MANDATE_ID);
     }
 }

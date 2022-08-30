@@ -2,15 +2,12 @@
 
 namespace RZP\Models\P2p\Mandate;
 
-use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Base;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\P2p\BankAccount;
 use RZP\Exception\LogicException;
-use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\P2p\Mandate\Patch\Action as PatchAction;
 
 /**
  * * @property Core $core
@@ -159,5 +156,33 @@ class Core extends Base\Core
     public function findByUMN(string $input)
     {
         return $this->repo->findByUMN($input);
+    }
+
+    /**
+     * @param array $input
+     *  This is the method to clean upipatch input
+     * @return array
+     */
+    protected function cleanPatchInput(array $input): array
+    {
+        unset($input[UpiMandate\Entity::MANDATE_ID],
+            $input[UpiMandate\Entity::ACTION],
+            $input[UpiMandate\Entity::STATUS],
+            $input[UpiMandate\Entity::HANDLE]);
+
+        return $input;
+    }
+
+    /**
+     * @param UpiMandate\Entity $upi
+     * @param array             $input
+     * This is the method to update upi data
+     * @return UpiMandate\Entity
+     */
+    public function findPatchByMandateIdAndActive(string $id, bool $active)
+    {
+        $patch = (new Patch\Core)->findPatchByMandateIdAndActive($id, $active);
+
+        return $patch;
     }
 }

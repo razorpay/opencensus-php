@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\P2p\Upi\Sharp;
 
+use Carbon\Carbon;
 use RZP\Models\P2p\Vpa;
 use RZP\Models\P2p\Device;
 use RZP\Models\P2p\Mandate;
@@ -128,6 +129,7 @@ class UpiGateway extends Gateway implements Contracts\UpiGateway
             Mandate\Entity::INTERNAL_STATUS         => $content[Fields::STATUS],
             Mandate\Entity::PAYER                   => $this->toUsernameHandle($content[Fields::PAYER_VPA]),
             Mandate\Entity::PAYEE                   => $this->toUsernameHandle($content[Fields::PAYEE_VPA]),
+            Mandate\Entity::EXPIRE_AT               => Carbon::tomorrow()->getTimestamp(),
         ];
 
         $mandate[Mandate\Entity::PAYEE][Vpa\Entity::BENEFICIARY_NAME] = 'rzp';

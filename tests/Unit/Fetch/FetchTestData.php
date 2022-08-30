@@ -723,7 +723,7 @@ return [
 
     E::P2P_UPI_MANDATE => [],
 
-    E::P2P_MANDATES_PATCH => [],
+    E::P2P_MANDATE_PATCH => [],
 
     E::CUSTOMER => [],
 
