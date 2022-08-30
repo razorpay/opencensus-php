@@ -130,11 +130,11 @@ jobs:
       - name: Laravel test
         run: tests/integration/laravel/test.sh
 
-      - name: Guzzle 5 test
-        run: tests/integration/guzzle5/test.sh
-
-      - name: Guzzle 6 test
-        run: tests/integration/guzzle6/test.sh
+# Skipped as Guzzle 5 and 6 not supported in php8 or above (https://github.com/guzzle/guzzle/issues/3020)
+#      - name: Guzzle 5 test
+#        run: tests/integration/guzzle5/test.sh
+#      - name: Guzzle 6 test
+#        run: tests/integration/guzzle6/test.sh
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
