@@ -6906,10 +6906,7 @@ trait Authorize
             {
                 $input = [Order\Entity::AUTHORIZED => true];
 
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($input, $order)
-                {
-                    OrderUpdate::dispatchNow($this->mode, $input, $order);
-                }));
+                $this->app['pg_router']->updateInternalOrder($input, $order->getId(),$order->getMerchantId(), true);
             }
             else
             {
