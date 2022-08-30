@@ -275,13 +275,15 @@ export default class Details extends Component {
                   ) : (
                     <span>
                       {account.email}
-                      <a
-                        class="p-l"
-                        onClick={this.showEditAccountModal(account)}
-                        title="Edit Email"
-                      >
-                        Change
-                      </a>
+                      {!user.isRouteLinkedAccountCreationDisabled && (
+                        <a
+                          class="p-l"
+                          onClick={this.showEditAccountModal(account)}
+                          title="Edit Email"
+                        >
+                          Change
+                        </a>
+                      )}
                     </span>
                   )}
                 </EntityDetailRow>
@@ -296,6 +298,7 @@ export default class Details extends Component {
                     activationStatus={status}
                     showActivationForm={this.showActivationForm}
                     errorDetails={account.activation_details?.bank_details_verification_error}
+                    isCreationDisabled={user.isRouteLinkedAccountCreationDisabled}
                   />
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">

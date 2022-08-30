@@ -226,6 +226,7 @@ export default class AccountsListContainer extends ListContainer {
   render() {
     const { loading, accounts, user } = this.props;
     const status = this.state.status;
+    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
 
     return (
       <div class="LinkedAccountsList content-wrapper">
@@ -245,7 +246,15 @@ export default class AccountsListContainer extends ListContainer {
             <ShowWhen
               additionalCondition={(_user) => _user.isAllowedEdit('accounts') && !_user.isOrgAxis}
             >
-              <button class="btn btn-primary" onClick={this.showAddAccountModal}>
+              <button
+                class="btn btn-primary"
+                onClick={this.showAddAccountModal}
+                disabled={isCreationDisabled}
+                title={
+                  isCreationDisabled &&
+                  'Linked account creation is not allowed for your business type'
+                }
+              >
                 <i class="i i-plus" />
                 <span>Add Account</span>
               </button>
@@ -269,6 +278,7 @@ export default class AccountsListContainer extends ListContainer {
           showEditAccountModal={this.showEditAccountModal}
           onEdit={this.showAccountDetailsModal}
           isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
+          isCreationDisabled={user.isRouteLinkedAccountCreationDisabled}
           onToggleDashboardAccess={
             showWhenUtil({
               additionalCondition: (_user) => _user.isAllowedEdit('accounts'),

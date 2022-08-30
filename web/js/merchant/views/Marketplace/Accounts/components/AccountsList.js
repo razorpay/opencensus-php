@@ -43,6 +43,7 @@ const AccountsListItem = ({
   onToggleDashboardAccess,
   onToggleAllowRefunds,
   isRouteCodeSupportEnabled,
+  isCreationDisabled,
 }) => {
   const status = account.activation_details ? account.activation_details.status : account.activated;
   const timeStamp = account.activation_details
@@ -76,6 +77,7 @@ const AccountsListItem = ({
           timeStamp={timeStamp}
           showActivationForm={onEdit}
           errorDetails={account.activation_details?.bank_details_verification_error}
+          isCreationDisabled={isCreationDisabled}
         />
       </td>
       {onToggleDashboardAccess && (
@@ -133,6 +135,7 @@ export default function AccountsList({
   onToggleAllowRefunds,
   isRouteCodeSupportEnabled,
   isDirectTransferEnabled,
+  isCreationDisabled,
 }) {
   return (
     <div class="table-responsive">
@@ -177,6 +180,7 @@ export default function AccountsList({
               account={account}
               isRouteCodeSupportEnabled={isRouteCodeSupportEnabled}
               showEditAccountModal={showEditAccountModal}
+              isCreationDisabled={isCreationDisabled}
               onEdit={() => onEdit(account)}
               onToggleDashboardAccess={
                 onToggleDashboardAccess

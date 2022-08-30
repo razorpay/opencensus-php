@@ -42,7 +42,7 @@ const statusMap = {
 };
 
 const AccountStatusDetailsView = React.memo(
-  ({ showActivationForm, activationStatus, errorDetails }) => {
+  ({ showActivationForm, activationStatus, errorDetails, isCreationDisabled }) => {
     const status = activationStatus || 'not_activated';
     // TODO: quick fix unexpected activation status, remove once new key added
     if (!statusMap[status]) {
@@ -50,6 +50,7 @@ const AccountStatusDetailsView = React.memo(
     }
 
     const { labelClass, ctaText, showCtaAsButton, description } = statusMap[status];
+    const isCtaDisabled = showCtaAsButton && isCreationDisabled;
 
     return (
       <>
@@ -61,9 +62,16 @@ const AccountStatusDetailsView = React.memo(
         )}
         {showCtaAsButton ? (
           <div>
-            <a class="m-t btn btn-primary btn-sm" onClick={showActivationForm}>
+            <button
+              class="m-t btn btn-primary btn-sm"
+              onClick={showActivationForm}
+              disabled={isCtaDisabled}
+              title={
+                isCtaDisabled && 'Linked account creation is not allowed for your business type'
+              }
+            >
               {ctaText}
-            </a>
+            </button>
           </div>
         ) : (
           <a onClick={showActivationForm}>{ctaText}</a>
@@ -74,7 +82,7 @@ const AccountStatusDetailsView = React.memo(
 );
 
 const AccountStatusListView = React.memo(
-  ({ showActivationForm, activationStatus, timeStamp, errorDetails }) => {
+  ({ showActivationForm, activationStatus, timeStamp, errorDetails, isCreationDisabled }) => {
     const status = activationStatus || 'not_activated';
     // TODO: quick fix unexpected activation status, remove once new key added
     if (!statusMap[status]) {
@@ -82,6 +90,7 @@ const AccountStatusListView = React.memo(
     }
 
     const { labelClass, tooltipCta, tooltipMessage } = statusMap[status];
+    const isCtaDisabled = isCreationDisabled;
 
     return (
       <small class="help-content">
@@ -96,7 +105,11 @@ const AccountStatusListView = React.memo(
               {status === 'activated' && <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />}
               <br />
               {tooltipCta && (
-                <button class="btn-link tooltip-cta" onClick={showActivationForm}>
+                <button
+                  class="btn-link tooltip-cta"
+                  onClick={showActivationForm}
+                  disabled={isCtaDisabled}
+                >
                   {tooltipCta}
                 </button>
               )}

@@ -1207,6 +1207,10 @@ export default class User {
     return this.isFeatureEnabled('route_code_support');
   }
 
+  get isRouteLinkedAccountCreationDisabled() {
+    return this.merchant.category === '6211' && this.merchant.category2 === 'mutual_funds';
+  }
+
   get isSubscriptionPauseAndResumeEnabled() {
     return this.getExpStatus('pause_resume_enabled');
   }
