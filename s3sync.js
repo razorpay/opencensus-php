@@ -65,6 +65,11 @@ glob(
       ) {
         fileParams.CacheControl = 'no-store,must-revalidate';
       }
+
+      if (/\.[0-9a-f]+\.(js|css)$/.test(file)) {
+        fileParams.CacheControl = 'max-age=31536000';
+      }
+
       const type = ContentType[ext];
 
       // do brotli compression for dummy TestComponentBrotli only
