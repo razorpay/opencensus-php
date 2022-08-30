@@ -809,12 +809,12 @@ class Core extends Base\Core
             {
                 case Constants\Entity::BANKING_ACCOUNT_STATEMENT :
                     $idExists = (($this->repo->banking_account_statement->checkIfIdExists($id) === true) or
-                                 (array_key_exists($id, $insertedIds) === true));
+                                 (array_key_exists($id, array_flip($insertedIds)) === true));
                     break;
 
                 case Constants\Entity::TRANSACTION :
                     $idExists = (($this->repo->transaction->checkIfIdExists($id) === true) or
-                                 (array_key_exists($id, $insertedIds) === true));
+                                 (array_key_exists($id, array_flip($insertedIds)) === true));
                     break;
             }
 
