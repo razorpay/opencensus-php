@@ -45,6 +45,10 @@ class EdgePreAuthenticate
 
                 return response('Unauthorized.', 401);
             }
+            else
+            {
+                return $next($request);
+            }
         }
 
         $publicKey = app('config')['app.passport_public_key'];
