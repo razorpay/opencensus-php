@@ -314,6 +314,8 @@ class ConfigKey
 
     const ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS = SELF::PREFIX . 'ondemand_settlement_internal_merchants';
 
+    const MCC_DEFAULT_MARKDOWN_PERCENTAGE = SELF::PREFIX . 'mcc_default_markdown_percentage';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -446,6 +448,7 @@ class ConfigKey
         self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
+        self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
     ];
 
     const REDIS_CONFIG_MAP = [

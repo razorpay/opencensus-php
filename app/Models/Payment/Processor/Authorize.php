@@ -4345,12 +4345,13 @@ trait Authorize
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $input);
 
         // if gateway is doing currency conversions, actual rate used by gateway
-        // will use lower than current rates hence we also use 2.0 percentage lower
-        // values
+        // will use lower than current rates hence we also use merchant / default 
+        // level percentage for lower values in base_amount for settlement.
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
-            $baseAmount = (int) ceil($baseAmount * (1-(Merchant\Entity::DEFAULT_MCC_MARKDOWN_PERCENTAGE)/100));
+            $mccMarkdownPercentage = 1 - $merchant->getMccMarkdownMarkdownPercentage() / 100;
+            $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
         }
 
         /**

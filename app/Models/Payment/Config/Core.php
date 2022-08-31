@@ -64,6 +64,11 @@ class Core extends Base\Core
                     return $this->validateAndSaveDccConfig($input, $merchant, $config);
                 }
 
+                if ((isset($input['type']) === true) && ($input['type'] === Type::MCC_MARKDOWN))
+                {
+                    return $this->validateAndSaveMccMarkdownConfig($input, $merchant, $config);
+                }
+
                 $config = $this->repo->config->transaction(function () use($input, $merchant, $config)
                 {
                     //updating the default value of config if already exist
@@ -101,8 +106,8 @@ class Core extends Base\Core
                             $this->repo->saveOrFail($defaultConfig);
                         }
 
-                        if (((isset($defaultConfig) === true) and ($input['type'] === Type::DCC)) || 
-                            ((isset($defaultConfig) === true) and ($input['type'] === Type::DCC_RECURRING)))
+                        if ((isset($defaultConfig) === true) and 
+                            ((new Type())->isInternationalMarkupOrMarkdownConfig($input['type']) === true))
                         {
                             $defaultConfig->is_default = false;
                         }
@@ -257,6 +262,15 @@ class Core extends Base\Core
         return $config;
     }
 
+    private function updateMccMarkdownConfig($config, $input)
+    {
+        $config->setConfig(json_encode($input['config']));
+
+        $this->repo->saveOrFail($config);
+
+        return $config;
+    }
+
     public function update($input)
     {
         $this->trace->info(TraceCode::CONFIG_UPDATE_REQUEST, $input);
@@ -303,6 +317,11 @@ class Core extends Base\Core
                         if ($type === Type::DCC || $type === Type::DCC_RECURRING)
                         {
                             $this->updateDccConfig($config, $input);
+                        }
+
+                        if ($type === Type::MCC_MARKDOWN)
+                        {
+                            $this->updateMccMarkdownConfig($config, $input);
                         }
 
                         if ($type === Type::PAYMENT_FAILED)
@@ -396,6 +415,29 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_DCC_CONFIG_PRESENT, null, null,
                     "Dcc Config is already present for the provided merchant");
+            }
+
+            $this->repo->saveOrFail($config);
+
+            return $config;
+    }
+
+     /**
+     * @param $input
+     * @param Merchant\Entity $merchant
+     * @param $config
+     * @return $config
+     * @throws Exception\BadRequestException
+     */
+    private function validateAndSaveMccMarkdownConfig($input, Merchant\Entity $merchant, $config)
+    {
+            $configEntity = $this->repo->config->fetchConfigByMerchantIdAndType($merchant->getId(), $input['type'])->first();
+
+            if ((isset($configEntity) === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS, null, null,
+                    "Mcc Config is already present for the provided merchant");
             }
 
             $this->repo->saveOrFail($config);

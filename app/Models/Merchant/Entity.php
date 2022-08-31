@@ -31,6 +31,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Detail;
 use Illuminate\Database\Eloquent\Collection;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -296,6 +297,9 @@ class Entity extends Base\PublicEntity
 
     const DCC_RECURRING                     = 'dcc_recurring';
     const DCC_RECURRING_MARKUP_PERCENTAGE   = 'dcc_recurring_markup_percentage';
+
+    const MCC_MARKDOWN                      = 'mcc_markdown';
+    const MCC_MARKDOWN_PERCENTAGE           = 'mcc_markdown_percentage';
 
 
     const ALLOW_USER_CREATION       = 'allow_user_creation';
@@ -1549,6 +1553,19 @@ class Entity extends Base\PublicEntity
                      ->first();
     }
 
+    public function mccMarkdownPaymentConfig()
+    {
+        return $this->hasMany(PaymentConfig\Entity::class, PaymentConfig\Entity::MERCHANT_ID, Entity::ID)
+                     ->where(PaymentConfig\Entity::TYPE,PaymentConfig\Type::MCC_MARKDOWN);
+    }
+
+    public function latestMccMarkdownPaymentConfig()
+    {
+        return $this->mccMarkdownPaymentConfig()
+                     ->orderBy(PaymentConfig\Entity::CREATED_AT, 'desc')
+                     ->first();
+    }
+
     public function commissions()
     {
         return $this->hasMany(Commission\Entity::class, Commission\Entity::PARTNER_ID, Entity::ID);
@@ -2544,6 +2561,27 @@ class Entity extends Base\PublicEntity
         return self::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS;
     }
 
+    public function getMccMarkdownMarkdownPercentage()
+    {
+        $mccMarkdownPaymentConfigEntity = $this->latestMccMarkdownPaymentConfig();
+
+        if($mccMarkdownPaymentConfigEntity === null) 
+        {
+            $mccMarkdownFromConfig = ConfigKey::get(ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE);
+
+            if($mccMarkdownFromConfig === null)
+            {
+                return self::DEFAULT_MCC_MARKDOWN_PERCENTAGE;
+            }
+
+            return (int) $mccMarkdownFromConfig;
+        }
+
+        $data = $mccMarkdownPaymentConfigEntity->getFormattedConfig();
+
+        return $data[self::MCC_MARKDOWN_PERCENTAGE];
+    }
+    
     public function getDccMarkupPercentageForIntlBankTransfer()
     {
         return self::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_INTL_BANK_TRANSFER;

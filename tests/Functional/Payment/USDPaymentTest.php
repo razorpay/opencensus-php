@@ -5,6 +5,8 @@ namespace RZP\Tests\Functional\Payment;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Admin\ConfigKey;
 
 class USDPaymentTest extends TestCase
 {
@@ -219,5 +221,79 @@ class USDPaymentTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+    }
+
+    // Pick value from merchant level mcc markdown value
+    public function testMCCPaymentWithMerchantLevelConfig()
+    {
+        $mccMarkdownPercent = 4;
+        $this->fixtures->merchant->addMccMarkdownPaymentConfig($mccMarkdownPercent);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        //International card
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], null);
+        $this->assertEquals($payment['base_amount'], 48000);
+    }
+
+    // Checks if Merchant Level Config is empty and them pick admin config key value
+    public function testMCCPaymentWithAdminConfigKey()
+    {
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE => "3"
+            ]);
+
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        //International card
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], null);
+        $this->assertEquals($payment['base_amount'], 48500);
+    }
+
+    // Picks Hardcoded Value from Code i.e 2%
+    public function testMCCPaymentWithNoAdminConfigKeyAndNoMerchantLevel()
+    {
+        $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+        $payment['currency'] = $order['currency'];
+        //International card
+        $payment['card']['number'] = '4012 0111 1111 1113';
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['convert_currency'], null);
+        $this->assertEquals($payment['base_amount'], 49000);
     }
 }

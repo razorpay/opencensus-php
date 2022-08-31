@@ -12,14 +12,28 @@ class Type
     const PAYMENT_FAILED         = 'payment_failed';
     const CONVENIENCE_FEE        = 'convenience_fee';
     const DCC_RECURRING          = 'dcc_recurring';
+    const MCC_MARKDOWN           = 'mcc_markdown';
 
     protected static $supportedConfigType = [
-      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::PAYMENT_FAILED, self::DCC_RECURRING
+      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::PAYMENT_FAILED, self::DCC_RECURRING, self::MCC_MARKDOWN
     ];
 
     public function isConfigTypeSupported($type)
     {
         if (array_search($type, self::$supportedConfigType) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected static $internationalMarkupAndMarkdownConfigs = [
+        self::DCC, self::DCC_RECURRING, self::MCC_MARKDOWN
+    ];
+
+    public function isInternationalMarkupOrMarkdownConfig($type){
+        if (array_search($type, self::$internationalMarkupAndMarkdownConfigs) === false)
         {
             return false;
         }
