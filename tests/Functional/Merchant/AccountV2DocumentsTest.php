@@ -244,6 +244,56 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->assertEmpty($missingDocuments, 'Every document should be mapped to a proof type');
     }
 
+    public function testAccDocSubmitForNoDocMerchantInNCState()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $attribute = ['activation_status' => 'needs_clarification'];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->create('feature', [
+            'name'        => 'no_doc_onboarding',
+            'entity_id'   => $subMerchant->getId(),
+            'entity_type' => 'merchant'
+        ]);
+
+        $this->updateUploadDocumentData('testPostAccountDocument');
+        $testData = $this->testData['testPostAccountDocument'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testStakeholderDocSubmitForNoDocMerchantInNCState()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $stakeholder = $this->fixtures->create('stakeholder', [
+            'merchant_id' => $subMerchant->getId()
+        ]);
+
+        $attribute = ['activation_status' => 'needs_clarification'];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->create('feature', [
+            'name'        => 'no_doc_onboarding',
+            'entity_id'   => $subMerchant->getId(),
+            'entity_type' => 'merchant'
+        ]);
+
+        $this->updateUploadDocumentData('testPostStakeholderDocument');
+        $testData = $this->testData['testPostStakeholderDocument'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId() . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     protected function setupPrivateAuthForPartner()
     {
         list($partner, $app) = $this->createPartnerAndApplication();

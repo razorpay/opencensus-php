@@ -140,6 +140,12 @@ class Validator extends Base\Validator
             return;
         }
 
+        //This check is to allow no-doc onboarded merchants to provide documents in NC state as well, since documents are optional requirements for such a merchant
+        if($merchant->isNoDocOnboardingEnabled() === true and (new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchant) === false)
+        {
+            return;
+        }
+
         $ncDocuments = $clarificationReasons['documents'] ?? [];
 
         $documentType = $input[Constants::DOCUMENT_TYPE];

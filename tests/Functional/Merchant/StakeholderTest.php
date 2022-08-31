@@ -68,6 +68,35 @@ class StakeholderTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testProvideStakeholderOptionalFieldsForNoDocMerchantInNCState()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $stakeholder = $this->fixtures->create('stakeholder', [
+            'merchant_id' => $subMerchant->getId()
+        ]);
+
+        $attribute = [
+            'activation_status' => 'needs_clarification',
+            'business_type' => '3'
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), $attribute);
+
+        $this->fixtures->create('feature', [
+            'name'        => 'no_doc_onboarding',
+            'entity_id'   => $subMerchant->getId(),
+            'entity_type' => 'merchant'
+        ]);
+
+        $testData = $this->testData['testUpdateStakeholderThinToCompleteRequest'];
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/stakeholders/sth_' . $stakeholder->getId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testCreateStakeholderInvalidPercentageOwnership()
     {
         list($partner, $app) = $this->createPartnerAndApplication();
@@ -114,5 +143,21 @@ class StakeholderTest extends OAuthTestCase
         return [
             'partner_type'   => $partner->getPartnerType()
         ];
+    }
+
+    protected function setupPrivateAuthForPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+        $this->fixtures->merchant->activate($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+        list($subMerchant) = $this->createSubMerchant($partner, $app);
+
+        $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
+        $key = 'rzp_live_' . $key->getKey();
+
+        $this->ba->privateAuth($key);
+
+        return [$subMerchant, $partner];
     }
 }

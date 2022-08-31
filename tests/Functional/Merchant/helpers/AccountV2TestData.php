@@ -814,6 +814,47 @@ return [
         ],
     ],
 
+    'testProvideOptionalFieldForNoDocSubmerchantInNC' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'customer_facing_business_name'   => 'Acme'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_type'                   => 'partnership',
+                'customer_facing_business_name'   => 'Acme'
+            ],
+        ],
+    ],
+
+    'testProvideNonOptionalFieldForNoDocSubmerchantInNC' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'legal_info' => [
+                    'cin'            => 'U67190TN2014PTC096971'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only fields requested for needs clarification are allowed for update',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED,
+        ],
+    ],
+
     'testEditAccountV2ProfileAddress' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}',

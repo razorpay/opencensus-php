@@ -469,7 +469,7 @@ class Core extends Merchant\Core
     /**
      * This function checks if a sub-merchant has exhausted the GMV limit for no-doc onboarding
      *
-     * @param string $merchantId
+     * @param Merchant\Entity $merchant
      *
      * @return bool
      */
@@ -555,9 +555,14 @@ class Core extends Merchant\Core
      */
     public function isNoDocEnabledAndGmvLimitExhausted(Merchant\Entity $merchant): bool
     {
+        if($merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return false;
+        }
+
         $isNoDocGmvLimitExhausted = $this->isNoDocOnboardingGmvLimitExhausted($merchant);
 
-        if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocGmvLimitExhausted === true)
+        if ($isNoDocGmvLimitExhausted === true)
         {
             return true;
         }

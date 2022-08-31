@@ -5238,6 +5238,8 @@ class Core extends Base\Core
     {
         $requiredFields = [];
 
+        $optionalFields = [];
+
         $merchantDetailsArr = $merchantDetails->toArray();
 
         $isNoDocEnabledAndGmvLimitExhausted = (new Merchant\AccountV2\Core())->isNoDocEnabledAndGmvLimitExhausted($merchant);
@@ -5274,6 +5276,19 @@ class Core extends Base\Core
             }
         }
 
+        foreach ($validationOptionalFields as $key)
+        {
+            //
+            // Add the key to the list of the optional fields if:
+            //- if key is document ;- check it only in merchant-documents
+            //- else check in merchant_details
+
+            if ($this->isKeyPresent($key, $merchantDetailsArr, $documentsResponse) === false)
+            {
+                $optionalFields[] = $key;
+            }
+        }
+
         if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
         {
             //calculate selective optional validation fields for no doc onboarding merchants
@@ -5283,7 +5298,7 @@ class Core extends Base\Core
                     $merchant,
                     $validationSelectiveRequiredFields,
                     $documentsResponse,
-                    $validationOptionalFields);
+                    $optionalFields);
             }
             else
             {
@@ -5303,7 +5318,7 @@ class Core extends Base\Core
                 'status'              => 'disabled',
                 'disabled_reason'     => 'required_fields',
                 'required_fields'     => $requiredFields,
-                'optional_fields'     => $validationOptionalFields,
+                'optional_fields'     => $optionalFields,
                 'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 
@@ -5318,7 +5333,7 @@ class Core extends Base\Core
 
             if($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
             {
-                $response['verification']['optional_fields'] = $validationOptionalFields;
+                $response['verification']['optional_fields'] = $optionalFields;
             }
 
             $response['can_submit'] = true;

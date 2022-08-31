@@ -561,6 +561,56 @@ class AccountV2Test extends TestCase
         $this->assertEquals($expectedOptionalFields, array_values($data[2]));
     }
 
+    public function testProvideOptionalFieldsForNoDocMerchantInNCstate()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['testCreateSubmerchantWithNoDocFeature'];
+
+        $response = $this->startTest($testData);
+
+        $accountId = $response['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $attribute = [
+            'activation_status'         => 'needs_clarification',
+            'kyc_clarification_reasons' => [
+                'clarification_reasons' => [
+                    'promoter_pan_name' => [
+                        [
+                            'reason_type' => 'predefined',
+                            'field_type'  => 'text',
+                            'is_current'  => true,
+                            'reason_code' => 'signatory_name_not_matched',
+                            'from'        => 'admin'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $accountId, $attribute);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $accountId, $attribute);
+
+        $testData = $this->testData['testProvideOptionalFieldForNoDocSubmerchantInNC'];
+        $testData['request']['url'] = '/v2/accounts/acc_' . $accountId;
+        $this->startTest($testData);
+
+        $testData = $this->testData['testProvideNonOptionalFieldForNoDocSubmerchantInNC'];
+        $testData['request']['url'] = '/v2/accounts/acc_' . $accountId;
+        $this->startTest($testData);
+    }
+
 
     public function testEditAccountHavingNonEnglishDescription()
     {

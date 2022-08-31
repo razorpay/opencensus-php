@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Account\Constants;
+use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -336,7 +337,24 @@ class Validator extends Merchant\Validator
 
         $extraFields = array_diff_key($input, $ncFields);
 
-        if (count($extraFields) > 0)
+        if($merchant->isNoDocOnboardingEnabled() === true and ((new Merchant\AccountV2\Core())->isNoDocOnboardingGmvLimitExhausted($merchant) === false))
+        {
+            $noDocValidationFields = ValidationFields::getOptionalFieldsForNoDocOnboarding($merchantDetails->getBusinessType());
+
+            $extraFields = array_diff_key($extraFields, array_flip($noDocValidationFields));
+
+            if (count($extraFields) > 0)
+            {
+                $tracePayload = [
+                    'provided_fields'          => $input,
+                    'accepted_fields'          => array_keys($ncFields),
+                    'accepted_optional_fields' => $noDocValidationFields
+                ];
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_FIELDS_ARE_ALLOWED, null, $tracePayload);
+            }
+        }
+        else if (count($extraFields) > 0)
         {
             $tracePayload = [
                 'provided_fields' => $input,

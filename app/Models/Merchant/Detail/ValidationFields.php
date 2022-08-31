@@ -241,6 +241,16 @@ class ValidationFields
         Entity::BUSINESS_OPERATION_ADDRESS
     ];
 
+    const PROPRIETORSHIP_NO_DOC_OPTIONAL_FIELDS = [
+        Entity::BUSINESS_DBA
+    ];
+
+    const REGISTERED_NO_DOC_OPTIONAL_FIELDS = [
+        Entity::BUSINESS_DBA,
+        Entity::PROMOTER_PAN_NAME,
+        Entity::PROMOTER_PAN
+    ];
+
     const L1_FIELDS_IA_V2_APIS = [
         Entity::CONTACT_MOBILE,
         Entity::BUSINESS_CATEGORY,
@@ -249,7 +259,6 @@ class ValidationFields
         Entity::PROMOTER_PAN,
         Entity::PROMOTER_PAN_NAME
     ];
-
 
     protected static $BUSINESS_TYPE_FIELDS = [
         //registered business type
@@ -363,6 +372,31 @@ class ValidationFields
 
             default:
                 return self::DEFAULT_REGISTERED_NO_DOC_FIELDS;
+        }
+    }
+
+    public static function getOptionalFieldsForNoDocOnboarding(string $businessType) : array
+    {
+        switch ($businessType)
+        {
+            case BusinessType::PROPRIETORSHIP:
+                return self::PROPRIETORSHIP_NO_DOC_OPTIONAL_FIELDS;
+
+            case BusinessType::PARTNERSHIP:
+            case BusinessType::TRUST:
+            case BusinessType::NGO:
+            case BusinessType::SOCIETY:
+                return self::REGISTERED_NO_DOC_OPTIONAL_FIELDS;
+
+            case BusinessType::PUBLIC_LIMITED:
+            case BusinessType::PRIVATE_LIMITED:
+            case BusinessType::LLP:
+                $array = self::REGISTERED_NO_DOC_OPTIONAL_FIELDS;
+                array_push($array, Entity::COMPANY_CIN);
+                return $array;
+
+            default:
+                return [];
         }
     }
 
