@@ -29,7 +29,7 @@ class Base
 
     const BODY                  = 'body';
     const CODE                  = 'code';
-
+    const MESSAGE               = 'message';
     // Headers
     const ACCEPT                = 'Accept';
     const ADMIN_EMAIL           = 'admin_email';
@@ -217,7 +217,9 @@ class Base
 
         if ($code >= 400 and $code < 500)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_RAZORPAY_WALLET_ERROR,null,
+                ['method'=>'wallet'],$body[self::MESSAGE]);
         }
         else if ($code >= 500)
         {
