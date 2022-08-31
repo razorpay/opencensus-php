@@ -685,6 +685,8 @@ class Core extends Base\Core
             Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $ftaData[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
         ];
 
+        $this->handleIciciCurrentAccount2FAPayoutStatusUpdate($payout, $status, $ftaBankStatusCode, $ftaData);
+
         switch ($status)
         {
             case Status::PROCESSED:
@@ -752,6 +754,81 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    public function handleIciciCurrentAccount2FAPayoutStatusUpdate(Entity $payout, string $status, string $ftaBankStatusCode = null, array $ftaData)
+    {
+        if (($payout->getStatus()===Status::PENDING_ON_OTP) and
+            ($payout->balance->isAccountTypeDirect() === true) and
+            ($payout->getChannel() === Settlement\Channel::ICICI))
+        {
+            switch ($status) {
+                case Status::PROCESSED:
+                case Status::REVERSED:
+                case Status::FAILED:
+                    $this->handleStatusChangeForIcici2FACurrentAccountPayout($payout, $ftaBankStatusCode);
+                    break;
+
+                case Status::CREATED:
+                case Status::INITIATED:
+                    $this->handleInitiatedWebhookForIcici2FACurrentAccount($payout, $ftaBankStatusCode);
+                    break;
+
+                default:
+                    $this->trace->warning(
+                        TraceCode::UNKNOWN_FTA_STATUS_SENT_TO_PAYOUT,
+                        $ftaData);
+            }
+        }
+    }
+
+    public function handleInitiatedWebhookForIcici2FACurrentAccount(Entity $payout, string $ftaBankStatusCode = null)
+    {
+        if (($ftaBankStatusCode === "INVALID_OTP") or
+            ($ftaBankStatusCode === "EXPIRED_OTP"))
+        {
+            $payout->setStatus(Status::PENDING);
+
+            $payout->setStatusCode($ftaBankStatusCode);
+
+            $this->repo->saveOrFail($payout);
+
+            return;
+        }
+
+        if (empty($ftaBankStatusCode) === false)
+        {
+            $this->handleStatusChangeForIcici2FACurrentAccountPayout($payout, $ftaBankStatusCode);
+        }
+    }
+
+    public function handleStatusChangeForIcici2FACurrentAccountPayout(Entity $payout, string $ftaBankStatusCode = null)
+    {
+        $balance = $payout->balance;
+
+        $feeType = $this->updateFreePayoutsConsumedAndGetFeeType($balance);
+
+        $payout->setExpectedFeeType($feeType);
+
+        (new FundAccountPayout\Direct\Icici)->handleFeeAndTaxForIcici2FACurrentAccountPayout($payout);
+
+        $payout->setStatus(Status::CREATED);
+
+        $fta = $this->repo->fund_transfer_attempt
+                          ->getFTSAttemptBySourceId($payout->getId(), $payout->getEntityName(), true);
+
+        $this->updateStatusAfterFtaInitiated($payout, $fta);
+
+        $payout->setStatusCode($ftaBankStatusCode);
+
+        $this->repo->saveOrFail($payout);
+
+        $this->processApproveActionOnPayoutViaWorkflowServiceForICICICAPayout($payout->getId(), $payout->merchant->getId());
+    }
+
+    public function processApproveActionOnPayoutViaWorkflowServiceForICICICAPayout(string $payoutId, string $merchantId)
+    {
+
     }
 
     public function repeatedFtsStatusUpdateForTerminalStatePayout(Entity $payout, string $status)

@@ -2045,7 +2045,9 @@ class Entity extends Base\PublicEntity
             // then the role id for that user for the merchant in context
             // will have to be fetched from the merchant_users table.
             // This is because the role_map table doesn't have any merchant context.
-            $userRoleId = (new User\Core())->getUserRoleIdInMerchantForWorkflow($user->getId());
+            $merchantId = $this->merchant->getId();
+
+            $userRoleId = (new User\Core())->getUserRoleIdInMerchantForWorkflow($user->getId(), $merchantId);
         }
         catch (UserWorkflowNotApplicableException $exception)
         {

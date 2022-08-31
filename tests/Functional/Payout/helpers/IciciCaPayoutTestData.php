@@ -225,6 +225,186 @@ return [
         ],
     ],
 
+    'testInitiatedWebhookForIcici2FAWithIncorrectOtp' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'INVALID_OTP',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'NEFT',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check if free payouts consumed get reduced to 0.',
+                'source_id'           => '',
+                'source_type'         => 'payout',
+                'status'              => 'INITIATED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTA and source updated successfully'
+            ],
+        ],
+    ],
+
+    'testInitiatedWebhookForIcici2FAWithEmptyBankStatusCode' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => null,
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'NEFT',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check if free payouts consumed get reduced to 0.',
+                'source_id'           => '',
+                'source_type'         => 'payout',
+                'status'              => 'INITIATED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTA and source updated successfully'
+            ],
+        ],
+    ],
+
+    'testProcessedWebhookWithoutInitiatedForIcici2FAPayout' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'success',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'NEFT',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check if free payouts consumed get reduced to 0.',
+                'source_id'           => '',
+                'source_type'         => 'payout',
+                'status'              => 'PROCESSED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTA and source updated successfully'
+            ],
+        ],
+    ],
+
+    'testProcessedWebhookAfterInitiatedForIcici2FAPayout' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'success',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'NEFT',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check if free payouts consumed get reduced to 0.',
+                'source_id'           => '',
+                'source_type'         => 'payout',
+                'status'              => 'PROCESSED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTA and source updated successfully'
+            ],
+        ],
+    ],
+
+    'testFailedWebhookWithoutInitiatedForIcici2FAPayout' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'OTP_RETRIES_EXPIRED',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'NEFT',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check if free payouts consumed get reduced to 0.',
+                'source_id'           => '',
+                'source_type'         => 'payout',
+                'status'              => 'FAILED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTA and source updated successfully'
+            ],
+        ],
+    ],
+
+    'testReversedWebhookWithoutInitiatedForIcici2FAPayout' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'reversed',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1236890,
+                'mode'                => 'NEFT',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check if free payouts consumed get reduced to 0.',
+                'source_id'           => '',
+                'source_type'         => 'payout',
+                'status'              => 'REVERSED',
+                'utr'                 => 928337183,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTA and source updated successfully'
+            ],
+        ],
+    ],
+
     'testCreatingPendingPayoutsForIciciWithUnsupportedModeChannelDestinationTypeCombo' => [
         'request' => [
             'url'     => '/payouts',

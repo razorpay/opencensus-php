@@ -4957,9 +4957,14 @@ class Core extends Base\Core
      * @return array
      * @throws Exception\UserWorkflowNotApplicableException
      */
-    public function getUserRoleIdInMerchantForWorkflow(string $userId) : array
+    public function getUserRoleIdInMerchantForWorkflow(string $userId, string $merchantId = null) : array
     {
-        $mapping = $this->repo->merchant->getMerchantUserMapping($this->merchant->getId(),
+        if (empty($merchantId) === true)
+        {
+            $merchantId = $this->merchant->getId();
+        }
+
+        $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
             $userId,
             null,
             'banking'

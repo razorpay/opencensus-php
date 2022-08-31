@@ -62,4 +62,11 @@ class Icici extends Base
           $this->createFundTransferAttempt($payout, $ftaAccount);
         }
     }
+
+    public function handleFeeAndTaxForIcici2FACurrentAccountPayout(Entity $payout)
+    {
+        $this->assignFreePayoutIfApplicable($payout);
+
+        $this->setFeeAndTaxForPayout($payout);
+    }
 }
