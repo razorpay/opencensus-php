@@ -1488,3 +1488,9 @@ export const getYoutubeVideoID = (url = '') => {
   const match = url?.match(regExp);
   return match && match[7].length === 11 ? match[7] : false;
 };
+
+/* Update url extension , with the extension passed */
+export const updateExtension = (fileUrl, extension) => {
+  let url = fileUrl;
+  return url?.substr(0, url?.lastIndexOf('.')) + extension;
+};

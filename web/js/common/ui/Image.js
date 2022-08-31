@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
-
+import { updateExtension } from 'common/utils/rzp-utils';
 /*
  * Image replacement which will show placeholder component
  * if url is not passed or if the image can not be loaded
  *
  * You can pass the placeholder through children
- * class `invalid-src` will be added to the element if 
+ * class `invalid-src` will be added to the element if
  * we are not able to fetch the image
  */
 class Image extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       loading: !props.src,
       validUrl: !!props.src,
@@ -36,19 +35,22 @@ class Image extends Component {
   }
 
   render() {
-    const { children, src } = this.props,
-      { validUrl, loading } = this.state;
-
+    const { children, src, isWebP = false } = this.props;
+    const { validUrl, loading } = this.state;
     return (
       <div className={`rzp-image${!validUrl ? ' invalid-src' : ''}`}>
         {loading || !validUrl ? (
           children
         ) : (
-          <img
-            src={src}
-            onLoad={this.onImageFetchSuccess}
-            onError={this.onImageFetchError}
-          />
+          <picture>
+            {isWebP && <source srcSet={updateExtension(src, '.webp')} type="image/webp" />}
+            <img
+              srcSet={src}
+              src={src}
+              onLoad={this.onImageFetchSuccess}
+              onError={this.onImageFetchError}
+            />
+          </picture>
         )}
       </div>
     );
