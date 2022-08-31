@@ -515,6 +515,24 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postFreePayoutMigration()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postFreePayoutMigration($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function freePayoutRollback()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postFreePayoutRollback($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getSampleFileForBulkPayouts()
     {
         $input = Request::all();

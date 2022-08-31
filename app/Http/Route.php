@@ -3190,6 +3190,7 @@ class Route
         'update_free_payouts_attributes'           => ['post',     'balance/{id}/free_payout',                                  'BalanceController@postUpdateFreePayout'                  ],
         'get_free_payouts_attributes'              => ['get',      'payouts/{balance_id}/free_payout',                          'PayoutController@getFreePayoutsAttributes'               ],
         'admin_get_free_payouts_attributes'        => ['get',      'admin/payouts/{balance_id}/free_payout',                    'PayoutController@getFreePayoutsAttributes'               ],
+        'admin_free_payout_migration'              => ['post',     'admin/payouts/free_payout_migration',                       'PayoutController@postFreePayoutMigration'                ],
 
         'increase_transaction_limit_self_serve'    => ['post',     'merchant/transaction_limit',                                'MerchantController@postIncreaseTransactionLimitSelfServe' ],
         'merchant_workflow_details'                => ['get',      'merchant/{workflowType}/details',                           'MerchantController@getMerchantWorkflowDetails'            ],
@@ -3604,6 +3605,7 @@ class Route
         'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
+        'rollback_free_payouts'                   => ['post',     'payouts_service/free_payout_rollback',                   'PayoutController@freePayoutRollback'                          ],
         'payouts_service_redis_key_set'           => ['post',     'payouts_service_redis_key_set',                          'PayoutController@payoutServiceRedisKeySet'                    ],
 
         // Data Consistency Checker Routes
@@ -5033,8 +5035,8 @@ class Route
         'dcc_payouts_details_fetch',
         'initiate_payouts_consistency_check',
         'payout_bulk_update_attachments',
+        'rollback_free_payouts',
         'payouts_service_redis_key_set',
-
 
         // payment analytics cron creates a new partition and drops oldest partition, runs daily
         'payment_analytics_partition_cron',
@@ -7122,6 +7124,9 @@ class Route
         'create_sub_balances',
         'sub_balance_adjustment',
 
+        // Migrate free payout source of truth to microservice
+        'admin_free_payout_migration',
+
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes',
 
@@ -8408,6 +8413,9 @@ class Route
 
         // Get free_payout attributes for balance
         'admin_get_free_payouts_attributes'           => Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES,
+
+        // Free Payout Migration
+        'admin_free_payout_migration'              => Permission::FREE_PAYOUT_MIGRATION_TO_PS,
 
         'banking_account_statement_process_admin'     => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
@@ -10785,6 +10793,7 @@ class Route
             'admin_get_app_auth',
             'admin_get_file',
             'admin_get_free_payouts_attributes',
+            'admin_free_payout_migration',
             'admin_get_multiple',
             'admin_key_migrate_to_credcase',
             'admin_consumer_migrate_apps_to_credcase',
@@ -13776,6 +13785,7 @@ class Route
             'on_hold_merchant_slas_internal',
             'internal_balances_queued',
             'dcc_payouts_details_fetch',
+            'rollback_free_payouts',
         ],
 
         'ledger' => [

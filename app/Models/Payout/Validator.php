@@ -24,8 +24,10 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Attempt\Constants;
+use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Models\Feature\Repository as FeatureRepo;
 use RZP\Models\PayoutSource\Entity as PayoutSource;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -103,6 +105,8 @@ class Validator extends Base\Validator
     const PAYOUT_SERVICE_FTS_CREATE                 = 'payout_service_fts_create';
     const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
     const PAYOUT_SERVICE_FETCH_PRICING_INFO         = 'payout_service_fetch_pricing_info';
+    const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE       = 'migrate_free_payout_payouts_service';
+    const ROLLBACK_FREE_PAYOUT_PAYOUTS_SERVICE      = 'rollback_free_payout_payouts_service';
 
     const PAYOUTS_SERVICE_CREATE_FAILURE_PROCESSING_CRON    = 'payouts_service_create_failure_processing_cron';
     const PAYOUTS_SERVICE_UPDATE_FAILURE_PROCESSING_CRON    = 'payouts_service_update_failure_processing_cron';
@@ -461,6 +465,22 @@ class Validator extends Base\Validator
         Entity::CHANNEL              => 'required|string',
         Entity::PURPOSE              => 'sometimes|nullable|string',
         Entity::FEE_TYPE             => 'sometimes|nullable|string'
+    ];
+
+    protected static $migrateFreePayoutPayoutsServiceRules = [
+        EntityConstants::ACTION             => 'required|in:enable,disable',
+        'ids'                               => 'required|array',
+        'ids' . '.*.' . Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+        'ids' . '.*.' . Entity::BALANCE_ID  => 'required|alpha_num|size:14',
+    ];
+
+    protected static $rollbackFreePayoutPayoutsServiceRules = [
+        Entity::MERCHANT_ID                                => 'required|alpha_num|size:14',
+        Entity::BALANCE_ID                                 => 'required|alpha_num|size:14',
+        CounterEntity::FREE_PAYOUTS_CONSUMED               => 'required|integer',
+        CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 'required|epoch',
+        Balance\FreePayout::FREE_PAYOUTS_COUNT             => 'required|integer',
+        Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => 'required|array',
     ];
 
     protected static $payoutBulkStatusUpdateManualRules = [

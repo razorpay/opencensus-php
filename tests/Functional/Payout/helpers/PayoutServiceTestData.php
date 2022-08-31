@@ -7,9 +7,12 @@ use RZP\Models\Payout\Mode;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Method;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Merchant\Balance;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Counter\Entity as CounterEntity;
 
 return [
     'testCreatePayoutEntry' => [
@@ -2042,6 +2045,165 @@ return [
                 ],
                 'origin'          => 'dashboard',
             ],
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminAction' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminActionWithoutPayoutServiceEnabledFeature' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminActionDisableAction' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION => EntityConstants::DISABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminActionValidationFailure' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The ids.0.balance_id field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFreePayoutMigrationAdminActionWithPayoutsServiceFailure' => [
+        'request'  => [
+            'url'     => '/admin/payouts/free_payout_migration',
+            'method'  => 'post',
+            'content' => [
+                EntityConstants::ACTION           => EntityConstants::ENABLE,
+                'ids' => [
+                    [
+                        Entity::MERCHANT_ID => '10000000000000'
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'total_count' => 1,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutRollback' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+                Balance\FreePayout::FREE_PAYOUTS_COUNT             => 300,
+                Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => ['IMPS', 'RTGS'],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                EntityConstants::COUNTER_MIGRATED  => true,
+                EntityConstants::SETTINGS_MIGRATED => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFreePayoutRollbackValidationFailure' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+                Balance\FreePayout::FREE_PAYOUTS_COUNT             => 300,
+                Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => ['IMPS', 'RTGS'],
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The free payouts consumed field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

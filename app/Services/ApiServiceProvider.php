@@ -1731,9 +1731,9 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
     protected function registerUpdateFreePayout()
     {
-        $this->app->singleton(PayoutService\UpdateFreePayout::PAYOUT_SERVICE_UPDATE_FREE_PAYOUT, function($app)
+        $this->app->singleton(PayoutService\FreePayout::PAYOUT_SERVICE_FREE_PAYOUT, function($app)
         {
-            return new PayoutService\UpdateFreePayout($app);
+            return new PayoutService\FreePayout($app);
         });
     }
 

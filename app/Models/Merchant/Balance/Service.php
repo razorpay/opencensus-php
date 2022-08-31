@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Balance;
 
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Models\Counter;
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
@@ -12,21 +13,24 @@ use RZP\Base\JitValidator;
 use RZP\Services\PayoutService;
 use RZP\Models\Feature\Constants;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
+use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Service extends Base\Service
 {
     const FREE_PAYOUT_UPDATE_MUTEX_LOCK_TIMEOUT = 60;
 
     /**
-     * @var PayoutService\UpdateFreePayout
+     * @var PayoutService\FreePayout
      */
-    protected $payoutServiceUpdateFreePayoutClient;
+    protected $payoutServiceFreePayoutClient;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->payoutServiceUpdateFreePayoutClient = $this->app[PayoutService\UpdateFreePayout::PAYOUT_SERVICE_UPDATE_FREE_PAYOUT];
+        $this->payoutServiceFreePayoutClient = $this->app[PayoutService\FreePayout::PAYOUT_SERVICE_FREE_PAYOUT];
     }
 
     public function createCapitalBalance($input)
@@ -137,38 +141,9 @@ class Service extends Base\Service
 
     }
 
-    public function updateFreePayout($id, $input)
+    public function updateFreePayout($balanceId, $input)
     {
-        Base\UniqueIdEntity::verifyUniqueId($id, true);
-
-        try
-        {
-            /** @var Entity $balance */
-            $balance = $this->repo->balance->findOrFailById($id);
-        }
-
-        catch (\Exception $exception)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
-                Entity::BALANCE_ID,
-                [
-                    Entity::BALANCE_ID => $id,
-                ]);
-        }
-
-        $balanceType = $balance->getType();
-
-        if ($balanceType !== Type::BANKING)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
-                Entity::BALANCE_ID,
-                [
-                    Entity::BALANCE_ID => $balance->getId(),
-                    Entity::TYPE       => $balanceType,
-                ]);
-        }
+        $balance = $this->getBankingTypeBalanceEntity($balanceId);
 
         $merchantId = $balance->getMerchantId();
 
@@ -176,12 +151,12 @@ class Service extends Base\Service
 
         if ($merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS))
         {
-            return $this->payoutServiceUpdateFreePayoutClient->updateFreePayoutAttributesViaMicroservice($id, $input);
+            return $this->payoutServiceFreePayoutClient->updateFreePayoutAttributesViaMicroservice($balanceId, $input);
         }
         else
         {
             $mutexResource = sprintf('UPDATE_FREE_PAYOUT_%s_%s',
-                $id,
+                $balanceId,
                 $this->mode);
 
             return $this->app['api.mutex']->acquireAndRelease(
@@ -211,6 +186,225 @@ class Service extends Base\Service
                 },
                 self::FREE_PAYOUT_UPDATE_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+    }
+
+    public function getBankingTypeBalanceEntity($balanceId)
+    {
+        Base\UniqueIdEntity::verifyUniqueId($balanceId, true);
+
+        try
+        {
+            $balance = $this->repo->balance->findOrFailById($balanceId);
+        }
+
+        catch (\Exception $exception)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INVALID_BALANCE_ID,
+                Entity::BALANCE_ID,
+                [
+                    Entity::BALANCE_ID => $balanceId,
+                ]);
+        }
+
+        $balanceType = $balance->getType();
+
+        if ($balanceType !== Type::BANKING)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FREE_PAYOUTS_ATTRIBUTES_INCORRECT_BALANCE_TYPE,
+                Entity::BALANCE_ID,
+                [
+                    Entity::BALANCE_ID => $balance->getId(),
+                    Entity::TYPE       => $balanceType,
+                ]);
+        }
+
+        return $balance;
+    }
+
+    public function migrateFreePayout($merchant, $balanceId, $action)
+    {
+        $balance = $this->getBankingTypeBalanceEntity($balanceId);
+
+        switch ($action)
+        {
+            case EntityConstants::ENABLE:
+                return $this->handleFreePayoutEnable($merchant, $balance, $action);
+
+            case EntityConstants::DISABLE:
+                return $this->handleFreePayoutDisable($merchant, $balance, $action);
+
+            default:
+                throw new ServerErrorException(
+                    "Invalid action for free payout migration",
+                    ErrorCode::SERVER_ERROR,
+                    [
+                        Entity::MERCHANT_ID     => $merchant->getId(),
+                        Entity::BALANCE_ID      => $balance->getId(),
+                        EntityConstants::ACTION => $action,
+                    ]
+                );
+        }
+    }
+
+    protected function handleFreePayoutEnable($merchant, $balance, $action)
+    {
+        $counter = (new Payout\CounterHelper)->getCounterForBalance($balance);
+
+        // We don't want to enable free_payout_ledger_via_ps when payout_service_enabled
+        // is not enabled
+        if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_SERVICE_ENABLED) === false)
+        {
+            $this->trace->error(TraceCode::PAYOUT_SERVICE_NOT_ENABLED_FOR_THE_MERCHANT, [
+                Entity::MERCHANT_ID     => $merchant->getId(),
+                EntityConstants::ACTION => $action,
+            ]);
+
+            throw new ServerErrorException(
+                'payout_service_enabled feature is not enabled for the merchant',
+                ErrorCode::SERVER_ERROR,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        if ($merchant->isFeatureEnabled(FeatureConstants::FREE_PAYOUT_LEDGER_VIA_PS) === true)
+        {
+            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_ASSIGNED_ALREADY, [
+                Entity::MERCHANT_ID     => $merchant->getId(),
+                EntityConstants::ACTION => $action,
+            ]);
+
+            throw new ServerErrorException(
+                'free_payout_ledger_via_ps feature is assigned already to the merchant',
+                ErrorCode::SERVER_ERROR,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        $response = $this->repo->counter->transaction(
+            function() use ($counter, $balance, $merchant, $action)
+            {
+                return $this->migrateFreePayoutToMicroservice($counter,
+                                                              $balance,
+                                                              $merchant,
+                                                              $action);
+            });
+
+        $this->trace->info(
+            TraceCode::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_RESPONSE,
+            [
+                EntityConstants::RESPONSE => $response,
+                EntityConstants::ACTION   => $action,
+            ]);
+    }
+
+    protected function handleFreePayoutDisable($merchant, $balance, $action)
+    {
+        if ($merchant->isFeatureEnabled(FeatureConstants::FREE_PAYOUT_LEDGER_VIA_PS) === false)
+        {
+            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_NOT_ASSIGNED, [
+                Entity::MERCHANT_ID     => $merchant->getId(),
+                EntityConstants::ACTION => $action,
+            ]);
+
+            throw new ServerErrorException(
+                'free_payout_ledger_via_ps feature is not assigned to the merchant',
+                ErrorCode::SERVER_ERROR,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+
+        $input = [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            Entity::BALANCE_ID  => $balance->getId(),
+            EntityConstants::ACTION    => $action,
+        ];
+
+        return $this->payoutServiceFreePayoutClient->freePayoutMigrationForMicroservice($input);
+    }
+
+    // migrateFreePayoutToMicroservice sends counters and balance records to Payouts Service
+    // and assigns free_payout_ledger_via_ps feature to the merchant
+    public function migrateFreePayoutToMicroservice($counter, $balance, $merchant, $action)
+    {
+        $counter = $this->repo->counter->lockForUpdate($counter->getId());
+
+        $freePayoutsConsumed = $counter->getFreePayoutsConsumed();
+
+        $freePayoutsConsumedLastResetAt = $counter->getFreePayoutsConsumedLastResetAt();
+
+        $freePayoutsAttributes = (new FreePayout)->getFreePayoutCountAndSupportedModes($balance);
+
+        $input = [
+            Entity::MERCHANT_ID                          => $merchant->getId(),
+            Entity::BALANCE_ID                           => $balance->getId(),
+            EntityConstants::BALANCE_TYPE                       => $balance->getAccountType(),
+            Counter\Entity::FREE_PAYOUTS_CONSUMED               => $freePayoutsConsumed,
+            Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
+            FreePayout::FREE_PAYOUTS_COUNT                      => $freePayoutsAttributes[FreePayout::FREE_PAYOUTS_COUNT],
+            FreePayout::FREE_PAYOUTS_SUPPORTED_MODES            => $freePayoutsAttributes[FreePayout::FREE_PAYOUTS_SUPPORTED_MODES],
+            EntityConstants::ACTION                             => $action,
+        ];
+
+        $response = $this->payoutServiceFreePayoutClient->freePayoutMigrationForMicroservice($input);
+
+        if (($response[EntityConstants::COUNTER_MIGRATED] === true) and
+            ($response[EntityConstants::SETTINGS_MIGRATED] === true))
+        {
+            $this->addFreePayoutLedgerViaPSFeature($merchant);
+        }
+        else
+        {
+            $this->trace->error(TraceCode::FREE_PAYOUT_MIGRATION_PAYOUTS_SERVICE_CALL_FAILED, [
+                Entity::MERCHANT_ID => $merchant->getId(),
+                EntityConstants::ACTION    => $action,
+            ]);
+
+            throw new ServerErrorException(
+                "Counter and Settings migration failed",
+                ErrorCode::SERVER_ERROR,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                    Entity::BALANCE_ID  => $balance->getId(),
+                    EntityConstants::RESPONSE  => $response,
+                ]
+            );
+        }
+
+        return $response;
+    }
+
+    protected function addFreePayoutLedgerViaPSFeature($merchant)
+    {
+        try
+        {
+            $feature = (new Feature\Core)->create(
+                [
+                    Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                    Feature\Entity::NAME        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+                ]);
+
+            $this->trace->info(
+                TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_ASSIGNED,
+                [
+                    Entity::MERCHANT_ID      => $merchant->getId(),
+                    EntityConstants::FEATURE => $feature,
+                ]);
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_ASSIGN_FAILED, [
+                Entity::MERCHANT_ID           => $merchant->getId(),
+                EntityConstants::FEATURE_NAME => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+            ]);
+
+            throw $exception;
         }
     }
 

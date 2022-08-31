@@ -244,6 +244,16 @@ class Entity
     const ORG_FIELD_MAP         = 'org_field_map';
     const ADMIN_REPORT          = 'admin_report';
 
+    // free payout migration
+    const ENABLE            = 'enable';
+    const DISABLE           = 'disable';
+    const ACTION            = 'action';
+    const RESPONSE          = 'response';
+    const FEATURE_NAME      = 'feature_name';
+    const BALANCE_TYPE      = 'balance_type';
+    const COUNTER_MIGRATED  = 'counter_migrated';
+    const SETTINGS_MIGRATED = 'settings_migrated';
+
     //
     // Workflow Entities
     //

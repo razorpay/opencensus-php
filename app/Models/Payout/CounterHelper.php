@@ -385,4 +385,29 @@ class CounterHelper extends Base\Core
 
         return $updatedCounter;
     }
+
+    public function rollbackCounter(Balance\Entity $balance, $freePayoutsConsumed, $freePayoutsConsumedLastResetAt)
+    {
+        /** @var Counter\Entity $counter */
+        $counter = (new Counter\Core)->fetchOrCreate($balance);
+
+        /** @var Counter\Entity $counter */
+        $counter = $this->repo->counter->lockForUpdate($counter->getId());
+
+        $counter->setFreePayoutsConsumed($freePayoutsConsumed);
+        $counter->setFreePayoutsConsumedLastResetAt($freePayoutsConsumedLastResetAt);
+
+        $this->repo->counter->saveOrFail($counter);
+
+        $this->trace->info(
+            TraceCode::FREE_PAYOUTS_ENTITY_ROLLBACK,
+            [
+                Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $counter->getFreePayoutsConsumedLastResetAt(),
+                Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
+            ]
+        );
+    }
 }

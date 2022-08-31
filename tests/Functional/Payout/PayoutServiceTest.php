@@ -11,6 +11,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Validator;
@@ -18,9 +19,10 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\Type as Type;
-use RZP\Models\Reversal\Entity as ReversalEntity;
+use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -36,10 +38,10 @@ use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
+use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
 use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
-use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
 class PayoutServiceTest extends TestCase
@@ -595,7 +597,7 @@ class PayoutServiceTest extends TestCase
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
-        $freePayoutSetMock = Mockery::mock('RZP\Services\PayoutService\UpdateFreePayout',
+        $freePayoutSetMock = Mockery::mock('RZP\Services\PayoutService\FreePayout',
             [$this->app])->makePartial();
 
         $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
@@ -626,7 +628,7 @@ class PayoutServiceTest extends TestCase
                 $this->freePayoutSetResponseForPayoutServiceMock($fail)
             );
 
-        $this->app->instance(PayoutServiceUpdateFreePayout::PAYOUT_SERVICE_UPDATE_FREE_PAYOUT, $freePayoutSetMock);
+        $this->app->instance(PayoutServiceFreePayout::PAYOUT_SERVICE_FREE_PAYOUT, $freePayoutSetMock);
     }
 
     public function freePayoutSetResponseForPayoutServiceMock($fail)
@@ -727,6 +729,73 @@ class PayoutServiceTest extends TestCase
                 ]);
             $response->status_code = 200;
             $response->success     = true;
+        }
+
+        return $response;
+    }
+
+    public function mockPayoutServiceFreePayoutMigration($fail = false, $request = [])
+    {
+        $freePayoutMigrateMock = Mockery::mock('RZP\Services\PayoutService\FreePayout',
+                                               [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $freePayoutMigrateMock->shouldReceive('sendRequest')
+                              ->withArgs(
+                                  function($arg) use ($request) {
+                                      try
+                                      {
+                                          // Using this method only here as we want to check if the keys in the
+                                          // request are coming properly or not.
+                                          $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                          return true;
+                                      }
+                                      catch (\Throwable $e)
+                                      {
+                                          return false;
+                                      }
+                                  }
+                              )
+                              ->andReturn(
+                                  $this->freePayoutMigrationResponseForPayoutServiceMock($fail)
+                              );
+
+        $this->app->instance(PayoutServiceFreePayout::PAYOUT_SERVICE_FREE_PAYOUT, $freePayoutMigrateMock);
+    }
+
+    public function freePayoutMigrationResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field"       => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                    'merchant_id'        => 'rzp12345678909',
+                    'balance_id'         => 'bal12345678909',
+                    'counter_migrated'   => true,
+                    'settings_migrated'  => true
+                ]);
+            $response->status_code = 200;
+            $response->success = true;
         }
 
         return $response;
@@ -3222,6 +3291,135 @@ class PayoutServiceTest extends TestCase
         $this->assertNotNull($payout);
         $this->assertEquals($payout['workflow_feature'], 1);
         $this->assertEquals($payout['is_payout_service'], false);
+    }
+
+    public function testFreePayoutMigrationAdminAction()
+    {
+        $this->mockPayoutServiceFreePayoutMigration();
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $feature = $this->getDbLastEntity('feature', 'live')->toArray();
+
+        self::assertNotEmpty($feature);
+
+        $this->assertEquals(Constants::FREE_PAYOUT_LEDGER_VIA_PS, $feature['name']);
+    }
+
+    public function testFreePayoutMigrationAdminActionWithoutPayoutServiceEnabledFeature()
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+
+        $features = $this->getDbEntities('feature',
+                                         [
+                                             'entity_id'   => '10000000000000',
+                                             'entity_type' => EntityConstants::MERCHANT,
+                                             'name'        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+                                         ],
+                                         'live')->toArray();
+
+        self::assertEmpty($features);
+    }
+
+    public function testFreePayoutMigrationAdminActionDisableAction()
+    {
+        $this->mockPayoutServiceFreePayoutMigration();
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testFreePayoutMigrationAdminActionValidationFailure()
+    {
+        $this->mockPayoutServiceFreePayoutMigration();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testFreePayoutMigrationAdminActionWithPayoutsServiceFailure()
+    {
+        $this->mockPayoutServiceFreePayoutMigration(true);
+
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->adminAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testFreePayoutRollback()
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $features = $this->getDbEntities('feature',
+                                         [
+                                             'entity_id'   => '10000000000000',
+                                             'entity_type' => EntityConstants::MERCHANT,
+                                             'name'        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+                                         ],
+                                         'live')->toArray();
+
+        self::assertEmpty($features);
+    }
+
+    public function testFreePayoutRollbackValidationFailure()
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
     }
 
     public function testUpdateFreePayoutsCountAndMode()

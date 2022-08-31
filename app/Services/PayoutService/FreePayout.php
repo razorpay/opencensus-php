@@ -6,12 +6,13 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use Razorpay\Edge\Passport\Passport;
 
-class UpdateFreePayout extends Base
+class FreePayout extends Base
 {
     const UPDATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI = '/admin/free_payout/';
+    const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI = '/admin/free_payout_migration';
 
     // update free payout attributes for singleton class
-    const PAYOUT_SERVICE_UPDATE_FREE_PAYOUT = 'payout_service_update_free_payout';
+    const PAYOUT_SERVICE_FREE_PAYOUT = 'payout_service_free_payout';
 
     /**
      * @param string $id
@@ -36,6 +37,33 @@ class UpdateFreePayout extends Base
 
         $this->trace->info(
             TraceCode::UPDATE_FREE_PAYOUT_VIA_MICROSERVICE_RESPONSE,
+            [
+                'payouts service response' => $response,
+            ]);
+
+        return $response;
+    }
+
+    // freePayoutMigrationForMicroservice is used for both migrating free payout
+    // to payouts service and rolling back free payout from payouts service
+    public function freePayoutMigrationForMicroservice(array $input)
+    {
+        $this->trace->info(TraceCode::MIGRATE_FREE_PAYOUT_COUNTER_AND_SETTINGS_REQUEST,
+            [
+                'input' => $input,
+            ]);
+
+        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+
+        $response = $this->makeRequestAndGetContent(
+            $input,
+            self::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI,
+            Requests::POST,
+            $headers
+        );
+
+        $this->trace->info(
+            TraceCode::MIGRATE_FREE_PAYOUT_COUNTER_AND_SETTINGS_RESPONSE,
             [
                 'payouts service response' => $response,
             ]);

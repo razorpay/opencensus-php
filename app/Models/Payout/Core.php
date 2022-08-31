@@ -58,16 +58,19 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Exception\ServerErrorException;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\PartnerBankHealth\Events;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Jobs\QueuedPayoutsForVaToVaCreditTransfers;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -95,11 +98,15 @@ class Core extends Base\Core
 {
     const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
+    const FREE_PAYOUT_MIGRATE_RESOURCE      = 'FREE_PAYOUT_MIGRATE_%s_%s_%s';
+
     const CUSTOMER_WALLET_MUTEX_RESOURCE    = 'CUSTOMER_WALLET_PAYOUT_%s_%s_%s';
 
     const MAX_PAYOUT_AMOUNT                 = 800000000; // 80 Lakhs
 
     const MUTEX_LOCK_TIMEOUT                = 300;
+
+    const FREE_PAYOUT_MUTEX_LOCK_TIMEOUT    = 180;
 
     const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
 
@@ -4652,6 +4659,178 @@ class Core extends Base\Core
 
             return $response;
         }
+    }
+
+    // Push each request into queue. Worker will pick up
+    // and do actual migration. This is done to avoid timeouts
+    public function postFreePayoutMigration(array $input)
+    {
+        $action = $input[EntityConstant::ACTION];
+
+        $totalCount = 0;
+
+        foreach ($input['ids'] as $request)
+        {
+            $merchantId = $request[Entity::MERCHANT_ID];
+
+            $balanceId = $request[Entity::BALANCE_ID];
+
+            $traceInfo = [
+                EntityConstant::ACTION => $action,
+                Entity::MERCHANT_ID    => $merchantId,
+                Entity::BALANCE_ID     => $balanceId,
+            ];
+
+            $this->trace->info(TraceCode::MIGRATE_FREE_PAYOUT_TO_PAYOUTS_SERVICE_DISPATCH_INITIATE, $traceInfo);
+
+            try
+            {
+                FreePayoutMigrationForPayoutsService::dispatch($this->mode, $action, $merchantId, $balanceId);
+
+                $totalCount++;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(TraceCode::MIGRATE_FREE_PAYOUT_TO_PAYOUTS_SERVICE_DISPATCH_FAILED, [
+                    Entity::MERCHANT_ID    => $merchantId,
+                    EntityConstant::ACTION => $action,
+                ]);
+
+                throw $e;
+            }
+
+            $this->trace->info(TraceCode::MIGRATE_FREE_PAYOUT_TO_PAYOUTS_SERVICE_DISPATCH_COMPLETE, $traceInfo);
+        }
+
+        return [
+            'total_count' => $totalCount,
+        ];
+    }
+
+    public function performFreePayoutMigration(string $action,
+                                               string $merchantId,
+                                               string $balanceId)
+    {
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MERCHANT_FETCH_FAILED, [
+                Entity::MERCHANT_ID    => $merchantId,
+                EntityConstant::ACTION => $action,
+            ]);
+
+            throw $e;
+        }
+
+        $mutexResource = sprintf(self::FREE_PAYOUT_MIGRATE_RESOURCE,
+                                 $merchantId,
+                                 $balanceId,
+                                 $this->mode);
+
+        return $this->mutex->acquireAndRelease(
+            $mutexResource,
+            function() use ($merchant, $balanceId, $action) {
+                return (new Balance\Service)->migrateFreePayout($merchant, $balanceId, $action);
+            },
+            self::FREE_PAYOUT_MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS);
+    }
+
+    public function postFreePayoutRollback(array $request)
+    {
+        $merchantId = $request[Entity::MERCHANT_ID];
+
+        $balanceId = $request[Entity::BALANCE_ID];
+
+        $freePayoutsConsumed = $request[Counter\Entity::FREE_PAYOUTS_CONSUMED];
+
+        $freePayoutsConsumedLastResetAt = $request[Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT];
+
+        $freePayoutsCount = $request[Balance\FreePayout::FREE_PAYOUTS_COUNT];
+
+        $freePayoutsSupportedModes = $request[Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES];
+
+        try
+        {
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MERCHANT_FETCH_FAILED, [
+                Entity::MERCHANT_ID    => $merchantId,
+            ]);
+
+            throw $e;
+        }
+
+        $balance = (new Balance\Service)->getBankingTypeBalanceEntity($balanceId);
+
+        $response = $this->repo->counter->transaction(
+            function() use ($balance,
+                $merchant,
+                $freePayoutsConsumed,
+                $freePayoutsConsumedLastResetAt,
+                $freePayoutsCount,
+                $freePayoutsSupportedModes) {
+
+                // rollback counter
+                (new CounterHelper)->rollbackCounter($balance, $freePayoutsConsumed, $freePayoutsConsumedLastResetAt);
+
+                $this->rollbackFreePayoutsCountAndSupportedModes($balance, $freePayoutsCount, $freePayoutsSupportedModes);
+
+                $this->deleteFreePayoutLedgerViaPSFeature($merchant->getId());
+
+                return [
+                    Entity::BALANCE_ID                => $balance->getId(),
+                    EntityConstant::COUNTER_MIGRATED  => true,
+                    EntityConstant::SETTINGS_MIGRATED => true
+                ];
+
+            });
+
+        return $response;
+    }
+
+    protected function rollbackFreePayoutsCountAndSupportedModes($balance,
+                                                                 $freePayoutsCount,
+                                                                 $freePayoutsSupportedModes)
+    {
+        $freePayoutObj = new FreePayout();
+
+        $freePayoutObj->addNewAttribute($freePayoutsCount,
+                                        $balance,
+                                        FreePayout::FREE_PAYOUTS_COUNT);
+
+        $freePayoutObj->addNewAttribute($freePayoutsSupportedModes,
+                                        $balance,
+                                        FreePayout::FREE_PAYOUTS_SUPPORTED_MODES);
+    }
+
+    protected function deleteFreePayoutLedgerViaPSFeature($merchantId)
+    {
+        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
+            EntityConstant::MERCHANT,
+            $merchantId,
+            Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS);
+
+        if (empty($feature))
+        {
+            $this->trace->error(TraceCode::FREE_PAYOUT_LEDGER_VIA_PS_FEATURE_NOT_ASSIGNED, [
+                Entity::MERCHANT_ID    => $merchantId,
+            ]);
+
+            throw new ServerErrorException(
+                'free_payout_ledger_via_ps feature is not assigned to the merchant',
+                ErrorCode::SERVER_ERROR,
+                [
+                    Entity::MERCHANT_ID => $merchantId,
+                ]);
+        }
+
+        (new Feature\Core)->delete($feature);
     }
 
     public function rejectWorkflowViaWorkflowService(Entity $payout, array $input)

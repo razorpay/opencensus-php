@@ -2403,6 +2403,62 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function postFreePayoutMigration(array $input)
+    {
+        $this->trace->info(TraceCode::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_REQUEST,
+                           [
+                               'input' => $input,
+                           ]);
+
+        try
+        {
+            (new Validator)->validateInput(Validator::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE, $input);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_REQUEST_FAILED,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            throw $exception;
+        }
+
+        return $this->core->postFreePayoutMigration($input);
+    }
+
+    public function postFreePayoutRollback(array $input)
+    {
+        $this->trace->info(TraceCode::FREE_PAYOUT_ROLLBACK_REQUEST_FROM_PAYOUTS_SERVICE,
+                           [
+                               'input' => $input,
+                           ]);
+
+        try
+        {
+            (new Validator)->validateInput(Validator::ROLLBACK_FREE_PAYOUT_PAYOUTS_SERVICE, $input);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_REQUEST_FAILED,
+                [
+                    'input' => $input,
+                ]
+            );
+
+            throw $exception;
+        }
+
+        return $this->core->postFreePayoutRollback($input);
+    }
+
     /**
      * @param array $input
      * @param Base\PublicCollection $payouts

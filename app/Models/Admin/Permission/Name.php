@@ -769,6 +769,9 @@ class Name
     // Update Free Payout Permission
     const UPDATE_FREE_PAYOUTS_ATTRIBUTES      = 'update_free_payouts_attributes';
 
+    // Free Payout Migration to Payouts Service
+    const FREE_PAYOUT_MIGRATION_TO_PS         = 'free_payout_migration_to_ps';
+
     // View Free Payout Permission
     const VIEW_FREE_PAYOUTS_ATTRIBUTES        = 'view_free_payouts_attributes';
 

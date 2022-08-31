@@ -168,4 +168,12 @@ class FreePayout
     {
         return Settings\Accessor::for($balance, Settings\Module::FREE_PAYOUT);
     }
+
+    public function getFreePayoutCountAndSupportedModes(Balance\Entity $balance)
+    {
+        return [
+            self::FREE_PAYOUTS_COUNT           => $this->getFreePayoutsCount($balance),
+            self::FREE_PAYOUTS_SUPPORTED_MODES => $this->getFreePayoutsSupportedModes($balance),
+        ];
+    }
 }

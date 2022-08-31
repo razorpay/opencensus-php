@@ -1483,6 +1483,10 @@ return [
                 'description' => 'Update free payout attributes',
                 'assignable'  => true,
             ],
+            Permission::FREE_PAYOUT_MIGRATION_TO_PS => [
+                'description' => 'Free payout migration to payouts service',
+                'assignable'  => true,
+            ],
             Permission::VIEW_FREE_PAYOUTS_ATTRIBUTES => [
                 'description' => 'View free payout attributes',
                 'assignable'  => true,
