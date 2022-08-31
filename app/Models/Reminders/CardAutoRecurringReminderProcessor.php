@@ -145,7 +145,8 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         {
             $experimentKey = implode('_', [
                 $card->getNetworkCode(),
-                $card->getIssuer()
+                $card->getIssuer(),
+                $card->getType()
             ]);
 
             $variant = $this->app['razorx']->getTreatment(

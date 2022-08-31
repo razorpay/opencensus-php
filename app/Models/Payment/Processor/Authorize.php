@@ -8579,31 +8579,11 @@ trait Authorize
             if($token->isRecurring() and
                $token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
             {
-                try
-                {
-                    if($token->cardMandate->getVaultTokenPan() === null)
-                    {
-                        $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $card->merchant);
+                $paymentProcessor = (new Processor($this->merchant));
 
-                        $recurringTokenNumber = ["token" => ["number" => $cryptogram['token_number']]];
+                $paymentProcessor->setPayment($this->payment);
 
-                        (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $recurringTokenNumber);
-
-                        return $this->createCardForNetworkToken($card, $input, null, $cryptogram['token_number']);
-                    }
-                    else
-                    {
-                        $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
-
-                        return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
-                    }
-                }
-                catch (\Exception $e)
-                {
-                    $this->trace->info(TraceCode::MISC_TRACE_CODE, [
-                        'failedRetryStoringPanEntireLogic'     => $e,
-                    ]);
-                }
+                return $paymentProcessor->createCardForNetworkTokenCardMandate($card, $token, []);
             }
 
             $merchant = $card->merchant;

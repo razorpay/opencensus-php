@@ -41,6 +41,7 @@ use RZP\Services\Doppler;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\UpiMandate;
+use RZP\Models\CardMandate;
 use RZP\Models\BankAccount;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
@@ -6911,11 +6912,30 @@ class Processor
 
     public function createCardForNetworkTokenCardMandate($card, $token, $input)
     {
-        if($token->cardMandate->getVaultTokenPan()!==null)
+        try
         {
-            $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
+            if($token->cardMandate->getVaultTokenPan() === null)
+            {
+                $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $card->merchant);
 
-            return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+                $recurringTokenNumber = ["token" => ["number" => $cryptogram['token_number']]];
+
+                (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $recurringTokenNumber);
+
+                return $this->createCardForNetworkToken($card, $input, null, $cryptogram['token_number']);
+            }
+            else
+            {
+                $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
+
+                return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'failedRetryStoringPanEntireLogic'     => $e,
+            ]);
         }
 
         return $this->createCardForNetworkToken($card, $input);
