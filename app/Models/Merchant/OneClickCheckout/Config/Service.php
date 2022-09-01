@@ -196,6 +196,12 @@ class Service extends Base\Service
                         case "one_cc_capture_billing_address":
                             $this->add1ccConfigFlags($input, Type::ONE_CC_CAPTURE_BILLING_ADDRESS);
                             break;
+                        case Type::DOMAIN_URL:
+                            (new Core)->associateMerchant1ccConfig(
+                                Type::DOMAIN_URL,
+                                $value
+                            );
+                            break;
                     }
                 }
             }
@@ -233,6 +239,13 @@ class Service extends Base\Service
 
         $configFlagsResponse = $this->get1ccConfigFlagsStatus($this->merchant);
 
+        $domainUrlConfig = $this->merchant->get1ccConfig(Type::DOMAIN_URL);
+        $domainUrl = null;
+        if ($domainUrlConfig !== null)
+        {
+            $domainUrl = $domainUrlConfig->getValue();
+        }
+
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
             $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
@@ -242,6 +255,7 @@ class Service extends Base\Service
             );
 
             $response = [
+                "domain_url"      => $domainUrl,
                 'platform'         => Constants::SHOPIFY,
                 Constants::SHOP_ID => ''
             ];
@@ -291,6 +305,7 @@ class Service extends Base\Service
         }
 
         return [
+            "domain_url"      => $domainUrl,
             "shipping_info"   => $shippingInfoUrl,
             "list_promotions" => $couponsUrl,
             "apply_promotion" => $applyCouponUrl,

@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         "one_cc_auto_fetch_coupons"      => 'sometimes|boolean',
         "one_cc_international_shipping"  => 'sometimes|boolean',
         "one_cc_capture_billing_address" => 'sometimes|boolean',
-
+        "domain_url"                     => 'sometimes|url',
     ];
 
     protected static $shopifyRules = [
@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         "one_cc_buy_now_button"          => 'sometimes|boolean',
         "one_cc_auto_fetch_coupons"      => 'sometimes|boolean',
         "one_cc_international_shipping"  => 'sometimes|boolean',
-        "one_cc_capture_billing_address" => 'sometimes|boolean'
+        "one_cc_capture_billing_address" => 'sometimes|boolean',
+        "domain_url"                     => 'sometimes|url',
     ];
 }

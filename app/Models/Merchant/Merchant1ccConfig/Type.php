@@ -16,6 +16,7 @@ class Type {
     const ONE_CC_CAPTURE_BILLING_ADDRESS   = 'one_cc_capture_billing_address';
     const ONE_CC_GA_ANALYTICS              = 'one_cc_ga_analytics';
     const ONE_CC_FB_ANALYTICS              = 'one_cc_fb_analytics';
+    const DOMAIN_URL                       = 'domain_url';
 
     // supported platform types
     const NATIVE            = 'native';

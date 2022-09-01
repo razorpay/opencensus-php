@@ -13064,4 +13064,21 @@ return [
             ],
         ],
     ],
+
+    'testDomainUrlMerchant1ccConfig' => [
+        'request' => [
+            'url' => '/1cc/merchant/configs',
+            'method' => 'post',
+            'content' => [
+                "shop_id" => "hias",
+                "platform"=> "shopify",
+                "domain_url"=> "https://abc.com"
+            ],
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200
+        ],
+    ],
 ];
