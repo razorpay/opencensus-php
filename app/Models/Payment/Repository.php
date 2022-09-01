@@ -2973,12 +2973,21 @@ EOT;
 
     public function hasMerchantTransacted(string $merchantId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                    ->where(Entity::BASE_AMOUNT, ">", 0)
-                    ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
-                    ->limit(1)
-                    ->count() > 0;
+        $result = $this->newQueryWithConnection($this->getSlaveConnection())
+                       ->where(Entity::MERCHANT_ID, "=", $merchantId)
+                       ->where(Entity::BASE_AMOUNT, ">", 0)
+                       ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
+                       ->limit(1)
+                       ->get()
+                       ->pluck(Entity::MERCHANT_ID)
+                       ->toArray();;
+
+        if (empty($result) === true)
+        {
+            return false;
+        }
+        return true;
+
     }
 
     public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)
@@ -3160,7 +3169,7 @@ EOT;
             ->limit($limit)
             ->get();
     }
-    
+
     //select * from `payments`
     // where `payments`.`token_id` = JtXT7fDRwqDzP3
     // and `payments`.`token_id` is not null
