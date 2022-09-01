@@ -55,10 +55,7 @@ class RefundReconEntityUpdateTest extends TestCase
                 function ($input) use ($refundEntity) {
                     $refunds[] = [
                         'arn'                => '786355626788',
-                        'gateway_keys'       => [
-                            'arn'           => '12345678910',
-                            'recon_batch_id'=> $input['batch_id']
-                        ],
+                        'gateway_keys'       => [],
                         'reconciled_at'      => 1549108187,
                         'refund_id'          => $refundEntity['id'],
                         'status'             => 'processed',
@@ -119,8 +116,8 @@ class RefundReconEntityUpdateTest extends TestCase
 
         $reconJobData['upi'][] = [
             'refund_id'         => substr($refundEntity['id'],5),
-            'npci_reference_id' => '2341345679',
-            'npci_txn_id'       => '23413455672',
+            'npci_reference_id' => '23456674322',
+            'npci_txn_id'       => '23413455674',
         ];
 
         $reconJobData['gateway'] = 'upi_icici';
@@ -131,9 +128,22 @@ class RefundReconEntityUpdateTest extends TestCase
 
         $upiEntity = $this->getDbLastEntity('upi');
 
-        $this->assertEquals($upiEntity['npci_reference_id'],'2341345679') ;
+        $this->assertNotEquals($upiEntity['npci_reference_id'],'23456674322') ;
 
-        $this->assertEquals($upiEntity['npci_txn_id'],'23413455672') ;
+        $this->assertNotEquals($upiEntity['npci_txn_id'],'23413455674') ;
+
+        $reconJobData['upi'][0]['npci_reference_id'] = '';
+        $reconJobData['upi'][0]['npci_txn_id'] = '';
+
+        $this->job = $this->mockArtReconProcess($reconJobData);
+
+        $this->testRefundEntityUpdate('upi_icici');
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->assertNotEquals($upiEntity['npci_reference_id'],'23456674322') ;
+
+        $this->assertNotEquals($upiEntity['npci_txn_id'],'23413455674') ;
     }
 
     public function testUpiIciciInvalidRefundEntityUpdate()
@@ -222,9 +232,11 @@ class RefundReconEntityUpdateTest extends TestCase
         $this->fixtures->create(
             'upi',
             [
-                'payment_id' => $paymentId,
-                'refund_id'  => PublicEntity::stripDefaultSign($refundEntity['id']),
-                'action'     => Payment\Action::REFUND
+                'payment_id'        => $paymentId,
+                'refund_id'         => PublicEntity::stripDefaultSign($refundEntity['id']),
+                'action'            => Payment\Action::REFUND,
+                'npci_reference_id' => '23413455675',
+                'npci_txn_id'       => '23413455672',
             ]);
     }
 

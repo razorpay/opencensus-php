@@ -1288,8 +1288,15 @@ class Service extends Base\Service
      */
     protected function persistNpciReferenceId(Entity $gatewayRefund, array $gatewayData)
     {
-        if ((empty($gatewayRefund->getNpciReferenceId()) === false) and
-            ($gatewayData['npci_reference_id'] !== $gatewayRefund->getNpciReferenceId()))
+        if (empty($gatewayData['npci_reference_id']) === true)
+        {
+            return;
+        }
+
+        $dbNpciRefId = (string) $gatewayRefund->getNpciReferenceId();
+
+        if ((empty($dbNpciRefId) === false) and
+            ($gatewayData['npci_reference_id'] !== $dbNpciRefId))
         {
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
@@ -1299,7 +1306,7 @@ class Service extends Base\Service
                     'refund_id'               => $gatewayRefund->getRefundId(),
                     'amount'                  => $gatewayRefund->getAmount(),
                     'payment_id'              => $gatewayRefund->getPaymentId(),
-                    'db_reference_number'     => $gatewayRefund->getNpciReferenceId(),
+                    'db_reference_number'     => $dbNpciRefId,
                     'recon_reference_number'  => $gatewayData['npci_reference_id'],
                     'gateway'                 => $gatewayRefund->getGateway(),
                 ]);
@@ -1316,8 +1323,15 @@ class Service extends Base\Service
      */
     protected function persistNpciTransactionId(Entity $gatewayRefund, array $gatewayData)
     {
-        if ((empty($gatewayRefund->getNpciTransactionId()) === false) and
-            ($gatewayData['npci_txn_id'] !== $gatewayRefund->getNpciTransactionId()))
+        if (empty($gatewayData['npci_txn_id']) === true)
+        {
+            return;
+        }
+
+        $dbGatewayTransactionId = (string) $gatewayRefund->getNpciTransactionId();
+
+        if ((empty($dbGatewayTransactionId) === false) and
+            ($gatewayData['npci_txn_id'] !== $dbGatewayTransactionId))
         {
             $this->trace->info(
                 TraceCode::RECON_MISMATCH,
@@ -1327,7 +1341,7 @@ class Service extends Base\Service
                     'refund_id'             => $gatewayRefund->getRefundId(),
                     'amount'                => $gatewayRefund->getAmount(),
                     'payment_id'            => $gatewayRefund->getPaymentId(),
-                    'db_reference_number'   => $gatewayRefund->getNpciTransactionId(),
+                    'db_reference_number'   => $dbGatewayTransactionId,
                     'recon_reference_number'=> $gatewayData['npci_txn_id'],
                     'gateway'               => $gatewayRefund->getGateway(),
                 ]);
