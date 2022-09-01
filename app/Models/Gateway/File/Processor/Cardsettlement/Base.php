@@ -132,11 +132,11 @@ class Base extends BaseProcessor
         {
             $this->sendSettlementPassword($data);
 
-            $this->sendSettlementFile($data);
+//            $this->sendSettlementFile($data);
 
-            $this->gatewayFile->setFileSentAt(Carbon::now()->getTimestamp());
-
-            $this->gatewayFile->setStatus(Status::FILE_SENT);
+//            $this->gatewayFile->setFileSentAt(Carbon::now()->getTimestamp());
+//
+//            $this->gatewayFile->setStatus(Status::FILE_SENT);
         }
         catch (\Throwable $e)
         {

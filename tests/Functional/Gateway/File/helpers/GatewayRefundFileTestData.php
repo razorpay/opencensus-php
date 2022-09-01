@@ -56,7 +56,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'file_sent',
+                        'status'              => 'file_generated',
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',

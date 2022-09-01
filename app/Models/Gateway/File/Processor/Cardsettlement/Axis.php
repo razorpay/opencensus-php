@@ -56,9 +56,13 @@ class Axis extends Base
 
     protected $paymentsFirstTimestamp;
 
+    protected $totalPayments;
+
     protected $refundsLastTimestamp;
 
     protected $refundsFirstTimestamp;
+
+    protected $totalRefunds;
 
     protected $isExplicitTimestampPassed;
 
@@ -144,7 +148,7 @@ class Axis extends Base
         {
             $beginFromCache = (new AdminService)->getConfigKey([
                     'key' => ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
-                ]) + 1;
+                ]);
 
             if($beginFromCache < $begin)
             {
@@ -186,7 +190,7 @@ class Axis extends Base
         {
             $beginFromCache = (new AdminService)->getConfigKey([
                     'key' => ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
-                ]) + 1;
+                ]);
 
             if($beginFromCache < $begin)
             {
@@ -248,7 +252,7 @@ class Axis extends Base
 
         try
         {
-            $fileData = $this->formatDataForFile($data);
+            list($fileData, $debugFileData) = $this->formatDataForFile($data);
 
             $fileName = self::S3_PATH . $this->getFileToWriteName();
 
@@ -279,35 +283,36 @@ class Axis extends Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
+            if ( ($this->isExplicitTimestampPassed === false) and
+                ($this->isDarkRequest() === false))
+            {
+                $paymentOffset = $this->totalPayments > 0 ? 1 : 0;
+                $refundOffset = $this->totalRefunds > 0 ? 1 : 0;
+                (new AdminService)->setConfigKeys(
+                    [ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $this->paymentsLastTimestamp + $paymentOffset]
+                );
+
+                (new AdminService)->setConfigKeys(
+                    [ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $this->refundsLastTimestamp + $refundOffset]
+                );
+            }
+
             /* uncomment this if we need to generate output file for debugging
             * but do rememeber to scrub sensitive from file
             */
 
-//            $fileName = $this->getFileToWriteName();
-//
-//            $creator = new FileStore\Creator;
-//
-//            $creator->extension(static::EXTENSION)
-//                    ->content($fileData)
-//                    ->name($fileName)
-//                    ->store(FileStore\Store::S3)
-//                    ->type(static::FILE_TYPE_OUTPUT)
-//                    ->entity($this->gatewayFile)
-//                    ->metadata($metadata)
-//                    ->save();
+            $fileName = self::S3_PATH . $this->getFileToWriteName() . '_debug';
 
-            if ( ($this->isExplicitTimestampPassed === false) and
-                 ($this->isDarkRequest() === false))
-            {
-                (new AdminService)->setConfigKeys(
-                    [ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $this->paymentsLastTimestamp]
-                );
+            $creator = new FileStore\Creator;
 
-                (new AdminService)->setConfigKeys(
-                    [ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $this->refundsLastTimestamp]
-                );
-            }
-
+            $creator->extension(static::EXTENSION)
+                    ->content($debugFileData)
+                    ->name($fileName)
+                    ->store(FileStore\Store::S3)
+                    ->type(static::FILE_TYPE_OUTPUT)
+                    ->entity($this->gatewayFile)
+                    ->metadata($metadata)
+                    ->save();
         }
         catch (\Throwable $e)
         {
@@ -326,6 +331,8 @@ class Axis extends Base
     protected function formatDataForFile($data)
     {
         $content = [];
+
+        $debugFileContent = [];
 
         $totalTransactions = 0;
 
@@ -356,9 +363,7 @@ class Axis extends Base
 
                     $gatewayTID = $settlementPayment->terminal->getGatewayTerminalId();
 
-                    $content[] =
-                        $cardToken . self::PIPE_SEPARATOR .
-                        $cardTypeIdentifier . self::PIPE_SEPARATOR .
+                    $row = $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementPayment->getAmount()) . self::PIPE_SEPARATOR .
                         $gatewayRequestID . self::PIPE_SEPARATOR .
@@ -372,6 +377,10 @@ class Axis extends Base
                         '5' . self::PIPE_SEPARATOR .
                         $notesMTR . self::PIPE_SEPARATOR .
                         $notesGST . ' ' . $notesCorpName;
+
+                    $content[] = $cardToken . self::PIPE_SEPARATOR . $row;
+
+                    $debugFileContent[] = $row;
 
                     $paymentIds[] = $settlementPayment->getId();
                 }
@@ -388,7 +397,7 @@ class Axis extends Base
             }
         }
 
-        if(array_key_exists('refunds',$data)) 
+        if(array_key_exists('refunds',$data))
         {
             foreach ($data['refunds'] as $settlementRefunds)
             {
@@ -406,9 +415,7 @@ class Axis extends Base
 
                     $gatewayTID = $settlementRefunds->payment->terminal->getGatewayTerminalId();
 
-                    $content[] =
-                        $cardToken . self::PIPE_SEPARATOR .
-                        $cardTypeIdentifier . self::PIPE_SEPARATOR .
+                    $row = $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementRefunds->getBaseAmount()) . self::PIPE_SEPARATOR .
                         $gatewayRequestID . self::PIPE_SEPARATOR .
@@ -422,6 +429,10 @@ class Axis extends Base
                         '6' . self::PIPE_SEPARATOR .
                         $notesMTR . self::PIPE_SEPARATOR .
                         $notesGST . ' ' . $notesCorpName;
+
+                    $content[] = $cardToken . self::PIPE_SEPARATOR . $row;
+
+                    $debugFileContent[] = $row;
 
                     $refundIds[] = $settlementRefunds->payment->getId();
 
@@ -457,6 +468,8 @@ class Axis extends Base
 
         $textRows = array_merge($header, $content,$trailer);
 
+        $textDebugRows = array_merge($header, $debugFileContent, $trailer);
+
         $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
             'location' => 'After format for file',
             'payments' => $paymentIds,
@@ -464,7 +477,11 @@ class Axis extends Base
             'totalTxn' => $totalTransactions,
         ]);
 
-        return implode("\r\n", $textRows);
+        $this->totalPayments = count($paymentIds);
+
+        $this->totalRefunds = count($refundIds);
+
+        return array(implode("\r\n", $textRows), implode("\r\n", $textDebugRows));
     }
 
 

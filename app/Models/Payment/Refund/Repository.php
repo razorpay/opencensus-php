@@ -147,6 +147,7 @@ class Repository extends Base\Repository
             ->where($paymentMethod, '=', Payment\Method::CARD)
             ->where($paymentGateway, '=', 'cybersource')
             ->with('payment', 'payment.card.globalCard', 'payment.terminal')
+            ->orderBy($this->dbColumn(Refund\Entity::PROCESSED_AT), 'desc')
             ->select($refundData)
             ->get();
     }
