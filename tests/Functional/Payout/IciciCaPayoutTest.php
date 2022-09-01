@@ -2214,4 +2214,168 @@ class IciciCaPayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetPayoutByIdForIciciCa2faPayoutPendingStatusForInvalidOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'pending',
+            'status_code'     => 'INVALID_OTP',
+        ]);
+
+        $request = array(
+            'url'    => '/payouts/pout_' . 'FUj82QLoJgRcM0',
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('The OTP entered is incorrect, please retry with correct OTP.', $content['pending_reason']);
+        $this->assertEquals('pending', $content['status']);
+        $this->assertEquals('pending', $content['internal_status']);
+    }
+
+    public function testGetPayoutByIdForIciciCa2faPayoutPendingStatusForExpiredOtp()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'pending',
+            'status_code'     => 'EXPIRED_OTP',
+        ]);
+
+        $request = array(
+            'url'    => '/payouts/pout_' . 'FUj82QLoJgRcM0',
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('The OTP has expired, please request for a new OTP.', $content['pending_reason']);
+        $this->assertEquals('pending', $content['status']);
+        $this->assertEquals('pending', $content['internal_status']);
+    }
+
+    public function testGetPayoutByIdForIciciCa2faPayoutPendingOnOtpStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'pending_on_otp',
+            'status_code'     => null,
+        ]);
+
+        $request = array(
+            'url'    => '/payouts/pout_' . 'FUj82QLoJgRcM0',
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayNotHasKey('pending_reason', $content);
+        $this->assertEquals('pending', $content['status']);
+        $this->assertEquals('pending_on_otp', $content['internal_status']);
+    }
+
+    public function testGetPayoutByIdForIciciCa2faPayoutInitiatedStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'initiated',
+            'status_code'     => null,
+        ]);
+
+        $request = array(
+            'url'    => '/payouts/pout_' . 'FUj82QLoJgRcM0',
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('processing', $content['status']);
+        $this->assertArrayNotHasKey('pending_reason', $content);
+        $this->assertArrayNotHasKey('internal_status', $content);
+    }
+
+    public function testGetPayoutByIdForIciciCa2faPayoutMerchantNotEnabled()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'pending_on_otp',
+            'status_code'     => null,
+        ]);
+
+        $request = array(
+            'url'    => '/payouts/pout_' . 'FUj82QLoJgRcM0',
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('pending', $content['status']);
+        $this->assertArrayNotHasKey('pending_reason', $content);
+        $this->assertArrayNotHasKey('internal_status', $content);
+    }
+
+    public function testGetPayoutByIdForIciciCa2faPayoutPrivateAuth()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->on('test')->create('payout', [
+            'id'              => 'FUj82QLoJgRcM0',
+            'merchant_id'     => $this->merchant->getId(),
+            'fund_account_id' => '100000000000fa',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'amount'          => 100,
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'pending_on_otp',
+            'status_code'     => null,
+        ]);
+
+        $request = array(
+            'url'    => '/payouts/pout_' . 'FUj82QLoJgRcM0',
+            'method' => 'GET');
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('pending', $content['status']);
+        $this->assertArrayNotHasKey('pending_reason', $content);
+        $this->assertArrayNotHasKey('internal_status', $content);
+    }
 }

@@ -36,6 +36,7 @@ use RZP\Models\Settlement\Channel;
 use Razorpay\IFSC\IFSC as BaseIFSC;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
@@ -330,6 +331,10 @@ class Entity extends Base\PublicEntity
     //App Framework
     const BULK_PAYOUT_APP           = 'bulk_payout_app';
 
+    // Attribute exposed in public response for proxy auth for ICICI 2FA enabled merchants.
+    // This attribute indicates the reason why a payout is in pending state.
+    const PENDING_REASON            = 'pending_reason';
+
     protected $queueFlag = false;
 
     protected $statusDetails = [
@@ -554,6 +559,8 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::TAX,
         self::STATUS,
+        self::INTERNAL_STATUS,
+        self::PENDING_REASON,
         self::PURPOSE,
         self::UTR,
         self::USER_ID,
@@ -662,6 +669,8 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_AT,
         self::STATUS_DETAILS,
         self::STATUS_SUMMARY,
+        self::INTERNAL_STATUS,
+        self::PENDING_REASON,
     ];
 
     // TODO: review all the public setters and remove fileds which are not required.
@@ -2609,6 +2618,79 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($attributes[self::STATUS_SUMMARY]);
+        }
+    }
+
+    public function setPublicInternalStatusAttribute(array & $attributes)
+    {
+        $isProxyOrPrivilegeAuth = app('basicauth')->isProxyOrPrivilegeAuth();
+
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        $isStatusPending = Status::getPublicStatusFromInternalStatus($this->getStatus()) == Status::PENDING;
+
+        if ((empty($this->balance) === true) or (empty($this->merchant) === true))
+        {
+            $isMerchantEnabled = false;
+        }
+        else
+        {
+            try
+            {
+                Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant);
+
+                $isMerchantEnabled = true;
+            }
+            catch (BadRequestException $e)
+            {
+                $isMerchantEnabled = false;
+            }
+        }
+
+        if ($isAdminAuth or ($isProxyOrPrivilegeAuth and $isStatusPending and $isMerchantEnabled))
+        {
+            $attributes[self::INTERNAL_STATUS] = $this->getStatus();
+        }
+        else
+        {
+            unset($attributes[self::INTERNAL_STATUS]);
+        }
+    }
+
+    public function setPublicPendingReasonAttribute(array & $attributes)
+    {
+        $isProxyOrPrivilegeAuth = app('basicauth')->isProxyOrPrivilegeAuth();
+
+        $isAdminAuth = app('basicauth')->isAdminAuth();
+
+        $isStatusPending = $this->getStatus() == Status::PENDING;
+
+        if ((empty($this->balance) === true) or (empty($this->merchant) === true))
+        {
+            $isMerchantEnabled = false;
+        }
+        else
+        {
+            try
+            {
+                Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant);
+
+                $isMerchantEnabled = true;
+            }
+            catch (BadRequestException $e)
+            {
+                $isMerchantEnabled = false;
+            }
+        }
+
+        if ($isAdminAuth or ($isProxyOrPrivilegeAuth and $isStatusPending and $isMerchantEnabled))
+        {
+            $attributes[self::PENDING_REASON] =
+                ErrorCodeMapping::$pendingReasonMapping[$this->getStatusCode()] ?? null;
+        }
+        else
+        {
+            unset($attributes[self::PENDING_REASON]);
         }
     }
 

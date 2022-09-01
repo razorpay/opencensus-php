@@ -199,6 +199,11 @@ class ErrorCodeMapping
         'YB_NPCI_E308'                          => 'Failure or Rejection at beneficiary bank',
     ];
 
+    public static $pendingReasonMapping = [
+        'INVALID_OTP'                           => 'The OTP entered is incorrect, please retry with correct OTP.',
+        'EXPIRED_OTP'                           => 'The OTP has expired, please request for a new OTP.'
+    ];
+
     const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help.';
 
     public static function getErrorMessageFromBankResponseCode(Entity $payout, string $bankStatusCode = null)
