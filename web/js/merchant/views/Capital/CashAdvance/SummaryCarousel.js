@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState, useEffect, useRef } from 'react';
+import React, { useLayoutEffect, useState, useEffect, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import moment from 'moment';
@@ -69,6 +69,8 @@ function SummaryCarousel(props) {
     error: false,
     data: [],
   });
+  const reqAnimationFrameRef = useRef();
+  const resizeObserverRef = useRef();
 
   const productType = getProductType(props.user);
 
@@ -186,6 +188,15 @@ function SummaryCarousel(props) {
       });
   };
 
+  const unobserve = useCallback(() => {
+    if (resizeObserverRef.current) resizeObserverRef.current.disconnect();
+  }, []);
+
+  const observe = useCallback(() => {
+    if (resizeObserverRef.current && carouselContainerRef.current)
+      resizeObserverRef.current.observe(carouselContainerRef.current);
+  }, []);
+
   // We dont want to consume it from store as, as withdrawals save in store
   // contains filtered/paginated withdrawals. and the carousel rule
   // validator function requires chronologically latest withdrawals
@@ -209,10 +220,19 @@ function SummaryCarousel(props) {
 
   useLayoutEffect(() => {
     if (carouselContainerRef && carouselContainerRef.current) {
-      new ResizeObserver(() => {
-        setResizeLastDetected(Date.now());
-      }).observe(carouselContainerRef.current);
+      resizeObserverRef.current = new ResizeObserver(() => {
+        reqAnimationFrameRef.current = window.requestAnimationFrame(() => {
+          setResizeLastDetected(Date.now());
+        });
+      });
+      observe();
     }
+    return () => {
+      unobserve();
+      if (reqAnimationFrameRef.current) {
+        window.cancelAnimationFrame(reqAnimationFrameRef.current);
+      }
+    };
   }, []);
 
   // eslint-disable-next-line
