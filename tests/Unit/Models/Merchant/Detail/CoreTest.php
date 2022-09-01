@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Escalations;
+use RZP\Services\Mock\HarvesterClient;
 use RZP\Services\RazorXClient;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -91,6 +92,8 @@ class CoreTest extends TestCase
             'merchant_id'   => $merchantId,
             'created_at'    => $createdAt
         ]);
+
+        $this->mockPinot($merchantId, $amount);
     }
 
     private function createPayment(string $merchantId, int $amount, int $createdAt = null)
@@ -105,6 +108,8 @@ class CoreTest extends TestCase
             'merchant_id'   => $merchantId,
             'created_at'    => $createdAt
         ]);
+
+        $this->mockPinot($merchantId, $amount);
     }
 
     protected function createAndFetchFixtures($customMerchantAttributes, $customVerificationDetailAttributes, $customBvsDetails)
@@ -1018,16 +1023,16 @@ class CoreTest extends TestCase
             ->willReturn('on');
     }
 
-    private function mockApachePinot(string $merchantId, int $amount)
+    private function mockPinot(string $merchantId, int $amount)
     {
-        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+        $pinotService = $this->getMockBuilder(HarvesterClient::class)
                              ->setConstructorArgs([$this->app])
-                             ->onlyMethods(['getDataFromPinot'])
+                             ->setMethods(['getDataFromPinot'])
                              ->getMock();
 
-        $this->app->instance('apache.pinot', $pinotService);
+        $this->app->instance('eventManager', $pinotService);
 
-        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100];
+        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100, "transacted_merchants_count" => 1];
 
         $pinotService->method('getDataFromPinot')
                      ->willReturn([$dataFromPinot]);

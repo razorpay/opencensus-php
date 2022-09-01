@@ -414,8 +414,12 @@ class Core extends Base\Core
 
         $query = sprintf($query, $from, $to);
 
+        $content = [
+            'query' => $query
+        ];
+
         // fetch all merchants count merchants that have transacted since last time cron ran
-        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
         if (empty($queryResponse) === true)
         {
@@ -440,8 +444,12 @@ class Core extends Base\Core
 
         $query = sprintf($query, $from, $to, $resultCount + 1);
 
+        $content = [
+            'query' => $query
+        ];
+
         // fetch all merchants who've have done the transaction since last time cron ran
-        $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
         if (empty($queryResponse) === true)
         {
@@ -482,8 +490,12 @@ class Core extends Base\Core
 
             $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", count($merchantIdChunk) + 1);
 
+            $content = [
+                'query' => $query
+            ];
+
             // fetch all merchants first transaction timestamp
-            $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
             if (empty($queryResponse) === true)
             {
@@ -614,8 +626,12 @@ class Core extends Base\Core
 
             $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
 
+            $content = [
+                'query' => $query
+            ];
+
             // fetch all merchants count who've atleast breached lowest payments threshold
-            $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
             if (empty($queryResponse) === true)
             {
@@ -640,8 +656,12 @@ class Core extends Base\Core
 
             $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
 
+            $content = [
+                'query' => $query
+            ];
+
             // fetch all merchants who've atleast breached lowest payments threshold
-            $queryResponse = (new ApachePinotClient())->getDataFromPinot($query);
+            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
             if (empty($queryResponse) === true)
             {
@@ -694,8 +714,12 @@ class Core extends Base\Core
 
         $query = sprintf($query, "'" . implode("','", $merchantIdList) . "'", Constants::LOWEST_PAYMENTS_THRESHOLD, count($merchantIdList) + 1);
 
+        $content = [
+            'query' => $query
+        ];
+
         // fetch all merchants who've atleast breached lowest payments threshold
-        $queryResponse = $this->app['apache.pinot']->getDataFromPinot($query);
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
 
         if (empty($queryResponse) === true)
         {

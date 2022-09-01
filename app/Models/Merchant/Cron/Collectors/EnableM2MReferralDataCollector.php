@@ -3,10 +3,14 @@
 namespace RZP\Models\Merchant\Cron\Collectors;
 
 
+use RZP\Constants\Mode;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -75,9 +79,22 @@ class EnableM2MReferralDataCollector extends TimeBoundDbDataCollector
             return CollectorDto::create([]);
         }
 
-        $druidData = (new Merchant\Service)->getDataFromDruidForMerchantIds($merchants);
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::DRUID_MIGRATION,
+            Mode::LIVE);
 
-        return CollectorDto::create($druidData);
+        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        if($isDruidMigrationEnabled === true)
+        {
+            $merchantData = (new MerchantService)->getDataFromPinotForMerchantIds($merchants);
+        }
+        else
+        {
+            $merchantData = (new MerchantService)->getDataFromDruidForMerchantIds($merchants);
+        }
+
+        return CollectorDto::create($merchantData);
 
     }
 

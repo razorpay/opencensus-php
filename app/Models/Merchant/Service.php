@@ -2800,9 +2800,36 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function getDataFromPinotForMerchantIds(array $merchantIdList)
+    {
+        $strMerchantIds = implode(', ', array_map(function ($val) { return sprintf('\'%s\'', $val);}, $merchantIdList));
+
+        $query = 'select * from pinot.segment_fact where segment_fact.merchant_details_merchant_id in (%s)';
+
+        $query = sprintf($query, $strMerchantIds);
+
+        $content = [
+            'query' => $query
+        ];
+
+        $pinotService = $this->app['eventManager'];
+
+        $dataForMerchantIds = $pinotService->getDataFromPinot($content, self::REQUEST_TIMEOUT_GET_DATA_FOR_SEGMENT);
+
+        $data = [];
+
+        foreach ($dataForMerchantIds as $dataForMerchantId)
+        {
+            $dataFromPinot = $pinotService->parsePinotDefaultType($dataForMerchantId, 'segment_fact');;
+            array_push($data, $dataFromPinot);
+        }
+
+        return $data;
+    }
+
     public function getDataFromDruid($merchantId)
     {
-        $query = 'select *from druid.segment_fact as merchant_data where merchant_data.merchant_details_merchant_id = \'%s\'';
+        $query = 'select * from druid.segment_fact as merchant_data where merchant_data.merchant_details_merchant_id = \'%s\'';
 
         $query = sprintf($query, $merchantId);
 

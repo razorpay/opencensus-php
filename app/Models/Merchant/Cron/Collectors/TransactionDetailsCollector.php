@@ -6,13 +6,16 @@ namespace RZP\Models\Merchant\Cron\Collectors;
 
 use Carbon\Carbon;
 use Database\Connection;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Collectors\Core\TimeBoundDbDataCollector;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Models\Merchant\Cron\Traits\ConnectionFallbackMechanism;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Base\UniqueIdEntity;
 
 class TransactionDetailsCollector extends TimeBoundDbDataCollector
 {
@@ -37,9 +40,9 @@ class TransactionDetailsCollector extends TimeBoundDbDataCollector
 
         $merchantIdChunks = array_chunk($flattenedTransactedMerchants, 1000);
 
-        $merchantDataFromDruid =  $this->getDataFromDruidForMerchants($merchantIdChunks);
+        $merchantData =  $this->getDataForMerchants($merchantIdChunks);
 
-        return CollectorDto::create($merchantDataFromDruid);
+        return CollectorDto::create($merchantData);
     }
 
     /**
@@ -66,15 +69,28 @@ class TransactionDetailsCollector extends TimeBoundDbDataCollector
         return Connection::MASTER_REPLICA_LIVE;
     }
 
-    protected function getDataFromDruidForMerchants($merchantIdChunks) : array
+    protected function getDataForMerchants($merchantIdChunks) : array
     {
         $merchantDataFromDruid = [];
+
+        $experimentResult       = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::DRUID_MIGRATION,
+            Mode::LIVE);
+
+        $isDruidMigrationEnabled = ( $experimentResult === 'on' ) ? true : false;
 
         foreach ($merchantIdChunks as $merchantIdChunk)
         {
             try
             {
-                $merchantData = (new MerchantService)->getDataFromDruidForMerchantIds($merchantIdChunk);
+                if($isDruidMigrationEnabled === true)
+                {
+                    $merchantData = (new MerchantService)->getDataFromPinotForMerchantIds($merchantIdChunk);
+                }
+                else
+                {
+                    $merchantData = (new MerchantService)->getDataFromDruidForMerchantIds($merchantIdChunk);
+                }
 
                 array_push($merchantDataFromDruid, $merchantData);
             }

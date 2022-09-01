@@ -7,7 +7,7 @@ use DB;
 use Mail;
 use Queue;
 use RZP\Constants\Mode;
-use RZP\Services\Mock\ApachePinotClient;
+use RZP\Services\Mock\HarvesterClient;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\RazorXClient;
@@ -132,7 +132,7 @@ class CoreTest extends TestCase
         $this->addEscalation('L1', 500000);
         $this->addEscalation('L1', 1000000);
 
-        $this->mockApachePinot($merchantDetail->getMerchantId(), 15000);
+        $this->mockPinot($merchantDetail->getMerchantId(), 15000);
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -152,7 +152,7 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 100000);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
 
-        $this->mockApachePinot($merchantDetail->getMerchantId(), 100200);
+        $this->mockPinot($merchantDetail->getMerchantId(), 100200);
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -236,7 +236,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantId, 'payment', 10000);
 
-        (new Escalations\Core)->triggerPaymentEscalations(true);
+        (new Escalations\Core)->triggerPaymentEscalations();
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
 
@@ -263,7 +263,7 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantId, 'payment', 10000);
 
-        (new Escalations\Core)->triggerPaymentEscalations(true);
+        (new Escalations\Core)->triggerPaymentEscalations();
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
 
@@ -572,19 +572,19 @@ class CoreTest extends TestCase
             'merchant_id' => $merchantId
         ]);
 
-        $this->mockApachePinot($merchantId, $amount);
+        $this->mockPinot($merchantId, $amount);
     }
 
-    private function mockApachePinot(string $merchantId, int $amount)
+    private function mockPinot(string $merchantId, int $amount)
     {
-        $pinotService = $this->getMockBuilder(ApachePinotClient::class)
+        $pinotService = $this->getMockBuilder(HarvesterClient::class)
                              ->setConstructorArgs([$this->app])
-                             ->onlyMethods(['getDataFromPinot'])
+                             ->setMethods(['getDataFromPinot'])
                              ->getMock();
 
-        $this->app->instance('apache.pinot', $pinotService);
+        $this->app->instance('eventManager', $pinotService);
 
-        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100];
+        $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100, "transacted_merchants_count" => 1];
 
         $pinotService->method('getDataFromPinot')
                      ->willReturn([$dataFromPinot]);

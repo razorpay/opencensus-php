@@ -7,6 +7,7 @@ use DB;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Services\Mock\HarvesterClient;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Feature\Constants;
@@ -39,7 +40,8 @@ class M2MReferralsTest extends TestCase
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
                               function($mid, $feature, $mode) {
-                                  if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY)
+                                  if ($feature === RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY  or
+                                      $feature === RazorxTreatment::DRUID_MIGRATION )
                                   {
                                       return 'on';
                                   }
@@ -104,6 +106,34 @@ class M2MReferralsTest extends TestCase
         $druidService->method('getDataFromDruid')
                      ->willReturn([null, [$dataFromDruid]]);
     }
+
+    public function mockPinot($merchantId,$amount)
+    {
+        $harvesterService = $this->getMockBuilder(HarvesterClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getDataFromPinot'])
+            ->getMock();
+
+        $this->app->instance('eventManager', $harvesterService);
+
+        $dataFromHarvester = [
+            'user_days_till_last_transaction' => 30,
+            'merchant_lifetime_gmv'           => $amount,
+            'average_monthly_gmv'             => 10,
+            'primary_product_used'            => 'payment_links',
+            'ppc'                             => 1,
+            'mtu'                             => true,
+            'average_monthly_transactions'    => 3,
+            'pg_only'                         => false,
+            'pl_only'                         => true,
+            'pp_only'                         => false,
+            'merchant_details_merchant_id'    => $merchantId
+        ];
+
+        $harvesterService->method('getDataFromPinot')
+            ->willReturn([$dataFromHarvester]);
+    }
+
     /**
      * Scenario: merchant have transacted in the past day,
      * merchant is in activated state,
@@ -119,6 +149,8 @@ class M2MReferralsTest extends TestCase
         $this->app['basicauth']->setOrgId('100000razorpay');
 
         [$merchant] = $this->createMerchantFixtures(1631258738);
+
+        $this->mockPinot($merchant->getId(),6000);
 
         $this->mockDruid($merchant->getId(),6000);
 
@@ -148,7 +180,7 @@ class M2MReferralsTest extends TestCase
         $this->app['basicauth']->setOrgId('100000razorpay');
 
         [$merchant] = $this->createMerchantFixtures(1631258738);
-        $this->mockDruid($merchant->getId(),6000);
+        $this->mockPinot($merchant->getId(),6000);
 
         $feature = $this->fixtures->on('live')->create('feature', [
             'entity_id'   => $merchant->getId(),
@@ -182,7 +214,7 @@ class M2MReferralsTest extends TestCase
         $this->app['basicauth']->setOrgId('100000razorpay');
 
         [$merchant] = $this->createMerchantFixtures(Carbon::now(Timezone::IST)->getTimestamp());
-        $this->mockDruid($merchant->getId(),6000);
+        $this->mockPinot($merchant->getId(),6000);
 
         $this->createTransaction($merchant->getId(), 'payment', 300000);
         $this->createTransaction($merchant->getId(), 'payment', 200000);
@@ -208,7 +240,7 @@ class M2MReferralsTest extends TestCase
         $this->app['basicauth']->setOrgId('100000razorpay');
 
         [$merchant] = $this->createMerchantFixtures(1631258738);
-        $this->mockDruid($merchant->getId(),3);
+        $this->mockPinot($merchant->getId(),3);
 
         $this->createTransaction($merchant->getId(), 'payment', 1);
         $this->createTransaction($merchant->getId(), 'payment', 1);
@@ -235,7 +267,7 @@ class M2MReferralsTest extends TestCase
         $this->app['basicauth']->setOrgId('100000razorpay');
 
         [$merchant] = $this->createMerchantFixtures(1631258738);
-        $this->mockDruid($merchant->getId(),3000);
+        $this->mockPinot($merchant->getId(),3000);
 
         $this->createTransaction($merchant->getId(), 'payment', 300000);
 
