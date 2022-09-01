@@ -139,6 +139,7 @@ class Event
     const PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   = 'product.payment_links.activated_kyc_pending';
 
     const NO_DOC_ONBOARDING_GMV_LIMIT_WARNING           = 'account.no_doc_onboarding_gmv_limit_warning';
+    const INSTANT_ACTIVATION_GMV_LIMIT_WARNING          = 'account.instant_activation_gmv_limit_warning';
 
     //toeknisation events
     const TOKEN_SERVICE_PROVIDER_ACTIVATED                   = 'token.service_provider.activated';
@@ -271,6 +272,7 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED,
+        self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING,
     ];
 
     /**
@@ -403,6 +405,7 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_SUSPENDED,
         self::TOKEN_SERVICE_PROVIDER_DEACTIVATED,
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED,
+        self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -534,6 +537,7 @@ class Event
 
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => 54,
         self::ACCOUNT_UPDATED                             => 55,
+        self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING        => 56,
     ];
 
     /**
@@ -661,6 +665,7 @@ class Event
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => [Product::PRIMARY],
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => [Product::PRIMARY],
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING           => [Product::PRIMARY],
+        self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING          => [Product::PRIMARY],
 
     ];
 
@@ -784,6 +789,7 @@ class Event
         self::TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED       => Entity::TOKEN,
         self::PAYMENT_GATEWAY_PRODUCT_ACTIVATED_KYC_PENDING => Entity::MERCHANT_PRODUCT,
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Entity::MERCHANT_PRODUCT,
+        self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING          => Entity::MERCHANT,
     ];
 
     public static $eventsToFeatureMap = [
@@ -874,6 +880,7 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => Feature\Constants::SUBMERCHANT_ONBOARDING_V2,
         self::PAYMENT_PENDING                               => Feature\Constants::ONE_CLICK_CHECKOUT,
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => Feature\Constants::SUBM_NO_DOC_ONBOARDING,
+        self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING        => Feature\Constants::INSTANT_ACTIVATION_V2_API,
     ];
 
     /**

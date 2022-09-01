@@ -491,6 +491,149 @@ class CoreTest extends TestCase
         return $merchant;
     }
 
+    public function testInstantActivationSoftLimit_5k_EscalationV2()
+    {
+        $this->createAndFetchMocks(true);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId('100000razorpay');
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'    => '100000razorpay',
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
+            ->setMethods(['canTriggerIAWebhookEscalation'])
+            ->getMock();
+
+        $escalationCoreMock->expects($this->any())
+            ->method('canTriggerIAWebhookEscalation')
+            ->willReturn(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
+
+        $merchantId = $merchantDetail->getId();
+
+        $this->createTransaction($merchantId, 'payment', 5050);
+
+        $this->mockPinot($merchantId, 5050);
+
+        $escalationCoreMock->triggerPaymentEscalations(false);
+
+        $escalations = $this->getDbEntities('merchant_onboarding_escalations',[],'live');
+
+        $threshold = 500000;
+
+        $this->verifyEscalationAndActionInstAct_V2('L1', $threshold,
+            $escalations[0], Escalations\Constants::PAYMENTS_ESCALATION_MATRIX[$threshold]);
+
+        $this->verifyEscalationAndActionInstAct_V2('soft_limit_ia_v2', $threshold,
+            $escalations[1], Escalations\Constants::INSTANT_ACTIVATION_V2_API_ESCALATION_MATRIX[$threshold]);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        self::assertEquals(true, $merchant->getAttribute('live'));
+    }
+
+    public function testInstantActivationSoftLimitV2Escalation_10k_milestone()
+    {
+        $this->createAndFetchMocks(true);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId('100000razorpay');
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'    => '100000razorpay',
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
+
+        $merchantId = $merchantDetail->getId();
+
+        $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
+            ->setMethods(['canTriggerIAWebhookEscalation'])
+            ->getMock();
+
+        $escalationCoreMock->expects($this->any())
+            ->method('canTriggerIAWebhookEscalation')
+            ->willReturn(true);
+
+        $this->createTransaction($merchantId, 'payment', 10000);
+
+        $this->addEscalation('L1', 500000);
+        $this->addEscalation('soft_limit_ia_v2',500000);
+
+        $this->mockPinot($merchantDetail->getMerchantId(), 10000);
+
+        $escalationCoreMock->triggerPaymentEscalations(false);
+
+        $escalations = $this->getDbEntities('merchant_onboarding_escalations',[],'live');
+
+        $threshold = 1000000;
+
+        $this->verifyEscalationAndActionInstAct_V2('L1', $threshold,
+            $escalations[2], Escalations\Constants::PAYMENTS_ESCALATION_MATRIX[$threshold]);
+
+        $this->verifyEscalationAndActionInstAct_V2('soft_limit_ia_v2', $threshold,
+            $escalations[3], Escalations\Constants::INSTANT_ACTIVATION_V2_API_ESCALATION_MATRIX[$threshold]);
+    }
+
+    public function testInstantActivationSoftLimitV2Escalation_15kLimitBreached()
+    {
+        $this->createAndFetchMocks(true);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId('100000razorpay');
+
+        $this->fixtures->on('live')->create('org_hostname', [
+            'org_id'    => '100000razorpay',
+            'hostname'  => 'dashboard.razorpay.com'
+        ]);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
+
+        $merchantId = $merchantDetail->getId();
+
+        $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
+            ->setMethods(['canTriggerIAWebhookEscalation'])
+            ->getMock();
+
+        $escalationCoreMock->expects($this->any())
+            ->method('canTriggerIAWebhookEscalation')
+            ->willReturn(true);
+
+        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5200);
+
+        $this->addEscalation('L1', 500000);
+        $this->addEscalation('soft_limit_ia_v2',500000);
+        $this->addEscalation('L1', 1000000);
+        $this->addEscalation('soft_limit_ia_v2',1000000);
+
+        $this->mockPinot($merchantDetail->getMerchantId(), 15200);
+
+        $escalationCoreMock->triggerPaymentEscalations(false);
+
+        $escalations = $this->getDbEntities('merchant_onboarding_escalations',[],'live');
+
+        $threshold = 1500000;
+
+        $this->verifyEscalationAndActionInstAct_V2('L1', $threshold,
+            $escalations[4], Escalations\Constants::PAYMENTS_ESCALATION_MATRIX[$threshold]);
+
+        $this->verifyEscalationAndActionInstAct_V2('hard_limit_ia_v2', $threshold,
+            $escalations[5], Escalations\Constants::INSTANT_ACTIVATION_V2_API_ESCALATION_MATRIX[$threshold]);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        self::assertEquals(false, $merchant->getAttribute('live'));
+    }
+
     private function createAndFetchMocks($razorXEnabled)
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -678,6 +821,50 @@ class CoreTest extends TestCase
                 $this->assertFalse($merchant->getAttribute('live'));
                 $this->assertEquals(0, $merchant->getAttribute('activated'));
                 break;
+        }
+    }
+
+    private function verifyEscalationAndActionInstAct_V2($milestone, $threshold, $escalation, $escalationMatrix, $emptyAction = false)
+    {
+        $expectedEscalationConfig = null;
+        foreach ($escalationMatrix as $config)
+        {
+            if ($config[Escalations\Constants::MILESTONE] === $milestone)
+            {
+                $expectedEscalationConfig = $config;
+                break;
+            }
+        }
+
+        // Verify that escalation is created in db
+        $this->assertNotEmpty($escalation);
+        $this->assertEquals($milestone, $escalation->getAttribute('milestone'));
+        $this->assertEquals($threshold, $escalation->getAttribute('threshold'));
+
+        $this->verifyInstantActivationV2Action($escalation, $expectedEscalationConfig);
+    }
+
+    private function verifyInstantActivationV2Action($escalation, $expectedEscalationConfig)
+    {
+        $actions = DB::table('onboarding_escalation_actions')
+            ->where('escalation_id', $escalation->getId())
+            ->get()->toArray();
+
+        self::assertNotEmpty($actions);
+
+        foreach ($actions as $action)
+        {
+            $this->assertEquals($escalation->getAttribute('id'), $action->escalation_id);
+
+            $expected = Actions\Constants::SUCCESS . '|' . $action->action_handler;
+            $actual   = $action->status . '|' . $action->action_handler;
+            $this->assertEquals($expected, $actual);
+
+            $actionConfig = $this->getActionconfig($action->action_handler, $expectedEscalationConfig);
+
+            self::assertNotEmpty($actionConfig);
+
+            $this->verifyAction($action, $actionConfig);
         }
     }
 }

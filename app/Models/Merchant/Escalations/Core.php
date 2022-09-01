@@ -755,6 +755,8 @@ class Core extends Base\Core
                     $merchantId, $amount, $escalations[$merchantId] ?? []
                 );
 
+                $this->handleInstantActivationV2ApiLimitBreach($merchantId, $amount, $escalations[$merchantId] ?? []);
+
                 if ($triggered === false)
                 {
                     $skippedMerchants[] = [
@@ -1089,5 +1091,85 @@ class Core extends Base\Core
         $merchants = $this->repo->merchant->findManyByPublicIds($merchantIdList);
 
         $this->triggerNoDocLimitEscalation($merchants, $merchantsGmvList, $milestone, $threshold);
+    }
+
+    public function handleInstantActivationV2ApiLimitBreach($merchantId, $amount, $existingEscalations)
+    {
+        try
+        {
+            [$threshold, $escalationConfig] = $this->instantActivationThreshold($merchantId, $amount, $existingEscalations);
+
+            if ($threshold === 0) {
+                return;
+            }
+
+            (new Handler)->triggerEscalation($merchantId, $amount, $threshold, $escalationConfig, Constants::PAYMENT_BREACH);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->error(TraceCode::INSTANT_ACTIVATION_V2_APIS_ESCALATION_FAILURE, [
+                'merchant_id' => $merchantId,
+                'type'        => 'instant_activation_v2_api_webhook_alert',
+                'exception'   => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function instantActivationThreshold($merchantId, $breachedAmount, $existingEscalations)
+    {
+        $escalationMatrix  = array_reverse(Constants::INSTANT_ACTIVATION_V2_API_ESCALATION_MATRIX, true);
+
+        foreach ($escalationMatrix as $threshold => $escalationConfig)
+        {
+            if ($breachedAmount < $threshold)
+            {
+                continue;
+            }
+
+            $existingMilestones = $this->getExistingMilestones($threshold, $existingEscalations);
+
+            $escalationExists = in_array($escalationConfig[0][Constants::MILESTONE], $existingMilestones, true);
+            $hardLimitAlreadyBreached = in_array(Constants::HARD_LIMIT_IA_V2, $existingMilestones, true);
+
+            if ($escalationExists === true or $hardLimitAlreadyBreached === true)
+            {
+                continue;
+            }
+
+            foreach($escalationConfig as $config)
+            {
+                if ($this->canTriggerIAWebhookEscalation($merchantId, $config) === true)
+                {
+                    $config[Constants::ACTIONS][0][Constants::PARAMS][Entity::THRESHOLD] = $threshold;
+
+                    $config[Constants::ACTIONS][0][Constants::PARAMS][Constants::CURRENT_GMV] = $breachedAmount;
+
+                    return [$threshold, $config];
+                }
+            }
+        }
+
+        return [0,null];
+    }
+
+    public function canTriggerIAWebhookEscalation($merchantId, $config): bool
+    {
+        $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+        return (new Handler)->canTriggerEscalation($merchantDetails, $config);
+    }
+
+    public function getExistingMilestones($threshold, $existingEscalations): array
+    {
+        $milestones = [];
+
+        foreach ($existingEscalations as $escalation)
+        {
+            if ($escalation[Entity::THRESHOLD] >= $threshold)
+            {
+                $milestones[] = $escalation[Entity::MILESTONE];
+            }
+        }
+        return $milestones;
     }
 }

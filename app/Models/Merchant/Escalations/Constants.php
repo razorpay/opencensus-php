@@ -4,12 +4,14 @@
 namespace RZP\Models\Merchant\Escalations;
 
 
+use phpDocumentor\Reflection\Types\Self_;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Notifications\Onboarding\Events;
 
 use RZP\Models\Merchant\Detail\Entity as DEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail\Constants as DConstants;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\EscalationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\FundsOnHoldHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\MerchantTagsHandler;
@@ -17,6 +19,7 @@ use RZP\Models\Merchant\Escalations\Actions\Handlers\CommunicationHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\NoDocLimitWarnHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\DisablePaymentsHandler;
 use RZP\Models\Merchant\Escalations\Actions\Handlers\NoDocLimitHandler;
+use RZP\Models\Merchant\Escalations\Actions\Handlers\InstantActivationV2ApiLimitWarnHandler;
 
 class Constants
 {
@@ -82,6 +85,11 @@ class Constants
     const CMMA_SOFT_LIMIT_EXPERIMENT_ID = 'app.cmma_soft_limit_breach_trigger_experiment_id';
     const CMMA_AMP_EXPERIMENT_ID = 'app.cmma_amp_trigger_experiment_id';
     const CMMA_NEW_EXPERIMENT_ID_KEY = 'app.cmma_limit_breach_trigger_new_experiment_id';
+
+    const TAG          = 'tag';
+
+    const SOFT_LIMIT_IA_V2              = 'soft_limit_ia_v2';
+    const HARD_LIMIT_IA_V2              = 'hard_limit_ia_v2';
 
     const PAYMENTS_ESCALATION_MATRIX = [
         0          => [
@@ -352,4 +360,57 @@ class Constants
             ]
         ]
     ];
+
+    const SOFT_LIMIT_IA_V2_API = [
+        [
+            self::DESCRIPTION   => 'soft limit breach on instant activation',
+            self::TO            => self::MERCHANT,
+            self::CONDITIONS    => [
+                DEntity::ACTIVATION_STATUS => Status::INSTANTLY_ACTIVATED,
+                self::TAG                  => 'Instant_activation_subm'
+            ],
+            self::MILESTONE => self::SOFT_LIMIT_IA_V2,
+            self::ACTIONS       => [
+                [
+                    self::HANDLER => InstantActivationV2ApiLimitWarnHandler::class,
+                    self::PARAMS  => [
+                        self::MILESTONE => self::SOFT_LIMIT_IA_V2
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+    const HARD_LIMIT_IA_V2_API = [
+        [
+            self::DESCRIPTION   => '15k limit breach on instant activation',
+            self::TO            => self::MERCHANT,
+            self::CONDITIONS    => [
+                DEntity::ACTIVATION_STATUS => Status::INSTANTLY_ACTIVATED,
+                self::TAG                  => 'Instant_activation_subm'
+            ],
+            self::MILESTONE     => self::HARD_LIMIT_IA_V2,
+            self::ACTIONS       => [
+                [
+                    self::HANDLER   => InstantActivationV2ApiLimitWarnHandler::class,
+                    self::PARAMS    => [
+                        self::MILESTONE => self::HARD_LIMIT_IA_V2
+                    ]
+                ]
+            ]
+        ]
+    ];
+
+    const INSTANT_ACTIVATION_V2_API_ESCALATION_MATRIX = [
+        100000      => self::SOFT_LIMIT_IA_V2_API,
+        500000      => self::SOFT_LIMIT_IA_V2_API,
+        1000000     => self::SOFT_LIMIT_IA_V2_API,
+        1200000     => self::SOFT_LIMIT_IA_V2_API,
+        1300000     => self::SOFT_LIMIT_IA_V2_API,
+        1350000     => self::SOFT_LIMIT_IA_V2_API,
+        1400000     => self::SOFT_LIMIT_IA_V2_API,
+        1450000     => self::SOFT_LIMIT_IA_V2_API,
+        1500000     => self::HARD_LIMIT_IA_V2_API,
+    ];
+
 }
