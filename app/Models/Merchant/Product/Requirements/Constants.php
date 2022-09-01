@@ -99,6 +99,8 @@ class Constants
     const UPDATE          = '_update';
     const CREATE          = '_create';
 
+    const INSTANT_ACTIVATION_LIMIT_BREACH_DESCRIPTION = 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.';
+
     const ARTEFACT_STATUS_MAPPING = [
         Detail\Entity::COMPANY_CIN               => Detail\Entity::CIN_VERIFICATION_STATUS,
         Detail\Entity::COMPANY_PAN               => Detail\Entity::COMPANY_PAN_VERIFICATION_STATUS,

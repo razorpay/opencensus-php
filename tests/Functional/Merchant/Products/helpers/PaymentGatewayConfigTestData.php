@@ -2295,4 +2295,67 @@ return [
         ]
     ],
 
+    'testRequirementsUnRegisteredInstantlyActivatedLimitBreached' => [
+        'request'  => [
+            'url'    => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'requirements' => [
+                    [
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                ],
+                'activation_status' => 'instantly_activated'
+            ]
+        ]
+    ],
+
 ];

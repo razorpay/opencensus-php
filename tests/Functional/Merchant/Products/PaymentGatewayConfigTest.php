@@ -855,6 +855,29 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $this->assertTrue(($merchantProduct[Product\Entity::ACTIVATION_STATUS] === 'instantly_activated'));
     }
 
+    public function testProductConfigRequirementsLimitBreachedWarning()
+    {
+        $this->testUpdateRegisteredMerchantProductsStatusIfApplicable();
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_onboarding_escalations',[
+            'merchant_id'   => $merchantId,
+            'milestone'     => 'hard_limit_ia_v2',
+            'threshold'     => '1500000'
+        ]);
+
+        $merchantProduct = $this->getDbEntity('merchant_product',  ['merchant_id' => $merchantId]);
+
+        $testData = $this->testData['testRequirementsUnRegisteredInstantlyActivatedLimitBreached'];
+
+        $testData['request']['url'] = '/v2/accounts/acc_' . $merchantId . '/products/acc_prd_' . $merchantProduct['id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     /**
      * This testcase validates the following
      * 1. Create an registered account through V2 API

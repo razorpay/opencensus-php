@@ -16,6 +16,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Product\Util;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Product\TncMap\Acceptance as TncAcceptance;
@@ -113,6 +114,8 @@ class PaymentProductsBaseService extends Base\Service
             $allRequirements = array_merge($requirements, $optionalRequirements);
 
             $allRequirements = $this->updateResolutionUrl($merchantDetails, $merchantProduct, $allRequirements);
+
+            $this->addInstantActivationAlertInRequirementIfApplicable($merchant, $allRequirements);
 
             return $allRequirements;
         }
@@ -990,6 +993,32 @@ class PaymentProductsBaseService extends Base\Service
                 $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
 
                 array_push($requirements, $requirement);
+            }
+        }
+    }
+
+    /**
+     * This function will add a reminder in requirement array when Instantly_activated merchant would have exhausted
+     * their 15k limit, urging them to submit rest of the requirements.
+     * @param Merchant\Entity $merchant
+     * @param array $requirements
+     */
+    protected function addInstantActivationAlertInRequirementIfApplicable(Merchant\Entity $merchant,array &$requirements)
+    {
+        $tagResult = (new AccountV2\Core())->isInstantActivationTagEnabled($merchant->getId());
+
+        if($tagResult === false or $merchant->getAccountStatus() !== Status::INSTANTLY_ACTIVATED)
+        {
+            return ;
+        }
+
+        $escalation = $this->repo->merchant_onboarding_escalations->fetchEscalationForThresholdAndMilestone(
+            $merchant->getId(), 'hard_limit_ia_v2', 1500000);
+
+        if ($escalation)
+        {
+            foreach ($requirements as &$requirement) {
+                $requirement["description"] = Constants::INSTANT_ACTIVATION_LIMIT_BREACH_DESCRIPTION;
             }
         }
     }
