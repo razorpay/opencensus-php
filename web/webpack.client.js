@@ -13,6 +13,8 @@ const fontsToProjectMap = {
   pokedex: 'merchant',
 };
 
+const IS_WORKBOX_ENABLE = ['merchant', 'merchantLA'];
+
 module.exports = ({ config, project }) => {
   config.entry = {
     [project]: `./js/${project}/index.js`,
@@ -167,16 +169,21 @@ module.exports = ({ config, project }) => {
   }
 
   config.plugins.push(
-    new WorkbboxWebpackPlugin.InjectManifest({
-      exclude: [/\.map$/, /asset-manifest\.json$/, /\.(png|jpg|jpeg|svg|gif|html)?$/],
-      swSrc: './utils/customWorkbox.js',
-      swDest: 'sw-utils/sw.js',
-    }),
     new webpack.DefinePlugin({
       'process.env.PROJECT': JSON.stringify(project),
       'process.env.PUBLIC_ENV': JSON.stringify(process.env.STAGE),
     }),
   );
+
+  if (IS_WORKBOX_ENABLE.indexOf(project) > -1) {
+    config.plugins.push(
+      new WorkbboxWebpackPlugin.InjectManifest({
+        exclude: [/\.map$/, /asset-manifest\.json$/, /\.(png|jpg|jpeg|svg|gif|html)?$/],
+        swSrc: './utils/customWorkbox.js',
+        swDest: `sw-utils/sw-${project}.js`,
+      }),
+    );
+  }
 
   return config;
 };

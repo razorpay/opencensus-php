@@ -22,7 +22,8 @@ const unregister = () => {
 export default function registerServiceWorker() {
   if (process.env.PUBLIC_ENV === 'production') {
     if ('serviceWorker' in navigator) {
-      if (isWorkboxEnable()) {
+      const url = process.env.PROJECT && `/sw-${process.env.PROJECT}.js`;
+      if (isWorkboxEnable() && url) {
         const workboxInstance = new Workbox('/sw.js');
         workboxInstance.addEventListener('installed', () => {
           console.log('Service Worker is ready');
