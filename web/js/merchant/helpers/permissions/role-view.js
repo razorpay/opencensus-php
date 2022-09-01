@@ -133,4 +133,5 @@ export default {
   partner_home: [OWNER],
   loans: [OWNER, ADMIN],
   cash_advance: [OWNER, ADMIN],
+  b2b_payments: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
 };

@@ -850,7 +850,7 @@ const initialState = {
     },
     {
       name: 'International Payments',
-      description: 'Cards, Paypal',
+      description: 'Cards, Paypal, USD ACH & more',
       slug: 'international',
       icon: 'international',
       actionItems: {},
@@ -913,6 +913,25 @@ const initialState = {
               status: 'greyed',
               slug: 'app.sofort',
               icon: 'sofort',
+            },
+          ],
+        },
+        {
+          header: 'Bank Transfers (International)',
+          listHeader: 'Local Currency Bank Transfer',
+          listDescription:
+            'Setup a local account in all locations mentioned below to accept international payments',
+          slug: 'localcurrencytransfer',
+          list: [
+            {
+              name: 'USD Bank Account',
+              description: 'Accept payments via ACH transfer',
+              message:
+                'Share the below details with your US customers to accept USD payments via ACH transfer',
+              vaCurrency: 'USD',
+              status: 'greyed',
+              slug: 'international.usd',
+              icon: 'https://cdn.razorpay.com/static/assets/instrument-request/usd.svg',
             },
           ],
         },

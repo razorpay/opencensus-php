@@ -1,0 +1,104 @@
+$blue-highlight = #0B70E70D
+$desc-white = #162F568A
+$text-blue = #2A86F3
+$color-grey = #515978
+$border-color-1 = #EAEFF0
+$border-color-2 = #222
+
+.local-wire-transfer-instrument
+  padding: 0 20px
+
+  &:last-child .instrument-row
+    border-bottom: unset
+
+  .toggle-container
+    display: flex
+    flex-direction: row
+    align-items: center
+
+    .toggle-text
+      color: $text-blue
+      font-size: 14px
+      font-weight: 500
+      cursor: pointer
+      display: flex
+
+    .icon-wrapper
+      transform: rotate(90deg)
+      margin-left: 7px
+      transition: 0.4s transform
+
+      i
+        color: $text-blue
+
+    .LoaderDots
+      margin-left: 7px
+      margin-top: -13px
+
+      span
+        color: $text-blue
+
+  .detail-list
+    display: flex
+    flex-direction: column
+    height: 0
+    overflow: hidden
+    transition: 0.4s height
+
+    .list-item
+      display: flex
+      flex-direction: row
+      justify-content: space-between
+      align-items: center
+      padding: 12px 0
+      border-bottom: 1px solid $border-color-1
+
+      .ClipboardCustom
+        [data-tip]::before
+          bottom: 0
+          border-bottom-color: $border-color-2
+          border-top-color: transparent
+
+        [data-tip]::after
+          bottom: -115%
+
+      .info
+        font-size: 12px
+        line-height: 16px
+        color: $desc-white
+
+  &.active
+    background: $blue-highlight
+
+    .detail-list
+      height: 240px
+
+    .toggle-container
+      .icon-wrapper
+        transform: rotate(-90deg)
+        font-weight: 600
+
+.b2b-acknowledgement-popup
+  .modal-title
+    font-size: 17px
+    color: $color-grey
+
+  p
+    margin-bottom: 20px
+    color: $color-grey
+
+  .checkbox-wrapper
+    display: flex
+    flex-direction: row
+    align-items: center
+    margin-bottom: 20px
+
+    .Input--checkbox
+      margin: 0
+
+    .i-external-link
+      margin-left: 3px
+
+  .btn-primary
+    margin-bottom: 24px
+    width: 100%

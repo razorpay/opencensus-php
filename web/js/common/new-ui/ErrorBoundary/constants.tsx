@@ -152,4 +152,6 @@ export const RoutesConfig = {
 
   '/connected-banking': Teams.PLATFORM_GROWTH,
   '/announcements': Teams.PLATFORM_GROWTH,
+
+  '/payments/b2b-exports': Teams.CROSS_BORDER,
 };

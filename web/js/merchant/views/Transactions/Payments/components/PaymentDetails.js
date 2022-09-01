@@ -165,33 +165,35 @@ function PaymentDetails(props) {
                 user.isSingleReconEnabled && user.isOptimizerEnabled ? 'optimizer-panel-body' : ''
               }`}
             >
-              {payment.status === 'authorized' && isRoleAllowedEdit && (
-                <div className="payments-manual-actions">
-                  <button
-                    onClick={() => {
-                      track.capturePayment(
-                        'capture payment',
-                        isFromHomePage ? 'home page' : 'transactions',
-                      );
-                      track.onActionSideBar(
-                        'action items on sidebar',
-                        isFromHomePage ? 'home page' : 'transactions',
-                      );
-                      props.confirmCapture(payment);
-                    }}
-                    className="btn btn-primary"
-                  >
-                    Capture Payment
-                  </button>
-                  <button
-                    onClick={openRefundModal}
-                    className="btn btn-primary"
-                    style={{ marginLeft: '5px' }}
-                  >
-                    Refund Payment
-                  </button>
-                </div>
-              )}
+              {payment.status === 'authorized' &&
+                isRoleAllowedEdit &&
+                payment.method !== 'intl_bank_transfer' && (
+                  <div className="payments-manual-actions">
+                    <button
+                      onClick={() => {
+                        track.capturePayment(
+                          'capture payment',
+                          isFromHomePage ? 'home page' : 'transactions',
+                        );
+                        track.onActionSideBar(
+                          'action items on sidebar',
+                          isFromHomePage ? 'home page' : 'transactions',
+                        );
+                        props.confirmCapture(payment);
+                      }}
+                      className="btn btn-primary"
+                    >
+                      Capture Payment
+                    </button>
+                    <button
+                      onClick={openRefundModal}
+                      className="btn btn-primary"
+                      style={{ marginLeft: '5px' }}
+                    >
+                      Refund Payment
+                    </button>
+                  </div>
+                )}
               <Alert type={statusMsg.type} message={statusMsg.message} />
               <div
                 className={`list-group pair-row-container ${

@@ -79,7 +79,12 @@ export default class ListContainer extends Component {
     params = this.removeBlacklistedParams(params);
 
     // HOTFIX: temporary, default to 7 days for loading payments if there is no from and to in the URL
-    if (this.props.location.pathname === '/payments' && !params?.from && !params?.to) {
+    if (
+      (this.props.location.pathname === '/payments' ||
+        this.props.location.pathname === '/payments/b2b-exports') &&
+      !params?.from &&
+      !params?.to
+    ) {
       params.from = moment().add(-7, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
     }

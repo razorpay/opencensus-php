@@ -1,11 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { Link } from 'react-router-dom';
 import LeafListItem from './LeafListItem';
 import { analyticsTrack } from 'common/utils/analytics';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { setFeatureFlag } from 'merchant/reducers/b2bExports/actions';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import Paypal from './Paypal';
 import International from './International';
+import LocalWireTransfer from './LocalWireTransfer/index';
 import InstantBankTransfer from './InstantBankTransfer';
 
 const fircClickHandler = () => {
@@ -20,8 +24,16 @@ const fircClickHandler = () => {
   });
 };
 
-const LeafList = ({ instrument, intermediateInstrument, user }) => {
+const LeafList = ({
+  instrument,
+  intermediateInstrument,
+  user,
+  isB2BEnabled,
+  fetchFeatureStatus,
+  setFeatureFlag,
+}) => {
   const [filter, setFilter] = useState('active');
+
   const ulRef = useRef(null);
   const addShadow = () => {
     if (ulRef && ulRef.current) {
@@ -33,9 +45,27 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
       }
     }
   };
+
+  /**
+   * this checks if B2B instrument container has to be shown to a
+   * merchant using feature flag status
+   */
+  const checkB2BFeatureFlag = async () => {
+    const response = await fetchFeatureStatus(user?.id, 'allow_b2b_activation');
+    if (response?.success) {
+      setFeatureFlag({ isB2BEnabled: response?.data?.status });
+    }
+  };
+
   useEffect(() => {
     addShadow();
   });
+
+  //calls the function when merchant is on international tab
+  useEffect(() => {
+    instrument?.slug === 'international' && checkB2BFeatureFlag();
+  }, [instrument]);
+
   if (!instrument) return null;
   function renderLeafList(leafList) {
     const analyticsList = {};
@@ -75,6 +105,8 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
         return <p class="all-inactive">No banks active for you. Add more banks to catch up.</p>;
       }
     }
+    if (leafList?.slug === 'localcurrencytransfer' && user?.international)
+      return <LocalWireTransfer leafList={leafList} />;
     if (leafList?.slug === 'instantbanktransfer') {
       return <InstantBankTransfer leafList={leafList} />;
     }
@@ -94,6 +126,7 @@ const LeafList = ({ instrument, intermediateInstrument, user }) => {
   return (
     <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
       {instrument.leafList.map((leafList) => {
+        if (leafList.slug === 'localcurrencytransfer' && !isB2BEnabled) return null;
         if (
           leafList?.slug === 'instantbanktransfer' &&
           (!user.isApmOnboardingEnabled || !user?.international)
@@ -226,6 +259,11 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   instrument: state.instrumentRequests.leafInstrument,
   intermediateInstrument: state.instrumentRequests.intermediateInstrument,
+  isB2BEnabled: state.b2bExportsAccounts.featureFlags?.isB2BEnabled,
 });
 
-export default connect(mapStateToProps, {})(LeafList);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators({ setFeatureFlag, fetchFeatureStatus }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(LeafList);

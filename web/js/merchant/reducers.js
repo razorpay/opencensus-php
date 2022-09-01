@@ -120,6 +120,7 @@ import {
   allowlistReducer,
 } from 'merchant/reducers/magicCheckout/magicIntelligence/reducer';
 
+import { b2bReducers } from 'merchant/reducers/b2bExports';
 import non3dsCardsActivationReducer from 'merchant/reducers/non3dsCardsActivation';
 import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
 import apiStatsReducer from 'merchant/reducers/developers/apiStats';
@@ -239,6 +240,8 @@ export default combineReducers({
   trackEvents: trackEventsReducer,
   workflows: workflowReducer,
   virtualAccountBatches: virtualAccountBatchesReducer,
+  b2bExportsTransactions: b2bReducers.b2bExportsTransactionsReducer,
+  b2bExportsAccounts: b2bReducers.b2bExportsAccountsReducer,
   apmForm: apmFormReducer,
   non3dsCardsActivation: non3dsCardsActivationReducer,
   apiLogs: apiLogsReducer,

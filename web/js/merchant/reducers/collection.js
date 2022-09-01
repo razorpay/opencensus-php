@@ -15,6 +15,7 @@ import Submerchant from 'merchant/models/Submerchant';
 import Token from 'merchant/models/Token';
 import Commission from 'merchant/models/Commission';
 import Invitation from 'merchant/models/Invitation';
+import B2bExportsPayments from 'merchant/models/B2bExportsPayments';
 
 import RegistrationLink from 'merchant/models/RegistrationLink';
 
@@ -163,6 +164,9 @@ export const transfersReducer = makeActionCollectionReducer('TRANSFERS');
 
 export const fetchReversals = (params) => fetchAll(params, Reversal, 'REVERSALS');
 export const reversalsReducer = makeCollectionReducer('REVERSALS');
+
+export const fetchB2bPayments = (params) =>
+  fetchAll(params, B2bExportsPayments, 'B2B_EXPORTS_TRANSACTIONS');
 
 export const fetchMarketplacePayments = (params) => {
   params.transferred = 1;
