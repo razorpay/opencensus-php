@@ -17,32 +17,34 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends Core
 {
-    const TENANT                = 'tenant';
-    const MODE                  = 'mode';
-    const MERCHANT_ID           = 'merchant_id';
-    const BALANCE_ID            = 'balance_id';
-    const CURRENCY              = 'currency';
-    const AMOUNT                = 'amount';
-    const BASE_AMOUNT           = 'base_amount';
-    const COMMISSION            = 'commission';
-    const TAX                   = 'tax';
-    const NOTES                 = 'notes';
-    const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
-    const FTS_ACCOUNT_TYPE      = 'fts_account_type';
-    const TERMINAL_ID           = 'terminal_id';
-    const TERMINAL_ACCOUNT_TYPE = 'terminal_account_type';
-    const TRANSACTION_ID        = 'transaction_id';
-    const TRANSACTION_DATE      = 'transaction_date';
-    const TRANSACTOR_ID         = 'transactor_id';
-    const TRANSACTOR_EVENT      = 'transactor_event';
-    const TRANSACTION_CONFIG_ID = 'transaction_config_id';
-    const ENTITY                = 'entity';
-    const IDEMPOTENCY_KEY       = 'idempotency_key';
-    const BANKING_ACCOUNT_ID    = 'banking_account_id';
-    const API_TRANSACTION_ID    = 'api_transaction_id';
-    const IDENTIFIERS           = 'identifiers';
-    const ADDITIONAL_PARAMS     = 'additional_params';
-    const FTS_INFO              = 'fts_info';
+    const TENANT                 = 'tenant';
+    const LEDGER_TENANT_HEADER   = 'ledger-tenant';
+    const MODE                   = 'mode';
+    const MERCHANT_ID            = 'merchant_id';
+    const BALANCE_ID             = 'balance_id';
+    const CURRENCY               = 'currency';
+    const AMOUNT                 = 'amount';
+    const BASE_AMOUNT            = 'base_amount';
+    const COMMISSION             = 'commission';
+    const TAX                    = 'tax';
+    const NOTES                  = 'notes';
+    const FTS_FUND_ACCOUNT_ID    = 'fts_fund_account_id';
+    const FTS_ACCOUNT_TYPE       = 'fts_account_type';
+    const TERMINAL_ID            = 'terminal_id';
+    const TERMINAL_ACCOUNT_TYPE  = 'terminal_account_type';
+    const TRANSACTION_ID         = 'transaction_id';
+    const TRANSACTION_DATE       = 'transaction_date';
+    const TRANSACTOR_ID          = 'transactor_id';
+    const TRANSACTOR_EVENT       = 'transactor_event';
+    const TRANSACTION_CONFIG_ID  = 'transaction_config_id';
+    const ENTITY                 = 'entity';
+    const IDEMPOTENCY_KEY        = 'idempotency_key';
+    const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
+    const BANKING_ACCOUNT_ID     = 'banking_account_id';
+    const API_TRANSACTION_ID     = 'api_transaction_id';
+    const IDENTIFIERS            = 'identifiers';
+    const ADDITIONAL_PARAMS      = 'additional_params';
+    const FTS_INFO               = 'fts_info';
 
     const BANKING_ACCOUNT_STMT_DETAIL_ID  = "banking_account_stmt_detail_id";
 
@@ -237,8 +239,8 @@ class Base extends Core
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_FROM_JOB, $payload);
         $ledgerService = $this->app['ledger'];
         $requestHeaders = [
-            self::TENANT          => self::X,
-            self::IDEMPOTENCY_KEY => Uuid::uuid1()
+            self::LEDGER_TENANT_HEADER    => self::X,
+            self::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
         ];
 
         $response = $ledgerService->createJournal($payload, $requestHeaders, true);
@@ -266,12 +268,12 @@ class Base extends Core
         {
             $ledgerService = $this->app['ledger'];
             $requestHeaders = [
-                self::TENANT => self::X
+                self::LEDGER_TENANT_HEADER => self::X
             ];
             // create a new idempotency key for the first call, use the same idempotency key for retry
             if ($retryCount === 0)
             {
-                $requestHeaders[self::IDEMPOTENCY_KEY] = Uuid::uuid1();
+                $requestHeaders[self::IDEMPOTENCY_KEY_HEADER] = Uuid::uuid1();
             }
             $response = $ledgerService->createJournal($payload, $requestHeaders, true);
 
@@ -360,7 +362,7 @@ class Base extends Core
         {
             $ledgerService = $this->app['ledger'];
             $requestHeaders = [
-                self::TENANT => self::X
+                self::LEDGER_TENANT_HEADER => self::X
             ];
             $response = $ledgerService->fetchByTransactor($payload, $requestHeaders, true);
         }

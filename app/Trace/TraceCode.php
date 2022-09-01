@@ -7033,6 +7033,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_RESPONSE                                       = 'LEDGER_RESPONSE';
     const LEDGER_REQUEST                                        = 'LEDGER_REQUEST';
     const LEDGER_FAILURE_EXCEPTION                              = 'LEDGER_FAILURE_EXCEPTION';
+    const LEDGER_REQUEST_HEADER_MISSING                         = 'LEDGER_REQUEST_HEADER_MISSING';
 
     const LEDGER_JOURNAL_CRON_INIT                              = 'LEDGER_JOURNAL_CRON_INIT';
     const LEDGER_DELETE_MERCHANTS_REQUEST                       = 'LEDGER_DELETE_MERCHANTS_REQUEST';

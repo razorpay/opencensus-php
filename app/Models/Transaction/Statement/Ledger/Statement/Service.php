@@ -121,7 +121,7 @@ class Service extends Base\Service
             ];
 
             $requestHeaders = [
-                LedgerProcessor\Base::TENANT => LedgerProcessor\Base::X
+                LedgerProcessor\Base::LEDGER_TENANT_HEADER => LedgerProcessor\Base::X
             ];
 
             $response = $this->ledgerService->fetchById($request, $requestHeaders);

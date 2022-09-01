@@ -118,8 +118,8 @@ class Core extends Base\Core
             // onboard to ledger in sync for reverse shadow mode
             $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, self::BANKING_ACCOUNT_ID, $bankingAccount->getPublicId(), $balanceAmount, $creditBalance, $bankingAccount->getFtsFundAccountId());
             $requestHeaders = [
-                self::TENANT          => self::X,
-                self::IDEMPOTENCY_KEY => Uuid::uuid1()
+                LedgerService::LEDGER_TENANT_HEADER    => self::X,
+                LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
             ];
             $ledgerService = $this->app['ledger'];
             $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
@@ -150,8 +150,8 @@ class Core extends Base\Core
         {
             $payload = $this->getPGLedgerAccountCreatePayload($mode, $merchant, self::PG_MERCHANT_ONBOARDING, $balanceAmount, $creditBalances);
             $requestHeaders = [
-                self::TENANT          => self::PG,
-                self::IDEMPOTENCY_KEY => Uuid::uuid1()->toString()
+                LedgerService::LEDGER_TENANT_HEADER    => self::PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
             ];
             $ledgerService = $this->app['ledger'];
             $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
@@ -176,8 +176,8 @@ class Core extends Base\Core
         {
             $payload = $this->getPGLedgerGatewayAccountCreatePayload($mode, $merchantId, self::PG_GATEWAY_ONBOARDING, $gateway);
             $requestHeaders = [
-                self::TENANT          => self::PG,
-                self::IDEMPOTENCY_KEY => Uuid::uuid1()->toString()
+                LedgerService::LEDGER_TENANT_HEADER    => self::PG,
+                LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()->toString()
             ];
             $ledgerService = $this->app['ledger'];
             $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
@@ -400,8 +400,8 @@ class Core extends Base\Core
             // onboard to ledger in sync for reverse shadow mode
             $payload = $this->getLedgerAccountCreatePayload($mode, $merchant, $event, self::BANKING_ACCOUNT_STMT_DETAILS_ID, $bankingAccountStmtDetails->getPublicId(), $balanceAmount, $creditBalance, null);
             $requestHeaders = [
-                self::TENANT          => self::X,
-                self::IDEMPOTENCY_KEY => Uuid::uuid1()
+                LedgerService::LEDGER_TENANT_HEADER    => self::X,
+                LedgerService::IDEMPOTENCY_KEY_HEADER  => Uuid::uuid1()
             ];
             $ledgerService = $this->app['ledger'];
             $ledgerService->createAccountsOnEvent($payload, $requestHeaders, true);
@@ -439,7 +439,7 @@ class Core extends Base\Core
                 ];
 
                 $requestHeaders = [
-                    self::TENANT => self::X,
+                    LedgerService::LEDGER_TENANT_HEADER => self::X,
                 ];
 
                 $ledgerBalanceFetchTiDBEnabled = $this->isBalanceFetchFromLedgerTiDBEnabled($merchantId, $this->mode);
@@ -634,7 +634,7 @@ class Core extends Base\Core
             ];
 
             $requestHeaders = [
-                self::TENANT => self::X
+                LedgerService::LEDGER_TENANT_HEADER => self::X,
             ];
 
             if ($balance != null)

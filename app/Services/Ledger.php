@@ -107,8 +107,7 @@ class Ledger
     const CONTENT_TYPE           = 'Content-Type';
     const X_REQUEST_ID           = 'X-Request-ID';
     const TENANT                 = 'tenant';
-    const LEDGER_TENANT_HEADER   = 'Ledger-Tenant';
-    const IDEMPOTENCY_KEY        = 'idempotency_key';
+    const LEDGER_TENANT_HEADER   = 'ledger-tenant';
     const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
 
     const REQUEST_TIMEOUT = 60; // In seconds
@@ -632,33 +631,34 @@ class Ledger
      */
     private function addHeaders(array $headers)
     {
-        // Add Ledger-Tenant header
-        if(isset($headers[self::TENANT]) === true)
+        // Add ledger-tenant header
+        if(isset($headers[self::LEDGER_TENANT_HEADER]) === true)
         {
-            $this->headers[self::LEDGER_TENANT_HEADER] = $headers[self::TENANT];
+            if(is_array($headers[self::LEDGER_TENANT_HEADER]) === true)
+            {
+                $this->headers[self::LEDGER_TENANT_HEADER] = $headers[self::LEDGER_TENANT_HEADER][0];
+            }
+            else
+            {
+                $this->headers[self::LEDGER_TENANT_HEADER] = $headers[self::LEDGER_TENANT_HEADER];
+            }
         }
         // for backward compatibility adding X as default value
         // As we have only onboarded X use cases till now
         else
         {
+            $this->trace->info(TraceCode::LEDGER_REQUEST_HEADER_MISSING, [
+                'value' => self::LEDGER_TENANT_HEADER,
+            ]);
+
             $this->headers[self::LEDGER_TENANT_HEADER] = self::RAZORPAY_X_TENANT;
         }
 
         // Add idempotency-key header
-        if(isset($headers[self::IDEMPOTENCY_KEY]) === true)
+        if(isset($headers[self::IDEMPOTENCY_KEY_HEADER]) === true)
         {
-            $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $headers[self::IDEMPOTENCY_KEY];
+            $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $headers[self::IDEMPOTENCY_KEY_HEADER];
         }
-    }
-
-    public function setIdempotencyKey(string $key)
-    {
-        $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $key;
-    }
-
-    public function setTenantHeader(string $key)
-    {
-        $this->headers[self::LEDGER_TENANT_HEADER] = $key;
     }
 
     /**
@@ -772,9 +772,6 @@ class Ledger
             $url = $this->baseTestUrl . $endpoint;
         }
 
-        // Will remove statement once we've the tenant header present in the request header list
-        $this->headers[self::LEDGER_TENANT_HEADER] = $this->getTenant($body);
-
         $this->addHeaders($headers);
 
         // json encode if data is must, else ignore.
@@ -806,35 +803,6 @@ class Ledger
     protected function getAdminEmail(): string
     {
         return $this->auth->getDashboardHeaders()['admin_email'] ?? '';
-    }
-
-    /**
-     * @param array  $data
-     *
-     * @return string
-     */
-    protected function getTenant(array $data): string
-    {
-        $tenant = Request::header(self::LEDGER_TENANT_HEADER);
-
-        // TODO: remove conditional X after everything is in place
-        // reading tenant from header for rest call
-        if ($tenant !== NULL)
-        {
-            return $tenant;
-        }
-        // reading from request if call is internal.
-        // Eg if payout want to trigger some endpoint the header will not contain the tenant
-        elseif (isset($data[self::TENANT]) === true and $data[self::TENANT] !== NULL)
-        {
-            return $data[self::TENANT];
-        }
-        // for backward compatibility adding X as default value
-        // As we have only onboarded X use cases till now
-        else
-        {
-            return 'X';
-        }
     }
 
     /**

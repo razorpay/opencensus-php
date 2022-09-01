@@ -162,7 +162,7 @@ class Service extends Base\Service
 
         $ledgerRequest = (new InternalLedgerProcessor())->createLedgerPayloadFromEntity($internal, $params);
         $ledgerRequestHeaders = [
-            self::TENANT => self::X
+            LedgerService::LEDGER_TENANT_HEADER => self::X
         ];
 
         $journal = $this->createJournal($ledgerRequest, $ledgerRequestHeaders);
@@ -185,7 +185,7 @@ class Service extends Base\Service
         {
             $ledgerRequest = (new InternalLedgerProcessor())->createLedgerPayloadFromEntity($internal, $params);
             $ledgerRequestHeaders = [
-                self::TENANT => self::X
+                LedgerService::LEDGER_TENANT_HEADER => self::X
             ];
 
             $response = $this->ledgerService->createJournal($ledgerRequest, $ledgerRequestHeaders, true);
