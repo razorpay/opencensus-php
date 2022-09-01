@@ -7926,6 +7926,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const IFSC_MAPPING_MISSING_FOR_INVALID_IFSC                       = 'IFSC_MAPPING_MISSING_FOR_INVALID_IFSC';
 
+    const ASSOCIATED_ACCOUNTS_FOR_MARKET_PLACE_FEATURE_MERCHANT       = 'ASSOCIATED_ACCOUNTS_FOR_MARKET_PLACE_FEATURE_MERCHANT';
+    const ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS              = 'ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS';
+    const PARTNER_FETCH_SUBMERCHANTS_LIST                             = 'PARTNER_FETCH_SUBMERCHANTS_LIST';
+    const PARTNER_FETCH_SUBMERCHANTS_DATA                             = 'PARTNER_FETCH_SUBMERCHANTS_DATA';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

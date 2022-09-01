@@ -4808,6 +4808,13 @@ class Core extends Base\Core
             });
         }
 
+        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS_LIST,[
+            'partner_id'            => $partner->getId(),
+            'merchants'             => $merchants,
+            'apply_product_filter'  => $applyProductFilter,
+            'product_usage'         => $checkingProductUsage
+        ]);
+
         $fetchSubMerchantsLatency = millitime() - $reqStartAt;
 
         $this->trace->info(
@@ -4851,6 +4858,14 @@ class Core extends Base\Core
                 ]
             );
         }
+
+        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA,
+            [
+                'partner_id'      => $partner->getId(),
+                'product'         => $product,
+                'merchants'       => $merchants
+            ]
+        );
 
         return $applyProductFilter ? [$merchants, 'offset' => $offset] : [$merchants];
     }
