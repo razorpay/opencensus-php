@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\Service\Config;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Workflow\Service\Adapter\Constants;
 use RZP\Models\Workflow\Service\Client;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -51,20 +52,38 @@ class Core extends Base\Core
         // Duplicating code, since the old flow will be removed in future
         // todo: Remove this comment post removal of old flow
 
+        $config_type = Constants::PAYOUTS_APPROVAL_CONFIG_TYPE;
+
+        // config type will be passed from Admin dashboard for ICICI config
+        if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
+        {
+            $config_type = $input[Constants::CONFIG_TYPE];
+            unset($input[Constants::CONFIG_TYPE]);
+        }
+
         // Create config in workflow service
         $response = $this->workflowServiceClient->createConfigV2($input);
 
-        $this->saveConfigId($response);
+        $this->saveConfigId($response, $config_type);
 
         return $response;
     }
 
     public function updateWorkflowConfig(array $input): array
     {
+        $config_type = Constants::PAYOUTS_APPROVAL_CONFIG_TYPE;
+
+        // config type will be passed from Admin dashboard for ICICI config
+        if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
+        {
+            $config_type = $input[Constants::CONFIG_TYPE];
+            unset($input[Constants::CONFIG_TYPE]);
+        }
+
         // Update config in workflow service
         $response = $this->workflowServiceClient->updateConfigV2($input);
 
-        $this->saveConfigId($response);
+        $this->saveConfigId($response, $config_type);
 
         return $response;
     }
@@ -79,12 +98,13 @@ class Core extends Base\Core
 
     /**
      * @param array $response
+     * @param string $config_type
      */
-    private function saveConfigId(array $response) {
+    private function saveConfigId(array $response, string $config_type) {
         $attributes = [
             Entity::ID          => $response[Entity::ID],
             Entity::CONFIG_ID   => $response[Entity::ID],
-            Entity::CONFIG_TYPE => $response[Entity::TYPE],
+            Entity::CONFIG_TYPE => $config_type !== null ? $config_type : $response[Entity::TYPE],
             Entity::ENABLED     => $response[Entity::ENABLED] === 'true',
         ];
 

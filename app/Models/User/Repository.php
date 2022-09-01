@@ -103,6 +103,13 @@ class Repository extends Base\Repository
                     ->firstOrFailPublic();
     }
 
+    public function getUserFromId($user_id)
+    {
+        return $this->newQuery()
+            ->where(Entity::ID, $user_id)
+            ->firstOrFailPublic();
+    }
+
 
     public function findUserWithContactNumbersExcludingUser(string $userIdToBeExcluded, array $numbers)
     {

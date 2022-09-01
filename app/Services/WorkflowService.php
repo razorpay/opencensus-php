@@ -150,11 +150,18 @@ class WorkflowService
             // Return the response received from workflow service.
             // Take care of throwing appropriate response in the service layer.
             // Make this default, and remove throwing default ServerErrorException
-            $isSSWFEnabled = $this->app['razorx']->getTreatment($this->ba->getMerchantId(),
-                    Merchant\RazorxTreatment::RX_SELF_SERVE_WORKFLOW,
-                    Mode::LIVE) === 'on';
+            $isSSWFEnabled = false;
 
-            if ($isSSWFEnabled === true)
+            $isAdminAuth = $this->app['basicauth']->isAdminAuth();
+
+            if ($isAdminAuth === false)
+            {
+                $isSSWFEnabled = $this->app['razorx']->getTreatment($this->ba->getMerchantId(),
+                        Merchant\RazorxTreatment::RX_SELF_SERVE_WORKFLOW,
+                        Mode::LIVE) === 'on';
+            }
+
+            if ($isAdminAuth == true || $isSSWFEnabled === true)
             {
                 return $res;
             }

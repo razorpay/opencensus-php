@@ -33,4 +33,9 @@ class Entity extends Pivot
         return $this->getAttribute(self::ROLE);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
+    }
+
 }

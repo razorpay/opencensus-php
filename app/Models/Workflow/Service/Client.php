@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\WorkflowService;
 use RZP\Models\Workflow\Service\Adapter;
+use RZP\Models\Workflow\Service\Adapter\Constants;
 
 class Client
 {
@@ -317,13 +318,32 @@ class Client
     /**
      * @param Base\PublicEntity $entity
      * @param array $input
+     * @param array $optional_input
      * @return array
+     * @throws Exception\RuntimeException
+     * @throws Exception\ServerErrorException
      */
-    public function createActionOnEntity(Base\PublicEntity $entity, array $input)
+    public function createActionOnEntity(Base\PublicEntity $entity, array $input, array $optional_input = [])
     {
         $entityAdapter = $this->getEntityAdapter($entity);
 
         $actionPayload = $entityAdapter->getActionCreateOnEntityPayload($entity, $input);
+
+        // this is applicable only for ICICI CA Flow
+        // where payouts layer trigger workflow approve call for Owner state
+        if (count($optional_input) > 0)
+        {
+            $input[Constants::ACTOR_ID] = $optional_input[Constants::ACTOR_ID];
+            $input[Constants::ACTOR_TYPE] = $optional_input[Constants::ACTOR_TYPE];
+            $input[Constants::ACTOR_PROPERTY_KEY] = $optional_input[Constants::ACTOR_PROPERTY_KEY];
+            $input[Constants::ACTOR_PROPERTY_VALUE] = $optional_input[Constants::ACTOR_PROPERTY_VALUE];
+            $input[Constants::SERVICE] = Constants::SERVICE_RX_LIVE;
+            $input[Constants::ACTOR_META] =
+                [
+                    Constants::EMAIL => $optional_input[Constants::ACTOR_EMAIL],
+                    Constants::NAME => $optional_input[Constants::ACTOR_NAME]
+                ];
+        }
 
         $this->trace->info(TraceCode::WORKFLOW_SERVICE_TRACE_INFO, $actionPayload);
 

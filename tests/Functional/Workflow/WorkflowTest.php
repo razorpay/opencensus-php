@@ -324,6 +324,38 @@ class WorkflowTest extends TestCase
         $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
     }
 
+    public function testCreateICICIWorkflowConfigInAdminAuth()
+    {
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+
+        $this->assertEquals(true, $workflowConfig['enabled']);
+
+        $this->assertEquals('icici-payouts-approval', $workflowConfig['config_type']);
+
+        $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+    }
+
     public function testUpdateWorkflowConfig()
     {
         $user = $this->fixtures->create('user');
@@ -338,6 +370,34 @@ class WorkflowTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
         $this->startTest();
+    }
+
+    public function testUpdateICICIWorkflowConfigInAdminAuth()
+    {
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+
+        $this->assertEquals(true, $workflowConfig['enabled']);
+
+        $this->assertEquals('icici-payouts-approval', $workflowConfig['config_type']);
+
+        $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
     }
 
     public function testDeleteWorkflowConfig()
@@ -358,6 +418,30 @@ class WorkflowTest extends TestCase
         $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
 
         $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+    }
+
+    public function testDeleteICICIWorkflowConfigInAdminAuth()
+    {
+        $admin = $this->prepareAdminForPayoutWorkflow('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'token'      => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('test', $token);
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->ba->addAccountAuth('10000000000000');
 
         $this->startTest();
 
@@ -698,10 +782,15 @@ class WorkflowTest extends TestCase
             'name'   => 'edit_workflow'
         ]);
 
+        $permission7 = $this->fixtures->on($mode)->create('permission',[
+            'name'   => 'self_serve_workflow_config'
+        ]);
+
         $role->permissions()->attach($permission3->getId());
         $role->permissions()->attach($permission4->getId());
         $role->permissions()->attach($permission5->getId());
         $role->permissions()->attach($permission6->getId());
+        $role->permissions()->attach($permission7->getId());
 
         $admin->roles()->attach($role);
 

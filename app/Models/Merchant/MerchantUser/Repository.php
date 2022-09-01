@@ -225,6 +225,15 @@ class Repository extends Base\Repository
             ->get()->count();
     }
 
+    public function fetchOwnerByMerchantIdAndBankingProduct(string $merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ROLE, 'owner')
+            ->where(Entity::PRODUCT, 'banking')
+            ->firstOrFail();
+    }
+
     /**
      * Fetches all the merchant_users for given merchantIds and roles from the provided connection mode
      *

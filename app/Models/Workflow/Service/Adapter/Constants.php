@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Service\Adapter;
 class Constants
 {
     const SERVICE_RX                    = 'rx_';
+    const SERVICE_RX_LIVE               = 'rx_live';
     const PAYOUT_SERVICE_CALLBACK       = 'payouts_';
 
     const WORKFLOW_TYPE                 = 'workflow_type';
@@ -19,12 +20,15 @@ class Constants
     const ROLE                          = 'role';
     const API                           = 'api';
     const NAME                          = 'name';
+    const EMAIL                         = 'email';
     const INTERNAL_ACTOR_NAME           = 'internalsystem';
+    const PAYOUTS_APPROVAL_CONFIG_TYPE  = 'payouts-approval';
 
     const WORKFLOW_ID           = 'workflow_id';
     const STATUS                = 'status';
     const DOMAIN_STATUS         = 'domain_status';
     const CONFIG_ID             = 'config_id';
+    const CONFIG_TYPE           = 'config_type';
 
     const WORKFLOW_HISTORY      = 'workflow_history';
     const WORKFLOW_STATES       = 'states';
@@ -36,10 +40,14 @@ class Constants
     const COMMENT               = 'comment';
     const ACTOR_ID              = 'actor_id';
     const ACTOR_TYPE            = 'actor_type';
+    const ACTOR_EMAIL           = 'actor_email';
+    const ACTOR_NAME            = 'actor_name';
     const ACTOR_PROPERTY_KEY    = 'actor_property_key';
     const ACTOR_PROPERTY_VALUE  = 'actor_property_value';
     const ACTOR_META            = 'actor_meta';
     const NARRATION             = 'narration';
     const NOTES                 = 'notes';
+    const APPROVED              = 'approved';
     const REJECTED              = 'rejected';
+    const OWNER                 = 'owner';
 }

@@ -148,75 +148,53 @@ class IciciCaPayoutTest extends TestCase
    //2fa approval flow first attempt with otp
     public function testCreatingPendingPayoutsAndApprovalWithOtp()
     {
-        $this->liveSetUp();
+        $this->testPayoutCreateWithIcici2FaSuccess();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payoutAttrib = [];
-
-        $payoutAttrib['account_number'] = '2224440041626905';
-
-        $this->createPayoutWithWorkflow($payoutAttrib, 'rzp_live_TheLiveAuthKey');
-
-        $payout = $this->getDbLastEntity('payout','live');
+        $payout = $this->getDbLastEntity('payout');
 
         // Approve with Owner role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', null);
+        $this->ba->proxyAuth();
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_id'] = 'pout_'.$payout['id'];
 
         $this->startTest();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
-        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+        $fta = $this->getDbLastEntity('fund_transfer_attempt');
 
         $publicResponse = $payout->toArrayPublic();
 
         $this->assertEquals('pending_on_otp', $payout['internal_status']);
         $this->assertEquals('pending', $publicResponse['status']);
         $this->assertEquals($payout['id'], $fta['source_id']);
-        $this->assertEquals('initiated', $fta['status']);
     }
 
     //Retry flow for payout approval once invalid or expired otp is entered.
     public function testCreatingPendingPayoutsAndRetryApprovalWithOtp()
     {
-        $this->liveSetUp();
+        $this->testPayoutCreateWithIcici2FaSuccess();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
-
-        $this->createPayoutWorkflowWithBankingUsersLiveMode();
-
-        $payoutAttrib = [];
-
-        $payoutAttrib['account_number'] = '2224440041626905';
-
-        $this->createPayoutWithWorkflow($payoutAttrib, 'rzp_live_TheLiveAuthKey');
-
-        $payout = $this->getDbLastEntity('payout','live');
+        $payout = $this->getDbLastEntity('payout');
 
         // Approve with Owner role user
-        $this->ba->proxyAuth('rzp_live_10000000000000', null);
+        $this->ba->proxyAuth();
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_id'] = 'pout_'.$payout['id'];
 
         $this->startTest();
 
-        $oldPayout = $this->getDbLastEntity('payout', 'live');
+        $oldPayout = $this->getDbLastEntity('payout');
 
-        $oldFta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+        $oldFta = $this->getDbLastEntity('fund_transfer_attempt');
 
         $publicResponse = $oldPayout->toArrayPublic();
 
         $this->assertEquals('pending_on_otp', $oldPayout['internal_status']);
         $this->assertEquals('pending', $publicResponse['status']);
         $this->assertEquals($payout['id'], $oldFta['source_id']);
-        $this->assertEquals('initiated', $oldFta['status']);
 
         //Moving payout back to pending assuming that it was an invalid otp and reattempting
         $this->fixtures->edit(
@@ -229,9 +207,9 @@ class IciciCaPayoutTest extends TestCase
 
         $this->startTest();
 
-        $newPayout = $this->getDbLastEntity('payout', 'live');
+        $newPayout = $this->getDbLastEntity('payout');
 
-        $newFta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+        $newFta = $this->getDbLastEntity('fund_transfer_attempt');
 
         $publicResponseNew = $newPayout->toArrayPublic();
 
@@ -239,7 +217,6 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals('pending', $publicResponseNew['status']);
         $this->assertEquals($oldFta['id'], $newFta['id']);
         $this->assertEquals($oldPayout['id'], $newPayout['id']);
-        $this->assertEquals('initiated', $newFta['status']);
     }
 
     //Reattempt for approval when otp is already submitted and payout is in pending_on_otp state
@@ -247,9 +224,9 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
-        $this->ba->proxyAuth('rzp_live_10000000000000', null);
+        $this->ba->proxyAuth();
 
         $testData = &$this->testData[__FUNCTION__];
         $testData['request']['content']['payout_id'] = 'pout_'.$payout['id'];
@@ -262,14 +239,14 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
         $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
                 'is_fts'      => true,
-            ], 'live')->first();
+            ])->first();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -277,7 +254,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->ftsAuth('live');
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -294,14 +271,14 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
         $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
                 'is_fts'      => true,
-            ], 'live')->first();
+            ])->first();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -309,7 +286,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->ftsAuth('live');
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -326,16 +303,16 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
         $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
                 'is_fts'      => true,
-            ], 'live')->first();
+            ])->first();
 
-        $this->setUpCounterAndFreePayoutsCount('direct', $payout->getBalanceId(), 'icici', 'live');
+        $this->setUpCounterAndFreePayoutsCount('direct', $payout->getBalanceId(), 'icici');
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -343,7 +320,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->ftsAuth('live');
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -364,8 +341,7 @@ class IciciCaPayoutTest extends TestCase
             [
                 'account_type' => 'direct',
                 'balance_id'   => $payout->getBalanceId(),
-            ],
-            'live')->first();
+            ])->first();
 
         // Assert that one free payout has been consumed
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
@@ -375,14 +351,14 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
         $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
                 'is_fts'      => true,
-            ], 'live')->first();
+            ])->first();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -390,7 +366,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->ftsAuth('live');
+        $this->ba->ftsAuth();
 
         $payloadForInitiatedWebhook = $testData['request']['content'];
 
@@ -412,7 +388,7 @@ class IciciCaPayoutTest extends TestCase
 
         $ftaForPayout->reload();
 
-        $feeRecovery = $this->getDbLastEntity('fee_recovery', 'live');
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
 
         $this->assertEquals($payout['id'], $feeRecovery->getEntityId());
 
@@ -433,14 +409,14 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
         $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
                 'is_fts'      => true,
-            ], 'live')->first();
+            ])->first();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -448,7 +424,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->ftsAuth('live');
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -456,7 +432,7 @@ class IciciCaPayoutTest extends TestCase
 
         $ftaForPayout->reload();
 
-        $feeRecovery = $this->getDbLastEntity('fee_recovery', 'live');
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
 
         $this->assertEquals($payout['id'], $feeRecovery->getEntityId());
 
@@ -477,14 +453,14 @@ class IciciCaPayoutTest extends TestCase
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();
 
-        $payout = $this->getDbLastEntity('payout', 'live');
+        $payout = $this->getDbLastEntity('payout');
 
         $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
             [
                 'source_id'   => $payout->getId(),
                 'source_type' => 'payout',
                 'is_fts'      => true,
-            ], 'live')->first();
+            ])->first();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -492,7 +468,7 @@ class IciciCaPayoutTest extends TestCase
 
         $this->testData[__FUNCTION__] = $testData;
 
-        $this->ba->ftsAuth('live');
+        $this->ba->ftsAuth();
 
         $this->startTest();
 
@@ -500,9 +476,9 @@ class IciciCaPayoutTest extends TestCase
 
         $ftaForPayout->reload();
 
-        $reversal = $this->getDbLastEntity('reversal', 'live');
+        $reversal = $this->getDbLastEntity('reversal');
 
-        $feeRecovery = $this->getDbLastEntity('fee_recovery', 'live');
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
 
         $this->assertEquals($reversal['id'], $feeRecovery->getEntityId());
 

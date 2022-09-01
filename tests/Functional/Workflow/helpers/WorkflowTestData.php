@@ -947,6 +947,272 @@ return [
         ],
     ],
 
+    'testCreateICICIWorkflowConfigInAdminAuth' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/workflow/config',
+            'content' => [
+                'config_type' => 'icici-payouts-approval'
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "id" =>  "FQE6Xw4ZpoM21X",
+                "name" =>  "10000000000000 - Payout approval workflow",
+                "template" =>  [
+                    "state_transitions" =>  [
+                        "0_1k_workflow" =>  [
+                            "current_state" =>  "0_1k_workflow",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "10k_10Cr_workflow" =>  [
+                            "current_state" =>  "10k_10Cr_workflow",
+                            "next_states" =>  [
+                                "Owner_Approval"
+                            ]
+                        ],
+                        "1k_10k_workflow" =>  [
+                            "current_state" =>  "1k_10k_workflow",
+                            "next_states" =>  [
+                                "FL1_Approval",
+                                "FL4_Approval"
+                            ]
+                        ],
+                        "Admin_Approval" =>  [
+                            "current_state" =>  "Admin_Approval",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "And_1_result" =>  [
+                            "current_state" =>  "And_1_result",
+                            "next_states" =>  [
+                                "FL2_Approval",
+                                "Admin_Approval"
+                            ]
+                        ],
+                        "FL1_Approval" =>  [
+                            "current_state" =>  "FL1_Approval",
+                            "next_states" =>  [
+                                "And_1_result"
+                            ]
+                        ],
+                        "FL2_Approval" =>  [
+                            "current_state" =>  "FL2_Approval",
+                            "next_states" =>  [
+                                "FL3_Approval"
+                            ]
+                        ],
+                        "FL3_Approval" =>  [
+                            "current_state" =>  "FL3_Approval",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "FL4_Approval" =>  [
+                            "current_state" =>  "FL4_Approval",
+                            "next_states" =>  [
+                                "And_1_result"
+                            ]
+                        ],
+                        "Owner_Approval" =>  [
+                            "current_state" =>  "Owner_Approval",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "START_STATE" =>  [
+                            "current_state" =>  "START_STATE",
+                            "next_states" =>  [
+                                "0_1k_workflow",
+                                "1k_10k_workflow",
+                                "10k_10Cr_workflow"
+                            ]
+                        ]
+                    ],
+                    "states_data" =>  [
+                        "0_1k_workflow" =>  [
+                            "name" =>  "0_1k_workflow",
+                            "group" =>  "ABC",
+                            "type" =>  "between",
+                            "rules" =>  [
+                                "min" =>  "1",
+                                "max" =>  "1000",
+                                "key" =>  "amount"
+                            ]
+                        ],
+                        "10k_10Cr_workflow" =>  [
+                            "name" =>  "10k_10Cr_workflow",
+                            "group" =>  "ABC",
+                            "type" =>  "between",
+                            "rules" =>  [
+                                "min" =>  "10000",
+                                "max" =>  "100000000",
+                                "key" =>  "amount"
+                            ]
+                        ],
+                        "1k_10k_workflow" =>  [
+                            "name" =>  "1k_10k_workflow",
+                            "group" =>  "ABC",
+                            "type" =>  "between",
+                            "rules" =>  [
+                                "min" =>  "1000",
+                                "max" =>  "10000",
+                                "key" =>  "amount"
+                            ]
+                        ],
+                        "Admin_Approval" =>  [
+                            "name" =>  "Admin_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "admin",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "And_1_result" =>  [
+                            "name" =>  "And_1_result",
+                            "group" =>  "ABC",
+                            "type" =>  "merge_states",
+                            "rules" =>  [
+                                "states" =>  [
+                                    "FL1_Approval",
+                                    "FL4_Approval"
+                                ]
+                            ]
+                        ],
+                        "FL1_Approval" =>  [
+                            "name" =>  "FL1_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl1",
+                                "count" =>  2
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "FL2_Approval" =>  [
+                            "name" =>  "FL2_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl2",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "FL3_Approval" =>  [
+                            "name" =>  "FL3_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl3",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "FL4_Approval" =>  [
+                            "name" =>  "FL4_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl4",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "Owner_Approval" =>  [
+                            "name" =>  "Owner_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "owner",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "allowed_actions" =>  [
+                        "approved",
+                        "rejected"
+                    ],
+                    "meta" =>  [
+                        "domain" =>  "payouts",
+                        "task_list_name" =>  "payouts-approval",
+                        "workflow_expire_time" =>  "3000"
+                    ],
+                    "type" =>  "approval"
+                ],
+                "type" =>  "payout-approval",
+                "version" =>  1,
+                "owner_id" =>  "10000000000000",
+                "owner_type" =>  "merchant",
+                "context" =>  [
+                    "aa" =>  "test context"
+                ],
+                "enabled" =>  "true",
+                "service" =>  "rx_live",
+                "org_id" =>  "100000razorpay",
+                "created_at" =>  "1597317215"
+            ],
+        ],
+    ],
+
     'testUpdateWorkflowConfig' => [
         'request'  => [
             'method'  => 'PUT',
@@ -1214,6 +1480,272 @@ return [
         ],
     ],
 
+    'testUpdateICICIWorkflowConfigInAdminAuth' => [
+        'request'  => [
+            'method'  => 'PUT',
+            'url'     => '/admin/workflow/config',
+            'content' => [
+                'config_type' => 'icici-payouts-approval'
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "id" =>  "FQE6Xw4ZpoM21X",
+                "name" =>  "10000000000000 - Payout approval workflow",
+                "template" =>  [
+                    "state_transitions" =>  [
+                        "0_1k_workflow" =>  [
+                            "current_state" =>  "0_1k_workflow",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "10k_10Cr_workflow" =>  [
+                            "current_state" =>  "10k_10Cr_workflow",
+                            "next_states" =>  [
+                                "Owner_Approval"
+                            ]
+                        ],
+                        "1k_10k_workflow" =>  [
+                            "current_state" =>  "1k_10k_workflow",
+                            "next_states" =>  [
+                                "FL1_Approval",
+                                "FL4_Approval"
+                            ]
+                        ],
+                        "Admin_Approval" =>  [
+                            "current_state" =>  "Admin_Approval",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "And_1_result" =>  [
+                            "current_state" =>  "And_1_result",
+                            "next_states" =>  [
+                                "FL2_Approval",
+                                "Admin_Approval"
+                            ]
+                        ],
+                        "FL1_Approval" =>  [
+                            "current_state" =>  "FL1_Approval",
+                            "next_states" =>  [
+                                "And_1_result"
+                            ]
+                        ],
+                        "FL2_Approval" =>  [
+                            "current_state" =>  "FL2_Approval",
+                            "next_states" =>  [
+                                "FL3_Approval"
+                            ]
+                        ],
+                        "FL3_Approval" =>  [
+                            "current_state" =>  "FL3_Approval",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "FL4_Approval" =>  [
+                            "current_state" =>  "FL4_Approval",
+                            "next_states" =>  [
+                                "And_1_result"
+                            ]
+                        ],
+                        "Owner_Approval" =>  [
+                            "current_state" =>  "Owner_Approval",
+                            "next_states" =>  [
+                                "END_STATE"
+                            ]
+                        ],
+                        "START_STATE" =>  [
+                            "current_state" =>  "START_STATE",
+                            "next_states" =>  [
+                                "0_1k_workflow",
+                                "1k_10k_workflow",
+                                "10k_10Cr_workflow"
+                            ]
+                        ]
+                    ],
+                    "states_data" =>  [
+                        "0_1k_workflow" =>  [
+                            "name" =>  "0_1k_workflow",
+                            "group" =>  "ABC",
+                            "type" =>  "between",
+                            "rules" =>  [
+                                "min" =>  "1",
+                                "max" =>  "1000",
+                                "key" =>  "amount"
+                            ]
+                        ],
+                        "10k_10Cr_workflow" =>  [
+                            "name" =>  "10k_10Cr_workflow",
+                            "group" =>  "ABC",
+                            "type" =>  "between",
+                            "rules" =>  [
+                                "min" =>  "10000",
+                                "max" =>  "100000000",
+                                "key" =>  "amount"
+                            ]
+                        ],
+                        "1k_10k_workflow" =>  [
+                            "name" =>  "1k_10k_workflow",
+                            "group" =>  "ABC",
+                            "type" =>  "between",
+                            "rules" =>  [
+                                "min" =>  "1000",
+                                "max" =>  "10000",
+                                "key" =>  "amount"
+                            ]
+                        ],
+                        "Admin_Approval" =>  [
+                            "name" =>  "Admin_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "admin",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "And_1_result" =>  [
+                            "name" =>  "And_1_result",
+                            "group" =>  "ABC",
+                            "type" =>  "merge_states",
+                            "rules" =>  [
+                                "states" =>  [
+                                    "FL1_Approval",
+                                    "FL4_Approval"
+                                ]
+                            ]
+                        ],
+                        "FL1_Approval" =>  [
+                            "name" =>  "FL1_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl1",
+                                "count" =>  2
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "FL2_Approval" =>  [
+                            "name" =>  "FL2_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl2",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "FL3_Approval" =>  [
+                            "name" =>  "FL3_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl3",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "FL4_Approval" =>  [
+                            "name" =>  "FL4_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "fl4",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ],
+                        "Owner_Approval" =>  [
+                            "name" =>  "Owner_Approval",
+                            "group" =>  "ABC",
+                            "type" =>  "checker",
+                            "rules" =>  [
+                                "actor_property_key" =>  "role",
+                                "actor_property_value" =>  "owner",
+                                "count" =>  1
+                            ],
+                            "callbacks" =>  [
+                                "status" =>  [
+                                    "in" =>  [
+                                        "created",
+                                        "processed"
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    "allowed_actions" =>  [
+                        "approved",
+                        "rejected"
+                    ],
+                    "meta" =>  [
+                        "domain" =>  "payouts",
+                        "task_list_name" =>  "payouts-approval",
+                        "workflow_expire_time" =>  "3000"
+                    ],
+                    "type" =>  "approval"
+                ],
+                "type" =>  "payout-approval",
+                "version" =>  1,
+                "owner_id" =>  "10000000000000",
+                "owner_type" =>  "merchant",
+                "context" =>  [
+                    "aa" =>  "test context"
+                ],
+                "enabled" =>  "true",
+                "service" =>  "rx_live",
+                "org_id" =>  "100000razorpay",
+                "created_at" =>  "1597317215"
+            ],
+        ],
+    ],
+
     'testDeleteWorkflowConfig' => [
         'request'  => [
             'method'  => 'DELETE',
@@ -1221,6 +1753,23 @@ return [
             'content' => [
                 'otp' => '0007',
                 'action' => 'delete_workflow_config'
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testDeleteICICIWorkflowConfigInAdminAuth' => [
+        'request'  => [
+            'method'  => 'DELETE',
+            'url'     => '/admin/workflow/config',
+            'content' => [
             ],
             'server' => [
                 'HTTP_X-Dashboard-User-Id' => '20000000000000',

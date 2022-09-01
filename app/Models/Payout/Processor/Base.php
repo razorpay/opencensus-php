@@ -403,8 +403,15 @@ class Base extends BaseCore
 
         $this->preValidations();
 
-        // Workflow is enabled by default for this flow
-        $this->isWorkflowEnabled = true;
+        if ($this->isTestMode() === true)
+        {
+            $this->isWorkflowEnabled = false;
+        }
+        else
+        {
+            // Workflow is enabled by default for this flow
+            $this->isWorkflowEnabled = true;
+        }
 
         /** @var Payout\Entity $payout */
         $payout = $this->repo->transaction(function () use ($input)
@@ -1819,17 +1826,20 @@ class Base extends BaseCore
 
                 $this->trace->count(Metric::PAYOUT_WORKFLOW_CREATION_FAILED_TOTAL);
 
+                // Remove workflow fallback for self-serve feature
+                // TODO: Make this default (removing the API fallback) for all the flows
+
                 $isCacEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
                         Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_ENABLED,
                         Mode::LIVE) === Workflow\Constants::ON;
 
-                // Remove workflow fallback for self-serve feature
-                // TODO: Make this default (removing the API fallback) for all the flows
+                $isIcici2faEnabled = $this->merchant->isFeatureEnabled(Features::ICICI_2FA);
+
                 $isSSWFEnabled = $this->app['razorx']->getTreatment($this->merchant->getId(),
                         Merchant\RazorxTreatment::RX_SELF_SERVE_WORKFLOW,
                         Mode::LIVE) === 'on';
 
-                if ($isCacEnabled === true || $isSSWFEnabled === true)
+                if ($isCacEnabled === true || $isSSWFEnabled === true || $isIcici2faEnabled === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_FAILURE,

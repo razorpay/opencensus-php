@@ -1572,6 +1572,10 @@ class Route
         'workflow_config_update'                    => ['put',    'workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
         'workflow_config_delete'                    => ['delete',    'workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
 
+        'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
+        'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
+        'workflow_config_delete_admin'              => ['delete',    'admin/workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
+
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
@@ -7297,6 +7301,11 @@ class Route
         'developer_console_admin_action',
 
         'banking_account_statement_fetch_missing',
+
+        // Self serve workflow admin routes
+        'workflow_config_create_admin',
+        'workflow_config_update_admin',
+        'workflow_config_delete_admin',
     ];
 
     public static $routePermission = [
@@ -8606,6 +8615,11 @@ class Route
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
         'get_non_3ds_details'                        => Permission::VIEW_ALL_WORKFLOW,
+
+        // Self serve workflow admin routes
+        'workflow_config_create_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'workflow_config_delete_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -12761,6 +12775,11 @@ class Route
             //'delete_cac_role',
             'create_cac_role',
             'edit_cac_role',
+
+            // Self serve workflow admin routes
+            'workflow_config_create_admin',
+            'workflow_config_update_admin',
+            'workflow_config_delete_admin',
         ],
 
         //

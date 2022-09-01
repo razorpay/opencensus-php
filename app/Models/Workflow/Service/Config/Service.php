@@ -102,11 +102,14 @@ class Service extends Base\Service
      */
     public function createWorkflowConfig(array $input)
     {
-        // Verify OTP
-        (new User\Core)->verifyOtp($input,
-            $this->app['basicauth']->getMerchant(),
-            $this->app['basicauth']->getUser(),
-            $this->app['basicauth']->getMode() === Constants\Mode::TEST);
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            // Verify OTP
+            (new User\Core)->verifyOtp($input,
+                $this->app['basicauth']->getMerchant(),
+                $this->app['basicauth']->getUser(),
+                $this->app['basicauth']->getMode() === Constants\Mode::TEST);
+        }
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -125,11 +128,15 @@ class Service extends Base\Service
      */
     public function updateWorkflowConfig(array $input)
     {
-        // Verify OTP
-        (new User\Core)->verifyOtp($input,
-            $this->app['basicauth']->getMerchant(),
-            $this->app['basicauth']->getUser(),
-            $this->app['basicauth']->getMode() === Constants\Mode::TEST);
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            // Verify OTP
+            (new User\Core)->verifyOtp($input,
+                $this->app['basicauth']->getMerchant(),
+                $this->app['basicauth']->getUser(),
+                $this->app['basicauth']->getMode() === Constants\Mode::TEST);
+
+        }
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -150,11 +157,15 @@ class Service extends Base\Service
      */
     public function deleteWorkflowConfig(array $input)
     {
-        // Verify OTP
-        (new User\Core)->verifyOtp($input,
-            $this->app['basicauth']->getMerchant(),
-            $this->app['basicauth']->getUser(),
-            $this->app['basicauth']->getMode() === Constants\Mode::TEST);
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            // Verify OTP
+            (new User\Core)->verifyOtp($input,
+                $this->app['basicauth']->getMerchant(),
+                $this->app['basicauth']->getUser(),
+                $this->app['basicauth']->getMode() === Constants\Mode::TEST);
+
+        }
 
         $workflowInput = $this->generateWorkflowInput($input);
 

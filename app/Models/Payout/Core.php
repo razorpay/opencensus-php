@@ -78,6 +78,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
+use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
 use RZP\Models\Payout\DataMigration\Processor as DataMigrationProcessor;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\PushNotifications\Payout\PendingApprovals as PendingApprovalsPN;
@@ -830,12 +831,22 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payout);
 
-        $this->processApproveActionOnPayoutViaWorkflowServiceForICICICAPayout($payout->getId(), $payout->merchant->getId());
-    }
-
-    public function processApproveActionOnPayoutViaWorkflowServiceForICICICAPayout(string $payoutId, string $merchantId)
-    {
-
+        try
+        {
+            $this->processApproveActionOnPayoutViaWorkflowServiceForICICICAPayout($payout->getId(), $payout->merchant->getId());
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException(
+                $throwable,
+                null,
+                TraceCode::PAYOUT_2FA_ICICI_PROCESS_WORKFLOW_EXCEPTION,
+                [
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $payout->merchant->getId()
+                ]
+            );
+        }
     }
 
     public function repeatedFtsStatusUpdateForTerminalStatePayout(Entity $payout, string $status)
@@ -4886,6 +4897,53 @@ class Core extends Base\Core
             ]);
 
             throw $e;
+        }
+    }
+
+    protected function processApproveActionOnPayoutViaWorkflowServiceForICICICAPayout(string $payout_id, string $merchant_id)
+    {
+        $optional_input = [];
+
+        // get payout entity from payout_id
+        $payout = $this->repo->payout->findByIdAndMerchantId($payout_id, $merchant_id);
+
+        // get owner from merchant id
+        $owner = $this->repo->merchant_user->fetchOwnerByMerchantIdAndBankingProduct($merchant_id);
+
+        // get user details from owner_id
+        $user = $this->repo->user->getUserFromId($owner->getUserId());
+
+        $optional_input[WorkflowConstants::ACTOR_ID] = $owner->getUserId();
+        $optional_input[WorkflowConstants::ACTOR_TYPE] = WorkflowConstants::USER;
+        $optional_input[WorkflowConstants::ACTOR_PROPERTY_KEY] = WorkflowConstants::ROLE;
+        $optional_input[WorkflowConstants::ACTOR_PROPERTY_KEY] = WorkflowConstants::OWNER;
+        $optional_input[WorkflowConstants::ACTOR_EMAIL] = $user->getEmail();
+        $optional_input[WorkflowConstants::ACTOR_NAME] = $user->getName();
+
+        try
+        {
+            $input = [];
+
+            $input['action'] = Workflow\Service\Adapter\Payout::APPROVED;
+
+            $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_INFO, [
+                'payout_id' => $payout->getId(),
+                'action'    => Workflow\Service\Adapter\Payout::APPROVED,
+                'input'     => $input,
+            ]);
+
+
+            $this->workflowService->createActionOnEntity($payout, $input, $optional_input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::PAYOUT_WORKFLOW_OWNER_APPROVE_FAILED_ICICI_CA, [
+                'payout_id'     => $payout_id,
+                'action'        => WorkflowConstants::APPROVED,
+                'merchant_id'   => $merchant_id,
+            ]);
+
+            $this->trace->count(Metric::PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL);
         }
     }
 
