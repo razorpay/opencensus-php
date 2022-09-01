@@ -1,33 +1,42 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { defaultTagStyle, tagStyles, TAG_MAP, TAG_OVERALL_MAP } from '../constants';
 
 export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
-  const { backgroundColor, borderColor, borderStyle, borderWidth } = tagStyle;
+  const { backgroundColor, color, borderStyle, borderWidth } = tagStyle;
 
-  const onClick = (e) => onSelect(e.target.id);
+  const onCheck = useCallback((e) => onSelect(e.target.value), [onSelect]);
 
   return (
-    <div
-      className="tags-group__tag"
-      id={tag.value}
-      onClick={onClick}
-      style={{
-        ...(backgroundColor && isActive && { backgroundColor }),
-        ...(borderColor && { borderColor }),
-        ...(borderStyle && { borderStyle }),
-        ...(borderWidth && { borderWidth }),
-      }}
-    >
-      {tag.name || '--'}
-    </div>
+    <label className="tag-list__item">
+      <input
+        type="checkbox"
+        checked={isActive}
+        name={tag.name}
+        value={tag.value}
+        onChange={onCheck}
+      />
+      <span
+        className="tag-list__item-label"
+        style={{
+          ...(backgroundColor && isActive && { backgroundColor }),
+          ...(color && { color }),
+          ...(color && { borderColor: color }),
+          ...(borderStyle && { borderStyle }),
+          ...(borderWidth && { borderWidth }),
+        }}
+      >
+        <i className="i i-tick tick tick--check" />
+        {tag.name || '--'}
+      </span>
+    </label>
   );
 };
 
 const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect }) => {
   if (isLoading) {
     return (
-      <div className="tags-loader">
+      <div className="tag-list">
         <PlaceholderLoader />
         <PlaceholderLoader style={{ width: '45%' }} />
       </div>
@@ -37,7 +46,7 @@ const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect }
   if (!tags?.length) return null;
 
   return (
-    <div className="tags-group">
+    <div className="tag-list">
       {tags?.map((tag, idx) => {
         let name = TAG_MAP[tag] ?? tag;
         if (tag === 'Overall') name = TAG_OVERALL_MAP[groupBy];

@@ -300,12 +300,8 @@ export const getMerchantErrorsPayload = () => {
     from: startDate.unix(),
     to: endDate.unix(),
     mode,
-    filters: {
-      method,
-    },
-    group_by: {
-      limit: 4,
-    },
+    filters: { method },
+    group_by: { limit: 6 },
   };
 
   return payload;

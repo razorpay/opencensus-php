@@ -1,15 +1,16 @@
-$bg-white = #ffffff
-$text-blue = #528ff0
+$bg-white = #FFF
+$text-blue = #528FF0
 $text-grey = #58666E
 $text-green = #008659
 $font-color = #0A1D38
-$default-grey = #9fb1c7
+$default-grey = #9FB1C7
 $border-grey = #A6B0BF
 $border-blue = #336CD5
 $widget-border = #E8EAEB
 $pill-color = #132644
+$btn-disabled-border = #CFDADD73
+$btn-disabled-text = #58666E73
 $spacer = 8px
-font-size = 14px
 
 .sr-dashboard
   background-color: $bg-white
@@ -29,45 +30,91 @@ font-size = 14px
     &__actions
       margin-top: $spacer * 3
       margin-left: $spacer * 2
+
       .btn
         font-weight: bold
+
       .btn-text
         color: $text-blue
         background-color: transparent
         margin-left: $spacer
 
     .grouping-dropdown
-      width 192px
-      margin-right 20px
+      width: 192px
+      margin-right: 20px
 
-/*************** Tab Filter ***************/
-
-.success-rate-tab-filter
-  left -28px !important //adding important to override element.style added by PowerSelect library
-  top 5px !important //adding important to override element.style added by PowerSelect library
+.sr-tab__filter
+  /* stylelint-disable */
+  left: -28px !important //adding important to override element.style added by PowerSelect library
+  top: 5px !important //adding important to override element.style added by PowerSelect library
+  /* stylelint-enable */
 
   &.PowerSelect__Tether
-    width 192px
+    width: 192px
 
   .react-normal-select__Menu
     .PowerSelect__Options
       .PowerSelect__Option
-        padding 0 10px
+        padding: 0 10px
 
         &:hover
-          background-color #FAFBFC
+          background-color: #FAFBFC
 
         & > span
-          line-height 40px
+          line-height: 40px
 
       .PowerSelect__Option--highlighted
-        background-color $bg-white
+        background-color: $bg-white
 
-/*******************************************************/
+.sr-metrics .metrics-card
+  padding: $spacer * 2
+  padding-bottom: $spacer
+  background-color: $bg-white
+  border: 1px solid $border-grey
+  border-radius: 2px
 
+  &__title
+    display: flex
+    align-items: center
 
-/*************** Success rate tabs ***************/
-  
+    p.display-text
+      margin: 0
+
+    small.help-content
+      margin-left: 4px
+
+      > i.i-help-outline
+        color: $text-grey
+        font-size: 14px
+        vertical-align: middle
+
+  > h1
+    color: $font-color
+    margin: $spacer 0
+    font-size: 24px
+    line-height: 36px
+
+  div.mini-chart
+    width: 100%
+    height: 40px
+    background-color: transparent
+    transition: 0.1s margin 0.05s ease-out
+
+    .min-chart-content
+      width: 100%
+      height: 100%
+      margin-bottom: 4px
+      border-bottom: 1px solid transparent
+
+    &.active
+      transition: margin 0.1s ease-out
+
+    &.no-data .min-chart-content
+      border-bottom-color: $default-grey
+
+    &.no-data.active .min-chart-content
+      border-bottom-color: $border-blue
+
 .sr-metrics
   .nav.nav-tabs > li
     display: inline-block
@@ -76,23 +123,31 @@ font-size = 14px
     margin-bottom: $spacer * 2
     margin-left: $spacer * 2
     cursor: pointer
+
     > a
       margin: 0
       padding: 0
       border: none
       text-align: left
       color: inherit
-    &:hover > a, &.active > a
+
+    &:hover > a,
+    &.active > a
       color: inherit
       background-color: transparent
       border: none
+
     &:first-child
       margin-left: 0
-    &:hover .metrics-card, &.active .metrics-card
+
+    &:hover .metrics-card,
+    &.active .metrics-card
       border-color: $border-blue
+
     &.active .metrics-card
       position: relative
       border-width: 2px
+
       &::after
         content: ""
         position: absolute
@@ -106,57 +161,232 @@ font-size = 14px
         border-top-color: $border-blue
         border-style: solid
 
-/*******************************************************/
+.sr-dashboard
+  .box-widget div.no-data
+    font-size: 20px
+    color: $default-grey
+    padding: $spacer * 2.5
+    text-align: center
 
-/********** Success rate tabs metrics card **********/
+    &__title
+      margin-bottom: $spacer * 0.75
 
-.sr-metrics .metrics-card
-  padding: $spacer * 2
-  padding-bottom: $spacer
-  background-color: $bg-white
-  border: 1px solid $border-grey
-  border-radius: 2px
-  &__title
+    &__subtitle
+      font-size: 16px
+      color: $border-grey
+
+.sr-metrics .graph-panel
+  &__topbar
+    display: flex
+    justify-content: space-between
+    padding-right: $spacer * 2
+    padding-left: $spacer * 3
+
+    div.panel-actions .panel-action-item
+      &.btn-group.time-breakdown button.btn[disabled]
+        opacity: 1
+        position: relative
+        color: $btn-disabled-text
+        border-color: $btn-disabled-border
+
+        &:hover .rzp-tooltip
+          opacity: 1
+          position: absolute
+          top: 0
+          right: 0
+          margin-top: $spacer * -5
+          white-space: nowrap
+
+  div.chart-container
+    position: relative
+    height: 265px
+
+.sr-metrics .tag-list
+  display: flex
+  align-items: center
+  flex-wrap: wrap
+  flex-basis: 60%
+
+  &__item
+    display: inline-block
+    font-size: 14px
+    font-weight: normal
+    line-height: 20px
+    margin-right: $spacer
+    margin-bottom: $spacer
+    cursor: pointer
+
+    input[type="checkbox"],
+    input[type="checkbox"] + .tag-list__item-label .tick--check
+      display: none
+
+    input[type="checkbox"]:checked + .tag-list__item-label .tick--check
+      display: inline-block
+
+    &-label
+      display: inline-block
+      background-color: $bg-white
+      color: $text-grey
+      border: 1px solid $pill-color
+      border-radius: 16px
+      padding: 4px 16px
+
+      .tick
+        position: relative
+        font-size: 10px
+        margin-right: 10px
+        vertical-align: baseline
+
+.sr-dashboard .styled-header
+  position: relative
+  font-weight: 700
+  font-size: 14px
+  line-height: 20px
+  color: #344A6C
+  padding-left: $spacer
+  margin-bottom: $spacer
+
+  &::before
+    content: ""
+    background-color: #336CD5
+    position: absolute
+    width: 2px
+    height: 20px
+    top: 0
+    left: 0
+
+.sr-dashboard .volume-container
+  display: flex
+  flex-direction: column
+
+  .chart-col .pie-chart
+    width: 100%
+    height: 250px
+
+  .info-card
+    margin-bottom: $spacer * 4
+
+    .styled-header
+      margin-bottom: $spacer * 2
+
+    &__label
+      display: flex
+      align-items: center
+      line-height: 26px
+
+      > p.label-text
+        font-size: 14px
+        color: $text-grey
+
+      > span.info-icon
+        padding-left: 4px
+
+    &__value
+      display: flex
+      align-items: center
+
+      > p
+        font-size: 18px
+        font-weight: bold
+        line-height: 36px
+        color: $font-color
+
+        > span.highlight
+          color: $text-green
+
+    &:first-child .styled-header
+      color: $border-blue
+
+.sr-dashboard .reasons-container
+  padding: 0
+
+  .rp-panel
+    padding: $spacer * 2 $spacer * 4
+    height: 100%
+
+    div.no-data
+      padding-inline: 0
+      text-align: start
+
+      &__title
+        font-size: 16px
+
+    .rp-grid
+      margin-top: $spacer * 4
+
+      &__item
+        margin-bottom: $spacer * 4
+
+        p.item-count
+          color: $font-color
+          font-size: 18px
+          font-weight: bold
+          line-height: 36px
+
+        p.item-description
+          color: #818EA3
+          font-size: 12px
+          line-height: 16px
+
+.sr-dashboard .vtab__tablist__tab
+  .tab-card
     display: flex
     align-items: center
-    p.display-text
-      margin: 0
-    small.help-content
-      margin-left: 4px
-      > i.i-help-outline
-        color: $text-grey
-        font-size: 14px
-        vertical-align: middle
-  > h1
-    color: $font-color
-    margin: $spacer 0
-    font-size: 24px
-    line-height: 36px
-  div.mini-chart
-    width: 100%
-    height: 40px
-    background-color: transparent
-    transition: 0.1s margin 0.05s ease-out
-    .min-chart-content
-      width: 100%
-      height: 100%
-      margin-bottom: 4px
-      border-bottom: 1px solid transparent
-    &.active
-      transition: margin 0.1s ease-out      
-    &.no-data .min-chart-content
-      border-bottom-color: $default-grey
-    &.no-data.active .min-chart-content
-      border-bottom-color: $border-blue
+    justify-content: space-between
+    padding: $spacer
+    padding-left: $spacer * 3
 
-/************************************************************/
+    &__info
+      display: flex
+      flex-direction: column
+      align-items: flex-start
+      flex-grow: 1
 
-/********** Success rate common css **********/
+      div.info-value,
+      div.info-label
+        display: flex
+        align-items: center
+
+      div.info-value
+        font-size: 13px
+        padding-bottom: $spacer
+
+        .rate
+          color: #0A1D38
+          font-size: 18px
+
+        font-weight: 600
+
+        > span
+          color: #D13821
+          padding-left: $spacer * 1.5
+
+        > span i.arrow
+          display: inline-block
+          transform: rotate(90deg)
+
+      div.info-label
+        p.label-text
+          color: $text-grey
+          font-size: 14px
+
+        span.info-icon
+          padding-left: "calc(%s / 2)" % $spacer
+
+        > span > i.i-info-outline
+          font-size: 12px
+          vertical-align: middle
+
+    > i.i-chevron-right
+      color: #3370DF
+      font-size: 24px
 
 .sr-dashboard .panel.dasboard-home-panel
   padding: $spacer * 3 $spacer * 1.5
+
   div.panel-actions
     margin-left: auto
+
     .panel-action-item
       margin-left: 0
 
@@ -164,6 +394,7 @@ font-size = 14px
   .alert-danger
     padding: $spacer
     padding-right: 35px
+
   .alert-dismissable .close
     top: 2px
 
@@ -181,23 +412,6 @@ font-size = 14px
   border: 1px solid $widget-border
   border-radius: 2px
 
-.sr-dashboard .styled-header
-  position: relative
-  font-weight: 700
-  font-size: 14px
-  line-height: 20px
-  color: #344A6C
-  padding-left: $spacer
-  margin-bottom: $spacer
-  &:before
-    content: ""
-    background-color: #336CD5
-    position: absolute
-    width: 2px
-    height: 20px
-    top 0
-    left: 0
-
 .vtab
   width: 100%
   display: flex
@@ -206,20 +420,22 @@ font-size = 14px
   .vtab__tablist
     display: flex
     flex-direction: column
-    border-right: 1px solid #e6e7e8
+    border-right: 1px solid #E6E7E8
 
     .vtab__tablist__tab
       min-width: 300px
       background-color: $bg-white
       padding: $spacer
       color: $font-color
-      font-size: 1rem
+      font-size: 16px
       border: 1px solid #E6E7E8
       border-left: 0
       border-right: 0
       cursor: pointer
       outline: none
-      &:hover, &.selected
+
+      &:hover,
+      &.selected
         background-color: #F5F8FE
 
   .vtab__tabpanel
@@ -228,163 +444,3 @@ font-size = 14px
     flex-grow: 1
     padding: $spacer
     color: $font-color
-
-/************************************************************/
-
-/*************** Success rate No Data Component ***************/
-
-.sr-dashboard
-  .box-widget div.no-data
-    font-size: 20px
-    color: $default-grey
-    padding: $spacer * 2.5
-    text-align center
-    &__title
-      margin-bottom $spacer * 0.75
-    &__subtitle
-      font-size: 16px
-      color: $border-grey
-
-/*******************************************************/
-
-/********** Success rate graph **********/
-
-.sr-metrics .graph-panel
-  &__topbar
-    display: flex
-    justify-content: space-between
-    padding-right: $spacer * 2
-    padding-left: $spacer * 3
-
-  div.chart-container
-    position: relative
-    height: 265px
-
-/************************************************************/
-
-/********** Success rate graph widget tags **********/
-
-.sr-metrics
-  .tags-loader
-    width: 50%
-  .tags-group
-    display: flex
-    align-items: center
-    flex-wrap: wrap
-    flex-basis: 60%
-    &__tag
-      display: flex
-      align-items: center
-      justify-content: center
-      background-color: $bg-white
-      color: $text-grey
-      padding: 4px 16px
-      border: 1px solid $pill-color
-      border-radius: 16px
-      margin-inline: 4px
-      margin-bottom: $spacer
-      cursor: pointer
-
-/************************************************************/
-
-/********** Success rate volume widget **********/
-
-.sr-dashboard .volume-container
-  display: flex
-  flex-direction: column
-  .chart-col .pie-chart
-    width: 100%
-    height: 250px
-  .info-card
-    margin-bottom: $spacer * 4
-    .styled-header
-      margin-bottom: $spacer * 2
-    &__label
-      display: flex
-      align-items: center
-      line-height: 26px
-      > p.label-text
-        font-size: 14px
-        color: $text-grey
-      > span.info-icon
-        padding-left: 4px
-    &__value
-      display: flex
-      align-items: center
-      > p
-        font-size: 18px
-        font-weight: bold
-        line-height: 36px
-        color: $font-color
-        > span.highlight
-          color: $text-green
-    &:first-child .styled-header
-      color: $border-blue
-
-    
-/************************************************************/
-
-.sr-dashboard .reasons-container
-  padding: 0
-  .rp-panel
-    padding: $spacer * 2 $spacer * 4
-    height: 100%
-    div.no-data
-      padding-inline: 0
-      text-align: start
-      &__title
-        font-size: 16px
-    .rp-grid
-      margin-top: $spacer * 4
-      &__item
-        margin-bottom: $spacer * 4
-        p.item-count       
-          color: $font-color
-          font-size: 18px
-          font-weight: bold
-          line-height: 36px
-        p.item-description
-          color: #818EA3
-          font-size: 12px
-          line-height: 16px     
-
-.sr-dashboard .vtab__tablist__tab
-  .tab-card
-    display: flex
-    align-items: center
-    justify-content: space-between
-    padding: $spacer
-    padding-left: $spacer * 3
-    &__info
-      display: flex
-      flex-direction: column
-      align-items: flex-start
-      flex-grow: 1
-      div.info-value, div.info-label
-        display: flex
-        align-items: center
-      div.info-value
-        font-size: 13px
-        padding-bottom: $spacer
-        .rate
-          color:#0A1D38
-          font-size: 18px
-          font-weight: 600
-        > span
-          color: #D13821
-          padding-left: $spacer * 1.5
-        > span i.arrow
-          display: inline-block
-          transform: rotate(90deg)                
-      div.info-label
-        p.label-text
-          color: $text-grey
-          font-size: 14px
-        span.info-icon
-          padding-left: "calc(%s / 2)" % $spacer
-        > span > i.i-info-outline
-          font-size: 12px
-          vertical-align: middle
-    > i.i-chevron-right
-      color: #3370DF
-      font-size: 24px

@@ -153,31 +153,31 @@ export const namedColors = {
 /**************************************** Graph methods ****************************************/
 
 export const defaultTagStyle = {
-  borderColor: namedColors['black.500'],
+  color: namedColors['black.500'],
   backgroundColor: namedColors['black.400'],
 };
 
 export const tagStyles = [
   {
-    borderColor: namedColors['black.500'],
+    color: namedColors['black.500'],
     backgroundColor: namedColors['black.400'],
     borderStyle: 'dashed',
     borderWidth: '2px',
   },
   {
-    borderColor: namedColors['orange.500'],
+    color: namedColors['orange.500'],
     backgroundColor: namedColors['orange.400'],
   },
   {
-    borderColor: namedColors['blue.500'],
+    color: namedColors['blue.500'],
     backgroundColor: namedColors['blue.400'],
   },
   {
-    borderColor: namedColors['green.500'],
+    color: namedColors['green.500'],
     backgroundColor: namedColors['green.400'],
   },
   {
-    borderColor: namedColors['pink.500'],
+    color: namedColors['pink.500'],
     backgroundColor: namedColors['pink.400'],
   },
 ];

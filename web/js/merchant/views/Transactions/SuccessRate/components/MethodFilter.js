@@ -10,7 +10,7 @@ const MethodFilter = (props) => {
       return (
         <GroupingDropdown
           key={index}
-          className={`success-rate-tab-filter ${disabled ? ' PowerSelect--disabled' : ''}`}
+          className={`sr-tab__filter ${disabled ? ' PowerSelect--disabled' : ''}`}
           onGroupChange={handleGroupingChange(index)}
           grouping={groupingData}
           selectedGrouping={selectedGrouping?.[index] || groupingData?.[0]}

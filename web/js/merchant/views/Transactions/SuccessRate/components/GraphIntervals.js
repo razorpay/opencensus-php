@@ -11,12 +11,12 @@ const GraphIntervals = (props) => {
       {Object.values(graphIntervals).map((item, index) => {
         const isEnabled = item.isEnabled(startDate, endDate);
         const btnProps = {
-          value: item.value,
           key: index,
           className: 'btn-default',
+          value: item.value,
         };
 
-        if (!isEnabled) btnProps.className = `${btnProps.className} disabled`;
+        if (!isEnabled) btnProps.disabled = 'disabled';
 
         return (
           <Btn key={`${item.value}_${index}`} {...btnProps}>
