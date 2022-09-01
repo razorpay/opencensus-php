@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Feature\Constants;
 
 class CounterHelper extends Base\Core
 {
@@ -38,10 +39,12 @@ class CounterHelper extends Base\Core
      */
     public function updateFreePayoutConsumedIfApplicable(Balance\Entity $balance)
     {
-        if ($balance->getType() !== Balance\Type::BANKING)
+        if ($balance->getType() !== Balance\Type::BANKING ||
+            $balance->merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true)
         {
             return null;
         }
+
         // This is to ensure that this method is called from within a transaction only as we are updating entities here
         // and don't want them to be done outside of a transaction.
         assertTrue($this->repo->counter->isTransactionActive());
@@ -92,6 +95,11 @@ class CounterHelper extends Base\Core
      */
     public function decreaseFreePayoutsConsumedIfApplicable(Entity $payout, string $criteria)
     {
+        if ($payout->merchant->isFeatureEnabled(Constants::FREE_PAYOUT_LEDGER_VIA_PS) == true)
+        {
+            return false;
+        }
+
         $shouldDecreaseFreePayoutsConsumed = false;
 
         $balance = $payout->balance;

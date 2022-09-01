@@ -821,6 +821,66 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout['id'], 'pout_Gg7sgBZgvYjlSB');
     }
 
+    public function testCreatePayoutWithLedgerFreePayoutViaPSFeatureEnabled()
+    {
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId, null, 'live');
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $this->startTest();
+
+        $counter = $this->getDbEntities('counter',
+                                        [
+                                            'account_type' => 'shared',
+                                            'balance_id'   => $balanceId,
+                                        ], 'live')->first();
+
+        // Assert that zero free payout has been consumed when free payouts is enabled on PS
+        $this->assertEquals(0, $counter->getFreePayoutsConsumed());
+        $payout = $this->getLastEntity('payout', true, 'live');
+
+        // Assert that fee_type is null
+        $this->assertEquals($payout['fee_type'], null);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true, 'live');
+
+        // On private auth, payout.user_id should be null
+        $this->assertNull($payout['user_id']);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals('Batman', $payoutAttempt['narration']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals('ba_1000000lcustba', 'ba_' . $payoutAttempt['bank_account_id']);
+        $this->assertEquals($payout['channel'], $payoutAttempt['channel']);
+
+        // Verify transaction entity
+        $txn   = $this->getLastEntity('transaction', true, 'live');
+        $txnId = str_after($txn['id'], 'txn_');
+
+        $this->assertEquals($payout['transaction_id'], $txn['id']);
+        $this->assertNotNull($txn['balance_id']);
+        $this->assertNotNull($txn['posted_at']);
+
+        $feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
+
+        $expectedBreakup = [
+            'name'            => "payout",
+            'transaction_id'  => $txnId,
+            'pricing_rule_id' => "Bbg7dTcURsOr77",
+            'percentage'      => null,
+            'amount'          => 900,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
+    }
+
     // Check payout Create transaction func on processor base
     public function testCreatePayoutServiceTransaction($mode = 'IMPS')
     {
