@@ -75,12 +75,17 @@ class CommissionInvoiceAction extends Job
 
     protected function handleIssued()
     {
-
         $core    = new Invoice\Core;
+
+        $pdfPath = $core->createInvoicePdfAndGetFilePath($this->invoice);
 
         $core->createInvoicePdfAndGetFilePath($this->invoice);
 
         $core->sendCommissionInvoiceEvents($this->invoice, EventCode::PARTNERSHIPS_COMMISSION_INVOICE_GENERATED);
+
+        $core->sendCommissionIssuedMail($this->invoice, $pdfPath);
+
+        $core->sendCommissionSms($this->invoice, $pdfPath);
     }
 
     protected function handleUnderReview()

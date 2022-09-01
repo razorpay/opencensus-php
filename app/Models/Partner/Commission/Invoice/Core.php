@@ -225,6 +225,20 @@ class Core extends Base\Core
 
     public function sendCommissionIssuedMail(Entity $invoice, string $pdfPath = null)
     {
+        $merchant = $invoice->merchant;
+
+        $properties = [
+            'id'            => $merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.send_sms_on_commission_invoice_issued_exp_id'),
+        ];
+
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+        if($isExpEnabled === false)
+        {
+            return ;
+        }
+
         $data = $this->getTemplateData($invoice, $pdfPath);
 
         $commissionInvoice = new CommissionInvoiceIssued($data);
