@@ -130,7 +130,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals(null, $MCResponse['service_provider_tokens'][0]['provider_data']['token_iin']);
 
-        $this->assertEquals('created', $MCResponse['status']);
+        $this->assertEquals('initiated', $MCResponse['status']);
 
         $this->assertEquals(null, $MCResponse['expired_at']);
     }
@@ -201,7 +201,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals(null, $MCResponse['service_provider_tokens'][0]['provider_data']['token_iin']);
 
-        $this->assertEquals('created', $MCResponse['status']);
+        $this->assertEquals('initiated', $MCResponse['status']);
 
         $this->assertEquals(null, $MCResponse['expired_at']);
     }
@@ -486,7 +486,7 @@ class TokenTest extends TestCase
 
         $this->assertEquals(null, $MCResponse['service_provider_tokens'][0]['provider_data']['token_iin']);
 
-        $this->assertEquals('created', $MCResponse['status']);
+        $this->assertEquals('initiated', $MCResponse['status']);
 
         $this->assertEquals(null, $MCResponse['expired_at']);
     }
@@ -1021,7 +1021,7 @@ class TokenTest extends TestCase
                     'entity'         => 'service_provider_token',
                     'provider_type'  => 'network',
                     'provider_name'  => 'mastercard',
-                    'status'         => 'created',
+                    'status'         => 'initiated',
                     'interoperable'  => true,
                     'provider_data'  => [
                         'token_reference_number'     => $token,
@@ -1091,7 +1091,7 @@ class TokenTest extends TestCase
                     'entity'         => 'service_provider_token',
                     'provider_type'  => 'network',
                     'provider_name'  => 'Amex',
-                    'status'         => 'created',
+                    'status'         => 'initiated',
                     'interoperable'  => true,
                     'provider_data'  => [
                         'token_reference_number'     => $token,
@@ -1255,7 +1255,7 @@ class TokenTest extends TestCase
                     'entity'         => 'service_provider_token',
                     'provider_type'  => 'network',
                     'provider_name'  => $input['provider']['network'],
-                    'status'         => 'created',
+                    'status'         => 'initiated',
                     'interoperable'  => true,
                     'provider_data'  => [
                         'token_reference_number'     => $token,

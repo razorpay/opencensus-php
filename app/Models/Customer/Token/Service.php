@@ -959,13 +959,13 @@ class Service extends Base\Service
                 'entity'         => 'service_provider_token',
                 'provider_type'  => 'network',
                 'provider_name'  => $token->card->getNetwork(),
-                'status'         => 'created',
+                'status'         => 'initiated',
                 'interoperable'  => true,
             ]];
 
             if ($token->card->getNetwork() === Mpan\Constants::MASTERCARD)
             {
-                $response['status'] = 'created';
+                $response['status'] = 'initiated';
 
                 $response['expired_at'] = null;
 
