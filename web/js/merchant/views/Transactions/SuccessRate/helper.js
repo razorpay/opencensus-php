@@ -1,8 +1,6 @@
 import moment from 'moment';
-import head from 'lodash/head';
-import reduce from 'lodash/reduce';
-import cloneDeep from 'lodash/cloneDeep';
-import store from 'merchant/store';
+import { reduce, head, map, unionBy, filter, cloneDeep, upperFirst } from 'lodash';
+import store, { getUser } from 'merchant/store';
 import {
   DATE_RANGE_PRESETS,
   DEFAULT_INTERVAL,
@@ -12,6 +10,11 @@ import {
   defaultPieChartStyle,
   pieChartStyle,
   TAG_MAP,
+  DEFAULT_OPTIMIZER_FILTERS,
+  TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS,
+  TABS_VS_OPTIMIZER_GROUP_BY,
+  DEFAULT_GROUP_BY,
+  FILTERS_VS_DISPLAY_NAMES,
 } from './constants';
 
 export const getInterval = (startDate, endDate) => {
@@ -61,13 +64,43 @@ export const initialFilters = () => {
   return payload;
 };
 
-export const queryFilters = () => {
+export const getDefaultOptimizerFilterValues = () =>
+  reduce(
+    DEFAULT_OPTIMIZER_FILTERS,
+    (acc, defaultFilter) => {
+      acc.push(...defaultFilter.map((item) => item.value));
+      return acc;
+    },
+    [],
+  );
+
+const getSelectedFilters = (selectedDropdownFilterOptions, user) => {
+  const defaultOptimizerFilters = getDefaultOptimizerFilterValues();
+  if (!user.isOptimizerEnabled) return {};
+  return selectedDropdownFilterOptions?.reduce((acc, option) => {
+    const { query, value } = option || {};
+    if (!defaultOptimizerFilters?.includes(value)) {
+      acc[query] = [value];
+    }
+    return acc;
+  }, {});
+};
+
+export const queryFilters = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
   const user = session?.user;
-  const mode = user.isOptimizerEnabled ? 'optimizer' : 'razorpay';
   const { filters, activeTab, tabs } = successRate;
+  const mode = activeTab === 'Overall' || !user.isOptimizerEnabled ? 'razorpay' : 'optimizer';
   const { startDate, endDate, interval } = filters;
-  const { method, group_by } = tabs[activeTab];
+  const { method, group_by, selectedDropdownFilterOptions = {} } = tabs[activeTab];
+  let _group_by = [group_by];
+  if (updateDropdownOptions) {
+    if (user.isOptimizerEnabled) {
+      _group_by = TABS_VS_OPTIMIZER_GROUP_BY?.[activeTab];
+    } else {
+      _group_by = [DEFAULT_GROUP_BY[activeTab]];
+    }
+  }
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -76,9 +109,10 @@ export const queryFilters = () => {
     mode,
     filters: {
       method,
+      ...(updateDropdownOptions ? {} : getSelectedFilters(selectedDropdownFilterOptions, user)),
     },
     group_by: {
-      keys: [group_by],
+      keys: _group_by,
       limit: 3,
     },
   };
@@ -273,6 +307,11 @@ export const getSuitableY = (y, yArray = [], direction) => {
   return result;
 };
 
+export const getTagLabel = (name) => {
+  const defaultLabel = getUser()?.isOptimizerEnabled ? upperFirst(name) : name;
+  return (TAG_MAP[name] ?? defaultLabel) || '--';
+};
+
 export const getPieChartData = (groupData = []) => {
   const { backgroundColor, borderColor } = defaultPieChartStyle;
   const totalSum = groupData.reduce((total, value) => total + (value?.total ?? 0), 0);
@@ -285,7 +324,7 @@ export const getPieChartData = (groupData = []) => {
       const _borderColor = pieChartStyle?.[idx]?.borderColor ?? borderColor;
       const percentage = (datapoint?.successful / totalSum) * 100 || 0;
       const percentageValue = percentage.toFixed(2);
-      const label = (TAG_MAP[datapoint?.name] ?? datapoint?.name) || '--';
+      const label = getTagLabel(datapoint?.name);
       accumulator?.labels?.push(label);
       accumulator?.datasets?.[0]?.data?.push(percentageValue);
       accumulator?.datasets?.[0]?.backgroundColor?.push(_backgroundColor);
@@ -301,38 +340,64 @@ export const getPieChartData = (groupData = []) => {
   return result;
 };
 
-export const getMerchantErrorsPayload = () => {
+export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
   const user = session?.user;
-  const mode = user.isOptimizerEnabled ? 'optimizer' : 'razorpay';
   const { tabs, activeTab, filters } = successRate;
-  const { method } = tabs[activeTab];
+  const { method, selectedDropdownFilterOptions } = tabs[activeTab];
   const { startDate, endDate } = filters;
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
     to: endDate.unix(),
-    mode,
-    filters: { method },
-    group_by: { limit: 6 },
+    mode: 'razorpay',
+    filters: {
+      method,
+      ...(updateDropdownOptions ? {} : getSelectedFilters(selectedDropdownFilterOptions, user)),
+    },
+    group_by: {
+      limit: 6,
+    },
   };
 
   return payload;
 };
 
 //Returns a list of initial set of filters for each method.
-export const getInitialGroupings = (methodFilters) => {
-  return reduce(
-    methodFilters,
-    (acc, tabFilters, key) => {
-      acc[key] = [
-        ...(acc?.[key] || []),
-        ...tabFilters?.map((filter) => {
-          return head(filter);
+export const getInitialGroupings = (methodFilters) => methodFilters?.map((filter) => head(filter));
+
+export const getFormattedFilters = (filters) =>
+  reduce(
+    filters,
+    (acc, values, key) => {
+      acc.push([
+        ...(DEFAULT_OPTIMIZER_FILTERS?.[key] || []),
+        ...values?.map((filterDetails) => {
+          const { code, name } = filterDetails || {};
+          return {
+            value: code || name,
+            text: FILTERS_VS_DISPLAY_NAMES?.[name] || upperFirst(name),
+            query: key,
+          };
         }),
-      ];
+      ]);
       return acc;
     },
-    {},
+    [],
   );
+
+export const getOptimizerFilters = (data, activeTab) => {
+  const filters = data?.groups?.procurer?.reduce((acc, procurerDetails) => {
+    const { groups } = procurerDetails || {};
+    map(groups, (groupDetails, groupKey) => {
+      acc[groupKey] = filter(
+        unionBy(acc?.[groupKey] || [], groupDetails, (item) => item?.code),
+        (item) => !['', 'others'].includes(item?.code),
+      );
+    });
+    return acc;
+  }, {});
+  return !TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS?.includes(activeTab)
+    ? []
+    : getFormattedFilters(filters);
 };

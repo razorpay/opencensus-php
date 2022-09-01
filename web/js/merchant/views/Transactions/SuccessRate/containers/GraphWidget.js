@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { analyticsTrack } from 'common/utils/analytics';
+import { getUser } from 'merchant/store';
 import Tabs, { Tab, TabPane } from 'common/ui/ReactTabs';
 import MetricsCard from '../components/MetricsCard';
 import GraphPanel from '../components/GraphPanel';
@@ -14,29 +14,24 @@ import {
   fetchSuccessRate,
   fetchMerchantErrors,
   setGroupTypeFilter,
+  setSelectedDropdownFilterOptions,
 } from 'merchant/reducers/successRate';
-import { queryFilters, getMerchantErrorsPayload, getInitialGroupings } from '../helper';
-import { SR_FILTERS, DEFAULT_GROUP_BY } from '../constants';
-import { methodTabClick } from '../ga';
+import { queryFilters, getMerchantErrorsPayload } from '../helper';
+import { methodTabClick, methodDropdownChange, trackSuccessRateEvents } from '../trackEvents';
 
 const GraphWidget = (props) => {
   const {
-    isLoading,
-    tabLoading,
-    activeTab,
+    successRate,
     setActiveTab,
-    metrics,
     fetchSuccessRate,
     fetchMerchantErrors,
     setGroupTypeFilter,
+    setSelectedDropdownFilterOptions,
   } = props;
-
+  const { isLoading, tabLoading, activeTab, metrics, tabs, isDropdownFilterLoading } = successRate;
   const tabContainerRef = useRef(null);
   const [tabWidth, setTabWidth] = useState();
   const tabPane = Object.values(metrics);
-  const methodFilters = SR_FILTERS; //optimizer filters to be added based on tag for optimizer sr dashboard.
-  const initialGroupings = getInitialGroupings(methodFilters) ?? {};
-  const [selectedGroupings, setSelectedGroupings] = useState(initialGroupings);
 
   const handleTabWidth = useCallback(
     debounce(() => {
@@ -52,30 +47,25 @@ const GraphWidget = (props) => {
   const handleTabChange = (tab) => {
     if (tab.name === activeTab) return;
     setActiveTab(tab.name);
-    setSelectedGroupings(initialGroupings);
-    setGroupTypeFilter(initialGroupings[tab?.name]?.[0]?.value ?? DEFAULT_GROUP_BY?.[tab?.name]);
-    const payload = queryFilters();
-    fetchSuccessRate(payload);
-    const errorsPaylod = getMerchantErrorsPayload();
+    const updateDropdownOptions = tab.name != 'Overall';
+    const payload = queryFilters(updateDropdownOptions);
+    fetchSuccessRate(payload, updateDropdownOptions);
+    const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     fetchMerchantErrors(errorsPaylod);
-
-    analyticsTrack(methodTabClick({ tabName: tab.name }));
+    trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
   };
 
-  const handleGroupingChange = (tabName) => (index) => ({ option }) => {
-    setSelectedGroupings((prevSelectedGroupings) => {
-      const newState = {
-        ...prevSelectedGroupings,
-        [tabName]: [
-          ...prevSelectedGroupings?.[tabName]?.slice(0, index),
-          option,
-          ...prevSelectedGroupings?.[tabName]?.slice(index + 1),
-        ],
-      };
-      return newState;
-    });
-    setGroupTypeFilter(option?.value);
+  const handleGroupingChange = ({ option }) => {
+    const user = getUser();
+    setSelectedDropdownFilterOptions(option);
+    !user?.isOptimizerEnabled && setGroupTypeFilter(option?.value);
     fetchSuccessRate(queryFilters());
+    if (user?.isOptimizerEnabled) {
+      fetchMerchantErrors(getMerchantErrorsPayload());
+    }
+    trackSuccessRateEvents(
+      methodDropdownChange({ tabName: activeTab, optionSelected: option?.value }),
+    );
   };
 
   useEffect(() => {
@@ -102,15 +92,18 @@ const GraphWidget = (props) => {
         })}
 
         {tabPane.map((tab, idx) => {
+          const { dropdownFilterOptions = [], selectedDropdownFilterOptions } = tabs?.[activeTab];
           return (
             <TabPane key={`${tab.name}-${idx}`}>
-              <MethodFilter
-                activeTab={activeTab}
-                disabled={isLoading || tabLoading}
-                filtersList={methodFilters[activeTab] ?? []}
-                handleGroupingChange={handleGroupingChange(tab?.name)}
-                selectedGrouping={selectedGroupings?.[tab?.name]}
-              />
+              {!isDropdownFilterLoading && (
+                <MethodFilter
+                  activeTab={activeTab}
+                  disabled={isLoading || tabLoading}
+                  filtersList={dropdownFilterOptions}
+                  handleGroupingChange={handleGroupingChange}
+                  selectedGrouping={selectedDropdownFilterOptions}
+                />
+              )}
               <GraphPanel />
             </TabPane>
           );
@@ -120,14 +113,17 @@ const GraphWidget = (props) => {
   );
 };
 
-const mapStateToProps = ({ successRate }) => {
-  const { isLoading, tabLoading, activeTab, metrics } = successRate;
-  return { isLoading, tabLoading, activeTab, metrics };
-};
+const mapStateToProps = ({ successRate }) => ({ successRate });
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { setActiveTab, setGroupTypeFilter, fetchSuccessRate, fetchMerchantErrors },
+    {
+      setActiveTab,
+      setGroupTypeFilter,
+      fetchSuccessRate,
+      fetchMerchantErrors,
+      setSelectedDropdownFilterOptions,
+    },
     dispatch,
   );
 };

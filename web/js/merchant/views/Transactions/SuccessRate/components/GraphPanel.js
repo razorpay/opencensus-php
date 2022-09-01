@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { analyticsTrack } from 'common/utils/analytics';
 import GenericPanel, { PanelTopbar, PanelBody } from 'merchant/components/Home/GenericPanel';
+import { getUser } from 'merchant/store';
 import TagGroup from './TagGroup';
 import GraphIntervals from './GraphIntervals';
 import ChartArea from './ChartArea';
@@ -12,7 +12,7 @@ import ChartArea from './ChartArea';
 import { updateGraphInterval, fetchBreakdownIntervals } from 'merchant/reducers/successRate';
 import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
 import { queryFilters, generateDatasets } from '../helper';
-import { methodIntervalClick, methodTagsClick } from '../ga';
+import { methodIntervalClick, methodTagsClick, trackSuccessRateEvents } from '../trackEvents';
 
 const initTagList = ['Overall'];
 
@@ -31,13 +31,15 @@ const GraphPanel = (props) => {
   }, [isLoading]);
 
   const updateDatasets = (tag, position) => {
+    const user = getUser();
     if (chartReference?.current) {
       const chart = chartReference.current.chartInstance;
+      const _group_by = activeTab === 'Overall' || !user.isOptimizerEnabled ? group_by : 'procurer';
       const tagIndex = tags.indexOf(tag);
       const intervals =
         (tag === 'Overall'
           ? data?.intervals
-          : data?.groups[group_by]?.find((obj) => obj.name === tag)?.intervals) ?? [];
+          : data?.groups[_group_by]?.find((obj) => obj.name === tag)?.intervals) ?? [];
 
       if (position > -1 && tagList.length > 1) {
         chart.data.datasets.splice(position, 1);
@@ -60,8 +62,7 @@ const GraphPanel = (props) => {
     else if (tagIndex < 0) tagsClone.push(tag);
     updateDatasets(tag, tagIndex);
     setTagList(tagsClone);
-
-    analyticsTrack(methodTagsClick({ selectedTags: tagsClone }));
+    trackSuccessRateEvents(methodTagsClick({ selectedTags: tagsClone }));
   };
 
   const handleBreakdown = (breakdown) => {
@@ -70,8 +71,7 @@ const GraphPanel = (props) => {
     payload.interval = breakdownInterval[breakdown];
     props.fetchBreakdownIntervals(breakdown, payload);
     setTagList(initTagList);
-
-    analyticsTrack(methodIntervalClick({ breakdown }));
+    trackSuccessRateEvents(methodIntervalClick({ breakdown }));
   };
 
   return (
@@ -88,6 +88,7 @@ const GraphPanel = (props) => {
           selectedTags={tagList}
           groupBy={group_by}
           onSelect={handleTags}
+          activeTab={activeTab}
         />
         <div className="panel-actions">
           <GraphIntervals

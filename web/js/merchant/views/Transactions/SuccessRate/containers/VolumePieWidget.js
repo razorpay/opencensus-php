@@ -3,17 +3,18 @@ import { connect } from 'react-redux';
 import { Pie } from 'react-chartjs-2';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';
+import { getUser } from 'merchant/store';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Spinner from 'common/ui/Spinner';
 import StyledHeader from '../components/StyledHeader';
 import NoDataMessage from '../components/NoDataMessage';
 import { pieChartOptions as options, piePlugins as plugins } from '../chartConfig';
-import { getPieChartData } from '../helper';
-import { TAG_MAP, TAG_OVERALL_MAP } from '../constants';
+import { getPieChartData, getTagLabel } from '../helper';
+import { TAG_OVERALL_MAP } from '../constants';
 
 const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
   if (name === 'others' && !sr) return null;
-  const label = (TAG_MAP[name] ?? name) || '--';
+  const label = getTagLabel(name);
   return (
     <div key={`${name}___${index}`} className="col-md-4 info-card">
       <StyledHeader text={label} />
@@ -30,9 +31,11 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
 };
 
 const VolumePieWidget = (props) => {
-  const { isLoading, tab = {} } = props;
+  const { isLoading, activeTab, tab = {} } = props;
   const { group_by = '', data } = tab;
-  const groupData = data?.groups?.[group_by] ?? [];
+  const user = getUser();
+  const _group_by = activeTab === 'Overall' || !user.isOptimizerEnabled ? group_by : 'procurer';
+  const groupData = data?.groups?.[_group_by] ?? [];
   const pieChartData = getPieChartData(groupData);
   const compactData = compact(pieChartData?.datasets?.[0]?.data);
 
@@ -65,7 +68,13 @@ const VolumePieWidget = (props) => {
                 {isLoading ? (
                   <PlaceholderLoader style={{ marginBottom: '10px' }} />
                 ) : (
-                  <StyledHeader text={TAG_OVERALL_MAP[group_by]} />
+                  <StyledHeader
+                    text={
+                      !getUser()?.isOptimizerEnabled || activeTab === 'Overall'
+                        ? TAG_OVERALL_MAP[group_by]
+                        : 'Overall'
+                    }
+                  />
                 )}
                 {isLoading ? (
                   <PlaceholderLoader />

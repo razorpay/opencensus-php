@@ -11,7 +11,7 @@ const MethodFilter = (props) => {
         <GroupingDropdown
           key={index}
           className={`sr-tab__filter ${disabled ? ' PowerSelect--disabled' : ''}`}
-          onGroupChange={handleGroupingChange(index)}
+          onGroupChange={handleGroupingChange}
           grouping={groupingData}
           selectedGrouping={selectedGrouping?.[index] || groupingData?.[0]}
         />

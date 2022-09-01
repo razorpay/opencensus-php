@@ -22,7 +22,7 @@ export const DEFAULT_METHOD = {
 export const DEFAULT_GROUP_BY = {
   Overall: 'method',
   UPI: 'upi_type',
-  Card: 'network',
+  Card: 'type',
   Netbanking: 'bank',
 };
 
@@ -80,6 +80,8 @@ export const tabMeta = {
   tags: [],
   group_by: [],
   selectedInterval: 'hourly',
+  dropdownFilterOptions: [],
+  selectedDropdownFilterOptions: [],
 };
 
 export const metricsCard = {
@@ -280,21 +282,75 @@ export const CARD_GROUPING_DATA = [
   {
     value: 'type',
     text: 'Card Type',
+    query: 'filter',
   },
   {
     value: 'network',
     text: 'Card Networks',
+    query: 'filter',
   },
   {
     value: 'issuer',
     text: 'Banks',
+    query: 'filter',
   },
 ];
+
+export const DEFAULT_OPTIMIZER_FILTERS = {
+  issuer: [
+    {
+      value: 'all_issuer',
+      text: 'All banks',
+      query: 'issuer',
+    },
+  ],
+  network: [
+    {
+      value: 'all_network',
+      text: 'All card networks',
+      query: 'network',
+    },
+  ],
+  type: [
+    {
+      value: 'all_type',
+      text: 'All card types',
+      query: 'type',
+    },
+  ],
+  upi_type: [
+    {
+      value: 'all_upi_type',
+      text: 'Intent and Collect',
+      query: 'upi_type',
+    },
+  ],
+  bank: [
+    {
+      value: 'all_bank',
+      text: 'All banks',
+      query: 'bank',
+    },
+  ],
+};
 
 export const SR_FILTERS = {
   UPI: [],
   Card: [CARD_GROUPING_DATA],
   Netbanking: [],
+};
+
+export const TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS = ['UPI', 'Card', 'Netbanking'];
+
+export const TABS_VS_OPTIMIZER_GROUP_BY = {
+  Card: ['type', 'network', 'issuer'],
+  Netbanking: ['bank'],
+  UPI: ['upi_type'],
+};
+
+export const FILTERS_VS_DISPLAY_NAMES = {
+  intent: 'Intent Only',
+  collect: 'Collect Only',
 };
 
 /******************************************************************************************/

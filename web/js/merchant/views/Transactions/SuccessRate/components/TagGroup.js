@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-import { defaultTagStyle, tagStyles, TAG_MAP, TAG_OVERALL_MAP } from '../constants';
+import { getUser } from 'merchant/store';
+import { getTagLabel } from '../helper';
+import { defaultTagStyle, tagStyles, TAG_OVERALL_MAP } from '../constants';
 
 export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
   const { backgroundColor, color, borderStyle, borderWidth } = tagStyle;
@@ -33,7 +35,7 @@ export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
   );
 };
 
-const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect }) => {
+const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect, activeTab }) => {
   if (isLoading) {
     return (
       <div className="tag-list">
@@ -48,8 +50,10 @@ const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect }
   return (
     <div className="tag-list">
       {tags?.map((tag, idx) => {
-        let name = TAG_MAP[tag] ?? tag;
-        if (tag === 'Overall') name = TAG_OVERALL_MAP[groupBy];
+        let name = getTagLabel(tag);
+        if ((!getUser()?.isOptimizerEnabled || activeTab === 'Overall') && tag === 'Overall') {
+          name = TAG_OVERALL_MAP[groupBy];
+        }
         return (
           <Tag
             key={`${tag}__${idx}`}

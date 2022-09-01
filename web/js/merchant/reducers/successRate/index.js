@@ -10,6 +10,8 @@ import {
   getMetricsData,
   setBreakdownInterval,
   getErrorMessage,
+  getOptimizerFilters,
+  getInitialGroupings,
 } from 'merchant/views/Transactions/SuccessRate/helper';
 import {
   DEFAULT_ACTIVE_TAB,
@@ -20,6 +22,7 @@ import {
   metricsCard,
   tabsHelpTextMap,
   tabsTitleMap,
+  SR_FILTERS,
 } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
@@ -27,17 +30,30 @@ const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
 const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
 const UPDATE_TAB_DATA = 'UPDATE_TAB_DATA';
 const SET_GROUP_TYPE_FILTER = 'SET_GROUP_TYPE_FILTER';
-const UPDATE_GRAPH_INTERVAL = 'UPDATE_GRAPH_INTERVAL';
 const SET_METRICS_DATA = 'SET_METRICS_DATA';
 const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
 const FETCH_INTERVALS = 'FETCH_INTERVALS';
+const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
 
-export const fetchSuccessRate = (payload) => async (dispatch) => {
-  const { activeTab, metrics, tabs } = store?.getState()?.successRate;
-  const { selectedInterval, group_by } = tabs[activeTab];
+export const fetchSuccessRate = (payload, updateDropdownOptions) => async (dispatch) => {
+  const { successRate = {}, session } = store?.getState();
+  const user = session?.user;
+  const { activeTab, metrics, tabs } = successRate;
+  const {
+    selectedInterval,
+    group_by,
+    dropdownFilterOptions,
+    selectedDropdownFilterOptions,
+  } = tabs?.[activeTab];
+  let newDropdownFilterOptions = dropdownFilterOptions;
+  let newSelectedDropdownFilterOptions = selectedDropdownFilterOptions;
+  let newGroupBy = group_by;
   dispatch({
     type: `${FETCH_SUCCESS_RATE}::PENDING`,
-    key: activeTab === 'Overall' ? 'isLoading' : 'tabLoading',
+    payload: {
+      [activeTab === 'Overall' ? 'isLoading' : 'tabLoading']: true,
+      isDropdownFilterLoading: updateDropdownOptions,
+    },
   });
   try {
     const { data } = await merchantFetch({
@@ -50,12 +66,23 @@ export const fetchSuccessRate = (payload) => async (dispatch) => {
 
     if (data?.Code === 'SERVER_ERROR') throw new Error(data?.Description);
 
+    if (updateDropdownOptions) {
+      if (!user?.isOptimizerEnabled) {
+        newDropdownFilterOptions = SR_FILTERS?.[activeTab];
+        newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
+        newGroupBy = DEFAULT_GROUP_BY[activeTab];
+      } else {
+        newDropdownFilterOptions = getOptimizerFilters(data, activeTab);
+        newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
+      }
+    }
+
     const options = {
       data,
       startTime: payload.from,
       endTime: payload.to,
       breakdown: selectedInterval,
-      group_by,
+      group_by: activeTab === 'Overall' || !user.isOptimizerEnabled ? newGroupBy : 'procurer',
     };
 
     const res = onFetchSR(options);
@@ -69,7 +96,10 @@ export const fetchSuccessRate = (payload) => async (dispatch) => {
         group_by,
       });
 
-      dispatch({ type: SET_METRICS_DATA, payload: metricsResult });
+      dispatch({
+        type: SET_METRICS_DATA,
+        payload: metricsResult,
+      });
     }
 
     dispatch({
@@ -80,6 +110,9 @@ export const fetchSuccessRate = (payload) => async (dispatch) => {
         error: null,
         fetched: true,
         selectedInterval: setBreakdownInterval(payload.from, payload.to),
+        dropdownFilterOptions: newDropdownFilterOptions,
+        selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
+        group_by: newGroupBy,
         ...res,
       },
     });
@@ -104,7 +137,9 @@ export const fetchMerchantErrors = (payload) => {
 };
 
 export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) => {
-  const { activeTab, tabs } = store?.getState()?.successRate;
+  const { successRate = {}, session } = store?.getState();
+  const user = session?.user;
+  const { activeTab, tabs } = successRate;
   const { group_by } = tabs[activeTab];
 
   dispatch({ type: `${FETCH_INTERVALS}::PENDING` });
@@ -125,7 +160,7 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
       startTime: payload.from,
       endTime: payload.to,
       breakdown,
-      group_by,
+      group_by: activeTab === 'Overall' || !user?.isOptimizerEnabled ? group_by : 'procurer',
     };
 
     const res = onFetchSR(options);
@@ -191,12 +226,26 @@ export const setGroupTypeFilter = (groupType) => {
   };
 };
 
+export const setSelectedDropdownFilterOptions = (option) => {
+  const { query } = option;
+  const { activeTab, tabs } = store?.getState()?.successRate;
+  const { selectedDropdownFilterOptions } = tabs?.[activeTab];
+  const indexToUpdate = selectedDropdownFilterOptions?.findIndex(
+    (option) => option?.query === query,
+  );
+  return {
+    type: SET_SELECTED_DROPDOWN_FILTER_OPTIONS,
+    payload: { indexToUpdate, option },
+  };
+};
+
 const getInitialState = () => {
   const state = {
     isLoading: true,
     tabLoading: true,
     graphLoading: false,
     isLoadingMerchantErrors: true,
+    isDropdownFilterLoading: false,
     activeTab: DEFAULT_ACTIVE_TAB,
     filters: initialFilters(),
     metrics: {},
@@ -227,13 +276,14 @@ export default (state = getInitialState(), action) => {
 
   switch (type) {
     case `${FETCH_SUCCESS_RATE}::PENDING`: {
-      return set(state, action.key, true);
+      return merge(state, ...payload);
     }
 
     case `${FETCH_SUCCESS_RATE}::SUCCESS`: {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, 'isLoading', false);
       lodashset(stateClone, 'tabLoading', false);
+      lodashset(stateClone, 'isDropdownFilterLoading', false);
       lodashset(stateClone, `tabs.${state.activeTab}`, payload);
       return stateClone;
     }
@@ -242,6 +292,7 @@ export default (state = getInitialState(), action) => {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, 'isLoading', false);
       lodashset(stateClone, 'tabLoading', false);
+      lodashset(stateClone, 'isDropdownFilterLoading', false);
       lodashset(stateClone, `tabs.${state.activeTab}.error`, payload);
       return stateClone;
     }
@@ -305,9 +356,14 @@ export default (state = getInitialState(), action) => {
       return stateClone;
     }
 
-    case UPDATE_GRAPH_INTERVAL: {
+    case SET_SELECTED_DROPDOWN_FILTER_OPTIONS: {
+      const { indexToUpdate, option } = payload;
       const stateClone = cloneDeep(state);
-      lodashset(stateClone, `tabs.${state.activeTab}.selectedInterval`, payload);
+      lodashset(
+        stateClone,
+        `tabs.${state.activeTab}.selectedDropdownFilterOptions.${indexToUpdate}`,
+        option,
+      );
       return stateClone;
     }
 

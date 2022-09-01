@@ -32,6 +32,7 @@ import EasterEgg from 'merchant/components/EasterEgg';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from '../../../common/ui/DashboardBanner';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import { trackSuccessRateEvents, visitSuccessRate } from './SuccessRate/trackEvents';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
@@ -361,15 +362,11 @@ class TransactionsContainer extends Component {
               <NavLink
                 to="/success-rate"
                 onClick={() => {
-                  analyticsTrack({
-                    objectName: 'transactions tab',
-                    actionName: 'clicked',
-                    screen: 'transactions',
-                    properties: {
-                      tabName: 'succes rate',
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
+                  trackSuccessRateEvents(
+                    visitSuccessRate({
+                      tabName: 'success rate',
+                    }),
+                  );
                 }}
               >
                 Success Rate

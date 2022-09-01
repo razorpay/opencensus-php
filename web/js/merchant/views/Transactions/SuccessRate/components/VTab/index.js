@@ -3,8 +3,7 @@ import { ERROR_CATEGORIES, ERROR_CATEGORIES_VS_DISPLAY_TEXT } from '../../consta
 import TabPane from './TabPane';
 import TabContent from './TabContent';
 import ReasonsPanel from '../ReasonsPanel';
-import { analyticsTrack } from 'common/utils/analytics';
-import { methodFailureReasonClick } from '../../ga';
+import { methodFailureReasonClick, trackSuccessRateEvents } from '../../trackEvents';
 
 function VTab(props) {
   const { selectedTab, isLoading, onTabChange, ariaLabel, tabData } = props;
@@ -13,7 +12,7 @@ function VTab(props) {
   const content = tabData?.[selectedKey] ?? [];
 
   useEffect(() => {
-    analyticsTrack(methodFailureReasonClick({ tabName: selectedKey }));
+    trackSuccessRateEvents(methodFailureReasonClick({ tabName: selectedKey }));
   }, [selectedKey]);
 
   return (
