@@ -485,6 +485,9 @@ final class RazorxTreatment
     //Experiment to disable statement fetch for merchants
     const DISABLE_STATEMENT_FETCH = 'disable_statement_fetch';
 
+    // Experiment to use secure context for OTP generation
+    const SECURE_OTP_CONTEXT = 'secure_otp_context';
+
     // Experiment to block pan details in html code
     const BLOCK_PAN_DETAIL_IN_AUTHLINK_HTML = 'block_pan_detail_in_authlink_html';
 

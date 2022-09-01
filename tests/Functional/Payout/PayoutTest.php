@@ -25,6 +25,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Artisan;
 
 use RZP\Constants;
+use RZP\Models\User;
 use RZP\Error\Error;
 use RZP\Models\Admin;
 use RZP\Models\Batch;
@@ -3608,6 +3609,138 @@ class PayoutTest extends OAuthTestCase
         $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+
+    public function mockRaven($expectedContext, $receiver = null, $source = 'api')
+    {
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('verifyOtp')
+                  ->andReturnUsing(function(array $request) use ($expectedContext, $receiver, $source) {
+                      try
+                      {
+                          self::assertEquals($request['receiver'], $receiver);
+                          self::assertEquals($request['context'], $expectedContext);
+                          self::assertEquals($request['source'], $source);
+                      }
+                      catch(\Exception $e)
+                      {
+                          throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                      }
+
+                      return [
+                          'success' => true
+                      ];
+                  });
+
+        $this->app->instance('raven', $ravenMock);
+    }
+
+    public function testCreatePayoutWithOtpWithSecureContext()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT      => 'on',
+                                       RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $testData                                = $this->testData['testCreatePayoutWithOtp'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $testData['request']['content']['otp']   = '0007';
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   '10000000000000',
+                                   'MerchantUser01',
+                                   User\Constants::CREATE_PAYOUT,
+                                   'BUIj3m2Nx2VvVj',
+                                   2000000,
+                                   'fa_100000000000fa',
+                                   '2224440041626905');
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $user = $this->getDbEntity('user', ['id' => 'MerchantUser01']);
+
+        $this->mockRaven($expectedContext, $user->getEmail());
+
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $this->assertEquals("MerchantUser01", $payout['user_id']);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals('Test Merchant Fund Transfer', $payoutAttempt['narration']);
+    }
+
+    public function testCreatePayoutWithOtpWithInvalidParameters()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT      => 'on',
+                                       RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        unset($testData['request']['content']['amount']);
+
+        $testData['request']['content']['fund_account_id'] = 'fa_100000000001fa';
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   '10000000000000',
+                                   'MerchantUser01',
+                                   User\Constants::CREATE_PAYOUT,
+                                   'BUIj3m2Nx2VvVj',
+                                   2000000,
+                                   'fa_100000000000fa',
+                                   '2224440041626905');
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $user = $this->getDbEntity('user', ['id' => 'MerchantUser01']);
+
+        $this->mockRaven($expectedContext, $user->getEmail());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testApprovePayoutWithOtpWithSecureContext()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT      => 'on',
+                                       RazorxTreatment::NEFT_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s',
+                                   '10000000000000',
+                                   $this->ownerRoleUser->getId(),
+                                   User\Constants::APPROVE_PAYOUT,
+                                   'BUIj3m2Nx2VvVj',
+                                   $payout['id']);
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $this->mockRaven($expectedContext);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->testData[__FUNCTION__]                   = $this->testData['testApprovePayoutWithComment'];
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $firstApprovalResponse = $this->startTest();
+
+        // Validating first approval response
+        $firstActionChecker = $this->getDbLastEntity('action_checker', 'live');
+        $this->assertEquals(2, $firstApprovalResponse['workflow_history']['current_level']);
+        $this->assertEquals('pending', $firstApprovalResponse['status']);
+        $this->assertEquals('Approving', $firstActionChecker['user_comment']);
+        $this->assertEquals(true, $firstActionChecker['approved']);
     }
 
     // Create Undoable payout testcase

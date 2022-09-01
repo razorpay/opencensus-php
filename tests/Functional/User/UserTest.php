@@ -9,9 +9,9 @@ use Hash;
 use Queue;
 use Mockery;
 use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Models\User\BankingRole;
-use Respect\Validation\Rules\Bank;
 use RZP\Http\UserRolePermissionsMap;
 use RZP\Jobs\NotifyRas;
 use RZP\Error\ErrorCode;
@@ -5714,6 +5714,116 @@ class UserTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
 
         $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function mockRaven($expectedContext, $receiver, $source = 'api')
+    {
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('generateOtp')
+                  ->andReturnUsing(function(array $request) use ($expectedContext, $receiver, $source) {
+                      self::assertEquals($request['receiver'], $receiver);
+                      self::assertEquals($request['context'], $expectedContext);
+                      self::assertEquals($request['source'], $source);
+
+                      return [
+                          'otp'        => '0007',
+                          'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+                      ];
+                  });
+
+        $this->app->instance('raven', $ravenMock);
+    }
+
+    public function testSendOtpForCreatePayoutWithSecureOTP()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE          => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSendOtpForCreatePayoutWithoutMobileNumberInReceiver'];
+
+        $testData['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $testData['request']['content']['token'] = 'QtrxYjsbrs';
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   $this->fundAccount->merchant->getId(),
+                                   $user->getId(),
+                                   Constants::CREATE_PAYOUT,
+                                   'QtrxYjsbrs',
+                                   10000,
+                                   $this->fundAccount->getPublicId(),
+                                   '1234567890');
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $this->mockRaven($expectedContext, '123456789');
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testSendOtpForApprovePayoutWithSecureOTP()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE          => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSendOtpForCreatePayoutWithoutMobileNumberInReceiver'];
+
+        $testData['request']['content'] = [
+            'action'         => Constants::APPROVE_PAYOUT,
+            'payout_id'      => 'pout_IxOlvTAXZIAduq',
+            'amount'         => 100,
+            'account_number' => '4564563559247998'
+        ];
+
+        $testData['request']['content']['token'] = 'QtrxYjsbrs';
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s',
+                                   $this->fundAccount->merchant->getId(),
+                                   $user->getId(),
+                                   Constants::APPROVE_PAYOUT,
+                                   'QtrxYjsbrs',
+                                   'pout_IxOlvTAXZIAduq');
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $this->mockRaven($expectedContext, '123456789');
+
+        $response = $this->startTest($testData);
 
         $this->assertNotEmpty($response['token']);
     }

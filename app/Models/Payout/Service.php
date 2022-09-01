@@ -534,7 +534,7 @@ class Service extends Base\Service
 
         $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
 
-        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout'], $this->merchant, $this->user);
+        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout', 'payout_id' => $id], $this->merchant, $this->user);
 
         $payout = (new Core)->approvePayout($payout, $input);
 

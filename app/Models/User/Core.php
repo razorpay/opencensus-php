@@ -4225,7 +4225,20 @@ class Core extends Base\Core
 
         if (isset($merchant) === true)
         {
-            $context = sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $input[Entity::ACTION], $token);
+            $variant = $this->app->razorx->getTreatment(
+                $merchant->getId(),
+                Merchant\RazorxTreatment::SECURE_OTP_CONTEXT,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                $context = $this->getContextFromAction($merchant, $user, $input, $token);
+            }
+            else
+            {
+                $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user,  $input[Entity::ACTION], $token);
+            }
         }
         else
         {
@@ -4289,6 +4302,70 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    protected function getContextFromAction($merchant, $user, $input, $token)
+    {
+        $action = $input[Entity::ACTION];
+
+        $context = null;
+
+        switch ($action)
+        {
+            case Constants::CREATE_PAYOUT:
+                $requiredParams = [Payout\Entity::AMOUNT,
+                                   Payout\Entity::FUND_ACCOUNT_ID,
+                                   Payout\Entity::ACCOUNT_NUMBER];
+
+                if (empty(array_diff_key(array_flip($requiredParams), $input)) === true)
+                {
+                    $context = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                       $merchant->getId(),
+                                       $user->getId(),
+                                       $action,
+                                       $token,
+                                       $input[Payout\Entity::AMOUNT],
+                                       $input[Payout\Entity::FUND_ACCOUNT_ID],
+                                       $input[Payout\Entity::ACCOUNT_NUMBER]);
+
+                    $context = hash('sha3-512', $context);
+                }
+                else
+                {
+                    $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
+                }
+
+                break;
+
+            case Constants::APPROVE_PAYOUT:
+                if (empty($input[Payout\Entity::PAYOUT_ID]) === false)
+                {
+                    $context = sprintf('%s:%s:%s:%s:%s',
+                                       $merchant->getId(),
+                                       $user->getId(),
+                                       $action,
+                                       $token,
+                                       $input[Payout\Entity::PAYOUT_ID]);
+
+                    $context = hash('sha3-512', $context);
+                }
+                else
+                {
+                    $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
+                }
+
+                break;
+            default:
+                // Fallback to default context
+                $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $input, $token);
+        }
+
+        return $context;
+    }
+
+    protected function getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token)
+    {
+        return sprintf('%s:%s:%s:%s', $merchant->getId(), $user->getId(), $action, $token);
     }
 
     protected function upsertSettings(Entity $user, array $settings)

@@ -89,6 +89,11 @@ class Constants
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID_X_IOS      = 'oauth.merchant_oauth_client_id_x_ios';
     const OAUTH_MERCHANT_OAUTH_MOCK                 = 'oauth.merchant_oauth_mock';
 
+    // OTP Actions
+
+    const CREATE_PAYOUT                = 'create_payout';
+    const APPROVE_PAYOUT               = 'approve_payout';
+
     // oauth constants end
 
     const INCORRECT_LOGIN_TTL = 7200; // 2 hours
