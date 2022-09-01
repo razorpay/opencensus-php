@@ -122,6 +122,7 @@ class PayoutProcessedContactCommunication extends Mailable
             'payout_processed_at'     => Carbon::createFromTimeStamp($this->payout->getProcessedAt(), Timezone::IST)
                                                ->format(self::DATE_FORMAT),
             'payout_notes'            => $this->payout->getNotes()->toArray(),
+            'payout_narration'        => $this->payout->getNarration(),
             'merchant_website'        => $this->merchant->merchantDetail->getWebsite() ?? '',
             'merchant_email'          => $this->merchant->merchantDetail->getContactEmail() ?? '',
             'merchant_phone'          => $this->merchant->merchantDetail->getContactMobile() ?? '',

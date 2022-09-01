@@ -3111,4 +3111,13 @@ class Entity extends Base\PublicEntity
 
         return true;
     }
+
+    public function isVendorPayment() :bool
+    {
+        $sourceDetails = $this->payoutSources()
+            ->where(PayoutSource\Entity::SOURCE_TYPE, PayoutSource\Entity::VENDOR_PAYMENTS)
+            ->get();
+
+        return $sourceDetails->isEmpty() === false;
+    }
 }

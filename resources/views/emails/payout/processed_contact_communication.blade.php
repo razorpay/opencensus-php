@@ -20,14 +20,17 @@
             background: #fafafa;
             padding: 30px 20px 20px;
         }
+
         tfoot .title,
         tfoot .sub-title {
             text-align: center;
         }
+
         tfoot .title {
             font-size: 13px;
             color: #8b8b8b;
         }
+
         tfoot .sub-title {
             font-size: 12px;
             color: #989898;
@@ -47,27 +50,33 @@
         #outlook a {
             padding: 0;
         }
+
         .ReadMsgBody {
             width: 100%;
         }
+
         .ExternalClass {
             width: 100%;
         }
+
         .ExternalClass * {
             line-height: 100%;
         }
+
         body {
             margin: 0;
             padding: 0;
             -webkit-text-size-adjust: 100%;
             -ms-text-size-adjust: 100%;
         }
+
         table,
         td {
             border-collapse: collapse;
             mso-table-lspace: 0pt;
             mso-table-rspace: 0pt;
         }
+
         img {
             border: 0;
             height: auto;
@@ -76,6 +85,7 @@
             text-decoration: none;
             -ms-interpolation-mode: bicubic;
         }
+
         p {
             display: block;
             margin: 13px 0;
@@ -87,6 +97,7 @@
             @-ms-viewport {
                 width: 320px;
             }
+
             @viewport {
                 width: 320px;
             }
@@ -103,8 +114,8 @@
     </style>
 </head>
 
-<body style="background-color:#FAFAFA;">
-<div style="background-color:#FAFAFA;">
+<body style="background-color:#EDF0F5;">
+<div style="background-color:#EDF0F5; padding-bottom: 40px;">
 
     <div class="max-width-override"
          style="background: #FBFDFF; background-color: #FBFDFF; Margin: 0px auto; max-width: unset;">
@@ -122,7 +133,7 @@
     </div>
 
     <div class="max-width-override"
-         style="background: {{ $merchant_brand_color }}; background-color: {{ $merchant_brand_color }}; Margin: 0px auto; max-width: unset;">
+         style="background: #528FF0; background-color: #528FF0; Margin: 0px auto; max-width: unset;">
 
         <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation"
                style="background:{{ $merchant_brand_color }};background-color:{{ $merchant_brand_color }};width:100%;">
@@ -138,32 +149,54 @@
                             <tr>
                                 <td style="vertical-align:top;padding:0px;">
 
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                           style="" width="100%">
 
                                         <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+                                            <td align="left"
+                                                style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div
                                                     style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="header" style="box-sizing: border-box; max-width: 100%;">
+                                                    <div class="header"
+                                                         style="box-sizing: border-box; max-width: 100%;">
+                                                        <div class="content"
+                                                             style="background: #EDF0F5; background-color: #EDF0F5; padding: 5px; color: #0C2651; font-weight: 400;font-size: 14px; line-height: 16px; text-align: center;">
+                                                            <em
+                                                                style="margin-right: 6px; display: inline-block; vertical-align: middle;">Business
+                                                                Banking Powered by</em>
+                                                            <img style="display: inline-block; vertical-align: middle;"
+                                                                 src="https://cdn.razorpay.com/static/assets/logo/rzpX/rzpx-dark-with-bg.png"
+                                                                 width="100px" />
+
+                                                        </div>
                                                         <div class="content branding merchant"
-                                                             style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; padding-top: 18px; padding-bottom: 18px;">
+                                                             style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 24px; padding-right: 24px; border-radius: 2px; padding-top: 18px; padding-bottom: 18px;">
                                                             <div class="branding-content"
                                                                  style="text-align: center; width: fit-content; margin: 0 auto; font-size: 16px; line-height: 1.5; color: #0D2366;">
                                                                 <div class="content-element logo"
-                                                                     style="display: inline-block; vertical-align: middle; background-color: #FFFFFF; box-sizing: border-box; line-height: 0;">
-                                                                    @isset($merchant_brand_logo) <img src="{{$merchant_brand_logo}}"
-                                                                                                      style="height: 32px; width: 32px; margin: 7px;" width="32" height="32">
+                                                                     style="display: inline-block; vertical-align: middle; background-color: #FFFFFF; box-sizing: border-box; line-height: 0; border-radius: 6px;">
+                                                                    @isset($merchant_brand_logo) <img
+                                                                        src="{{$merchant_brand_logo}}"
+                                                                        style="height: 32px; width: 32px; margin: 7px; border-radius: 6px;"
+                                                                        width="32" height="32">
                                                                     @endisset</div>
                                                                 <div class="content-element"
                                                                      style="display: inline-block; vertical-align: middle; margin-left: 10px; color: {{ $merchant_contrast_color }};">
                                                                     {{ $merchant_billing_label }}</div>
                                                             </div>
                                                         </div>
-                                                        <div class="content title"
-                                                             style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-top: 12px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+                                                        <div class="content title background-white"
+                                                             style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 24px; padding-right: 24px; border-radius: 2px; background-color: #FFFFFF; padding-top: 16px; border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
                                                             <div class="title-content"
                                                                  style="text-align: center; width: fit-content; margin: 0 auto;">
+                                                                <div class="center-align"
+                                                                     style="text-align: center">
+                                                                    <img class="image small"
+                                                                         src="https://cdn.razorpay.com/static/assets/razorpayx/emails/payout-success-tick.png"
+                                                                         style="margin: 8px; background: transparent; height: 44px;"
+                                                                         height="44" />
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -202,44 +235,65 @@
                             <tr>
                                 <td style="vertical-align:top;padding:0px;">
 
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                           style="" width="100%">
 
                                         <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+                                            <td align="left"
+                                                style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div
                                                     style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="card title"
-                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; padding-top: 16px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 16px; border-top-left-radius: 0; border-top-right-radius: 0;">
-                                                        <div class="center-align" style="text-align: center;">
+                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; padding-top: 5px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 24px; padding-right: 24px; border-radius: 2px; background-color: #FFFFFF; padding-bottom: 0px; border-top-left-radius: 0; border-top-right-radius: 0;">
+                                                        <div class="center-align"
+                                                             style="text-align: center;">
                                                             <div class="para para-banner para-light"
-                                                                 style="margin: 0; text-align: center; font-size: 16px; line-height: 1.5; color: #7B8199; border-bottom: 1px solid #747a9347; padding-bottom: 16px;">
-                                                                <div class="icon"
-                                                                     style="width: 32px; display: inline-block; vertical-align: middle; margin-right: 10px;"><img
-                                                                        src="https://cdn.razorpay.com/static/assets/email/payment_success.png"
-                                                                        style="height: 100%; width: 100%;"></div>
+                                                                 style="margin: 0; text-align: center; font-size: 16px; line-height: 1.5; color: #7B8199;">
+
                                                                 <div>
                                                                     <div class="amount header"
-                                                                         style="box-sizing: border-box; display: inline-block; max-width: 100%;"><span
-                                                                            class="symbol"
-                                                                            style="font-size: 24px; line-height: 1.5; color: #0D2366;">{{$payout_amount[0]}}</span><span
-                                                                            class="rupees"
-                                                                            style="font-size: 24px; line-height: 1.5; color: #0D2366;">{{$payout_amount[1]}}</span><span
-                                                                            class="paise"
-                                                                            style="font-size: 16px; line-height: 1.5; color: #515978;">.{{$payout_amount[2]}}</span>
+                                                                         style="box-sizing: border-box; max-width: 100%; font-size: 24px; line-height: 1.5; color: #162F56;">
+ <span
+     class="symbol">{{$payout_amount[0]}}</span><span
+                                                                            class="rupees">{{$payout_amount[1]}}</span><span
+                                                                            class="paise">.{{$payout_amount[2]}}</span>
                                                                     </div>
                                                                 </div>
-                                                                <div class="inline-block" style="display: inline-block;">&nbsp;Received Successfully
+                                                                <div
+                                                                    style="color: rgba(22, 47, 86, 0.54);font-weight: 400;font-size: 14px;line-height: 20px; margin-top: 4px;">
+                                                                    Received Successfully
+                                                                </div>
+                                                                <div class="left-align"
+                                                                     style="text-align: left">
+                                                                    <div class="puck para"
+                                                                         style="margin: 0; padding: 16px 0">
+                                                                        <div class="bar"
+                                                                             style="margin: 0px auto;width: 24px;height: 4px;background-color: #1F890E;">
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div class="card title"
-                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-left-radius: 0; border-top-right-radius: 0;">
+                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 24px; padding-right: 24px; border-radius: 2px; background-color: #FFFFFF; border-top-left-radius: 0; border-top-right-radius: 0;">
                                                         <div class="para para-banner para-light"
-                                                             style="margin: 0; font-size: 15px; line-height: 1.5; color: #7B8199; padding-bottom: 16px;">
-                                                            <p style="margin-top: 0;">You have received <strong>{{ $payout_amount[0] }} {{ $payout_amount[1] }}.{{ $payout_amount[2] }}</strong> from <strong>{{ $merchant_billing_label }}</strong>. Please find details below.</p>
-                                                            <p style="margin-bottom: 0;">If you haven't received this amount, kindly contact your bank with the UTR.</p>
+                                                             style="margin: 0; font-size: 14px; line-height: 20px; color: rgba(22, 47, 86, 0.74); padding-bottom: 32px; font-weight: 400;">
+                                                            <p
+                                                                style="margin-top: 0; color: rgba(22, 47, 86, 0.74);">
+                                                                You have received
+                                                                <strong>{{ $payout_amount[0] }} {{
+ $payout_amount[1] }}.{{
+ $payout_amount[2] }}</strong> from
+                                                                <strong>{{ $merchant_billing_label
+ }}</strong>. Please find details below.
+                                                            </p>
+                                                            <p
+                                                                style="margin-bottom: 0; color: rgba(22, 47, 86, 0.74);">
+                                                                If you haven't
+                                                                received the amount, kindly contact your
+                                                                bank with the UTR mentioned below.</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -278,89 +332,104 @@
                             <tr>
                                 <td style="vertical-align:top;padding:0px;">
 
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                           style="" width="100%">
 
                                         <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
+                                            <td align="left"
+                                                style="font-size:0px;padding:0px;word-break:break-word;">
 
                                                 <div
                                                     style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
                                                     <div class="card merchant-highlight informative"
-                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 0px; border-top-style: solid; padding-top: 20px; padding-bottom: 20px; border-top-color: {{ $merchant_brand_color }}; margin-top: 8px;">
+                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 24px; padding-right: 24px; border-radius: 2px; background-color: #FFFFFF; border-top-width: 2px; border-top-style: solid; padding-top: 24px; padding-bottom: 24px; border-top-color: #2B83EA; margin-top: 8px;">
                                                         <div class="information-row"
-                                                             style="font-size: 16px; text-align: left; font-weight: 600; line-height: 1.5; width: 100%; box-sizing: border-box; margin-bottom: 20px; padding-bottom: 16px;">
+                                                             style="font-size: 16px; text-align: left; font-weight: 700;line-height: 19px; width: 100%; box-sizing: border-box; padding-bottom: 24px; color: #162F56;">
                                                             <p style="margin: 0;">Transfer details</p>
                                                         </div>
                                                         <div class="information-row"
-                                                             style="font-size: 14px; border-bottom: 1px solid #747a9347; line-height: 1.5; font-weight: 500; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding-bottom: 10px">
+                                                             style="font-size: 14px;border-bottom: 1px solid rgba(22, 47, 86, 0.1); line-height: 16px; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding-bottom: 12px">
                                                             <div class="label"
-                                                                 style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                                 style="font-weight: 400;color: rgba(22, 47, 86, 0.74); display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                                                 UTR</div>
-                                                            <div class="value" style="color: #515978; font-weight: bolder; display: inline-block; font-weight: 500; max-width: 50%;">
+                                                            <div class="value"
+                                                                 style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
                                                                 {{$payout_utr}}</div>
                                                         </div>
                                                         <div class="information-row"
-                                                             style="font-size: 14px; border-bottom: 1px solid #747a9347; line-height: 1.5; font-weight: 500; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding-bottom: 10px">
+                                                             style="font-size: 14px; border-bottom: 1px solid rgba(22, 47, 86, 0.1); line-height: 16px; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding-bottom: 12px">
                                                             <div class="label"
-                                                                 style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                                 style="font-weight: 400;color: rgba(22, 47, 86, 0.74); display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                                                 Amount</div>
-                                                            <div class="value" style="color: #515978; font-weight: bolder; display: inline-block; font-weight: 500; max-width: 50%;">
-                                                                {{ $payout_amount[0] }} {{ $payout_amount[1] }}.{{ $payout_amount[2] }}</div>
+                                                            <div class="value"
+                                                                 style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
+                                                                {{ $payout_amount[0] }} {{ $payout_amount[1]
+ }}.{{ $payout_amount[2] }}</div>
                                                         </div>
                                                         @isset($payout_reference_id)
                                                             <div class="information-row"
-                                                                 style="font-size: 14px; border-bottom: 1px solid #747a9347; line-height: 1.5; font-weight: 500; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding-bottom: 10px">
+                                                                 style="font-size: 14px;border-bottom: 1px solid rgba(22, 47, 86, 0.1); line-height: 16px; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding-bottom: 12px">
                                                                 <div class="label"
-                                                                     style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                                     style="font-weight: 400;color: rgba(22, 47, 86, 0.74); display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                                                     Reference Id</div>
-                                                                <div class="value" style="color: #515978; font-weight: bolder; display: inline-block; font-weight: 500; max-width: 50%;">
+                                                                <div class="value"
+                                                                     style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
                                                                     {{ $payout_reference_id }}</div>
                                                             </div>
                                                         @endisset
                                                         <div class="information-row"
-                                                             style="font-size: 14px; border-bottom: 1px solid #747a9347; line-height: 1.5; font-weight: 500; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding-bottom: 10px">
+                                                             style="font-size: 14px; border-bottom: 1px solid rgba(22, 47, 86, 0.1); line-height: 16px; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding-bottom: 12px">
                                                             <div class="label"
-                                                                 style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                                 style="font-weight: 400;color: rgba(22, 47, 86, 0.74); display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                                                 Paid via</div>
-                                                            <div class="value" style="color: #515978; font-weight: bolder; display: inline-block; font-weight: 500; max-width: 50%;">
+                                                            <div class="value"
+                                                                 style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
                                                                 {{ $payout_mode }}</div>
                                                         </div>
                                                         <div class="information-row"
-                                                             style="font-size: 14px; border-bottom: 1px solid #747a9347; line-height: 1.5; font-weight: 500; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding-bottom: 10px">
+                                                             style="font-size: 14px;border-bottom: 1px solid rgba(22, 47, 86, 0.1); line-height: 16px; width: 100%; box-sizing: border-box; margin-bottom: 12px; padding-bottom: 12px">
                                                             <div class="label"
-                                                                 style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                                 style="font-weight: 400;color: rgba(22, 47, 86, 0.74); display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
                                                                 Paid on</div>
-                                                            <div class="value" style="color: #515978; font-weight: bolder; display: inline-block; font-weight: 500; max-width: 50%;">
+                                                            <div class="value"
+                                                                 style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
                                                                 {{ $payout_processed_at }}</div>
                                                         </div>
-                                                        @if(count($payout_notes) > 0)
+                                                        @isset($payout_narration)
                                                             <div class="information-row"
-                                                                 style="font-size: 14px; line-height: 1.5; font-weight: 500; width: 100%; box-sizing: border-box; margin-bottom: 10px; padding-bottom: 10px;">
+                                                                 style="font-size: 14px;line-height: 16px; width: 100%; box-sizing: border-box;">
                                                                 <div class="label"
-                                                                     style="color: #7B8199; display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
-                                                                    Notes</div>
-                                                                <div class="value" style="color: #515978; font-weight: bolder; display: inline-block; font-weight: 500; max-width: 50%;">
-                                                                    <table>
-                                                                        @foreach($payout_notes as $key => $value)
-                                                                            <tr>
-                                                                                <td class="text-left">
-                                                                                    {{ $key }}:
-                                                                                </td>
-                                                                                <td class="text-center">
-                                                                                    {{ $value }}
-                                                                                </td>
-                                                                            </tr>
-                                                                        @endforeach
-                                                                    </table>
-                                                                </div>
+                                                                     style="font-weight: 400;color: rgba(22, 47, 86, 0.74); display: inline-block; vertical-align: top; width: 50%; width: calc((388.203px - 100%) * 388.203); max-width: 100%; min-width: 50%;">
+                                                                    Narration</div>
+                                                                <div class="value"
+                                                                     style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
+                                                                    {{ $payout_narration }}</div>
                                                             </div>
                                                         @endif
 
                                                     </div>
-                                                    <div style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #f5f5f5; padding: 10px;">
-                                                        <p style="vertical-align:top; line-height: 20px; text-align: center; color: #8b8b8b;">Powered by <img style="height: 20px; vertical-align: bottom;" src="https://cdn.razorpay.com/static/assets/logo/rzpX/rzpX-dark.png" alt="RazorpayX" /></p>
-                                                        <p style="text-align: center; color: #8b8b8b;">Powerfully Simple Business Banking! <a style="text-decoration: none;" href="{{ $learn_more_url }}">Learn more</a></p>
+
+                                                    <div
+                                                        style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; text-align: center; display: flex; align-items: center; background: #f9fbfe; background-color: #f9fbfe; padding-top: 16px; padding-left:24px; padding-bottom: 19px; padding-right: 24px;">
+                                                        <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/contacts_zap.png"
+                                                             width="32px" height="32px"
+                                                             style="width:32px; height:32px; margin-right:12px;" />
+
+                                                        <span
+                                                            style="font-weight: 400; font-size: 12px; line-height: 18px; color: rgba(22, 47, 86, 0.54); text-align: left;">
+ For any product/service query contact
+ <a style="color: #0B70E7; text-decoration: none;"
+    href="{{ $merchant_website }}">{{
+ $merchant_website }},</a>
+ <span style="color: #0B70E7;">
+ {{ $merchant_phone }}</span>
+ or
+ <a style="color: #0B70E7; text-decoration: none;"
+    href="mailto:{{ $merchant_email }}">{{
+ $merchant_email }}</a>
+ </span>
                                                     </div>
+
                                                 </div>
 
                                             </td>
@@ -381,26 +450,73 @@
 
     </div>
 
-    <div class="max-width-override" style="Margin: 0px auto; max-width: unset; text-align: center; color: #8b8b8b;">
-        <div style="display: inline-block;">
-            <table align="center" border="0" cellpadding="0" cellspacing="0" style="width:100%;">
-                <tbody>
-                <tr style="font-family:Trebuchet MS; font-size: 14px;">
-                    <td style="direction:ltr;padding:20px;text-align:left;vertical-align:top;">
-                        <div>
-                            <a class="link" href="{{ $merchant_website }}" target="_blank" style="text-decoration:none;color: inherit">{{ $merchant_website }}</a>
-                        </div>
-                    </td>
-                    <td style="direction:ltr;padding:20px;text-align:right;vertical-align:top;">
-                        <div>{{$merchant_phone }}</div>
-                    </td>
-                    <td style="direction:ltr;padding:20px;text-align:right;vertical-align:top;">
-                        <div><a class="link" href="mailto:{{ $merchant_email }}" target="_blank" style="text-decoration:none;color: inherit">{{ $merchant_email }}</a></div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
+
+        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
+            <tbody>
+            <tr>
+                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
+
+                    <div class="mj-column-per-100 outlook-group-fix"
+                         style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
+
+                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
+                            <tbody>
+                            <tr>
+                                <td style="vertical-align:top;padding:0px;">
+
+                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                           style="" width="100%">
+
+                                        <tr>
+                                            <td align="left"
+                                                style="font-size:0px;padding:0px;word-break:break-word;">
+
+                                                <div
+                                                    style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
+
+                                                    <div class="card title"
+                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; margin-top: 8px;box-sizing: border-box; padding-top: 20px; padding-bottom: 20px; border-radius: 2px; background: url(https://cdn.razorpay.com/static/assets/razorpayx/emails/razorpayx_footer_bg.png), black; background-repeat: no-repeat; background-size: 100% 100%; border-top-left-radius: 0; border-top-right-radius: 0;">
+
+                                                        <img style="width: 100px; padding-left: 24px; padding-right: 24px;"
+                                                             src="https://cdn.razorpay.com/static/assets/logo/rzpX.png">
+
+                                                        <div
+                                                            style="font-weight: 400; padding-left: 24px; padding-right: 24px;font-size: 18px; padding-top: 16px;line-height: 125%; color: #FAFAFA; text-transform: capitalize;">
+                                                            Banking Made Awesome<br /> For Startups
+                                                        </div>
+                                                        <div
+                                                            style="padding-left: 22px; padding-right: 24px; width: 250px; max-width: 100%; margin: 0;">
+                                                            <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/promo.gif"
+                                                                 style="margin: 0;" width="100%"
+                                                                 height="auto" />
+                                                        </div>
+
+                                                        <div>
+                                                            <a href="https://x.razorpay.com/"
+                                                               style="margin-left: 24px; margin-right: 24px; text-decoration: none; display: inline-block; font-weight: 500;font-size: 12px; padding: 8px 12px; line-height: 16px; background: #2A86F3; border: 1px solid #2A86F3; color: white; border-radius: 2px;">Explore
+                                                                RazorpayX</a>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </td>
+                                        </tr>
+
+                                    </table>
+
+                                </td>
+                            </tr>
+
+                            </tbody>
+                        </table>
+
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
 
     </div>
 

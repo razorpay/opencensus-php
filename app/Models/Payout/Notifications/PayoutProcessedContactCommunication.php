@@ -45,8 +45,11 @@ class PayoutProcessedContactCommunication extends Base
 
     public function notify()
     {
+        //If payout source is vendor payment then do not send email
+        // TODO: Add a check for dashboard payouts and make the feature default instead of Feature Flag
         if ($this->payout->merchant->isFeatureEnabled(
-                Feature\Constants::BENE_EMAIL_NOTIFICATION) === true)
+                Feature\Constants::BENE_EMAIL_NOTIFICATION) === true &&
+            $this->payout->isVendorPayment() === false)
         {
             $this->sendEmail();
         }

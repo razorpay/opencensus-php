@@ -12059,6 +12059,13 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreateVendorPaymentPayoutWithOriginWithSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutLinkPayoutWithOrigin()
     {
         $this->ba->appAuthTest($this->config['applications.payout_links.secret']);
@@ -20732,6 +20739,7 @@ class PayoutTest extends OAuthTestCase
             $this->assertArrayHasKey('payout_reference_id', $mail->viewData);
             $this->assertArrayHasKey('payout_mode', $mail->viewData);
             $this->assertArrayHasKey('payout_id', $mail->viewData);
+            $this->assertArrayHasKey('payout_narration', $mail->viewData);
             $this->assertArrayHasKey('payout_processed_at', $mail->viewData);
             $this->assertArrayHasKey('merchant_website', $mail->viewData);
             $this->assertArrayHasKey('learn_more_url', $mail->viewData);
@@ -20744,6 +20752,48 @@ class PayoutTest extends OAuthTestCase
         });
 
         Mail::assertQueued(PayoutMail::class);
+    }
+
+    public function testBeneNotificationOnPayoutProcessedNotSentIfSourceIsVendorPayments()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
+            Feature\Constants::BENE_SMS_NOTIFICATION]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreateVendorPaymentPayoutWithOriginWithSourceDetails();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $fta = $payout->fundTransferAttempts()->first();
+
+        // Assert that fta status was initiated (FTS sync call).
+        $this->assertEquals('initiated', $fta->getStatus());
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+            PayoutProcessedNotification::SMS_TEMPLATE,
+            $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
     }
 
     public function testBeneNotificationOnPayoutProcessedNotSentWhenFeatureIsNotEnabled()
