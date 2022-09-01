@@ -574,6 +574,8 @@ final class RazorxTreatment
 
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';
 
+    public const SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK = 'smartcollect_service_qr_payments_callback';
+
     /* Experiment to enable self serve workflow */
     public const RX_SELF_SERVE_WORKFLOW = "rx_self_serve_workflow";
 

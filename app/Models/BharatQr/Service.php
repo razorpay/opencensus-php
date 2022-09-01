@@ -6,10 +6,14 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Gateway\Sharp;
+use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\QrPayment\Entity;
+use RZP\Services\SmartCollect;
 use RZP\Trace\TraceCode;
 use RZP\Models\QrPayment;
 use RZP\Models\Payment\Gateway;
@@ -22,11 +26,15 @@ class Service extends Base\Service
 {
     protected $core;
 
+    protected $smartCollectService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Core;
+
+        $this->smartCollectService = $this->app['smartCollect'];
     }
 
     public function processPayment($input, string $gateway)
@@ -62,6 +70,10 @@ class Service extends Base\Service
             [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse($input, $gatewayClass, $gateway);
 
             $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+
+            $path = "/v1/payment/callback/bharatqr/" . $gateway;
+
+            $this->forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse);
 
             $gatewayClass->setGatewayParams($gatewayResponse, $this->mode, $terminal);
 
@@ -163,6 +175,10 @@ class Service extends Base\Service
             }
 
             $qrPaymentRequest = (new QrPaymentRequest\Service())->create($gatewayResponse, QrPaymentRequest\Type::BHARAT_QR);
+
+            $path = "/v1/payment/callback/bharatqr/" . $gateway . "/internal";
+
+            $this->forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse);
 
             $valid = $this->processQrCodePayment($gatewayResponse, $terminal, $qrPaymentRequest);
 
@@ -391,5 +407,38 @@ class Service extends Base\Service
         }
 
         $this->app['basicauth']->setModeAndDbConnection($this->mode);
+    }
+    protected function forwardPaymentsCallBackToSCService($qrPaymentRequest, $path, $gatewayResponse)
+    {
+        if (empty($qrPaymentRequest[Entity::QR_CODE_ID]) === false) {
+
+            $qrCode_id = $qrPaymentRequest->getQrCodeId();
+
+            if (($gatewayResponse['qr_data']['gateway'] === Gateway::SHARP)  and
+                ($this->isNonVAQrCodePayment($gatewayResponse)))
+            {
+                $qrCode_id = substr($qrCode_id, 0, 14);
+            }
+
+            $qrCode = $this->repo->qr_code->find($qrCode_id);
+
+            if($qrCode === null)
+            {
+                return;
+            }
+
+            $mid = $qrCode->merchant->getId();
+
+            //TODO : Need to remove this experiment after sometime
+            $variant = $this->app->razorx->getTreatment($mid,
+                RazorxTreatment::SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK,
+                $this->mode ?? Mode::LIVE);
+
+            if ($variant === 'on') {
+                $response = $this->smartCollectService->sendRequest($path, "POST", $qrPaymentRequest->toArray());
+            }
+        }
+
+        return;
     }
 }

@@ -4,8 +4,10 @@ namespace RZP\Tests\Functional\QrPayment;
 
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Models\Merchant\Account;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Hitachi\ResponseFields;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -267,6 +269,75 @@ class BharatQrPaymentTest extends TestCase
         $card = $this->getLastEntity('card', true);
 
         $this->assertEquals('Razorpay', $card['name']);
+    }
+
+    public function testMakeTestPaymentsViaScService()
+    {
+        $this->enableRazorXTreatmentForRoutingFromApiToScService();
+
+        $this->fixtures->terminal->disableTerminal($this->t1['id']);
+
+        $this->fixtures->terminal->disableTerminal($this->t2['id']);
+
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->proxyAuth();
+
+        $content = [
+            'reference' => $this->qrCode['id'],
+            'method'    => 'card',
+            'amount'    => '100',
+        ];
+
+        $request['content'] = $content;
+
+        $request['method'] = 'post';
+
+        $request['url'] = '/bharatqr/pay/test';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('card', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+        $this->assertEquals('sharp', $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals('10000000000000', $payment['merchant_id']);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('Razorpay', $card['name']);
+    }
+
+    protected function enableRazorXTreatmentForRoutingFromApiToScService()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function($mid, $feature, $mode) {
+                    if ($feature === RazorxTreatment::SMARTCOLLECT_SERVICE_QR_PAYMENTS_CALLBACK)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
     }
 
     public function testMakeTestPaymentSuccess()
