@@ -105,6 +105,7 @@ class Validator extends Base\Validator
     const PAYOUT_SERVICE_FTS_CREATE                 = 'payout_service_fts_create';
     const RETRY_PAYOUTS_ON_SERVICE                  = 'retry_payouts_on_service';
     const PAYOUT_SERVICE_FETCH_PRICING_INFO         = 'payout_service_fetch_pricing_info';
+    const DECREMENT_FREE_PAYOUT_FOR_PAYOUTS_SERVICE = 'decrement_free_payout_for_payouts_service';
     const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE       = 'migrate_free_payout_payouts_service';
     const ROLLBACK_FREE_PAYOUT_PAYOUTS_SERVICE      = 'rollback_free_payout_payouts_service';
 
@@ -238,6 +239,12 @@ class Validator extends Base\Validator
     protected static $payoutServiceCreateRules = [
         Entity::ID                   => 'required|string|size:14',
         Entity::MERCHANT_ID          => 'required|string|size:14'
+    ];
+
+    protected static $decrementFreePayoutForPayoutsServiceRules = [
+        Entity::MERCHANT_ID     => 'required|string|size:14',
+        Entity::BALANCE_ID      => 'required|string|size:14',
+        Entity::PAYOUT_ID       => 'required|string|size:14',
     ];
 
 

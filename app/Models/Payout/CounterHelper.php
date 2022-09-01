@@ -129,25 +129,39 @@ class CounterHelper extends Base\Core
 
         if ($shouldDecreaseFreePayoutsConsumed === true)
         {
-            $counter = $this->getCounterForBalance($balance, $payout);
-
-            $counter = $this->decreaseFreePayoutsConsumed($counter);
-
-            $this->trace->info(
-                TraceCode::FREE_PAYOUTS_CONSUMED_DECREMENT,
-                [
-                    Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
-                    Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
-                        $counter->getFreePayoutsConsumedLastResetAt(),
-                    Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
-                    self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
-                    self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
-                    self::CRITERIA                                      => $criteria,
-                ]
-            );
+            $this->fetchCounterAndDecreaseFreePayoutsConsumed($balance, $payout, $criteria);
         }
 
         return $shouldDecreaseFreePayoutsConsumed;
+    }
+
+    public function fetchCounterAndDecreaseFreePayoutsConsumed(
+        Balance\Entity $balance, Entity $payout = null, string $criteria = "")
+    {
+        $counter = $this->getCounterForBalance($balance, $payout);
+
+        $counter = $this->decreaseFreePayoutsConsumed($counter);
+
+        $this->trace->info(
+            TraceCode::FREE_PAYOUTS_CONSUMED_DECREMENT,
+            [
+                Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+                Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT =>
+                    $counter->getFreePayoutsConsumedLastResetAt(),
+                Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+                self::COUNTER . '_' . Counter\Entity::ID            => $counter->getId(),
+                self::COUNTER . '_' . Counter\Entity::UPDATED_AT    => $counter->getUpdatedAt(),
+                self::CRITERIA                                      => $criteria,
+            ]
+        );
+
+        $resp = [
+            Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
+            Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $counter->getFreePayoutsConsumedLastResetAt(),
+            Counter\Entity::BALANCE_ID                          => $counter->getBalanceId(),
+        ];
+
+        return $resp;
     }
 
     /*

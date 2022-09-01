@@ -2437,6 +2437,48 @@ return [
         ],
     ],
 
+    'testDecrementFreePayoutsConsumedForPayoutsService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/decrement_free_payouts',
+            'content' => [
+                "merchant_id"          => "10000000000000",
+                "balance_id"           => "bal12345678909",
+                "payout_id"            => "dummypayout123",
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testDecrementFreePayoutsConsumedForPayoutsServiceValidationFailure' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/decrement_free_payouts',
+            'content' => [
+                "merchant_id"          => "10000000000000",
+                "balance_id"           => "bal12345678909",
+                "payout_id"            => "dummypayout123",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The balance id must be 14 characters.',
+                ],
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithLedgerFreePayoutViaPSFeatureEnabled' => [
         'request'  => [
             'method'  => 'POST',

@@ -3609,6 +3609,7 @@ class Route
         'update_payout_payout_service'            => ['patch',    'payouts_service/payout/{payout_id}/update',              'PayoutController@updatePayoutEntry'                           ],
         'payout_outbox_partition_cron'            => ['post',     'payout_outbox/partition',                                'PayoutOutboxController@createPayoutOutboxPartition'           ],
         'payment_analytics_partition_cron'        => ['post',     'payment_analytics/partition',                            'PaymentController@createPaymentAnalyticsPartition'            ],
+        'decrement_free_payouts_payouts_service'  => ['post',     'payouts_service/decrement_free_payouts',                 'PayoutController@decrementFreePayoutsForPayoutsService'       ],
         'rollback_free_payouts'                   => ['post',     'payouts_service/free_payout_rollback',                   'PayoutController@freePayoutRollback'                          ],
         'payouts_service_redis_key_set'           => ['post',     'payouts_service_redis_key_set',                          'PayoutController@payoutServiceRedisKeySet'                    ],
 
@@ -5039,6 +5040,8 @@ class Route
         'dcc_payouts_details_fetch',
         'initiate_payouts_consistency_check',
         'payout_bulk_update_attachments',
+        'decrement_free_payouts_payouts_service',
+
         'rollback_free_payouts',
         'payouts_service_redis_key_set',
 
@@ -13804,6 +13807,7 @@ class Route
             'on_hold_merchant_slas_internal',
             'internal_balances_queued',
             'dcc_payouts_details_fetch',
+            'decrement_free_payouts_payouts_service',
             'rollback_free_payouts',
         ],
 

@@ -3258,6 +3258,11 @@ class Service extends Base\Service
         return ['success' => $success];
     }
 
+    public function decrementFreePayoutsForPayoutsService($input)
+    {
+        return $this->core->decrementFreePayoutsForPayoutsService($input);
+    }
+
     /**
      * Gets the signed URL for the attachment added against the payout
      * @param string $payoutId

@@ -7,6 +7,7 @@ use Mockery;
 use Carbon\Carbon;
 use Requests_Response;
 
+use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
@@ -3904,6 +3905,61 @@ class PayoutServiceTest extends TestCase
         $this->testData[__FUNCTION__]['request']['headers']['X-Passport-JWT-V1'] = "";
 
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testDecrementFreePayoutsConsumedForPayoutsService()
+    {
+        $balance = $this->fixtures->create('balance', [
+            'merchant_id'    => '10000000000000',
+            'account_type'   => 'shared',
+            'type'           => 'banking',
+            'channel'        => 'icici',
+            'balance'        => 10000000,
+        ]);
+
+        $balanceId = $balance->getId();
+
+        $this->fixtures->create(
+            'counter',
+            [
+                'balance_id'   => $balanceId,
+                'account_type' => 'shared',
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['balance_id'] = $balanceId;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $counter = $this->getDbEntity('counter', [
+            CounterEntity::BALANCE_ID   => $balanceId,
+            CounterEntity::ACCOUNT_TYPE => AccountType::SHARED
+        ])->toArray();
+
+        $this->fixtures->edit('counter', $counter['id'], ['free_payouts_consumed' => 300]);
+
+        $this->ba->payoutInternalAppAuth();
+
+        $this->startTest();
+
+        // Assert that we have now consumed another free payout and counter has Decremented to 299.
+        $updatedCounter = $this->getDbEntity('counter', [
+            CounterEntity::BALANCE_ID   => $balanceId,
+            CounterEntity::ACCOUNT_TYPE => AccountType::SHARED
+        ])->toArray();
+
+        $this->assertEquals(299, $updatedCounter['free_payouts_consumed']);
+    }
+
+    public function testDecrementFreePayoutsConsumedForPayoutsServiceValidationFailure()
+    {
+        $this->ba->payoutInternalAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = "bal12345678901234567";
 
         $this->startTest();
     }

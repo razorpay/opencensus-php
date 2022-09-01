@@ -26918,5 +26918,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->assertFalse(array_key_exists('workflow_history', $payouts['items'][0]));
     }
+
  }
 

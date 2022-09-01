@@ -4602,6 +4602,36 @@ class Core extends Base\Core
         }
     }
 
+    public function decrementFreePayoutsForPayoutsService(array $input)
+    {
+        (new Validator)->setStrictFalse()->validateInput(Validator::DECREMENT_FREE_PAYOUT_FOR_PAYOUTS_SERVICE, $input);
+
+        $balance = $this->repo->balance->findOrFailById($input[Entity::BALANCE_ID]);
+
+        try
+        {
+            if ($balance->getType() === Merchant\Balance\Type::BANKING)
+            {
+                $resp = (new CounterHelper)->fetchCounterAndDecreaseFreePayoutsConsumed($balance);
+
+                $this->trace->info(TraceCode::DECREMENT_FREE_PAYOUTS_FOR_PAYOUTS_SERVICE_RESPONSE, [
+                    'response' => $resp,
+                ]);
+
+                return $resp;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::BAD_REQUEST_DECREMENT_FREE_PAYOUTS_FOR_PAYOUTS_SERVICE, [
+                Entity::BALANCE_ID => $input[Entity::BALANCE_ID],
+            ]);
+            throw $e;
+        }
+
+        return null;
+    }
+
     public function decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable(string $balanceId, $feeType)
     {
         if ($feeType === Entity::FREE_PAYOUT)
