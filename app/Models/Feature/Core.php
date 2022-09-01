@@ -28,9 +28,11 @@ use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Notifications\Dashboard\Events;
+use RZP\Constants\Entity as AppConstants;
 use RZP\Jobs\SkipOnboardingCommFromHubSpot;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Customer\Token;
+use RZP\Services\PayoutService;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -45,6 +47,11 @@ class Core extends Base\Core
 {
     use NotifyTrait;
 
+    /**
+     * @var PayoutService\MerchantConfig
+     */
+    protected $payoutServiceMerchantConfigClient;
+
     public function __construct()
     {
         parent::__construct();
@@ -53,6 +60,8 @@ class Core extends Base\Core
         {
             $this->merchant->setLoadedFeaturesNull();
         }
+
+        $this->payoutServiceMerchantConfigClient = $this->app[PayoutService\MerchantConfig::PAYOUT_SERVICE_MERCHANT_CONFIG];
     }
 
     /**
@@ -279,7 +288,47 @@ class Core extends Base\Core
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);
 
+        $this->updatePayoutsMicroserviceOnFeatureUpdate($feature, $entityType, $entityId, AppConstants::ENABLE);
+
         return $feature;
+    }
+
+    // updatePayoutsMicroserviceOnFeatureUpdate is used to update the merchant config
+    // cache on Payouts service so that there is no lag between enabling a feature
+    // on API and the same being reflected on Payouts Service.
+    // Any error/exception in this function is logged and not thrown so that the feature
+    // addition/deletion flows are not affected.
+    public function updatePayoutsMicroserviceOnFeatureUpdate(
+        Entity $feature, string $entityType, string $entityId, string $action)
+    {
+        try {
+            if ($entityType === Constants::MERCHANT)
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($entityId);
+
+                if ($merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true)
+                {
+                    $payoutServiceRequest = [
+                        Constants::MERCHANT_ID        => $merchant->getId(),
+                        Constants::FEATURE            => $feature->getName(),
+                        AppConstants::ACTION          => $action,
+                    ];
+
+                    $this->payoutServiceMerchantConfigClient->updateMerchantFeatureCacheInPayoutMicroservice($payoutServiceRequest);
+                }
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(
+                TraceCode::UPDATE_MERCHANT_FEATURE_IN_PAYOUT_SERVICE_FAILED,
+                [
+                    Constants::MERCHANT_ID => $entityId,
+                    Constants::FEATURE     => $feature->getName(),
+                    AppConstants::ACTION   => $action,
+                    'error'                => $ex->getMessage()
+                ]);
+        }
     }
 
     /**
@@ -314,6 +363,8 @@ class Core extends Base\Core
         $this->handleEsFeatureDeletion($feature);
 
         $this->notifyFeatureUpdateOnSlack($feature, true);
+
+        $this->updatePayoutsMicroserviceOnFeatureUpdate($feature, $feature->getEntityType(), $feature->getEntityId(), AppConstants::DISABLE);
     }
 
     /**

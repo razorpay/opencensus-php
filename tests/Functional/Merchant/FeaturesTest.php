@@ -2629,7 +2629,7 @@ Regards,
                 {
                     $this->assertEquals('key_TheTestAuthKey', $tag);
                 }
-                else if (starts_with($tag, 'feature') === true)
+                else if (starts_with($tag, 'feature_merchant') === true)
                 {
                     $this->assertEquals('feature_merchant_10000000000000', $tag);
                 }
@@ -2651,7 +2651,7 @@ Regards,
 
                     $this->assertEquals('TheTestAuthKey', $e->value[0]->id);
                 }
-                else if (starts_with($tag, 'feature') === true)
+                else if (starts_with($tag, 'feature_merchant') === true)
                 {
                     $this->assertEquals('feature_merchant_10000000000000', $tag);
 

@@ -2437,6 +2437,82 @@ return [
         ],
     ],
 
+    'testPayoutServiceMerchantFeatureAddition' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['free_payout_ledger_via_ps'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPayoutServiceMerchantFeatureAdditionServiceRequestFailure' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['free_payout_ledger_via_ps'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPayoutServiceMerchantFeatureDeletion' => [
+        'request'   => [
+            'content' => [
+                'should_sync'  => false,
+            ],
+            'url'     => '/accounts/10000000000000/features/free_payout_ledger_via_ps',
+            'method'  => 'DELETE',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPayoutServiceMerchantFeatureDeletionServiceRequestFailure' => [
+        'request'   => [
+            'content' => [
+                'should_sync'  => false,
+            ],
+            'url'     => '/accounts/10000000000000/features/free_payout_ledger_via_ps',
+            'method'  => 'DELETE',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+            ],
+        ],
+        'response'  => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDecrementFreePayoutsConsumedForPayoutsService' => [
         'request'  => [
             'method'  => 'POST',

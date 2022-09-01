@@ -699,6 +699,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerUpdateFreePayout();
 
+        $this->registerUpdateMerchantFeatureInPayoutService();
+
         $this->registerOnHoldSLAUpdate();
 
         $this->registerPayoutServiceDataConsistencyChecker();
@@ -1734,6 +1736,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\FreePayout::PAYOUT_SERVICE_FREE_PAYOUT, function($app)
         {
             return new PayoutService\FreePayout($app);
+        });
+    }
+
+    protected function registerUpdateMerchantFeatureInPayoutService()
+    {
+        $this->app->singleton(PayoutService\MerchantConfig::PAYOUT_SERVICE_MERCHANT_CONFIG, function($app)
+        {
+            return new PayoutService\MerchantConfig($app);
         });
     }
 

@@ -7,6 +7,7 @@ use Mockery;
 use Carbon\Carbon;
 use Requests_Response;
 
+use RZP\Constants\Mode;
 use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -43,6 +44,8 @@ use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
 use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
+use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
+use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
 class PayoutServiceTest extends TestCase
@@ -3821,6 +3824,24 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutServiceMerchantFeatureAddition()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->mockPayoutServiceMerchantConfigUpdate();
+
+        $this->startTest();
+    }
+
+    public function testPayoutServiceMerchantFeatureAdditionServiceRequestFailure()
+    {
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->mockPayoutServiceMerchantConfigUpdate(true);
+
+        $this->startTest();
+    }
+
     public function testPayoutsServiceCreateFailureProcessingCron()
     {
         $this->ba->cronAuth();
@@ -3839,9 +3860,31 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testPayoutServiceMerchantFeatureDeletion()
+    {
+        $this->fixtures->merchant->addFeatures(['free_payout_ledger_via_ps']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->mockPayoutServiceMerchantConfigUpdate();
+
+        $this->startTest();
+    }
+
     public function testPayoutsServiceCreateFailureProcessingCronAndCountMissing()
     {
         $this->ba->cronAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutServiceMerchantFeatureDeletionServiceRequestFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['free_payout_ledger_via_ps']);
+
+        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
+
+        $this->mockPayoutServiceMerchantConfigUpdate(true);
 
         $this->startTest();
     }
@@ -3851,6 +3894,63 @@ class PayoutServiceTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest();
+    }
+
+    public function mockPayoutServiceMerchantConfigUpdate($fail = false, $request = [])
+    {
+        $merchantConfigUpdateMock = Mockery::mock('RZP\Services\PayoutService\MerchantConfig',
+            [$this->app])->makePartial();
+
+        $merchantConfigUpdateMock->shouldReceive('sendRequest')
+            ->withArgs(
+                function($arg) use ($request) {
+                    try
+                    {
+                        // Using this method only here as we want to check if the keys in the
+                        // request are coming properly or not.
+                        $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                        return true;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        return false;
+                    }
+                }
+            )
+            ->andReturn(
+            // We are returning this response only as we don't have a use case of supporting
+            // response based on $request, if needed, that can also be added here using
+            // andReturnUsing method instead of and Return
+                $this->updateMerchantFeatureCacheResponseForPayoutServiceMock($fail)
+            );
+
+        $this->app->instance(PayoutServiceMerchantConfig::PAYOUT_SERVICE_MERCHANT_CONFIG, $merchantConfigUpdateMock);
+    }
+
+    public function updateMerchantFeatureCacheResponseForPayoutServiceMock($fail)
+    {
+        $response = new Requests_Response();
+
+        if ($fail === true) {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code" => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => "Service Failure",
+                            "field" => null
+                        ]
+                ]);
+            $response->status_code = 400;
+            $response->success = true;
+        } else {
+            $response->body = null;
+            $response->status_code = 200;
+            $response->success = true;
+        }
+
+        return $response;
     }
 
     public function testPayoutsServiceUpdateFailureProcessingCron()
