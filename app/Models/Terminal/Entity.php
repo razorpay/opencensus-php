@@ -417,6 +417,16 @@ class Entity extends Base\PublicEntity
         self::MPAN,
     ];
 
+    /**
+     * {@inheritDoc}
+     */
+    protected $dispatchesEvents = [
+        // Event 'retrieved' fires on fetch from terminals table.
+        'retrieved'   => EventRetrieved::class,
+        // Event 'saved' fires on insert or update from terminals table.
+        'saved'       => EventSaved::class,
+    ];
+
     protected static function boot()
     {
         parent::boot();

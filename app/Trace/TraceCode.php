@@ -5076,6 +5076,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_SAVED_EVENT                                     = 'MERCHANT_SAVED_EVENT';
     const MERCHANT_DETAIL_SAVED_EVENT                              = 'MERCHANT_DETAIL_SAVED_EVENT';
+    const TERMINALS_RETRIEVAL_EVENT                                = 'TERMINALS_RETRIEVAL_EVENT';
+    const TERMINALS_SAVED_EVENT                                    = 'TERMINALS_SAVED_EVENT';
     const INSTRUMENT_EVENT_RULES_TRIGGER                           = 'INSTRUMENT_EVENT_RULES_TRIGGER';
     const INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED                   = 'INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED';
     const INSTRUMENT_EVENT_RULES_METRICS                           = 'INSTRUMENT_EVENT_RULES_METRICS';

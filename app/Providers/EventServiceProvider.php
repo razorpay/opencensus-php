@@ -18,6 +18,7 @@ use RZP\Events\P2p;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Models\Merchant;
 use RZP\Models\Partner;
+use RZP\Models\Terminal;
 use RZP\Modules\Acs;
 
 class EventServiceProvider extends ServiceProvider
@@ -134,6 +135,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         Merchant\Detail\EventSaved::class => [
             Listeners\MerchantDetailEventListener::class . '@onSaved',
+        ],
+        Terminal\EventRetrieved::class => [
+            Listeners\TerminalsEventListener::class . '@onRetrieved',
+        ],
+        Terminal\EventSaved::class => [
+            Listeners\TerminalsEventListener::class . '@onSaved',
         ],
         ConsoleEvents\CommandFinished::class => [
             Acs\TriggerSyncListener::class,
