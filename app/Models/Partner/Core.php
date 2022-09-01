@@ -1082,11 +1082,19 @@ class Core extends Detail\Core
                 return false;
             }
             $existingAppIds = $existingApps->pluck(MerchantApplicationsEntity::APPLICATION_ID)->toArray();
-            $deletedAppIds = $deletedApps->pluck(MerchantApplicationsEntity::APPLICATION_ID)->toArray();
+
+            $deletedManagedAppId = $deletedApps->firstWhere(
+                MerchantApplicationsEntity::TYPE, MerchantApplicationsEntity::MANAGED
+            )->getApplicationId();
+            $deletedReferredAppId = $deletedApps->firstWhere(
+                MerchantApplicationsEntity::TYPE, MerchantApplicationsEntity::REFERRED
+            )->getApplicationId();
+
             list($defaultConfig, $accessMaps, $subMs) = $this->validateAndFetchPartnerEntities($existingAppIds[0], $merchant);
 
             return $this->createAndUpdateSupportingEntitiesForOldAuth(
-                $merchant, $existingAppIds, $deletedAppIds, $defaultConfig, $accessMaps, $subMs
+                $merchant, $existingAppIds, [ $deletedManagedAppId, $deletedReferredAppId ],
+                $defaultConfig, $accessMaps, $subMs
             );
         }
         catch (Exception\LogicException $e)
@@ -1146,7 +1154,7 @@ class Core extends Detail\Core
      * Assigns submerchants dashboard access to aggregator partners.
      * Deletes old OAuth and Merchant application for reseller partner.
      *
-     * @param   Merchant\Entity         $merchant       the reseller partner
+     * @param   Merchant\Entity         $partner       the reseller partner
      * @param   string                  $existingAppId  the existing referred application ID
      * @param   PartnerConfig\Entity    $defaultConfig  the default partner config for the referred app
      * @param   PublicCollection        $accessMaps     the existing access maps for sub-merchants
@@ -1158,31 +1166,30 @@ class Core extends Detail\Core
      * @throws  Throwable
      */
     private function createAndUpdateSupportingEntitiesForNewAuth(
-        Merchant\Entity $merchant, string $existingAppId, PartnerConfig\Entity $defaultConfig,
+        Merchant\Entity $partner, string $existingAppId, PartnerConfig\Entity $defaultConfig,
         PublicCollection $accessMaps, PublicCollection $subMerchants
     ): bool
     {
+        $newManagedAppId = $this->merchantCore->createPartnerApp($partner, [])[OAuthApp\Entity::ID];
+        $newReferredAppId = $this->merchantCore->createPartnerApp(
+            $partner, [OAuthApp\Entity::NAME => Merchant\Entity::REFERRED_APPLICATION]
+        )[OAuthApp\Entity::ID];
         try
         {
             $this->repo->transactionOnLiveAndTest(function () use (
-                $merchant, $existingAppId, $defaultConfig, $accessMaps, $subMerchants
+                $partner, $existingAppId, $newManagedAppId, $newReferredAppId, $defaultConfig, $accessMaps, $subMerchants
             )
             {
-                $managedAppId = $this->createPartnerAndMerchantApplication(
-                    $merchant, [], MerchantApplicationsEntity::MANAGED
-                );
-                $referredAppId = $this->createPartnerAndMerchantApplication(
-                    $merchant,
-                    [OAuthApp\Entity::NAME => Merchant\Entity::REFERRED_APPLICATION],
-                    MerchantApplicationsEntity::REFERRED
-                );
                 $this->updatePartnerEntities(
-                    $merchant, $existingAppId, $managedAppId, $referredAppId, $defaultConfig, $accessMaps, $subMerchants
+                    $partner, $existingAppId, $newManagedAppId, $newReferredAppId, $defaultConfig, $accessMaps, $subMerchants
                 );
-                app('authservice')->deleteApplication($existingAppId, $merchant->getId());
+                app('authservice')->deleteApplication($existingAppId, $partner->getId());
             });
         } catch (Throwable $e)
         {
+            app('authservice')->deleteApplication($newManagedAppId, $partner->getId(), false);
+            app('authservice')->deleteApplication($newReferredAppId, $partner->getId(), false);
+
             $this->trace->error(
                 TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_ERROR,
                 [ 'error' => $e ]
@@ -1222,18 +1229,8 @@ class Core extends Detail\Core
                 $partner, $existingAppIds, $deletedAppIds, $defaultConfig, $accessMaps, $subMerchants
             )
             {
-                $this->repo->merchant_application->restoreDeletedApps($deletedAppIds, Mode::LIVE);
-                $this->repo->merchant_application->restoreDeletedApps($deletedAppIds, Mode::TEST);
-
-                $managedAppId = $this->repo->merchant_application->fetchMerchantApplications(
-                    $partner->getId(), [ MerchantApplicationsEntity::MANAGED ]
-                )->first()->getApplicationId();
-                $referredAppId = $this->repo->merchant_application->fetchMerchantApplications(
-                    $partner->getId(), [ MerchantApplicationsEntity::REFERRED ]
-                )->first()->getApplicationId();
-
                 $this->updatePartnerEntities(
-                    $partner, $existingAppIds[0], $managedAppId, $referredAppId,
+                    $partner, $existingAppIds[0], $deletedAppIds[0], $deletedAppIds[1],
                     $defaultConfig, $accessMaps, $subMerchants
                 );
 
@@ -1255,7 +1252,7 @@ class Core extends Detail\Core
 
     /**
      * Updates the partner entities for migrating aggregator-turned reseller back to aggregator type.
-     * @param   Merchant\Entity     $merchant       the partner merchant
+     * @param   Merchant\Entity     $partner       the partner merchant
      * @param   string              $existingAppId  the existing application ID of Reseller partner
      * @param   string              $managedAppId   the managed application ID when partner was Aggregator
      * @param   string              $referredAppId  the referred application ID when partner was Aggregator
@@ -1267,11 +1264,18 @@ class Core extends Detail\Core
      * @throws  LogicException
      */
     private function updatePartnerEntities(
-        Merchant\Entity $merchant, string $existingAppId, string $managedAppId, string $referredAppId,
+        Merchant\Entity $partner, string $existingAppId, string $managedAppId, string $referredAppId,
         PartnerConfig\Entity $defaultConfig, PublicCollection $accessMaps, PublicCollection $subMerchants
     )
     {
-        $this->createPartnerConfigFromExistingConfig($merchant, $defaultConfig, $referredAppId);
+        $this->merchantCore->createMerchantApplication(
+            $partner, $managedAppId, MerchantApplicationsEntity::MANAGED
+        );
+        $this->merchantCore->createMerchantApplication(
+            $partner, $referredAppId, MerchantApplicationsEntity::REFERRED
+        );
+
+        $this->createPartnerConfigFromExistingConfig($partner, $defaultConfig, $referredAppId);
         $this->trace->info(TraceCode::RESELLER_TO_AGGREGATOR_APPLICATION_CREATED, [
                 'old_application_id' => $existingAppId,
                 'new_application_ids' => [$managedAppId, $referredAppId]
@@ -1282,11 +1286,11 @@ class Core extends Detail\Core
         (new Merchant\AccessMap\Core())->updateApplications($accessMaps, $managedAppId);
         if (empty($subMerchants) === false)
         {
-            $this->assignDashboardAccessForSubmerchants($merchant, $subMerchants);
+            $this->assignDashboardAccessForSubmerchants($partner, $subMerchants);
         }
 
-        $merchant->setPartnerType(Constants::AGGREGATOR);
-        $this->repo->merchant->saveOrFail($merchant);
+        $partner->setPartnerType(Constants::AGGREGATOR);
+        $this->repo->merchant->saveOrFail($partner);
     }
 
     private function filterDefaultConfig($configs)

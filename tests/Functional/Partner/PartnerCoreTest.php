@@ -111,6 +111,7 @@ class PartnerCoreTest extends OAuthTestCase
         $merchantOnTest = $this->getDbEntityById('merchant', $partnerId, 'test');
         $this->assertEquals('aggregator', $merchantOnLive->getPartnerType());
         $this->assertEquals('aggregator', $merchantOnTest->getPartnerType());
+        $this->assertOnDeletedMerchantApplication($partnerId, $resellerAppId, $oldManagedAppId, $oldReferredAppId);
         $this->assertOnMerchantApplication($partnerId, $resellerAppId, $oldManagedAppId, $oldReferredAppId);
         $this->assertOnAccessMaps($partnerId, $subMerchant, $oldManagedAppId);
         $this->assertOnPartnerConfigs($resellerAppId, $oldManagedAppId, $oldReferredAppId);
@@ -128,14 +129,39 @@ class PartnerCoreTest extends OAuthTestCase
             $partnerId, $resellerAppId, $oldManagedAppId, $oldReferredAppId, $subMerchant
             ) = $this->setupAggrTurnedResellerPartner();
 
-        $subM = $this->getTrashedDbEntity('merchant_application', ['application_id' => $oldReferredAppId], 'test');
-        $subM->forceDelete();
+        $merchantApp = $this->getTrashedDbEntity('merchant_application', ['application_id' => $oldReferredAppId], 'test');
+        $merchantApp->forceDelete();
 
         $input = [ "merchant_id" => $partnerId, "new_auth_create" => false ];
 
         $this->expectException(Exception\LogicException::class);
 
         $this->core->migrateResellerToAggregatorPartner($input);
+    }
+
+    private function assertOnDeletedMerchantApplication(
+        string $partnerId, string $resellerAppId, string $managedAppId, string $referredAppId
+    )
+    {
+        // new merchant applications should be created for managed and referred
+        $applicationsOnLive = $this->getTrashedDbEntities(
+            'merchant_application', ['merchant_id' => $partnerId], 'live'
+        )->whereNotIn('application_id', [$resellerAppId])->toArray();
+        $applicationsOnTest = $this->getTrashedDbEntities(
+            'merchant_application', ['merchant_id' => $partnerId], 'test'
+        )->whereNotIn('application_id', [$resellerAppId])->toArray();
+
+        $this->assertCount(2, $applicationsOnLive);
+        $this->assertEquals('managed', $applicationsOnLive[0]['type']);
+        $this->assertEquals($managedAppId, $applicationsOnLive[0]['application_id']);
+        $this->assertEquals('referred', $applicationsOnLive[1]['type']);
+        $this->assertEquals($referredAppId, $applicationsOnLive[1]['application_id']);
+
+        $this->assertCount(2, $applicationsOnTest);
+        $this->assertEquals('managed', $applicationsOnTest[0]['type']);
+        $this->assertEquals($managedAppId, $applicationsOnTest[0]['application_id']);
+        $this->assertEquals('referred', $applicationsOnTest[1]['type']);
+        $this->assertEquals($referredAppId, $applicationsOnTest[1]['application_id']);
     }
 
     private function assertOnMerchantApplication(
