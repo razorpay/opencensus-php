@@ -968,6 +968,7 @@ class MethodsTest extends TestCase
 
     public function testEnableItzcash()
     {
+        $this->markTestSkipped();
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
@@ -999,6 +1000,8 @@ class MethodsTest extends TestCase
 
     public function testEnableOxigen()
     {
+        $this->markTestSkipped();
+
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
@@ -1030,6 +1033,7 @@ class MethodsTest extends TestCase
 
     public function testEnablePaycash()
     {
+        $this->markTestSkipped();
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
@@ -1061,6 +1065,7 @@ class MethodsTest extends TestCase
 
     public function testEnableAmexeasyclick()
     {
+        $this->markTestSkipped();
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',
@@ -1092,6 +1097,7 @@ class MethodsTest extends TestCase
 
     public function testEnableCitibankrewards()
     {
+        $this->markTestSkipped();
         $request = [
             'method'  => 'PUT',
             'url'     => '/merchants/10000000000000/methods',

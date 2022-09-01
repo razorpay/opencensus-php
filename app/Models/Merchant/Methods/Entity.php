@@ -623,27 +623,32 @@ class Entity extends Base\PublicEntity
 
     public function isItzcashEnabled()
     {
-        return $this->getItzcash();
+//        return $this->getItzcash();
+        return false;
     }
 
     public function isOxigenEnabled()
     {
-        return $this->getOxigen();
+//        return $this->getOxigen();
+        return false;
     }
 
     public function isAmexeasyclickEnabled()
     {
-        return $this->getAmexeasyclick();
+//        return $this->getAmexeasyclick();
+        return false;
     }
 
     public function isPaycashEnabled()
     {
-        return $this->getPaycash();
+//        return $this->getPaycash();
+        return false;
     }
 
     public function isCitibankrewardsEnabled()
     {
-        return $this->getCitibankrewards();
+//        return $this->getCitibankrewards();
+        return false;
     }
 
     public function isEmiEnabled()
