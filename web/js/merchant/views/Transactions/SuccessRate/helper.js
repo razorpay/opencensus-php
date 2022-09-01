@@ -94,10 +94,23 @@ export const getErrorMessage = (error) => {
   return message;
 };
 
+export const generateDatasets = (intervals) => {
+  return intervals?.map((obj) => {
+    const from = +moment.unix(obj?.from).format('x');
+    const to = +moment.unix(obj?.to).format('x');
+    return {
+      x: from,
+      y: obj.sr,
+      from,
+      to,
+    };
+  });
+};
+
 export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown, tagIndex }) => {
   const dataset = {
     label: tabsOrder[tagIndex],
-    data: intervals?.map((obj) => ({ x: +moment.unix(obj?.from).format('x'), y: obj.sr })),
+    data: generateDatasets(intervals),
     ...chartStyle[tagIndex],
   };
 

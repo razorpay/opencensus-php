@@ -64,14 +64,66 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
         bottom: 0,
       },
     },
-    elements: { point: { radius: 2, hoverRadius: 4 } },
+    elements: {
+      point: {
+        radius: (ctx) => {
+          const isLastPoint = ctx.dataIndex === ctx.dataset.data.length - 1; // change the point radius for last data point
+          if (isLastPoint) return 4;
+          return 2;
+        },
+        hoverRadius: 4,
+      },
+    },
     tooltips: {
       enabled: true,
+      mode: 'point',
+      intersect: true,
+      bodySpacing: 15,
+      borderWidth: 1,
+      backgroundColor: '#ffffff',
+      borderColor: '#e0e8f4',
+      titleFontFamily: 'Lato',
+      titleFontColor: '#262D3A',
+      titleSpacing: 5,
+      titleMarginBottom: 10,
+      bodyFontFamily: 'Lato',
+      bodyFontColor: '#262D3A',
+      xPadding: 12,
+      yPadding: 12,
+      caretPadding: 5,
+      cornerRadius: 4,
       callbacks: {
-        label: (tooltipItem, data) => {
-          const label = data?.datasets[tooltipItem?.datasetIndex]?.label;
+        title: ([tooltipItem], { datasets }) => {
+          const datapoint = datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index];
+          const isSameDay = moment(datapoint.from).isSame(datapoint.to, 'day');
+          const isSameMonth = moment(datapoint.from).isSame(datapoint.to, 'month');
+          if (isSameDay) {
+            return `${moment(datapoint.from).format('DD MMM YYYY')}`;
+          }
+          if (isSameMonth) {
+            return `${moment(datapoint.from).format('DD')} - ${moment(datapoint.to).format(
+              'DD, MMM YYYY',
+            )}`;
+          }
+          return `${moment(datapoint.from).format('DD MMM YYYY')} - ${moment(datapoint.to).format(
+            'DD MMM YYYY',
+          )}`;
+        },
+        afterTitle: ([tooltipItem], { datasets }) => {
+          if (breakdown !== 'hourly') return null;
+          const datapoint = datasets[tooltipItem?.datasetIndex]?.data?.[tooltipItem?.index];
+          const startTime = moment(datapoint.from).format('hh:mm a');
+          const endTime = moment(datapoint.to).format('hh:mm a');
+          return `${startTime} - ${endTime}`;
+        },
+        label: (tooltipItem, { datasets }) => {
+          const label = datasets[tooltipItem?.datasetIndex]?.label;
           const labelText = TAG_MAP[label] ?? label;
           return `${labelText}: ${tooltipItem?.yLabel}%`;
+        },
+        labelColor: (item, chart) => {
+          const color = chart.config.data.datasets[item.datasetIndex].borderColor;
+          return { backgroundColor: color, borderColor: 'transparent' };
         },
       },
     },
@@ -90,7 +142,6 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
               second: 'h a',
               millisecond: 'h a',
             },
-            tooltipFormat: 'DD MMM YYYY, hh:mm a',
           },
           gridLines: {
             color: gridLineColor,
@@ -238,7 +289,7 @@ export const piePlugins = [
         ctx.moveTo(point2X, point2Y);
         ctx.lineTo(edgePointX, point2Y);
         ctx.stroke();
-        //fill custom label
+        // fill custom label
         const labelAlignStyle = edgePointX < chartCenterPoint.x ? 'left' : 'right';
         const labelX = edgePointX;
         const labelY = point2Y + 15;

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import moment from 'moment';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -12,7 +11,7 @@ import ChartArea from './ChartArea';
 
 import { updateGraphInterval, fetchBreakdownIntervals } from 'merchant/reducers/successRate';
 import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
-import { queryFilters } from '../helper';
+import { queryFilters, generateDatasets } from '../helper';
 import { methodIntervalClick, methodTagsClick } from '../ga';
 
 const initTagList = ['Overall'];
@@ -45,10 +44,7 @@ const GraphPanel = (props) => {
       } else if (position < 0) {
         const newDataset = {
           label: tag,
-          data: intervals?.map((obj) => ({
-            x: +moment.unix(obj?.from).format('x'),
-            y: obj.sr,
-          })),
+          data: generateDatasets(intervals),
           ...(chartStyle[tagIndex] ?? defaultChartStyle),
         };
         chart.data.datasets.push(newDataset);
