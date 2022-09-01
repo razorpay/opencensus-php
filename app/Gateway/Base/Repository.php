@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Base;
+use RZP\Base\ConnectionType;
 
 class Repository extends Base\Repository
 {
@@ -18,56 +19,141 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
     {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where('action', '=', $action)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->firstOrFail();
+        $query = $this->newQuery()
+            ->where(Entity::PAYMENT_ID, '=', $paymentId)
+            ->where('action', '=', $action)
+            ->orderBy(Entity::CREATED_AT, 'desc');
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $query->firstOrFail();
+        }
+
+        $data = $query->first();
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                ->where('action', '=', $action)
+                ->orderBy(Entity::CREATED_AT, 'desc')
+                ->firstOrFail();
+        }
+
+        return $data;
     }
 
     public function findByPaymentIdAndAction($paymentId, $action)
     {
-        return $this->newQuery()
+        $data = $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $data;
+        }
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                ->where('action', '=', $action)
+                ->orderBy(Entity::CREATED_AT, 'desc')
+                ->first();
+        }
+
+        return $data;
     }
 
     public function findByPaymentIdAndActionGetLast($paymentId, $action)
     {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where('action', '=', $action)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->first();
+        return $this->findByPaymentIdAndAction($paymentId, $action);
     }
 
     public function fetchByPaymentIdsAndAction($paymentIds, $action)
     {
-        return $this->newQuery()
+        $data = $this->newQuery()
                     ->whereIn('payment_id', $paymentIds)
                     ->where('action', '=', $action)
                     ->get();
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $data;
+        }
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                ->whereIn('payment_id', $paymentIds)
+                ->where('action', '=', $action)
+                ->get();
+        }
+
+        return $data;
     }
 
     public function fetchByPaymentIdsAndActions($paymentIds, $actions)
     {
-        return $this->newQuery()
+        $data = $this->newQuery()
                     ->whereIn('payment_id', $paymentIds)
                     ->whereIn('action', $actions)
                     ->get();
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $data;
+        }
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                ->whereIn('payment_id', $paymentIds)
+                ->whereIn('action', $actions)
+                ->get();
+        }
+
+        return $data;
     }
 
     public function findByPaymentIdActionAndStatus(string $paymentId,
                                                    string $action,
                                                    array $statuses)
     {
-        return $this->newQuery()
+        $data = $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
                     ->whereIn('status', $statuses)
                     ->first();
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $data;
+        }
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                ->where('action', '=', $action)
+                ->whereIn('status', $statuses)
+                ->first();
+        }
+
+        return $data;
     }
 
     public function findByTraceIdAndAction($paymentId, $action)
@@ -124,10 +210,29 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdAndActionGetLastOrFail($paymentId, $action)
     {
-        return $this->newQuery()
+        $query = $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->firstOrFail();
+                    ->orderBy(Entity::CREATED_AT, 'desc');
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $query->firstOrFail();
+        }
+
+        $data = $query->first();
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                ->where('action', '=', $action)
+                ->orderBy(Entity::CREATED_AT, 'desc')
+                ->firstOrFail();
+        }
+
+        return $data;
     }
 }

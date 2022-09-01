@@ -896,7 +896,7 @@ class Service extends Base\Service
                                 {
                                     foreach ($action as $gatewayAction => $columns)
                                     {
-                                        if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionorFail') === true)
+                                        if (method_exists($this->repo->$gatewayEntity, 'findByPaymentIdAndActionOrFail') === true)
                                         {
                                             $entity = [];
 
@@ -904,7 +904,7 @@ class Service extends Base\Service
                                             {
                                                 $entity = $this->repo
                                                                ->$gatewayEntity
-                                                               ->findByPaymentIdAndActionorFail($paymentEntity['id'], $gatewayAction)
+                                                               ->findByPaymentIdAndActionOrFail($paymentEntity['id'], $gatewayAction)
                                                                ->toArray();
                                             }
                                             catch (\Exception $ex)
@@ -1226,11 +1226,11 @@ class Service extends Base\Service
 
                                     $action = (isset($gatewayEntitySplitString[2]) === true) ? $gatewayEntitySplitString[2] : null;
 
-                                    if (method_exists($this->repo->$entity, 'findByPaymentIdAndActionorFail') === true) {
+                                    if (method_exists($this->repo->$entity, 'findByPaymentIdAndActionOrFail') === true) {
                                         try {
                                             $data = $this->repo
                                                 ->$entity
-                                                ->findByPaymentIdAndActionorFail($id, $action)
+                                                ->findByPaymentIdAndActionOrFail($id, $action)
                                                 ->toArray();
 
                                             if (($entity === RefundConstants::MOZART) and
