@@ -9657,6 +9657,19 @@ trait Authorize
         }
     }
 
+    protected function verifyCurrency($gatewayInput, $payment)
+    {
+        if(array_key_exists("currency", $gatewayInput) == true)
+        {
+            if($gatewayInput["currency"] == Currency\Currency::getIsoCode($payment->getCurrency())
+             || strtolower($gatewayInput["currency"]) == strtolower($payment->getCurrency())) {
+                return ;
+            }
+            throw new Exception\BadRequestValidationFailureException(
+                'Callback payment currency does not match. Please notify the admin of this error.');
+        }
+    }
+
     /**
      * Creates the callback url for payment
      * where the gateway can hit back to say payment

@@ -98,6 +98,8 @@ trait Callback
         unset($gatewayInput['csrf']);
         $this->verifyHash($hash, $payment->getPublicId());
 
+        $this->verifyCurrency($gatewayInput, $payment);
+
         $response = $this->acquireLockAndProcessCallback($payment, $gatewayInput);
 
         return $response;
