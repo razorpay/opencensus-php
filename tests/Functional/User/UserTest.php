@@ -1204,7 +1204,6 @@ class UserTest extends TestCase
     {
         Mail::fake();
 
-        $this->enableRazorXTreatmentForRazorX();
 
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
@@ -1245,7 +1244,6 @@ class UserTest extends TestCase
     {
         Mail::fake();
 
-        $this->enableRazorXTreatmentForRazorX();
 
         $user = $this->fixtures->create('user', ['password' => 'hello123']);
 
@@ -8277,7 +8275,6 @@ class UserTest extends TestCase
 
     public function testMobileLoginWithNewSmsTemplateAndSendsViaStork()
     {
-        $this->enableRazorXTreatmentForRazorX();
 
         $this->fixtures->create('user', [
             'id'                      => '10000000000000',
@@ -8301,7 +8298,6 @@ class UserTest extends TestCase
 
     public function testMobileSignupWithNewSmsTemplateAndSendsViaStork()
     {
-        $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->appAuth();
 
@@ -8316,7 +8312,6 @@ class UserTest extends TestCase
 
     public function testMobileVerifyOtpForLoginWithNewSmsTemplate()
     {
-        $this->enableRazorXTreatmentForRazorX();
 
         $this->fixtures->create('user', [
             'id'                      => '10000000000000',
@@ -8354,7 +8349,6 @@ class UserTest extends TestCase
 
     public function testMobileVerifyOtpForSignupWithNewSmsTemplate()
     {
-        $this->enableRazorXTreatmentForRazorX();
 
         $this->ba->appAuth();
 
@@ -8703,6 +8697,10 @@ class UserTest extends TestCase
 
         $this->app->instance('raven', $ravenMock);
 
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
         $smsPayload = [
             'otp'        => '0007',
             'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
@@ -8711,9 +8709,9 @@ class UserTest extends TestCase
 
         $this->app['raven']->method('generateOtp')->willReturn($smsPayload);
 
-        $this->app['raven']->method('sendOtp')->willThrowException(
-            new BadRequestException(ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED)
-        );
+        $storkMock->shouldReceive('sendSms')->andThrow(new BadRequestException(
+            ErrorCode::BAD_REQUEST_RESOURCE_EXHAUSTED
+        ));
 
         $testData = & $this->testData[__FUNCTION__];
 

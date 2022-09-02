@@ -192,7 +192,6 @@ class Core extends Base\Core
         $messageSendViaStork = false;
 
         if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
-            $this->app['razorx']->getTreatment($receiver , Constants::API_STORK_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on' and
             $input['action'] = Constants::SIGNUP_OTP_ACTION)
         {
             $messageSendViaStork = true;
@@ -344,7 +343,6 @@ class Core extends Base\Core
 
         if($input[Entity::MEDIUM] === Org\Constants::SMS and
             $this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
-            $this->app['razorx']->getTreatment($receiver, Constants::API_STORK_SEND_SMS_RAZORX_EXP, Mode::LIVE) === 'on' and
             $input[Entity::ACTION] == Constants::SIGNUP_OTP_ACTION)
         {
             //It should come from frontend once experiment will be removed.
@@ -1241,7 +1239,6 @@ class Core extends Base\Core
         $messageSendViaStork = false;
 
         if ($this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
-            $this->app['razorx']->getTreatment($input[Entity::CONTACT_MOBILE] , Constants::API_STORK_SEND_SMS_RAZORX_EXP , Mode::LIVE) === 'on' and
             $input[Entity::ACTION] === Constants::LOGIN_OTP_ACTION)
         {
             $input[Entity::ACTION] = Constants::LOGIN_OTP_ACTION_V2;
@@ -1881,7 +1878,6 @@ class Core extends Base\Core
 
         if($input[Entity::MEDIUM] === Org\Constants::SMS and
             $this->app['basicauth']->getRequestOriginProduct() === ProductType::PRIMARY and
-            $this->app['razorx']->getTreatment($receiver, Constants::API_STORK_SEND_SMS_RAZORX_EXP, Mode::LIVE) === 'on' and
             $input[Entity::ACTION] == Constants::LOGIN_OTP_ACTION)
         {
             $input[Entity::ACTION] = Constants::LOGIN_OTP_ACTION_V2;
