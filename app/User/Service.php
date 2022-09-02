@@ -1089,6 +1089,10 @@ class Service extends Base\Service
 
     public function getUserDetails(array $params = [])
     {
+        $currentRouteName = \Route::currentRouteName();
+
+        $serverName = \Request::server('SERVER_NAME');
+
         $data = [
             'current'   =>  null
         ];
@@ -1215,9 +1219,10 @@ class Service extends Base\Service
 
                 if ($merchant['id'] === $currentMerchantId)
                 {
-                    if($experiments === "1")
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                        ($this->isFieldExcluededInPgRendering(Constants::EXPERIMENTS) === false)) and
+                        ($experiments === "1"))
                     {
-
                         $this->trace->info(
                             TraceCode::MERCHANT_EXPERIMENTS,
                             [
@@ -1254,17 +1259,23 @@ class Service extends Base\Service
 
                     $data['current'] = $currentMerchantId;
 
-                    if($tags === "1")
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                        ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
+                        ($tags === "1"))
                     {
                         $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                     }
 
-                    if($features === "1")
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                        ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
+                        ($features === "1"))
                     {
                         $data['features'] = $merchantService->getMerchantFeatures();
                     }
 
-                    if($splitzExperiments === "1")
+                    if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
+                        ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
+                        ($splitzExperiments === "1"))
                     {
                         $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
                     }
@@ -1282,10 +1293,15 @@ class Service extends Base\Service
 
                     if (($isBankingRequest === false))
                     {
-                        // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
-                        // which is causing validation failure
-                        // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
-                        $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
+                        if (($this->isPgRenderCall($currentRouteName, $serverName) === false) or
+                            ($this->isFieldExcluededInPgRendering(Constants::CAMPAIGNS) === false))
+
+                        {
+                            // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
+                            // which is causing validation failure
+                            // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
+                            $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
+                        }
 
                         // Fetch partner intent incase current merchant has owner role
                         if ((new Helper)->isOwner($currentMerchant))
@@ -1317,7 +1333,6 @@ class Service extends Base\Service
                         }
                     }
                 }
-
             }
         }
 
@@ -2322,5 +2337,34 @@ class Service extends Base\Service
         ];
 
         $this->fireEventToHubspotViaApi($input, $merchantId);
+    }
+
+    // This function is to check if the rendering is done for PG Dashboard of RazorPay org.
+    private function isPgRenderCall(string $currentRouteName, string $serverName) : bool
+    {
+        // PG_DASHBOARD_RENDER_ROUTES contains the routes called for PG rendering
+        // dashboard and dashboard_app routes are only called from PG merchant dashboard and not from X dashboard
+        // PG_DASHBOARD_SERVER_NAMES contains the names of server for RazorPay org merchant dashboard
+        if ((in_array($currentRouteName, Constants::PG_DASHBOARD_RENDER_ROUTES, true) === true) and
+            (in_array($serverName, Constants::PG_DASHBOARD_SERVER_NAMES, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    // This function is to decouple the API calls for the fields mentioned in FIELDS_DECOUPLED_FOR_PG_RENDERING
+    // during PG rendering to improve the loadtime.
+    // Separate API calls are being made to get those field values.
+    private function isFieldExcluededInPgRendering(string $field) : bool
+    {
+        // Fields to be added in FIELDS_DECOUPLED_FOR_PG_RENDERING only if API calls are to be skipped for those fileds.
+        if (in_array($field, Constants::FIELDS_DECOUPLED_FOR_PG_RENDERING, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

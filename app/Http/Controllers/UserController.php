@@ -55,9 +55,11 @@ class UserController extends Controller
     public function getIndex()
     {
         $domain = \Request::server('SERVER_NAME');
+
         $currentRouteName = \Route::currentRouteName();
 
         list($orgError, $org) = (new Admin\Service)->getOrg($domain);
+
         list($userError, $details) = (new User\Service)->getUserDetails();
 
         $data = [

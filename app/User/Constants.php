@@ -122,6 +122,8 @@ class Constants
     const FEATURES           = 'features';
     const MERCHANT_DETAILS   = 'merchant_details';
 
+    const CAMPAIGNS          = 'campaigns';
+
     const LOGIN_2FA_WITH_OTP = "otp";
 
     const LOGIN_2FA_WITH_PASSWORD = "password";
@@ -180,6 +182,7 @@ class Constants
     const USER_OAUTH_LOGIN_FAILED           = 'user_oauth_login_failed';
     const USER_OAUTH_SIGNUP_SUCCESS         = 'user_oauth_signup_success';
     const USER_OAUTH_SIGNUP_FAILED          = 'user_oauth_signup_failed';
+    const DASHBOARD_APP                     = 'dashboard_app';
 
     const SESSION_WHITELISTED_ERROR_CODES = [
         'BAD_REQUEST_USER_2FA_LOGIN_PASSWORD_REQUIRED',
@@ -188,6 +191,28 @@ class Constants
         'BAD_REQUEST_2FA_LOGIN_INCORRECT_OTP',
         'BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED',
         'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED',
+    ];
+
+    // PG routes called while rendering. These routes are specific to PG and not called by X.
+    const PG_DASHBOARD_RENDER_ROUTES = [
+        self::DASHBOARD,
+        self::DASHBOARD_APP,
+    ];
+
+    // Adding Server Names of orgs which do not want to call FIELDS_DECOUPLED_FOR_PG_RENDERING fields while rendering
+    const PG_DASHBOARD_SERVER_NAMES = [
+        'dashboard.razorpay.com',
+    ];
+
+    // Fields to be added if API calls are to be skipped for them.
+    // Since we want to adopt the changes in a phase-wise manner, commenting out the fields.
+    // Will uncomment when they are to be excluded from the user data
+    const FIELDS_DECOUPLED_FOR_PG_RENDERING = [
+//        self::EXPERIMENTS,
+//        self::SPLITZ_EXPERIMENTS,
+//        self::TAGS,
+//        self::FEATURES,
+//        self::CAMPAIGNS,
     ];
 
     const TRACE_DETAILS_MAP = [
