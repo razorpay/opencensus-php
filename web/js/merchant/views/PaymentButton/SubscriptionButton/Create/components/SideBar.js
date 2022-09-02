@@ -1,8 +1,12 @@
+import React from 'react';
+
 import { classList } from 'common/utils/rzp-utils';
 import { filterSubscriptionPaymentItems } from 'merchant/reducers/subscriptionButtons/create';
 import track from '../track';
 
 import { totalTabs } from './Form';
+
+import SidebarImage from 'assets/payment_button/sidebar-display.svg';
 
 export default class SideBar extends React.Component {
   totalTabs = totalTabs;
@@ -10,10 +14,10 @@ export default class SideBar extends React.Component {
   get isButtonDetailsDone() {
     const { subscriptionButtonEntity, stepsProgress } = this.props;
 
-    const hasTitle = subscriptionButtonEntity.title,
-      hasButtonText = !!subscriptionButtonEntity.settings.payment_button_text;
+    const hasTitle = subscriptionButtonEntity.title;
+    const hasButtonText = !!subscriptionButtonEntity.settings.payment_button_text;
 
-    let hasButtonDetails = hasTitle && hasButtonText;
+    const hasButtonDetails = hasTitle && hasButtonText;
 
     return hasButtonDetails && stepsProgress.isButtonDetailsReviewed;
   }
@@ -66,7 +70,7 @@ export default class SideBar extends React.Component {
 
     return (
       <div class="PaymentButton-Create-SideBar">
-        <img src="/dist/css/assets/payment_button/sidebar-display.svg" />
+        <img src={SidebarImage} />
 
         {subscriptionButtonEntity && (
           <React.Fragment>

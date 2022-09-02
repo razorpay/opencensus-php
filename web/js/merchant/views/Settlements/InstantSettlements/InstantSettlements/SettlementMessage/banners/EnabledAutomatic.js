@@ -27,7 +27,7 @@ import {
   trackExploreNowClicked,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/analytics';
 
-const INSTANT_LOGO = '/dist/css/assets/settlements/instant.svg';
+import INSTANT_LOGO from 'assets/settlements/instant.svg';
 
 const Wrapper = styled.div`
   background: rgba(21, 102, 241, 0.09);

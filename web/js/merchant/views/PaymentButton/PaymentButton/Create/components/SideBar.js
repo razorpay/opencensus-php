@@ -3,6 +3,9 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { classList } from 'common/utils/rzp-utils';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import track from '../track';
+
+import SidebarImage from 'assets/payment_button/sidebar-display.svg';
+
 export default class SideBar extends React.Component {
   get isQuickPayTemplate() {
     const { paymentButtonEntity } = this.props;
@@ -76,7 +79,7 @@ export default class SideBar extends React.Component {
     return (
       <div class="PaymentButton-Create-SideBar">
         <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-          <img src="/dist/css/assets/payment_button/sidebar-display.svg" />
+          <img src={SidebarImage} />
         </ShowWhen>
 
         <div class="SideBar-title">

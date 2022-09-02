@@ -20,9 +20,9 @@ import Base, {
 } from './Base';
 import { NEW_BANNERS } from './constants';
 import { resolvePath } from 'common/utils/rzp-utils';
+import INSTANT_LOGO from 'assets/settlements/instant.svg';
 
 const color = '#008659';
-const INSTANT_LOGO = '/dist/css/assets/settlements/instant.svg';
 
 const StyledContainer = styled(Container)`
   background: rgba(0, 156, 92, 0.03);

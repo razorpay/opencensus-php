@@ -2,6 +2,8 @@ import React from 'react';
 import { readableFileSize, titleCase, classList, isBlank } from 'common/utils/rzp-utils';
 import Staged from './Staged';
 
+import FilePlaceholderImage from 'assets/files/file-placeholder.svg';
+
 const fileTypesMap = {
   csv: 'text/csv,application/vnd.ms-excel',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', //new excel format
@@ -377,8 +379,8 @@ export default class FileUpload extends React.Component {
                 <React.Fragment>
                   <img
                     className="Dropzone-file-icon"
-                    src="/dist/css/assets/files/file-placeholder.svg"
-                    alt=""
+                    src={FilePlaceholderImage}
+                    alt="file dropzone image"
                   />
                   <div className="Dropzone-content-desc">
                     <p className="Dropzone-content-desc--primary upload-file-heading">

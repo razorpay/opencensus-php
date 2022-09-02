@@ -22,6 +22,8 @@ import RTracking from 'react-tracking';
 import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
 import { isOrgFeatureExist } from 'merchant/models/User';
 
+import BusinessImage from 'assets/business.svg';
+
 @withRouter
 @connect(
   (state) => {
@@ -259,7 +261,7 @@ export default class ProfileDropdown extends Component {
                 <div className="media-left">
                   <div className="media-object">
                     <Image src={user.logo_url}>
-                      <img src="/dist/css/assets/business.svg" alt="business" />
+                      <img src={BusinessImage} alt="business" />
                     </Image>
                   </div>
                 </div>

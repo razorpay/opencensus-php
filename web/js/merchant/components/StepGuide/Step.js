@@ -3,6 +3,21 @@ import PropTypes from 'prop-types';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { PossibleStatuses } from 'merchant/helpers/data';
 
+import ProgressImage from 'assets/onboarding/progress.png';
+import LockedImage from 'assets/onboarding/locked.png';
+import DoneImage from 'assets/onboarding/done.png';
+import ActiveImage from 'assets/onboarding/active.png';
+import BlockedImage from 'assets/onboarding/blocked.png';
+
+// created on the basis of the keys in PossibleStatuses
+const IMAGE_MAP = {
+  progress: ProgressImage,
+  locked: LockedImage,
+  done: DoneImage,
+  active: ActiveImage,
+  blocked: BlockedImage,
+};
+
 export default class Step extends React.Component {
   static defaultProps = {
     status: PossibleStatuses.loading,
@@ -26,7 +41,7 @@ export default class Step extends React.Component {
           {isLoading || !PossibleStatuses[status] ? (
             <PlaceholderLoader />
           ) : (
-            <img src={`/dist/css/assets/onboarding/${status}.png`} />
+            <img src={IMAGE_MAP[status] || ProgressImage} />
           )}
         </div>
 

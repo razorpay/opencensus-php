@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
@@ -9,6 +10,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { validateAlphanumeric } from 'common/utils/validators';
 import debounce from 'common/utils/debounce';
+
+import BulbImage from 'assets/lighten-bulb.svg';
 
 import {
   MERCHANT_PREFIX_MIN_LENGTH_VPA,
@@ -26,7 +29,7 @@ import {
 })
 export default class VPAPrefixModal extends React.Component {
   constructor(props) {
-    super();
+    super(props);
 
     this.state = {
       merchantPrefix: '',
@@ -95,8 +98,6 @@ export default class VPAPrefixModal extends React.Component {
       setTimeout(() => {
         if (!isInvalidValue) {
           this.debounce_validateMerchantPrefix(value);
-
-          return;
         }
       }, 5);
     });
@@ -111,7 +112,7 @@ export default class VPAPrefixModal extends React.Component {
 
     return this.props
       .saveVPACustomPrefix(this.state.merchantPrefix)
-      .then((resp) => {
+      .then(() => {
         this.setState({
           isSaving: false,
         });
@@ -141,8 +142,6 @@ export default class VPAPrefixModal extends React.Component {
 
     const handle = get_VPA_Handle(this.props.handle);
 
-    const showStatus = !!(status.type && !isValidating);
-
     const disabled =
       status.type !== 'text-success' || isValidating || this.isInvalidMerchantPrefix || isSaving;
 
@@ -164,7 +163,7 @@ export default class VPAPrefixModal extends React.Component {
                 {merchantPrefix.length} / {MERCHANT_PREFIX_MAX_LENGTH_VPA}
               </div>
 
-              <div class={'status ' + status.type}>{status.message}</div>
+              <div class={`status ${status.type}`}>{status.message}</div>
             </>
           }
           addonBefore={
@@ -189,8 +188,7 @@ export default class VPAPrefixModal extends React.Component {
             {handle}
           </span>
         </div>
-        <img src="/dist/css/assets/lighten-bulb.svg" /> Protip: Highlight your brand by adding it as
-        a prefix to UPI IDs.
+        <img src={BulbImage} /> Protip: Highlight your brand by adding it as a prefix to UPI IDs.
         <div class="Modal-actions">
           <Button.Transparent
             class="Cancel-btn"
@@ -239,5 +237,7 @@ function validateCustomMerchantPrefix() {
     if (!isValidAlphanumeric) {
       return 'Special characters not allowed';
     }
+
+    return '';
   };
 }

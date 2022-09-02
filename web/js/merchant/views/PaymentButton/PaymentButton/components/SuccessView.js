@@ -10,13 +10,24 @@ import { DocLink } from 'merchant/components/DocsLink';
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 import track from '../Details/track';
 
+import WordpressImage from 'assets/payment_button/success-screen/plugins/wordpress.svg';
+import ElementorImage from 'assets/payment_button/success-screen/plugins/elementor.svg';
+import SiteOriginImage from 'assets/payment_button/success-screen/plugins/siteorigin.jpeg';
+import VisualComposerImage from 'assets/payment_button/success-screen/plugins/visual-composer.jpeg';
+import DrupalImage from 'assets/payment_button/success-screen/plugins/drupal.svg';
+import GoDaddyImage from 'assets/payment_button/success-screen/integrations/goDaddy.svg';
+import WeeblyImage from 'assets/payment_button/success-screen/integrations/weebly.svg';
+import WixImage from 'assets/payment_button/success-screen/integrations/wix.svg';
+import GoogleSitesImage from 'assets/payment_button/success-screen/integrations/googleSites.svg';
+import BloggerImage from 'assets/payment_button/success-screen/integrations/blogger.svg';
+
 const pluginsList = [
   {
     title: 'Wordpress Plugin',
     handleClick: track.pluginClick.bind(null, 'wordpress'),
     docLink: 'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/',
     docLink2: 'https://wordpress.org/plugins/razorpay-payment-button/',
-    icon: 'wordpress.svg',
+    icon: WordpressImage,
   },
   {
     title: 'Elementor Plugin',
@@ -24,7 +35,7 @@ const pluginsList = [
     docLink:
       'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/elementor/',
     docLink2: 'https://wordpress.org/plugins/razorpay-payment-button-elementor/',
-    icon: 'elementor.svg',
+    icon: ElementorImage,
   },
   {
     title: 'SiteOrigin Plugin',
@@ -32,7 +43,7 @@ const pluginsList = [
     docLink:
       'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/site-origin/',
     docLink2: 'https://wordpress.org/plugins/razorpay-payment-button-for-siteorigin/',
-    icon: 'siteorigin.jpeg',
+    icon: SiteOriginImage,
   },
   {
     title: 'Visual Composer Plugin',
@@ -40,14 +51,14 @@ const pluginsList = [
     docLink:
       'https://razorpay.com/docs/payments/payment-button/supported-platforms/wordpress/visual-composer/',
     docLink2: 'https://wordpress.org/plugins/razorpay-payment-button-for-visual-composer/',
-    icon: 'visual-composer.jpeg',
+    icon: VisualComposerImage,
   },
   {
     title: 'Drupal Plugin',
     handleClick: track.pluginClick.bind(null, 'drupal'),
     docLink: 'https://razorpay.com/docs/payments/payment-button/supported-platforms/#drupal-plugin',
     docLink2: 'https://www.drupal.org/project/payment_button_drupal_plugin',
-    icon: 'drupal.svg',
+    icon: DrupalImage,
   },
 ];
 
@@ -56,31 +67,31 @@ const integrationsList = [
     title: 'Go Daddy',
     handleClick: track.pluginClick.bind(null, 'godaddy'),
     docLink: '#godaddy',
-    icon: 'goDaddy.svg',
+    icon: GoDaddyImage,
   },
   {
     title: 'Weebly',
     handleClick: track.pluginClick.bind(null, 'weebly'),
     docLink: '#weebly',
-    icon: 'weebly.svg',
+    icon: WeeblyImage,
   },
   {
     title: 'Wix',
     handleClick: track.pluginClick.bind(null, 'wix'),
     docLink: '#wix',
-    icon: 'wix.svg',
+    icon: WixImage,
   },
   {
     title: 'Google Sites',
     handleClick: track.pluginClick.bind(null, 'google_sites'),
     docLink: '#google-sites',
-    icon: 'googleSites.svg',
+    icon: GoogleSitesImage,
   },
   {
     title: 'Blogger',
     handleClick: track.pluginClick.bind(null, 'blogger'),
     docLink: '#blogger',
-    icon: 'blogger.svg',
+    icon: BloggerImage,
   },
 ];
 @withRouter
@@ -202,7 +213,7 @@ export default class SuccessModal extends React.Component {
                     {pluginsList.map((plugin, i) => (
                       <div key={`plugin-${i}`}>
                         <img
-                          src={`/dist/css/assets/payment_button/success-screen/plugins/${plugin.icon}`}
+                          src={plugin.icon}
                           alt={`${plugin.title} Logo`}
                           height="19"
                           width="19"
@@ -223,8 +234,10 @@ export default class SuccessModal extends React.Component {
                     {integrationsList.map((integration, i) => (
                       <div key={`integration-${i}`}>
                         <img
-                          src={`/dist/css/assets/payment_button/success-screen/integrations/${integration.icon}`}
+                          src={integration.icon}
                           alt={`${integration.title} Logo`}
+                          height="19"
+                          width="19"
                         />
                         <DocLink
                           href={`https://razorpay.com/docs/payment-button/supported-platforms/${integration.docLink}`}

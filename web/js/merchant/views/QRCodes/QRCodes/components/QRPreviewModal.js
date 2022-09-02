@@ -1,6 +1,8 @@
 import React from 'react';
 import Button from 'common/new-ui/Button';
 
+import DoneImage from 'assets/onboarding/done.png';
+
 const QRCodePreviewModal = React.memo(({ previewImg, closeModal, history, onDownloadQRCode }) => {
   function downloadQRCode() {
     window.open(previewImg);
@@ -19,7 +21,7 @@ const QRCodePreviewModal = React.memo(({ previewImg, closeModal, history, onDown
   return (
     <div>
       <div class="heading">
-        <img src="/dist/css/assets/onboarding/done.png" class="m-r" /> QR Code Created Successfully
+        <img src={DoneImage} class="m-r" /> QR Code Created Successfully
         <button type="button" class="close" onClick={toToDashboard}>
           <i class="i i-close" />
         </button>

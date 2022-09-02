@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
@@ -5,19 +6,22 @@ import { classList } from 'common/utils/rzp-utils';
 
 import track from '../track';
 
+import StandardLinkImage from 'assets/payment_links/standard_link.svg';
+import UpiLinkImage from 'assets/payment_links/upi.png';
+
 const PAYMENT_LINK_TYPES = [
   {
     key: 'standard',
     title: 'Standard Payment Link',
     description:
       'Create a classic payment link to collect payment from your customers in all payment methods.',
-    img: '/img/payment_links/standard_link.svg',
+    img: StandardLinkImage,
   },
   {
     key: 'upi',
     title: 'UPI Payment Link',
     description: `Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.`,
-    img: '/img/payment_links/upi.png',
+    img: UpiLinkImage,
     className: 'upi-template',
   },
 ];
@@ -29,7 +33,7 @@ const TEST_MODE_TYPES = {
     description: `Collect UPI payments from your customers, using UPI payment links, without knowing their UPI/VPA addresses.`,
     hoverText:
       'UPI Payment Links is not supported in Test Mode. Please experience the product in Live Mode.',
-    img: '/img/payment_links/upi.png',
+    img: UpiLinkImage,
   },
 };
 
@@ -62,6 +66,7 @@ export default class PaymentLinkSelector extends React.PureComponent {
 
             return (
               <TemplateCard
+                key={templateData.key}
                 {...templateData}
                 {...(props.isTestMode && TEST_MODE_TYPES[templateData.key])}
                 {...extraProps}
@@ -91,20 +96,12 @@ export default class PaymentLinkSelector extends React.PureComponent {
 }
 
 class TemplateCard extends React.PureComponent {
-  state = {};
-
-  componentDidMount() {
-    this.setState({
-      isLoaded: true,
-    });
-  }
-
   render() {
     const { title, description, img, onClick, hoverText, className } = this.props;
 
     return (
       <div class={classList('TemplateCard', !onClick && 'disabled', className)} onClick={onClick}>
-        <img src={this.state.isLoaded ? img : null} />
+        <img src={img} />
         <div class="TemplateCard-details">
           {title}
           <div class="TemplateCard-desc">

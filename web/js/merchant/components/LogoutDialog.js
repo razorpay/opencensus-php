@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
 import qs from 'query-string';
 
+import BgDesktopImage from 'assets/logout/bg-desk.png';
+import BgMobileImage from 'assets/logout/bg-mob.png';
+
 const LogoutDialog = ({ user }) => {
   const sendLjData = (state, event) => {
     let utm, gclid, browserDetails, source, mode;
@@ -80,16 +83,8 @@ const LogoutDialog = ({ user }) => {
           Log In Now <i className="i i-arrow-forward" />
         </button>
       </div>
-      <img
-        src="/dist/css/assets/logout/bg-desk.png"
-        alt="logout-image"
-        className="bg-image desktop"
-      />
-      <img
-        src="/dist/css/assets/logout/bg-mob.png"
-        alt="logout-image"
-        className="bg-image mobile"
-      />
+      <img src={BgDesktopImage} alt="logout-image" className="bg-image desktop" />
+      <img src={BgMobileImage} alt="logout-image" className="bg-image mobile" />
     </div>
   );
 };

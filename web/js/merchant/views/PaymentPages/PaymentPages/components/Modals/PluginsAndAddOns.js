@@ -11,6 +11,9 @@ import { updateData } from 'merchant/reducers/wysiwyg';
 
 import track from '../../Wysiwyg/track';
 
+import FbPixelImage from 'assets/payment_pages/fb-pixel-logo.svg';
+import GaImage from 'assets/payment_pages/ga-logo.svg';
+
 const FB_PIXEL_CTA_LINK =
   'https://www.facebook.com/business/help/952192354843755?id=1205376682832142';
 const GA_CTA_LINK =
@@ -96,7 +99,7 @@ export default class PluginsAndAddOns extends React.Component {
           <div class="section-wrapper">
             <div class="section">
               <div class="section-title">
-                <img src="/dist/css/assets/payment_pages/fb-pixel-logo.svg" alt="FB Pixel Logo" />
+                <img src={FbPixelImage} alt="FB Pixel Logo" />
                 Facebook Pixel
               </div>
               <div class="section-body">
@@ -143,7 +146,7 @@ export default class PluginsAndAddOns extends React.Component {
             </div>
             <div class="section">
               <div class="section-title">
-                <img src="/dist/css/assets/payment_pages/ga-logo.svg" alt="GA Logo" />
+                <img src={GaImage} alt="GA Logo" />
                 Google Analytics
               </div>
               <div class="section-body">

@@ -24,6 +24,8 @@ import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbu
 import { setIsPaymentButtonCodeUsed } from '../../utils';
 import track from './track';
 
+import EmptyListImage from 'assets/payment_button/empty-list.svg';
+
 const tabsData = [
   { title: 'Payment Buttons', url: '/paymentbuttons' },
   { title: 'Subscription Buttons', url: '/subscription_buttons' },
@@ -52,7 +54,7 @@ export const status = {
 
 const EmptyComponent = () => (
   <div class="PaymentButton-empty-list">
-    <img src="/dist/css/assets/payment_button/empty-list.svg" width="280px" />
+    <img src={EmptyListImage} width="280px" />
 
     <div class="description">
       <h4>It’s Lonely Here!</h4>

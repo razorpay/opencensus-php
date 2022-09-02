@@ -554,7 +554,8 @@ export default class CreateVirtualAccount extends React.Component {
                     defaultChecked={_internals.hasBankAccount}
                     label={
                       <div>
-                        <img src={BankImage} /> Bank Transfers (NEFT, RTGS, IMPS)
+                        <img src={BankImage} width="16px" height="16px" /> Bank Transfers (NEFT,
+                        RTGS, IMPS)
                       </div>
                     }
                     description={
@@ -608,7 +609,8 @@ export default class CreateVirtualAccount extends React.Component {
                       defaultChecked={_internals.hasVPA}
                       label={
                         <div>
-                          <img src={UpiImage} /> UPI Transfers (GPay, PhonePe, etc.)
+                          <img src={UpiImage} width="16px" height="16px" /> UPI Transfers (GPay,
+                          PhonePe, etc.)
                         </div>
                       }
                       description={
