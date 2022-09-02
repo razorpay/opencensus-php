@@ -7862,6 +7862,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FAILED_TO_FETCH_PNETWORK_DATA                         = 'FAILED_TO_FETCH_PNETWORK_DATA';
     const FAILED_TO_UPDATE_PNETWORK_DATA                        = 'FAILED_TO_UPDATE_PNETWORK_DATA';
     const FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE               = 'FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE';
+    const PAYMENTS_REARCH_RAZORX_EVALUATION                     = 'PAYMENTS_REARCH_RAZORX_EVALUATION';
     const REDIS_CONFIG_VALUE_EMPTY                              = 'REDIS_CONFIG_VALUE_EMPTY';
 
     const PARTNER_NOT_ONBOARDED_ON_NSS                      = 'PARTNER_NOT_ONBOARDED_ON_NSS';

@@ -671,10 +671,12 @@ class Processor
         $shouldRoute = false;
 
         $currentRouteName = $this->route->getCurrentRouteName();
+        /**
+         * @var Merchant\Entity
+         */
         $merchant = $this->app['basicauth']->getMerchant();
 
-        if (($this->ba->getOAuthClientId() !== null) or
-            ($this->ba->isPartnerAuth() === true))
+        if ($this->ba->getOAuthClientId() !== null)
         {
             return false;
         }
@@ -722,6 +724,23 @@ class Processor
                 }
             }
 
+        }
+
+        if ($this->ba->isPartnerAuth() !== null)
+        {
+            $shouldRoute = false;
+            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_partner';
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
+
+            $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
+                'variant'      => $variant,
+                'feature_flag' => $featureFlag,
+            ]);
+
+            if ($variant === 'on')
+            {
+                $shouldRoute = true;
+            }
         }
 
         if ($shouldRoute === false)
