@@ -72,36 +72,28 @@ glob(
 
       const type = ContentType[ext];
 
-      // do brotli compression for dummy TestComponentBrotli only
-      if (type && fileParams.Key?.includes('TestComponentBrotli')) {
-        const brotilFileParams = { ...fileParams };
-        brotilFileParams.ContentType = type;
-        brotilFileParams.ContentEncoding = 'br';
-        brotilFileParams.Key = `${brotilFileParams.Key}.br`;
-        brotilFileParams.Body = zlib.brotliCompressSync(brotilFileParams.Body, {
-          params: {
-            [zlib.constants.BROTLI_PARAM_QUALITY]: zlib.constants.BROTLI_MAX_QUALITY,
-          },
+      if (type) {
+        fileParams.ContentType = type;
+
+        // gzip compress for (js/css/html/svg) files
+        const gzipFileParams = { ...fileParams };
+        gzipFileParams.ContentEncoding = 'gzip';
+        gzipFileParams.Key = `${fileParams.Key}.gz`;
+        gzipFileParams.Body = zlib.gzipSync(fileParams.Body, {
+          level: zlib.Z_BEST_COMPRESSION,
         });
-        s3.putObject(brotilFileParams, (err, _data) => {
+        s3.putObject(gzipFileParams, (err, _data) => {
           if (err) {
             console.error(err);
             // eslint-disable-next-line no-process-exit
             process.exit(1);
           } else {
-            console.log(brotilFileParams.Key);
+            console.log(gzipFileParams.Key);
           }
         });
       }
 
-      if (type) {
-        fileParams.ContentType = type;
-        fileParams.ContentEncoding = 'gzip';
-        fileParams.Body = zlib.gzipSync(fileParams.Body, {
-          level: zlib.Z_BEST_COMPRESSION,
-        });
-      }
-
+      // uncompressed version of all files
       s3.putObject(fileParams, (err, _data) => {
         if (err) {
           console.error(err);
