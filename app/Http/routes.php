@@ -130,6 +130,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/features', 'MerchantController@getMerchantFeatures');
         Route::get('/merchant/splitzexperiments', 'MerchantController@getSplitzExperiments');
         Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('merchant_details');
+        Route::get('/merchant/tags', 'MerchantController@getMerchantTags')->name('merchant_tags');
     });
 
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()

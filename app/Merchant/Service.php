@@ -846,5 +846,4 @@ class Service extends Base\Service
 
         return [$error, $data];
     }
-
 }

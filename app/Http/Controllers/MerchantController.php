@@ -320,4 +320,17 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse([], $response);
     }
+
+    public function getMerchantTags()
+    {
+        $currentUser = Auth::guard('user')->user();
+
+        $currentMerchant = $currentUser->currentMerchant();
+
+        $currentMerchantId  = $currentMerchant->id;
+
+        $data = (new Merchant\Service)->getMerchantTags($currentMerchantId);
+
+        return AppResponse::jsonResponse([], $data);
+    }
 }
