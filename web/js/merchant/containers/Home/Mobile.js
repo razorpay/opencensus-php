@@ -12,6 +12,7 @@ import DateRangePicker from 'common/ui/DateRangePicker';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
+import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
 import OndemandModal from 'merchant/views/Settlements/Settlements/components/Modals/OndemandModal';
 import { openModal } from 'merchant_common/reducers/modals';
 import Announcement from 'merchant/components/Announcements/Instant';
@@ -295,6 +296,12 @@ class AnalyticsMobile extends Component {
           {hasSecondaryBanner && (
             <div className="secondary-announcement-banner">
               <PersonaliseBanner track={trackPersonaliseBanner} />
+            </div>
+          )}
+          {/* add conditions to show product onboarding card */}
+          {false && (
+            <div style={{ padding: '20px' }}>
+              <ProductOnboardingCard />
             </div>
           )}
           {this.renderRecommendationWidget()}

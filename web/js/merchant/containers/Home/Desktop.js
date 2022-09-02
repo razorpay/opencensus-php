@@ -17,6 +17,8 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import NewUserOnboardingCard from 'merchant/containers/Home/OnboardingCard';
 import ProductRecommendationnCard from 'merchant/containers/Home/ProductRecommendationnCard';
+import ProductOnboardingCard from 'merchant/containers/Home/ProductOnboardingCard';
+import QuickActionsCard from 'merchant/containers/Home/QuickActionsCard';
 import KeyMetrics from 'merchant/containers/Home/KeyMetrics';
 import Announcement from 'merchant/components/Announcements/Instant';
 import NPSAnnouncement from 'merchant/components/Announcements/NPSAnnouncement';
@@ -763,6 +765,19 @@ class AnalyticsDesktop extends Component {
               <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
             ) : null}
           </ErrorBoundary>
+
+          {/* add conditions to show product onboarding card */}
+          {false && (
+            <div style={{ padding: '20px' }}>
+              <QuickActionsCard />
+            </div>
+          )}
+          {false && (
+            <div style={{ padding: '20px' }}>
+              <ProductOnboardingCard />
+            </div>
+          )}
+
           {user.canSwitchOnboardingCard ? (
             this.renderOnboardingAndRecommendationWidget()
           ) : (
