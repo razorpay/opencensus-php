@@ -4567,6 +4567,15 @@ class Service extends Base\Service
             return $data;
         }
 
+        if (($payment->isBharatQr() === true) or ($payment->isUpiTransfer() === true))
+        {
+            $this->traceRetryVerifyFalse($id, TraceCode::PAYMENT_VERIFY_STOPPED_FOR_BHARAT_QR_AND_VPA, $data);
+
+            $data['retry_verify'] = false;
+
+            return $data;
+        }
+
         $extraProperties = [
             'is_pushed_to_kafka'  => $payment->getIsPushedToKafka(),
         ];
