@@ -204,8 +204,11 @@ class ApiTraceProcessor
     protected function addRouteNameForExceptions(& $record)
     {
         // If this is an exception, a stack key is present in the context array
-        $isException = (isset($record['context']['stack'])
-                        or (isset($record['message']) and $record['message'] === TraceCode::ERROR_RESPONSE_DATA));
+        $isException = (
+            isset($record['context']['stack'])
+            or (isset($record['message']) and $record['message'] === TraceCode::ERROR_RESPONSE_DATA)
+            or (isset($record['code']) and $record['code'] === TraceCode::ERROR_EXCEPTION)
+        );
 
         if ($isException === true)
         {
