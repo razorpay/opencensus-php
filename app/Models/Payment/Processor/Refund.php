@@ -2876,7 +2876,8 @@ trait Refund
 
     public function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null, $batchID = null)
     {
-        if ($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true)
+        if (($this->isRefundRequestV1_1($this->merchant->getId(), $payment) === true) and
+        ($batch === null) and ($batchID === null))
         {
             $this->trace->info(
             TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
