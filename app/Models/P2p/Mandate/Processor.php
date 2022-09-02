@@ -4,6 +4,7 @@ namespace RZP\Models\P2p\Mandate;
 
 use App;
 use Carbon\Carbon;
+use RZP\Events\P2p;
 use RZP\Models\P2p\Base;
 use RZP\Error\P2p\Error;
 use RZP\Trace\TraceCode;
@@ -425,36 +426,36 @@ class Processor extends Base\Processor
      * @throws \RZP\Exception\LogicException
      * @throws \RZP\Exception\RuntimeException
      */
-    protected function updateMandateStatus(Entity $mandate, ArrayBag $input):Entity
+    protected function updateMandateStatus(Entity $mandate, ArrayBag $input):Actions
     {
         switch ($input->get(Entity::INTERNAL_STATUS))
         {
             case Status::COMPLETED:
-                $this->setMandateCompleted($mandate, $input);
+                $actions = $this->setMandateCompleted($mandate, $input);
                 break;
 
             case Status::APPROVED:
-                $this->setMandateApproved($mandate, $input);
+                $actions =  $this->setMandateApproved($mandate, $input);
                 break;
 
             case Status::REJECTED:
-                $this->setMandateRejected($mandate, $input);
+                $actions = $this->setMandateRejected($mandate, $input);
                 break;
 
             case Status::PAUSED:
-                $this->setMandatePaused($mandate, $input);
+                $actions = $this->setMandatePaused($mandate, $input);
                 break;
 
             case Status::REVOKED:
-                $this->setMandateRevoked($mandate, $input);
+                $actions = $this->setMandateRevoked($mandate, $input);
                 break;
 
             case Status::FAILED:
-                $this->setMandateFailed($mandate, $input);
+                $actions = $this->setMandateFailed($mandate, $input);
                 break;
 
             case Status::REQUESTED:
-                $this->setMandateRequested($mandate, $input);
+                $actions = $this->setMandateRequested($mandate, $input);
                 break;
 
             default:
@@ -464,9 +465,12 @@ class Processor extends Base\Processor
                 ]);
         }
 
-        $this->core->update($mandate, $input->toArray());
+        if ($actions->shouldUpdate() === true)
+        {
+            $this->core->update($mandate, $input->toArray());
+        }
 
-        return $mandate;
+        return $actions;
     }
 
     /**
@@ -475,8 +479,19 @@ class Processor extends Base\Processor
      * This is the method to set mandate status to be authorized
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandateApproved(Entity $mandate, ArrayBag $input)
+    protected function setMandateApproved(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
+        // if the mandate is not in an completed state throw the error
+        if ($this->isExpired($mandate) === true)
+        {
+            throw $this->logicException('mandate has expired cannot mark it as approved', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
         if ($mandate->isFailed() === true || $mandate->isRevoked() === true )
         {
             throw $this->logicException('mandate can not be marked completed', [
@@ -484,8 +499,16 @@ class Processor extends Base\Processor
                 Entity::ID              => $mandate->getId(),
             ]);
         }
+        else if ($mandate->isApproved() === true)
+        {
+            return $actions->setShouldUpdate(false);
+        }
 
         $mandate->markApproved();
+
+        $actions->setEvent(new P2p\MandateStatusUpdate($this->context(), $mandate));
+
+        return $actions;
     }
 
     /**
@@ -494,8 +517,10 @@ class Processor extends Base\Processor
      * This is the method to set mandate status to be completed
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandateCompleted(Entity $mandate, ArrayBag $input)
+    protected function setMandateCompleted(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
         if ($mandate->isFailed() === true)
         {
             throw $this->logicException('mandate can not be marked completed', [
@@ -503,8 +528,16 @@ class Processor extends Base\Processor
                 Entity::ID              => $mandate->getId(),
             ]);
         }
+        else if ($mandate->isCompleted() === true)
+        {
+            return $actions->setShouldUpdate(false);
+        }
 
         $mandate->markCompleted();
+
+        $actions->setEvent(new P2p\MandateCompleted($this->context(), $mandate));
+
+        return $actions;
     }
 
     /**
@@ -513,8 +546,19 @@ class Processor extends Base\Processor
      * This is the method to set mandate status to be completed
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandateRejected(Entity $mandate, ArrayBag $input)
+    protected function setMandateRejected(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
+        // if the mandate is not in an completed state throw the error
+         if ($this->isExpired($mandate) === true)
+         {
+            throw $this->logicException('mandate has expired cannot mark it as rejected', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
         if (($mandate->isFailed() === true ) or
             ($mandate->isRevoked() === true) or
             ($mandate->isApproved() === true))
@@ -524,8 +568,16 @@ class Processor extends Base\Processor
                 Entity::ID              => $mandate->getId(),
             ]);
         }
+        else if ($mandate->isRejected() === true)
+        {
+            return $actions->setShouldUpdate(false);
+        }
 
         $mandate->markRejected();
+
+        $actions->setEvent(new P2p\MandateStatusUpdate($this->context(), $mandate));
+
+        return $actions;
     }
 
     /**
@@ -535,8 +587,19 @@ class Processor extends Base\Processor
      *
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandatePaused(Entity $mandate, ArrayBag $input)
+    protected function setMandatePaused(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
+        // if the mandate is not in an completed state throw the error
+        if ($this->isExpired($mandate) === true)
+        {
+            throw $this->logicException('mandate has expired cannot mark it as paused', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
         // if the mandate creation has already failed throw the error
         if ($mandate->isFailed() === true)
         {
@@ -547,7 +610,7 @@ class Processor extends Base\Processor
         }
 
         // if the mandate is in revoked state throw the error
-        if ($mandate->isRevoked() === true)
+        else if ($mandate->isRevoked() === true)
         {
             throw $this->logicException('mandate cannot be marked paused as the mandate has already been revoked', [
                 Entity::MANDATE => $input,
@@ -556,7 +619,7 @@ class Processor extends Base\Processor
         }
 
         // if the mandate is not in an completed state throw the error
-        if ($mandate->isCompleted() === true)
+        else if ($mandate->isCompleted() === true)
         {
             throw $this->logicException('mandate is not in progress and already completed', [
                 Entity::MANDATE => $input,
@@ -564,7 +627,16 @@ class Processor extends Base\Processor
             ]);
         }
 
+        else if ($mandate->isPaused() === true)
+        {
+            return $actions->setShouldUpdate(false);
+        }
+
         $mandate->markPaused();
+
+        $actions->setEvent(new P2p\MandateStatusUpdate($this->context(), $mandate));
+
+        return $actions;
     }
 
     /**
@@ -574,8 +646,19 @@ class Processor extends Base\Processor
      *
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandateRevoked(Entity $mandate, ArrayBag $input)
+    protected function setMandateRevoked(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
+        // if the mandate is not in an completed state throw the error
+        if ($this->isExpired($mandate) === true)
+        {
+            throw $this->logicException('mandate has expired cannot mark it as revoked', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
         // if the mandate creation has already failed throw the error
         if ($mandate->isFailed() === true)
         {
@@ -594,7 +677,18 @@ class Processor extends Base\Processor
             ]);
         }
 
+        // no need to update the status if the mandate has already been revoked
+
+        if ($mandate->isRevoked() === true)
+        {
+            return $actions->setShouldUpdate(false);
+        }
+
         $mandate->markRevoked();
+
+        $actions->setEvent(new P2p\MandateStatusUpdate($this->context(), $mandate));
+
+        return $actions;
     }
 
     /**
@@ -604,14 +698,20 @@ class Processor extends Base\Processor
      *
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandateFailed(Entity $mandate, ArrayBag $input)
+    protected function setMandateFailed(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
         if ($mandate->isCompleted() === true)
         {
             throw $this->logicException('Transaction can not be marked failed', [
                 Entity::MANDATE         => $input,
                 Entity::ID              => $mandate->getId(),
             ]);
+        }
+        else if ($mandate->isFailed() === true)
+        {
+            return $actions->setShouldUpdate(false);
         }
 
         $mandate->setInternalStatus($input[Entity::INTERNAL_STATUS]);
@@ -620,8 +720,11 @@ class Processor extends Base\Processor
 
         $mandate->setErrorCode($error->getPublicErrorCode());
         $mandate->setErrorDescription($error->getDescription());
-    }
 
+        $actions->setEvent(new P2p\MandateFailed($this->context(), $mandate));
+
+        return $actions;
+    }
 
     /**
      * @param Entity   $mandate
@@ -630,8 +733,19 @@ class Processor extends Base\Processor
      *
      * @throws \RZP\Exception\LogicException
      */
-    protected function setMandateRequested(Entity $mandate, ArrayBag $input)
+    protected function setMandateRequested(Entity $mandate, ArrayBag $input):Actions
     {
+        $actions = new Actions();
+
+        // if the mandate is not in an completed state throw the error
+        if ($this->isExpired($mandate) === true)
+        {
+            throw $this->logicException('mandate has expired cannot mark it as requested', [
+                Entity::MANDATE => $input,
+                Entity::ID      => $mandate->getId(),
+            ]);
+        }
+
         // if the mandate creation has already failed throw the error
         if ($mandate->isFailed() === true)
         {
@@ -660,8 +774,11 @@ class Processor extends Base\Processor
         }
 
         $mandate->markRequested();
-    }
 
+        $actions->setEvent(new P2p\MandateStatusUpdate($this->context(), $mandate));
+
+        return $actions;
+    }
     /**
      * @param string   $action
      * @param ArrayBag $input
@@ -692,7 +809,7 @@ class Processor extends Base\Processor
 
                     $this->checkForDuplicate($upi);
 
-                    $this->updateMandateStatus($mandate, $input);
+                    $actions = $this->updateMandateStatus($mandate, $input);
 
                     $upi->associateMandate($mandate);
 
@@ -701,6 +818,8 @@ class Processor extends Base\Processor
                     $actionInput = [Entity::ACTION => $action, Entity::STATUS => Status::REQUESTED, PatchEntity::ACTIVE => false];
 
                     $this->createPatch($mandate, $actionInput);
+
+                    $this->performMandateActions($actions, $mandate);
 
                     return $mandate;
                 });
@@ -732,6 +851,8 @@ class Processor extends Base\Processor
                     $this->core->updateUpi($mandate->upi, $upiInput->toArray());
 
                     $this->updatePatchStatusAccordingToMandateAction($mandate, $action);
+
+                    $this->performMandateActions($actions, $mandate);
 
                     return $mandate;
                 });
@@ -858,4 +979,35 @@ class Processor extends Base\Processor
             Entity::END_DATE        => $mandate->getEndDate(),
         ];
     }
+
+    /**
+     * This is the method to perform mandate action
+     * @param \RZP\Models\P2p\Mandate\Actions $actions
+     * @param Entity                          $mandate
+     */
+    protected function performMandateActions(Actions $actions, Entity $mandate)
+    {
+        if ($actions->hasEvent() === true)
+        {
+            $this->app['events']->dispatch($actions->getEvent());
+        }
+    }
+
+    /**
+     * This is the function to check if its expired.
+     * @param Entity $mandate
+     */
+    protected function isExpired(Entity $mandate)
+    {
+        if(!($mandate ->isEmpty  === true))
+        {
+            // if the expiry time is lesser than current time
+            if ($mandate->getExpiry() < Carbon::now()->getTimestamp())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

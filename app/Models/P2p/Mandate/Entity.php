@@ -390,12 +390,30 @@ class Entity extends Base\Entity
     }
 
     /**
-     *  This is the method to check if the status is marked as completed
+     *  This is the method to check if the status is marked as revoked
      * @return bool
      */
     public function isRevoked(): bool
     {
         return in_array($this->getInternalStatus(), [Status::REVOKED]);
+    }
+
+    /**
+     *  This is the method to check if the status is marked as Requested
+     * @return bool
+     */
+    public function isRequested(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::REQUESTED]);
+    }
+
+    /**
+     *  This is the method to check if the status is marked as Requested
+     * @return bool
+     */
+    public function isRejected(): bool
+    {
+        return in_array($this->getInternalStatus(), [Status::REJECTED]);
     }
 
     /***************** SETTERS *****************/
@@ -602,5 +620,69 @@ class Entity extends Base\Entity
     public function patch()
     {
         return $this->hasMany(Patch\Entity::class, Patch\Entity::MANDATE_ID);
+    }
+
+    /**
+     * @return string self::TYPE
+     */
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    /**
+     * @return string self::FLOW
+     */
+    public function getFlow()
+    {
+        return $this->getAttribute(self::FLOW);
+    }
+
+    /**
+     * @return string self::MODE
+     */
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
+    /**
+    * @return string self::GATEWAY
+    */
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
+    }
+
+    /**
+     * @return string self::STATUS
+     */
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    /**
+     * @return string self::ERROR_CODE
+     */
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    /**
+     * @return string self::PAYER_TYPE
+     */
+    public function getPayerType()
+    {
+        return $this->getAttribute(self::PAYER_TYPE);
+    }
+
+    /**
+     * @return string self::PAYEE_TYPE
+     */
+    public function getPayeeType()
+    {
+        return $this->getAttribute(self::PAYEE_TYPE);
     }
 }

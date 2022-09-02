@@ -67,15 +67,15 @@ class Validator extends Base\Validator
      */
     public function makeEditRules()
     {
-    $rules = $this->makeRules([
-                              Entity::MANDATE_ID => 'sometimes',
-                              Entity::DETAILS    => 'sometimes',
-                              Entity::ACTION     => 'sometimes',
-                              Entity::STATUS     => 'sometimes',
-                              Entity::ACTIVE     => 'sometimes',
-                              Entity::EXPIRY     => 'sometimes',
-                              Entity::REMARKS    => 'sometimes',
-             ]);
+        $rules = $this->makeRules([
+                  Entity::MANDATE_ID => 'sometimes',
+                  Entity::DETAILS    => 'sometimes',
+                  Entity::ACTION     => 'sometimes',
+                  Entity::STATUS     => 'sometimes',
+                  Entity::ACTIVE     => 'sometimes',
+                  Entity::EXPIRY     => 'sometimes',
+                  Entity::REMARKS    => 'sometimes',
+                ]);
 
         return $rules;
     }
