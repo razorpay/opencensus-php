@@ -3477,6 +3477,28 @@ return [
         ],
     ],
 
+    'testAutoRejectPayoutWithNewWorkflowServiceViaCron' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/auto_expire'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testPendingPayoutProcessingAutoReject' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/auto_expire'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testBulkRejectPayoutsWithoutComment' => [
         'request'  => [
             'method'  => 'POST',

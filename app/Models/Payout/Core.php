@@ -38,6 +38,7 @@ use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Models\CreditTransfer;
 use RZP\Models\BankingAccount;
+use RZP\Jobs\PayoutsAutoExpire;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\PayoutService;
@@ -1774,129 +1775,129 @@ class Core extends Base\Core
 
         // Adding this mutex here to handle concurrent requests.
         $payout = $this->mutex->acquireAndRelease(
-            'process_workflow_action_on_' . $payoutId,
-            function() use ($payout, $approve, $input)
-            {
-                // Reload $payout here if needed.
-
-                /** @var Workflow\Action\Entity|null $workflowAction */
-                $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
-
-                $action = ($approve === true) ? 'approve' : 'reject';
-
-                if ($workflowAction === null)
+                  $payoutId,
+                function() use ($payout, $approve, $input)
                 {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'No further actions can be performed on this payout',
-                        null,
-                        ['action' => $action, 'payout_id' => $payout->getId()]);
-                }
+                    // Reload $payout here if needed.
 
-                $payout = $this->repo->transaction(
-                    function() use ($payout, $workflowAction, $approve, $action, $input) {
-                        $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+                    /** @var Workflow\Action\Entity|null $workflowAction */
+                    $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
 
-                        $actionCheckerCreateParams = [
-                            Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
-                            Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
-                        ];
+                    $action = ($approve === true) ? 'approve' : 'reject';
 
-                        if (empty($userComment) === false)
-                        {
-                            $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
-                        }
+                    if ($workflowAction === null)
+                    {
+                        throw new Exception\BadRequestValidationFailureException(
+                            'No further actions can be performed on this payout',
+                            null,
+                            ['action' => $action, 'payout_id' => $payout->getId()]);
+                    }
 
-                        $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+                    $payout = $this->repo->transaction(
+                        function() use ($payout, $workflowAction, $approve, $action, $input) {
+                            $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
 
-                        $e = null;
+                            $actionCheckerCreateParams = [
+                                Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
+                                Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                            ];
 
-                        if((empty($actionChecker) === true))
-                        {
-                            $e = new Exception\BadRequestException(
-                                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
-                                null,
-                                [
-                                    'create_params'       => $actionCheckerCreateParams,
-                                    'payout_id'           => $payout->getId(),
-                                    'workflows_action_id' => $workflowAction->getId(),
-                                    'action'              => $action,
-                                ]);
-                        }
-
-                        //tracking slack app related events
-                        $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
-                            $payout,
-                            $e);
-
-                        if ((empty($actionChecker) === true) and
-                            ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
-                        {
-                            throw new Exception\BadRequestException(
-                                ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
-                                null,
-                                [
-                                    'create_params'       => $actionCheckerCreateParams,
-                                    'payout_id'           => $payout->getId(),
-                                    'workflows_action_id' => $workflowAction->getId(),
-                                    'action'              => $action,
-                                ]);
-                        }
-
-                        //
-                        // Reload the workflow_action entity. Changes from the previous function calls
-                        // may not have been sync'd
-                        //
-                        $workflowAction->reload();
-
-                        $this->trace->info(
-                            TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
-                            [
-                                'workflow_action' => $workflowAction,
-                                'action'          => $action,
-                                'payout_id'       => $payout->getId(),
-                            ]);
-
-                        // This check is similar in processApprovePayout function
-                        // If Logic is changed then it needs to be changed at both the places
-                        $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ? boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
-
-                        if (($approve === true) and
-                            ($workflowAction->getApproved() === true))
-                        {
-                            if ($payout->getIsPayoutService() == true) {
-                                $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
-                                    $payout->getId(),
-                                    $queueFlag
-                                );
+                            if (empty($userComment) === false)
+                            {
+                                $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
                             }
-                            else {
-                                $payout = $this->processApprovePayout($payout, $input);
+
+                            $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+                            $e = null;
+
+                            if((empty($actionChecker) === true))
+                            {
+                                $e = new Exception\BadRequestException(
+                                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                                    null,
+                                    [
+                                        'create_params'       => $actionCheckerCreateParams,
+                                        'payout_id'           => $payout->getId(),
+                                        'workflows_action_id' => $workflowAction->getId(),
+                                        'action'              => $action,
+                                    ]);
                             }
-                        }
-                        else
-                        {
-                            if (($approve === false) and
-                                ($workflowAction->isRejected() === true))
+
+                            //tracking slack app related events
+                            $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                                $payout,
+                                $e);
+
+                            if ((empty($actionChecker) === true) and
+                                ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
+                            {
+                                throw new Exception\BadRequestException(
+                                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                                    null,
+                                    [
+                                        'create_params'       => $actionCheckerCreateParams,
+                                        'payout_id'           => $payout->getId(),
+                                        'workflows_action_id' => $workflowAction->getId(),
+                                        'action'              => $action,
+                                    ]);
+                            }
+
+                            //
+                            // Reload the workflow_action entity. Changes from the previous function calls
+                            // may not have been sync'd
+                            //
+                            $workflowAction->reload();
+
+                            $this->trace->info(
+                                TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
+                                [
+                                    'workflow_action' => $workflowAction,
+                                    'action'          => $action,
+                                    'payout_id'       => $payout->getId(),
+                                ]);
+
+                            // This check is similar in processApprovePayout function
+                            // If Logic is changed then it needs to be changed at both the places
+                            $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ? boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
+
+                            if (($approve === true) and
+                                ($workflowAction->getApproved() === true))
                             {
                                 if ($payout->getIsPayoutService() == true) {
-                                    $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
-                                        $payout->getId()
+                                    $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
+                                        $payout->getId(),
+                                        $queueFlag
                                     );
                                 }
                                 else {
-                                    $payout = $this->processRejectPayout($payout);
+                                    $payout = $this->processApprovePayout($payout, $input);
                                 }
                             }
-                        }
+                            else
+                            {
+                                if (($approve === false) and
+                                    ($workflowAction->isRejected() === true))
+                                {
+                                    if ($payout->getIsPayoutService() == true) {
+                                        $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
+                                            $payout->getId()
+                                        );
+                                    }
+                                    else {
+                                        $payout = $this->processRejectPayout($payout);
+                                    }
+                                }
+                            }
 
-                        return $payout;
-                    });
+                            return $payout;
+                        });
 
-                return $payout;
-            });
+                    return $payout;
+                });
 
-        return $this->repo->payout->findOrFail($payout->getId());
-    }
+            return $this->repo->payout->findOrFail($payout->getId());
+        }
 
     // Fetch payout by id from payouts service
     public function fetchByIdFromPayoutsService(string $id, array $input): array
@@ -2522,6 +2523,77 @@ class Core extends Base\Core
                 $e,
                 Trace::ERROR,
                 TraceCode::ON_HOLD_PAYOUT_PROCESSING_DISPATCH_FAILED,
+                $data);
+        }
+    }
+
+    public function processAutoExpiryOfPayouts(string $payoutId)
+    {
+        try
+        {
+            return $this->mutex->acquireAndRelease(
+                $payoutId,
+                function () use ($payoutId)
+                {
+                    $payout = $this->repo->payout->findOrFail($payoutId);
+
+                    $status = $payout[Entity::STATUS];
+
+                    switch ($status)
+                    {
+                        case Status::PENDING:
+                            $this->forceRejectPayout($payout);
+                            break;
+
+                        default:
+                            $this->trace->warning(
+                                TraceCode::UNKNOWN_STATUS_SENT_TO_PAYOUT,
+                                $payoutId
+                            );
+                    }
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PAYOUT_AUTO_EXPIRY_JOB_FAILED,
+                [
+                    'payout_id' => $payoutId,
+                ]);
+        }
+    }
+
+    public function dispatchPayoutsForAutoExpiry(array $payoutIdList)
+    {
+        try
+        {
+            foreach ($payoutIdList as $payoutId)
+            {
+                $traceInfo = [
+                    'payout_id' => $payoutId,
+                ];
+
+                $this->trace->info(TraceCode::PAYOUT_AUTO_EXPIRY_JOB, $traceInfo);
+
+                PayoutsAutoExpire::dispatch($this->mode, $payoutId);
+
+                $this->trace->info(TraceCode::PAYOUT_AUTO_EXPIRY_DISPATCH_COMPLETE, $traceInfo);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these again and attempt to dispatch.
+            $data = $traceInfo + ['message' => $e->getMessage()];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYOUT_AUTO_EXPIRY_DISPATCH_FAILED,
                 $data);
         }
     }

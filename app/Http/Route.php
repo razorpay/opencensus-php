@@ -1677,8 +1677,10 @@ class Route
         'payouts_update_failure_processing_cron'   => ['post',     'payouts/cron/update_failure_processing',         'PayoutController@payoutsServiceUpdateFailureProcessingCron'               ],
         'payouts_process_batch'                    => ['post',     'payouts/batch/process',                          'PayoutController@processInitiateForBatchSubmittedPayouts'          ],
         'payouts_process_scheduled'                => ['post',     'payouts/scheduled/process',                      'PayoutController@processInitiateForScheduledPayouts'               ],
+        'payouts_auto_cancel_on_expiry'            => ['post',     'payouts/auto_expire',                            'PayoutController@processDispatchForPayoutsAutoRejectionOnExpiry'   ],
+
         'payout_service_data_migration'            => ['post',     'payout_service_data_migration',                  'PayoutController@initiateDataMigration'                            ],
-        'ps_data_migration_redis_clean_up'         => ['post',     'ps_data_migration_redis_clean_up',                'PayoutController@psDataMigrationRedisCleanUp'                            ],
+        'ps_data_migration_redis_clean_up'         => ['post',     'ps_data_migration_redis_clean_up',                'PayoutController@psDataMigrationRedisCleanUp'                     ],
 
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
@@ -3075,7 +3077,6 @@ class Route
         'banking_account_fetch_by_account_number' => ['get',      'banking_accounts/{account_number}/{merchant_id}',           'BankingAccountController@getBankingAccountForAccountNumber'],
         'banking_account_fetch_by_balance_id'     => ['get',      'banking_accounts_balance_id/{balance_id}',                  'BankingAccountController@getBankingAccountForBalanceId'],
         'banking_account_beneficiary_fetch'       => ['get',      'banking_accounts_beneficiary/{account_number}/{ifsc}',           'BankingAccountController@getBankingAccountBeneficiary'],
-
 
         'rbl_current_account_serviceability_get'  => ['get',      'banking_accounts/serviceability/rbl/pincode/{pincode}',      'BankingAccountController@checkPincodeServiceabilityByRBL'       ],
 
@@ -4724,6 +4725,7 @@ class Route
         'payout_service_data_migration',
         'ps_data_migration_redis_clean_up',
         'payouts_process_on_hold',
+        'payouts_auto_cancel_on_expiry',
         'payouts_create_failure_processing_cron',
         'payouts_update_failure_processing_cron',
         'card_settlement_generate_file',
@@ -13034,6 +13036,7 @@ class Route
             'payout_service_data_migration',
             'ps_data_migration_redis_clean_up',
             'payouts_process_on_hold',
+            'payouts_auto_cancel_on_expiry',
             'payouts_create_failure_processing_cron',
             'payouts_update_failure_processing_cron',
             'card_settlement_generate_file',
@@ -14477,6 +14480,7 @@ class Route
         'payout_service_data_migration',
         'ps_data_migration_redis_clean_up',
         'payouts_process_on_hold',
+        'payouts_auto_cancel_on_expiry',
         'payouts_process_batch',
         'payouts_process_scheduled',
         'payout_service_process_scheduled_payout',

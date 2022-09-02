@@ -514,6 +514,31 @@ class Repository extends Base\Repository
                      ->toArray();
     }
 
+    //fetch payouts in provided status
+    public function getPayoutsBeforeTimestampForStatus(string $status, int $beforeDate, int $afterDate = null)
+    {
+        $payoutStatus = $this->dbColumn(Entity::STATUS);
+
+        $payoutIdColumn = $this->dbColumn(Entity::ID);
+
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        $query= $this->newQueryWithConnection($this->getSlaveConnection())
+                     ->select($payoutIdColumn)
+                     ->where($payoutStatus, '=', $status)
+                     ->where($createdAtColumn, '<', $beforeDate);
+
+        if (empty($afterDate) === false)
+        {
+            $query->where($createdAtColumn, '>', $afterDate);
+        }
+
+        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+                     ->get()
+                     ->pluck(Entity::ID)
+                     ->toArray();
+    }
+
     public function getMerchantIdsWithAtleastOneOnHoldPayout()
     {
         $onholdAtColumn = $this->dbColumn(Entity::ON_HOLD_AT);

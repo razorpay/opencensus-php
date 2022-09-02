@@ -1205,6 +1205,27 @@ class Service extends Base\Service
         return $newPayout->toArrayPublic();
     }
 
+    public function processDispatchForPayoutsAutoExpiry()
+    {
+        $from = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
+
+        $pendingPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::PENDING, $from);
+
+        $this->core->dispatchPayoutsForAutoExpiry($pendingPayoutIds);
+
+        $response =
+            [
+                'payout_ids_to_expire' => $pendingPayoutIds,
+            ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_AUTO_EXPIRY_DISPATCH_COMPLETE,
+            $response
+            );
+
+        return $response;
+    }
+
     public function processInitiateForScheduledPayouts($input)
     {
         (new Validator)->validateInput(Validator::PROCESS_SCHEDULED_PAYOUTS, $input);

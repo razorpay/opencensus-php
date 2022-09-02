@@ -492,6 +492,15 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function processDispatchForPayoutsAutoRejectionOnExpiry()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processDispatchForPayoutsAutoExpiry($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getScheduleSlotsForPayouts()
     {
         $response = $this->service()->getScheduleSlotsForPayouts();

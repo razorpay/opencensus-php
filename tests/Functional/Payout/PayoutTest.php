@@ -4781,6 +4781,39 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testPendingPayoutProcessingAutoReject()
+    {
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $pendingPayout1 = $this->getDbLastEntity('payout', 'live');
+
+        $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $pendingPayout2 = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::PENDING, $pendingPayout1['status']);
+
+        $this->assertEquals(Status::PENDING, $pendingPayout2['status']);
+
+        $this->fixtures->edit('payout', $pendingPayout1['id'], ['created_at' => strtotime(('-100 days'), time())]);
+
+        $this->ba->cronAuth('live');
+
+        $this->startTest();
+
+        $updatedPendingPayout1 = $this->getDbEntityById('payout', $pendingPayout1['id'], 'live');
+
+        $updatedPendingPayout2 = $this->getDbEntityById('payout', $pendingPayout2['id'], 'live');
+
+        // Assert that the payout which was older than 3 months is rejected
+        $this->assertEquals(Status::REJECTED, $updatedPendingPayout1['status']);
+        $this->assertEquals(Status::PENDING, $updatedPendingPayout2['status']);
+    }
+
     public function testRejectPayoutWithRejectCommentInWebhookWithWFS()
     {
         $this->liveSetUp();
