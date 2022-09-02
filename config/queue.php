@@ -52,6 +52,10 @@ return [
         'test'       =>  env('AWS_LEDGER_STATUS_TEST_QUEUE'),
         'live'       =>  env('AWS_LEDGER_STATUS_LIVE_QUEUE'),
     ],
+    'ledger_x_journal' => [
+        'test'       =>  env('AWS_LEDGER_X_JOURNAL_TEST_QUEUE'),
+        'live'       =>  env('AWS_LEDGER_X_JOURNAL_LIVE_QUEUE'),
+    ],
     'batch_payouts_process' => [
         'test'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_LIVE_QUEUE'),
@@ -536,6 +540,10 @@ return [
 
         env('AWS_FIRS_DOCUMENT_TEST_QUEUE') => 'RZP\\Jobs\\MerchantFirsDocuments',
         env('AWS_FIRS_DOCUMENT_LIVE_QUEUE') => 'RZP\\Jobs\\MerchantFirsDocuments',
+
+        // mapping for ledger X journal created txn processing jobs
+        env('AWS_LEDGER_X_JOURNAL_TEST_QUEUE') => 'RZP\\Jobs\\LedgerJournalTest',
+        env('AWS_LEDGER_X_JOURNAL_LIVE_QUEUE') => 'RZP\\Jobs\\LedgerJournalLive',
 
         //mapping for ART refund recon entity update job
         env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE') => 'RZP\\Jobs\\ArtReconProcess',
