@@ -235,7 +235,7 @@ class ThirdWatchService
                         $dimensions,
                         [
                             'request' => $this->getMaskedAddressDetails($input),
-                            'exception'=> $e->getTrace()
+                            'exception'=> $ex->getTrace()
                         ]
                     )
                 );
