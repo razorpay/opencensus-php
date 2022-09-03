@@ -676,11 +676,6 @@ class Processor
          */
         $merchant = $this->app['basicauth']->getMerchant();
 
-        if ($this->ba->getOAuthClientId() !== null)
-        {
-            return false;
-        }
-
         if ((app()->isEnvironmentProduction() === true) and
             ($this->mode === Mode::TEST))
         {
@@ -721,25 +716,41 @@ class Processor
                 )
                 {
                     $shouldRoute = true;
+
+                    if ($this->ba->isPartnerAuth() === true)
+                    {
+                        $shouldRoute = false;
+                        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_partner';
+                        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
+
+                        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
+                            'variant'      => $variant,
+                            'feature_flag' => $featureFlag,
+                        ]);
+
+                        if ($variant === 'on')
+                        {
+                            $shouldRoute = true;
+                        }
+                    }
+
+                    if ($this->ba->getOAuthClientId() !== null)
+                    {
+                        $shouldRoute = false;
+                        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_oauth';
+                        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
+
+                        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
+                            'variant'      => $variant,
+                            'feature_flag' => $featureFlag,
+                        ]);
+
+                        if ($variant === 'on')
+                        {
+                            $shouldRoute = true;
+                        }
+                    }
                 }
-            }
-
-        }
-
-        if ($this->ba->isPartnerAuth() !== null)
-        {
-            $shouldRoute = false;
-            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_partner';
-            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
-
-            $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
-                'variant'      => $variant,
-                'feature_flag' => $featureFlag,
-            ]);
-
-            if ($variant === 'on')
-            {
-                $shouldRoute = true;
             }
         }
 
