@@ -399,7 +399,15 @@ class Base extends BaseCore
     {
         $this->setPayoutBalance($input);
 
-        Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant);
+        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ENABLED_FOR_2FA_PAYOUT,
+                null,
+                null,
+                'merchant is not enabled for ICICI 2FA payout flow'
+            );
+        }
 
         $this->preValidations();
 

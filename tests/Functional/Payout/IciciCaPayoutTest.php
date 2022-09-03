@@ -2378,4 +2378,20 @@ class IciciCaPayoutTest extends TestCase
         $this->assertArrayNotHasKey('pending_reason', $content);
         $this->assertArrayNotHasKey('internal_status', $content);
     }
+
+    public function testPayoutCreateForIciciCaApiPayoutMerchantEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+    }
+
+    public function testPayoutCreateForIciciCaApiPayoutMerchantNotEnabled()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
 }

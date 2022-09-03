@@ -333,7 +333,7 @@ class Service extends Base\Service
             $isCompositePayout = true;
         }
 
-        $this->checkIfPayoutIsAllowed($isCompositePayout, $input);
+        $this->checkIfPayoutIsAllowed($isCompositePayout, $input, $balance);
 
         if ($isCompositePayout === true)
         {
@@ -505,7 +505,15 @@ class Service extends Base\Service
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($input['payout_id'], $this->merchant);
 
-        Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($payout->balance, $this->merchant);
+        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($payout->balance, $this->merchant) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ENABLED_FOR_2FA_PAYOUT,
+                null,
+                null,
+                'merchant is not enabled for ICICI 2FA payout flow'
+            );
+        }
 
         $payoutValidator =  $payout->getValidator();
 
@@ -974,7 +982,15 @@ class Service extends Base\Service
             );
         }
 
-        Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($payout->balance, $this->merchant);
+        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($payout->balance, $this->merchant) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ENABLED_FOR_2FA_PAYOUT,
+                null,
+                null,
+                'merchant is not enabled for ICICI 2FA payout flow'
+            );
+        }
 
         try
         {
@@ -3053,9 +3069,19 @@ class Service extends Base\Service
         return $this->core->updatePayoutEntry($payoutId, $input);
     }
 
-    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input)
+    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, Merchant\Balance\Entity $balance)
     {
         $payoutMode = $input[Payout\Entity::MODE] ?? null;
+
+        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'API payouts are not available for this account'
+            );
+        }
 
         if ($this->merchant->isFeatureEnabled(Features::ALLOW_NON_SAVED_CARDS) === true)
         {

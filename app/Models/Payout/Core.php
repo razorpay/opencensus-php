@@ -863,6 +863,21 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaInitiated(Entity $payout, Attempt\Entity $fta)
     {
+        if ($payout->getStatus() === Status::PENDING_ON_OTP)
+        {
+            // For ICICI CA 2FA flows, after we send a sync call to FTS, the payout moves to pending_on_otp
+            // state. We should not update payout status to initiated for this case.
+
+            $this->trace->info(
+                TraceCode::PAYOUT_UPDATE_STATUS_AFTER_FTA_INITIATED_SKIPPED,
+                [
+                    'payout_id' => $payout->getId(),
+                    'merchant_id' => $payout->getMerchantId()
+                ]);
+
+            return;
+        }
+
         Status::validateStatusUpdate(Status::INITIATED, $payout->getStatus());
 
         if ($payout->getIsPayoutService() === true)
@@ -7025,10 +7040,9 @@ class Core extends Base\Core
      * @param Balance\Entity $balance
      * @param Merchant\Entity $merchant
      *
-     * @return null
-     * @throws BadRequestException
+     * @return bool
      */
-    public static function checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa(Balance\Entity $balance, Merchant\Entity $merchant)
+    public static function checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa(Balance\Entity $balance, Merchant\Entity $merchant): bool
     {
         $balanceType = $balance->getType();
         $accountType = $balance->getAccountType();
@@ -7046,17 +7060,12 @@ class Core extends Base\Core
             ]
         );
 
-        if ($balanceType !== Balance\Type::BANKING or $accountType !== Balance\AccountType::DIRECT or
-            $channel !== Channel::ICICI or $isFeatureEnabled !== true)
+        if ($balanceType === Balance\Type::BANKING and $accountType === Balance\AccountType::DIRECT and
+            $channel === Channel::ICICI and $isFeatureEnabled === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ENABLED_FOR_2FA_PAYOUT,
-                null,
-                null,
-                'merchant is not enabled for ICICI 2FA payout flow'
-            );
+            return true;
         }
 
-        return null;
+        return false;
     }
 }

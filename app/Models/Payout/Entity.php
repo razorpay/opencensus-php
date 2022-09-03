@@ -2635,16 +2635,8 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            try
-            {
-                Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant);
-
-                $isMerchantEnabled = true;
-            }
-            catch (BadRequestException $e)
-            {
-                $isMerchantEnabled = false;
-            }
+            $isMerchantEnabled = Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa(
+                                    $this->balance, $this->merchant);
         }
 
         if ($isAdminAuth or ($isProxyOrPrivilegeAuth and $isStatusPending and $isMerchantEnabled))
@@ -2671,16 +2663,8 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            try
-            {
-                Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($this->balance, $this->merchant);
-
-                $isMerchantEnabled = true;
-            }
-            catch (BadRequestException $e)
-            {
-                $isMerchantEnabled = false;
-            }
+            $isMerchantEnabled = Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa(
+                                    $this->balance, $this->merchant);
         }
 
         if ($isAdminAuth or ($isProxyOrPrivilegeAuth and $isStatusPending and $isMerchantEnabled))
