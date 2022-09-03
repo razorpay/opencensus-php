@@ -1424,7 +1424,15 @@ return [
             Permission::BANK_TRANSFER_MODIFY_PAYER_ACCOUNT => [
                 'description' => 'Bank transfer modify payer account',
                 'assignable'  => true
-            ]
+            ],
+            Permission::LINKED_ACCOUNT_REFERENCE_DATA_CREATE => [
+                'description' => 'Create Linked Account Reference Data',
+                'assignable'  => true
+            ],
+            Permission::AMC_LINKED_ACCOUNT_CREATION => [
+                'description' => 'Create AMC Linked Account for Mutual Fund Distributor Merchants',
+                'assignable'  => true
+            ],
         ],
 
         PermissionCategory::VIRTUAL_ACCOUNT => [

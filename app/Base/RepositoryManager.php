@@ -221,6 +221,8 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Website\Repository                              $merchant_website
  * @property Models\Merchant\Consent\Details\Repository                      $merchant_consent_details
  * @property Models\Merchant\Consent\Repository                              $merchant_consents
+ * @property Models\Merchant\LinkedAccountReferenceData\Repository           $linked_account_reference_data
+
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

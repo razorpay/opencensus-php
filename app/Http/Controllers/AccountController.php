@@ -8,6 +8,7 @@ use ApiResponse;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant;
 use RZP\Trace\Tracer;
+use RZP\Constants\Entity as E;
 
 class AccountController extends Controller
 {
@@ -137,6 +138,24 @@ class AccountController extends Controller
         $input = Request::all();
 
         $response = $this->service()->fetchLinkedAccountsForMerchant($input, $merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createLinkedAccountReferenceData()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::LINKED_ACCOUNT_REFERENCE_DATA)->createLinkedAccountReferenceData($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createAMCLinkedAccountViaAdmin()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createAMCLinkedAccountViaAdmin($input);
 
         return ApiResponse::json($response);
     }

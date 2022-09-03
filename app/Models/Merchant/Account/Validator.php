@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Account;
 
 use RZP\Base\Fetch;
 use RZP\Models\Merchant;
+use RZP\Models\Feature;
 use RZP\Constants\Entity as CE;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -187,6 +188,10 @@ class Validator extends Merchant\Validator
         Constants::INTERNATIONAL => 'sometimes|boolean',
     ];
 
+    protected static $createAMCLinkedAccountViaAdminRules = [
+        Constants::MERCHANT_IDS => 'required|min:0'
+    ];
+
     protected static $createAccountValidators = [
         'profile_input',
         'settlement_input',
@@ -362,6 +367,24 @@ class Validator extends Merchant\Validator
         if (in_array($value, Constants::$validBusinessModels, true) === false)
         {
             throw new BadRequestValidationFailureException('Invalid business model: ' . $value);
+        }
+    }
+
+    public function validateAMCLinkedAccountCreationAllowed(Merchant\Entity $merchant)
+    {
+        if($merchant->getCategory() !== Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY] ||
+            $merchant->getCategory2() !== Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2] )
+        {
+            throw new BadRequestValidationFailureException('AMC linked account creation not allowed for this merchant',[
+                Entity::MERCHANT_ID   => $merchant->getId()
+            ]);
+        }
+
+        if($merchant->isFeatureEnabled(Feature\Constants::MARKETPLACE) === false)
+        {
+            throw new BadRequestValidationFailureException('Feature marketplace not enabled',[
+                Entity::MERCHANT_ID   => $merchant->getId()
+            ]);
         }
     }
 }

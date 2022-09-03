@@ -8,6 +8,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 use RZP\Models\Merchant\Document\Type;
+use RZP\Models\Terminal\Category;
 
 /**
  * General constants for Merchant Model.
@@ -524,6 +525,11 @@ final class Constants
         '8244',
         '8249',
         '8299'
+    ];
+
+    const LINKED_ACCOUNT_ACTIONS_BLOCKED = [
+        Entity::CATEGORY     => '6211',
+        Entity::CATEGORY2    => Category::MUTUAL_FUNDS,
     ];
 
     const MERCHANT_WORKFLOWS = [

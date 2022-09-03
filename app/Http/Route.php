@@ -2000,6 +2000,8 @@ class Route
         'admin_merchant_la_fetch'                  => ['get',      'admin/merchants/{id}/linked_accounts',           'AccountController@fetchLinkedAccountsForMerchant'                  ],
         'linked_account_create_batch'              => ['post',     'linked_accounts/batch',                          'MerchantController@createLinkedAccount'                            ],
         'linked_account_update_bank_account'       => ['patch',    'beta/accounts/{id}/bank_account',                'MerchantController@updateLinkedAccountBankAccount'                 ],
+        'linked_account_reference_data_create'     => ['post',     'la_reference_data',                              'AccountController@createLinkedAccountReferenceData'                ],
+        'amc_linked_account_create'                => ['post',     'la_amc',                                         'AccountController@createAMCLinkedAccountViaAdmin'                  ],
         'transfer_settlement_status_update'        => ['patch',     'transfers/settlement_status',                   'TransferController@updateSettlementStatusInTransfer'               ],
 
         'user_register'                            => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
@@ -6155,6 +6157,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'linked_account_reference_data_create',
+        'amc_linked_account_create',
         'admin_website_section_action',
         'admin_website_section_save',
         'admin_website_section_fetch',
@@ -7327,6 +7331,8 @@ class Route
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE,
+        'linked_account_reference_data_create'      => Permission::LINKED_ACCOUNT_REFERENCE_DATA_CREATE,
+        'amc_linked_account_create'                 => Permission::AMC_LINKED_ACCOUNT_CREATION,
         'nocode_debugging_route'                    => Permission::DEBUG_NOCODE_ROUTES,
         'merchant_enhanced_activation_details'     => Permission::VIEW_MERCHANT,
         'mob_admin_routes'                          => Permission::MOB_ADMIN,
@@ -10690,6 +10696,8 @@ class Route
             'admin_website_section_fetch',
             'banking_account_statement_insert_missing',
             'role_self_get',
+            'linked_account_reference_data_create',
+            'amc_linked_account_create',
             'admin_collect_info_merchant_details_patch',
             'merchant_enhanced_activation_details',
             'mob_admin_routes',

@@ -111,4 +111,28 @@ class RoutesTest extends TestCase
 
         $this->assertEquals([], $diff);
     }
+
+    public function testDuplicateRoute()
+    {
+        $routes = Route::getApiRoutes();
+
+        $pathArray = [];
+
+        $count = 0;
+
+        foreach ($routes as $route)
+        {
+            if(array_key_exists($route[1], $pathArray) === true)
+            {
+                if($route[0] === $pathArray[$route[1]])
+                {
+                    s($route[1], $route[0]);
+                    $count++;
+                }
+            }
+
+            $pathArray[$route[1]] = $route[0];
+        }
+        s("count", $count);
+    }
 }

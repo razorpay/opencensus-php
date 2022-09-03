@@ -1412,6 +1412,146 @@ return [
         ],
     ],
 
+    'testCreateLinkedAccountForMutualFundDistributorMerchant' => [
+        'request'   => [
+            'url'     => '/beta/accounts',
+            'method'  => 'post',
+            'content' => [
+                'name'            => 'Linked Account 1',
+                'email'           => 'linked1@account.com',
+                'tnc_accepted'    => true,
+                'notes'           => [
+                    'custom_account_id' => 'Qwerty123',
+                    'custom_attribute'  => 'some_value',
+                ],
+                'account_details' => [
+                    'business_name' => 'Acme solutions',
+                    'business_type' => 'proprietorship',
+                ],
+                'bank_account' => [
+                    'ifsc_code'             => 'ICIC0001206',
+                    'account_number'        => '0002020000304030434',
+                    'account_type'          => 'current',
+                    'beneficiary_name'      => 'Test R4zorpay:'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked account creation is not allowed for your business type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED,
+        ],
+    ],
+
+    'testCreateMarketplaceLinkedAccountForMutualFundDistributorMerchant' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'      => '7gcKngYfqyDMjN',
+                'name'    => 'Linked Account 2',
+                'email'   => 'linkedaccount@razorpay.com',
+                'account' => true,
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked account creation is not allowed for your business type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED,
+        ],
+    ],
+
+    'testUpdateLinkedAccountEmailMutualFundDistributorMerchant' => [
+        'request' => [
+            'url' => '/la-merchants/email',
+            'method' => 'put',
+            'content' => [
+                'email' => 'test+1@razorpay.com'
+            ],
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked account updation is not allowed for your business type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED,
+        ],
+    ],
+
+    'testUpdateLinkedAccountConfigMutualFundDistributorMerchant' => [
+        'request' => [
+            'url' => '/la-merchants/email',
+            'method' => 'put',
+            'content' => [
+                'allow_reversals'    => true,
+                'accountId'          => 'acc_10000000000000'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked account updation is not allowed for your business type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED,
+        ],
+    ],
+
+
+    'testUpdateLinkedAccountBankAccountForMutualFundDistributorMerchant' => [
+        'request' => [
+            'method' => 'patch',
+            'content' => [
+                'beneficiary_name'  => 'Bobby Fischer Junior',
+                'account_number'    => '987698769876',
+                'ifsc_code'         => 'SBIN0000003',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Linked account updation is not allowed for your business type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED,
+        ],
+    ],
+
     'testBalanceConfigInTestAfterCreatedMerchant' => [
         'request'  => [
             'url'    => '/balance_configs',
@@ -1826,4 +1966,79 @@ return [
             ],
         ],
     ],
+
+    'testCreateLinkedAccountReferenceData' => [
+        'request' => [
+            'url' => '/la_reference_data',
+            'method' => 'post',
+            'content' => [
+                "la_reference_data" => [
+                    [
+                        "account_name" => "ABC Mutual Fund - Online Collection Account",
+                        "account_number"=> "123000000000000",
+                        "account_email" => "test+1@gmail.com",
+                        "beneficiary_name"=> "ABC Mutual Fund - Funds Collection Account",
+                        "business_name"=> "Test Asset Management Limited",
+                        "business_type"=> "private_limited",
+                        "dashboard_access"=> 0,
+                        "customer_refund_access"=> 0,
+                        "ifsc_code" => "HDFC0000060",
+                        "category" => "amc_bank_account"
+                    ],
+                    [
+                        "account_name"=>"XAY Mutual Fund - Online Collection Account",
+                        "account_number"=> "000000000000123",
+                        "account_email"=> "test+2@gmail.com",
+                        "beneficiary_name"=> "XAY Mutual Fund - Online Collection Account",
+                        "business_name"=> "Test Asset Management Limited",
+                        "business_type"=> "private_limited",
+                        "dashboard_access"=> 0,
+                        "customer_refund_access"=> 0,
+                        "ifsc_code"=> "UTIB0054004"
+                    ],
+                    [
+                        "account_name"=>"XAY Mutual Fund - Online Collection Account",
+                        "account_number"=> "000000000000123",
+                        "account_email"=> "test+2@gmail.com",
+                        "beneficiary_name"=> "XAY Mutual Fund - Online Collection Account",
+                        "business_name"=> "Test Asset Management Limited",
+                        "business_type"=> "private_limited",
+                        "dashboard_access"=> 0,
+                        "customer_refund_access"=> 0,
+                        "ifsc_code"=> "UTIB0054004",
+                        "category" => "wrong_category",
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "success" => 1,
+                "failure" => 2,
+                "total"  => 3,
+                "data"   => [
+                    "successful" => [
+                        "Test Asset Management Limited",
+                    ],
+
+                    "failed" => [
+                        "Test Asset Management Limited",
+                        "Test Asset Management Limited",
+                    ],
+                ]
+            ]
+        ]
+    ],
+
+    'testAmcLinkedAccountCreateForMutualFundDistributorMerchantAdminApi' => [
+        'request' => [
+            'url'    => '/la_amc',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content'  => [
+                'message'  => 'Request processing'
+            ]
+        ]
+    ]
 ];

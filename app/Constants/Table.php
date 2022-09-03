@@ -467,6 +467,8 @@ class Table
     const ROLE_ACCESS_POLICY_MAP        = 'role_access_policy_map';
     const ACCESS_CONTROL_HISTORY_LOGS   = 'access_control_history_logs';
 
+    const LINKED_ACCOUNT_REFERENCE_DATA = 'linked_account_reference_data';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

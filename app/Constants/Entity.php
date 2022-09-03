@@ -727,6 +727,8 @@ class Entity
 
     const GATEWAY_TERMINAL_ID = 'gateway_terminal_id';
 
+    const LINKED_ACCOUNT_REFERENCE_DATA = 'linked_account_reference_data';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes
@@ -1136,6 +1138,9 @@ class Entity
         self::EARLY_SETTLEMENT_FEATURE_PERIOD   => \RZP\Models\Settlement\EarlySettlementFeaturePeriod::class,
 
         self::MERCHANT_NOTIFICATION_CONFIG      => \RZP\Models\Merchant\MerchantNotificationConfig::class,
+
+        self::LINKED_ACCOUNT_REFERENCE_DATA     => \RZP\Models\Merchant\LinkedAccountReferenceData::class,
+
 
         // gateways
         self::EBS                    => \RZP\Gateway\Ebs::class,

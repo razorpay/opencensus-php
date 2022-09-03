@@ -18,6 +18,7 @@ use RZP\Services\RazorXClient;
 use Razorpay\OAuth\Application;
 use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
+use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Pricing\DefaultPlan;
 use Illuminate\Support\Facades\Redis;
@@ -38,6 +39,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Models\Merchant\Detail\Status as MerchantDetailStatus;
@@ -1559,6 +1561,116 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(2, $users->count());
     }
 
+    public function testUpdateLinkedAccountEmailMutualFundDistributorMerchant()
+    {
+        Mail::fake();
+
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth();
+
+        $account = $account->toArrayPublic();
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $this->startTest();
+    }
+
+    public function testUpdateLinkedAccountConfigMutualFundDistributorMerchant()
+    {
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $account = $this->fixtures->create('merchant', ['parent_id' => '10000000000000']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $account['id'];
+
+        $this->startTest();
+    }
+
+    public function testUpdateLinkedAccountBankAccountForMutualFundDistributorMerchant()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace', 'la_bank_account_update']);
+
+        $testData = $this->testData['testCreateLinkedAccountOnProxyAuth'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $id = $response['id'];
+
+        $this->fixtures->merchant->activate($id);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/beta/accounts/acc_' . $id . '/bank_account';
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreateAutomaticAmcLinkedAccountCreationForMutualFundDistributorMerchant()
+    {
+        $this->createLinkedAccountReferenceData();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $request = [
+            'url'     => '/merchants/me/features',
+            'method'  => 'post',
+            'content' => [
+                "features"    => [
+                     'marketplace' => 1
+                ],
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'test@razorpay.com',
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $linkedAccount = $this->getLastEntity(Constants\Entity::MERCHANT, true);
+
+        $linkedAccountDetail = $this->getLastEntity(Constants\Entity::MERCHANT_DETAIL, true);
+
+        $this->assertEquals("Test Asset Management Limited", $linkedAccount['name']);
+
+        $this->assertEquals("test+1@gmail.com", $linkedAccount['email']);
+
+        $this->assertEquals("Test Asset Management Limited", $linkedAccountDetail['business_name']);
+
+        $this->assertEquals("123000000000000", $linkedAccountDetail['bank_account_number']);
+
+        $this->assertEquals("UTIB0000004", $linkedAccountDetail['bank_branch_ifsc']);
+    }
+
     public function testCreateMarketplaceLinkedAccountWithAlreadyExistingUser()
     {
         Mail::fake();
@@ -2612,6 +2724,36 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('late_auth_'.$this->merchantId, $testConfig['name']);
     }
 
+    public function testCreateLinkedAccountForMutualFundDistributorMerchant()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMarketplaceLinkedAccountForMutualFundDistributorMerchant()
+    {
+        $user = $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['user_id'] = $user['id'];
+
+        $this->startTest();
+    }
+
     protected function mockLedgerSnsPush()
     {
         $sns = \Mockery::mock('RZP\Services\Aws\Sns');
@@ -2691,5 +2833,87 @@ class MerchantCreateTest extends TestCase
 
         $splitzMock = $this->getSplitzMock();
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('K1ZaAGS9JfAUHj'))->andReturn($output);
+    }
+
+    public function testCreateLinkedAccountReferenceData()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $upsertPerm = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::LINKED_ACCOUNT_REFERENCE_DATA_CREATE]);
+
+        $role->permissions()->attach($upsertPerm->getId());
+
+        $this->startTest();
+    }
+
+    public function testAmcLinkedAccountCreateForMutualFundDistributorMerchantAdminApi()
+    {
+        $this->createLinkedAccountReferenceData();
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $this->addPermissionToBaAdmin(Permission\Name::AMC_LINKED_ACCOUNT_CREATION);
+
+        $this->createUserMerchantMapping('10000000000000', 'owner');
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'],
+            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2']]);
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $merchantNotMarketplace = $this->fixtures->create('merchant');
+
+        $this->testData[__FUNCTION__]['request']['content']['merchant_ids'] = ['10000000000000', $merchantNotMarketplace->getId()];
+
+        $this->startTest();
+
+        $linkedAccount = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals($linkedAccount['name'],'Test Asset Management Limited' );
+
+        $this->assertEquals($linkedAccount['parent_id'],'10000000000000' );
+    }
+
+    protected function createLinkedAccountReferenceData()
+    {
+        $input = [
+            "account_name" => "ABC Mutual Fund - Online Collection Account",
+            "account_number"=> "123000000000000",
+            "account_email" => "test+1@gmail.com",
+            "beneficiary_name"=> "ABC Mutual Fund - Funds Collection Account",
+            "business_name"=> "Test Asset Management Limited",
+            "business_type"=> "private_limited",
+            "dashboard_access"=> 0,
+            "customer_refund_access"=> 0,
+            "ifsc_code" => "UTIB0000004",
+            "category" => "amc_bank_account"
+        ];
+
+        return $this->fixtures->create('linked_account_reference_data', $input);
+    }
+
+    protected function addPermissionToBaAdmin(string $permissionName): void
+    {
+        $admin = $this->ba->getAdmin();
+
+        if ($admin->hasPermission($permissionName) === true)
+        {
+            return;
+        }
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($perm->getId());
     }
 }

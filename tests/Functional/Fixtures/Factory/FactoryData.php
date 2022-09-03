@@ -2210,5 +2210,19 @@ final class FactoryData
         $factory(\RZP\Models\Merchant\Slab\Entity::class, [
             'id'        => $faker->uniqueid,
         ]);
+
+        $factory(\RZP\Models\Merchant\LinkedAccountReferenceData\Entity::class, [
+                "id"               => $faker->uniqueid,
+                "account_name"     => "ABC Mutual Fund - Online Collection Account",
+                "account_number"   => "123000000000000",
+                "account_email"    => "test+1@gmail.com",
+                "beneficiary_name"  => "ABC Mutual Fund - Funds Collection Account",
+                "business_name"    => "Test Asset Management Limited",
+                "business_type"    => "private_limited",
+                "dashboard_access" => 0,
+                "ifsc_code"        => "HDFC0000060",
+                "category"         => "amc_bank_account",
+               "customer_refund_access"    => 0,
+        ]);
     }
 }

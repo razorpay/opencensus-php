@@ -132,6 +132,7 @@ class Constants
     const POLICY_URL          = 'policy_url';
     const WEBSITES            = 'websites';
     const STANDARD            = 'standard';
+    const MERCHANT_IDS        = 'merchant_ids';
 
     const CUSTOMER_FACING_BUSINESS_NAME = 'customer_facing_business_name';
 

@@ -785,6 +785,11 @@ class Name
 
     const PAYMENT_LINKS_OPS_BATCH_CANCEL      = 'payment_links_ops_batch_cancel';
 
+    // linked account data reference Permission
+
+    const LINKED_ACCOUNT_REFERENCE_DATA_CREATE       = 'linked_account_reference_data_create';
+    const AMC_LINKED_ACCOUNT_CREATION                = 'amc_linked_account_creation';
+
     // Dedupe Permission
     const VIEW_MERCHANT_DEDUPE                = 'view_merchant_dedupe';
     const SUB_MERCHANT_DEDUPE                 = 'submerchant_dedupe';

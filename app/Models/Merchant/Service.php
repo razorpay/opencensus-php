@@ -595,7 +595,11 @@ class Service extends Base\Service
             );
         }
 
-        (new Validator())->validateInput('la_bank_account_update', $input);
+        $validator = new Validator();
+
+        $validator->validateInput('la_bank_account_update', $input);
+
+        $validator->validateLinkedAccountUpdation($this->merchant);
 
         return $this->mutex->acquireAndReleaseStrict(
             sprintf(self::LINKED_ACCOUNT_BANK_ACCOUNT_UPDATE, $id),
@@ -6728,7 +6732,13 @@ class Service extends Base\Service
     {
         $merchant = $this->merchant;
 
-        (new Validator)->validateLinkedAccount($merchant);
+        $validator = new Validator;
+
+        $validator->validateLinkedAccount($merchant);
+
+        $parentMerchant = $merchant->parent;
+
+        $validator-> validateLinkedAccountUpdation($parentMerchant);
 
         if (empty($input['email']) === false)
         {
@@ -6762,7 +6772,13 @@ class Service extends Base\Service
     {
         $merchant = $this->auth->getMerchant();
 
-        (new Validator)->validateLinkedAccount($merchant);
+        $validator = new Validator;
+
+        $validator->validateLinkedAccount($merchant);
+
+        $parentMerchant = $merchant->parent;
+
+        $validator->validateLinkedAccountUpdation($parentMerchant);
 
         if (isset($input['dashboard_access']) === true)
         {

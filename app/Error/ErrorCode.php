@@ -2793,6 +2793,9 @@ class ErrorCode
 
     const BAD_REQUEST_REFUND_AMOUNT_EXCEEDS_PAYMENT_AMOUNT                          = 'BAD_REQUEST_REFUND_AMOUNT_EXCEEDS_PAYMENT_AMOUNT';
 
+    const BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED                          = "BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED";
+    const BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED                          = "BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED";
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

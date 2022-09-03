@@ -6,12 +6,14 @@ use RZP\Exception;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\Transfers\AutoLinkedAccountCreation;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
+use RZP\Models\Merchant\LinkedAccountReferenceData;
 
 class Core extends Merchant\Core
 {
@@ -253,6 +255,120 @@ class Core extends Merchant\Core
     {
         (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
         (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
+    }
+
+    public function createAMCLinkedAccountViaAdmin(array $merchantIds)
+    {
+        foreach($merchantIds as $merchantId)
+        {
+            try
+            {
+                AutoLinkedAccountCreation::dispatch($this->mode, $merchantId);
+            }
+            catch(\Exception $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::AMC_LINKED_ACCOUNT_CREATION_FAILED_VIA_ADMIN);
+            }
+        }
+
+        return [
+            "message"  => "Request processing"
+        ];
+    }
+
+    public function createAutoAMCAccountsForMFDMerchants(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $validator = (new Validator());
+
+        $validator->validateLinkedAccountCreation(true, $merchant);
+
+        $validator->validateAMCLinkedAccountCreationAllowed($merchant);
+
+        $failedLA = [];
+
+        $successfulLA = [];
+
+        $amcBankAccounts = $this->repo->linked_account_reference_data->fetchAllByCategory(LinkedAccountReferenceData\Category::AMC_BANK_ACCOUNT);
+
+        foreach ($amcBankAccounts as $amcBankAccount)
+        {
+            $input = $this->preProcessAMCBankAccountDetailsToCreateLinkedAccount($amcBankAccount);
+
+            try {
+                $this->createLinkedAccount($input, $merchant);
+
+                $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_SUCCESSFUL,[
+                    Entity::MERCHANT_ID     => $merchantId,
+                    Entity::BUSINESS_NAME   => $amcBankAccount[Entity::BUSINESS_NAME]
+                ]);
+
+                array_push($successfulLA, $amcBankAccount->getBusinessName());
+            }
+            catch( \Exception $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::AMC_LINKED_ACCOUNT_CREATION_FAILED, [
+                    'error' => $e,
+                    'amc_business_name' => $amcBankAccount->getBusinessName(),
+                    Entity::MERCHANT_ID => $merchantId
+                    ]);
+
+                array_push($failedLA, $amcBankAccount->getBusinessName());
+            }
+        }
+
+        $response = [
+            'successful'  =>
+                [
+                    'total' => count($successfulLA),
+                    'linked_accounts' => $successfulLA
+                ],
+            'failed'      =>
+                [
+                    'total' => count($failedLA),
+                    'linked_accounts' => $failedLA
+                ],
+            ];
+
+        $this->trace->info(TraceCode::AUTO_AMC_LINKED_ACCOUNT_CREATE_RESULT, [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            "result"            => $response
+        ]);
+
+        return $response;
+
+    }
+
+    protected function preProcessAMCBankAccountDetailsToCreateLinkedAccount(LinkedAccountReferenceData\Entity $laRefData)
+    {
+        $input = [];
+
+        $input[Entity::NAME] = $laRefData->getBusinessName();
+
+        $input['email'] = $laRefData->getAccountEmail();
+
+        $input[Entity::BANK_ACCOUNT] = [
+
+            Entity::IFSC_CODE         => $laRefData->getIfscCode(),
+
+            Entity::BENEFICIARY_NAME  => $laRefData->getBeneficiaryName(),
+
+            Entity::ACCOUNT_NUMBER   => $laRefData->getAccountNumber(),
+        ];
+
+        $input[Entity::ACCOUNT_DETAILS] = [
+
+            Entity::BUSINESS_NAME => $laRefData->getBusinessName(),
+
+            Entity::BUSINESS_TYPE => $laRefData->getBusinessType()
+        ];
+
+        $input[Entity::TNC_ACCEPTED]  = $laRefData->getTncAccepted();
+
+        return $input;
     }
 
     protected function submitDetailsAndActivateIfApplicable(Merchant\Entity $partner, Merchant\Entity $subMerchant)

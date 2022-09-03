@@ -10,6 +10,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Notify;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\Tracer;
+use RZP\Jobs\Transfers\AutoLinkedAccountCreation;
 
 class Service extends Merchant\Service
 {
@@ -233,5 +234,16 @@ class Service extends Merchant\Service
         return [
             'linked_account_ids' => $linkedAccounts->getIds()
         ];
+    }
+
+    public function createAMCLinkedAccountViaAdmin(array $input)
+    {
+        $this->trace->info(TraceCode::AMC_LINKED_ACCOUNT_CREATION_INITIATED_VIA_ADMIN);
+
+        (new Validator())->validateInput('createAMCLinkedAccountViaAdmin', $input);
+
+        $merchantIds = array_get($input, Constants::MERCHANT_IDS);
+
+        return $this->core()->createAMCLinkedAccountViaAdmin($merchantIds);
     }
 }

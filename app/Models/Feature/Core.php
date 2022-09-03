@@ -37,6 +37,7 @@ use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Jobs\Transfers\AutoLinkedAccountCreation;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
@@ -284,6 +285,11 @@ class Core extends Base\Core
             }
 
             (new Token\Core())->onboardMerchant($merchant, [$tokenizationGateways]);
+        }
+
+        if($feature->getName() === Feature::MARKETPLACE)
+        {
+            AutoLinkedAccountCreation::dispatch($this->mode, $entityId);
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

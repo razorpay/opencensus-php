@@ -1325,6 +1325,8 @@ class Validator extends Base\Validator
         }
         else
         {
+            $this->validateLinkedAccountCreation($linkedAccount, $partner);
+
             $isUrlValidationEnabled = (new Core())->isRazorxExperimentEnable(
                 $partner->getId(),
                 RazorxTreatment::URL_VALIDATION_FOR_LINKED_ACCOUNT_NAME
@@ -1333,6 +1335,31 @@ class Validator extends Base\Validator
             {
                 $this->validateLinkedAccountNameInput('linked_account_name', array_only($input, Entity::NAME));
             }
+        }
+    }
+
+    public function validateLinkedAccountCreation(bool $linkedAccount, $merchant)
+    {
+        if(($linkedAccount === true) and
+            ($merchant->getCategory() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) and
+            ($merchant->getCategory2() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) and
+            (app('request.ctx')->getRoute() !== 'merchant_features_update' and app('request.ctx')->getRoute() !== 'amc_linked_account_create'))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED
+            );
+        }
+    }
+
+    public function validateLinkedAccountUpdation(Entity $merchant)
+    {
+        if($merchant->getCategory() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY] and
+            $merchant->getCategory2() === Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]
+            )
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_UPDATION_NOT_ALLOWED
+            );
         }
     }
 

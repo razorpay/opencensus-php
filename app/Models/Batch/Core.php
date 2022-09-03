@@ -50,6 +50,8 @@ class Core extends Base\Core
 
         $this->validatePermissionForBatchType($input);
 
+        (new Validator)->validateLinkedAccountBatchActionAllowed($input, $merchant);
+
         $batch = (new Entity)->build($input);
 
         $batch->creator()->associate($creator);
@@ -135,6 +137,8 @@ class Core extends Base\Core
     public function storeAndValidateInputFile(array $input, Merchant\Entity $merchant): array
     {
         $this->trace->info(TraceCode::BATCH_FILE_VALIDATE_REQUEST, $input);
+
+        (new Validator)->validateLinkedAccountBatchActionAllowed($input, $merchant);
 
         $batch = (new Entity)->build($input, 'validate');
 
