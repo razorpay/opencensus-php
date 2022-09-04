@@ -53,6 +53,7 @@ const SettingsForm = ({ settings, updateSettings, merchantId }) => {
       list_promotions: `${domain}/wp-json/1cc/v1/coupon/list`,
       apply_promotion: `${domain}/wp-json/1cc/v1/coupon/apply`,
       shipping_info: `${domain}/wp-json/1cc/v1/shipping/shipping-info`,
+      domain_url: domain,
     });
     analyticsTrack({
       objectName: '1ccclickednextonplatformsettings',

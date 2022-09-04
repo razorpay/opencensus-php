@@ -44,9 +44,11 @@ const SettingsForm = ({ settings, updateSettings, merchantId }) => {
   );
 
   const onSave = useCallback(() => {
+    const storeId = `${shopId}.myshopify.com`;
     updateSettings({
       platform: PLATFORMS.VALUES.SHOPIFY,
-      shop_id: `${shopId}.myshopify.com`,
+      shop_id: storeId,
+      domain_url: `https://${storeId}`,
       list_promotions: ``,
       apply_promotion: ``,
       shipping_info: ``,
