@@ -19,7 +19,7 @@ class FileGenerationInstrumentation extends Job
 
     protected $queueConfigKey = self::QUEUE_NAME_KEY;
 
-    public $timeout = 3600; // 1 hour
+    public $timeout = 6 * 3600; // 6 hours timeout for  processing large citi data
 
     public function __construct(string $gatewayFileId, string $mode)
     {
