@@ -22,11 +22,14 @@ class PayoutsAutoExpire extends Job
     {
         parent::handle();
 
-        $this->trace->info(
-            TraceCode::PAYOUT_AUTO_EXPIRY_JOB_STARTED,
+        $traceData =
             [
                 'payout_id' => $this->payoutId,
-            ]
+            ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_AUTO_EXPIRY_JOB_STARTED,
+            $traceData
             );
 
         try
