@@ -530,8 +530,8 @@ class Service extends Base\Service
             $merchantEmail = (new EmailService())->proxyGetSupportDetails($merchant);
 
             $response[Entity::ADDITIONAL_DATA] = [
-                Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? '',
-                Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? ''
+                Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? null,
+                Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? null
             ];
 
         }
@@ -864,7 +864,7 @@ class Service extends Base\Service
                     break;
 
                 case Status::ACTIVATED:
-                    $status = 'Approved';
+                    $status = 'approved';
                     break;
 
                 case Status::REJECTED:
@@ -1309,6 +1309,8 @@ class Service extends Base\Service
                 ]
             ];
 
+            $communicationArgs['params']['email_content'] = '';
+
             if (empty($merchant->getEmail()) === false)
             {
                 $communicationArgs['params']['email_content'] = " We have also sent you an email with these details.";
@@ -1432,6 +1434,8 @@ class Service extends Base\Service
                     'date'         => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->addDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
                 ]
             ];
+
+            $communicationArgs['params']['email_content'] = '';
 
             if (empty($merchant->getEmail()) === false)
             {
