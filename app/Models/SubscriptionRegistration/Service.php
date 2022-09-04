@@ -807,8 +807,8 @@ class Service extends Base\Service
 
         $subscriptionRegistration->getValidator()->validateTokenToRetry($token);
 
-        $payments = $token->nachPayments;
-
+        $payments = $this->repo->payment->getPaymentCountByToken($token->getId())->get();
+        
         if (count($payments) !== 1)
         {
             throw new Exception\LogicException(
