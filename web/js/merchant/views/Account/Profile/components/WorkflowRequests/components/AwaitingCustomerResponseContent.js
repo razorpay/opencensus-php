@@ -13,7 +13,7 @@ const AwaitingCustomerResponseContent = ({
         <div className="title">Action required</div>
         We need a few more details to change your bank account - Please submit the required details
         -
-        <button className="btn-link" onClick={onReplyClick ? onReplyClick : null}>
+        <button className="btn-link" onClick={onReplyClick}>
           Submit details
         </button>
       </div>
@@ -30,7 +30,7 @@ const AwaitingCustomerResponseContent = ({
     <div className="workflow-status rejected">
       {needsClarificationMessage}
       {showAddReplyButton && (
-        <button className="btn btn-link" onClick={onReplyClick ? onReplyClick : null}>
+        <button className="btn btn-link" onClick={onReplyClick}>
           Add Reply
         </button>
       )}
