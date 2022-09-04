@@ -28,9 +28,10 @@ use RZP\Models\DeviceDetail;
 use RZP\Mail\User as UserMail;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
+use RZP\Exception\BaseException;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -1168,9 +1169,12 @@ class Service extends Base\Service
 
                 return array_merge($responseData, $responseTokenArray);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::MOBILE_OAUTH_TOKEN_GENERATION_ERROR);
+
+                throw new ServerErrorException(
+                    "Failed to complete request", ErrorCode::SERVER_ERROR, null, $e);
             }
         }
 

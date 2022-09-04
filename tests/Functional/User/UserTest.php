@@ -1464,6 +1464,44 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testLoginForMobileOauthWithError()
+    {
+        $user = $this->fixtures->create('user',['password' => 'hello123']);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $merchantId = $merchant->getId();
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $content = [
+            'email'                 => $user['email'],
+            'password'              => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        $testData['request']['content'] = $content;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->setAuthServiceMockForGetApplicationForMobileApp($merchantId);
+
+        $this->setAuthServiceMockForPostApplicationForMobileApp($merchantId);
+
+        $this->startTest();
+    }
+
     public function testOauthLogout()
     {
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);

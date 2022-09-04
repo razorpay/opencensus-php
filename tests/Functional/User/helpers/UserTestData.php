@@ -651,6 +651,26 @@ return [
         ],
     ],
 
+    'testLoginForMobileOauthWithError' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'content' => [],
+            'server'     => [
+                'HTTP_X-Mobile-Oauth' => 'true',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\ServerErrorException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
+        ],
+    ],
+
     'testMobileLoginWithPassword' => [
         'request' => [
             'url'     => '/users/login',
