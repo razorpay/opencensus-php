@@ -12,9 +12,22 @@ class Repository extends Base\Repository
 
     public function findByPaymentId($id)
     {
-        return $this->newQuery()
-                    ->where('payment_id', '=', $id)
-                    ->get();
+        $hotData = $this->newQuery()
+                        ->where('payment_id', '=', $id)
+                        ->get();
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $hotData;
+        }
+
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $warmData = $this->newQueryWithConnection($connectionType)
+                         ->where('payment_id', '=', $id)
+                         ->get();
+
+        return $this->mergeCollectionsBasedOnKey($hotData, $warmData, 'id');
     }
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
@@ -79,52 +92,46 @@ class Repository extends Base\Repository
 
     public function fetchByPaymentIdsAndAction($paymentIds, $action)
     {
-        $data = $this->newQuery()
-                    ->whereIn('payment_id', $paymentIds)
-                    ->where('action', '=', $action)
-                    ->get();
+        $hotData = $this->newQuery()
+                        ->whereIn('payment_id', $paymentIds)
+                        ->where('action', '=', $action)
+                        ->get();
 
         if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
         {
-            return $data;
+            return $hotData;
         }
 
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-            $data = $this->newQueryWithConnection($connectionType)
-                ->whereIn('payment_id', $paymentIds)
-                ->where('action', '=', $action)
-                ->get();
-        }
+        $warmData = $this->newQueryWithConnection($connectionType)
+                         ->whereIn('payment_id', $paymentIds)
+                         ->where('action', '=', $action)
+                         ->get();
 
-        return $data;
+        return $this->mergeCollectionsBasedOnKey($hotData, $warmData, 'id');
     }
 
     public function fetchByPaymentIdsAndActions($paymentIds, $actions)
     {
-        $data = $this->newQuery()
-                    ->whereIn('payment_id', $paymentIds)
-                    ->whereIn('action', $actions)
-                    ->get();
+        $hotData = $this->newQuery()
+                        ->whereIn('payment_id', $paymentIds)
+                        ->whereIn('action', $actions)
+                        ->get();
 
         if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
         {
-            return $data;
+            return $hotData;
         }
 
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
-            $data = $this->newQueryWithConnection($connectionType)
-                ->whereIn('payment_id', $paymentIds)
-                ->whereIn('action', $actions)
-                ->get();
-        }
+        $warmData = $this->newQueryWithConnection($connectionType)
+                         ->whereIn('payment_id', $paymentIds)
+                         ->whereIn('action', $actions)
+                         ->get();
 
-        return $data;
+        return $this->mergeCollectionsBasedOnKey($hotData, $warmData, 'id');
     }
 
     public function findByPaymentIdActionAndStatus(string $paymentId,
@@ -174,9 +181,25 @@ class Repository extends Base\Repository
 
     public function findByRefundId($refundId)
     {
-        return $this->newQuery()
-                    ->where(Entity::REFUND_ID, '=', $refundId)
-                    ->first();
+        $data = $this->newQuery()
+                     ->where(Entity::REFUND_ID, '=', $refundId)
+                     ->first();
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $data;
+        }
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                         ->where(Entity::REFUND_ID, '=', $refundId)
+                         ->first();
+        }
+
+        return $data;
     }
 
     public function findByRefundIdAndAction(string $refundId, string $action)
@@ -203,9 +226,25 @@ class Repository extends Base\Repository
 
     public function retrieveByPaymentIdOrFail($paymentId)
     {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->firstOrFail();
+        $query = $this->newQuery()->where(Entity::PAYMENT_ID, '=', $paymentId);
+
+        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
+        {
+            return $query->firstOrFail();
+        }
+
+        $data = $query->first();
+
+        if (empty($data) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $data = $this->newQueryWithConnection($connectionType)
+                         ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                         ->firstOrFail();
+        }
+
+        return $data;
     }
 
     public function findByPaymentIdAndActionGetLastOrFail($paymentId, $action)

@@ -18,6 +18,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
 use RZP\Models\Base\Collection;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
@@ -1345,4 +1346,37 @@ class Repository extends \Razorpay\Spine\Repository
         return $data->get();
     }
 
+    /**
+     * mergeCollectionsBasedOnKey : Merges collection c2 into collection c1 based using $key in both collections items
+     * as primary key. If a c2 item with same $key => $value is present in c1, c2 item will not be pushed during merge
+     *
+     * @param PublicCollection $c1
+     * @param PublicCollection $c2
+     * @param string $key
+     * @return PublicCollection
+     */
+    public function mergeCollectionsBasedOnKey(PublicCollection $c1, PublicCollection $c2, string $key): PublicCollection
+    {
+        $combinedItems = $keyStore = [];
+
+        foreach ($c1->toArrayWithItems()[PublicCollection::ITEMS] as $item)
+        {
+            $combinedItems[] = $item;
+
+            if (empty($item[$key]) === false)
+            {
+                $keyStore[$item[$key]] = true;
+            }
+        }
+
+        foreach ($c2->toArrayWithItems()[PublicCollection::ITEMS] as $item)
+        {
+            if (empty($keyStore[$item[$key]] ?? false) === true)
+            {
+                $combinedItems[] = $item;
+            }
+        }
+
+        return new PublicCollection($combinedItems);
+    }
 }
