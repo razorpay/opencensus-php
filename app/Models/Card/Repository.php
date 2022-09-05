@@ -333,7 +333,11 @@ class Repository extends Base\Repository
         $cardsIdColumn = $this->repo->card->dbColumn(Entity::ID);
         $fundAccountIdForeignColumn = $this->repo->fund_account->dbColumn(FundAccount\Entity::ACCOUNT_ID);
 
-        $query->from(\DB::raw(Table::CARD.' USE INDEX (cards_created_at_index)'));
+        if (!isset($params[$this->individualEntityFetchKey]) || $params[$this->individualEntityFetchKey] != true)
+        {
+            // only apply created_at index while fetching list of entities and not while fetching a single entity
+            $query->from(\DB::raw(Table::CARD.' USE INDEX (cards_created_at_index)'));
+        }
 
         return $query->select(Table::CARD . ".*")
                     ->join($fundAccount, $cardsIdColumn, '=', $fundAccountIdForeignColumn)

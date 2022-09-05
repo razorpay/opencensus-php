@@ -119,6 +119,10 @@ trait RepositoryFetch
 
     protected $merchantIdRequiredForMultipleFetch = true;
 
+    protected $individualEntityFetchKey = "isIndividualEntityFetch";
+
+    protected $keysToSkipForQueryBuild = [];
+
     public function fetchAndReturnPublicArrayWithExpand($id, $merchant, array $params)
     {
         return $this->findByPublicIdAndMerchant($id, $merchant, $params)->toArrayPublicWithExpand();
@@ -534,6 +538,11 @@ trait RepositoryFetch
     {
         foreach ($params as $key => $value)
         {
+            if (in_array($key, $this->keysToSkipForQueryBuild, true))
+            {
+                return;
+            }
+
             $func = 'addQueryParam' . studly_case($key);
 
             if (method_exists($this, $func))
@@ -993,7 +1002,7 @@ trait RepositoryFetch
             $query = $this->newQueryWithConnection($this->getConnectionFromType($connectionType))->with($expands);
         }
 
-        $this->attachRoleBasedQueryParams($params);
+        $this->attachRoleBasedQueryParams($params, true);
 
         $this->buildQueryWithParams($query, $params);
 
@@ -1054,8 +1063,9 @@ trait RepositoryFetch
 
     /**
      * @param array $params
+     * @param bool $isIndividualEntityFetch
      */
-    protected function attachRoleBasedQueryParams(array &$params)
+    protected function attachRoleBasedQueryParams(array &$params, bool $isIndividualEntityFetch = false)
     {
         $basicAuth = app('basicauth');
 
@@ -1076,6 +1086,12 @@ trait RepositoryFetch
                     $params[$key] = $value;
                 }
             }
+
+            // to differentiate that the call was made to fetch individual entity on admin dashboard
+            $params[$this->individualEntityFetchKey] = $isIndividualEntityFetch;
+
+            // push the individual entity fetch key in the list of keys which should be skipped while building db query params
+            array_push($this->keysToSkipForQueryBuild, $this->individualEntityFetchKey);
         }
     }
 
