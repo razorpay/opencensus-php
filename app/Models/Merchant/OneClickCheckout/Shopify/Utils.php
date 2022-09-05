@@ -19,19 +19,16 @@ class Utils
 
         foreach ($items as $item)
         {
-            $properties = $item['properties'];
+            $properties = $item['properties'] ?? [];
 
             $attributes = [];
 
-            if ($properties !== null)
+            foreach ($properties as $key => $value)
             {
-                foreach ($properties as $key => $value)
-                {
-                    $attributes[] = [
-                        'key'   => $key,
-                        'value' => $value
-                    ];
-                }
+                $attributes[] = [
+                    'key'   => $key,
+                    'value' => $value
+                ];
             }
 
             $lineItems[] = [
