@@ -6881,7 +6881,7 @@ class Service extends Base\Service
             $associatedAccounts = $merchant->accounts()->get()->getIds();
             $this->trace->info(TraceCode::ASSOCIATED_ACCOUNTS_FOR_MARKET_PLACE_FEATURE_MERCHANT,
                 [
-                    'partner_id'          => $merchantId,
+                    'partner_id'           => $merchantId,
                     'associated_accounts'  => $associatedAccounts
                 ]
             );
@@ -6895,7 +6895,6 @@ class Service extends Base\Service
             $this->trace->info(TraceCode::ASSOCIATED_MERCHANT_DATA_FOR_PARTNER_MERCHANTS,
                 [
                     'partner_id'            => $merchantId,
-                    'merchants'             => $submerchants,
                     'associated_accounts'   => $associatedAccounts
                 ]
             );

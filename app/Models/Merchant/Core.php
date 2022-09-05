@@ -4810,7 +4810,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS_LIST,[
             'partner_id'            => $partner->getId(),
-            'merchants'             => $merchants,
+            'merchants'             => $merchants->getIds(),
             'apply_product_filter'  => $applyProductFilter,
             'product_usage'         => $checkingProductUsage
         ]);
@@ -4863,7 +4863,7 @@ class Core extends Base\Core
             [
                 'partner_id'      => $partner->getId(),
                 'product'         => $product,
-                'merchants'       => $merchants
+                'merchants'       => $merchants->getIds()
             ]
         );
 
