@@ -8792,7 +8792,6 @@ class Route
         'vendor_settlement_vendor_balance'             => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_settlement_execute_multiple'           => Permission::CREATE_PAYOUT,
         'vendor_settlement_mark_as_paid'               => Permission::EDIT_VENDOR_PAYMENTS,
-        'vendor_payment_get_tds_categories'            => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_summary'                       => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_edit'                          => Permission::EDIT_VENDOR_PAYMENTS,
         'vendor_payment_cancel'                        => Permission::CANCEL_VENDOR_PAYMENTS,
