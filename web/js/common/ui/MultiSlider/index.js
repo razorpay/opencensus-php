@@ -1,15 +1,16 @@
-import { Component } from 'react';
+import { Component, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { emptySliderStack } from 'merchant_common/reducers/multiSlider';
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
-import { MultiSlider__Overlay, MultiSliderAttributes } from './MultiSliderStyle';
+import { MultiSliderOverlay, multiSliderAttributes } from './MultiSliderStyle';
 import MultiSliderComponent from './MultiSlider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
 
 @withRouter
 @connect((state) => state.multiSlider, { emptySliderStack })
-export default class MultiSlider extends Component {
+class MultiSlider extends Component {
   disableScrolling = () => {
     document.body.style.height = '100%';
     document.body.style.overflow = 'hidden';
@@ -56,12 +57,12 @@ export default class MultiSlider extends Component {
           onEntered={this.handleEnter}
           onExit={this.handleExit}
         >
-          <MultiSlider__Overlay />
+          <MultiSliderOverlay />
         </CSSTransition>
         <TransitionGroup component={null}>
           {sliderStack.map(
             ({ id, component, size, transitionSpeed, position, onClose, classString }) => {
-              const { width, transitionDuration } = MultiSliderAttributes({
+              const { width, transitionDuration } = multiSliderAttributes({
                 size,
                 transitionSpeed,
               });
@@ -89,3 +90,26 @@ export default class MultiSlider extends Component {
     );
   }
 }
+
+const MultiSliderFallback = connect(null, { showNotification: showNotificationProp })(
+  ({ showNotification }) => {
+    useEffect(() => {
+      showNotification({
+        type: 'error',
+        message: 'Error in opening multi slider',
+      });
+    }, []);
+
+    return null;
+  },
+);
+
+const MultiSliderWrapper = () => {
+  return (
+    <ErrorBoundary resetOnProps FallbackComponent={MultiSliderFallback}>
+      <MultiSlider />
+    </ErrorBoundary>
+  );
+};
+
+export default MultiSliderWrapper;

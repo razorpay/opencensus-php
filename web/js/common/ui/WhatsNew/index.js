@@ -32,7 +32,7 @@ import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnou
 import Loader from 'common/ui/Loader';
 import { analyticsTrack } from 'common/utils/analytics';
 
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import lazy from 'merchant/routes/LazyLoader';
 import './WhatsNew.styl';
@@ -516,7 +516,7 @@ class WhatsNew extends Component {
             </div>
           </div>
         </div>
-        <ErrorBoundary resetOnProps>
+        <GrowthAssetEB shouldShowDefaultFb>
           <div class="content-wrapper content-sm txn-details whats-new">
             <div class="panel panel-default SliderPanel">
               <div class="panel-heading">
@@ -533,7 +533,7 @@ class WhatsNew extends Component {
               </div>
             </div>
           </div>
-        </ErrorBoundary>
+        </GrowthAssetEB>
       </div>
     );
   }

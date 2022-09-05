@@ -9,6 +9,8 @@ import { fetchExclusiveOffer as fetchExclusiveOfferProp } from '../../../merchan
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+
 class NavFragment extends Component {
   constructor(props) {
     super(props);
@@ -71,26 +73,28 @@ class NavFragment extends Component {
 
     return (
       <React.Fragment>
-        <ShowWhen
-          // eslint-disable-next-line no-shadow
-          additionalCondition={(user) =>
-            showOFYNitroFlow ||
-            canShowOnboardingOffers ||
-            user.isProjectNitroCorporateCard ||
-            user.isProjectMoonshineEnabled ||
-            user.isProjectKeystoneCorporateCardsEnabled ||
-            user.isProjectKeystoneCashAdvanceEnabled ||
-            user.isICICILinkedCAFlowEnabled('offers-for-you') ||
-            user.isUCCapitalCardsOnlyCampaignEnabled ||
-            user.isUCCapitalLOCOnlyCampaignEnabled ||
-            shouldShowGSExclusiveOffers
-          }
-        >
-          <OffersForYou
-            canShowOnboardingOffers={canShowOnboardingOffers}
-            mtuOfferCount={mtuOfferCount}
-          />
-        </ShowWhen>
+        <GrowthAssetEB>
+          <ShowWhen
+            // eslint-disable-next-line no-shadow
+            additionalCondition={(user) =>
+              showOFYNitroFlow ||
+              canShowOnboardingOffers ||
+              user.isProjectNitroCorporateCard ||
+              user.isProjectMoonshineEnabled ||
+              user.isProjectKeystoneCorporateCardsEnabled ||
+              user.isProjectKeystoneCashAdvanceEnabled ||
+              user.isICICILinkedCAFlowEnabled('offers-for-you') ||
+              user.isUCCapitalCardsOnlyCampaignEnabled ||
+              user.isUCCapitalLOCOnlyCampaignEnabled ||
+              shouldShowGSExclusiveOffers
+            }
+          >
+            <OffersForYou
+              canShowOnboardingOffers={canShowOnboardingOffers}
+              mtuOfferCount={mtuOfferCount}
+            />
+          </ShowWhen>
+        </GrowthAssetEB>
         <li>
           <ModesDropdown
             mode={mode}

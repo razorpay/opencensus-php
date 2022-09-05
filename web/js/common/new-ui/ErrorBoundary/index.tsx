@@ -5,7 +5,7 @@ import errorService from '@razorpay/universe-utils/errorService';
 import { Ranks, Teams } from './constants'; // Failing to load in .ts format
 import { getTeamName } from 'common/new-ui/ErrorBoundary/utils';
 
-interface FallbackComponentProps extends React.FC<any> {
+export interface FallbackComponentProps extends React.FC<any> {
   eventId?: string | null;
 }
 

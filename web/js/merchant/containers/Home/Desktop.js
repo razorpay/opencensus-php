@@ -71,7 +71,7 @@ import CongratulatoryBanner from 'merchant/components/Announcements/Congratulato
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import ShowWhen from '../../components/ShowWhen';
 import EasterEgg from 'merchant/components/EasterEgg';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import M2MBanner from 'merchant/components/M2M/M2MBanner';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SupportRequest from 'merchant/components/Announcements/SupportRequest';
@@ -756,15 +756,11 @@ class AnalyticsDesktop extends Component {
           {this.props.can_refer ? <M2MBanner /> : null}
           {/* Announcement Banners End */}
           {/* TODO: Move announcement section to different file */}
-          <ErrorBoundary
-            FallbackComponent={() => {
-              return null;
-            }}
-          >
+          <GrowthAssetEB>
             {carouselItem.length ? (
               <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
             ) : null}
-          </ErrorBoundary>
+          </GrowthAssetEB>
 
           {/* add conditions to show product onboarding card */}
           {false && (

@@ -8,6 +8,7 @@ import { LoginCardArray } from '../data';
 import LoginCard from './LoginCard';
 import { fetchLoginCards, transformFetchLoginCardData } from '../../apis';
 import Loader from '../../../../js/common/components/Loader';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 
 const DefaultView = () => {
   const [loginCardArray, setLoginCardArray] = useState([]);
@@ -43,7 +44,7 @@ const DefaultView = () => {
   return (
     <Flex flexDirection="column">
       <View>
-        {!isFetchingLoginCardData ? LoginCards : <Loader />}
+        <GrowthAssetEB>{!isFetchingLoginCardData ? LoginCards : <Loader />}</GrowthAssetEB>
         <Space margin={[7, 0]}>
           <Flex>
             <View>

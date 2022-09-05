@@ -14,7 +14,7 @@ import { getItem, setItem } from 'common/utils/localStorage';
 import NavFragment from './NavFragment';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import StatusDetails from './StatusDetails/index';
 import { compose } from 'redux';
 import SupportRequestDropdown from './SupportRequestDropdown';
@@ -219,9 +219,11 @@ class HeaderNav extends Component {
                 {!showMobileNav && (
                   <NavFragment analytics={analytics} {...fragmentSpecificProps} {...commonProps} />
                 )}
-                <ShowWhen additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}>
-                  <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
-                </ShowWhen>
+                <GrowthAssetEB>
+                  <ShowWhen additionalCondition={() => user.isProjectNitroEnabled && showMobileNav}>
+                    <OffersForYou showMobileNav={showMobileNav} mtuOfferCount={mtuOfferCount} />
+                  </ShowWhen>
+                </GrowthAssetEB>
 
                 {/* Will uncomment later. Please dont block this from going to prod  */}
                 {!showMobileNav && user.isMobileSignupCareActive && (
@@ -233,7 +235,7 @@ class HeaderNav extends Component {
                   additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
                 >
                   <li id="whats-new-section">
-                    <ErrorBoundary FallbackComponent={ErrorFallbackComponent} resetOnProps>
+                    <GrowthAssetEB FallbackComponent={ErrorFallbackComponent}>
                       {user.isWhatsNewLazyEnabled ? (
                         <NotificationIcon
                           analytics={analytics}
@@ -253,7 +255,7 @@ class HeaderNav extends Component {
                           />
                         </ShowWhen>
                       )}
-                    </ErrorBoundary>
+                    </GrowthAssetEB>
                   </li>
                 </ShowWhen>
                 {user?.isOrgRZP && user?.isInternalStatusPageEnabled && (

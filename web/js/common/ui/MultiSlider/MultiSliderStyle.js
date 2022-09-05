@@ -42,12 +42,12 @@ export const MultiSlider__Component = styled.div.attrs((props) => ({
     z-index: 1110;
   }
 
-  @media(max-width: 650px) {
+  @media (max-width: 650px) {
     max-width: 92%;
   }
 `;
 
-export const MultiSlider__Overlay = styled.div`
+export const MultiSliderOverlay = styled.div`
   position: fixed;
   top: 51px;
   width: 100%;
@@ -73,7 +73,7 @@ export const MultiSlider__Overlay = styled.div`
   }
 `;
 
-export const MultiSliderAttributes = ({ size = 'medium', transitionSpeed = 'medium' }) => {
+export const multiSliderAttributes = ({ size = 'medium', transitionSpeed = 'medium' }) => {
   const widthOptions = {
     small: 400,
     medium: 480,
@@ -86,9 +86,9 @@ export const MultiSliderAttributes = ({ size = 'medium', transitionSpeed = 'medi
   };
 
   const style = {
-    width: widthOptions[size] || widthOptions['medium'],
+    width: widthOptions[size] || widthOptions.medium,
     transitionDuration:
-      transitionDurationOptions[transitionSpeed] || transitionDurationOptions['medium'],
+      transitionDurationOptions[transitionSpeed] || transitionDurationOptions.medium,
   };
 
   return style;

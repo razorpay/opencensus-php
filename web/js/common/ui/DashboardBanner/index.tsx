@@ -6,10 +6,8 @@ import BannerComponent from './BannerComponent';
 import { DashboardBannerProps } from './TypesDeclare/DashboardBannerTypes';
 import { getCTAArray } from './util';
 import { routeToRouteNameMap } from '../../../merchant/models/GrowthService/data';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import { withRouter } from 'react-router';
-
-const BannerFallbackComponent = () => null;
 
 const DashboardBanner = ({
   fetchBanners,
@@ -34,10 +32,10 @@ const DashboardBanner = ({
     });
   }
 
-  return <ErrorBoundary FallbackComponent={BannerFallbackComponent}>{contentToShow}</ErrorBoundary>;
+  return contentToShow;
 };
 
-export default compose<any>(
+const DashboardBannerWithCompose = compose<any>(
   withRouter,
   connect(
     (state) => ({
@@ -48,3 +46,13 @@ export default compose<any>(
     },
   ),
 )(DashboardBanner);
+
+const DashboardBannerWrapper = (): JSX.Element => {
+  return (
+    <GrowthAssetEB>
+      <DashboardBannerWithCompose />
+    </GrowthAssetEB>
+  );
+};
+
+export default DashboardBannerWrapper;

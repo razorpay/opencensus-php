@@ -41,6 +41,7 @@
     "js/common/ui/DashboardBanner",
     "js/common/ui/NotificationsDropdown/Neostone",
     "js/common/ui/GrowthCustomizeModal",
+    "js/common/ui/GrowthAssetEB.tsx",
     "js/common/ui/MwebExOfferCampaign",
     "js/merchant/views/Settings/PaymentMethods"
   ],

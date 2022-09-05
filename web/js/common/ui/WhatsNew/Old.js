@@ -28,7 +28,6 @@ import { analyticsTrack } from 'common/utils/analytics';
 
 import { openSlider } from 'merchant_common/reducers/slider';
 import Slider from 'common/ui/Slider';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import './Old.styl';
 import MobileAppQRCode from 'merchant/components/MobileAppQRCode';
@@ -43,6 +42,7 @@ import GrowthServiceModal from '../GrowthServiceModal';
 import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
 import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
 import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
+import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 
 function _isUnreadNotification(startTS, endTS, lastReadTS) {
   return lastReadTS < startTS && moment().unix() < endTS;
@@ -636,7 +636,7 @@ class WhatsNewOld extends Component {
         </div>
         {isOpenSlider1 ? (
           <Slider closeButtonClass="announcement-title">
-            <ErrorBoundary resetOnProps>
+            <GrowthAssetEB shouldShowDefaultFb>
               <div className="content-wrapper content-sm txn-details whats-new-old">
                 <div className="panel panel-default SliderPanel">
                   <div className="panel-heading">
@@ -653,7 +653,7 @@ class WhatsNewOld extends Component {
                   </div>
                 </div>
               </div>
-            </ErrorBoundary>
+            </GrowthAssetEB>
           </Slider>
         ) : null}
       </main>
