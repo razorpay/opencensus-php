@@ -4697,6 +4697,20 @@ return [
         ],
     ],
 
+    'testFetchMerchantIdsForUserContact' => [
+        'request' => [
+            'url'     => '/internal/merchant/fetch_for_user_contact/9091929394',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'owner_ids' => ['12345678901234'],
+            ],
+        ],
+    ],
+
     'testSendBulkPayoutOtpViaEMail' => [
         'request' => [
             'url'     => '/users/otp/send',

@@ -95,6 +95,18 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function fetchPrimaryMerchantIdsForUserIdAndRole(string $userId, string $role = Role::OWNER)
+    {
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID)
+                    ->where(Entity::USER_ID, $userId)
+                    ->where(Entity::ROLE, $role)
+                    ->where(Entity::PRODUCT, 'primary')
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
     public function fetchBankingSignUpTimeStampOfOwner(string $merchantId)
     {
         $query =  $this->newQuery()

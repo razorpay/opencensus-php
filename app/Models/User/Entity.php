@@ -602,6 +602,11 @@ class Entity extends Base\PublicEntity
         return (new MerchantUser\Repository())->fetchMerchantIdForUserIdAndRole($this->getId());
     }
 
+    public function getPrimaryMerchantIds()
+    {
+        return (new MerchantUser\Repository())->fetchPrimaryMerchantIdsForUserIdAndRole($this->getId());
+    }
+
     public function getFirstMerchantEntity()
     {
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1);

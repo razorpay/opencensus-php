@@ -148,48 +148,10 @@ class CareServiceTest extends TestCase
                 self::PERMISSIONS                         => ['care_service_dark_proxy'],
             ],
             [
-
-                self::AUTH                                => 'yellowmessenger',
-                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/GetMerchant',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/GetMerchant',
-                self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
-                    'key' => 'value',
-                ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
-            ],
-            [
-                self::AUTH                                => 'yellowmessenger',
-                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/FetchTickets',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/FetchTickets',
-                self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
-                    'key' => 'value',
-                ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
-            ],
-            [
                 self::AUTH                                => 'yellowmessenger',
                 self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/FetchMerchant',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/FetchMerchant',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
-                    'key' => 'value',
-                ],
-                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
-            ],
-            [
-                self::AUTH                                => 'proxy',
-                self::API_ROUTE                           => '/care_service/merchant/twirp/rzp.care.chat.v1.ChatService/Init',
-                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/Init',
-                self::EXPECTED_CARE_SERVICE_REQUEST       => [
-                    'merchant' => [
-                        'id' => '10000000000000',
-                        'user_id' => User::MERCHANT_USER_ID,
-                    ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
                     'key' => 'value',

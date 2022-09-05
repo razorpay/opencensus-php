@@ -7,6 +7,7 @@ use Hash;
 use Cache;
 use Config;
 use Carbon\Carbon;
+use Lib\PhoneBook;
 use RZP\Jobs\NotifyRas;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Hashing\BcryptHasher;
@@ -39,10 +40,12 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
 
 use Razorpay\Trace\Logger as Trace;
+use function Clue\StreamFilter\append;
 
 class Service extends Base\Service
 {
@@ -2423,6 +2426,45 @@ class Service extends Base\Service
         $this->app['token_service']->verify($token, $this->user->getId());
 
         return $this->core()->editContactMobile($input, $this->user);
+    }
+
+    public function isPartnerMerchant($merchantId): bool
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $isPartner = $merchant->getPartnerType();
+
+        if (empty($isPartner) === true) {
+
+            $isSubMerchantOfPartner  = $this->repo->merchant_access_map->getByMerchantId($merchantId);
+
+            if (empty($isSubMerchantOfPartner) == true) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function fetchMerchantIdsForUserContact(string $contact)
+    {
+        $phoneNumber = new PhoneBook($contact);
+
+        $phoneNumber = $phoneNumber->format(PhoneBook::DOMESTIC);
+
+        $user = $this->repo->user->getUserFromMobileOrFail($phoneNumber);
+
+        $nonPartnerIds = [];
+
+        foreach ($user->getPrimaryMerchantIds() as $id)
+        {
+            if($this->isPartnerMerchant($id) === false)
+            {
+                array_push($nonPartnerIds, $id);
+            }
+        }
+
+        return ['owner_ids' => $nonPartnerIds];
     }
 
     /**

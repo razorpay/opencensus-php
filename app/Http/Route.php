@@ -2099,6 +2099,8 @@ class Route
         'user_add_email'                          => ['post',       'users/email/update',                            'UserController@sendOtpForAddEmail'                                 ],
         'user_add_email_verify'                   => ['post',       'users/email/update/verify',                     'UserController@verifyOtpForAddEmail'                               ],
 
+        'merchant_ids_fetch_for_user_contact'      => ['get',       'internal/merchant/fetch_for_user_contact/{contact}', 'UserController@fetchMerchantIdsForUserContact'                ],
+
         'user_fetch_for_merchant'                  => ['get',      'users/fetch_for_merchant/{id}',                  'UserController@getUserForMerchant'                                 ],
         'update_submerchant_user_contact'          => ['put',      'submerchant/user/contact_no',                     'UserController@updateContactNumberForSubMerchantUser'],
 
@@ -4992,6 +4994,7 @@ class Route
         'internal_order_update',
 
         // care
+        'merchant_ids_fetch_for_user_contact',
         'internal_workflow_action_get_multiple',
         'myoperator_v1_proxy_get',
         'myoperator_v2_proxy_post',
@@ -13739,6 +13742,7 @@ class Route
         ],
 
         'care' => [
+            'merchant_ids_fetch_for_user_contact',
             'internal_workflow_action_get_multiple',
             'payment_fetch_multiple',
             'internal_merchant_fetch',

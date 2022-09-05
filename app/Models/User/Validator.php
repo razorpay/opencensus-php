@@ -277,6 +277,10 @@ class Validator extends Base\Validator
         Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
     ];
 
+    protected static $fetchMerchantIdsByUserContactRules = [
+        Entity::CONTACT_MOBILE => 'required|max:15|contact_syntax',
+    ];
+
     protected static $optInWhatsappRules = [
         'source'               => 'required|string',
         'send_welcome_message' => 'sometimes|boolean',

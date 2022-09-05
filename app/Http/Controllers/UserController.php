@@ -482,6 +482,13 @@ class UserController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchMerchantIdsForUserContact(string $contact)
+    {
+        $response = $this->service()->fetchMerchantIdsForUserContact($contact);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      *  User is sending otp to update his/her own contact Mobile
      * @return mixed

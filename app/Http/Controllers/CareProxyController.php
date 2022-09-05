@@ -199,8 +199,6 @@ class CareProxyController extends Controller
     ];
 
     const CHAT_ROUTES = [
-        self::CHAT_GET_MERCHANT,
-        self::CHAT_FETCH_TICKETS,
         self::CHAT_FETCH_MERCHANT,
     ];
 
