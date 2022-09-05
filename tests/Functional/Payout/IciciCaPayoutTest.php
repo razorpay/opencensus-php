@@ -2238,7 +2238,7 @@ class IciciCaPayoutTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('The OTP entered is incorrect, please retry with correct OTP.', $content['pending_reason']);
+        $this->assertEquals('The OTP entered is incorrect. Request for a new OTP.', $content['pending_reason']);
         $this->assertEquals('pending', $content['status']);
         $this->assertEquals('pending', $content['internal_status']);
     }
@@ -2266,7 +2266,7 @@ class IciciCaPayoutTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals('The OTP has expired, please request for a new OTP.', $content['pending_reason']);
+        $this->assertEquals('The OTP has expired. Request for a new OTP.', $content['pending_reason']);
         $this->assertEquals('pending', $content['status']);
         $this->assertEquals('pending', $content['internal_status']);
     }

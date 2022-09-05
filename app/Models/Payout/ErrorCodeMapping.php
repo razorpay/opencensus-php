@@ -187,7 +187,9 @@ class ErrorCodeMapping
         'VAULT_TOKEN_EXPIRED'                   => 'Payout failed. Contact support for help.',
         'VAULT_PANREF_NOT_FOUND'                => 'Payout failed. Contact support for help.',
         'CARD_NUMBER_UNAVAILABLE'               => 'Payout failed as the card number is not available. Please retry.',
-        'PBANK_TECHNICAL_ERROR_PENDING'        => 'Payout failed. Temporary Issue at Partner bank.'
+        'FTS_OTP_NOT_FOUND'                     => 'Payout failed due to technical failure. Please retry after 30 min',
+        'FTS_GATEWAY_REF_NUM_NOT_FOUND'         => 'Payout failed due to technical failure. Please retry after 30 min',
+        'OTP_RETRIES_EXPIRED'                   => 'Payout failed due to multiple incorrect OTP(s). Please retry',
     ];
 
     public static $alternateFailureReasonMapping = [
@@ -200,8 +202,8 @@ class ErrorCodeMapping
     ];
 
     public static $pendingReasonMapping = [
-        'INVALID_OTP'                           => 'The OTP entered is incorrect, please retry with correct OTP.',
-        'EXPIRED_OTP'                           => 'The OTP has expired, please request for a new OTP.'
+        'INVALID_OTP'                           => 'The OTP entered is incorrect. Request for a new OTP.',
+        'EXPIRED_OTP'                           => 'The OTP has expired. Request for a new OTP.'
     ];
 
     const DEFAULT_FAILURE_REASON = 'Payout failed. Contact support for help.';

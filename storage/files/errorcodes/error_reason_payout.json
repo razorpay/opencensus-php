@@ -568,5 +568,26 @@
       "reason": "gateway_technical_error",
       "description": "Payout failed at partner bank."
     }
+  },
+  "OTP_RETRIES_EXPIRED": {
+    "failed": {
+      "source": "business",
+      "reason": "max_otp_attempts_exceeded",
+      "description": "Payout failed due to multiple incorrect OTP(s). Please retry"
+    }
+  },
+  "FTS_OTP_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed due to technical failure. Please retry after 30 min"
+    }
+  },
+  "FTS_GATEWAY_REF_NUM_NOT_FOUND": {
+    "failed": {
+      "source": "internal",
+      "reason": "server_error",
+      "description": "Payout failed due to technical failure. Please retry after 30 min"
+    }
   }
 }
