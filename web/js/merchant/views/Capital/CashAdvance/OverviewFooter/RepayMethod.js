@@ -1,9 +1,9 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-
 import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import Repayments from 'merchant/models/Capital/Repayments';
 import { loadCheckoutScript } from '../../utils/index';
 import {
@@ -49,6 +49,7 @@ const RepayMethod = ({
 }) => {
   const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
+  const isFundsOnHold = user?.merchant?.hold_funds;
 
   const handleRazorpayCheckoutPayment = (RepaymentInstance, paymentParams) => {
     const requests = [
@@ -223,49 +224,62 @@ const RepayMethod = ({
     <div className="repay-container repay-method repay">
       <div className="repay-text">I want to repay using</div>
       <div className="flex repay-actions">
-        <div
-          className={`action ml--1 ${settlementBalance.isCustomAmountActive ? '' : 'mr-24'} ${
-            settlementBalance.active && !settlementBalance.error ? 'active' : ''
-          } ${settlementBalance.active && settlementBalance.error ? 'error' : ''} ${
-            balance === 0 ? 'disabled' : ''
-          } cursor-pointer`}
-          onClick={() => handleSettlementBalanceSelect(!settlementBalance.active)}
-        >
-          <div className="mr-7">
-            <input
-              type={repayInputType}
-              key={REPAY_METHOD_TYPES.SETTLEMENT_BALANCE}
-              value={REPAY_METHOD_TYPES.SETTLEMENT_BALANCE}
-              checked={settlementBalance.active}
-              onChange={(e) => handleSettlementBalanceSelect(e.target.checked)}
-            />
-          </div>
-          <div>
-            <div className="repay--type-title">Settlement Balance</div>
-            <div className="mt-4">
-              {balance === 0 ? (
-                <div className="repay--type-description">
-                  Not Available, As balance is{' '}
-                  <Amount
-                    className="repay--amount"
-                    currency="INR"
-                    value={settlementBalance.amount}
-                  />
-                </div>
-              ) : (
-                <div className="repay--type-description">
-                  Use{' '}
-                  <Amount
-                    className="repay--amount"
-                    currency="INR"
-                    value={settlementBalance.amount}
-                  />{' '}
-                  from balance.
-                </div>
-              )}
+        <div>
+          <div
+            className={`action ml--1 ${settlementBalance.isCustomAmountActive ? '' : 'mr-24'} ${
+              settlementBalance.active && !settlementBalance.error ? 'active' : ''
+            } ${settlementBalance.active && settlementBalance.error ? 'error' : ''} ${
+              balance === 0 || isFundsOnHold ? 'disabled' : ''
+            } cursor-pointer`}
+            onClick={() => handleSettlementBalanceSelect(!settlementBalance.active)}
+          >
+            <div className="mr-7">
+              <input
+                type={repayInputType}
+                key={REPAY_METHOD_TYPES.SETTLEMENT_BALANCE}
+                value={REPAY_METHOD_TYPES.SETTLEMENT_BALANCE}
+                checked={!isFundsOnHold && settlementBalance.active}
+                onChange={(e) => handleSettlementBalanceSelect(e.target.checked)}
+              />
+            </div>
+            <div>
+              <div className="repay--type-title">Settlement Balance</div>
+              <div className="mt-4">
+                {balance === 0 ? (
+                  <div className="repay--type-description">
+                    Not Available, As balance is{' '}
+                    <Amount
+                      className="repay--amount"
+                      currency="INR"
+                      value={settlementBalance.amount}
+                    />
+                  </div>
+                ) : (
+                  <div className="repay--type-description">
+                    Use{' '}
+                    <Amount
+                      className="repay--amount"
+                      currency="INR"
+                      value={settlementBalance.amount}
+                    />{' '}
+                    from balance.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+          {isFundsOnHold && (
+            <Popover align="bottom" theme="dark">
+              <PopoverBody>
+                <div className="text-center">
+                  This repayment method is disabled because your settlement account is on hold; you
+                  will be able to repay once it is activated again
+                </div>
+              </PopoverBody>
+            </Popover>
+          )}
         </div>
+
         <div
           className={`action mr-24 ${settlementBalance.isCustomAmountActive ? 'ml--1' : ''} ${
             bankBalance.active ? 'active' : ''
