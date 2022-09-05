@@ -149,7 +149,7 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->kycServiceRetryDelayInSecond = (int) $this->app['config']['applications.kyc']['retry_delay'];
+        // $this->kycServiceRetryDelayInSecond = (int) $this->app['config']['applications.kyc']['retry_delay'];
 
         $this->mutex = $this->app['api.mutex'];
 

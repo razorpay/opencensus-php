@@ -10,7 +10,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
-use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
+// use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
 use RZP\Models\Merchant\AutoKyc\MozartService\ProcessorFactoryImpl as MozartProcessorFactory;
 
 /**
@@ -37,55 +37,55 @@ class ServiceFactory
                                                      string $processorType,
                                                      string $mode = null): ProcessorFactory
     {
-        if (self::shouldRouteTrafficToKycService($input, $processorType) === true)
-        {
-            return new KycProcessorFactory();
-        }
+        // if (self::shouldRouteTrafficToKycService($input, $processorType) === true)
+        // {
+        //     return new KycProcessorFactory();
+        // }
 
         return new MozartProcessorFactory();
     }
 
-    /**
-     * Checks if we should serve traffic from kyc service or not
-     *
-     * @param array  $input
-     * @param string $processorType
-     *
-     * @return bool
-     */
-    public static function shouldRouteTrafficToKycService(array $input, string $processorType): bool
-    {
-        switch ($processorType)
-        {
-            case DEConstants::POA :
+    // /**
+    //  * Checks if we should serve traffic from kyc service or not
+    //  *
+    //  * @param array  $input
+    //  * @param string $processorType
+    //  *
+    //  * @return bool
+    //  */
+    // public static function shouldRouteTrafficToKycService(array $input, string $processorType): bool
+    // {
+    //     switch ($processorType)
+    //     {
+    //         case DEConstants::POA :
 
-                return self::servePOAFromKycService($input);
+    //             return self::servePOAFromKycService($input);
 
-            default :
+    //         default :
 
-                return true;
-        }
-    }
+    //             return true;
+    //     }
+    // }
 
-    /**
-     *  Kyc service only understands ufh file store ,
-     * so if api source is api then don't route traffic to new kyc service
-     *
-     * @param array $input
-     *
-     * @return bool
-     */
-    private static function servePOAFromKycService(array $input)
-    {
-        $documentSource = $input[DEConstants::DOCUMENT_SOURCE] ?? Source::API;
+    // /**
+    //  *  Kyc service only understands ufh file store ,
+    //  * so if api source is api then don't route traffic to new kyc service
+    //  *
+    //  * @param array $input
+    //  *
+    //  * @return bool
+    //  */
+    // private static function servePOAFromKycService(array $input)
+    // {
+    //     $documentSource = $input[DEConstants::DOCUMENT_SOURCE] ?? Source::API;
 
-        if ($documentSource === Source::API)
-        {
-            return false;
-        }
+    //     if ($documentSource === Source::API)
+    //     {
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 
     /**
      * @param string $merchantId

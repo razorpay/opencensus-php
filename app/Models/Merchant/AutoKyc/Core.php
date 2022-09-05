@@ -16,7 +16,7 @@ use RZP\Models\Merchant\AutoKyc\Verifiers\GSTINVerifier;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Verifiers\CompanyPanVerifier;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
-use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
+// use RZP\Models\Merchant\AutoKyc\KycService\ProcessorFactoryImpl as KycProcessorFactory;
 
 class Core extends Base\Core
 {
@@ -220,34 +220,33 @@ class Core extends Base\Core
         return $verificationStatus;
     }
 
-    /**
-     * Returns kyc details from kyc service
-     * @param array $input
-     *
-     * @return mixed
-     */
-    public function getKycDetailsFromKycService(array $input)
-    {
-        $processorFactory = new KycProcessorFactory();
+    // /**
+    //  * Returns kyc details from kyc service
+    //  * @param array $input
+    //  *
+    //  * @return mixed
+    //  */
+    // public function getKycDetailsFromKycService(array $input)
+    // {
+    //     $processorFactory = new KycProcessorFactory();
 
-        $processor = $processorFactory::getKYCDetailProcessor($input);
+    //     $processor = $processorFactory::getKYCDetailProcessor($input);
 
-        $processorResponse = $processor->process();
+    //     $processorResponse = $processor->process();
 
-        $data = $processorResponse->getResponseData();
+    //     $data = $processorResponse->getResponseData();
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
-    public function isDocumentAlreadyPresentInKycService(array $input, string $documentType)
-    {
-        $kycDetails = $this->getKycDetailsFromKycService($input);
+    // public function isDocumentAlreadyPresentInKycService(array $input, string $documentType)
+    // {
+    //     $kycDetails = $this->getKycDetailsFromKycService($input);
 
-        $documentsList = $kycDetails[DEConstants::DOCUMENTS] ?? [];
+    //     $documentsList = $kycDetails[DEConstants::DOCUMENTS] ?? [];
 
-        return in_array($documentType, $documentsList, true);
-    }
-
+    //     return in_array($documentType, $documentsList, true);
+    // }
 
     /**
      * @param array  $input

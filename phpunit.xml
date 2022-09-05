@@ -160,7 +160,7 @@
 <!--        This is temporary fix to split Feature-2 Test Suite because of OOM issue. Root cause is unknown-->
         <testsuite name="Feature-7 Test Suite">
             <directory>./tests/Functional/Merchant/Activation</directory>
-            <directory>./tests/Functional/Merchant/AutoKyc</directory>
+            <!-- <directory>./tests/Functional/Merchant/AutoKyc</directory> -->
             <directory>./tests/Functional/Merchant/Bvs</directory>
             <directory>./tests/Functional/Merchant/BvsVerification</directory>
             <directory>./tests/Functional/Merchant/Products</directory>
