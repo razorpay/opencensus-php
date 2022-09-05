@@ -110,11 +110,11 @@ class FundLoading extends Base
      * @throws BadRequestException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null, string $iKey = null)
     {
         try
         {
-            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
+            $response = parent::createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit, $iKey);
         }
         catch (BadRequestException $e)
         {

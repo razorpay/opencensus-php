@@ -261,20 +261,24 @@ class Base extends Core
      * @throws \RZP\Exception\GatewayTimeoutException
      * @throws \Throwable
      */
-    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null)
+    public function createJournalEntry(array $payload, int $maxRetryCount = self::DEFAULT_MAX_RETRY_COUNT, int $retryCount = 0, PublicCollection $feeSplit = null, string $iKey = null)
     {
         $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST, $payload);
         try
         {
             $ledgerService = $this->app['ledger'];
-            $requestHeaders = [
-                self::LEDGER_TENANT_HEADER => self::X
-            ];
-            // create a new idempotency key for the first call, use the same idempotency key for retry
-            if ($retryCount === 0)
+
+            // add new idempotency key for the first call, use the same idempotency key for retries
+            if ($iKey === null)
             {
-                $requestHeaders[self::IDEMPOTENCY_KEY_HEADER] = Uuid::uuid1();
+                $iKey = Uuid::uuid1();
             }
+
+            // create request headers
+            $requestHeaders = [
+                self::LEDGER_TENANT_HEADER      => self::X,
+                self::IDEMPOTENCY_KEY_HEADER    => $iKey
+            ];
             $response = $ledgerService->createJournal($payload, $requestHeaders, true);
 
             // For testing retries through LedgerStatus Job, uncomment this
@@ -305,7 +309,7 @@ class Base extends Core
                 if ($retryCount < $maxRetryCount)
                 {
                     $retryCount++;
-                    return $this->createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
+                    return $this->createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit, $iKey);
                 }
                 else
                 {
@@ -328,7 +332,7 @@ class Base extends Core
             if ($retryCount < $maxRetryCount)
             {
                 $retryCount++;
-                return $this->createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit);
+                return $this->createJournalEntry($payload, $maxRetryCount, $retryCount, $feeSplit, $iKey);
             }
             else
             {
