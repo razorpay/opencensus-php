@@ -157,6 +157,13 @@ export const trackTermsOrPolicy = (MID, name) => {
   });
 };
 
+export const trackCashAdvanceV2Rendered = () => {
+  trackSegmentEvent({
+    objectName: 'Cash Advance Homepage New Rendered V2',
+    actionName: EVENT_TYPES.RENDERED,
+  });
+};
+
 export const trackApplyNowCTACashAdvanceV2 = () => {
   trackSegmentEvent({
     objectName: 'Apply Now V2',

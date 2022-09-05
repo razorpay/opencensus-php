@@ -16,7 +16,12 @@ import {
   getApplications,
 } from 'merchant/reducers/capital';
 import moment from 'moment';
-import { trackCheckEligibilityCta, trackTabChange, trackApplyNowCTACashAdvanceV2 } from './ga';
+import {
+  trackCheckEligibilityCta,
+  trackTabChange,
+  trackApplyNowCTACashAdvanceV2,
+  trackCashAdvanceV2Rendered,
+} from './ga';
 import { MERCHANT_OWNER_TYPE } from '../../CashAdvance/constants';
 import { CASH_ADVANCE_LINK } from '../../CashAdvanceV2/constants';
 
@@ -37,9 +42,13 @@ const ApplicationOnboardingForm = (props) => {
       });
     }
   };
+  const { isCARerouteExperiment } = props.user;
 
   React.useEffect(() => {
     fetch();
+    if (props.isProductCashAdvance && isCARerouteExperiment) {
+      trackCashAdvanceV2Rendered();
+    }
   }, []);
 
   React.useEffect(() => {
