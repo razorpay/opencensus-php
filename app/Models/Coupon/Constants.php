@@ -8,7 +8,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 class Constants
 {
 
-    const MTU_COUPON    = 'OFFERMTU2';
+    const MTU_COUPON    = 'OFFERMTU3';
     const M2M_FRIEND    = 'M2MREFEREE';
     const M2M_ADVOCATE1 = 'ADVOCATE1';
     const M2M_ADVOCATE2 = 'ADVOCATE2';

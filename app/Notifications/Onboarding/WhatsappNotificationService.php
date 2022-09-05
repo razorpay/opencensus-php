@@ -6,7 +6,6 @@ namespace RZP\Notifications\Onboarding;
 use RZP\Services\Stork;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Constants;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\BaseNotificationService;
 
 class WhatsappNotificationService extends BaseNotificationService

@@ -43,7 +43,7 @@ class Handler extends BaseHandler
         Events::ONBOARDING_VERIFY_EMAIL                              => [Channel::SMS, Channel::WHATSAPP],
         Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION            => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
         Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED          => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
-        Events::FIRST_PAYMENT_OFFER                                  => [Channel::SMS, Channel::WHATSAPP],
+        Events::FIRST_PAYMENT_OFFER                                  => [Channel::WHATSAPP],
         Events::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED               => [Channel::SMS, Channel::WHATSAPP],
         Events::SIGNUP_STARTED_NOTIFY                                => [Channel::SMS, Channel::WHATSAPP],
 

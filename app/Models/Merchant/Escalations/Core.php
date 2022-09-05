@@ -814,7 +814,10 @@ class Core extends Base\Core
         foreach ($merchantIdList as $merchantId)
         {
             $args = [
-                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId)
+                Constants::MERCHANT => $this->repo->merchant->findOrFailPublic($merchantId),
+                Constants::PARAMS   => [
+                    'amount'    =>  '₹10,000'
+                ]
             ];
 
             $success = (new OnboardingNotificationHandler($args))
