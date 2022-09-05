@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import * as d3 from 'd3';
 
 import Tooltip from 'common/ui/Tooltip';
 import { getFormattedNumber, getFormattedAmountNew } from 'common/utils/rzp-utils';
@@ -87,7 +88,7 @@ export default class Treemap extends Component {
       this.onShowTooltip,
       this.onHideTooltip,
       groupTitleMap,
-      bankNames
+      bankNames,
     );
 
     return typeof this.props.onCSVData === 'function' && this.props.onCSVData(this.treemapApi.csv);
@@ -98,7 +99,7 @@ export default class Treemap extends Component {
 
     const parent = this.node.parentNode;
 
-    this.node.style.width = parent.clientWidth + 'px';
+    this.node.style.width = `${parent.clientWidth}px`;
 
     timer = window.setTimeout(() => {
       this.renderTreemap(this.props.data, this.props.isCurrency);
@@ -113,6 +114,7 @@ export default class Treemap extends Component {
     return this.props.data && this.renderTreemap(this.props.data, this.props.isCurrency);
   }
 
+  // eslint-disable-next-line consistent-return
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { data, currentLevel } = this.props;
 
@@ -128,9 +130,12 @@ export default class Treemap extends Component {
   }
 
   render() {
-    const { tooltip } = this.state,
-      { isCurrency } = this.props,
-      amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(tooltip.data.amount, true);
+    const { tooltip } = this.state;
+    const { isCurrency } = this.props;
+    const amount = (isCurrency ? getFormattedAmountNew : getFormattedNumber)(
+      tooltip.data.amount,
+      true,
+    );
 
     return (
       <div>
@@ -142,12 +147,13 @@ export default class Treemap extends Component {
               <span className="payment-label">{tooltip.data.label}</span>
             </p>
             <span className="payment-amount">
-              {amount} <small>{'(' + tooltip.data.percent + '%)'}</small>
+              {amount} <small>{`(${tooltip.data.percent}%)`}</small>
             </span>
           </div>
           {tooltip.canBeZoomed && (
             <div className="tooltip-footer">
-              <i className="i i-hand" />Click to drill down
+              <i className="i i-hand" />
+              Click to drill down
             </div>
           )}
         </Tooltip>

@@ -7,7 +7,6 @@ import Breadcrumb, { BreadcrumbItem } from 'common/ui/Breadcrumb';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import Treemap from 'merchant/containers/Home/PaymentMethods/Treemap';
 import LastUpdated from 'merchant/components/Home/LastUpdated';
 import MoreOptionsButton from 'merchant/containers/Home/MoreOptionsButton';
 import { fetch } from 'merchant/reducers/pokedex';
@@ -19,11 +18,17 @@ import GenericPanel, {
 import { API_ERROR, API_INVALID_RESP } from 'merchant/components/Home/data';
 import { trackGoToLinks, trackNoData, trackError } from 'merchant/containers/Home/ga';
 import GroupingDropdown from 'merchant/components/Home/GroupingDropdown';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 import Mobile from './Mobile';
 import { trackBreadcrumbClick } from './ga';
 import { getQuery, aggTypes } from './data';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+
+const Treemap = lazy(() =>
+  import(/* webpackChunkName: 'Treemap' */ 'merchant/containers/Home/PaymentMethods/Treemap'),
+);
 
 function getLevels(hierarchy, levels = []) {
   if (hierarchy.parent) {
@@ -299,13 +304,15 @@ class PaymentMethods extends Component {
           </div>
         </PanelTopbar>
         <PanelBody>
-          <Treemap
-            data={this.state.data}
-            isCurrency={'isCurrency' in selectedAgg}
-            onLevelChange={this.onLevelChange}
-            currentLevel={this.state.currentLevel}
-            onCSVData={this.onCSVData}
-          />
+          <SuspenseWithLoader>
+            <Treemap
+              data={this.state.data}
+              isCurrency={'isCurrency' in selectedAgg}
+              onLevelChange={this.onLevelChange}
+              currentLevel={this.state.currentLevel}
+              onCSVData={this.onCSVData}
+            />
+          </SuspenseWithLoader>
         </PanelBody>
         <PanelFooter className="clearfix">
           <div className="pull-left">

@@ -121,7 +121,6 @@ module.exports = ({ config, project }) => {
       React: 'react',
       moment: 'moment',
       Chart: 'chart',
-      d3: 'd3',
       axios: 'axios',
       PropTypes: 'prop-types',
     }),
