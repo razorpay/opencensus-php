@@ -196,6 +196,34 @@ class ReportingTest extends TestCase
         $this->startTest();
     }
 
+    public function testConfigCreateWithAdminAuthValid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testConfigCreateWithAdminAuthInvalid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testConfigUpdateWithAdminAuthValid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testConfigDeleteWithAdminAuthValid()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)

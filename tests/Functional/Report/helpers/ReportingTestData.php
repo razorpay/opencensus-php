@@ -727,7 +727,146 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testConfigCreateWithAdminAuthValid' => [
+        'request' => [
+            'url'     => '/admin-reporting/configs',
+            'method'  => 'POST',
+            'content' => [
+                "type"     => "payments",
+                "template" => []
             ],
-    ]
+            'server' => [
+                'HTTP_X-Report-Type' => 'admin',
+                'HTTP_X-Consumer'    => '100000razorpay'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testConfigCreateWithAdminAuthInvalid' => [
+        'request' => [
+            'url'     => '/admin-reporting/configs',
+            'method'  => 'POST',
+            'content' => [
+                "type"     => "payments",
+                "template" => []
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'admin',
+                'HTTP_X-Consumer'    => '20000000000000'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ]
+    ],
+
+    'testConfigUpdateWithAdminAuthValid' => [
+        'request' => [
+            'url'     => '/admin-reporting/configs/config_D5RAgPWrrUgP9K',
+            'method'  => 'PATCH',
+            'content' => [
+                "type"     => "payments",
+                "template" => []
+            ],
+            'server' => [
+                'HTTP_X-Report-Type' => 'admin',
+                'HTTP_X-Consumer'    => '100000razorpay'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testConfigDeleteWithAdminAuthValid' => [
+        'request' => [
+            'url'     => '/admin-reporting/configs/config_D5RAgPWrrUgP9K',
+            'method'  => 'DELETE',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Report-Type' => 'admin',
+                'HTTP_X-Consumer'    => '100000razorpay'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                "entity" => "collection",
+                "count" => 3,
+                "items" => [
+                    [
+                        "id" => "config_D5RAgPWrrUgP9K",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_CC39ZQphE0ox5U",
+                        "consumer" => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id" => "config_C1eAjMzFDEU074",
+                        "consumer" => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+    ],
 
 ];

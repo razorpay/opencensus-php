@@ -164,6 +164,27 @@ class ReportingController extends Controller
         return $this->proxy($path);
     }
 
+    public function createConfigAdmin()
+    {
+        $data = $this->reportingService()->createConfigAdmin($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateConfigAdmin(string $id)
+    {
+        $data = $this->reportingService()->editConfigAdmin($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteConfigAdmin(string $id)
+    {
+        $data = $this->reportingService()->deleteConfigAdmin($id);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Warning: Don't use this function from outside this class
      *

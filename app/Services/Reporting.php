@@ -66,6 +66,9 @@ class Reporting implements ExternalService
     const TEMPLATE_OVERRIDES = 'template_overrides';
     const QUERY_PARAMS       = 'query_params';
 
+    // OrgAdminReport Constants
+    const DASHBOARD_HOST_NAME = 'dashboard_host_name';
+
     // Headers
     const CONSUMER_HEADER               = 'X-Consumer';
     const REPORT_TYPE_HEADER            = 'X-Report-Type';
@@ -90,7 +93,14 @@ class Reporting implements ExternalService
     const ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE = [
         'reporting_config_create_full',
         'reporting_config_edit_full',
-        'reporting_config_edit_bulk',
+        'reporting_config_edit_bulk'
+    ];
+
+    const RZP_ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE = [
+        'reporting_config_create_admin',
+        'reporting_config_list_admin',
+        'reporting_config_edit_admin',
+        'reporting_config_delete_admin'
     ];
 
     /**
@@ -110,6 +120,10 @@ class Reporting implements ExternalService
      * @var \RZP\Http\BasicAuth\BasicAuth
      */
     protected $ba;
+    /**
+     * @var mixed
+     */
+    private $repo;
 
     public function __construct()
     {
@@ -265,6 +279,13 @@ class Reporting implements ExternalService
         return $this->createAndSendRequest(Requests::POST, self::CONFIG_PATH, $input);
     }
 
+    public function createConfigAdmin(array $input): array
+    {
+        $this->verifyIfAdminPerformingOrgReportConfig();
+
+        return $this->createConfig($input);
+    }
+
     public function createFullConfig(array $input): array
     {
         $path = self::CONFIG_PATH . '/full';
@@ -276,7 +297,10 @@ class Reporting implements ExternalService
 
     public function fetchConfigMultiple(array $input): array
     {
-        $this->headers[self::ASSOCIATED_FEATURES_HEADER] = $this->getAssociatedFeaturesHeader();
+        if ($this->ba->isAdminAuth() === false)
+        {
+            $this->headers[self::ASSOCIATED_FEATURES_HEADER] = $this->getAssociatedFeaturesHeader();
+        }
 
         $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
 
@@ -295,6 +319,13 @@ class Reporting implements ExternalService
         $path = self::CONFIG_PATH . '/' . $id;
 
         return $this->createAndSendRequest(Requests::PATCH, $path, $input);
+    }
+
+    public function editConfigAdmin(string $id, array $input): array
+    {
+        $this->verifyIfAdminPerformingOrgReportConfig();
+
+        return $this->editConfig($id, $input);
     }
 
     public function editFullConfig(string $id, array $input): array
@@ -328,6 +359,13 @@ class Reporting implements ExternalService
         }
 
         return $response;
+    }
+
+    public function deleteConfigAdmin(string $id): array
+    {
+        $this->verifyIfAdminPerformingOrgReportConfig();
+
+        return $this->deleteConfig($id);
     }
 
     public function createLog(array $input): array
@@ -397,6 +435,12 @@ class Reporting implements ExternalService
         }
 
         $this->validateInput($input);
+
+        if ($this->ba->isAdminAuth() === true and
+            ($this->ba->getAdmin()->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID))
+        {
+            $this->addOrgHostname($input);
+        }
 
         return $this->createAndSendRequest(Requests::POST, $path, $input);
     }
@@ -1328,6 +1372,15 @@ class Reporting implements ExternalService
         // Admin auth will be used here
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
+        // Allow Razorpay Admin to access routes in RZP_ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE for
+        // configuring org reports and allow X_REPORT_TYPE as MERCHANT_REPORT_TYPES.
+        // These routes are used for configuration and not for downloading.
+        if ($this->ba->getAdmin()->getOrgId() === Org\Entity::RAZORPAY_ORG_ID and
+            (in_array($routeName, self::RZP_ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE, true) === true))
+        {
+            return;
+        }
+
         // allowing only routes in this ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE
         // to contain X_REPORT_TYPE as MERCHANT_REPORT_TYPES
         if (in_array($routeName, self::ADMIN_ROUTES_WITH_MERCHANT_REPORT_TYPE, true) === false)
@@ -1508,5 +1561,55 @@ class Reporting implements ExternalService
         $enabledFeatures = $merchant->getEnabledFeatures();
 
         return json_encode($enabledFeatures);
+    }
+
+    /**
+     * Verifies if Admin is performing report configuration for an OrgId
+     *
+     * @throws Exception\BadRequestException if orgId passed in X-Consumer header is invalid
+     * @throws Exception\BadRequestValidationFailureException if X-Consumer header is missing
+     */
+    private function verifyIfAdminPerformingOrgReportConfig()
+    {
+        $consumer = Request::header(self::CONSUMER_HEADER);
+
+        if (empty($consumer) === false)
+        {
+            try
+            {
+                $this->repo->org->isValidOrg(Org\Entity::verifyIdAndSilentlyStripSign($consumer));
+
+                return;
+            }
+            catch (Exception\BadRequestException $e)
+            {
+                $errorMsg = "Admin auth should not be used for configuring non-org reports";
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED, null, null, $errorMsg);
+            }
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_MISSING_HEADERS);
+        }
+    }
+
+    /**
+     * Adds org dashboard hostname in the Template Overrides of the Log.
+     * This is used in Reporting Service for sending report download url over email.
+     *
+     * @param array $input
+     */
+    private function addOrgHostname(array & $input)
+    {
+        $input[self::TEMPLATE_OVERRIDES] = ((isset($input[self::TEMPLATE_OVERRIDES]) === true) and
+            (is_array($input[self::TEMPLATE_OVERRIDES]) === true)) ?  $input[self::TEMPLATE_OVERRIDES]: [];
+
+        $orgHostName = $this->ba->getOrgHostName();
+
+        if (empty($orgHostName) === false)
+        {
+            $input[self::TEMPLATE_OVERRIDES][self::DASHBOARD_HOST_NAME] = $orgHostName;
+        }
     }
 }
