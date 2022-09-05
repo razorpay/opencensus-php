@@ -1470,6 +1470,51 @@ class UserTest extends TestCase
         $this->assertEquals($response[Entity::TOKEN], $input[Entity::TOKEN]);
     }
 
+    public function testSendOtpVerifyUser()
+    {
+        Mail::fake();
+
+        $input = [
+            Entity::MEDIUM        => 'sms',
+            Entity::ACTION        => 'verify_user',
+            Entity::TOKEN         => '7643816831',
+        ];
+
+        $mailMock = Mockery::mock('RZP\Mail');
+
+        $mailMock->shouldReceive('queue')->withAnyArgs()->andReturn([]);
+
+        $ravenMock = Mockery::mock('RZP\Services\Mock\Raven');
+
+        $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
+
+        $ravenMock->shouldReceive('sendSms')->andReturn(['sms_id' => '10000000000sms']);
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->userEntityMock->shouldReceive('getValidator')->withAnyArgs()->andReturn($this->userValidator);
+
+        $this->userValidator->shouldReceive('validateSendOtpOperation')->withAnyArgs()->andReturn([]);
+
+        $this->merchantEntityMock->shouldReceive('getId')->withAnyArgs()->andReturn('100002Razorpay');
+
+        $response = $this->userService->sendOtp($input);
+
+        $this->assertEquals($response[Entity::TOKEN], $input[Entity::TOKEN]);
+
+        $input = [
+            Entity::MEDIUM        => 'email',
+            Entity::ACTION        => 'verify_user',
+            Entity::TOKEN         => '7643816831',
+        ];
+
+        $this->userEntityMock->shouldReceive('toArrayPublic')->withAnyArgs()->andReturn([]);
+
+        $response = $this->userService->sendOtp($input);
+
+        $this->assertEquals($response[Entity::TOKEN], $input[Entity::TOKEN]);
+    }
+
     public function testConfirm()
     {
         $content  = [

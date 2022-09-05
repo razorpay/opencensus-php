@@ -467,10 +467,18 @@ class Constants
 
     // Constants related to product-switch for user_fetch
     const PRODUCT_SWITCH          = 'product_switch';
-
     const PRODUCT_SWITCH_REQUIRED = 'product_switch_required';
 
     const USER_FETCH_GUEST_BLACKLISTED_ROUTES = [
         'user_fetch'
+    ];
+
+    const VERIFY_CONTACT = 'verify_contact';
+
+    const VERIFY_USER = 'verify_user';
+
+    const ACTIONS_FOR_OTP_CONTACT_VERIFICATION = [
+        self::VERIFY_CONTACT,
+        self::VERIFY_USER,
     ];
 }

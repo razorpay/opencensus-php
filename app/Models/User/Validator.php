@@ -345,6 +345,7 @@ class Validator extends Base\Validator
         Entity::MEDIUM        => 'sometimes|filled|in:sms,email,sms_and_email',
         Entity::ACTION        => 'required|filled|in:'
                                  . 'verify_contact,'
+                                 . 'verify_user,'
                                  . 'verify_email,'
                                  . 'x_verify_email,'
                                  . 'create_payout,'
@@ -939,13 +940,13 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Otp must be sent to registered email');
         }
 
-        if (($action === 'verify_contact') and
+        if ((in_array($action, Constants::ACTIONS_FOR_OTP_CONTACT_VERIFICATION, true) === true) and
             ($medium !== 'sms'))
         {
             throw new BadRequestValidationFailureException('Sms must be the medium for verifying contact');
         }
 
-        if (($action === 'verify_contact') and
+        if ((in_array($action, Constants::ACTIONS_FOR_OTP_CONTACT_VERIFICATION, true) === true) and
             ($user->isContactMobileVerified() === true))
         {
             throw new BadRequestValidationFailureException('Contact mobile is already verified');
@@ -958,7 +959,7 @@ class Validator extends Base\Validator
         }
 
         if (($medium === 'sms') and
-            ($action !== 'verify_contact') and
+            (in_array($action, Constants::ACTIONS_FOR_OTP_CONTACT_VERIFICATION, true) === false) and
             ($user->isContactMobileVerified() === false))
         {
             throw new BadRequestValidationFailureException('Contact mobile is not verified');

@@ -3540,6 +3540,20 @@ return [
         ],
     ],
 
+    'testSendOtpVerifyUser' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium' => 'sms',
+                'action' => 'verify_user',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testSendOtpForViewOnlyRoleInX' => [
         'request' => [
             'url'     => '/users/otp/send',

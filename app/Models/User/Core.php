@@ -3916,7 +3916,7 @@ class Core extends Base\Core
     public function sendOtpViaSms(array $input, $merchant, Entity $user, array $otp = null): array
     {
         if ((isset($input[Entity::MEDIUM]) === false) and
-            ($input[Entity::ACTION] !== 'verify_contact') and
+            (in_array($action, Constants::ACTIONS_FOR_OTP_CONTACT_VERIFICATION, true) === false) and
             ($user->isContactMobileVerified() === false))
         {
             return [];
