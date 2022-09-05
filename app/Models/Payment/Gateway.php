@@ -3295,24 +3295,6 @@ class Gateway
                     CardlessEmi::FLOW => CardlessEmi::PAN
                 ]
             ],
-            IFSC::HDFC => [
-                CardlessEmi::POWERED_BY => [
-                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
-                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
-                ],
-                CardlessEmi::META => [
-                    CardlessEmi::FLOW => CardlessEmi::PAN
-                ]
-            ],
-            IFSC::IDFB => [
-                CardlessEmi::POWERED_BY => [
-                    Payment\Entity::METHOD   => Method::CARDLESS_EMI,
-                    Payment\Entity::PROVIDER => CardlessEmi::FLEXMONEY
-                ],
-                CardlessEmi::META => [
-                    CardlessEmi::FLOW => CardlessEmi::PAN
-                ]
-            ],
         ]
     ];
 
