@@ -11,11 +11,35 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 import { getUser } from 'merchant/store';
 import { AccountStatusListView as AccountStatusLabel } from './AccountStatusLabel';
 
-export const ToggleField = ({ children, onEdit, isDisabled, isDashboard }) => {
-  if (isDisabled) {
+export const ToggleField = ({
+  onEdit,
+  isLAEmailAbsent,
+  isDashboard,
+  isLACreationDisabled,
+  onChange,
+  checked,
+}) => {
+  const isDisabled = (isLACreationDisabled && isLAEmailAbsent) || isLAEmailAbsent;
+
+  const _SwitchField = (
+    <SwitchField checked={checked} onChange={onChange} disabled={isDisabled} type="prime" />
+  );
+
+  if (isLACreationDisabled && isLAEmailAbsent) {
     return (
       <small class="help-content">
-        {children}
+        {_SwitchField}
+        <Popover align="top" theme="dark">
+          <PopoverBody>This action is not allowed for your business type</PopoverBody>
+        </Popover>
+      </small>
+    );
+  }
+
+  if (isLAEmailAbsent) {
+    return (
+      <small class="help-content">
+        {_SwitchField}
         <Popover align="top" theme="dark">
           <PopoverBody>
             <div>
@@ -33,7 +57,7 @@ export const ToggleField = ({ children, onEdit, isDisabled, isDashboard }) => {
     );
   }
 
-  return children;
+  return _SwitchField;
 };
 
 const AccountsListItem = ({
@@ -62,9 +86,20 @@ const AccountsListItem = ({
       </td>
       <td>
         {showEditAccountModal && noLAEmail ? (
-          <button class="btn btn-link no-padding" onClick={() => showEditAccountModal(account)}>
-            Add Email
-          </button>
+          <span>
+            {isCreationDisabled && (
+              <Popover align="top" theme="dark">
+                <PopoverBody>This action is not allowed for your business type</PopoverBody>
+              </Popover>
+            )}
+            <button
+              class="btn btn-link no-padding"
+              onClick={() => showEditAccountModal(account)}
+              disabled={isCreationDisabled}
+            >
+              Add Email
+            </button>
+          </span>
         ) : (
           <span>{account.email}</span>
         )}
@@ -82,33 +117,26 @@ const AccountsListItem = ({
       </td>
       {onToggleDashboardAccess && (
         <td style={{ textAlign: 'center' }}>
-          {
-            <ToggleField
-              onEdit={() => showEditAccountModal(account)}
-              isDisabled={noLAEmail}
-              isDashboard
-            >
-              <SwitchField
-                checked={!!account.dashboard_access}
-                onChange={onToggleDashboardAccess}
-                disabled={noLAEmail}
-                type="prime"
-              />
-            </ToggleField>
-          }
+          <ToggleField
+            onEdit={() => showEditAccountModal(account)}
+            isLAEmailAbsent={noLAEmail}
+            isDashboard
+            isLACreationDisabled={isCreationDisabled}
+            onChange={onToggleDashboardAccess}
+            checked={!!account.dashboard_access}
+          />
         </td>
       )}
       {onToggleAllowRefunds && (
         <td style={{ textAlign: 'center' }}>
           {
-            <ToggleField onEdit={() => showEditAccountModal(account)} isDisabled={noLAEmail}>
-              <SwitchField
-                checked={!!account.allow_reversals}
-                onChange={onToggleAllowRefunds}
-                disabled={noLAEmail}
-                type="prime"
-              />
-            </ToggleField>
+            <ToggleField
+              onEdit={() => showEditAccountModal(account)}
+              isLAEmailAbsent={noLAEmail}
+              isLACreationDisabled={isCreationDisabled}
+              checked={!!account.allow_reversals}
+              onChange={onToggleAllowRefunds}
+            />
           }
         </td>
       )}

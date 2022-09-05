@@ -61,18 +61,23 @@ const AccountStatusDetailsView = React.memo(
           </div>
         )}
         {showCtaAsButton ? (
-          <div>
-            <button
-              class="m-t btn btn-primary btn-sm"
-              onClick={showActivationForm}
-              disabled={isCtaDisabled}
-              title={
-                isCtaDisabled && 'Linked account creation is not allowed for your business type'
-              }
-            >
-              {ctaText}
-            </button>
-          </div>
+          <>
+            <br />
+            <span>
+              {isCtaDisabled && (
+                <Popover align="top" theme="dark">
+                  <PopoverBody>This action is not allowed for your business type</PopoverBody>
+                </Popover>
+              )}
+              <button
+                class="m-t btn btn-primary btn-sm"
+                onClick={showActivationForm}
+                disabled={isCtaDisabled}
+              >
+                {ctaText}
+              </button>
+            </span>
+          </>
         ) : (
           <a onClick={showActivationForm}>{ctaText}</a>
         )}

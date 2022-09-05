@@ -9,7 +9,6 @@ import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import { showWhenUtil } from 'merchant/components/ShowWhen';
 import { ModalMask } from 'common/new-ui/Modal';
 import Amount from 'common/ui/Amount';
-import SwitchField from 'common/ui/Forms/SwitchField';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { AccountStatusDetailsView as AccountStatus } from './components/AccountStatusLabel';
 
@@ -244,6 +243,7 @@ export default class Details extends Component {
     const isAllowToEdit = showWhenUtil({
       additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
     });
+    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -266,24 +266,42 @@ export default class Details extends Component {
               <div class="panel-body">
                 <EntityDetailRow label="Email">
                   {noLAEmail ? (
-                    <button
-                      class="btn btn-link no-padding"
-                      onClick={this.showEditAccountModal(account)}
-                    >
-                      Add Email
-                    </button>
+                    <span>
+                      {isCreationDisabled && (
+                        <Popover align="top" theme="dark">
+                          <PopoverBody>
+                            This action is not allowed for your business type
+                          </PopoverBody>
+                        </Popover>
+                      )}
+                      <button
+                        class="btn btn-link no-padding"
+                        onClick={this.showEditAccountModal(account)}
+                        disabled={isCreationDisabled}
+                      >
+                        Add Email
+                      </button>
+                    </span>
                   ) : (
                     <span>
-                      {account.email}
-                      {!user.isRouteLinkedAccountCreationDisabled && (
-                        <a
-                          class="p-l"
+                      <span class="p-r">{account.email}</span>
+                      <span>
+                        {isCreationDisabled && (
+                          <Popover align="top" theme="dark">
+                            <PopoverBody>
+                              This action is not allowed for your business type
+                            </PopoverBody>
+                          </Popover>
+                        )}
+                        <button
+                          class="btn btn-link no-padding"
                           onClick={this.showEditAccountModal(account)}
                           title="Edit Email"
+                          disabled={isCreationDisabled}
                         >
                           Change
-                        </a>
-                      )}
+                        </button>
+                      </span>
                     </span>
                   )}
                 </EntityDetailRow>
@@ -298,7 +316,7 @@ export default class Details extends Component {
                     activationStatus={status}
                     showActivationForm={this.showActivationForm}
                     errorDetails={account.activation_details?.bank_details_verification_error}
-                    isCreationDisabled={user.isRouteLinkedAccountCreationDisabled}
+                    isCreationDisabled={isCreationDisabled}
                   />
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
@@ -306,14 +324,14 @@ export default class Details extends Component {
                 </EntityDetailRow>
                 {isAllowToEdit && (
                   <EntityDetailRow label="Dashboard Access">
-                    <ToggleField onEdit={this.showEditAccountModal(account)} isDisabled={noLAEmail}>
-                      <SwitchField
-                        checked={!!account.dashboard_access}
-                        onChange={this.onToggleDashboardAccess}
-                        disabled={noLAEmail}
-                        type="prime"
-                      />
-                    </ToggleField>
+                    <ToggleField
+                      onEdit={this.showEditAccountModal(account)}
+                      isLAEmailAbsent={noLAEmail}
+                      isLACreationDisabled={isCreationDisabled}
+                      checked={!!account.dashboard_access}
+                      onChange={this.onToggleDashboardAccess}
+                      isDashboard
+                    />
                   </EntityDetailRow>
                 )}
                 {isAllowToEdit && (
@@ -334,14 +352,13 @@ export default class Details extends Component {
                       </span>
                     }
                   >
-                    <ToggleField onEdit={this.showEditAccountModal(account)} isDisabled={noLAEmail}>
-                      <SwitchField
-                        checked={!!account.allow_reversals}
-                        onChange={this.onToggleAllowRefunds}
-                        disabled={noLAEmail}
-                        type="prime"
-                      />
-                    </ToggleField>
+                    <ToggleField
+                      onEdit={this.showEditAccountModal(account)}
+                      isLAEmailAbsent={noLAEmail}
+                      isLACreationDisabled={isCreationDisabled}
+                      checked={!!account.allow_reversals}
+                      onChange={this.onToggleAllowRefunds}
+                    />
                   </EntityDetailRow>
                 )}
 
