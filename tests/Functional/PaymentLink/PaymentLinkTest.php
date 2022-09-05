@@ -3434,6 +3434,65 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals("", $pl->getSlugFromShortUrl());
     }
 
+    /**
+     * @group nocode_cds
+     */
+    public function testOnCreateCustomDomainShouldWhitelistDomain()
+    {
+        $domain = "subdomain.razorpay.com";
+
+        $this->startTest(['request' => ['content' => ["domain_name" => $domain]]]);
+
+        /**
+         * @var $merchant \RZP\Models\Merchant\Entity
+         */
+        $merchant = $this->getDbEntityById("merchant", self::TEST_MID);
+
+        $found = false;
+
+        foreach ($merchant->getWhitelistedDomains() as $dm)
+        {
+            if ($dm === $domain)
+            {
+                $found = true;
+                break;
+            }
+        }
+
+        $this->assertTrue($found);
+    }
+
+    /**
+     * @group nocode_cds
+     */
+    public function testOnDeleteCustomDomainShouldRemoveFromWhitelistDomain()
+    {
+        $domain = "subdomain.razorpay.com";
+
+        /**
+         * @var $merchant \RZP\Models\Merchant\Entity
+         */
+        $merchant = $this->getDbEntityById("merchant", self::TEST_MID);
+        $merchant->setWhitelistedDomains([$domain]);
+        $merchant->saveOrFail();
+
+        $this->startTest(['request' => ['content' => ["domain_name" => $domain]]]);
+
+        $merchant = $this->getDbEntityById("merchant", self::TEST_MID);
+        $found = false;
+
+        foreach ($merchant->getWhitelistedDomains() as $dm)
+        {
+            if ($dm === $domain)
+            {
+                $found = true;
+                break;
+            }
+        }
+
+        $this->assertFalse($found);
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function assertManipulateOrderItemAndMakePayment(

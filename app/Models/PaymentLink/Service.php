@@ -9,6 +9,7 @@ use Request;
 use RZP\Encryption\AESEncryption;
 use RZP\Error\Error;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\PaymentLink\NocodeCustomUrl;
 use RZP\Models\PaymentLink\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
@@ -791,6 +792,7 @@ class Service extends Base\Service
      *
      * @return array
      * @throws \RZP\Exception\IntegrationException
+     * @throws \Throwable
      */
     public function cdsDomainCreate(array $input): array
     {
@@ -800,7 +802,18 @@ class Service extends Base\Service
 
         $domainClient = CustomDomain\Factory::getDomainClient();
 
-        return $domainClient->createDomain($input);
+        $res = $domainClient->createDomain($input);
+
+        // add domain in whitelisted domains for the merchant
+        $merchantCore = new Merchant\Core;
+
+        $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($input['domain_name']);
+
+        $merchantCore->addDomainInWhitelistedDomain($this->merchant, $domain);
+
+        $this->merchant->saveOrFail();
+
+        return $res;
     }
 
     /**
@@ -825,6 +838,7 @@ class Service extends Base\Service
      *
      * @return array
      * @throws \RZP\Exception\IntegrationException
+     * @throws \Throwable
      */
     public function cdsDomainDelete(array $input): array
     {
@@ -834,7 +848,18 @@ class Service extends Base\Service
 
         $domainClient = CustomDomain\Factory::getDomainClient();
 
-        return $domainClient->deleteDomain($input);
+        $res = $domainClient->deleteDomain($input);
+
+        // remove domain from whitelisted domains for the merchant
+        $merchantCore = new Merchant\Core;
+
+        $domain = NocodeCustomUrl\Entity::determineDomainFromUrl($input['domain_name']);
+
+        $merchantCore->removeDomainFromWhitelistedDomain($this->merchant, $domain);
+
+        $this->merchant->saveOrFail();
+
+        return $res;
     }
 
     /**

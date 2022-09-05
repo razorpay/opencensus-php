@@ -5471,4 +5471,30 @@ return [
             ]
         ],
     ],
+
+    "testOnCreateCustomDomainShouldWhitelistDomain" => [
+        'request' => [
+            "url"     => "/v1/payment_pages/cds/domains",
+            "method"  => "post",
+            "content" => [
+                "domain_name" => "https://subdomain.razorpay.com"
+            ],
+        ],
+        "response" => [
+            "content" => []
+        ],
+    ],
+
+    "testOnDeleteCustomDomainShouldRemoveFromWhitelistDomain" => [
+        'request' => [
+            "url"     => "/v1/payment_pages/cds/domains",
+            "method"  => "delete",
+            "content" => [
+                "domain_name" => "https://subdomain.razorpay.com"
+            ],
+        ],
+        "response" => [
+            "content" => []
+        ],
+    ],
 ];
