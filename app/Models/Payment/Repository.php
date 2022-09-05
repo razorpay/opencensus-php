@@ -2974,7 +2974,8 @@ EOT;
     public function hasMerchantTransacted(string $merchantId)
     {
         $result = $this->newQueryWithConnection($this->getSlaveConnection())
-                       ->where(Entity::MERCHANT_ID, "=", $merchantId)
+            ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
+            ->where(Entity::MERCHANT_ID, "=", $merchantId)
                        ->where(Entity::BASE_AMOUNT, ">", 0)
                        ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
                        ->limit(1)
