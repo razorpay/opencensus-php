@@ -116,9 +116,9 @@
   },
   "MERCHANT_VALIDATION_ERROR": {
     "failed": {
-      "source": "gateway",
-      "reason": "gateway_technical_error",
-      "description": "Payout failed at partner bank. Please retry after 30 min."
+      "source": "beneficiary_bank",
+      "reason": "bank_account_invalid",
+      "description": "Invalid beneficiary details."
     }
   },
   "CAPPED_DEBIT": {

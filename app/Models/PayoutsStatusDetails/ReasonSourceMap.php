@@ -54,7 +54,11 @@ class ReasonSourceMap
 
      Reason::IMPS_NOT_ALLOWED                      => self::BENEFICIARY_BANK,
 
-     Reason::BANK_ACCOUNT_INVALID                  => self::BUSINESS,
+     /**
+      * Commenting this mapping as for this reason multiple source is present .
+      * For this reason we will use source from json file depending on bank status code.
+      */
+     //Reason::BANK_ACCOUNT_INVALID                  => self::BUSINESS,
 
      Reason::INVALID_IFSC_CODE                     => self::BENEFICIARY_BANK,
 
