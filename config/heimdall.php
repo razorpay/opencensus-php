@@ -1636,16 +1636,7 @@ return [
                 'description' => 'Allow viewing access to capital-loc withdrawals and repayments',
                 'assignable'  => true,
             ],
-
-            Permission::OFFLINE_VERIFICATION_SERVICE_VIEW => [
-                'description' => 'Allow read access to Offline Verification Service routes/actions from dashboard',
-                'assignable'  => true,
-            ],
-
-            Permission::OFFLINE_VERIFICATION_SERVICE_EDIT => [
-                'description' => 'Allow edit access to Offline Verification Service routes/actions from dashboard',
-                'assignable'  => true,
-            ],
+            
             Permission::FINANCIAL_DATA_SERVICE => [
                 'description' => 'Allow access to Financial Data Service routes from dashboard',
                 'assignable'  => true,

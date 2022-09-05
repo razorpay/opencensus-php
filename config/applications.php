@@ -902,13 +902,6 @@ return [
         'webhook_secret'=> env('APP_CAPITAL_COLLECTIONS_WEBHOOK_SECRET'),
     ],
 
-    'offline_verification' => [
-        'url'           => env('APP_OFFLINE_VERIFICATION_URL'),
-        'username'      => 'api',
-        'secret'        => env('APP_OFFLINE_VERIFICATION_SECRET'),
-        'timeout'       => env('APP_OFFLINE_VERIFICATION_TIMEOUT', 60),
-    ],
-
     'payment_links' => [
         'mock'          => env('MOCK_PAYMENT_LINK_SERVICE', false),
         'url'           => env('APP_PAYMENT_LINKS_URL'),

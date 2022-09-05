@@ -282,8 +282,6 @@ return array(
 
     'subscription_proxy_timeout'          => env('SUBSCRIPTION_PROXY_TIMEOUT', 10),
 
-    'offline_verification_proxy_timeout'  => env('OFFLINE_VERIFICATION_PROXY_TIMEOUT', 10),
-
     'throw_exception_in_testing'          => env('THROW_EXCEPTION_IN_TESTING', true),
 
     'financial_data_service_proxy_timeout'  => env('FINANCIAL_DATA_SERVICE_PROXY_TIMEOUT', 10),
