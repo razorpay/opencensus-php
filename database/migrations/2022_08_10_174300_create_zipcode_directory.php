@@ -52,6 +52,6 @@ class CreateZipcodeDirectory extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::ADDRESS_CONSENT_1CC);
+        Schema::drop(Table::ZIPCODE_DIRECTORY);
     }
 }
