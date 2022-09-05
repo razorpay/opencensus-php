@@ -5,6 +5,14 @@
 
 @include('partials/header')
 
+@if ($newAuthFlow === true and $newAuthRoute === 'signup')
+  <title>Create your Razorpay Account - Razorpay</title>
+  <meta name="description" content="Welcome to Razorpay! Create your free Razorpay account today. Sign up for free to join the millions of users that trust us with their payments, banking & working capital." />
+@else
+  <title>Razorpay Dashboard</title>
+  <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
+@endif
+
 @if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete)
 
 @elseif ($newAuthFlow === false)
@@ -16,15 +24,29 @@
   @include('partials/new-auth')
 @else
   @include('partials/common')
+
+  <!-- Logged in user section -->
+
+  <!-- Preconnect to required domains  -->
+  <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
+  <link rel="dns-prefetch" href="https://www.gstatic.com">
+  <link rel="dns-prefetch" href="https://maxcdn.bootstrapcdn.com">
+  <link rel="dns-prefetch" href="https://o515678.ingest.sentry.io">
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://www.google-analytics.com">
+  <link rel="dns-prefetch" href="https://www.googleadservices.com">
+  <link rel="dns-prefetch" href="https://connect.facebook.net">
+  <link rel="dns-prefetch" href="https://www.youtube.com">
+  <link rel="dns-prefetch" href="https://googleads.g.doubleclick.net">
+  <link rel="dns-prefetch" href="https://www.facebook.com">
+  <link rel="dns-prefetch" href="https://www.google.com">
+  <link rel="dns-prefetch" href="https://www.google.co.in">
+
+  <!-- Preload FA icons CSS -->
+  <link rel="preload" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
 @endif
 
-@if ($newAuthFlow === true and $newAuthRoute === 'signup')
-  <title>Create your Razorpay Account - Razorpay</title>
-  <meta name="description" content="Welcome to Razorpay! Create your free Razorpay account today. Sign up for free to join the millions of users that trust us with their payments, banking & working capital." />
-@else
-  <title>Razorpay Dashboard</title>
-  <meta name="description" content="Online payment gateway for India with the best in class API, integration procedure, robust security and powerful dashboard" />
-@endif
+<!-- head tag ends here -->
 
 <script>
 var _dcq = _dcq || [];

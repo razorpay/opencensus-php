@@ -1,5 +1,4 @@
 // Comments are not supported inside merchantEntry function have to disable the eslint for this file
-// Comments are not supported inside merchantEntry function have to disable the eslint for this file
 
 function merchantEntry() {
   function executeJS() {
@@ -7,15 +6,16 @@ function merchantEntry() {
 
     const appendLink = (src) => {
       const link = document.createElement('link');
+      link.type = 'text/css';
       link.rel = 'stylesheet';
       link.href = src;
-      document.documentElement.appendChild(link);
+      document.head.appendChild(link);
     };
 
     const appendScript = (src) => {
       const s = document.createElement('script');
       s.src = src;
-      document.documentElement.appendChild(s);
+      document.head.appendChild(s);
     };
 
     websiteAssets.js.forEach((src) => {
@@ -25,8 +25,6 @@ function merchantEntry() {
     websiteAssets.css.forEach((src) => {
       appendLink(cdnDashboardUrl + src);
     });
-
-    appendLink('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
 
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api:client.js';
