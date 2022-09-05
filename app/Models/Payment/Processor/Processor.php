@@ -21,6 +21,7 @@ use RZP\Models\Card;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
 use RZP\Jobs\Order\OrderUpdate;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
@@ -285,6 +286,10 @@ class Processor
      */
     const MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER = 'marketplace_v2_card_payments_via_pg_router';
 
+    /**
+     * Razorx flag to indicate if a Fee Bearer Payment should go via PG Router and CPS or just via API service
+     */
+    const FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER = 'fee_bearer_card_payments_via_pg_router';
 
     /**
      * User consent flag indicates whether the user has given consent to tokenise
@@ -504,7 +509,6 @@ class Processor
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
-                ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
                 (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false))
@@ -639,6 +643,13 @@ class Processor
             if ($this->ba->isPartnerAuth() === true)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::PARTNER_AUTH_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
+            if ($merchant->isFeeBearerCustomerOrDynamic() ===true )
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
@@ -2297,6 +2308,77 @@ class Processor
             }
         }
         return $order;
+    }
+
+    public function processAndReturnPaymentFees($payment)
+    {
+        $data = [];
+        [$fee, $tax, $feeSplit] = (new Fee())->calculateMerchantFees($payment);
+
+        if($this->merchant->isFeeBearerCustomerOrDynamic() === false)
+        {
+            $data['fees'] = $fee;
+            $data['tax'] = $tax;
+            $data['currency'] = $payment->getCurrency();
+            $data['fee_bearer']= $payment->getFeeBearer();
+            return $data;
+        }
+
+        $payment->setAmount($payment->getAmount()- $payment->getFee());
+
+        if( $payment->hasOrder() === true and
+            $payment->order->getFeeConfigId() !== null )
+        {
+            $order = $this->repo->order->findByPublicId($payment->getOrderId());
+            $rzpFee = $fee - $tax;
+
+            $customerFee = $this->calculateCustomerFee($payment, $order, $rzpFee);
+            $customerFeeTax = $this->calculateCustomerFeeGst($customerFee, $rzpFee, $tax);
+        }
+
+        if(isset($customerFee) === true and $customerFee >= 0)
+        {
+            $payment->setFeeBearer(Merchant\FeeBearer::PLATFORM);
+        }
+
+        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
+        {
+            $fee = 0;
+            $tax = 0;
+        }
+
+        //Verifying if value sent in Convenience Fee
+        //is valid or not
+        if(isset($convenienceFee) === true)
+        {
+            if(isset($customerFee) === false or $customerFee > $convenienceFee)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The value sent in Convenience Fee Field is invalid ',
+                    'Convenience Fee');
+            }
+        }
+
+        $data = [
+            'original_amount'  => $payment->getAmount(),
+            'fees'            => $fee,
+            'razorpay_fee'    => $fee - $tax,
+            'tax'             => $tax,
+            'amount'          => $payment->getAmount() + $fee,
+            'currency'        => $payment->getCurrency(),
+            'fee_bearer'      => $payment->getFeeBearer()
+        ];
+
+        //Adding extra fields for response in case of
+        //additional customer fee associated with Payment
+        if(isset($customerFee) === true)
+        {
+            $data['customer_fee'] = $customerFee;
+            $data['customer_fee_gst'] = $customerFeeTax;
+            $data['amount'] = $payment->getAmount() + $customerFee + $customerFeeTax;
+        }
+
+        return $data;
     }
 
     public function processAndReturnFees(array & $input)

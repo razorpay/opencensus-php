@@ -165,6 +165,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function cardPaymentsInternalAppAuth($hostname = null, $mode = 'test'): void
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.card_payment_service')['secret'], $hostname);
+
+        $this->proxy = false;
+    }
+
     public function trustedBadgeInternalAppAuth($hostname = null, $mode = 'test'): void
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.trusted_badge')['secret'], $hostname);

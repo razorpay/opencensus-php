@@ -4466,20 +4466,15 @@ class Service extends Base\Service
         }
 
         $payment = $this->repo->payment->findByPublicId($id);
+        $this->merchant = $this->repo->merchant->findOrFail($payment['merchant_id']);
 
-        [$fee, $tax, $feeSplit] = (new Fee())->calculateMerchantFees($payment);
-
-        $response = [
-            "fee" => $fee,
-            "tax" => $tax,
-            "fee_split" => $feeSplit,
-        ];
+        $processor = $this->getNewProcessor($this->merchant);
+        $data = $processor->processAndReturnPaymentFees( $payment);
 
         $esInput['payment_ids'] = array($id);
-
         $this->paymentsCardEsSyncCron($esInput);
 
-        return $response;
+        return $data;
     }
 
     public function internalRiskNotificationForRearch($id, $input)
