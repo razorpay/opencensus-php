@@ -19,25 +19,7 @@ return [
             'content' => [
                 'iin'          => '112333',
                 'high_range'   => '999999999',
-               'low_range'    => '111111111',
-            ],
-        ],
-    ],
-
-    'testUpdateIin' => [
-        'request' => [
-            'url' => '/tokens/iin/update/112333',
-            'method' => 'post',
-            'content' => [
-                'high_range'        => '99999',
-                'low_range'         => '11111',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'iin'             => '112333',
-                'high_range'   => '99999',
-                'low_range'    => '11111',
+                'low_range'    => '111111111',
             ],
         ],
     ],

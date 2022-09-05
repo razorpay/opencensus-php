@@ -20,7 +20,7 @@ class Service extends Base\Service
         return $tokenisedIin->toArrayAdmin();
     }
 
-    public function updateIin($iin, $input)
+    public function updateIin($iin , $input)
     {
         $iin = $this->repo->tokenised_iin->findByIin($iin);
 
@@ -36,20 +36,66 @@ class Service extends Base\Service
         return $iin->toArrayAdmin();
     }
 
-    public function addOrUpdate($id, $input) : array
+    public function update($input)
     {
-        $iin = $this->repo->tokenised_iin->find($id);
+        if(isset($input['high_range'])){
 
-        if ($iin === null)
-        {
-            $input['iin'] = $id;
+            $iin = $this->repo->tokenised_iin->findbyHighRange($input['high_range']);
+        }
+        elseif(isset($input['low_range'])){
 
-            return $this->createIin($input);
+            $iin = $this->repo->tokenised_iin->findbyLowRange($input['low_range']);
         }
-        else
-        {
-            return $this->updateIin($id, $input);
+        else{
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
+                null,
+                [
+                    'input'  => $input
+                ]);
         }
+
+        if(!isset($iin)){
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS,
+                null,
+                [
+                    'input'  => $input
+                ]);
+        }
+
+        $iin_input = $input['iin'];
+
+        $iin->edit($iin_input);
+
+        $this->repo->saveOrFail($iin);
+
+        return $iin->toArrayAdmin();
+    }
+
+    public function addOrUpdate($iin) : array
+    {
+        $token_iin_high = $this->repo->tokenised_iin->findbyHighRange($iin['high_range']) ;
+
+        $token_iin_low = $this->repo->tokenised_iin->findbyLowRange($iin['low_range']);
+
+        if(isset($token_iin_high)){
+
+            $response = $this->updateIin($token_iin_high, $iin);
+
+        }
+        elseif(isset($token_iin_low)){
+
+            $response = $this->updateIin($token_iin_high , $iin);
+
+        }
+        else{
+
+            $response = $this->createIin($iin);
+
+        }
+
+        return $response;
     }
 
     public function fetchIin($iin)
@@ -96,34 +142,77 @@ class Service extends Base\Service
     public function addIinBulk($input): array
     {
 
+        $failedIds = [];
+        $successCount = $failedCount = 0;
+        $existingTokens = [];
         $returnData = [];
 
         foreach ($input['iins'] as $iin) {
 
-            try
-            {
+            try {
 
-                $iincreateResponse = $this->createIin($iin);
+                $token_iin_high = $this->repo->tokenised_iin->findbyHighRange($iin['high_range']) ;
 
-                $returnData[$iin['iin']] = $iincreateResponse;
+                $token_iin_low = $this->repo->tokenised_iin->findbyLowRange($iin['low_range']);
+
+                if(isset($token_iin_high->iin)){
+
+                    $this->trace->info(TraceCode::TOKEN_IIN_ALREADY_EXISTS,
+                        [
+                            'iin_high'    => $token_iin_high
+                        ]
+                    );
+                    $existingTokens[] =  $token_iin_high;
+
+                }
+                elseif(isset($token_iin_low->iin)){
+
+                    $this->trace->info(TraceCode::TOKEN_IIN_ALREADY_EXISTS,
+                        [
+                            'iin_low'    => $token_iin_low
+                        ]
+                    );
+                    $existingTokens[] =  $token_iin_low;
+                }
+                else{
+
+                    $resp = $this->createIin($iin);
+
+                    $returnData[$iin['iin']] = $resp;
+                }
+
+                $successCount++;
 
             }
-            catch (\Exception $e)
-            {
+            catch (\Exception $e){
+
                 $returnData[$iin['iin']] = $e->getMessage();
 
-                $this->trace->error(
-                    TraceCode::TOKENISED_IIN_BULK_ADDITION_FAILED,
+                $this->trace->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::TOKENISED_IINS_BULK_UPLOAD_FAILED,
                     [
                         'iin' => $iin,
                         'error' => $e->getMessage(),
                     ]
                 );
+                $failedCount++;
+
+                $failedIds[] = $iin;
+
             }
 
         }
 
-        return $returnData;
+        $response = [
+            'total_success'      => $successCount,
+            'total_fail'         => $failedCount,
+            'failed_iins'         => $failedIds,
+            'success_iins'        => $returnData,
+            'existing_iins'       => $existingTokens
+        ];
+
+        return $response;
     }
 
 

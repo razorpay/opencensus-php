@@ -28,14 +28,6 @@ class TokenIinTest extends TestCase
         $this->startTest();
     }
 
-
-    public function testUpdateIin()
-    {
-        $this->testCreateIin();
-
-        $this->startTest();
-    }
-
     public function testfetchIin()
     {
         $this->testCreateIin();

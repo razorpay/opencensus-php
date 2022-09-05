@@ -2489,6 +2489,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENISED_IIN_MISMATCH_STATIC_SELECTED                = 'TOKENISED_IIN_MISMATCH_STATIC_SELECTED';
     const DB_TOKENISED_IIN_SELECTED                             = 'DB_TOKENISED_IIN_SELECTED';
     const STATIC_TOKENISED_IIN_SELECTED                         = 'STATIC_TOKENISED_IIN_SELECTED';
+    const TOKENISED_IINS_BULK_UPLOAD                            = 'TOKENISED_IINS_BULK_UPLOAD';
+    const TOKENISED_IINS_BULK_UPLOAD_FAILED                     = 'TOKENISED_IINS_BULK_UPLOAD_FAILED';
+    const TOKEN_IIN_ALREADY_EXISTS                              = 'TOKEN_IIN_ALREADY_EXISTS';
     const IIN_METRICS_PUSH_EXCEPTION                            = 'IIN_METRICS_PUSH_EXCEPTION';
     const IIN_ERROR_LOGGING_RESPONSE_TIME_METRIC                = 'IIN_ERROR_LOGGING_RESPONSE_TIME_METRIC';
     const IIN_RECURRING_CHECK_FAILED                            = 'IIN_RECURRING_CHECK_FAILED';

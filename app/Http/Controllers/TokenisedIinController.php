@@ -21,11 +21,11 @@ class TokenisedIinController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function updateIin($iin)
+    public function updateIin()
     {
         $input = Request::all();
 
-        $data = $this->service()->updateIin($iin, $input);
+        $data = $this->service()->update($input);
 
         return ApiResponse::json($data);
     }
@@ -56,7 +56,6 @@ class TokenisedIinController extends Controller
 
         return ApiResponse::json($data);
     }
-
 
     public function deleteBulk($id)
     {

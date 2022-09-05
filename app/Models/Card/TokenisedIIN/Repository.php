@@ -55,4 +55,15 @@ class Repository extends Base\Repository
                     ->where(Entity::HIGH_RANGE, 'like' , $tokenIin."%")
                     ->first();
     }
+
+    public function findbyLowRange($tokenIin)
+    {
+        return $this->newQuery()->where(Entity::LOW_RANGE,'=',$tokenIin)->first();
+    }
+
+    public function findbyHighRange($tokenIin)
+    {
+        return $this->newQuery()->where(Entity::HIGH_RANGE,'=',$tokenIin)->first();
+    }
+
 }

@@ -3786,7 +3786,7 @@ class Route
      //Tokenisation Bin internal routes
         'create_token_iin'                          =>  ['post',       'tokens/iin',                                       'TokenisedIinController@createIin'                                    ],
         'fetch_token_iin'                           =>  ['post',       'tokens/iin/fetch/{iin}',                           'TokenisedIinController@fetchIin'                                     ],
-        'update_token_iin'                          =>  ['post',       'tokens/iin/update/{iin}',                          'TokenisedIinController@updateIin'                                    ],
+        'update_token_iin'                          =>  ['post',       'tokens/iin/update',                                'TokenisedIinController@updateIin'                                    ],
         'fetch_token_iin_by_range'                  =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
         'add_token_iin_bulk'                        =>  ['post',       'tokens/bulk/iin',                                  'TokenisedIinController@addIinBulk'                                   ],
         'delete_iin'                                =>  ['post',       'tokens/delete/{id}',                               'TokenisedIinController@deleteIin'                                    ],
