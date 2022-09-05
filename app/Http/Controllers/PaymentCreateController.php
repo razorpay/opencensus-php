@@ -912,6 +912,33 @@ class PaymentCreateController extends Controller
         return $data;
     }
 
+    public function generateCoprotoForRearch()
+    {
+        $input = Request::all();
+
+        $merchant = $this->repo->merchant->findByPublicId($input['merchant_id']);
+
+        $languageCode = App::getLocale() !== null ?
+            App::getLocale() :
+            LocaleCore::setLocale($data, $merchant->getId());
+
+        $templateData = [
+               'data'          => $input,
+               'cdn'           => $this->config->get('url.cdn.production'),
+               'production'    => $this->app->environment() === Environment::PRODUCTION,
+               'language_code' => $languageCode,
+            ];
+
+        $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
+            [
+                'view create via'   =>  'gateway.gatewayOtpPostForm',
+                'rearch_coproto_generation' => "rearch_acs_page"
+            ]);
+
+       return View::make('gateway.gatewayOtpPostForm')
+                            ->with('data', $templateData);
+    }
+
     protected function returnCallbackResponse($data)
     {
         $merchant = $this->app['basicauth']->getMerchant();

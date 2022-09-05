@@ -3687,6 +3687,7 @@ class Route
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
         'internal_merchant_risk_notification'        => ['post',       'internal/payments/{id}/risk_notification',            'PaymentController@internalRiskNotificationForRearch'                      ],
         'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
+        'internal_generate_coproto'                  => ['post',       'internal/payments/coproto',                           'PaymentCreateController@generateCoprotoForRearch'            ],
 
         // Onboarding APIs
         'complete_submerchant_onboarding'         => ['post',       'submerchants/{id}/onboard',                             'MerchantController@completeSubmerchantOnboarding'],
@@ -5087,6 +5088,7 @@ class Route
         'internal_payment_pricing',
         'internal_merchant_risk_notification',
         'internal_sign_payload',
+        'internal_generate_coproto',
 
 
         // cron to send emails about pending payouts
@@ -13697,6 +13699,7 @@ class Route
             'internal_payment_pricing',
             'internal_merchant_risk_notification',
             'internal_sign_payload',
+            'internal_generate_coproto',
         ],
 
         'freshdesk_webhook' => [
