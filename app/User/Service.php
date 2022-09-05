@@ -417,7 +417,13 @@ class Service extends Base\Service
     {
         $userId = Session::get('user_id', "");
 
-        if (empty($userId) === false)
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $userId = app('request.ctx')->getUserId();
+
+            $options['headers']['X-Dashboard-User-Id'] = $userId;
+        }
+        else if (empty($userId) === false)
         {
             $options['headers']['X-Dashboard-User-Id'] = $userId;
 

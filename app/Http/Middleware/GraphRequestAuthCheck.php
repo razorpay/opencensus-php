@@ -38,7 +38,7 @@ class GraphRequestAuthCheck
         'resendTwoFactorLoginOtp',
         'loginTwoFactorPassword',
         'accountVerificationOtp',
-        'refreshToken'
+        'refreshAccessToken'
     ];
 
     public function handle($request, Closure $next)
