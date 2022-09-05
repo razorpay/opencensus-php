@@ -491,8 +491,12 @@ class Service extends Base\Service
             );
         }
 
-        $user = Auth::guard('user')->user();
-        $user->confirmed = true;
+        // Adding this check Since user would not be present in session for oauth.
+        if (app('request.ctx')->isOauthRequest() === false)
+        {
+            $user = Auth::guard('user')->user();
+            $user->confirmed = true;
+        }
 
         return [$error, $data];
     }
