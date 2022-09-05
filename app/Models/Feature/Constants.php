@@ -1549,6 +1549,11 @@ class Constants
      */
     const ICICI_2FA = 'icici_2fa';
 
+    /**
+     * Feature flag to download consolidated org reports from respective org admin dashboard
+     */
+    const CONSOLIDATED_ORG_REPORTS = 'consolidated_org_reports';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2116,6 +2121,7 @@ class Constants
         self::CAMS_MERCHANT_REPORT            => true,
         self::ICICI_2FA                       => true,
         self::BSE_MERCHANT_REPORT             => true,
+        self::CONSOLIDATED_ORG_REPORTS        => true,
     ];
 
     // Entity type constants
