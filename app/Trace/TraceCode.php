@@ -4495,6 +4495,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
     const GATEWAY_CAPTURE_RAZORX_VARIANT                        = 'GATEWAY_CAPTURE_RAZORX_VARIANT';
     const ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT                  = 'ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT';
+    const TOKEN_HQ_RESPONSE_EVENT_DATA                          = 'TOKEN_HQ_RESPONSE_EVENT_DATA';
     const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
     const VAULT_SERVICE_DISABLING                               = 'VAULT_SERVICE_DISABLING';
     const VAULT_SERVICE_INTERNAL_ERROR                          = 'VAULT_SERVICE_INTERNAL_ERROR';

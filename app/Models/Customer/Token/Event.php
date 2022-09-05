@@ -97,6 +97,16 @@ class Event extends Base\Core
 
             $eventData = $this->fetchResponseEventData($exe, $eventData, $response);
 
+            $this->trace->info(TraceCode::TOKEN_HQ_RESPONSE_EVENT_DATA, [
+                'response'       => $response,
+                'eventData'      => $eventData,
+                'execption'      => $exe,
+                'eventCode'      => $eventCode,
+                'event'          => $event,
+                'input'          => $input,
+                'type'           => $type
+            ]);
+
             $context = [
                 'task_id' => $this->app['request']->getTaskId(),
                 'request_id' => $this->app['request']->getId(),
@@ -188,7 +198,7 @@ class Event extends Base\Core
         }
 
         $eventData += [
-                'status' => 'SUCCESS',
+                'status' => isset($response['success']) ? $response['success'] : 'SUCCESS',
                 'spt_token'  => isset($response['id']) ? $response['id'] : null,
                 'token_id'      => isset($response['token']) ? $response['token'] : null,
                 'payment_account_reference' => isset($response['fingerprint']) ? $response['fingerprint'] : null,
