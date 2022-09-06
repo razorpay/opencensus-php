@@ -6562,14 +6562,17 @@ class UserTest extends TestCase
         $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
         Channel::RBL);
 
-        $bankingAccountAttributes = [
-            'id'                    =>  'ABCde1234ABCdE',
-            'account_number'        =>  '2224440041626998',
-            'balance_id'            =>  $this->bankingBalance->getId(),
-            'account_type'          =>  'nodal',
-        ];
-
-        $this->createBankingAccount($bankingAccountAttributes);
+        $basd = $this->fixtures->create('banking_account_statement_details', [
+            'id'                      => 'xbasd000000003',
+            'account_number'          => '2224440041626998',
+            'status'                  => 'active',
+            'merchant_id'             => '10000000000000',
+            'balance_id'              => $this->bankingBalance->getId(),
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct',
+            'channel'                 => 'rbl',
+        ]);
 
         $this->fixtures->user->createBankingUserForMerchant('10000000000000',
                                                             $attributes = ['id' => '30000000000000'],
@@ -6611,6 +6614,34 @@ class UserTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testGetForUsersWithBankingAccountForCAHavingGatewayBalance()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
+
+        $this->setUpMerchantForBusinessBanking(false, 1000000, AccountType::DIRECT,
+                                               Channel::ICICI);
+
+        $this->fixtures->user->createBankingUserForMerchant('10000000000000',
+                                                            $attributes = ['id' => '30000000000000'],
+                                                            $role = 'owner',
+                                                            $mode = 'test');
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => '10000000000000',
+            Details\Entity::BALANCE_ID              => $this->bankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '2224440041626905',
+            Details\Entity::CHANNEL                 => Details\Channel::ICICI,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 30000000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
     }
 
     public function testGetBankingUserWithPermissions()

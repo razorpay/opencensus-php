@@ -485,6 +485,9 @@ final class RazorxTreatment
     //Experiment to disable statement fetch for merchants
     const DISABLE_STATEMENT_FETCH = 'disable_statement_fetch';
 
+    //Experiment to choose gateway balance in case of CA flows
+    const USE_GATEWAY_BALANCE = 'use_gateway_balance';
+    
     // Experiment to use secure context for OTP generation
     const SECURE_OTP_CONTEXT = 'secure_otp_context';
 

@@ -1165,11 +1165,24 @@ class Core extends Base\Core
         /** @var BankingAccountStatement\Details\Entity $basDetailsUpdated */
         $basDetailsUpdated = $this->fetchAndUpdateGatewayBalanceIfStale($balanceEntity);
 
+        $variant = $this->app->razorx->getTreatment(
+            $basDetailsUpdated->getId(),
+            Merchant\RazorxTreatment::USE_GATEWAY_BALANCE,
+            $this->mode
+        );
+
         $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
 
-        if ($basDetailsUpdated->isGatewayBalanceFetchCronMoreUpdated() === true)
+        if ($variant === 'on')
         {
             $balanceAmount = $basDetailsUpdated->getGatewayBalance();
+        }
+        else
+        {
+            if ($basDetailsUpdated->isGatewayBalanceFetchCronMoreUpdated() === true)
+            {
+                $balanceAmount = $basDetailsUpdated->getGatewayBalance();
+            }
         }
 
         return $balanceAmount;

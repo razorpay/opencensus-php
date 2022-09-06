@@ -4472,6 +4472,52 @@ return [
         ],
     ],
 
+    'testGetForUsersWithBankingAccountForCAHavingGatewayBalance' => [
+        'request'  => [
+            'url'     => '/users/30000000000000',
+            'method'  => 'GET',
+            'content' => [],
+            'server'  => [
+                'HTTP_X_DASHBOARD_USER_ID' => '30000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants' => [
+                    [
+                        'activated'            => true,
+                        'ca_activation_status' => 'activated',
+                        'accounts'             => [
+                            [
+                                'channel'         => 'icici',
+                                'status'          => 'activated',
+                                'account_number'  => '2224440041626905',
+                                'account_type'    => 'current',
+                                'balance'         => [
+                                    'balance' => 30000000,
+                                ],
+                                'banking_balance' => [
+                                    'account_number' => '2224440041626905',
+                                    'balance'        => 30000000,
+                                    'type'           => 'banking',
+                                    'channel'        => 'icici',
+                                    'last_fetched_at'=> 1659873429,
+                                ]
+                            ]
+                        ],
+                    ],
+                ],
+                'invitations' => [
+                ],
+                'settings'    => [
+                ],
+            ],
+        ],
+    ],
+
     'testGetBankingUserWithPermissions'   => [
         'response'      => [
             'content'     => [

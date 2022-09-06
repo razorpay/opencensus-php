@@ -22,6 +22,7 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -1015,7 +1016,16 @@ class BasicAuthTest extends TestCase
 
         $balance = $this->getDbLastEntity('balance');
 
-        $this->createBankingAccount();
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => '10000000000000',
+            Details\Entity::BALANCE_ID              => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '2224440041626905',
+            Details\Entity::CHANNEL                 => Details\Channel::ICICI,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 800000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
 
         $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 12000]);
 

@@ -528,11 +528,24 @@ class Core extends Base\Core
     {
         $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
 
-        $bankingAccount = $balanceEntity->bankingAccount;
+        $basDetails = $balanceEntity->bankingAccountStatementDetails;
 
-        if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
+        $variant = $this->app->razorx->getTreatment(
+            $basDetails->getId(),
+            Merchant\RazorxTreatment::USE_GATEWAY_BALANCE,
+            $this->mode
+        );
+
+        if ($variant === 'on')
         {
-            $balanceAmount = $bankingAccount->getGatewayBalance();
+            $balanceAmount = $basDetails->getGatewayBalance();
+        }
+        else
+        {
+            if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
+            {
+                $balanceAmount = $basDetails->getGatewayBalance();
+            }
         }
 
         return $balanceAmount;

@@ -17,6 +17,7 @@ use RZP\Models\BankingAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Merchant\Credits\Constants;
 use RZP\Models\BankingAccountStatement\Details;
@@ -152,25 +153,27 @@ class Entity extends Base\PublicEntity
     {
         $accountType = $attributes[self::ACCOUNT_TYPE];
 
-        $channel = $attributes[self::CHANNEL];
-
         if ($accountType === AccountType::DIRECT)
         {
-            if ($channel === Channel::RBL)
-            {
-                $bankingAccount = $this->bankingAccount;
+            /** @var Details\Entity $basDetails */
+            $basDetails = $this->bankingAccountStatementDetails;
 
-                // in normal scenario we are sending balance table's balance but if the gateway balance is
-                // more updated, then we use that instead
-                if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
-                {
-                    $attributes[self::BALANCE] = $bankingAccount->getGatewayBalance();
-                }
+            $app = App::getFacadeRoot();
+
+            $variant = $app->razorx->getTreatment(
+                $basDetails->getId(),
+                RazorxTreatment::USE_GATEWAY_BALANCE,
+                $app['rzp.mode'] ?? 'live'
+            );
+
+            if ($variant === 'on')
+            {
+                // Consuming gateway balance from basDetails for RBL too, since banking_account is going to be migrated
+                // to banking_account service
+                $attributes[self::BALANCE] = $basDetails->getGatewayBalance();
             }
-            else if ($channel === Details\Channel::ICICI)
+            else
             {
-                $basDetails = $this->bankingAccountStatementDetails;
-
                 // in normal scenario we are sending balance table's balance but if the gateway balance is
                 // more updated, then we use that instead
                 if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)
@@ -204,26 +207,27 @@ class Entity extends Base\PublicEntity
     {
         $accountType = $attributes[self::ACCOUNT_TYPE];
 
-        $channel = $attributes[self::CHANNEL];
-
         if ($accountType === AccountType::DIRECT)
         {
-            if ($channel === Channel::RBL)
-            {
-                $bankingAccount = $this->bankingAccount;
+            /** @var Details\Entity $basDetails */
+            $basDetails = $this->bankingAccountStatementDetails;
 
-                // in normal scenario we are sending balance table's balance but if the gateway balance is
-                // more updated, then we use that instead
-                if ($bankingAccount->isGatewayBalanceFetchCronMoreUpdated() === true)
-                {
-                    $attributes[self::LAST_FETCHED_AT] = $bankingAccount->getBalanceLastFetchedAt();
-                }
+            $app = App::getFacadeRoot();
+
+            $variant = $app->razorx->getTreatment(
+                $basDetails->getId(),
+                RazorxTreatment::USE_GATEWAY_BALANCE,
+                $app['rzp.mode'] ?? 'live'
+            );
+
+            if ($variant === 'on')
+            {
+                // Consuming balanceLastFetchedAt from basDetails for RBL too, since banking_account is going to be migrated
+                // to banking_account service
+                $attributes[self::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
             }
-            else if ($channel === Details\Channel::ICICI)
+            else
             {
-                /** @var Details\Entity $basDetails */
-                $basDetails = $this->bankingAccountStatementDetails;
-
                 // in normal scenario we are sending balance table's balance but if the gateway balance is
                 // more updated, then we use that instead
                 if ($basDetails->isGatewayBalanceFetchCronMoreUpdated() === true)

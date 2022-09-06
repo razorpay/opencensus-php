@@ -32,6 +32,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Services\Segment\XSegmentClient;
+use RZP\Models\BankingAccountStatement\Details;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -4671,6 +4672,17 @@ class BankingAccountTest extends TestCase
 
         $ba2 = $this->createBankingAccount();
 
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => '10000000000000',
+            Details\Entity::BALANCE_ID              => $xBalance2->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567808',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 100000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
+
         $this->fixtures->edit('banking_account', $ba1->getId(), [
             'account_number' => '2224440041626905',
             'balance_id'     => $xBalance1->getId(),
@@ -4699,6 +4711,17 @@ class BankingAccountTest extends TestCase
                                              ]);
 
         $ba2 = $this->createBankingAccount();
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => '10000000000000',
+            Details\Entity::BALANCE_ID              => $xBalance2->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567808',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 100000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
 
         $this->fixtures->edit('banking_account', $ba2['id'], [
             'status'         => 'archived',
@@ -5000,6 +5023,17 @@ class BankingAccountTest extends TestCase
 
         $ba2 = $this->createBankingAccount();
 
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => $merchantId,
+            Details\Entity::BALANCE_ID              => $xBalance2->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567808',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 90000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
+
         $this->fixtures->edit('banking_account', $ba1->getId(), [
             'account_number' => '2224440041626905',
             'balance_id'     => $xBalance1->getId(),
@@ -5040,6 +5074,17 @@ class BankingAccountTest extends TestCase
                 'balance'           => 90000,
                 'channel'           => 'rbl'
             ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => $merchantId,
+            Details\Entity::BALANCE_ID              => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567890',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 90000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
 
         $bankingAccount = $this->createBankingAccount();
 
@@ -5097,6 +5142,17 @@ class BankingAccountTest extends TestCase
                 'balance'           => 90000,
                 'channel'           => 'rbl'
             ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => $merchantId,
+            Details\Entity::BALANCE_ID              => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567890',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 90000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
 
         $bankingAccount = $this->createBankingAccount();
 
@@ -5156,6 +5212,17 @@ class BankingAccountTest extends TestCase
                 'channel'           => 'rbl'
             ]);
 
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => $merchantId,
+            Details\Entity::BALANCE_ID              => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567890',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 90000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
+
         $bankingAccount = $this->createBankingAccount();
 
         $this->fixtures->edit('banking_account', $bankingAccount['id'], [
@@ -5213,6 +5280,17 @@ class BankingAccountTest extends TestCase
                 'balance'           => 90000,
                 'channel'           => 'rbl'
             ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            Details\Entity::ID                      => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID             => $merchantId,
+            Details\Entity::BALANCE_ID              => $balance->getId(),
+            Details\Entity::ACCOUNT_NUMBER          => '1234567890',
+            Details\Entity::CHANNEL                 => Details\Channel::RBL,
+            Details\Entity::STATUS                  => Details\Status::ACTIVE,
+            Details\Entity::GATEWAY_BALANCE         => 90000,
+            Details\Entity::BALANCE_LAST_FETCHED_AT => 1659873429
+        ]);
 
         $bankingAccount = $this->createBankingAccount();
 

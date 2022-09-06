@@ -24,6 +24,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -1496,6 +1497,43 @@ class IciciCaPayoutTest extends TestCase
         $bankingBalance = $this->getDbLastEntity('balance');
 
         $this->fixtures->balance->edit($bankingBalance['id'], ['balance' => 21000000]);
+
+        $this->dispatchQueuedPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('created', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+    }
+
+    public function testQueuedPayoutByFetchingBalanceFromGatewayBalance()
+    {
+        $this->mockMozartResponseForFetchingBalanceFromIciciGateway(500);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::USE_GATEWAY_BALANCE    => 'on']);
+
+        $firstQueuedPayoutAttributes = [
+            'account_number'       => '2224440041626905',
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
+        ];
+
+        $this->fixtures->edit('banking_account_statement_details','xbas0000000002',[
+            'gateway_balance'         => 2500,
+            'balance_last_fetched_at' => 1565944927,
+            'account_type'            => 'direct'
+        ]);
+
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('queued', $payout['status']);
+        $this->assertEquals('icici', $payout['channel']);
+
+        $this->fixtures->edit('banking_account_statement_details','xbas0000000002',[
+            'gateway_balance'         => 500000000
+        ]);
 
         $this->dispatchQueuedPayouts();
 
