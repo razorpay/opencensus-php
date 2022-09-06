@@ -481,7 +481,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $businessAppUrlCheckRules = [
-        DetailConstants::BUSINESS_APP_URL           => 'sometimes|string|max:50',
+        DetailConstants::BUSINESS_APP_URL           => 'sometimes|string|max:100',
         DetailConstants::BUSINESS_APP_USERNAME      => 'sometimes|string|max:50',
         DetailConstants::BUSINESS_APP_PASSWORD      => 'sometimes|string|max:50',
         DetailConstants::URL_TYPE                   => 'required|string|in:'.DetailConstants::URL_TYPE_APP,
