@@ -703,4 +703,34 @@ class VendorPaymentTest extends TestCase
 
         $vpMock->shouldHaveReceived('executeVendorPayment2fa');
     }
+
+    public function testCreateBusinessInfo()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createBusinessInfo')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createBusinessInfo');
+    }
+
+    public function testGetBusinessInfoStatus()
+    {
+        $this->ba->proxyAuth();
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getBusinessInfoStatus')->andReturn([]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getBusinessInfoStatus');
+    }
 }

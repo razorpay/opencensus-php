@@ -139,6 +139,8 @@ class Tracing
             'vendor_settlement_mark_as_paid',
             'vendor_settlement_vendor_balance',
             'vendor_payment_list_vendors',
+            'vendor_sign_up_create_business_info',
+            'vendor_sign_up_get_business_info_status',
 
             'vendor_invoices_list',
             'vendor_invoice_get_by_id',

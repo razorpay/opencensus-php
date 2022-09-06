@@ -801,4 +801,32 @@ return [
             'content' => []
         ]
     ],
+    'testCreateBusinessInfo' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/onboarding/business_info',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+    'testGetBusinessInfoStatus' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/onboarding/business_info/status',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

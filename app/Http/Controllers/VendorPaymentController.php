@@ -322,4 +322,14 @@ class VendorPaymentController extends Controller
     {
         return $this->service->listVendors($this->ba->getMerchant(), $this->input);
     }
+
+    public function createBusinessInfo()
+    {
+        return $this->service->createBusinessInfo($this->ba->getMerchant(), $this->input);
+    }
+
+    public function getBusinessInfoStatus()
+    {
+        return $this->service->getBusinessInfoStatus($this->ba->getMerchant());
+    }
 }

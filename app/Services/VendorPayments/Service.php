@@ -74,6 +74,8 @@ class Service
     const GET_FUND_ACCOUNTS             = 'GetFundAccounts';
     const GET_VENDOR_BALANCE            = 'GetVendorBalance';
     const LIST_VENDORS                  = 'ListVendors';
+    const CREATE_BUSINESS_INFO          = 'CreateBusinessInfo';
+    const GET_BUSINESS_INFO_STATUS      = 'GetBusinessInfoStatus';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -887,5 +889,19 @@ class Service
                 $description);
         }
         return $responseBody;
+    }
+
+    public function createBusinessInfo(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_BUSINESS_INFO);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getBusinessInfoStatus(MerchantEntity $merchant)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_BUSINESS_INFO_STATUS);
+
+        return $this->makeRequest($merchant, $url);
     }
 }
