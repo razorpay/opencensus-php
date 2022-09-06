@@ -301,6 +301,15 @@ class Service extends Base\Service
 
     public function updatePresignUpData($data, $activated, $currentMerchant = null, $genericUser = null)
     {
+        // In case the call is for merchant_details for web oauth, we
+        // take pre_signup_complete from users API. So returning for merchant_details call
+        // for web mobile_oauth
+        if ((app('request.ctx')->isOauthRequest() === true &&
+            empty($genericUser) === true))
+        {
+            return $data;
+        }
+
         $user = Auth::user();
 
         // with mobile signup going live, only contact name is used
