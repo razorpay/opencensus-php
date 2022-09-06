@@ -91,10 +91,14 @@ class Repository extends Base\Repository
         }
         else if ($shouldSync === false)
         {
+            $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'saveOrFail']);
+
             parent::saveOrFail($entity, $options);
         }
         else
         {
+            $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'saveOrFail']);
+
             $entity = $this->transaction(function () use (& $entity, $options, $shouldSync) {
                 if ($shouldSync === true) {
                     $entity->setSyncStatus(SyncStatus::NOT_SYNCED);
@@ -152,6 +156,8 @@ class Repository extends Base\Repository
 
     public function getByTypeAndMerchantIds($type, $merchantIds)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByTypeAndMerchantIds']);
+
         $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $terminalAllColumn = $this->dbColumn('*');
 
@@ -280,6 +286,8 @@ class Repository extends Base\Repository
     {
         $gateways = Payment\Gateway::$methodMap['wallet'];
 
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getTerminalsWithNullEnabledWallets']);
+
         $terminals = $this->newQuery()
                           ->whereIn(Entity::GATEWAY, $gateways)
                           ->limit($count)
@@ -290,6 +298,8 @@ class Repository extends Base\Repository
 
     public function findOrFail($id, $columns = array('*'))
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findOrFail']);
+
         $model = $this->find($id, $columns);
 
         if ( ! is_null($model))
@@ -307,6 +317,8 @@ class Repository extends Base\Repository
 
     public function findOrFailPublic($id, $columns = ['*'])
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findOrFailPublic']);
+
         $model = $this->find($id, $columns);
 
         if (is_null($model) === false)
@@ -348,6 +360,8 @@ class Repository extends Base\Repository
                 // In case of activated PayPal terminals it is present in both API service DB and TS service DB.
                 if(!$terminalEntityByTS->isTerminalOnlyOnTerminalsService()){
 
+                    $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'find']);
+
                     $terminal = parent::find($id, $columns);
 
                     if (Terminal\Service::compareTerminalEntity($terminal, $terminalEntityByTS) === false)
@@ -366,6 +380,7 @@ class Repository extends Base\Repository
             }
         }
 
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'find']);
         return parent::find($id, $columns);
     }
 
@@ -406,6 +421,7 @@ class Repository extends Base\Repository
             return $tsTerminals;
         }
         else {
+            $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'fetch']);
 
             $terminals = parent::fetch($params, $merchantId, $connectionType);
             return $terminals;
@@ -432,6 +448,8 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($mid)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByMerchantId']);
+
         $query = $this->newQuery()
                       ->withTrashed();
 
@@ -442,6 +460,8 @@ class Repository extends Base\Repository
 
     public function getActivatedDirectSettlementTerminalsByMerchant(string $mId)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getActivatedDirectSettlementTerminalsByMerchant']);
+
         $query = $this->newQuery();
 
         $this->addMerchantWhereCondition($query, [$mId]);
@@ -511,6 +531,9 @@ class Repository extends Base\Repository
         {
             $query->withTrashed();
         }
+
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findByGatewayAndTerminalData']);
+
         $apiTerminals = $query->get();
 
         try
@@ -559,6 +582,8 @@ class Repository extends Base\Repository
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findByGatewayMerchantId']);
+
         $terminal =  $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY, '=', $gateway)
@@ -620,6 +645,8 @@ class Repository extends Base\Repository
 
     public function findActivatedTerminalByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findActivatedTerminalByGatewayMerchantId']);
+
         $terminal =  $this->newQuery()
             ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
             ->where(Entity::GATEWAY, '=', $gateway)
@@ -677,6 +704,8 @@ class Repository extends Base\Repository
 
     public function findTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findTerminalByGatewayMerchantIdAndGatewayTerminalId']);
+
         $terminal =  $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                     ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
@@ -736,6 +765,8 @@ class Repository extends Base\Repository
 
     public function findEnabledTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findEnabledTerminalByMpanAndGatewayMerchantId']);
+
         $terminal = $this->newQuery()
         ->where(Entity::GATEWAY, '=', $gateway)
         ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
@@ -801,6 +832,8 @@ class Repository extends Base\Repository
 
     public function getByParams(array $params, bool $fetchWhereSubmerchant = false)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByParams']);
+
         $query = $this->buildFetchByParamsQuery($params);
 
         $terminals = $query->get();
@@ -858,6 +891,7 @@ class Repository extends Base\Repository
 
     public function getNonFailedNonDeactivatedByParams(array $params, $proxyTs = true)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getNonFailedNonDeactivatedByParams']);
 
         $query = $this->buildFetchByParamsQuery($params);
 
@@ -911,6 +945,8 @@ class Repository extends Base\Repository
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getTerminalsForMerchantAndSharedMerchant']);
+
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
         $cacheTag = Entity::getCacheTag($merchant->getId());
@@ -947,6 +983,8 @@ class Repository extends Base\Repository
         $query->remember($this->getCacheTtl())
               ->cachetags($cacheTags);
 
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getTerminalForMerchantParentMerchantAndSharedMerchant']);
+
         return $query->get();
     }
 
@@ -962,7 +1000,7 @@ class Repository extends Base\Repository
         // This is because we don't have different terminals for the first
         // auth transaction and then subsequent recurring transactions.
         //
-
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getEmandateTerminalsForMerchantAndSharedMerchant']);
 
         $query = $this->newQuery()
                       ->enabled()
@@ -1029,6 +1067,8 @@ class Repository extends Base\Repository
 
     public function getHitachiTerminalsForCurrencyOrStatusUpdate($limit): PublicCollection
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getHitachiTerminalsForCurrencyOrStatusUpdate']);
+
         $currencyLength = strlen(json_encode(Currency::SUPPORTED_CURRENCIES));
 
         return $this->newQuery()
@@ -1041,6 +1081,8 @@ class Repository extends Base\Repository
 
     public function getAllBankTransferTerminals($gateway, $merchantIds = []): PublicCollection
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getAllBankTransferTerminals']);
+
         $query = $this->newQuery()
                       ->select([Entity::ID, Entity::GATEWAY_MERCHANT_ID, Entity::GATEWAY, Entity::GATEWAY_MERCHANT_ID2, Entity::MERCHANT_ID, Entity::ACCOUNT_TYPE])
                       ->where(Entity::BANK_TRANSFER, true)
@@ -1113,6 +1155,8 @@ class Repository extends Base\Repository
 
         $newQuery = clone $query;
 
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'addMerchantWhereCondition']);
+
         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
         $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
@@ -1138,6 +1182,8 @@ class Repository extends Base\Repository
 
     public function getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($gatewayTerminalId, $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull']);
+
         $terminal = $this->newQuery()
                     ->withTrashed()
                     ->where(Entity::GATEWAY_TERMINAL_ID, '=', $gatewayTerminalId)
@@ -1201,6 +1247,8 @@ class Repository extends Base\Repository
 
     public function getByIdAndMerchantId($mid, $tid)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByIdAndMerchantId']);
+
         $query = $this->newQuery()
                       ->withTrashed();
 
@@ -1258,6 +1306,8 @@ class Repository extends Base\Repository
 
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByMerchantIdAndGateway']);
+
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY, '=', $gateway)
                       ->enabled();
@@ -1321,6 +1371,8 @@ class Repository extends Base\Repository
 
     public function getIdsByMerchantIdsAndGateway($mids, $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getIdsByMerchantIdsAndGateway']);
+
         $query = $this->newQuery()
                     ->where(Entity::GATEWAY, $gateway)
                     ->enabled();
@@ -1384,6 +1436,8 @@ class Repository extends Base\Repository
 
     public function getRecurringTerminalsByMidAndGateway($mid, $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getRecurringTerminalsByMidAndGateway']);
+
         $query = $this->newQuery()
             ->where(Entity::GATEWAY, $gateway)
             ->type([Terminal\Type::RECURRING_3DS])
@@ -1448,6 +1502,8 @@ class Repository extends Base\Repository
 
     public function getUpiRecurringTerminalsByMid($mid)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getUpiRecurringTerminalsByMid']);
+
         $query = $this->newQuery()
                       ->whereIn(Entity::GATEWAY, Payment\Gateway::$upiRecurringGateways)
                       ->type([Terminal\Type::RECURRING_3DS])
@@ -1508,6 +1564,8 @@ class Repository extends Base\Repository
 
     public function getSharedTerminalForGateway($gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getSharedTerminalForGateway']);
+
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
@@ -1517,6 +1575,8 @@ class Repository extends Base\Repository
 
     public function getSharedTerminalForGatewayWithCategory($gateway, $category)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getSharedTerminalForGatewayWithCategory']);
+
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
@@ -1527,6 +1587,8 @@ class Repository extends Base\Repository
 
     public function getEmiTerminal($mId, $gateway, $duration)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getEmiTerminal']);
+
         $query = $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->shared()
@@ -1541,6 +1603,8 @@ class Repository extends Base\Repository
 
     public function getSharedTerminalsOnCommonAccount()
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getSharedTerminalsOnCommonAccount']);
+
         return $this->newQuery()
                     ->merchantId(Merchant\Account::SHARED_ACCOUNT)
                     ->enabled()
@@ -1549,6 +1613,8 @@ class Repository extends Base\Repository
 
     public function getAllSharedTerminals()
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getAllSharedTerminals']);
+
         $map = Terminal\Shared::getSharedTerminalMapping();
 
         $sharedTerminalIds = array_keys($map);
@@ -1561,6 +1627,8 @@ class Repository extends Base\Repository
 
     public function getByTerminalIds(array $ids, bool $proxy = true)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByTerminalIds']);
+
         $apiTerminals = $this->newQuery()
             ->whereIn(Entity::ID, $ids)
             ->get();
@@ -1607,6 +1675,8 @@ class Repository extends Base\Repository
 
     public function getTpvTerminalIdsForGateway($gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getTpvTerminalIdsForGateway']);
+
         $tpvCategories = Category::getTPVCategories();
 
         return $this->newQuery()
@@ -1618,6 +1688,8 @@ class Repository extends Base\Repository
 
     public function getTerminalIdsForGateway($gateway, $exclude = [])
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getTerminalIdsForGateway']);
+
         return $this->newQuery()
                     ->where(Entity::GATEWAY, $gateway)
                     ->whereNotIn(Entity::ID, $exclude)
@@ -1627,6 +1699,8 @@ class Repository extends Base\Repository
 
     public function getDirectTerminalsForGateway(string $gateway): PublicCollection
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getDirectTerminalsForGateway']);
+
         $apiTerminals = $this->newQuery()
                     ->where(Entity::GATEWAY, $gateway)
                     ->where(Entity::MERCHANT_ID, '!=', Account::SHARED_ACCOUNT)
@@ -1678,6 +1752,8 @@ class Repository extends Base\Repository
 
     public function findByGatewayMpan(string $mpan, string $gateway)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findByGatewayMpan']);
+
         $terminal = $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->where(function ($query) use ($mpan)
@@ -1747,6 +1823,8 @@ class Repository extends Base\Repository
                 $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
                 try{
+                    $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'deleteOrFail']);
+
                     parent::saveOrFail($entity);
                 }catch (DbQueryException $e){
                     $this->trace->traceException($e, Trace::ERROR, TraceCode::DB_QUERY_EXCEPTION);
@@ -1756,6 +1834,7 @@ class Repository extends Base\Repository
                     }
                 }
             }
+            $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'deleteOrFail']);
 
             $entity->deleteOrFail();
 
@@ -1765,6 +1844,8 @@ class Repository extends Base\Repository
 
     public function restoreOrFail($terminal)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'restoreOrFail']);
+
         $restored = $terminal->restore();
 
         if ($restored === true)
@@ -1779,6 +1860,8 @@ class Repository extends Base\Repository
     public function addMerchantToTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
         $this->repo->transaction(function () use ($terminal, $merchant) {
+            $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'addMerchantToTerminal']);
+
             $terminal->merchants()->attach($merchant);
 
             $sync = $this->app['config']->get('applications.terminals_service.sync');
@@ -1792,6 +1875,8 @@ class Repository extends Base\Repository
     public function removeMerchantFromTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
         $this->repo->transaction(function () use ($terminal, $merchant) {
+            $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'removeMerchantFromTerminal']);
+
             $terminal->merchants()->detach($merchant);
             $sync = $this->app['config']->get('applications.terminals_service.sync');
             if ($sync === true)
@@ -1804,6 +1889,8 @@ class Repository extends Base\Repository
 
     public function getByMerchantProviderAndMethod(string $provider, string $merchantId, string $method)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'getByMerchantProviderAndMethod']);
+
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
                       ->where($method, '=', 1)
@@ -1864,6 +1951,8 @@ class Repository extends Base\Repository
 
     public function findByMerchantIdAndMethod(string $merchantId, string $method)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findByMerchantIdAndMethod']);
+
         $query = $this->newQuery()
                       ->where($method, '=', 1)
                       ->enabled();
@@ -1915,6 +2004,8 @@ class Repository extends Base\Repository
 
     public function findManyEnabledByIds($ids)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findManyEnabledByIds']);
+
         $apiTerminals = $this->newQuery()
                     ->whereIn(Entity::ID, $ids)
                     ->enabled()
@@ -1962,6 +2053,8 @@ class Repository extends Base\Repository
 
     public function fetchForSyncToTerminalsService(array $input)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'fetchForSyncToTerminalsService']);
+
         $query = $this->newQuery()
                       ->where(Entity::SYNC_STATUS, '=', SyncStatus::getValueForSyncStatusString($input[Entity::SYNC_STATUS]));
 
@@ -1975,6 +2068,8 @@ class Repository extends Base\Repository
 
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findByMerchantIdGatewayAndCurrency']);
+
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY, '=', $gateway)
                       ->where(Entity::CURRENCY, 'LIKE', '%'.$currency.'%')
@@ -2029,6 +2124,8 @@ class Repository extends Base\Repository
 
     public function fetchByMerchantIdGatewayAndStatus(string $mid, string $gateway, array $status)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'fetchByMerchantIdGatewayAndStatus']);
+
         $apiTerminals = $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->where(Entity::MERCHANT_ID, '=', $mid)
@@ -2079,6 +2176,8 @@ class Repository extends Base\Repository
 
     public function findMerchantIdByGatewayMerchantID(string $gatewayMerchantId)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findMerchantIdByGatewayMerchantID']);
+
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
                       ->enabled();
@@ -2088,6 +2187,8 @@ class Repository extends Base\Repository
 
     public function findMerchantIdByGatewayMerchantIDAll(string $gatewayMerchantId)
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'findMerchantIdByGatewayMerchantIDAll']);
+
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId);
 
@@ -2096,6 +2197,8 @@ class Repository extends Base\Repository
 
     public function fetchTerminalsForTokenization(int $count, array $terminalIds = [])
     {
+        $this->trace->info(TraceCode::TERMINALS_REPO_CALL_RECEIVED, ['method' => 'fetchTerminalsForTokenization']);
+
         $gatewayHavingMpans = [Payment\Gateway::WORLDLINE, Payment\Gateway::HITACHI, Payment\Gateway::ISG];
 
         $query = $this->newQuery()

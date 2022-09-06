@@ -5465,6 +5465,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINALS_SERVICE_PROXY_V2                                          = 'TERMINALS_SERVICE_PROXY_V2';
     const TERMINALS_SERVICE_PROXY_V1                                          = 'TERMINALS_SERVICE_PROXY_V1';
     const TERMINALS_SERVICE_PROXY_CALL_ERROR                                  = 'TERMINALS_SERVICE_PROXY_CALL_ERROR';
+    const TERMINALS_REPO_CALL_RECEIVED                                        = 'TERMINALS_REPO_CALL_RECEIVED';
     // Terminals service - merchant instrument requests
     const TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RE_REQUEST_FAILED             = 'TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RE_REQUEST_FAILED';
     const TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RE_REQUEST_RESPONSE           = 'TERMINALS_SERVICE_MERCHANT_INSTRUMENT_RE_REQUEST_RESPONSE';
