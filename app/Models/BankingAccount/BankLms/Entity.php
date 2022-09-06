@@ -155,7 +155,7 @@ class Entity extends BankingAccount\Entity
             return;
         }
 
-        $array[self::SENT_TO_BANK_DATE] = $sentToBankLog->pluck(self::CREATED_AT)->first();
+        $array[self::SENT_TO_BANK_DATE] = $sentToBankLog->pluck(self::CREATED_AT)->last();
     }
 
     public function setPublicBankPocNameAttribute(array & $array)

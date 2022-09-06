@@ -290,7 +290,7 @@ class Repository extends Base\Repository
                 $q2->from($bankingAccountStateTable)
                     ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn)
                     ->where($bankingAccountStateStatusColumn, '=', Status::INITIATED)
-                    ->oldest(State\Entity::CREATED_AT)
+                    ->latest(State\Entity::CREATED_AT)
                     ->limit(1);
 
             })
@@ -483,7 +483,7 @@ class Repository extends Base\Repository
         $bankingAccountId = State\Entity::BANKING_ACCOUNT_ID;
 
         $subquery = DB::table($bankingAccountState)
-                ->select($bankingAccountId, DB::raw('min(created_at) as sent_to_bank_date'))
+                ->select($bankingAccountId, DB::raw('max(created_at) as sent_to_bank_date'))
                 ->where(State\Entity::STATUS, '=', Status::INITIATED)
                 ->groupBy($bankingAccountId);
 

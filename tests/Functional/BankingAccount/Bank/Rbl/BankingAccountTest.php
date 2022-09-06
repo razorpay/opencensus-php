@@ -7932,6 +7932,7 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXBankLMSOriginHeader();
 
+        // Now for sent to bank date we consider last event when the lead was sent to bank
         $dataToReplace = [
             'request' => [
                 'url'     => '/banking_accounts/rbl/lms/banking_account?sort_sent_to_bank_date=desc',
@@ -7963,6 +7964,22 @@ class BankingAccountTest extends TestCase
         // Attach Sub-merchant to RBl Merchant
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::ARCHIVED,
+            null, null,
+            null, null,
+            $response);
+
+        sleep(3);
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::ARCHIVED, Status::INITIATED,
             null, null,
             null, null,
             $response);
@@ -8015,6 +8032,8 @@ class BankingAccountTest extends TestCase
             null, null,
             $response);
 
+        $state_timestamp = $this->getDbLastEntity('banking_account_state');
+
         sleep(3);
 
         // Attach Sub-merchant to RBl Merchant
@@ -8024,13 +8043,11 @@ class BankingAccountTest extends TestCase
             null, null,
             $response);
 
-        $state_timestamp = $this->getDbLastEntity('banking_account_state');
-
         $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
 
         $this->ba->addXBankLMSOriginHeader();
 
-        // Tests already exist here
+        // We should get zero results because we are searching with old sent to bank event
         $url = sprintf('/banking_accounts/rbl/lms/banking_account?lead_received_from_date=%s&lead_received_to_date=%s',
             $state_timestamp->getCreatedAt(),
             $state_timestamp->getCreatedAt()
