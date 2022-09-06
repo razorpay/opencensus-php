@@ -1,6 +1,6 @@
 name: Format Checker Workflow
 
-on: 
+on:
   pull_request:
     types: [ edited, opened, synchronize, reopened, assigned, labeled, review_requested ]
 
@@ -102,7 +102,13 @@ jobs:
       - name: Annotate Stylus Linting Results
         uses: ataylorme/eslint-annotate-action@v2
         id: stylus-annotator
-        if: steps.changed-stylus-files.outputs.all_modified_files != ''
+        # Don't run check on revert PRs
+        if: |
+          !(
+            startsWith(steps.branch-name.outputs.current_branch, 'revert-') ||
+            startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
+          ) &&
+          steps.changed-stylus-files.outputs.all_modified_files != ''
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "stylelint-report.json"
