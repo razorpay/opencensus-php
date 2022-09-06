@@ -1227,7 +1227,11 @@ class Service extends Base\Service
 
         $pendingPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::PENDING, $from);
 
-        $this->core->dispatchPayoutsForAutoExpiry($pendingPayoutIds);
+        $queuedPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::QUEUED, $from);
+
+        $payoutIdsToDispatch = array_merge($pendingPayoutIds, $queuedPayoutIds);
+
+        $this->core->dispatchPayoutsForAutoExpiry($payoutIdsToDispatch);
 
         $response =
             [

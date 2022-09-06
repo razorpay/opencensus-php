@@ -3488,7 +3488,7 @@ return [
         ],
     ],
 
-    'testPendingPayoutProcessingAutoReject' => [
+    'testAutoExpiryofPayoutsAfterThreeMonths' => [
         'request'  => [
             'method'    => 'POST',
             'url'       => '/payouts/auto_expire'

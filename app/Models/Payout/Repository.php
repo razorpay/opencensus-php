@@ -402,15 +402,19 @@ class Repository extends Base\Repository
         $merchantIdColumn            = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
         $queuedReasonColumn          = $this->repo->payout->dbColumn(Entity::QUEUED_REASON);
         $balanceIdPayoutsTableColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $createdAtPayoutsTableColumn = $this->repo->payout->dbColumn(Entity::CREATED_AT);
         $balanceTypeColumn           = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
         $balanceIdColumn             = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ID);
         $balanceColumn               = $this->repo->balance->dbColumn(Merchant\Balance\Entity::BALANCE);
         $balanceTable                = $this->repo->balance->getTableName();
 
+        $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
+
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
                       ->join($balanceTable, $balanceIdPayoutsTableColumn, '=', $balanceIdColumn)
                       ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount, COUNT(' . 'payouts.id' . ') AS count, balance_id, queued_reason, balance')
                       ->where($merchantIdColumn, '=', $merchantId)
+                      ->where($createdAtPayoutsTableColumn, '>=', $afterDate)
                       ->wherein($statusColumn, [Status::QUEUED, Status::ON_HOLD])
                       ->where($balanceTypeColumn, '=', $balanceType)
                       ->groupBy($balanceIdColumn, $queuedReasonColumn, $balanceColumn);
@@ -422,10 +426,14 @@ class Repository extends Base\Repository
     {
         $statusColumn       = $this->repo->payout->dbColumn(Entity::STATUS);
         $scheduledAtColumn  = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
+        $createdAtColumn    = $this->repo->payout->dbColumn(Entity::CREATED_AT);
+
+        $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->with(['balance', 'merchant'])
                     ->whereIn($statusColumn, [Status::SCHEDULED, Status::PENDING])
+                    ->where($createdAtColumn, '>=', $afterDate)
                     ->whereNotNull($scheduledAtColumn)
                     ->merchantId($merchantId)
                     ->limit(self::SCHEDULED_PAYOUTS_FETCH_LIMIT)
@@ -671,7 +679,12 @@ class Repository extends Base\Repository
 
         $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
 
-        $query->where($balanceTypeColumn, '=', $balanceType);
+        $createdAtColumn = $this->repo->payout->dbColumn(Entity::CREATED_AT);
+
+        $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
+
+        $query->where($balanceTypeColumn, '=', $balanceType)
+              ->where($createdAtColumn, '>=', $afterDate);
 
         $payouts = $query->get();
 
@@ -1146,8 +1159,13 @@ class Repository extends Base\Repository
 
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
 
+        $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
+
+        $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
+
         $query->where($statusColumn, Status::PENDING)
-              ->where($merchantIdColumn, $this->merchant->getId());
+              ->where($merchantIdColumn, $this->merchant->getId())
+              ->where($createdAtColumn, '>=', $afterDate);
     }
 
     protected function addQueryParamPendingOnMe(BuilderEx $query, array $params)

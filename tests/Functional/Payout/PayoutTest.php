@@ -2651,6 +2651,18 @@ class PayoutTest extends OAuthTestCase
 
         $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
 
+        $thirdQueuedPayoutAttributes = [
+            'account_number'       => '2224440041626906',
+            'amount'               => 40000099,
+            'queue_if_low_balance' => 1,
+        ];
+
+        $this->createQueuedOrPendingPayout($thirdQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+
+        $thirdQueuedPayout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->edit('payout', $thirdQueuedPayout['id'], ['created_at' => strtotime(('-100 days'), time())]);
+
         // Setup the payout workflow
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
@@ -2668,6 +2680,17 @@ class PayoutTest extends OAuthTestCase
                 'amount'         => 12345
             ],
             'rzp_live_TheLiveAuthKey');
+
+        $this->createPayoutWithWorkflow(
+            [
+                'account_number' => '2224440041626906',
+                'amount'         => 24500
+            ],
+            'rzp_live_TheLiveAuthKey');
+
+        $thirdPendingPayout = $this->getDbLastEntity('payout','live');
+
+        $this->fixtures->edit('payout', $thirdPendingPayout['id'], ['created_at' => strtotime(('-100 days'), time())]);
 
         $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
 
@@ -4781,22 +4804,40 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testPendingPayoutProcessingAutoReject()
+    public function testAutoExpiryofPayoutsAfterThreeMonths()
     {
         $this->liveSetUp();
 
+        // create queued payouts
+        $firstQueuedPayoutAttributes = [
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1
+        ];
+        $this->createQueuedOrPendingPayout($firstQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+        $queuedPayout1 = $this->getDbLastEntity('payout', 'live');
+
+        $secondQueuedPayoutAttributes = [
+            'amount'               => 20000099,
+            'queue_if_low_balance' => 1,
+        ];
+        $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+        $queuedPayout2 = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::QUEUED, $queuedPayout1['status']);
+        $this->assertEquals(Status::QUEUED, $queuedPayout2['status']);
+
+        $this->fixtures->edit('payout', $queuedPayout1['id'], ['created_at' => strtotime(('-100 days'), time())]);
+
+        //create pending payouts
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
         $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
         $pendingPayout1 = $this->getDbLastEntity('payout', 'live');
 
         $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
-
         $pendingPayout2 = $this->getDbLastEntity('payout', 'live');
 
         $this->assertEquals(Status::PENDING, $pendingPayout1['status']);
-
         $this->assertEquals(Status::PENDING, $pendingPayout2['status']);
 
         $this->fixtures->edit('payout', $pendingPayout1['id'], ['created_at' => strtotime(('-100 days'), time())]);
@@ -4806,12 +4847,17 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
 
         $updatedPendingPayout1 = $this->getDbEntityById('payout', $pendingPayout1['id'], 'live');
-
         $updatedPendingPayout2 = $this->getDbEntityById('payout', $pendingPayout2['id'], 'live');
 
-        // Assert that the payout which was older than 3 months is rejected
+        $updatedQueuedPayout1  = $this->getDbEntityById('payout', $queuedPayout1['id'], 'live');
+        $updatedQueuedPayout2  = $this->getDbEntityById('payout', $queuedPayout2['id'], 'live');
+
+        // Assert that the payout which was older than 3 months is rejected/failed
         $this->assertEquals(Status::REJECTED, $updatedPendingPayout1['status']);
         $this->assertEquals(Status::PENDING, $updatedPendingPayout2['status']);
+
+        $this->assertEquals(Status::FAILED, $updatedQueuedPayout1['status']);
+        $this->assertEquals(Status::QUEUED, $updatedQueuedPayout2['status']);
     }
 
     public function testRejectPayoutWithRejectCommentInWebhookWithWFS()

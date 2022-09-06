@@ -2560,6 +2560,10 @@ class Core extends Base\Core
                             $this->forceRejectPayout($payout);
                             break;
 
+                        case Status::QUEUED:
+                            $this->handlePayoutFailed($payout);
+                            break;
+
                         default:
                             $this->trace->warning(
                                 TraceCode::UNKNOWN_STATUS_SENT_TO_PAYOUT,

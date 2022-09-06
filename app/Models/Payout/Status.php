@@ -118,6 +118,7 @@ class Status
         ],
         self::QUEUED => [
             self::CREATED,
+            self::FAILED,
             self::CANCELLED,
         ],
         self::PENDING => [

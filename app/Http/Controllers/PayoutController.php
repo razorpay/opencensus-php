@@ -496,7 +496,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->processDispatchForPayoutsAutoExpiry($input);
+        $response = $this->service()->processDispatchForPayoutsAutoExpiry();
 
         return ApiResponse::json($response);
     }
