@@ -103,7 +103,20 @@ class SegmentAnalyticsClient extends AbstractEventClient
             if ($this->isFacebookPlatformEvent($eventName))
             {
                 $properties += [
-                    'action_source'                 => Constants::ACTION_SOURCE];
+                    'action_source'     => Constants::ACTION_SOURCE
+                ];
+
+                if (empty($merchant->getEmail()) == false) {
+                    $properties += [
+                        'email'         => hash('sha256', $merchant->getEmail())
+                    ];
+                }
+
+                if (empty(optional($merchant->merchantDetail)->getContactMobile()) == false) {
+                    $properties += [
+                        'phone'         => hash('sha256', $merchant->merchantDetail->getContactMobile())
+                    ];
+                }
             }
 
             $properties += $this->getUserProperties($merchant);
@@ -514,6 +527,7 @@ class SegmentAnalyticsClient extends AbstractEventClient
         $googleAnalyticsEvents = [
             EventCode::MTU_TRANSACTED,
             EventCode::PAYMENTS_ENABLED,
+            EventCode::L1_SUBMISSION,
             EventCode::L2_SUBMISSION
         ];
 
