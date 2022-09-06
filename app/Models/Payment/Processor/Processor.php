@@ -2660,6 +2660,7 @@ class Processor
             Payment\Gateway::WALLET_FREECHARGE,
             Payment\Gateway::WALLET_PAYZAPP,
             Payment\Gateway::WALLET_PHONEPE,
+            Payment\Gateway::WALLET_AMAZONPAY,
         ];
 
         if (((in_array($method, $cpsEnabledMethods, true) === false) or

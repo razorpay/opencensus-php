@@ -4463,6 +4463,7 @@ class Gateway
             self::INGENICO,
             self::WALLET_PAYZAPP,
             self::WALLET_PHONEPE,
+            self::WALLET_AMAZONPAY
         ];
 
         $acquirerGateways = [
