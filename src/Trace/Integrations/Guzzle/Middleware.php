@@ -78,7 +78,8 @@ class Middleware
                     $request = $request->withHeader($headerName, $headerValue);
                 }
             }
-            $requestHeaders = $request->getHeaders();
+            $requestHeaders = (array) null;
+            $requestHeaders  = !is_null($request->getHeaders()) ? $request->getHeaders() : [];
             $requestHeaders += ['method' => $request->getMethod()];
             $requestHeaders += ['uri' => (string)$request->getUri()];
             return Tracer::inSpan([
