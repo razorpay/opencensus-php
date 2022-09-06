@@ -4,6 +4,12 @@ import { getDeviceSource } from 'merchant/components/Support/getCommonSupportPro
 const FRESHCHAT_TOKEN = '5f1b4ead-651e-472b-afa8-a94d7fa3873f'; //live
 const FRESHCHAT_HOST = 'https://wchat.in.freshchat.com';
 
+const CLOSING_TEXTS = [
+  'Thank you for sharing your experience.',
+  'We will be closing the conversation as you seem to be away. Please feel free to connect back in case you need any further assistance. We will be happy to help! Thank you for chatting with Razorpay.',
+  'We are closing the conversation as you have been inactive for more than 5 minutes.',
+];
+
 const initFreshchat = (data) => {
   const role = data.userRole;
   const { isFreshChatbotLive } = data;
@@ -36,6 +42,16 @@ const initFreshchat = (data) => {
       source: getDeviceSource(),
       isContextual: isFreshChatbotLive,
     });
+    if (isFreshChatbotLive) {
+      window.fcWidget.on('message:received', (data) => {
+        if (CLOSING_TEXTS.includes(data?.message?.messageFragments?.[0]?.content)) {
+          window.fcWidget.destroy();
+          window.fcWidget.on('widget:destroyed', () => {
+            initFreshchat(data);
+          });
+        }
+      });
+    }
   }
 };
 
