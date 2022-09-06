@@ -3662,7 +3662,7 @@ class Processor
     {
 
         if (($payment->isCard() === false)
-        and ($payment->isUpi() === false))
+        and ($payment->isUpi() === false) || $payment->getMerchantId() === "2aTeFCKTYWwfrF")
         {
             return;
         }
@@ -3719,6 +3719,7 @@ class Processor
             'description'   => $payment->getDescription(),
             'vpa'           => $payment->getVpa(),
             'method'        => $payment->getMethod(),
+            'base_amount'   => $payment->getBaseAmount(),
         ];
 
         $terminal = $payment->terminal;
