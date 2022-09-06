@@ -19,22 +19,38 @@ class Repository extends Base\Repository
 
     public function fetchExternalComments()
     {
-        $baActivationDetailsTable = $this->repo->banking_account_activation_detail->getTableName();
+        return $this->buildQueryToFetchExternalComment(null,'external','desc')->get();
+    }
 
-        $baCommentsBaId = $this->repo->banking_account_comment->dbColumn(Entity::BANKING_ACCOUNT_ID);
+    public function fetchLatestComment(string $bankingAccountId, string $commentType = null)
+    {
+        return $this->buildQueryToFetchExternalComment($bankingAccountId, $commentType,'desc')->first();
+    }
 
+    protected function buildQueryToFetchExternalComment(string $bankingAccountId = null, string $commentType = null, string $sortOrder = 'desc')
+    {
         $baCommentsType = $this->repo->banking_account_comment->dbColumn(Entity::TYPE);
+        $baCommentsAddedAt = $this->repo->banking_account_comment->dbColumn(Entity::ADDED_AT);
 
-        $baCommentsCreatedAt = $this->repo->banking_account_comment->dbColumn(Entity::CREATED_AT);
+        $query = $this->newQuery()
+            ->select($this->getTableName() . '.*');
 
-        $baActivationDetailsBaId = $this->repo->banking_account_activation_detail->dbColumn(ActivationDetail\Entity::BANKING_ACCOUNT_ID);
+        if ($commentType === 'external')
+        {
+            $query->whereIn($baCommentsType, array('external', 'external_resolved'));
+        }
 
-        return $this->newQuery()
-                    ->select($this->getTableName() . '.*')
-                    ->join($baActivationDetailsTable, $baCommentsBaId, '=', $baActivationDetailsBaId)
-                    ->where($baCommentsType, '=', 'external')
-                    ->orderBy($baCommentsCreatedAt, 'asc')
-                    ->get();
+        if ($commentType === 'internal')
+        {
+            $query->where($baCommentsType, '=', 'internal');
+        }
+
+        if ($bankingAccountId !== null)
+        {
+            $query->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccountId);
+        }
+        // Since comments can be added with different added date, sortiny comments by Added at date
+        return $query->orderBy($baCommentsAddedAt, $sortOrder);
     }
 
     public function fetchCommentsMadeBetweenForSpoc(int $fromTs, int $toTs)

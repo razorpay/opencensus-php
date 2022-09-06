@@ -159,9 +159,20 @@ class Leads extends Base
 
         foreach ($bankingAccounts as $bankingAccount)
         {
+            $bankingAccountId = $bankingAccount->getPublicId();
+
             if (get_parent_class($bankingAccount) === BankingAccount\Entity::Class)
             {
-                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
+                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+            }
+
+            $comment = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::COMMENT];
+
+            $lastExternalComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccount->getId(), 'external');
+
+            if (is_null($lastExternalComment) === false)
+            {
+                $comment = $lastExternalComment->getComment();
             }
 
             $bankAccountType = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE];
@@ -198,7 +209,7 @@ class Leads extends Base
                 self::TIMESTAMP => $sentToBankTime,
                 self::BUSINESS_MODEL =>  $this->toPublic(self::BUSINESS_MODEL, $bankingAccount->merchant->merchantDetail[Merchant\Detail\Entity::BUSINESS_CATEGORY]),
                 self::ACCOUNT_TYPE => $this->toPublic(self::ACCOUNT_TYPE, $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE]),
-                self::COMMENT => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::COMMENT],
+                self::COMMENT => $comment,
                 self::EXPECTED_MONTHLY_GMV => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::EXPECTED_MONTHLY_GMV],
                 self::SALES_POC => $bankingAccount->spocs->first()['name'],
                 self::SALES_POC_PHONE_NUMBER => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],

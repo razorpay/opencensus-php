@@ -4175,9 +4175,48 @@ return [
         'response' => [
             'content'     => [
                 'status' => 'initiated',
+                'banking_account_activation_details' => [
+                ]
             ],
             'status_code' => 200,
         ],
+    ],
+
+    'testBankLMSFetchByIdLatestExternalComment' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'status' => 'initiated',
+                'banking_account_activation_details' => [
+                    'comment' => 'second comment on lead - external'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testBankLMSFetchByIdLatestExternalCommentWithMultipleCommentsForAdminAuth' => [
+        'request'  => [
+            'url'     => '/admin/banking_account',
+            'method'  => 'GET',
+            'content' => [
+                'expand' => ['merchant','merchant.merchantDetail'],
+            ],
+        ],
+        'response' => [
+            'content' =>  [
+                        'banking_account_activation_details'      => [
+                            'comment' => 'fourth comment on lead - external'
+                        ]
+                    ],
+            ],
     ],
 
     'testBankLmsEndToEndForFetchCommentsById' => [

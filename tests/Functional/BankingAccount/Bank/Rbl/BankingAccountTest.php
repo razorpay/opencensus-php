@@ -5554,8 +5554,8 @@ class BankingAccountTest extends TestCase
 
         if ($comment !== null)
         {
-            $dataToReplace['request']['content'] = $comment;
-            $dataToReplace['response']['content'] = $comment;
+            $dataToReplace['request']['content']= $comment;
+            $dataToReplace['response']['content']= $comment;
         }
 
         $this->ba->adminAuth();
@@ -8084,6 +8084,112 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testBankLMSFetchByIdLatestExternalComment()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        // New Merchant Apply for Current Account through Admin
+        $response = $this->AdminApplyForCurrentAccount();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response);
+
+
+        $this->testCreateBankingAccountActivationComment($response, [
+                'comment' => 'second comment on lead - external',
+                'type' => 'external'
+            ]);
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account/'. $response['id'],
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $this->startTest($dataToReplace);
+
+    }
+
+    public function testBankLMSFetchByIdLatestExternalCommentWithMultipleCommentsForAdminAuth(){
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        // New Merchant Apply for Current Account through Admin
+        $response = $this->AdminApplyForCurrentAccount();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Attach Submerchant to RBl Merchant
+       /* $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $response); */
+
+        $commentAddedAt = time() + 5000 ;
+
+        $this->testCreateBankingAccountActivationComment($response, [
+            'comment' => 'second comment on lead - internal',
+            'type' => 'internal',
+            'added_at' => $commentAddedAt
+            ]
+        );
+
+        $commentAddedAt = $commentAddedAt + 500;
+        $this->testCreateBankingAccountActivationComment($response, [
+            'comment' => 'third comment on lead - external',
+            'type' => 'external',
+            'added_at' => $commentAddedAt
+            ]
+        );
+
+        $commentAddedAt = $commentAddedAt + 500;
+        $this->testCreateBankingAccountActivationComment($response, [
+            'comment' => 'fourth comment on lead - external',
+            'type' => 'external',
+            'added_at' => $commentAddedAt
+            ]
+        );
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/admin/banking_account/'. $response['id'],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+
+    }
+
     public function testBankLmsEndToEndForFetchCommentsById()
     {
         // Make merchant as Bank CA Onboarding Partner
@@ -8455,7 +8561,7 @@ class BankingAccountTest extends TestCase
             Entity::CHANNEL     => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
-                ActivationDetail\Entity::SALES_TEAM        => 'self_serve'
+                ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
             ]
         ];
 
@@ -8475,6 +8581,62 @@ class BankingAccountTest extends TestCase
 
         return $response;
     }
+
+    private function AdminApplyForCurrentAccount(string $submerchantId = '10000000000000', array $input = [])
+    {
+
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $data = [
+            Entity::PINCODE     => '560030',
+            Entity::CHANNEL     => 'rbl',
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'sme',
+                ActivationDetail\Entity::COMMENT           => 'first comment on lead',
+                ActivationDetail\Entity::SALES_POC_ID      => 'admin_'. Org::SUPER_ADMIN,
+                ActivationDetail\Entity::SALES_POC_PHONE_NUMBER     => '1234554321',
+                ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
+                ActivationDetail\Entity::MERCHANT_POC_DESIGNATION => 'Financial Consultant',
+                ActivationDetail\Entity::MERCHANT_POC_EMAIL         => 'sample@sample.com',
+                ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER  => '9876556789',
+                ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'x, y, z',
+                ActivationDetail\Entity::INITIAL_CHEQUE_VALUE => 100,
+                ActivationDetail\Entity::ACCOUNT_TYPE => 'insignia',
+                ActivationDetail\Entity::MERCHANT_CITY => 'Bangalore',
+                ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => true,
+                ActivationDetail\Entity::MERCHANT_REGION => 'South',
+                ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
+                ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE => 0
+
+            ]
+        ];
+
+        $data = array_merge($data, $input);
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_admin',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => $data
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($response['id']);
+
+        return $response;
+    }
+
 
     /**
      * @param $merchant

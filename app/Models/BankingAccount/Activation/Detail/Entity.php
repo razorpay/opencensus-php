@@ -261,6 +261,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ADDITIONAL_DETAILS,
+        self::COMMENT,
     ];
 
     protected $dates = [
@@ -376,6 +377,29 @@ class Entity extends Base\PublicEntity
         }
 
         return '';
+    }
+
+    public function setPublicCommentAttribute(array &$array)
+    {
+        $bankingAccountID = $this->getBankingAccountId();
+
+        if (app('basicauth')->isAdminAuth() === true)
+        {
+            //get latest from all comments
+            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccountID);
+        } else
+        {
+            //get latest external comment
+            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccountID, 'external');
+        }
+
+        // First comment on lead is saved as internal comment. TBD: Understand why it needs to be internal comment.
+        // If there are no other external comment, we have to return the first comment
+        if (is_null($bankingAccountComment) === false)
+        {
+            $array[self::COMMENT] = $bankingAccountComment->getComment();
+        }
+        return $bankingAccountComment;
     }
 
     public function getBankPOCUser()
