@@ -13,6 +13,12 @@ then
   exit 0
 fi
 
+if [ "${ARCHIVAL_LABEL}" = "true" ]
+then
+  echo "This PR contains archival label. Jira check is not needed here."
+  exit 0
+fi
+
 if [ "${PAYMENTS_BU_FLAG}" = "true" ]
 then
   if [ "${NON_MIGRATION_FLAG}" = "true" ]
@@ -35,7 +41,7 @@ then
       fi
     fi
   else
-    echo "This is a migration PR. Jira check is not needed here."
+    echo "This is a not a Non-Migration PR. Jira check is not needed here."
     exit 0
   fi
 else

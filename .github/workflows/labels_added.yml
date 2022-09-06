@@ -76,6 +76,10 @@ jobs:
         name: Set flag Non-Migration
         id: nonMigration
         run: echo "::set-output name=flag::true"
+      - if: contains(github.event.pull_request.labels.*.name, 'Archival')
+        name: Set flag Archival
+        id: archival
+        run: echo "::set-output name=flag::true"
       - name: Migration or Non-Migration label added
         env:
           USER_CHECK: ${{steps.githubUsers.outputs.flaguser}}
@@ -83,6 +87,8 @@ jobs:
           LABEL_ONE_FLAG: ${{steps.migration.outputs.flag}}
           LABEL_TWO: 'Non-Migration'
           LABEL_TWO_FLAG: ${{steps.nonMigration.outputs.flag}}
+          LABEL_THREE: 'Archival'
+          LABEL_THREE_FLAG: ${{steps.archival.outputs.flag}}
         run: |
           sh ./.github/actions/alternateLabelCheck.sh
       - name: BU and module label added
