@@ -616,8 +616,7 @@ class Processor
                 return ($result === 'on');
             }
 
-            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true) and
-                ($merchant->isHeadlessEnabled() === false))
+            if (($merchant->isFeatureEnabled(Feature::JSON_V2) === true))
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::JSON_V2_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
