@@ -214,11 +214,19 @@ EOT;
 
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
-        return $this->newQuery()
-                    ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
-                    ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
-                    ->limit($limit)
-                    ->get();
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+                     ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
+                     ->limit($limit)
+                     ->get();
     }
 
     public function fetchPaymentsStatusCountBetweenTimestamps(array $params,
@@ -954,11 +962,19 @@ EOT;
 
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
-        return $this->newQuery()
-                    ->status(Payment\Status::AUTHORIZED)
-                    ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
-                    ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
-                    ->get();
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query->status(Payment\Status::AUTHORIZED)
+                     ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
+                     ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
+                     ->get();
     }
 
 
@@ -1022,14 +1038,22 @@ EOT;
 
     public function getAutoCapturedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
-        return $this->newQuery()
-                    ->status(Payment\Status::CAPTURED)
-                    ->where(Payment\Entity::AUTO_CAPTURED, '=', true)
-                    ->where(Payment\Entity::CAPTURED_AT, '<=', $timeUpperLimit)
-                    ->where(Payment\Entity::CAPTURED_AT, '>', $timeLowerLimit)
-                    ->orderBy(Payment\Entity::MERCHANT_ID, 'desc')
-                    ->orderBy(Payment\Entity::ID, 'desc')
-                    ->get();
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query->status(Payment\Status::CAPTURED)
+                     ->where(Payment\Entity::AUTO_CAPTURED, '=', true)
+                     ->where(Payment\Entity::CAPTURED_AT, '<=', $timeUpperLimit)
+                     ->where(Payment\Entity::CAPTURED_AT, '>', $timeLowerLimit)
+                     ->orderBy(Payment\Entity::MERCHANT_ID, 'desc')
+                     ->orderBy(Payment\Entity::ID, 'desc')
+                     ->get();
     }
 
     public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways,
@@ -1782,13 +1806,21 @@ EOT;
 
     public function fetchAuthorizedSummary()
     {
-        return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::AUTHORIZED)
-                    ->groupBy(Entity::MERCHANT_ID)
-                    ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
-                       'COUNT(*) AS count')
-                    ->get();
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query->where(Entity::STATUS, '=', Status::AUTHORIZED)
+                     ->groupBy(Entity::MERCHANT_ID)
+                     ->selectRaw(Entity::MERCHANT_ID . ','.
+                        'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
+                        'COUNT(*) AS count')
+                     ->get();
     }
 
     public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [])
@@ -1802,14 +1834,22 @@ EOT;
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)
     {
-        return $this->newQuery()
-                    ->where(Entity::STATUS, '=', Status::CAPTURED)
-                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->groupBy(Entity::MERCHANT_ID)
-                    ->selectRaw(Entity::MERCHANT_ID . ','.
-                       'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
-                       'COUNT(*) AS count')
-                    ->get();
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query->where(Entity::STATUS, '=', Status::CAPTURED)
+                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
+                     ->groupBy(Entity::MERCHANT_ID)
+                     ->selectRaw(Entity::MERCHANT_ID . ','.
+                        'SUM(' . Entity::BASE_AMOUNT . ') AS sum' . ','.
+                        'COUNT(*) AS count')
+                     ->get();
     }
 
     /**
@@ -2031,21 +2071,24 @@ EOT;
 
         $nowMinus2Days = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp();
 
-        $results = $this->repo->useSlave(function() use ($orderTable, $orderId, $paymentOrderId, $paymentCols, $paymentAuthorizedAt, $nowMinus2Days, $orderStatus, $paymentStatus, $paymentDisputed)
-        {
-          return $this->newQuery()
-                      ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
-                      ->join($orderTable, $orderId, '=', $paymentOrderId)
-                      ->select($paymentCols)
-                      ->where($paymentAuthorizedAt, '>', $nowMinus2Days)
-                      ->where($orderStatus, Order\Status::PAID)
-                      ->where($paymentStatus, Status::AUTHORIZED)
-                      ->where($paymentDisputed, 0)
-                      ->with('merchant')
-                      ->get();
-        });
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
 
-        return $results;
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                     ->join($orderTable, $orderId, '=', $paymentOrderId)
+                     ->select($paymentCols)
+                     ->where($paymentAuthorizedAt, '>', $nowMinus2Days)
+                     ->where($orderStatus, Order\Status::PAID)
+                     ->where($paymentStatus, Status::AUTHORIZED)
+                     ->where($paymentDisputed, 0)
+                     ->with('merchant')
+                     ->get();
     }
 
     public function getPaymentVolumeBetweenTimestamp($from, $to)
@@ -2793,7 +2836,9 @@ EOT;
         $paymentCreatedAtCol = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
         $paymentMerchantIdCol = $this->repo->payment->dbColumn(Payment\Entity::MERCHANT_ID);
 
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType)
                       ->select($paymentCreatedAtCol, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS, $paymentMerchantIdCol);
 
         $paymentCardIdCol = $this->dbColumn(Payment\Entity::CARD_ID);
@@ -2845,7 +2890,9 @@ EOT;
 
     public function fetchLastNUpiPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->select(Payment\Entity::CREATED_AT, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS, Payment\Entity::MERCHANT_ID);
 
         $query = $query->where(Payment\Entity::METHOD, Method::UPI);
@@ -2882,7 +2929,9 @@ EOT;
 
     public function fetchLastNNetbankingPaymentsForDowntime($from, $to, $type, $key, $value, $limit)
     {
-        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->select(Payment\Entity::CREATED_AT, Payment\Entity::AUTHORIZED_AT, Payment\Entity::STATUS, Payment\Entity::MERCHANT_ID);
 
         $query = $query->where(Payment\Entity::METHOD, Method::NETBANKING);

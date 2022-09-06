@@ -57,11 +57,12 @@ class Repository extends \Razorpay\Spine\Repository
     const DELETED      = 'deleted';
 
     // Data Warehouse
-    const ADMIN_FETCH               = "data_warehouse_admin_fetch";
-    const MERCHANT_FETCH            = "data_warehouse_merchant_fetch";
-    const MERCHANT_TIDB_EXPERIMENT  = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
-    const ADMIN_TIDB_EXPERIMENT     = 'admin_tidb_experiment';
-    const TIDB_GATEWAY_FALLBACK     = 'tidb_gateway_fallback';
+    const ADMIN_FETCH                    = "data_warehouse_admin_fetch";
+    const MERCHANT_FETCH                 = "data_warehouse_merchant_fetch";
+    const MERCHANT_TIDB_EXPERIMENT       = 'rearch_fetch_tidb_or_slave'; // used as experiment for merchant tidb cluster
+    const ADMIN_TIDB_EXPERIMENT          = 'admin_tidb_experiment';
+    const TIDB_GATEWAY_FALLBACK          = 'tidb_gateway_fallback';
+    const PAYMENT_QUERIES_TIDB_MIGRATION = 'payment_queries_tidb_migration';
 
     const ADMIN_TIDB_EXPERIMENT_REFUNDS = 'admin_tidb_experiment_refunds';
 
@@ -1320,6 +1321,23 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $data->limit($limit)->update(['balance_id' => $balanceId]);
+    }
+
+    protected function isExperimentEnabledForId(string $feature, string $id = null): bool
+    {
+        $app = $this->app;
+
+        $contextId = $id ?? UniqueIdEntity::generateUniqueId();
+
+        $variant = $app['razorx']->getTreatment($contextId, $feature, $app['basicauth']->getMode() ?? Mode::LIVE);
+
+        $this->trace->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
+            'variant'    => $variant,
+            'feature'    => $feature,
+            'context_id' => $contextId,
+        ]);
+
+        return ($variant === 'on');
     }
 
     /**
