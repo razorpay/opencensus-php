@@ -32,14 +32,11 @@ class SyncEventTriggerMiddleware
 
     public function terminate($request, $response)
     {
-        // raise the event only if the request is successful
-        if ($response->getStatusCode() < 300)
-        {
-            event(new TriggerSyncEvent());
-        }
-        else
-        {
-            $this->app[SyncEventManager::SINGLETON_NAME]->resetAccountParams();
-        }
+        /*
+           This raises the event for all requests, irrespective of whether the request fails or succeeds
+           this is to ensure data is always synced between API<>ASV even in 4xx/5xx requests
+           which may create or update one or more entities in API.
+        */
+        event(new TriggerSyncEvent());
     }
 }
