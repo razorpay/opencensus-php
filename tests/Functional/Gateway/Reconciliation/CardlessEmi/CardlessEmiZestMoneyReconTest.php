@@ -79,11 +79,11 @@ Class CardlessEmiZestMoneyReconTest extends TestCase
         $data[0] = $this->testData['testZestMoneySuccessRecon'];
         $data[1] = $this->testData['testZestMoneySuccessRecon'];
 
-        $data[0]['orderid'] = substr($payment['id'], 4);
-        $data[1]['refundid'] = substr($refund['id'], 5);
-        $data[1]['orderid'] = substr($refund['payment_id'], 4);
-        $data[1]['transactiontype'] = 'Cancellations';
-        $data[1]['refundamount'] = '500.00';
+        $data[0]['partner_order_id'] = substr($payment['id'], 4);
+        $data[1]['refund_id'] = substr($refund['id'], 5);
+        $data[1]['partner_order_id'] = substr($refund['payment_id'], 4);
+        $data[1]['transaction_type'] = 'REVERSE';
+        $data[1]['refund_amount'] = '500.00';
 
         $file = $this->writeToExcelFile($data, 'zestmoney_recon_file', 'files/filestore');
 

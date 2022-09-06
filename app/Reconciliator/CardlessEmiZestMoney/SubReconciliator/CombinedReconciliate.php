@@ -7,9 +7,9 @@ use RZP\Reconciliator\CardlessEmiZestMoney\Reconciliate;
 
 class CombinedReconciliate extends Base\SubReconciliator\CombinedReconciliate
 {
-    const PAYMENT = 'settlements';
-    const REFUND =  'cancellations';
-    const ACCOUNT_HOLDER_ID = 'accountholderid';
+    const PAYMENT = 'forward';
+    const REFUND =  'reverse';
+    const ACCOUNT_HOLDER_ID = 'account_holder_id';
     const ACCOUNT_ID = 'accountid';
 
     const BLACKLISTED_COLUMNS = [
