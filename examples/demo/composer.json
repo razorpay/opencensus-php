@@ -9,11 +9,11 @@
         "aws/aws-sdk-php": "^3.209",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
-        "laravel/framework": "^8.75",
+        "laravel/framework": "v9.27.0",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "opencensus/opencensus-exporter-jaeger": "v0.1.3-beta",
-        "predis/predis": "^1.1",
+        "predis/predis": "^2.0",
         "opencensus/opencensus": "v0.8.0-beta"
     },
     "require-dev": {

@@ -149,7 +149,7 @@ class SpanContext
      *
      * @return array
      */
-    public function baggage()
+    public function baggage(): array
     {
         return $this->baggageItems;
     }

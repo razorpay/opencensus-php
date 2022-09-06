@@ -17,6 +17,7 @@
 
 namespace OpenCensus\Trace\Integrations\Guzzle;
 
+use Closure;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
 use OpenCensus\Trace\Span;
 use OpenCensus\Trace\Tracer;
@@ -25,7 +26,7 @@ use OpenCensus\Trace\Propagator\PropagatorInterface;
 use Psr\Http\Message\RequestInterface;
 
 /**
- * This class handles integration with GuzzleHttp 6. Adding this middleware to
+ * This class handles integration with GuzzleHttp 7. Adding this middleware to
  * your Guzzle client, will enable distrubted tracing by passing along the trace context
  * header and will also create trace spans for all outgoing requests.
  *
@@ -46,13 +47,13 @@ class Middleware
     /**
      * @var PropagatorInterface
      */
-    private $propagator;
+    private PropagatorInterface $propagator;
 
     /**
      * Create a new Guzzle middleware that creates trace spans and propagates the current
      * trace context to the downstream request.
      *
-     * @param PropagatorInterface $propagator Interface responsible for serializing trace context
+     * @param PropagatorInterface|null $propagator Interface responsible for serializing trace context
      */
     public function __construct(PropagatorInterface $propagator = null)
     {
@@ -63,10 +64,10 @@ class Middleware
      * Magic method which makes this object callable. Guzzle middleware are expected to be
      * callables.
      *
-     * @param  callable $handler The next handler in the HandlerStack
-     * @return callable
+     * @param callable $handler The next handler in the HandlerStack
+     * @return callable|Closure
      */
-    public function __invoke(callable $handler)
+    public function __invoke(callable $handler): callable|Closure
     {
         return function (RequestInterface $request, $options) use ($handler) {
             $context = Tracer::spanContext();
@@ -77,12 +78,12 @@ class Middleware
                     $request = $request->withHeader($headerName, $headerValue);
                 }
             }
+            $requestHeaders = $request->getHeaders();
+            $requestHeaders += ['method' => $request->getMethod()];
+            $requestHeaders += ['uri' => (string)$request->getUri()];
             return Tracer::inSpan([
                 'name' => 'GuzzleHttp::request',
-                'attributes' => [
-                    'method' => $request->getMethod(),
-                    'uri' => (string)$request->getUri()
-                ],
+                'attributes' => $requestHeaders,
                 'kind' => Span::KIND_CLIENT
             ], $handler, [$request, $options]);
         };
