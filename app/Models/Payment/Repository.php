@@ -2973,22 +2973,34 @@ EOT;
 
     public function hasMerchantTransacted(string $merchantId)
     {
-        $result = $this->newQueryWithConnection($this->getSlaveConnection())
-            ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
-            ->where(Entity::MERCHANT_ID, "=", $merchantId)
-                       ->where(Entity::BASE_AMOUNT, ">", 0)
-                       ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
-                       ->limit(1)
-                       ->get()
-                       ->pluck(Entity::MERCHANT_ID)
-                       ->toArray();;
-
-        if (empty($result) === true)
+        try
         {
-            return false;
-        }
-        return true;
+            $result = $this->newQueryWithConnection($this->getSlaveConnection())
+                           ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
+                           ->where(Entity::MERCHANT_ID, "=", $merchantId)
+                           ->where(Entity::BASE_AMOUNT, ">", 0)
+                           ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
+                           ->limit(1)
+                           ->get()
+                           ->pluck(Entity::MERCHANT_ID)
+                           ->toArray();;
 
+            if (empty($result) === true)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::DB_QUERY_EXCEPTION);
+        }
+
+        return false;
     }
 
     public function findFirstDataAuthSeparatedPaymentIdsBetween(int $start, int $end)

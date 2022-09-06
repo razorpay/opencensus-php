@@ -15,8 +15,7 @@ class CreatePaymentsTable extends Migration
      */
     public function up()
     {
-        Schema::table(Table::PAYMENT, function(Blueprint $table)
-        {
+        Schema::table(Table::PAYMENT, function(Blueprint $table) {
             $table->index([Payment::MERCHANT_ID, Payment::STATUS, Payment::CREATED_AT],
                           "payments_merchant_id_status_created_at_index_all_replicas");
         });
@@ -29,6 +28,9 @@ class CreatePaymentsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payments');
+        Schema::table(Table::PAYMENT, function(Blueprint $table) {
+            $table->dropIndex(
+                "payments_merchant_id_status_created_at_index_all_replicas");
+        });
     }
 }
