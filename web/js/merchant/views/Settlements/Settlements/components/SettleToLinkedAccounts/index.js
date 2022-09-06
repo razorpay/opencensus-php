@@ -93,7 +93,7 @@ const SettleToLinkedAccount = ({
     <>
       <div className="InputGroup Input Input--vTop linked-account-input">
         <Input
-          label="Amount to settle now"
+          label="Amount pending to be settled"
           required={false}
           addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
           autoFocus={false}

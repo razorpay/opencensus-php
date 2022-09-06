@@ -1,5 +1,5 @@
-/* eslint-disable */
-import React, { lazy, Suspense, useState } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { connect } from 'react-redux';
 import Button from 'common/new-ui/Button';
 import { getItem } from 'common/utils/localStorage';
 import SettleNowLottie from 'merchant/helpers/lottieConfigs/SettleNow.json';
@@ -8,6 +8,8 @@ import { trackAnimatedSettleBtnImpressions } from 'merchant/views/Settlements/Se
 import settleNowIcon from '../../../../../../icons/merchant/settle-now-thunder.svg';
 import PropTypes from 'prop-types';
 import { trackSettleNowClicked } from '../../trackEvents';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { noop } from 'common/utils/rzp-utils';
 
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: "CustomLottie" */ 'common/new-ui/Lottie'),
@@ -27,7 +29,8 @@ const DefaultSettlementBtn = ({ onClick, disabled }) => {
 };
 
 const SettleNowButton = ({
-  disabled,
+  user,
+  disabled: ondemandDisabled,
   merchantId,
   fromWhere,
   settlementExists,
@@ -35,7 +38,34 @@ const SettleNowButton = ({
   showOndemandSettlementForm,
   checkIfFirstEverSettlement,
 }) => {
+  const [disabled, setDisabled] = useState(ondemandDisabled);
   const [hoverOnSettleButton, setHoverOnSettleButton] = useState(false);
+
+  /**
+   * This to stop disabling the settle now if user is live on
+   * Route Ondemand Settlements and have a valid balance > 0
+   */
+  useEffect(() => {
+    if (user.isOndemandRouteSettlementsEnabled && ondemandDisabled) {
+      merchantFetch({
+        url: 'capital_es/service/early_settlements/ondemand/route_settlement_balance',
+        mode: 'live',
+        method: 'get',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then((res) => {
+          if (res.success) {
+            const balance = parseInt(res?.data?.balance || 0, 10);
+            if (balance > 0) {
+              setDisabled(false);
+            }
+          }
+        })
+        .catch(noop);
+    }
+  }, [user.isOndemandRouteSettlementsEnabled, ondemandDisabled]);
 
   const handleMouseActivityOverSettleBtn = (type) => {
     if (!disabled) setHoverOnSettleButton(type === 'mouseEnter');
@@ -90,4 +120,8 @@ SettleNowButton.propTypes = {
   checkIfFirstEverSettlement: PropTypes.func,
 };
 
-export default SettleNowButton;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps)(SettleNowButton);
