@@ -278,7 +278,6 @@ class RouteTeamMap
         'merchants_risk_service'                          => [self::TEAM_PAYMENTS_GROWTH],
         'merchants_risk_admin'                            => [self::TEAM_PAYMENTS_GROWTH],
         'bvs_service_dashboard'                           => [self::TEAM_PAYMENTS_GROWTH],
-        'bvs_service_admin'                               => [self::TEAM_PAYMENTS_GROWTH],
         'bvs_validation_artifact_details'                 => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_analytics'                              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_document_delete'                        => [self::TEAM_PAYMENTS_GROWTH],
