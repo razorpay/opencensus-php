@@ -285,6 +285,11 @@ class Service extends Base\Service
         return $merchantData;
     }
 
+    public function getMerchantFromMid($mid)
+    {
+        return $this->repo->merchant->findOrFailPublic($mid);
+    }
+
     public function syncStakeholderFromMerchant($input)
     {
         $data = $this->core()->syncStakeholderFromMerchant($input);

@@ -12,6 +12,7 @@ use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
+use RZP\Models\Feature;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Trace\TraceCode;
 
@@ -106,7 +107,21 @@ class GifuFile extends Base\BaseGifuFile
         foreach ($modData as $mid=>$value)
         {
             try{
-                $accountNumber = (new Merchant\Service())->getBankAccount($mid,[Type::ORG_SETTLEMENT])['account_number'];
+                $merchant = (new Merchant\Service())->getMerchantFromMid($mid);
+
+                if ($merchant->isFeatureEnabled(Feature\Constants::CANCEL_SETTLE_TO_BANK) === true)
+                {
+                    return [];
+                }
+
+                if ($merchant->isFeatureEnabled(Feature\Constants::OLD_CUSTOM_SETTL_FLOW) === true)
+                {
+                    $accountNumber = (new Merchant\Service())->getBankAccount($mid,[Type::ORG_SETTLEMENT])['account_number'];
+                }
+                else
+                {
+                    $accountNumber = (new Merchant\Service())->getBankAccount($mid,[Type::MERCHANT])['account_number'];
+                }
 
                 if(isset($accountNumber) === false)
                 {
