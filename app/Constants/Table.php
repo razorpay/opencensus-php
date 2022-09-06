@@ -394,7 +394,10 @@ class Table
     const MERCHANT_REWARD  = 'merchant_rewards';
     const REWARD_COUPON    = 'reward_coupons';
 
-    //Razorpay Trusted Badge
+    // Checkout Entities
+    const CHECKOUT_ORDER = 'checkout_orders';
+
+    // Razorpay Trusted Badge
     const TRUSTED_BADGE          = 'trusted_badge';
     const TRUSTED_BADGE_HISTORY  = 'trusted_badge_history';
 

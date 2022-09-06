@@ -46,6 +46,7 @@ app/Models/Batch/                                      malligairajan.g@razorpay.
 app/Models/BharatQr/                                   @razorpay/TechVirtualAccounts
 app/Models/Card/                                       sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com
 app/Models/Card/NetworkName.php                        @razorpay/TechRulesRouting
+app/Models/Checkout/                                   @razorpay/checkout-backend-leads
 app/Models/Comment/                                    pankaj.kumar@razorpay.com                               praveen.patlola@razorpay.com
 app/Models/Contact/                                    @razorpay/Payouts-core
 app/Models/Currency/                                   sunny.aggrawal@razorpay.com                             vivek.kumar@razorpay.com

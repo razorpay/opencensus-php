@@ -210,7 +210,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Address\AddressConsent1ccAudits\Repository               $address_consent_1cc_audits
  * @property Models\Address\AddressConsent1cc\Repository                     $address_consent_1cc
  * @property Models\Pincode\ZipcodeDirectory\Repository                      $zipcode_directory
-
+ *
  * @property Models\Transaction\Statement\DirectAccount\Statement\Repository $direct_account_statement
  * @property Models\Roles\Repository                                         $roles
  * @property Models\Merchant\InternationalIntegration\Repository             $merchant_international_integrations
@@ -222,7 +222,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\Merchant\Consent\Details\Repository                      $merchant_consent_details
  * @property Models\Merchant\Consent\Repository                              $merchant_consents
  * @property Models\Merchant\LinkedAccountReferenceData\Repository           $linked_account_reference_data
-
+ * @property Models\Checkout\Order\Repository                                $checkout_order
  */
 
 class RepositoryManager extends Illuminate\Support\Manager

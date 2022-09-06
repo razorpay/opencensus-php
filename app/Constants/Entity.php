@@ -391,6 +391,7 @@ class Entity
     const NETBANKING_NSDL        = 'netbanking_nsdl';
     const BILLDESK_SIHUB         = 'billdesk_sihub';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
+    const CHECKOUT_ORDER         = 'checkout_order';
     const EMERCHANTPAY           = 'emerchantpay';
     const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_DBS         = 'netbanking_dbs';
