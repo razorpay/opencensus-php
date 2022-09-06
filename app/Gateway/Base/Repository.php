@@ -16,18 +16,7 @@ class Repository extends Base\Repository
                         ->where('payment_id', '=', $id)
                         ->get();
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $hotData;
-        }
-
-        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-        $warmData = $this->newQueryWithConnection($connectionType)
-                         ->where('payment_id', '=', $id)
-                         ->get();
-
-        return $this->mergeCollectionsBasedOnKey($hotData, $warmData, 'id');
+        return $hotData;
     }
 
     public function findByPaymentIdAndActionOrFail($paymentId, $action)
@@ -37,25 +26,7 @@ class Repository extends Base\Repository
             ->where('action', '=', $action)
             ->orderBy(Entity::CREATED_AT, 'desc');
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $query->firstOrFail();
-        }
-
-        $data = $query->first();
-
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $data = $this->newQueryWithConnection($connectionType)
-                ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                ->where('action', '=', $action)
-                ->orderBy(Entity::CREATED_AT, 'desc')
-                ->firstOrFail();
-        }
-
-        return $data;
+        return $query->firstOrFail();
     }
 
     public function findByPaymentIdAndAction($paymentId, $action)
@@ -65,22 +36,6 @@ class Repository extends Base\Repository
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->first();
-
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $data;
-        }
-
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $data = $this->newQueryWithConnection($connectionType)
-                ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                ->where('action', '=', $action)
-                ->orderBy(Entity::CREATED_AT, 'desc')
-                ->first();
-        }
 
         return $data;
     }
@@ -97,19 +52,7 @@ class Repository extends Base\Repository
                         ->where('action', '=', $action)
                         ->get();
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $hotData;
-        }
-
-        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-        $warmData = $this->newQueryWithConnection($connectionType)
-                         ->whereIn('payment_id', $paymentIds)
-                         ->where('action', '=', $action)
-                         ->get();
-
-        return $this->mergeCollectionsBasedOnKey($hotData, $warmData, 'id');
+        return $hotData;
     }
 
     public function fetchByPaymentIdsAndActions($paymentIds, $actions)
@@ -119,19 +62,7 @@ class Repository extends Base\Repository
                         ->whereIn('action', $actions)
                         ->get();
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $hotData;
-        }
-
-        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-        $warmData = $this->newQueryWithConnection($connectionType)
-                         ->whereIn('payment_id', $paymentIds)
-                         ->whereIn('action', $actions)
-                         ->get();
-
-        return $this->mergeCollectionsBasedOnKey($hotData, $warmData, 'id');
+        return $hotData;
     }
 
     public function findByPaymentIdActionAndStatus(string $paymentId,
@@ -143,22 +74,6 @@ class Repository extends Base\Repository
                     ->where('action', '=', $action)
                     ->whereIn('status', $statuses)
                     ->first();
-
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $data;
-        }
-
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $data = $this->newQueryWithConnection($connectionType)
-                ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                ->where('action', '=', $action)
-                ->whereIn('status', $statuses)
-                ->first();
-        }
 
         return $data;
     }
@@ -184,20 +99,6 @@ class Repository extends Base\Repository
         $data = $this->newQuery()
                      ->where(Entity::REFUND_ID, '=', $refundId)
                      ->first();
-
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $data;
-        }
-
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $data = $this->newQueryWithConnection($connectionType)
-                         ->where(Entity::REFUND_ID, '=', $refundId)
-                         ->first();
-        }
 
         return $data;
     }
@@ -254,24 +155,6 @@ class Repository extends Base\Repository
                     ->where('action', '=', $action)
                     ->orderBy(Entity::CREATED_AT, 'desc');
 
-        if ($this->isExperimentEnabled(self::TIDB_GATEWAY_FALLBACK) === false)
-        {
-            return $query->firstOrFail();
-        }
-
-        $data = $query->first();
-
-        if (empty($data) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $data = $this->newQueryWithConnection($connectionType)
-                ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                ->where('action', '=', $action)
-                ->orderBy(Entity::CREATED_AT, 'desc')
-                ->firstOrFail();
-        }
-
-        return $data;
+        return $query->firstOrFail();
     }
 }
