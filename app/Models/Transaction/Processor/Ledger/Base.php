@@ -135,7 +135,7 @@ class Base extends Core
             {
                 return [
                     self::FTS_FUND_ACCOUNT_ID => $ledgerEntry[self::ACCOUNT_ENTITIES][self::FTS_FUND_ACCOUNT_ID][0],
-                    self::FUND_ACCOUNT_TYPE   => $ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0]
+                    self::FTS_ACCOUNT_TYPE    => $ledgerEntry[self::ACCOUNT_ENTITIES][self::FUND_ACCOUNT_TYPE][0]
                 ];
             }
         }
