@@ -607,4 +607,7 @@ final class RazorxTreatment
     // Experiment to enable Whatsapp Notification for Risk chargeback intimation
     const RISK_WHATSAPP_NOTIFICATION = 'risk_whatsapp_notification';
 
+    // Experiment to show billing label over merchant label for billing label field. Slack : https://razorpay.slack.com/archives/C7WEGELHJ/p1660714831872219
+    const SHOW_BILLING_LABEL_OVER_MERCHANT_LABEL_FOR_RECURRING = 'show_billing_label_over_merchant_label_for_recurring';
+
 }

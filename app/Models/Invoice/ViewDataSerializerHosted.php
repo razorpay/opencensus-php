@@ -466,6 +466,20 @@ class ViewDataSerializerHosted extends Base\Core
         // In view, we show only captured(successful, not refunded) payments
         $serializedPayments = $this->repo->payment->getCapturedPaymentsForInvoice($this->invoice->getId());
 
+        if($this->invoice->isTypeOfSubscriptionRegistration())
+        {
+            $billingLabelVariant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::SHOW_BILLING_LABEL_OVER_MERCHANT_LABEL_FOR_RECURRING,
+                $this->mode
+            );
+
+            $billingLabel = strtolower($billingLabelVariant) === 'on' ? $this->merchant->getBillingLabel() : $this->invoice->getMerchantLabel();
+        }
+        else
+        {
+            $billingLabel = $this->invoice->getMerchantLabel();
+        }
 
         $serialized[Entity::IS_PAID]            = $this->invoice->isPaid();
         $serialized[Entity::PAYMENTS]           = $serializedPayments->toArrayHosted();
@@ -473,7 +487,7 @@ class ViewDataSerializerHosted extends Base\Core
         $serialized[Entity::CALLBACK_METHOD]    = $this->invoice->getCallbackMethod();
         $serialized[Entity::MERCHANT_GSTIN]     = $this->invoice->getMerchantGstin();
         $serialized[Entity::CUSTOMER_GSTIN]     = $this->invoice->getCustomerGstin();
-        $serialized[Entity::MERCHANT_LABEL]     = $this->invoice->getMerchantLabel();
+        $serialized[Entity::MERCHANT_LABEL]     = $billingLabel;
         $serialized[Entity::SUPPLY_STATE_NAME]  = $this->invoice->getSupplyStateName();
         $serialized[Entity::HAS_ADDRESS_OR_POS] = (($this->invoice->hasCustomerBillingAddress() === true) or
             ($this->invoice->hasCustomerShippingAddress() === true) or
