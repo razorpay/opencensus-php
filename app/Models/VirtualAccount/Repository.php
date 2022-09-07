@@ -152,13 +152,15 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchVirtualAccountsToBeClosed($limit = 10000)
+    public function fetchVirtualAccountsToBeClosed($limit = 5000)
     {
         $now = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $nowMinus14days = Carbon::now(Timezone::IST)->addDays(-14)->getTimestamp();
+
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->where(Entity::STATUS, '=', Status::ACTIVE)
-                    ->where(Entity::CLOSE_BY, '<', $now)
+                    ->whereBetween(Entity::CLOSE_BY, array($nowMinus14days, $now))
                     ->limit($limit)
                     ->pluck(Entity::ID)
                     ->toArray();
