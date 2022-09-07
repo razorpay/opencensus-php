@@ -32,6 +32,8 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
+        $this->request($input);
+
         if ((is_string($input) === true) and (str_contains($input, 'creditVpa') === true))
         {
             // to check whether this was an intent request

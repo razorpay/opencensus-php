@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Axis;
 
+use Mockery;
 use RZP\Gateway\Upi\Axis\Url;
 use RZP\Services\RazorXClient;
 use RZP\Gateway\Upi\Base\Entity;
@@ -44,6 +45,30 @@ class UpiAxisGatewayTest extends TestCase
         $this->payment = $this->getDefaultUpiPaymentArray();
 
         unset($this->payment['description']);
+    }
+
+    public function testCorrectPaymentDetailsPosted()
+    {
+        $asserted = false;
+
+        $this->mockServerRequestFunction(function(& $request, $action = null) use (& $asserted) {
+
+            $input = json_decode($request, true);
+
+            $this->assertEquals(
+                number_format((float)$this->payment['amount'] / 100, 2, '.', ''),
+                $input['amount']);
+
+            $this->assertEquals($this->payment['vpa'],
+                $input['customervpa']);
+
+            $asserted = true;
+        });
+
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $this->assertTrue($asserted, 'The request contents were not asserted');
+
     }
 
     public function testPayment($status = 'created')
