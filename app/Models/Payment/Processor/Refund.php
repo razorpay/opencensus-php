@@ -4064,6 +4064,7 @@ trait Refund
                     $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
                     $queryParams[RefundConstants::ISSUER] = $payment->card->getIssuer();
                     $queryParams[RefundConstants::CARD_TYPE] = strtolower($payment->card->getType());
+                    $queryParams[RefundConstants::BIN] = $payment->card->getIin();
                 }
             }
             else
@@ -4208,7 +4209,11 @@ trait Refund
 
             if (empty($tokenEntity) === false)
             {
-                $queryParams[RefundConstants::TOKEN_STATUS]             = $tokenEntity->getStatus();
+                $queryParams[RefundConstants::TOKEN_STATUS] = $tokenEntity->getStatus();
+                if (is_null($tokenEntity->card) === false)
+                {
+                    $queryParams[RefundConstants::NETWORK_TOKENISED_CARD] = $tokenEntity->card->isNetworkTokenisedCard();
+                }
             }
         }
         return $queryParams;

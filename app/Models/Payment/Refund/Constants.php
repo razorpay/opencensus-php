@@ -95,6 +95,7 @@ class Constants
     const CARD_TOKEN_EXPIRY_YEAR    = 'token_expiry_year';
     const CARD_TRIVIA               = 'trivia';
     const TOKEN_STATUS              = 'token_status';
+    const NETWORK_TOKENISED_CARD    = 'network_tokenised_card';
 
     /**
      * razorx experiments related constants
