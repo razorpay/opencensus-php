@@ -41,9 +41,9 @@ class Image extends Component {
       <div className={`rzp-image${!validUrl ? ' invalid-src' : ''}`}>
         {loading || !validUrl ? (
           children
-        ) : (
+        ) : isWebP ? (
           <picture>
-            {isWebP && <source srcSet={updateExtension(src, '.webp')} type="image/webp" />}
+            <source srcSet={updateExtension(src, '.webp')} type="image/webp" />
             <img
               srcSet={src}
               src={src}
@@ -51,6 +51,8 @@ class Image extends Component {
               onError={this.onImageFetchError}
             />
           </picture>
+        ) : (
+          <img src={src} onLoad={this.onImageFetchSuccess} onError={this.onImageFetchError} />
         )}
       </div>
     );
