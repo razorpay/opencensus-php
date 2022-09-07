@@ -609,7 +609,7 @@ class GatewayEmiFileTest extends TestCase
         // For the output files, the card numbers would be replaced with 0s
         if (empty($cardNumbers) === false)
         {
-            $cardNumbers = ['0000000000000000000'];
+            $cardNumbers = ['0000000000000006709'];
         }
 
         $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, true);

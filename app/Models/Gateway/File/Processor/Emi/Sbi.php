@@ -510,7 +510,7 @@ class Sbi extends Base
         // Replace characters from 57 till 76 which represents card numbers
         for ($i = 1; $i < sizeof($data); $i++)
         {
-            $out[] = substr_replace($data[$i], '0000000000000000000', 57, 19);
+            $out[] = substr_replace($data[$i], '000000000000000', 57, 15);
         }
 
         return implode($delimiter, $out);
