@@ -66,7 +66,7 @@ glob(
         fileParams.CacheControl = 'no-store,must-revalidate';
       }
 
-      if (/\.[0-9a-f]+\.(js|css)$/.test(file)) {
+      if (/\.[0-9a-f]+\.(js|css|svg|png|jpg|jpeg)$/.test(file)) {
         fileParams.CacheControl = 'max-age=31536000';
       }
 
