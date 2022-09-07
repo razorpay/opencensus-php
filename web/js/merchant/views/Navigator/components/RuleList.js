@@ -138,9 +138,9 @@ export default class RuleList extends React.Component {
               {isProvidersLoading ? (
                 <ProviderShimmer />
               ) : (
-                terminalProviders?.map((provider, index) => (
-                  <ProviderNewView provider={provider} key={index} />
-                ))
+                terminalProviders
+                  .slice(0, isCollapsed ? 4 : terminalProviders.length)
+                  ?.map((provider, index) => <ProviderNewView provider={provider} key={index} />)
               )}
             </div>
           </div>

@@ -59,10 +59,7 @@ export default class ProviderRules extends React.Component {
                       </div>
                     ))}
                     {readonly ? (
-                      <button
-                        type="button"
-                        className="btn btn-primary operator-btn priority-btn readonly"
-                      >
+                      <button type="button" className="btn operator-btn priority-btn readonly">
                         PRIORITY {providerPriority}
                       </button>
                     ) : null}
@@ -144,10 +141,11 @@ export default class ProviderRules extends React.Component {
                   </div>
                   {!readonly ? (
                     <div className="col-xs-12">
-                      <div className="add-expression add-provider">
-                        <b onClick={this.addProvider(provider_priority)} className="pointer">
-                          Add Another Provider
-                        </b>
+                      <div
+                        onClick={this.addProvider(provider_priority)}
+                        className="add-expression add-provider"
+                      >
+                        <b className="pointer">Add Another Provider</b>
                       </div>
                     </div>
                   ) : null}

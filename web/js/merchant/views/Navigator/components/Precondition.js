@@ -148,7 +148,7 @@ export default class Precondition extends React.Component {
                 />
               </div>
             ) : (
-              <button type="button" className="btn btn-primary operator-btn readonly">
+              <button type="button" className="btn operator-btn readonly">
                 {logical_operators.find((o) => o.value == this.props.precondition.value).name}
               </button>
             )

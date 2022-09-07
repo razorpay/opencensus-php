@@ -22,7 +22,7 @@ export const Step3 = ({
               <div className="col-xs-12" key={index}>
                 <div className="row">
                   <div className="col-xs-3">
-                    <label for="name" className="title-left">
+                    <label for="name" className="title-left gateway-detail-title">
                       {item}
                     </label>
                   </div>
@@ -62,7 +62,7 @@ export const Step3 = ({
               <div className="col-xs-12">
                 <div className="row">
                   <div className="col-xs-3">
-                    <label for="name" className="title-left">
+                    <label for="name" className="title-left gateway-detail-title">
                       Payment Methods
                     </label>
                   </div>

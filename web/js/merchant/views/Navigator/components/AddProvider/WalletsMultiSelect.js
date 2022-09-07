@@ -11,7 +11,7 @@ export const WalletsMultiSelect = ({
     <div className="col-xs-12">
       <div className="row">
         <div className="col-xs-3">
-          <label className="title-left">Wallets</label>
+          <label className="title-left gateway-detail-title">Wallets</label>
         </div>
         <div className="col-xs-6">
           <MultiSelectDropdownWithSearch
