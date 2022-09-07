@@ -145,14 +145,15 @@ class Webhooks extends Base\Core
         $client = new Shopify\Client($configs);
 
         $txns = $this->getTransactionsByOrder($client, $input['order_id']);
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_FETCH_TRANSACTIONS_SUCCESS,
+            [
+              'merchant_order_id' => $input['order_id'],
+              'txns'              => $txns,
+            ]);
+
         if (empty($txns['transactions']) === true)
         {
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_FETCH_TRANSACTIONS_FAILED,
-                [
-                    'merchant_order_id' => $input['order_id'],
-                    'txns' => $txns,
-                ]);
             return;
         }
 
@@ -165,9 +166,10 @@ class Webhooks extends Base\Core
         $refundFromTxn = (int)(floatval($txn['amount']) * 100);
         $refundFromWebhook = (int)(floatval($input['transactions'][0]['amount']) * 100);
 
-        [$merchantRzpOrderId, $paymentId] = explode('|', $txn['authorization']);
+        $keys = explode('|', $txn['authorization']);
 
-        if ($merchantRzpOrderId === null or $paymentId === null)
+        // Structure for all 1cc Razorpay payments
+        if (count($keys) !== 2)
         {
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
@@ -176,6 +178,8 @@ class Webhooks extends Base\Core
                     'authorization' => $txn['authorization'],
                 ]);
         }
+
+        [$merchantRzpOrderId, $paymentId] = $keys;
 
         $payment = $this->findPaymentAndSetMode(substr($paymentId, 4));
 
