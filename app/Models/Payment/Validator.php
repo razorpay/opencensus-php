@@ -759,13 +759,24 @@ class Validator extends Base\Validator
                                     'bharat_qr_pay_test']);
     }
 
+    protected function isBharatQr()
+    {
+        $app = App::getFacadeRoot();
+
+        $routeName = $app['router']->currentRouteName();
+
+        return in_array($routeName, ['gateway_payment_callback_bharatqr',
+                                     'bharat_qr_pay_test']);
+    }
+
     protected function validateVpa($attribute, $vpa)
     {
         (new Vpa\Validator)->validateAddress($attribute, $vpa);
 
         $vpaParts = explode('@', $vpa);
 
-        if (ProviderCode::validate($vpaParts[1]) === false)
+        if ((ProviderCode::validate($vpaParts[1]) === false) and
+            ($this->isBharatQr() === false))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(

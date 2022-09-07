@@ -1670,4 +1670,32 @@ class NonVirtualAccountQrCodeTest extends TestCase
         //Here , \xf8 is an invalid utf8 character
         $response = $this->createQrCode(['name' => "vinay\xf8surya"]);
     }
+
+    public function testProcessIciciQrPaymentWithInvalidHandle()
+    {
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerVA'] = 'vinaysurya@randominvalidvpahandle';
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+    }
 }
