@@ -97,6 +97,7 @@ class MailTags
     const REFUND_RRN_UPDATE                = 'refund_rrn_update';
 
     const PAYOUT_SUCCESSFUL                = 'payout_successful';
+    const PAYOUT_SUCCESSFUL_CONTACT_MAIL   = 'payout_successful_contact_mail';
 
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';

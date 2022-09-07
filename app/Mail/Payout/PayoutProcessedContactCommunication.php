@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Merchant;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\Timezone;
+use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Payout\Entity;
 
@@ -134,6 +135,18 @@ class PayoutProcessedContactCommunication extends Mailable
         ];
 
         $this->with($data);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::PAYOUT_SUCCESSFUL_CONTACT_MAIL);
+        });
 
         return $this;
     }
