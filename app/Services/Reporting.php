@@ -297,10 +297,7 @@ class Reporting implements ExternalService
 
     public function fetchConfigMultiple(array $input): array
     {
-        if ($this->ba->isAdminAuth() === false)
-        {
-            $this->headers[self::ASSOCIATED_FEATURES_HEADER] = $this->getAssociatedFeaturesHeader();
-        }
+        $this->addAssociatedFeaturesHeader();
 
         $configs = $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input);
 
@@ -641,8 +638,6 @@ class Reporting implements ExternalService
     public function fetchConfigMultipleAdmin(array $input): array
     {
         $headers = $this->fetchHeadersFromInput($input);
-
-        $headers[self::ASSOCIATED_FEATURES_HEADER] = $this->getAssociatedFeaturesHeader();
 
         return $this->createAndSendRequest(Requests::GET, self::CONFIG_PATH, $input, $headers);
     }
@@ -1554,13 +1549,16 @@ class Reporting implements ExternalService
         }
     }
 
-    protected function getAssociatedFeaturesHeader()
+    protected function addAssociatedFeaturesHeader()
     {
         $merchant = $this->ba->getMerchant();
 
-        $enabledFeatures = $merchant->getEnabledFeatures();
+        if (empty($merchant) === false)
+        {
+            $enabledFeatures = $merchant->getEnabledFeatures();
 
-        return json_encode($enabledFeatures);
+            $this->headers[self::ASSOCIATED_FEATURES_HEADER] = json_encode($enabledFeatures);
+        }
     }
 
     /**
