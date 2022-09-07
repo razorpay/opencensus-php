@@ -1,3 +1,7 @@
+// File not in use
+// Below script added in Dashboard Document in => blade.html
+// Only preset there for ref.
+
 import { Workbox } from 'workbox-window';
 import User from 'merchant/models/User';
 
@@ -24,7 +28,7 @@ export default function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       const url = process.env.PROJECT && `/sw-${process.env.PROJECT}.js`;
       if (isWorkboxEnable() && url) {
-        const workboxInstance = new Workbox('/sw.js');
+        const workboxInstance = new Workbox(url);
         workboxInstance.addEventListener('installed', () => {
           console.log('Service Worker is ready');
         });

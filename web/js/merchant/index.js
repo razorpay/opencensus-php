@@ -15,7 +15,6 @@ import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
-import registerServiceWorker from '../../utils/registerServiceWorker';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
@@ -35,5 +34,3 @@ render(
   </Provider>,
   document.getElementById('react-root'),
 );
-
-registerServiceWorker();
