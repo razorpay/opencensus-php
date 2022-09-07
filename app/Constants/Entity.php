@@ -975,7 +975,8 @@ class Entity
         Entity::FEE_BREAKUP,
         Entity::ENTITY_ORIGIN,
         Entity::UPI_METADATA,
-        Entity::BATCH_FUND_TRANSFER
+        Entity::BATCH_FUND_TRANSFER,
+        self::CHECKOUT_ORDER,
     ];
 
     public static $namespace = [
@@ -1412,6 +1413,8 @@ class Entity
         self::ACCESS_CONTROL_HISTORY_LOGS   => \RZP\Models\AccessControlHistoryLogs::class,
 
         self::ROLE_ACCESS_POLICY_MAP        => \RZP\Models\RoleAccessPolicyMap::class,
+
+        self::CHECKOUT_ORDER => \RZP\Models\Checkout\Order::class,
     ];
 
     protected static $repository = [

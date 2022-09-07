@@ -3,13 +3,15 @@
 namespace RZP\Models\Checkout\Order;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RZP\Constants\Entity as ConstantsEntity;
 use RZP\Constants\Table;
+use RZP\Models\Base\Notes;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Invoice\Entity as Invoice;
 use RZP\Models\Order\Entity as Order;
-use RZP\Models\Payment\Entity as Payment;
 
 /**
  * The CheckoutOrder entity is used for storing all options passed by checkout FE to initialise a specific payment
@@ -32,11 +34,12 @@ use RZP\Models\Payment\Entity as Payment;
  *
  * @property-read Merchant $merchant
  * @property-read Order    $order
- * @property-read Invoice  $Invoice
- * @property-read Payment  $payment
+ * @property-read Invoice  $invoice
  */
 class Entity extends PublicEntity
 {
+    use NotesTrait;
+
     /**
      * Properties of this Entity
      */
@@ -52,8 +55,269 @@ class Entity extends PublicEntity
     public const ORDER_ID = 'order_id';
     public const STATUS = 'status';
 
+    /**
+     * Fields received in create input that are part of META_DATA
+     */
+    public const ACCOUNT_ID = 'account_id';
+    public const AMOUNT = 'amount';
+    public const AUTH_LINK_ID = 'auth_link_id';
+    public const CONVENIENCE_FEE = 'convenience_fee';
+    public const CURRENCY = 'currency';
+    public const CUSTOMER_ID = 'customer_id';
+    public const DESCRIPTION = 'description';
+    public const FEE = 'fee';
+    public const METHOD = 'method';
+    public const NAME = 'name';
+    public const NOTES = 'notes';
+    public const OFFER_ID = 'offer_id';
+    public const PAYMENT_LINK_ID = 'payment_link_id';
+    public const RECEIVER_TYPE = 'receiver_type';
+    public const SIGNATURE = 'signature';
+
+    public const META_DATA_ATTRIBUTES = [
+        '_',
+        self::ACCOUNT_ID,
+        self::AMOUNT,
+        self::AUTH_LINK_ID,
+        self::CONVENIENCE_FEE,
+        self::CURRENCY,
+        self::CUSTOMER_ID,
+        self::DESCRIPTION,
+        self::FEE,
+        self::METHOD,
+        self::NAME,
+        self::NOTES,
+        self::OFFER_ID,
+        self::PAYMENT_LINK_ID,
+        self::RECEIVER_TYPE,
+        self::SIGNATURE,
+    ];
+
+    /** @var array The attributes that should be mutated to dates. */
+    protected $dates = [
+        self::CLOSED_AT,
+        self::CREATED_AT,
+        self::EXPIRE_AT,
+        self::UPDATED_AT,
+    ];
+
     protected $entity = ConstantsEntity::CHECKOUT_ORDER;
 
     /** @var string The table associated with the model. */
     protected $table = Table::CHECKOUT_ORDER;
+
+    /** @var array The attributes that should be cast to native types. */
+    protected $casts = [
+        self::META_DATA => 'json',
+    ];
+
+    /** @var array The default value for attributes to be set during building the entity */
+    protected $defaults = [
+        self::CLOSED_AT => null,
+        self::CLOSE_REASON => null,
+        self::EXPIRE_AT => null,
+        self::STATUS => Status::ACTIVE,
+    ];
+
+    /** @var string[] The attributes that are mass assignable. */
+    protected $fillable = [
+        self::CHECKOUT_ID,
+        self::CONTACT,
+        self::EMAIL,
+        self::INVOICE_ID,
+        self::ORDER_ID,
+    ];
+
+    /**
+     * @inheritDoc
+     */
+    protected $public = [
+        self::ID,
+        self::CHECKOUT_ID,
+        self::CLOSED_AT,
+        self::CLOSE_REASON,
+        self::EXPIRE_AT,
+        self::INVOICE_ID,
+        self::ORDER_ID,
+        self::STATUS,
+    ];
+
+    /** @var array The attributes that should be visible in serialization. */
+    protected $visible = [
+        self::ID,
+        self::CHECKOUT_ID,
+        self::CLOSED_AT,
+        self::CLOSE_REASON,
+        self::EXPIRE_AT,
+        self::INVOICE_ID,
+        self::ORDER_ID,
+        self::STATUS,
+    ];
+
+    /**
+     * Fields which will be generated during build
+     *
+     * @var string[]
+     *
+     * @see self::generateExpireAt()
+     * @see self::generateMetaData()
+     */
+    protected static $generators = [
+        self::ID,
+        self::EXPIRE_AT,
+        self::META_DATA,
+    ];
+
+    public function isClosed(): bool
+    {
+        return Carbon::now()->getTimestamp() >= $this->getExpireAt() ||
+            in_array($this->status, [Status::CLOSED, Status::PAID], true);
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === Status::PAID;
+    }
+
+    // ------------------------------ RELATIONSHIPS START ------------------------------
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, self::ORDER_ID);
+    }
+
+    public function invoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class, self::INVOICE_ID);
+    }
+
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class, self::MERCHANT_ID);
+    }
+
+    // ------------------------------ RELATIONSHIPS END ------------------------------
+    // --------------------------------------------------------------------------------
+    // ------------------------------ GENERATORS START ------------------------------
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     */
+    protected function generateExpireAt(array &$input): void
+    {
+        $expireAt = Carbon::now()->addSeconds(720)->getTimestamp(); // Default 12 minutes
+
+        if (!empty($input[self::EXPIRE_AT])) {
+            $expireAt = $input[self::EXPIRE_AT];
+
+            unset($input[self::EXPIRE_AT]);
+        }
+
+        $this->setAttribute(self::EXPIRE_AT, $expireAt);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     */
+    protected function generateMetaData(array &$input): void
+    {
+        $metaData = [];
+
+        foreach (self::META_DATA_ATTRIBUTES as $attributeKey)
+        {
+            if (array_key_exists($attributeKey, $input)) {
+                $metaData[$attributeKey] = $input[$attributeKey];
+
+                unset($input[$attributeKey]);
+            }
+        }
+
+        $this->setAttribute(self::META_DATA, $metaData);
+    }
+
+    // ------------------------------ GENERATORS END ------------------------------
+    // --------------------------------------------------------------------------------
+    // ------------------------------ GETTERS START ------------------------------
+
+    public function getAmount(): int
+    {
+        if (empty($this->order)) {
+            return (int) ($this->getAttribute(self::META_DATA)[self::AMOUNT] ?? 0);
+        }
+
+        return $this->order->getAmountDue();
+    }
+
+    public function getCustomerId(): string
+    {
+        return $this->attributes[self::META_DATA][self::CUSTOMER_ID] ?? '';
+    }
+
+    public function getDescription(): string
+    {
+        return $this->attributes[self::META_DATA][self::DESCRIPTION] ?? '';
+    }
+
+    public function getExpireAt(): int
+    {
+        return $this->getAttribute(self::EXPIRE_AT);
+    }
+
+    public function getName(): string
+    {
+        return $this->attributes[self::META_DATA][self::NAME] ?? '';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNotes(): ?Notes
+    {
+        if (empty($this->getNotesJson())) {
+            return null;
+        }
+
+        return $this->getNotesAttribute($this->getNotesJson());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getNotesJson(): string
+    {
+        return $this->attributes[self::META_DATA][self::NOTES] ?? '';
+    }
+
+    // ------------------------------ GETTERS END ------------------------------
+    // --------------------------------------------------------------------------------
+    // ------------------------------ SETTERS START ------------------------------
+
+    public function setCloseReason(string $closeReason): void
+    {
+        CloseReason::checkCloseReason($closeReason);
+
+        $this->setAttribute(self::CLOSE_REASON, $closeReason);
+    }
+
+    public function setStatus(string $status): void
+    {
+        Status::checkStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    protected function setNotesAttribute($notes)
+    {
+        parent::setNotesAttribute($notes);
+
+        $this->attributes[self::META_DATA][self::NOTES] = $this->attributes[self::NOTES];
+
+        unset($this->attributes[self::NOTES]);
+    }
+
+    // ------------------------------ SETTERS END ------------------------------
 }
