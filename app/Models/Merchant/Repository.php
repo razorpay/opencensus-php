@@ -795,11 +795,11 @@ class Repository extends Base\Repository
 
         $mapping =  $query->first();
 
-        $this->trace->info(
-            TraceCode::MERCHANT_USER_MAPPING,
-            [
-                'mapping' => $mapping,
-            ]);
+//        $this->trace->info(
+//            TraceCode::MERCHANT_USER_MAPPING,
+//            [
+//                'mapping' => $mapping,
+//            ]);
 
         return $mapping;
     }
