@@ -18,10 +18,11 @@ class FeatureEnableSliderButton extends React.PureComponent {
   };
 
   render() {
-    const { isLocalEnabler, feature, buttonText } = this.props;
+    const { isLocalEnabler, feature, buttonText, additionalTrackData } = this.props;
 
     const extraProps = {
       feature,
+      additionalTrackData,
     };
 
     if (isLocalEnabler) {
@@ -83,6 +84,7 @@ class SkipAndGetStartedButton extends React.PureComponent {
     this.props.tracking.trackEvent(
       window.rzpQ.productOnboarding().initiated(`${props.feature}.onboarding.get_started`, {
         clickSource: `Screen_${props.active === 0 ? 1 : 2}_SkipAndGetStarted_CTA`,
+        ...props.additionalTrackData,
       }),
     );
 

@@ -466,6 +466,10 @@ export default class User {
     return this.isFeatureEnabled('pp_custom_domain');
   }
 
+  get isPaymentPageOnboardingRedirectionEnabled() {
+    return this.getExpStatus('pp_onboarding_redirection_exp');
+  }
+
   get isInvoiceCreateFlowUXOptimizationEnabled() {
     return this.getExpStatus('inv_create_flow_ux');
   }

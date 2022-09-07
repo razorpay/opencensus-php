@@ -47,6 +47,7 @@ class FeatureEnableButton extends Component {
         this.props.tracking.trackEvent(
           window.rzpQ.productOnboarding().success(`${this.props.feature}.onboarding.get_started`, {
             isTour: true,
+            ...this.props.additionalTrackData,
           }),
         );
       }

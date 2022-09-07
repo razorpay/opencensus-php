@@ -1,4 +1,6 @@
+import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -23,46 +25,55 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 
+@withRouter
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
-    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.PP
-    ),
+    paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
   }),
   {
     handleProductQuickGuide,
-  }
+  },
 )
 @OnBoarding({
   feature: RZPFeatures.PP,
 })
 export default class PaymentPagesOnBoarding extends React.Component {
-  getNextBtnProp = sliderProps => () => {
+  getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
         isLocalEnabler
         feature={RZPFeatures.PP}
         onClick={this.closeOnboarding}
         page={sliderProps.active}
+        additionalTrackData={{
+          is_creation_redirection_enabled: this.props.user
+            .isPaymentPageOnboardingRedirectionEnabled,
+        }}
       />
     );
   };
 
   closeOnboarding = () => {
-    if (
-      this.props.user.isPaymentPagesEnabled &&
-      !this.props.paymentPageProductOnBoarding.isTour
-    ) {
+    const { user, paymentPageProductOnBoarding, closeOnboarding, history } = this.props;
+
+    if (user.isPaymentPagesEnabled && !paymentPageProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PP, false);
     }
 
-    this.props.closeOnboarding();
+    closeOnboarding();
+
+    /*
+      For an experiment being run 50% where on the click of skip/get started, rather
+      than landing on the list view, the user is redirected to the create flow
+    */
+    if (user.isPaymentPageOnboardingRedirectionEnabled) {
+      history.push('/paymentpages/new');
+    }
   };
 
   render() {
-    const { active, paymentPageProductOnBoarding } = this.props;
+    const { active, paymentPageProductOnBoarding, user } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentPages">
@@ -71,9 +82,10 @@ export default class PaymentPagesOnBoarding extends React.Component {
           afterSlide={getOnBoardingSliderDots({
             paymentPageProductOnBoarding,
             closeOnboarding: this.closeOnboarding,
+            isCreationRedirectionEnabled: user.isPaymentPageOnboardingRedirectionEnabled,
           })}
         >
-          {sliderProps => (
+          {(sliderProps) => (
             <Landing
               {...sliderProps}
               title="Payment Pages"
@@ -83,7 +95,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
             />
           )}
 
-          {sliderProps => (
+          {(sliderProps) => (
             <Features
               {...sliderProps}
               title="What makes Payment Pages great?"
@@ -102,8 +114,9 @@ export default class PaymentPagesOnBoarding extends React.Component {
 function getOnBoardingSliderDots({
   closeOnboarding,
   paymentPageProductOnBoarding,
+  isCreationRedirectionEnabled,
 }) {
-  return sliderProps => (
+  return (sliderProps) => (
     <SliderDots {...sliderProps}>
       <SkipAndGetStartedButton
         isLocalEnabler
@@ -111,15 +124,13 @@ function getOnBoardingSliderDots({
         onClick={closeOnboarding}
         page={sliderProps.active}
         isTour={paymentPageProductOnBoarding.isTour}
+        additionalTrackData={{ is_creation_redirection_enabled: isCreationRedirectionEnabled }}
       />
     </SliderDots>
   );
 }
 
-export function getIsAllowedPaymentPagesResetOnBoarding({
-  paymentPages,
-  loading,
-}) {
+export function getIsAllowedPaymentPagesResetOnBoarding({ paymentPages, loading }) {
   if (paymentPages.length || loading) {
     return false;
   }
