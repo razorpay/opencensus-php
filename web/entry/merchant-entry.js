@@ -28,7 +28,7 @@ function merchantEntry() {
 
     const script = document.createElement('script');
     script.src = 'https://apis.google.com/js/api:client.js';
-    script.async = true;
+    script.async = false;
     script.defer = true;
     document.documentElement.appendChild(script);
     window.loadHubspot = true;

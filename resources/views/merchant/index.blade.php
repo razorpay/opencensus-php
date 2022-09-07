@@ -78,7 +78,7 @@ _dcs.account = '9421167';
 
 </script>
 @if ($newAuthRoute !== 'signup')
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
@@ -87,7 +87,7 @@ _dcs.account = '9421167';
     gtag('config', 'AW-928471290');
   </script>
 @endif
-<script async defer src="https://apis.google.com/js/api:client.js"></script>
+<script defer src="https://apis.google.com/js/api:client.js"></script>
 
 <script>
   // @Todo: remove onload and onerror after debugging the missing display_google_auth event issue
@@ -136,7 +136,7 @@ _dcs.account = '9421167';
   trackScriptEvent('signup.google_onetap_script_attach', 'success');
 </script>
 
-<script async defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
+<script defer src="https://accounts.google.com/gsi/client" onerror="oneTapError()" onload="oneTapSuccess()"></script>
 
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
@@ -190,7 +190,7 @@ _dcs.account = '9421167';
 
 
   <script src="https://www.recaptcha.net/recaptcha/api.js?render=explicit"></script>
-  <script src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
+  <script async src="{{$cdnDashboardUrl}}/dist/merchant-entry.js"></script>
 @else
   <script type="text/javascript">
       window.session_id = "{!! $session_id !!}"

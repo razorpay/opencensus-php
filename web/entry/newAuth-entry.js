@@ -15,7 +15,7 @@ function NewAuthEntry() {
     });
 
     if (!window.location.hostname.includes('axis')) {
-      appendScript('https://apis.google.com/js/api:client.js', true, true);
+      appendScript('https://apis.google.com/js/api:client.js', false, true);
     }
 
     window.loadHubspot = true;
