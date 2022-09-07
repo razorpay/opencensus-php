@@ -26,7 +26,7 @@
   @if(env('APP_ENV') === 'production')
     <script>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(`https://dashboard.razorpay.com/sw-merchant.js`);
+            navigator.serviceWorker.register('/sw-merchant.js');
 
             navigator.serviceWorker.ready.then((registration) => {
                 registration.active.onerror = (event) => {
