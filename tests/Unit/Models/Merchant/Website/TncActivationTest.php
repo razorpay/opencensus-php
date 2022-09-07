@@ -3,26 +3,35 @@
 namespace Unit\Models\Merchant\Website;
 
 use DB;
-use Mail;
 use Hash;
+use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
+use RZP\Http\Response\Response;
 use RZP\Models\Admin\Permission;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ExtraFieldsException;
+use RZP\Tests\Functional\Authorization;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
+use Illuminate\Contracts\Routing\ResponseFactory;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Website\Constants as WConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 
+use Illuminate\Support\Facades\Mail;
+
 class TncActivationTest extends TestCase
 {
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -78,6 +87,8 @@ class TncActivationTest extends TestCase
      */
     public function testTncApplicableNotGeneratedWFExecutedMerchantNotActivated()
     {
+        Mail::fake();
+
         $this->mockRazorxTreatment();
 
         $this->app['rzp.mode'] = 'test';
@@ -140,7 +151,8 @@ class TncActivationTest extends TestCase
         $this->assertTrue($merchant->isActivated());
     }
 
-    /*public function testTncApplicableGenerationExecutedWFExistsMerchantActivated()
+    /*
+    public function testTncApplicableGenerationExecutedWFExistsMerchantActivated()
     {
         $this->mockRazorxTreatment();
 
@@ -154,11 +166,15 @@ class TncActivationTest extends TestCase
             'org_id'   => OrgEntity::AXIS_ORG_ID,
             'hostname' => 'hdfcbank.in'
         ]);
+        $merchant = $this->fixtures->create('merchant', [
+            'org_id'        => OrgEntity::AXIS_ORG_ID
+        ]);
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
             'business_type'    => 4,
             'submitted'        => 1,
-            'business_website' => ''
+            'business_website' => '',
+            'merchant_id' => $merchant->getId()
         ]);
 
         $workflow = $this->fixtures->connection('live')->create('workflow', [
@@ -213,11 +229,9 @@ class TncActivationTest extends TestCase
 
         $this->assertEquals('activated', $merchantDetail->getActivationStatus());
     }
+    */
 
-
-    // save merchant website section
-
-    private function createMerchant($input)
+    private function createMerchant($input,$mockSplitz=true)
     {
         $this->app['rzp.mode'] = 'live';
 
@@ -235,13 +249,37 @@ class TncActivationTest extends TestCase
 
         $merchant = $merchantDetail->merchant;
 
-        $ufhService = \Mockery::mock('RZP\Services\UfhService')->makePartial();
+        if ($mockSplitz === true)
+        {
+            $splitzInput = [
+                "experiment_id" => "K2hFpyVAkZomaH",
+                "id"            => $merchant->getId(),
+            ];
 
-        $this->app->instance('ufh.service', $ufhService);
+            $splitzOutput = [
+                "response" => [
+                    "variant" => [
+                        "name" => 'enable',
+                    ]
+                ]
+            ];
 
-        $ufhService->shouldReceive('getSignedUrl')->andReturn([
-                                                                  'signed_url' => 'firs/' . $merchantDetail['merchant_id'] . '/' . date('Y') . '/' . date('m') . '/' . "random_name.pdf"
-                                                              ]);
+            $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+        }
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000000',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->createUserMerchantMapping($mappingData, 'test');
+        $this->createUserMerchantMapping($mappingData, 'live');
+
+        $this->app['basicauth']->setMerchant($merchant);
+        $this->app['basicauth']->setUser($user);
 
         return $merchant;
     }
@@ -279,24 +317,19 @@ class TncActivationTest extends TestCase
                    ]);
     }
 
-    public function testMerchantSaveSectionDetailsWithDifferentWebsite()
+    public function testMerchantSaveSectionDetailsErrors()
     {
 
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
 
-        $this->app['basicauth']->setMerchant($merchant);
-
+        //1. website in the input is different from business website
         $input = [
             "merchant_website_details" => [
                 "contact_us" => [
-                    "section_status" => "1",
+                    "section_status" => 1,
                     "website"        => [
                         "http://hello.com" => [
                             "url" => "http://hello.co.in/contact_us"
-                        ]
-                    ],
-                    "appstore_url"   => [
-                        "https://apps.apple.com/lol12345.com" => [
                         ]
                     ]
                 ]
@@ -304,22 +337,14 @@ class TncActivationTest extends TestCase
 
         try
         {
-            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+            $response=  (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
         }
         catch (\Exception $e)
         {
-            $this->assertExceptionClass($e, BadRequestException::class);
-
+            //$this->assertExceptionClass($e, BadRequestException::class);
         }
-    }
 
-    public function testMerchantSaveSectionDetailsWithAppstoreFileStoreId()
-    {
-
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
+        //2. testMerchantSaveSectionDetailsWithAppstoreFileStoreId
         $input = [
             "merchant_website_details" => [
                 "contact_us" => [
@@ -339,22 +364,14 @@ class TncActivationTest extends TestCase
 
         try
         {
-            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+            $response= (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
         }
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
-
         }
-    }
 
-    public function testMerchantSaveSectionDetailsInvalidData()
-    {
-
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
+        //3. invalid section status input
         $input = [
             "merchant_website_details" => [
                 "contact_us" => [
@@ -364,24 +381,17 @@ class TncActivationTest extends TestCase
 
         try
         {
-            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+            $response= (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
         }
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
-
         }
-    }
 
-    public function testMerchantSaveSectionDetailsInvalidDataStructure()
-    {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
+        //4. invalid input structure no section name provided
         $input = [
             "merchant_website_details" => [
-                "section_status" => "1",
+                "section_status" => 1,
                 "website"        => [
                     "https://hello.com" => [
                         "url" => "https://hello.co.in/contact_us"
@@ -392,24 +402,18 @@ class TncActivationTest extends TestCase
 
         try
         {
-            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+            $response= (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
         }
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
 
         }
-    }
 
-    public function testMerchantSaveSectionDetailsInvalidKey()
-    {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
+        //5. invalid input data - extra non required field
         $input = [
             "merchant_website_details" => [
-                "section_status" => "1",
+                "section_status" => 1,
                 "website"        => [
                     "https://hello.com" => [
                         "url"      => "https://hello.co.in/contact_us",
@@ -421,25 +425,102 @@ class TncActivationTest extends TestCase
 
         try
         {
-            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+            $response= (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
         }
         catch (\Exception $e)
         {
             $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
 
         }
+
+        //6. invalid input data - extra non required field from merchant auth
+        $input = [
+            "admin_website_details" => [
+                "website" => [
+                    "contact_us" => [
+                        "url" => "https://hello.co.in/contact_us"
+                    ]
+                ]
+            ]
+        ];
+
+        try
+        {
+            $response= (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, ExtraFieldsException::class);
+
+        }
+
+        //7. invalid edit input -  - extra non required field
+        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 2,
+                                                                "website"        => [
+                                                                    "https://hello.com" => [
+                                                                        "url" => "https://hello.co.in/contact_us"
+                                                                    ]
+                                                                ]
+                                                            ]
+                                                        ]]);
+        $input = [
+            "section_name"          => "contact_us",
+            "action"                => "publish",
+            "merchant_consent"      => true,
+            "admin_website_details" => [
+                "website" => [
+                    "contact_us" => [
+                        "url" => "https://hello.co.in/contact_us"
+                    ]
+                ]
+            ]
+        ];
+
+        try
+        {
+            $response= (new Merchant\Website\Service)->postWebsiteSectionAction($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, ExtraFieldsException::class);
+
+        }
+
+        //8. testMerchantWebsiteSection Save Status
+        $input = [
+            WConstant::STATUS     => WConstant::SUBMITTED
+        ];
+
+        try
+        {
+            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+
+        }
+
     }
 
     public function testMerchantCreateWebsiteSectionDetailsSectionStatus1()
     {
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
 
-        $this->app['basicauth']->setMerchant($merchant);
-
         $input = [
             "merchant_website_details" => [
                 "contact_us" => [
-                    "section_status" => "1",
+                    "section_status" => 1,
                     "website"        => [
                         "https://hello.com" => [
                             "url" => "https://hello.co.in/contact_us"
@@ -453,8 +534,8 @@ class TncActivationTest extends TestCase
         $this->assertArraySubset([
                                      "merchant_website_details" => [
                                          "contact_us" => [
-                                             "section_status" => "1",
-                                             "status"         => "submitted",
+                                             "section_status" => 1,
+                                             "status"         => null,
                                              "website"        => [
                                                  "https://hello.com" => [
                                                      "url" => "https://hello.co.in/contact_us"
@@ -471,8 +552,6 @@ class TncActivationTest extends TestCase
     {
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
 
-        $this->app['basicauth']->setMerchant($merchant);
-
         $input = [
             "shipping_period"             => "3-5 days",
             "refund_request_period"       => "3-5 days",
@@ -482,7 +561,7 @@ class TncActivationTest extends TestCase
                 "support_email"          => "kakarla.vasanthi@razorpay.com"
             ], "merchant_website_details" => [
                 "contact_us" => [
-                    "section_status" => "2",
+                    "section_status" => 2,
                     "website"        => [
                         "https://hello.com" => [
                             "url" => "https://hello.co.in/contact_us"
@@ -502,7 +581,7 @@ class TncActivationTest extends TestCase
                                   ],
                                   "merchant_website_details" => [
                                       "contact_us" => [
-                                          "section_status" => "2",
+                                          "section_status" => 2,
                                           "website"        => [
                                               "https://hello.com" => [
                                                   "url" => "https://hello.co.in/contact_us"
@@ -520,8 +599,6 @@ class TncActivationTest extends TestCase
     {
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
 
-        $this->app['basicauth']->setMerchant($merchant);
-
         $input = [
             "shipping_period"             => "3-5 days",
             "refund_request_period"       => "3-5 days",
@@ -531,7 +608,7 @@ class TncActivationTest extends TestCase
                 "support_email"          => "kakarla.vasanthi@razorpay.com"
             ], "merchant_website_details" => [
                 "contact_us" => [
-                    "section_status" => "3",
+                    "section_status" => 3,
                 ]
             ]];
 
@@ -546,7 +623,7 @@ class TncActivationTest extends TestCase
                                   ],
                                   "merchant_website_details" => [
                                       "contact_us" => [
-                                          "section_status" => "3",
+                                          "section_status" => 3,
                                       ]
                                   ]], $websiteDetail);
 
@@ -564,7 +641,7 @@ class TncActivationTest extends TestCase
                                         'merchant_id'              => $merchant->getId(),
                                         "merchant_website_details" => [
                                             "terms" => [
-                                                "section_status" => "1",
+                                                "section_status" => 1,
                                                 "website"        => [
                                                     "https://hello.com" => [
                                                         "url" => "https://hello.co.in/terms"
@@ -574,7 +651,6 @@ class TncActivationTest extends TestCase
                                         ]
                                     ]);
 
-        $this->app['basicauth']->setMerchant($merchant);
 
         $input = [
             "shipping_period"             => "3-5 days",
@@ -585,7 +661,7 @@ class TncActivationTest extends TestCase
                 "support_email"          => "kakarla.vasanthi@razorpay.com"
             ], "merchant_website_details" => [
                 "contact_us" => [
-                    "section_status" => "3",
+                    "section_status" => 3,
                 ]
             ]];
 
@@ -600,7 +676,7 @@ class TncActivationTest extends TestCase
                                   ],
                                   "merchant_website_details" => [
                                       "terms"      => [
-                                          "section_status" => "1",
+                                          "section_status" => 1,
                                           "website"        => [
                                               "https://hello.com" => [
                                                   "url" => "https://hello.co.in/terms"
@@ -608,7 +684,7 @@ class TncActivationTest extends TestCase
                                           ]
                                       ],
                                       "contact_us" => [
-                                          "section_status" => "3",
+                                          "section_status" => 3,
                                       ]
                                   ]], $websiteDetail);
 
@@ -624,7 +700,7 @@ class TncActivationTest extends TestCase
                                                            'merchant_id'              => $merchant->getId(),
                                                            "merchant_website_details" => [
                                                                "terms" => [
-                                                                   "section_status" => "1",
+                                                                   "section_status" => 1,
                                                                    "website"        => [
                                                                        "https://hello.com" => [
                                                                            "url" => "https://hello.co.in/terms"
@@ -633,8 +709,6 @@ class TncActivationTest extends TestCase
                                                                ]
                                                            ]
                                                        ]);
-
-        $this->app['basicauth']->setMerchant($merchant);
 
         $input = [
             "shipping_period"             => "3-5 days",
@@ -645,7 +719,7 @@ class TncActivationTest extends TestCase
                 "support_email"          => "kakarla.vasanthi@razorpay.com"
             ], "merchant_website_details" => [
                 "terms" => [
-                    "section_status" => "3",
+                    "section_status" => 3,
                 ]
             ]];
 
@@ -660,12 +734,8 @@ class TncActivationTest extends TestCase
                                   ],
                                   "merchant_website_details" => [
                                       "terms" => [
-                                          "section_status" => "3",
-                                          "website"        => [
-                                              "https://hello.com" => [
-                                                  "url" => "https://hello.co.in/terms"
-                                              ]
-                                          ]
+                                          "section_status" => 3,
+                                          "website"        => null
                                       ]
                                   ]], $websiteDetail);
 
@@ -673,211 +743,10 @@ class TncActivationTest extends TestCase
         $this->assertArrayHasKey('id', $websiteDetail);
     }
 
-    public function testMerchantSaveAdminSectionDetails()
+    public function testMerchantWebsiteSectionActionSectionStatus3Publish()
     {
+        Mail::fake();
 
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $input = [
-            "admin_website_details" => [
-                "website" => [
-                    "contact_us" => [
-                        "url" => "https://hello.co.in/contact_us"
-                    ]
-                ]
-            ]
-        ];
-
-        try
-        {
-            (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, ExtraFieldsException::class);
-
-        }
-    }
-
-    public function testMerchantWebsiteSectionActionSectionStatus2InvalidInput()
-    {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
-                                                        "shipping_period"          => "3-5 days",
-                                                        "refund_request_period"    => "3-5 days",
-                                                        "refund_process_period"    => "3-5 days",
-                                                        "additional_data"          => [
-                                                            "support_contact_number" => "9980004017",
-                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
-                                                        ],
-                                                        "merchant_website_details" => [
-                                                            "contact_us" => [
-                                                                "section_status" => "2",
-                                                                "website"        => [
-                                                                    "https://hello.com" => [
-                                                                        "url" => "https://hello.co.in/contact_us"
-                                                                    ]
-                                                                ]
-                                                            ]
-                                                        ]]);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $input = [
-            "section_name"     => "contact_us1",
-            "action"           => "publish",
-            "merchant_consent" => true
-        ];
-
-        try
-        {
-            (new Merchant\Website\Service)->postWebsiteSectionAction($input);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
-
-        }
-    }
-
-    public function testMerchantWebsiteSectionActionSectionStatus2ExtraFields()
-    {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
-                                                        "shipping_period"          => "3-5 days",
-                                                        "refund_request_period"    => "3-5 days",
-                                                        "refund_process_period"    => "3-5 days",
-                                                        "additional_data"          => [
-                                                            "support_contact_number" => "9980004017",
-                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
-                                                        ],
-                                                        "merchant_website_details" => [
-                                                            "contact_us" => [
-                                                                "section_status" => "2",
-                                                                "website"        => [
-                                                                    "https://hello.com" => [
-                                                                        "url" => "https://hello.co.in/contact_us"
-                                                                    ]
-                                                                ]
-                                                            ]
-                                                        ]]);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $input = [
-            "section_name"     => "contact_us",
-            "action"           => "publish",
-            "merchant_consent" => true,
-            "admin_website_details" => [
-                "website" => [
-                    "contact_us" => [
-                        "url" => "https://hello.co.in/contact_us"
-                    ]
-                ]
-            ]
-        ];
-
-        try
-        {
-            (new Merchant\Website\Service)->postWebsiteSectionAction($input);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, ExtraFieldsException::class);
-
-        }
-    }
-
-    public function testMerchantWebsiteSectionActionSectionStatus3Download()
-    {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
-                                                        "shipping_period"          => "3-5 days",
-                                                        "refund_request_period"    => "3-5 days",
-                                                        "refund_process_period"    => "3-5 days",
-                                                        "additional_data"          => [
-                                                            "support_contact_number" => "9980004017",
-                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
-                                                        ],
-                                                        "merchant_website_details" => [
-                                                            "contact_us" => [
-                                                                "section_status" => "2",
-                                                                "website"        => [
-                                                                    "https://hello.com" => [
-                                                                        "url" => "https://hello.co.in/contact_us"
-                                                                    ]
-                                                                ]
-                                                            ]
-                                                        ]]);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $input = [
-            "section_name"     => "contact_us",
-            "action"           => "publish",
-            "merchant_consent" => true
-        ];
-
-        try
-        {
-            (new Merchant\Website\Service)->postWebsiteSectionAction($input);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, BadRequestException::class);
-
-        }
-    }
-
-    public function testMerchantWebsiteSectionActionSectionStatus2Publish()
-    {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
-
-        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
-                                                        "shipping_period"          => "3-5 days",
-                                                        "refund_request_period"    => "3-5 days",
-                                                        "refund_process_period"    => "3-5 days",
-                                                        "additional_data"          => [
-                                                            "support_contact_number" => "9980004017",
-                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
-                                                        ],
-                                                        "merchant_website_details" => [
-                                                            "contact_us" => [
-                                                                "section_status" => "2",
-                                                                "website"        => [
-                                                                    "https://hello.com" => [
-                                                                        "url" => "https://hello.co.in/contact_us"
-                                                                    ]
-                                                                ]
-                                                            ]
-                                                        ]]);
-
-        $this->app['basicauth']->setMerchant($merchant);
-
-        $input = [
-            WConstant::SECTION_NAME     => WConstant::CONTACT_US,
-            WConstant::ACTION           => WConstant::PUBLISH,
-            WConstant::MERCHANT_CONSENT => true
-        ];
-
-        try
-        {
-            (new Merchant\Website\Service)->postWebsiteSectionAction($input);
-        }
-        catch (\Exception $e)
-        {
-            $this->assertExceptionClass($e, BadRequestException::class);
-
-        }
-    }
-
-    public function testMerchantWebsiteSectionActionSectionStatus3()
-    {
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
 
         $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
@@ -894,23 +763,6 @@ class TncActivationTest extends TestCase
                                                             ]
                                                         ]]);
 
-        $user = $this->fixtures->create('user');
-
-        $mappingData = [
-            'user_id'     => $user['id'],
-            'merchant_id' => '10000000000000',
-            'role'        => 'owner',
-            'product'     => 'primary',
-        ];
-
-        $this->createUserMerchantMapping($mappingData, 'test');
-        $this->createUserMerchantMapping($mappingData, 'live');
-
-        $this->app['basicauth']->setMerchant($merchant);
-        $this->app['basicauth']->setUser($user);
-
-        $consentURL = "https://razorpay.com/terms/";
-
         $input = [
             "section_name"     => "contact_us",
             "action"           => "publish",
@@ -919,8 +771,7 @@ class TncActivationTest extends TestCase
 
         $websiteDetail = (new Merchant\Website\Service)->postWebsiteSectionAction($input);
 
-        $this->assertArraySubset(['merchant_id'              => $merchant->getId(),
-                                  "shipping_period"          => "3-5 days",
+        $this->assertArraySubset(["shipping_period"          => "3-5 days",
                                   "refund_request_period"    => "3-5 days",
                                   "refund_process_period"    => "3-5 days",
                                   "additional_data"          => [
@@ -931,21 +782,28 @@ class TncActivationTest extends TestCase
                                       "contact_us" => [
                                           "section_status" => 3,
                                           "status"         => "submitted",
-                                          "published_url"  => env(WConstant::MERCHANT_POLICIES_SUBDOMAIN).'/policy/contact_us/'.$merchantWebsite->getId()
+                                          "published_url"  => env(WConstant::MERCHANT_POLICIES_SUBDOMAIN) . '/policy/'.$merchantWebsite->getId().'/contact_us'
                                       ]
                                   ]], $websiteDetail);
 
         $merchantConsent = $this->getDbLastEntity('merchant_consents');
 
         $this->assertEquals($merchant->getId(), $merchantConsent->getMerchantId());
-        $this->assertEquals("contact_us", $merchantConsent->getConsentFor());
+        $this->assertEquals("website_contact_us", $merchantConsent->getConsentFor());
 
         $merchantConsentDetails = $this->getDbLastEntity('merchant_consent_details');
 
         $this->assertNull($merchantConsentDetails);
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.website_section_published', $mail->getTemplate());
+
+            return true;
+        });
     }
 
-    public function testMerchantWebsiteSectionActionSectionStatus2()
+    //it should be functional test case
+    /*public function testMerchantWebsiteSectionActionSectionStatus2Download()
     {
         $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
 
@@ -963,22 +821,8 @@ class TncActivationTest extends TestCase
                                                             ]
                                                         ]]);
 
-        $user = $this->fixtures->create('user');
-
-        $mappingData = [
-            'user_id'     => $user['id'],
-            'merchant_id' => '10000000000000',
-            'role'        => 'owner',
-            'product'     => 'primary',
-        ];
-
-        $this->createUserMerchantMapping($mappingData, 'test');
-        $this->createUserMerchantMapping($mappingData, 'live');
-
-        $this->app['basicauth']->setMerchant($merchant);
-        $this->app['basicauth']->setUser($user);
-
-        $consentURL = "https://razorpay.com/terms/";
+        $this->ba = new Authorization($this);
+        $this->ba->proxyAuth();
 
         $input = [
             "section_name"     => "contact_us",
@@ -988,8 +832,7 @@ class TncActivationTest extends TestCase
 
         $websiteDetail = (new Merchant\Website\Service)->postWebsiteSectionAction($input);
 
-        $this->assertArraySubset(['merchant_id'              => $merchant->getId(),
-                                  "shipping_period"          => "3-5 days",
+        $this->assertArraySubset(["shipping_period"          => "3-5 days",
                                   "refund_request_period"    => "3-5 days",
                                   "refund_process_period"    => "3-5 days",
                                   "additional_data"          => [
@@ -1006,35 +849,67 @@ class TncActivationTest extends TestCase
         $merchantConsent = $this->getDbLastEntity('merchant_consents');
 
         $this->assertEquals($merchant->getId(), $merchantConsent->getMerchantId());
-        $this->assertEquals("contact_us", $merchantConsent->getConsentFor());
+        $this->assertEquals("website_contact_us", $merchantConsent->getConsentFor());
 
         $merchantConsentDetails = $this->getDbLastEntity('merchant_consent_details');
 
         $this->assertNull($merchantConsentDetails);
     }
+    //it should be functional test case
+    public function testMerchantWebsiteSectionActionSectionDownload()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+
+        $merchantWebsite = $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 2
+                                                            ]
+                                                        ]]);
+
+        $this->ba->proxyAuth();
+
+        $input = [
+            "section_name"     => "contact_us",
+            "action"           => "download"
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->postWebsiteSectionAction($input);
+
+    }
+    */
 
     //admin dashboard
     public function testAdminCreateWebsiteSectionDetails()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com'],false);
 
         $input = [
-            "admin_website_details" => [
-                "website" => [
-                    "contact_us" => [
-                        "url" => "https://hello.co.in/contact_us"
-                    ]
-                ]
-            ]
+            "section_name" => "refund",
+            "url_type"     => "website",
+            "url"          => "https://hello.com",
+            "section_url"  => "http://hello.com/refund"
+
         ];
 
-        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant, $input);
+        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
 
         $this->assertArraySubset([
+                                     "isWebsiteSectionsApplicable" => true,
+                                     "isGracePeriodApplicable"     => false,
                                      "admin_website_details" => [
-                                         "website" => [
-                                             "contact_us" => [
-                                                 "url" => "https://hello.co.in/contact_us"
+                                         "website"                     => [
+                                             'https://hello.com' => [
+                                                 "refund" => [
+                                                     "url" => "http://hello.com/refund"
+                                                 ]
                                              ]
                                          ]
                                      ]
@@ -1044,29 +919,144 @@ class TncActivationTest extends TestCase
         $this->assertArrayHasKey('merchant_website_details', $websiteDetail);
     }
 
-    public function testAdminCreateWebsiteSectionComments()
+    public function testAdminCreateWebsiteSectionDetailsInvalidData()
     {
-        $merchant = $this->createMerchant(['business_website' => 'https://hello.com']);
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com'],false);
 
+        //1. invalid website
         $input = [
-            "admin_website_details" => [
-                "website" => [
-                    "comments" => "hello world"
-                ]
-            ]
+            "section_name" => "refund",
+            "url_type"     => "website",
+            "url"          => "http://hello.com",
+            "section_url"  => "http://hello.com/refund"
         ];
 
-        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant, $input);
+        try
+        {
+            $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+
+        }
+
+        //2. invalid url type
+        $input = [
+            "section_name" => "refund",
+            "url_type"     => "websites",
+            "url"          => "https://hello.com",
+            "section_url"  => "http://hello.com/refund"
+        ];
+
+        try
+        {
+            $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+
+        }
+
+        //3. invalid section url
+        $input = [
+            "section_name" => "refund",
+            "url_type"     => "website",
+            "url"          => "https://hello.com",
+            "section_url"  => "refund"
+        ];
+
+        try
+        {
+            $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+
+        }
+
+        //4. invalid section name
+        $input = [
+            "section_name" => "refund1",
+            "url_type"     => "website",
+            "url"          => "https://hello.com",
+            "section_url"  => "http://hello.com/refund"
+        ];
+
+        try
+        {
+            $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+
+        }
+
+        //4. required field comments is missing
+        $input = [
+            "section_name" => "comments",
+            "url_type"     => "website",
+            "url"          => "https://hello.com"
+        ];
+
+        try
+        {
+            $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+
+        }
+    }
+
+    public function testSaveAdminCreateWebsiteSection()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com'],false);
+
+        //section section information
+        $input = [
+            "section_name" => "refund",
+            "url_type"     => "website",
+            "url"          => "https://hello.com",
+            "section_url"  => "https://hello.com/refund"
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
 
         $this->assertArraySubset([
                                      "admin_website_details" => [
                                          "website" => [
-                                             "comments" => "hello world"
+                                             "https://hello.com" => [
+                                                 "refund" => [
+                                                     "url" => "https://hello.com/refund"
+                                                 ]
+                                             ]
                                          ]
                                      ]
                                  ], $websiteDetail);
+        // save comments
+        $input = [
+            "section_name" => "comments",
+            "url_type"     => "website",
+            "url"          => "https://hello.com",
+            "comments"     => "hello world"
+        ];
 
-        $this->assertArrayHasKey('admin_website_details', $websiteDetail);
-        $this->assertArrayHasKey('merchant_website_details', $websiteDetail);
-    }*/
+        $websiteDetail = (new Merchant\Website\Service)->saveAdminWebsiteSection($merchant->getId(), $input);
+
+        $this->assertArraySubset([
+                                     "admin_website_details" => [
+                                         "website" => [
+                                             "https://hello.com" => [
+                                                 "comments" => "hello world"
+                                             ]
+                                         ]
+                                     ]
+                                 ], $websiteDetail);
+    }
+
 }

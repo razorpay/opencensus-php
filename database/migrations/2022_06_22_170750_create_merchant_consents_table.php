@@ -40,6 +40,8 @@ class CreateMerchantConsentsTable extends Migration
 
             $table->bigInteger(Entity::CREATED_AT);
 
+            $table->bigInteger(Entity::UPDATED_AT);
+
 
         });
     }

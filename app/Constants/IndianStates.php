@@ -129,6 +129,18 @@ class IndianStates
         return $stateName ?: null;
     }
 
+    public static function getStateName($code)
+    {
+        if (empty($code) === false)
+        {
+            $stateName = array_search($code, self::$stateCodeMap);
+
+            return $stateName ?: null;
+        }
+
+        return null;
+    }
+
     public static function stateValueExist(string $value):bool
     {
         $value = strtoupper($value);

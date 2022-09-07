@@ -254,7 +254,7 @@ class Service extends Base\Service
         return $publicTncDetails;
     }
 
-    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin=false)
+    public function isWebsiteSectionsApplicable(MerchantEntity $merchant, $admin = false)
     {
 
         try
@@ -530,8 +530,8 @@ class Service extends Base\Service
             $merchantEmail = (new EmailService())->proxyGetSupportDetails($merchant);
 
             $response[Entity::ADDITIONAL_DATA] = [
-                Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? null,
-                Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? null
+                Constants::SUPPORT_PHONE => $merchantEmail['phone'] ?? '',
+                Constants::SUPPORT_EMAIL => $merchantEmail['email'] ?? ''
             ];
 
         }
@@ -1006,7 +1006,7 @@ class Service extends Base\Service
                 if (in_array($sectionName, explode(',', Constants::VALID_MERCHANT_SECTIONS)) === false)
                 {
                     $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
-                        "error"       => "invalid section ".$sectionName
+                        "error" => "invalid section " . $sectionName
                     ]);
 
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
@@ -1067,7 +1067,8 @@ class Service extends Base\Service
                                 // verify if the input website link is already provided by merchant in business_Website
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if (trim($websiteLink, '/') !== trim($merchantDetail->getWebsite(), '/'))
+                                    if (trim(strtolower($websiteLink), '/') !==
+                                        trim(strtolower($merchantDetail->getWebsite()), '/'))
                                     {
                                         $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
                                             "error"       => "invalid website",
@@ -1086,7 +1087,8 @@ class Service extends Base\Service
 
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if (trim($websiteLink, '/') !== trim($businessDetails->getPlaystoreUrl(), '/'))
+                                    if (trim(strtolower($websiteLink), '/') !==
+                                        trim(strtolower($businessDetails->getPlaystoreUrl()), '/'))
                                     {
                                         $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
                                             "error"       => "invalid playstore",
@@ -1106,7 +1108,8 @@ class Service extends Base\Service
 
                                 foreach ($allWebsites as $websiteLink)
                                 {
-                                    if (trim($websiteLink, '/') !== trim($businessDetails->getAppstoreUrl(), '/'))
+                                    if (trim(strtolower($websiteLink), '/') !==
+                                        trim(strtolower($businessDetails->getAppstoreUrl()), '/'))
                                     {
                                         $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
                                             "error"       => "invalid appstore",
@@ -1124,7 +1127,7 @@ class Service extends Base\Service
                             default:
 
                                 $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR, [
-                                    "error"       => "default : invalid key",
+                                    "error" => "default : invalid key",
                                 ]);
 
                                 throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
@@ -1304,7 +1307,7 @@ class Service extends Base\Service
                 'merchant' => $merchant,
                 'params'   => [
                     'section_name'  => Constants::SECTION_DISPLAY_NAME_MAPPING[$sectionName],
-                    'date'          => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->addDays(Constants::PUBLISH_TIME_LIMIT)->format('Y-m-d'),
+                    'date'          => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->addDays(Constants::PUBLISH_TIME_LIMIT)->format('Y-m-d'),
                     'published_url' => $published_url
                 ]
             ];
@@ -1383,7 +1386,7 @@ class Service extends Base\Service
                             [
                                 "data" => [
                                     'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
-                                    'updated_at'                 => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->isoFormat('MMM Do YYYY'),
+                                    'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
                                     'sectionName'                => $sectionName,
                                     'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
                                     'public'                     => false,
@@ -1402,16 +1405,16 @@ class Service extends Base\Service
 
         //$readmeFile = public_path() . '/files/policies/readme.txt';
 
-        $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile"    => $htmlFile,
-                                                               "textFile"    => $textFile,
-                                                               "zipFile"     => $zipFile
+        $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile" => $htmlFile,
+                                                               "textFile" => $textFile,
+                                                               "zipFile"  => $zipFile
         ]);
 
         file_put_contents($htmlFile, $htmlContent);
 
         if (File::exists($textFile))
         {
-            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile"    => $htmlFile
+            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["htmlFile" => $htmlFile
             ]);
         }
 
@@ -1419,7 +1422,7 @@ class Service extends Base\Service
 
         if (File::exists($textFile))
         {
-            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["textFile"    => $textFile,
+            $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["textFile" => $textFile,
             ]);
         }
 
@@ -1431,7 +1434,7 @@ class Service extends Base\Service
                 'merchant' => $this->repo->merchant->findOrFailPublic($merchantDetails->getMerchantId()),
                 'params'   => [
                     'section_name' => Constants::SECTION_DISPLAY_NAME_MAPPING[$sectionName],
-                    'date'         => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->addDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
+                    'date'         => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->addDays(Constants::DOWNLOAD_TIME_LIMIT)->format('Y-m-d')
                 ]
             ];
 
@@ -1742,7 +1745,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        if ($this->isWebsiteSectionsApplicable($merchant,true) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, true) === false)
         {
             return ["isWebsiteSectionsApplicable" => false,
                     "isGracePeriodApplicable"     => false
@@ -1769,7 +1772,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        if ($this->isWebsiteSectionsApplicable($merchant,true) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -1792,7 +1795,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
 
-        if ($this->isWebsiteSectionsApplicable($merchant,true) === false)
+        if ($this->isWebsiteSectionsApplicable($merchant, true) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
         }
@@ -2015,7 +2018,7 @@ class Service extends Base\Service
                                [
                                    "data" => [
                                        'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($this->merchant),
-                                       'updated_at'                 => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->isoFormat('MMM Do YYYY'),
+                                       'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
                                        'sectionName'                => $sectionName,
                                        'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
                                        'merchant'                   => $this->merchant->toArray(),
@@ -2055,7 +2058,7 @@ class Service extends Base\Service
                                    [
                                        "data" => [
                                            'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
-                                           'updated_at'                 => Carbon::createFromTimestamp($updatedAt,Timezone::IST)->isoFormat('MMM Do YYYY'),
+                                           'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
                                            'sectionName'                => $sectionName,
                                            'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
                                            'merchant'                   => $merchant->toArray(),

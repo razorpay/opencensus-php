@@ -24,7 +24,7 @@
         to the owner of the website whose registered/operational office is
         {{{$data['merchant_details']['business_registered_address']}}}
         {{{$data['merchant_details']['business_registered_city']}}}
-        {{{$data['merchant_details']['business_registered_state']}}}
+        {{{RZP\Constants\IndianStates::getStateName($data['merchant_details']['business_registered_state'])}}}
         {{{$data['merchant_details']['business_registered_pin']}}}. The term 'you' refers to the user or viewer of our website.
     </p>
     <p class='content-text'>
