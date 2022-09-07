@@ -2975,7 +2975,8 @@ class Core extends Base\Core
                 }
                 if ($bas === null)
                 {
-                    $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+                    $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout) ??
+                           $this->repo->banking_account_statement->fetchByGatewayRefNumForPayout($payout);
                 }
             }
             catch (\Throwable $e)
@@ -3070,7 +3071,8 @@ class Core extends Base\Core
         if ($bas === null)
         {
             $bas = $this->repo->banking_account_statement->fetchByUtrForReversal($reversal)->first() ??
-                   $this->repo->banking_account_statement->fetchByCmsRefNumForReversal($reversal)->first();
+                   $this->repo->banking_account_statement->fetchByCmsRefNumForReversal($reversal)->first() ??
+                   $this->repo->banking_account_statement->fetchByGatewayRefNumForReversal($reversal);
 
             // This happens when account statement has not been fetched yet, or we were unable to map the BAS to a reversal
             if (empty($bas) === true)
@@ -3776,7 +3778,8 @@ class Core extends Base\Core
         }
         if ($bas === null)
         {
-            $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+            $bas = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout) ??
+                   $this->repo->banking_account_statement->fetchByGatewayRefNumForPayout($payout);
         }
 
         if (empty($bas) === false)
@@ -6663,7 +6666,8 @@ class Core extends Base\Core
         }
         if ($debitBAS === null)
         {
-            $debitBAS = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout);
+            $debitBAS = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout) ??
+                        $this->repo->banking_account_statement->fetchByGatewayRefNumForPayout($payout);
         }
 
         if (empty($debitBAS) === false)
@@ -6676,7 +6680,8 @@ class Core extends Base\Core
             }
             if ($creditBAS === null)
             {
-                $creditBAS = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout, BankingAccountStatement\Type::CREDIT);
+                $creditBAS = $this->repo->banking_account_statement->fetchByCmsRefNumForPayout($payout, BankingAccountStatement\Type::CREDIT) ??
+                             $this->repo->banking_account_statement->fetchByGatewayRefNumForPayout($payout, BankingAccountStatement\Type::CREDIT);
             }
 
             if ($creditBAS === null)

@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Database\Connection;
 
 use RZP\Constants;
-use RZP\Constants\Mode;
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
@@ -4941,6 +4940,30 @@ class RblBankingAccountStatementTest extends TestCase
         $this->app->instance('mozart', $mock);
     }
 
+    protected function setMozartMockResponseRblV2($mockedResponse)
+    {
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                       {
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   });
+
+        $this->app->instance('mozart', $mozartMock);
+    }
+
     protected function addTestTransactions(): void
     {
         $mockedResponse = $this->getRblDataResponse();
@@ -8023,6 +8046,324 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(EntityConstants::EXTERNAL, $txn['type']);
         $this->assertEquals($txn['id'], $external['transaction_id']);
+    }
+
+    /**
+     * In this test, it is assumed that FTS webhook for the IFT payout hasn't come yet, and the corresponding
+     * BAS entity is mapped to external since it couldn't find gateway ref no. to map to payout.
+     * When the processed webhook arrives from FTS, it should map the payout to the debit entity.
+     */
+    public function testRblAccountStatementTxnMappingForIFTUsingGatewayRefNoFromFTSProcessedWebhook()
+    {
+        $channel = Channel::RBL;
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->setupForRblPayout($channel, 20000000, FundTransfer\Mode::RTGS);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'initiated_at' => 1660481812]);
+
+        $payout->reload();
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 20100000]);
+
+        // 1. Fetch account statement from RBL - debit fetch only
+        $mockedResponse = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2022-08-14T18:26:53.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200000.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'Vivek Karna HDFC RZPJAMESBOND7 ',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '1000.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2022-08-14T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        $this->setMozartMockResponseRblV2($mockedResponse);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH          => 'on',
+                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        BankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $external = $this->getDbLastEntity('external');
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals($external['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($external['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals(Payout\Status::INITIATED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
+
+        // 2. Initiate FTS status update webhook, status received as processed
+        $ftaTestData = $this->testData['testRblSlackAlertThrownForRecon'];
+        $ftaTestData['request']['content'] = [
+            'bank_account_type'   => "CURRENT",
+            'bank_processed_time' => "",
+            'bank_status_code'    => "SUCCESS",
+            'channel'             => "RBL",
+            'extra_info'          => [
+                'beneficiary_name' => "Test IFT Payout",
+                'cms_ref_no'       => 'PKJS5YtsjaMesBond7'
+            ],
+            'failure_reason'      => "",
+            'fund_transfer_id'    => $attempt['fts_transfer_id'],
+            'gateway_ref_no'      => "jaMesBond7",
+            'mode'                => 'IFT',
+            'source_id'           => $attempt['source_id'],
+            'source_type'         => $attempt['source_type'],
+            'status'              => Payout\Status::PROCESSED,
+            'utr'                 => 'PKJS5YtsjaMesBond7',
+        ];
+
+        $ftaTestData['response'] = [
+            'content' => []
+        ];
+
+        unset($ftaTestData['exception']);
+
+        $this->ba->ftsAuth();
+
+        $this->startTest($ftaTestData);
+
+        $payout->reload();
+        $attempt->reload();
+        $basEntity = $basEntries[0]->reload();
+
+        $this->assertEquals('PKJS5YtsjaMesBond7', $attempt['utr']);
+        $this->assertEquals('jaMesBond7', $attempt['gateway_ref_no']);
+        $this->assertEquals($payout['transaction_id'], $basEntity['transaction_id']);
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntity['entity_type']);
+        $this->assertEquals($payout['id'], $basEntity['entity_id']);
+        $this->assertEquals(Payout\Status::PROCESSED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
+        $this->assertEquals(Payout\Mode::IFT, $attempt[Payout\Entity::MODE]);
+    }
+
+    /**
+     * In this test, it is assumed that FTS webhook for the IFT payout hasn't come yet, and the corresponding
+     * BAS debit and credit entries are mapped to external since it couldn't find gateway ref no. to map to payout.
+     * When the failed webhook arrives from FTS, it should map the payout to the debit entity and create a reversed
+     * entity mapped to credit BAS.
+     */
+    public function testRblAccountStatementTxnMappingForIFTUsingGatewayRefNoFromFailedWebhookReroutedToReversed()
+    {
+        $channel = Channel::RBL;
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $this->setupForRblPayout($channel, 20000000, FundTransfer\Mode::RTGS);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'initiated_at' => 1660481812]);
+
+        $payout->reload();
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 20100000]);
+
+        // 1. Fetch account statement from RBL - debit fetch only
+        $mockedResponse = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2022-08-14T18:26:53.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200000.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7 ',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '1000.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 498',
+                                'valueDate' => '2022-08-14T00:00:00.000'
+                            ],
+                            [
+                                'pstdDate' => '2022-08-14T18:26:54.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '200000.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'UTIBH20106341692 Vivek Karna HDFC RZPJAMESBOND7 Refund ',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '201000.00'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429655',
+                                'txnSrlNo' => ' 499',
+                                'valueDate' => '2022-08-14T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        $this->setMozartMockResponseRblV2($mockedResponse);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH          => 'on',
+                                       RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        BankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[0]['entity_type']);
+        $this->assertEquals(EntityConstants::EXTERNAL, $basEntries[1]['entity_type']);
+
+        $this->assertEquals(Payout\Status::INITIATED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
+
+        // 2. Initiate FTS status update webhook, status received as failed
+        $ftaTestData = $this->testData['testRblSlackAlertThrownForRecon'];
+        $ftaTestData['request']['content'] = [
+            'bank_account_type'   => "CURRENT",
+            'bank_processed_time' => "",
+            'bank_status_code'    => "BENE_PSP_OFFLINE",
+            'channel'             => "RBL",
+            'extra_info'          => [
+                'beneficiary_name' => "Test IFT Payout",
+                'cms_ref_no'       => 'PKJS5YtsjaMesBond7'
+            ],
+            'failure_reason'      => "",
+            'fund_transfer_id'    => $attempt['fts_transfer_id'],
+            'gateway_ref_no'      => "jaMesBond7",
+            'mode'                => 'IFT',
+            'source_id'           => $attempt['source_id'],
+            'source_type'         => $attempt['source_type'],
+            'status'              => Payout\Status::FAILED,
+            'utr'                 => 'PKJS5YtsjaMesBond7',
+        ];
+
+        $ftaTestData['response'] = [
+            'content' => []
+        ];
+
+        unset($ftaTestData['exception']);
+
+        $this->ba->ftsAuth();
+
+        $this->startTest($ftaTestData);
+
+        $payout->reload();
+        $attempt->reload();
+
+        $reversal = $this->getDbLastEntity('reversal');
+        $debitBasEntity = $basEntries[0]->reload();
+        $creditBasEntity = $basEntries[1]->reload();
+
+        $this->assertEquals('PKJS5YtsjaMesBond7', $attempt['utr']);
+        $this->assertEquals('jaMesBond7', $attempt['gateway_ref_no']);
+        $this->assertEquals($payout['transaction_id'], $debitBasEntity['transaction_id']);
+        $this->assertEquals(EntityConstants::PAYOUT, $debitBasEntity['entity_type']);
+        $this->assertEquals($payout['id'], $debitBasEntity['entity_id']);
+        $this->assertEquals($reversal['transaction_id'], $creditBasEntity['transaction_id']);
+        $this->assertEquals(EntityConstants::REVERSAL, $creditBasEntity['entity_type']);
+        $this->assertEquals($reversal['id'], $creditBasEntity['entity_id']);
+        $this->assertEquals(Payout\Status::REVERSED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Status::FAILED, $attempt[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::RTGS, $payout[Payout\Entity::MODE]);
+        $this->assertEquals(Payout\Mode::IFT, $attempt[Payout\Entity::MODE]);
     }
 
     /*

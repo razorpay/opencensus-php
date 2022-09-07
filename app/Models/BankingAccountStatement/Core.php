@@ -3654,24 +3654,6 @@ class Core extends Base\Core
         /** @var BASDetails\Entity $basDetailEntity */
         $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
 
-        //s($basDetailEntity->toArray());
-
-        if ($basDetailEntity === null)
-        {
-            $id = (new Entity)->generateId()->getId();
-            s($id);
-
-            (new Details\Core)->createOrUpdate([
-                                                   BASDetails\Entity::MERCHANT_ID               => $id,
-                                                   BASDetails\Entity::ACCOUNT_NUMBER            => $accountNumber,
-                                                   BASDetails\Entity::CHANNEL                   => $channel,
-                                                   BASDetails\Entity::BALANCE_ID => $id
-                                               ]);
-
-            $basDetailEntity = $this->repo->banking_account_statement_details->fetchByAccountNumberAndChannel($accountNumber, $channel);
-
-            s($basDetailEntity->toArray());
-        }
         // roll out via razorx.
         $variant = $this->app->razorx->getTreatment(
             $basDetailEntity->getMerchantId(),

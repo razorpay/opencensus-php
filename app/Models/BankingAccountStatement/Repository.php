@@ -343,6 +343,62 @@ class Repository extends Base\Repository
         return null;
     }
 
+    public function fetchByGatewayRefNumForPayout($payout, $type = Type::DEBIT)
+    {
+        $fta = $payout->fundTransferAttempts->first();
+
+        if (($fta === null) or
+            ($fta->getMode() !== Payout\Mode::IFT) or
+            ($payout->getChannel() !== Channel::RBL))
+        {
+            return null;
+        }
+
+        $gatewayRefNo = strtoupper($fta->getGatewayRefNo());
+
+        $query = $this->newQuery()
+                      ->where(Entity::DESCRIPTION,'like', '%'.$gatewayRefNo.'%');
+
+        $basEntities = $this->fetchForPayout($query, $payout, $type);
+
+        $payoutInitiatedAt = $payout->getInitiatedAt();
+
+        $filteredBasEntities = [];
+
+        foreach ($basEntities as $basEntity)
+        {
+            /** @var Entity $basEntity */
+            $postedDate = $basEntity->getPostedDate();
+
+            $bankTimeBeforePostedDate = Carbon::createFromTimestamp($postedDate, Timezone::IST)
+                                              ->subHours(4)
+                                              ->getTimestamp();
+
+            if (($payoutInitiatedAt >= $bankTimeBeforePostedDate) and
+                ($payoutInitiatedAt <= $postedDate))
+            {
+                $filteredBasEntities[] = $basEntity;
+            }
+        }
+
+        if (count($filteredBasEntities) === 1)
+        {
+            return $filteredBasEntities[0];
+        }
+        elseif (count($filteredBasEntities) > 1)
+        {
+            throw new LogicException(
+                'Found too many bas entities when fetch by gateway reference number(mode IFT)',
+                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_GATEWAY_REF_NO_FOR_IFT,
+                [
+                    'payout_id' => $payout->getId(),
+                    'count'     => $basEntities->count(),
+                ]);
+        }
+
+        return null;
+    }
+
     public function fetchByUtrForReversal(Reversal\Entity $reversal)
     {
         /** @var Payout\Entity $payout */
@@ -399,6 +455,42 @@ class Repository extends Base\Repository
         }
 
         return $basEntities;
+    }
+
+    public function fetchByGatewayRefNumForReversal(Reversal\Entity $reversal)
+    {
+        /** @var Payout\Entity $payout */
+        $payout = $reversal->entity;
+
+        $fta = $payout->fundTransferAttempts->first();
+
+        if (($fta === null) or
+            ($fta->getMode() !== Payout\Mode::IFT) or
+            ($payout->getChannel() !== Channel::RBL))
+        {
+            return null;
+        }
+
+        $gatewayRefNo = strtoupper($fta->getGatewayRefNo());
+
+        $query = $this->newQuery()
+                      ->where(Entity::DESCRIPTION,'like', '%'.$gatewayRefNo.'%')
+                      ->where(Entity::CREATED_AT, '>=', $payout->getCreatedAt());
+
+        $basEntities = $this->fetchForReversal($query, $reversal);
+
+        if ($basEntities->count() > 1)
+        {
+            throw new LogicException(
+                'Found too many bas entities of type credit when fetched by gateway reference number ',
+                ErrorCode::SERVER_ERROR_MULTIPLE_BAS_FOR_REFERENCE_BY_REVERSAL_GATEWAY_REF_NO,
+                [
+                    'reversal_id'       => $reversal->getId(),
+                    'count'             => $basEntities->count(),
+                ]);
+        }
+
+        return $basEntities->first();
     }
 
     protected function fetchForReversal($query, Reversal\Entity $reversal)
