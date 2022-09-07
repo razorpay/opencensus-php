@@ -366,6 +366,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
             Constants::METHOD       => Constants::METHOD_CARD,
             Constants::DEBIT_TYPE   => $debitType,
             Constants::BUSINESS     => $payment->merchant->getName(),
+            Constants::MCC          => $payment->merchant->getCategory(),
             Constants::MAX_AMOUNT   => $maxAmount,
             Constants::START_TIME   => $startTime,
             Constants::END_TIME     => $endTime,

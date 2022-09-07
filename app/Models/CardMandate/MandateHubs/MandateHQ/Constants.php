@@ -25,6 +25,7 @@ class Constants
     const DEBIT_TYPE              = 'debit_type';
     const BUSINESS                = 'business';
     const MAX_AMOUNT              = 'max_amount';
+    const MCC                     = 'mcc';
     const START_TIME              = 'start_time';
     const END_TIME                = 'end_time';
     const FREQUENCY               = 'frequency';
