@@ -169,17 +169,29 @@ class ThirdWatchService
 
             $rtoPredictionServiceResponse = false;
             $rtoPredictionServiceExperimentation = false;
+            $rtoPredictionServiceRiskTier = "low";
 
             try
             {
                 $response = $this->app['rto_prediction_provider_service']->evaluate($input);
+
                 if (strcmp($response['result']['action'], "allow") == 0)
                 {
                     $rtoPredictionServiceResponse = true;
                 }
+
                 if (isset($response['meta_data']['experimentation']) === true)
                 {
                     $rtoPredictionServiceExperimentation = $response['meta_data']['experimentation'];
+                }
+
+                if (isset($response['meta_data']['risk_tier']) === true)
+                {
+                    $rtoPredictionServiceRiskTier = $response['meta_data']['risk_tier'];
+                }
+                else
+                {
+                    $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_EMPTY_RISK_TIER, $dimensions);
                 }
             }
             catch (Exception\BadRequestException $e)
@@ -212,6 +224,7 @@ class ThirdWatchService
                 Order1cc\Fields::COD_INTELLIGENCE_ENABLED => $codIntelligenceEnabled,
                 Order1cc\Fields::COD_ELIGIBLE => $codEligible,
                 Order1cc\Fields::COD_ELIGIBILITY_EXPERIMENTATION => $rtoPredictionServiceExperimentation,
+                Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER => $rtoPredictionServiceRiskTier,
                 ];
 
             $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);

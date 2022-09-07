@@ -56,6 +56,7 @@ class Fields
     const COD_INTELLIGENCE_ENABLED = 'enabled';
     const COD_ELIGIBLE = 'cod_eligible';
     const COD_ELIGIBILITY_EXPERIMENTATION = 'experimentation';
+    const COD_ELIGIBILITY_RISK_TIER = 'risk_tier';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 
