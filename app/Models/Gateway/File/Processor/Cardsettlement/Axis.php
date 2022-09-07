@@ -71,7 +71,9 @@ class Axis extends Base
      */
     public function fetchEntities(): PublicCollection
     {
-        list($begin, $end) = $this->calculateBeginEndForFile(Carbon::now()->timestamp);
+        $now = Carbon::now()->timestamp;
+
+        list($begin, $end) = $this->calculateBeginEndForFile($now);
 
         $this->isExplicitTimestampPassed = false;
 
