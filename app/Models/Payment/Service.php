@@ -1079,6 +1079,10 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
+        if ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE) {
+            $payment->enableCardPaymentService();
+        }
+
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)

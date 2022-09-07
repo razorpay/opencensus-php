@@ -98,6 +98,10 @@ trait CardPaymentService
     public function callCpsAction($payment, $gateway, $action, $gatewayData)
     {
         $statusCode = null;
+        if ($action === Action::FORCE_AUTHORIZE_FAILED)
+        {
+            return $this->app['card.payments']->forceAuthorizeFailed($gateway, $action, $gatewayData);
+        }
 
         try
         {

@@ -35,6 +35,7 @@ class Action
     public static $nonVerifiableActions = [
         self::AUTHENTICATE,
         self::PRE_DEBIT,
+        self::FORCE_AUTHORIZE_FAILED
     ];
 
     public static $cpsSupportedActions = [

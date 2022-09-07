@@ -6,6 +6,7 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 use Requests_Hooks;
 use RZP\Exception;
+use RZP\Gateway\Hitachi\Status;
 use RZP\Models\Order;
 use RZP\Models\Card;
 use RZP\Models\CardMandate;
@@ -71,6 +72,16 @@ class CardPaymentService
     // entities path
     const ENTITIES_PATH = 'entities/';
     const ENTITIES_PATH_V2 = 'v1/entitiesV2/';
+
+    /**
+     * Columns of CPS authorization table.
+     * To be used while force authorizing failed payment
+     */
+    const AUTH_CODE     = 'auth_code';
+    const RECON_ID      = 'recon_id';
+    const PAYMENT_ID    = 'payment_id';
+    const ENTITY_TYPE   = 'entity_type';
+    const STATUS        = 'status';
 
     protected $baseUrl;
     protected $config;
@@ -196,6 +207,115 @@ class CardPaymentService
 
         return $headers;
     }
+
+    public function getRequestFieldsToBeUpdated(string $gateway,  array $input)
+    {
+        switch ($gateway)
+        {
+            case Payment\Gateway::HITACHI :
+                return  [
+                    self::RRN           =>  $input['gateway'][\RZP\Gateway\Hitachi\Entity::RRN],
+                    self::AUTH_CODE     =>  $input['gateway'][\RZP\Gateway\Hitachi\Entity::AUTH_ID],
+                    self::RECON_ID      =>  $input['gateway'][\RZP\Gateway\Hitachi\Entity::MERCHANT_REFERENCE]
+                ];
+            case Payment\Gateway::FIRST_DATA :
+                return [
+                    self::AUTH_CODE           => $input['gateway'][\RZP\Gateway\FirstData\Entity::AUTH_CODE]
+                ];
+            case Payment\Gateway::CARD_FSS :
+                return [
+                    self::RRN    => $input['gateway']['reference_number']
+                ];
+            default :
+                return [];
+        }
+    }
+
+
+    public function forceAuthorizeFailed(string $gateway, string $action, array $input)
+    {
+        $paymentId = $input['payment']['id'];
+
+        $request = [
+            'fields'        => [self::STATUS],
+            'payment_ids'   => [$paymentId],
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_RECON_QUEUE_CPS_REQUEST,
+            $request
+        );
+
+        $response = $this->fetchAuthorizationData($request);
+
+        $this->trace->info(
+            TraceCode::RECON_INFO,
+            [
+                'info_code'     => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                'response'      => $response,
+            ]);
+
+        if (empty($response[$paymentId]) === false)
+        {
+            if ($response[$paymentId][self::STATUS] === Status::FAILED)
+            {
+                // Push to queue in order to update/force auth
+                // Note : This push part we can do in async way and
+                // just return true here, as there is no failure case ahead.
+
+                $entity = $this->getRequestFieldsToBeUpdated($this->gateway, $input);
+
+                if (empty($entity) === true)
+                {
+                    $this->trace->info(
+                        TraceCode::RECON_INFO_ALERT,
+                        [
+                            'info_code'     => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                            'payment_id'    => $paymentId,
+                            'gateway'       => $this->gateway,
+                        ]);
+
+                    return false;
+                }
+
+                $attr = [
+                    self::PAYMENT_ID    =>  $paymentId,
+                    self::ENTITY_TYPE   =>  self::GATEWAY,
+                    self::GATEWAY       =>  $entity
+                ];
+
+                $queueName = $this->app['config']->get('queue.payment_card_api_reconciliation.' . $this->mode);
+
+                Queue::pushRaw(json_encode($attr), $queueName);
+
+                $this->trace->info(
+                    TraceCode::RECON_INFO,
+                    [
+                        'info_code' => InfoCode::RECON_CPS_QUEUE_DISPATCH,
+                        'message'   => 'Update gateway data in order to Force Authorize payment',
+                        'payment_id'=> $paymentId,
+                        'queue'     => $queueName,
+                        'payload'   => json_encode($attr),
+                    ]
+                );
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'     => InfoCode::CPS_PAYMENT_AUTH_DATA_ABSENT,
+                    'payment_id'    => $paymentId,
+                    'gateway'       => $this->gateway,
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
 
     protected function verifyOtpAttempts($payment, $limit = null)
     {
