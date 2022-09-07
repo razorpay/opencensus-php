@@ -165,11 +165,14 @@ class IciciCaPayoutTest extends TestCase
 
         $fta = $this->getDbLastEntity('fund_transfer_attempt');
 
+        $settings = $this->getDbLastEntity('settings');
+
         $publicResponse = $payout->toArrayPublic();
 
         $this->assertEquals('pending_on_otp', $payout['internal_status']);
         $this->assertEquals('pending', $publicResponse['status']);
         $this->assertEquals($payout['id'], $fta['source_id']);
+        $this->assertEquals('abc123pqr', $settings['value']);
     }
 
     //Retry flow for payout approval once invalid or expired otp is entered.
@@ -192,6 +195,8 @@ class IciciCaPayoutTest extends TestCase
         $oldFta = $this->getDbLastEntity('fund_transfer_attempt');
 
         $publicResponse = $oldPayout->toArrayPublic();
+
+        $settings = $this->getDbLastEntity('settings');
 
         $this->assertEquals('pending_on_otp', $oldPayout['internal_status']);
         $this->assertEquals('pending', $publicResponse['status']);
@@ -218,6 +223,7 @@ class IciciCaPayoutTest extends TestCase
         $this->assertEquals('pending', $publicResponseNew['status']);
         $this->assertEquals($oldFta['id'], $newFta['id']);
         $this->assertEquals($oldPayout['id'], $newPayout['id']);
+        $this->assertEquals('abc123pqr', $settings['value']);
     }
 
     //Reattempt for approval when otp is already submitted and payout is in pending_on_otp state
@@ -263,9 +269,13 @@ class IciciCaPayoutTest extends TestCase
 
         $ftaForPayout->reload();
 
+        $settings = $this->getDbLastEntity('settings');
+
         $this->assertEquals('pending', $payout->getStatus());
 
         $this->assertNull($payout->getPricingRuleId());
+
+        $this->assertEquals('abc123pqr', $settings['value']);
     }
 
     public function testInitiatedWebhookForIcici2FAWithEmptyBankStatusCode()
@@ -295,9 +305,13 @@ class IciciCaPayoutTest extends TestCase
 
         $ftaForPayout->reload();
 
+        $settings = $this->getDbLastEntity('settings');
+
         $this->assertEquals('pending_on_otp', $payout->getStatus());
 
         $this->assertNull($payout->getPricingRuleId());
+
+        $this->assertEquals('abc123pqr', $settings['value']);
     }
 
     public function testProcessedWebhookWithoutInitiatedForIcici2FAPayout()
@@ -329,6 +343,8 @@ class IciciCaPayoutTest extends TestCase
 
         $ftaForPayout->reload();
 
+        $settings = $this->getDbLastEntity('settings');
+
         $this->assertEquals('processed', $payout->getStatus());
 
         $this->assertNotNull($payout->getInitiatedAt());
@@ -346,6 +362,8 @@ class IciciCaPayoutTest extends TestCase
 
         // Assert that one free payout has been consumed
         $this->assertEquals(1, $counter->getFreePayoutsConsumed());
+
+        $this->assertNull($settings['value']);
     }
 
     public function testProcessedWebhookAfterInitiatedForIcici2FAPayout()
@@ -391,6 +409,8 @@ class IciciCaPayoutTest extends TestCase
 
         $feeRecovery = $this->getDbLastEntity('fee_recovery');
 
+        $settings = $this->getDbLastEntity('settings');
+
         $this->assertEquals($payout['id'], $feeRecovery->getEntityId());
 
         $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecovery->getStatus());
@@ -404,6 +424,8 @@ class IciciCaPayoutTest extends TestCase
         $this->assertNotNull($payout->getInitiatedAt());
 
         $this->assertNotNull($payout->getPricingRuleId());
+
+        $this->assertNull($settings['value']);
     }
 
     public function testFailedWebhookWithoutInitiatedForIcici2FAPayout()
@@ -435,6 +457,8 @@ class IciciCaPayoutTest extends TestCase
 
         $feeRecovery = $this->getDbLastEntity('fee_recovery');
 
+        $settings = $this->getDbLastEntity('settings');
+
         $this->assertEquals($payout['id'], $feeRecovery->getEntityId());
 
         $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecovery->getStatus());
@@ -448,6 +472,8 @@ class IciciCaPayoutTest extends TestCase
         $this->assertNotNull($payout->getInitiatedAt());
 
         $this->assertNotNull($payout->getPricingRuleId());
+
+        $this->assertNull($settings['value']);
     }
 
     public function testReversedWebhookWithoutInitiatedForIcici2FAPayout()
@@ -481,6 +507,8 @@ class IciciCaPayoutTest extends TestCase
 
         $feeRecovery = $this->getDbLastEntity('fee_recovery');
 
+        $settings = $this->getDbLastEntity('settings');
+
         $this->assertEquals($reversal['id'], $feeRecovery->getEntityId());
 
         $this->assertEquals($reversal['entity_id'], $payout['id']);
@@ -496,6 +524,8 @@ class IciciCaPayoutTest extends TestCase
         $this->assertNotNull($payout->getInitiatedAt());
 
         $this->assertNotNull($payout->getPricingRuleId());
+
+        $this->assertNull($settings['value']);
     }
 
     public function testIciciAccountStatementFetchV2()

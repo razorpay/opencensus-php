@@ -26,6 +26,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Settings;
 use Razorpay\Trace\Logger;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
@@ -70,6 +71,7 @@ use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
 use RZP\Models\PayoutsDetails\Utils as PayoutsDetailsUtils;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Models\PayoutsDetails\Entity as PayoutsDetailsEntity;
+use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
@@ -1592,6 +1594,8 @@ class Base extends BaseCore
                     $this->fundTransferDestination = $payout->fundAccount->account;
 
                     $payoutType = $this->getPayoutType();
+
+                    $this->saveUserCommentInSettingsEntity($payout, $input[ActionChecker::USER_COMMENT] ?? '');
 
                     $downstreamProcessor = new DownstreamProcessor($payoutType,
                         $payout,
@@ -4044,5 +4048,14 @@ class Base extends BaseCore
         }
 
         return false;
+    }
+
+    protected function saveUserCommentInSettingsEntity(Entity $payout, string $userComment)
+    {
+        $accessor = Settings\Accessor::for($payout, Settings\Module::PAYOUTS);
+
+        $accessor->upsert(Payout\Core::USER_COMMENT_KEY_IN_SETTINGS_FOR_ICICI_2FA, $userComment);
+
+        $accessor->save();
     }
 }

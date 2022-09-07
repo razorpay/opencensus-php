@@ -178,6 +178,7 @@ return [
             'content' => [
                 'payout_id' => 'fa_100000000000fa',
                 'otp'          => '000777',
+                'user_comment' => 'abc123pqr'
             ],
         ],
         'response' => [
@@ -193,6 +194,7 @@ return [
             'content' => [
                 'payout_id' => 'fa_100000000000fa',
                 'otp'          => '000777',
+                'user_comment' => 'abc123pqr'
             ],
         ],
         'response' => [
@@ -208,6 +210,7 @@ return [
             'content' => [
                 'payout_id' => 'fa_100000000000fa',
                 'otp'          => '000777',
+                'user_comment' => 'abc123pqr'
             ],
         ],
         'response' => [

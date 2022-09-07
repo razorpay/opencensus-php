@@ -18,6 +18,7 @@ use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Services\Mutex;
+use RZP\Models\Settings;
 use RZP\Models\Customer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
@@ -144,6 +145,8 @@ class Core extends Base\Core
     const NARRATION_YESB                             = 'YESB Test Payout';
     const UTR_FOR_DELAYED_AND_UNSUCCESSFUl_CASES     = 'UTR_for_delayed_and_unsuccessful_cases';
     const PAYEE_ACCOUNT_NUMBER                       = 3434957265741928;
+
+    const USER_COMMENT_KEY_IN_SETTINGS_FOR_ICICI_2FA = 'user_comment_icici_2fa';
 
     const REDIS_KEY_PREFIX                     = 'ps_data_migration_';
     const MAX_ATTEMPTS_FOR_DATA_MIGRATION      = 10;
@@ -848,6 +851,8 @@ class Core extends Base\Core
                 ]
             );
         }
+
+        $this->deleteUserCommentInSettingsEntity($payout);
     }
 
     public function repeatedFtsStatusUpdateForTerminalStatePayout(Entity $payout, string $status)
@@ -5050,6 +5055,8 @@ class Core extends Base\Core
         // get user details from owner_id
         $user = $this->repo->user->getUserFromId($owner->getUserId());
 
+        $userComment = $this->fetchUserCommentFromSettingsEntity($payout) ?? '';
+
         $optional_input[WorkflowConstants::ACTOR_ID] = $owner->getUserId();
         $optional_input[WorkflowConstants::ACTOR_TYPE] = WorkflowConstants::USER;
         $optional_input[WorkflowConstants::ACTOR_PROPERTY_KEY] = WorkflowConstants::ROLE;
@@ -5062,6 +5069,8 @@ class Core extends Base\Core
             $input = [];
 
             $input['action'] = Workflow\Service\Adapter\Payout::APPROVED;
+
+            $input['user_comment'] = $userComment;
 
             $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_INFO, [
                 'payout_id' => $payout->getId(),
@@ -7089,5 +7098,23 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    protected function fetchUserCommentFromSettingsEntity(Entity $payout): string
+    {
+        $accessor = Settings\Accessor::for($payout, Settings\Module::PAYOUTS);
+
+        $userComment = $accessor->get(self::USER_COMMENT_KEY_IN_SETTINGS_FOR_ICICI_2FA);
+
+        return $userComment;
+    }
+
+    protected function deleteUserCommentInSettingsEntity(Entity $payout)
+    {
+        $accessor = Settings\Accessor::for($payout, Settings\Module::PAYOUTS);
+
+        $accessor->delete(self::USER_COMMENT_KEY_IN_SETTINGS_FOR_ICICI_2FA);
+
+        $accessor->save();
     }
 }
