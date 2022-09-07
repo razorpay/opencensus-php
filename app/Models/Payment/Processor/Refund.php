@@ -742,30 +742,6 @@ trait Refund
         return $verifyRefundResult;
     }
 
-    public function createGatewayRefundRecord(Payment\Refund\Entity $refund)
-    {
-        $payment = $refund->payment;
-
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        // The refund should have already been successful and everything on the api side.
-        // Because on timeout, we would have ignored it and created a refund as it was successful.
-        assertTrue ($refund->getTransactionId() !== null);
-
-        // Just making sure that the payment also has the transaction id. Refund will not have a transaction
-        // if payment does not have a transaction, anyway.
-        assertTrue ($payment->getTransactionId() !== null);
-
-        $data = [
-            'payment'   => $payment->toArrayGateway(),
-            'refund'    => $refund->toArrayGateway(),
-            'amount'    => $refund->getAmount(),
-            'currency'  => $refund->getCurrency()
-        ];
-
-        return $this->callGatewayForCreateRefundRecord($data);
-    }
-
     // create a virtual refund model entity based on the input params
     public function createVirtualRefundEntity(Payment\Entity $payment, array $input = [])
     {
@@ -1236,23 +1212,6 @@ trait Refund
         }
 
         return $this->prepareScroogeRefundResponse([], $verifyRefundResult);
-    }
-
-    protected function callGatewayForCreateRefundRecord(array $data)
-    {
-        try
-        {
-            return $this->callGatewayFunction(Payment\Action::CREATE_REFUND_RECORD, $data);
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->tracePaymentFailed(
-                $ex->getError(),
-                TraceCode::CREATE_GATEWAY_REFUND_RECORD_FAILED
-            );
-
-            throw $ex;
-        }
     }
 
     protected function refundOnGateway($data, $retry = false)

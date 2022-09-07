@@ -183,47 +183,6 @@ class Repository extends Base\Repository
         $query->where($refundGateway, '=', $gateway);
     }
 
-    protected function addQueryParamPaymentGateway($query, $params)
-    {
-        $gateway = $params['payment_gateway'];
-
-        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
-
-        Payment\Gateway::validateGateway($gateway);
-
-        $this->joinQueryPayment($query);
-
-        $query->where($paymentGateway, '=', $gateway);
-
-        $query->select($query->getModel()->getTable().'.*');
-    }
-
-    protected function addQueryParamTerminalId($query, $params)
-    {
-        $terminalId = $params[Refund\Entity::TERMINAL_ID];
-
-        $paymentTerminalId = $this->repo->payment->dbColumn(Payment\Entity::TERMINAL_ID);
-
-        $this->joinQueryPayment($query);
-
-        $query->where($paymentTerminalId, '=', $terminalId);
-
-        $query->select($query->getModel()->getTable().'.*');
-    }
-
-    protected function addQueryParamMethod($query, $params)
-    {
-        $method = $params[Payment\Entity::METHOD];
-
-        Payment\Method::validateMethod($method);
-
-        $this->joinQueryPayment($query);
-
-        $query->where(Payment\Entity::METHOD, '=', $method);
-
-        $query->select($query->getModel()->getTable().'.*');
-    }
-
     protected function addQueryParamPublicStatus($query, $params)
     {
         // We are disabling filtering for merchants like flipkart for which we are
@@ -257,28 +216,6 @@ class Repository extends Base\Repository
 
                 break;
         }
-    }
-
-    protected function joinQueryPayment($query)
-    {
-        $joins = $query->getQuery()->joins;
-
-        $joins = ($joins) ?? [];
-
-        foreach ($joins as $join)
-        {
-            if ($join->table === $this->repo->payment->getTableName())
-            {
-                return;
-            }
-        }
-
-        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
-        $refundPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
-
-        $paymentTable = $this->repo->payment->getTableName();
-
-        $query->join($paymentTable, $paymentId, '=', $refundPaymentId);
     }
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
@@ -449,26 +386,6 @@ class Repository extends Base\Repository
                              Table::REFUND. '.' . Refund\Entity::REFERENCE1,
                              Table::REFUND. '.' . Refund\Entity::ID)
                     ->whereIn(Table::REFUND. '.' . Refund\Entity::ID, $refundIds)
-                    ->get();
-    }
-
-    public function fetchGatewayRefundedRefundsWithoutTxns()
-    {
-        $refundAttrs = $this->dbColumn('*');
-        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
-        $refundTransactionIdAttr = $this->dbColumn(Entity::TRANSACTION_ID);
-        $refundGatewayRefundedAttr = $this->dbColumn(Entity::GATEWAY_REFUNDED);
-
-        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
-        $paymentTransactionIdAttr = $this->repo->payment->dbColumn(Payment\Entity::TRANSACTION_ID);
-
-        return $this->newQuery()
-                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                    ->select($refundAttrs)
-                    ->whereNull($refundTransactionIdAttr)
-                    ->whereNotNull($paymentTransactionIdAttr)
-                    ->where($refundGatewayRefundedAttr, '=', 1)
-                    ->with(['payment', 'merchant'])
                     ->get();
     }
 
@@ -789,67 +706,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * Join with the corresponding gateway and check that this particular payment
-     * has no gateway entity for the refund.
-     *
-     * @param $gateway
-     * @param $ts
-     * @return mixed
-     */
-    public function fetchMissingRefundsOfGateway($gateway, $ts)
-    {
-        // SELECT `refunds`.*
-        // FROM `refunds`
-        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
-        // WHERE `refunds`.`gateway` = '$gateway'
-        //     AND `payments`.`refund_status` IS NOT NULL
-        //     AND `payments`.`transaction_id` IS NOT NULL
-        //     AND `refunds`.`transaction_id` IS NOT NULL
-        //     AND `refunds`.`created_at` > '$ts'
-        //     AND refunds.id NOT IN
-        //         (SELECT refunds.id
-        //          FROM refunds
-        //          JOIN billdesk ON refunds.id = refund_id);
-
-        $paymentTable = Table::PAYMENT;
-        $refundTable = Table::REFUND;
-        $gatewayTable = Table::getTableNameForEntity($gateway);
-
-        $refundIdAttr = $this->dbColumn(Entity::ID);
-        $refundPaymentIdAttr = $this->dbColumn(Entity::PAYMENT_ID);
-        $refundCreatedAtAttr = $this->dbColumn(Entity::CREATED_AT);
-        $refundTransactionIdAttr = $this->dbColumn(Entity::TRANSACTION_ID);
-        $refundGatewayAttr = $this->dbColumn(Refund\Entity::GATEWAY);
-
-        $paymentIdAttr = $this->repo->payment->dbColumn(Payment\Entity::ID);
-        $paymentRefundStatusAttr = $this->repo->payment->dbColumn(Payment\Entity::REFUND_STATUS);
-        $paymentTransactionIdAttr = $this->repo->payment->dbColumn(Payment\Entity::TRANSACTION_ID);
-
-        $gatewayRefundIdAttr = 'refund_id';
-
-        $refundAttributes = $this->dbColumn('*');
-
-        $response = $this->newQuery()
-                         ->select($refundAttributes)
-                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                         ->where($refundGatewayAttr, '=', $gateway)
-                         ->whereNotNull($paymentRefundStatusAttr)
-                         ->whereNotNull($paymentTransactionIdAttr)
-                         ->whereNotNull($refundTransactionIdAttr)
-                         ->where($refundCreatedAtAttr, '>', $ts)
-                         ->whereRaw($refundIdAttr . ' NOT IN ' .
-                                 '(' .
-                                     ' SELECT ' . $refundIdAttr .
-                                     ' FROM ' . $refundTable .
-                                     ' JOIN ' . $gatewayTable . ' ON ' . $refundIdAttr . ' = ' . $gatewayRefundIdAttr .
-                                 ')'
-                         )
-                         ->get();
-
-        return $response;
-    }
-
     public function fetchRefundsByBatchAndPayment($batch, $payment)
     {
         return $this->newQuery()
@@ -857,52 +713,6 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
-    }
-
-    public function fetchRefundsByGatewayAndAttempts($gateways, $attempts)
-    {
-        //
-        // Select * from refunds join payments on refunds.payment_id = payments.id
-        // where payments.gateway IN ($gateway) and refunds.attempts > $attempt and
-        // refunds.last_attempted_at < $timeLimit and refunds.status = "failed"
-        // order by rand() limit 50
-        //
-
-        $attrs = $this->dbColumn('*');
-
-        $pRepo = $this->repo->payment;
-        $pTableName = $pRepo->getTableName();
-
-        $rPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
-        $rAttempts = $this->dbColumn(Refund\Entity::ATTEMPTS);
-        $rStatus = $this->dbColumn(Refund\Entity::STATUS);
-        $rLastAttemptedAt = $this->dbColumn(Refund\Entity::LAST_ATTEMPTED_AT);
-        $rCreatedAt = $this->dbColumn(Refund\Entity::CREATED_AT);
-        $rGateway = $this->dbColumn(Refund\Entity::GATEWAY);
-
-        $pId = $pRepo->dbColumn(Payment\Entity::ID);
-
-        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->getTimestamp();
-
-        // TODO: If the number of gateways exceeds by half of total,
-        // inverse the `whereIn` condition.
-        // Adding a createdAt check as refund entity as track ids were different
-        // for older refunds, 1493323209 is April 28, 2017 1:30:09 AM when 1st
-        // processed refund was done.
-
-        $query = $this->newQuery()
-                    ->select($attrs)
-                    ->join($pTableName, $rPaymentId, '=', $pId)
-                    ->where($rAttempts, '<', $attempts)
-                    ->where($rStatus, '=', Refund\Status::FAILED)
-                    ->where($rCreatedAt, '>', 1493323209)
-                    ->whereIn($rGateway, $gateways)
-                    ->where($rLastAttemptedAt, '<', $timeLimit)
-                    ->with(['payment','payment.terminal'])
-                    ->inRandomOrder()
-                    ->limit(100);
-
-        return $query->get();
     }
 
     public function fetchFailedRefundsByMethod(string $method)
@@ -923,26 +733,6 @@ class Repository extends Base\Repository
                        ->limit(200);
 
         return $query->get();
-    }
-
-    public function fetchRefundsForPnbClaims($from, $to, $gateway)
-    {
-        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
-
-        $rGateway = $this->dbColumn(Refund\Entity::GATEWAY);
-
-        $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
-
-        return $this->newQuery()
-                    ->select($this->dbColumn('*'))
-                    ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
-                    ->where($pAuthorizedAt, '<=', $from)
-                    ->where($rGateway, '=', $gateway)
-                    ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
-                    ->with(['payment','payment.terminal'])
-                    ->get();
     }
 
     public function fetchIrctcDeltaRefunds(string $merchantId, int $from, int $to)

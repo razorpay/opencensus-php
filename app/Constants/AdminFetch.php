@@ -3607,13 +3607,7 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
                 'gateway' => Fetch::FIELD_GATEWAY,
-                'payment_gateway' => [
-                    Fetch::LABEL  => 'Payment Gateway',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => config('gateway.available')
-                ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
-                'method' => Fetch::FIELD_METHOD,
                 'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',

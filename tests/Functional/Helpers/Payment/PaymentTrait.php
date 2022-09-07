@@ -1270,23 +1270,6 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function retryFailedRefunds($gateway = [])
-    {
-        $this->ba->cronAuth();
-
-        $content = [];
-
-        $request = array(
-            'method'  => 'POST',
-            'url'     => '/refunds/retry/failed',
-            'content' => $content
-        );
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
     protected function retryFailedRefund($id, $paymentId = null, $content = [], $data = [], $gateway = null)
     {
         $this->ba->adminAuth();
