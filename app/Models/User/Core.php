@@ -4353,7 +4353,7 @@ class Core extends Base\Core
                 break;
             default:
                 // Fallback to default context
-                $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $input, $token);
+                $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
         }
 
         return $context;

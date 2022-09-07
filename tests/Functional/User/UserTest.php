@@ -5784,6 +5784,45 @@ class UserTest extends TestCase
         $this->app->instance('raven', $ravenMock);
     }
 
+    public function testSendOtpForOtherActionsWithSecureOTPExperimentActive()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE          => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSendOtpForCreatePayoutWithoutMobileNumberInReceiver'];
+
+        $testData['request']['content']['action'] = 'create_payout_link';
+
+        $testData['request']['content']['token'] = 'QtrxYjsbrs';
+
+        $expectedContext = sprintf('%s:%s:%s:%s',
+                                   '10000000000000',
+                                   $user->getId(),
+                                   'create_payout_link',
+                                   'QtrxYjsbrs');
+
+        $this->mockRaven($expectedContext, '123456789');
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testSendOtpForCreatePayoutWithSecureOTP()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
