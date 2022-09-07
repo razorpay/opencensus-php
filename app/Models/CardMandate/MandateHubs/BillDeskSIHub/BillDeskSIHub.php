@@ -276,7 +276,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
 
-        $inputResponse = [
+        return [
             Constants::PAYMENT      => $payment->toArray(),
             Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
@@ -286,8 +286,6 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::MERCHANT     => $payment->merchant->toArray(),
             Constants::CARD_MANDATE => $cardMandate->toArray(),
         ];
-
-        return $this->getTokenDetails($payment, $inputResponse);
 
     }
 
