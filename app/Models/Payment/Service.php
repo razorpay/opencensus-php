@@ -4556,6 +4556,23 @@ class Service extends Base\Service
             return $data;
         }
 
+        // Skipping Payment Verification for UPI Authorized Payment
+        // to prevent creating multiple refunds for unexpected payments.
+        if (($payment->getMethod() === Method::UPI) and
+            ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT) and
+            ($payment->getStatus() === Payment\Status::AUTHORIZED))
+        {
+            $data['retry_verify'] = false;
+
+            $this->trace->info(
+                TraceCode::PAYMENT_VERIFY_DEMO_MERCHANT,
+                [
+                    'payment_id' => $id
+                ]);
+
+            return $data;
+        }
+
         if((in_array($payment->getGateway(),Payment\Gateway::$fileBasedEMandateDebitGateways)=== true) and
             ($payment->getRecurringType() === Payment\RecurringType::AUTO))
         {

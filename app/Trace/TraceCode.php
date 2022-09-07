@@ -7152,6 +7152,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_NOT_FOUND_FOR_VERIFY                                  = 'PAYMENT_NOT_FOUND_FOR_VERIFY';
     const PAYMENT_VERIFY_GATEWAY_NULL                                   = 'PAYMENT_VERIFY_GATEWAY_NULL';
     const PAYMENT_VERIFY_POSSIBLE_FRAUD                                 = 'PAYMENT_VERIFY_POSSIBLE_FRAUD';
+    const PAYMENT_VERIFY_DEMO_MERCHANT                                  = 'PAYMENT_VERIFY_DEMO_MERCHANT';
     const PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS                  = 'PAYMENT_VERIFY_STOPPED_FOR_FILE_BASED_DEBITS';
     const PAYMENT_VERIFY_STOPPED_FOR_BHARAT_QR_AND_VPA                  = 'PAYMENT_VERIFY_STOPPED_FOR_BHARAT_QR_AND_VPA';
 
