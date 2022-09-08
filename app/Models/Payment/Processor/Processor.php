@@ -3770,6 +3770,12 @@ class Processor
         if ($payment->getGatewayCaptured() === true) {
             $gateway_captured = 1;
         }
+        $dcc_offered = false;
+        $forex_rate = 1.0;
+        if($paymentMeta !== null)  {
+            $dcc_offered= $paymentMeta->isDccOffered();
+            $forex_rate=$paymentMeta->getForexRate();
+        }
         $data['payment'] = [
             'id'            => $payment->getId(),
             'amount'        => $payment->getAmount(),
@@ -3783,10 +3789,9 @@ class Processor
             'gateway_captured' => $gateway_captured,
             'gateway_currency' => $payment->getGatewayCurrency(),
             'dcc_markup_amount'=> $payment->getDccMarkUpAmount(),
-            'dcc_offered'   => $paymentMeta->isDccOffered(),
-            'forex_rate'    => $paymentMeta->getForexRate(),
+            'dcc_offered' => $dcc_offered,
+            'forex_rate' => $forex_rate
         ];
-
         $terminal = $payment->terminal;
 
         $data['terminal'] = [
