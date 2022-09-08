@@ -5582,6 +5582,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EINVOICE_CRN_AMOUNT_GREATER_THAN_INV_FOR_X            = 'EINVOICE_CRN_AMOUNT_GREATER_THAN_INV_FOR_X';
     const EINVOICE_ELIGIBLE_INVOICE_FOR_X                       = 'EINVOICE_ELIGIBLE_INVOICE_FOR_X';
     const EINVOICE_MISMATCHING_SELLER_FOR_X                     = 'EINVOICE_MISMATCHING_SELLER_FOR_X';
+    const EINVOICE_NOT_FOUND                                    = 'EINVOICE_NOT_FOUND';
+    const EINVOICE_DETAILS                                      = 'EINVOICE_DETAILS';
 
     const FEE_CALCULATION_FOR_BANKING_BALANCE_FAILED            = 'FEE_CALCULATION_FOR_BANKING_BALANCE_FAILED';
 

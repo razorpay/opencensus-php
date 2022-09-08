@@ -44,6 +44,15 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchByGspIrn(string $gspIrn)
+    {
+        return $this->newQuery()
+            ->where(Entity::GSP_IRN, '=', $gspIrn)
+            ->where(Entity::STATUS, '=', Status::STATUS_GENERATED)
+            ->orderBy(Entity::UPDATED_AT, 'DESC')
+            ->first();
+    }
+
     public function getInvoiceNumber(string $merchantId, int $month, int $year, string $type)
     {
         return $this->newQuery()

@@ -1088,6 +1088,7 @@ class Route
         'reports_monthly_invoice'                  => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_banking_invoice'          => ['post',     'reports/invoice/banking',                        'MerchantController@generateBankingInvoice'                         ],
         'reports_monthly_banking_invoice_admin'    => ['post',     'admin/reports/invoice/banking',                  'MerchantController@generateBankingInvoice'                         ],
+        'invoice_admin_actions'                    => ['post',     'invoice/admin',                                  'MerchantController@adminActions'                                   ],
         'reports_public_entity'                    => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'               => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'reports_refund_irctc'                     => ['get',      'reports/refund/irctc',                           'MerchantController@getIrctcRefundReport'                           ],
@@ -7145,6 +7146,8 @@ class Route
         'payouts_bulk_amount_type',
         'tax_payments_admin_auth_api',
 
+        'invoice_admin_actions',
+
         // payout-links admin route
         'payout_links_admin_auth_api',
 
@@ -8434,6 +8437,9 @@ class Route
 
         'banking_account_statement_process_admin'     => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
+
+        'invoice_admin_actions'                       => Permission:: TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
+
         'payout_links_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
         'salesforce_opportunity_details'              => Permission::VIEW_SALESFORCE_OPPORTUNITY_DETAIL,
 
@@ -12400,6 +12406,7 @@ class Route
             'tax_payments_add_or_update_settings_auto',
             'tax_payments_add_or_update_settings',
             'tax_payments_admin_auth_api',
+            'invoice_admin_actions',
             'tax_payments_bulk_pay',
             'tax_payments_cancel',
             'tax_payments_challan_download',

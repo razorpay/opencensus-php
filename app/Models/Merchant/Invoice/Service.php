@@ -4,7 +4,11 @@ namespace RZP\Models\Merchant\Invoice;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
+use RZP\Http\Request\Requests;
+use RZP\Http\Response\StatusCode;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -79,6 +83,28 @@ class Service extends Base\Service
                 'file_id' => $ufhResponse[UfhService::FILE_ID],
             ];
         }
+    }
+
+    public function adminActions(array $input)
+    {
+        $action = $input['action'];
+
+        if ($action === 'updateEInvoiceLineItem')
+        {
+            $this->updateQrCodeUrlForMerchantEinvoice($input);
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::INVALID_ACTION);
+        }
+    }
+
+    public function updateQrCodeUrlForMerchantEinvoice(array $input)
+    {
+        $XEInvoiceCore = (new EInvoice\XEInvoice());
+
+        $XEInvoiceCore->updateQrCodeUrlForMerchantEinvoice($input);
     }
 
     public function fetchMultipleBankingInvoices(array $input)

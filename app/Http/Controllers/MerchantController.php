@@ -914,6 +914,13 @@ class MerchantController extends Controller
         return $this->service('merchant_invoice')->requestBankingInvoice($input);
     }
 
+    public function adminActions()
+    {
+        $input = Request::all();
+
+        return $this->service('merchant_invoice')->adminActions($input);
+    }
+
     /**
      * Sends an email to every merchant
      * with all transactions from yesterday

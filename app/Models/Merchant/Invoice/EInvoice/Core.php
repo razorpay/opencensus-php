@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Invoice\EInvoice;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -48,6 +50,55 @@ class Core extends Base\Core
         $this->repo->saveOrFail($eInvoiceEntity);
 
         return $eInvoiceEntity;
+    }
+
+    public function updateQrCodeUrlForMerchantEinvoice($input)
+    {
+        if($input['data'] == null)
+        {
+            throw new BadRequestException(
+                ErrorCode::INVALID_ACTION);
+        }
+
+        $eInvoiceLineItems = $input['data'];
+
+        foreach ($eInvoiceLineItems as $lineItem)
+        {
+            $invoiceEntity = new Entity();
+
+            $qrCodeUrl = $lineItem['gsp_qr_code_url'];
+
+            $eInvoicePdfUrl = $lineItem['gsp_e_invoice_pdf'];
+
+            $gspIrn = $lineItem['gsp_irn'];
+
+            try {
+                $invoiceEntity = $this->repo->merchant_e_invoice->fetchByGspIrn($gspIrn);
+
+                $this->trace->info(
+                    TraceCode::EINVOICE_DETAILS,
+                    [
+                        'gsp_irn' => $gspIrn,
+                    ]);
+
+                $invoiceEntity->setGspQRCodeUrl($qrCodeUrl);
+
+                $invoiceEntity->setGspEInvoicePdf($eInvoicePdfUrl);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::EINVOICE_NOT_FOUND,
+                    [
+                        'qr_code_url' => $qrCodeUrl,
+                        'gsp_irn' => $gspIrn,
+                    ]);
+            }
+
+            $this->repo->saveOrFail($invoiceEntity);
+        }
     }
 
     public function generateEInvoice(Entity $eInvoiceEntity, $sellerEntity = Constants::RSPL)
