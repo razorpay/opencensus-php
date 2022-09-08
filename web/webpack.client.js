@@ -161,11 +161,18 @@ module.exports = ({ config, project }) => {
       },
     }),
   );
-  config.plugins.shift(); //removed cleanup plugin as outputpath is common for each build
 
-  if (isProd) {
-    config.plugins.splice(4, 1); //removing compress plugin as we have files othe than dist folder
-  }
+  const BLACKLISTED_PLUGINS = ['CleanWebpackPlugin', 'CompressionPlugin'];
+
+  config.plugins = config.plugins.filter((plugin) => {
+    return BLACKLISTED_PLUGINS.indexOf(plugin?.constructor?.name) === -1;
+  });
+
+  // config.plugins.shift(); //removed cleanup plugin as outputpath is common for each build
+
+  // if (isProd) {
+  //   config.plugins.splice(4, 1); //removing compress plugin as we have files othe than dist folder
+  // }
 
   config.plugins.push(
     new webpack.DefinePlugin({
