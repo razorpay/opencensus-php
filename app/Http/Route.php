@@ -3788,6 +3788,7 @@ class Route
         'fetch_token_iin'                           =>  ['post',       'tokens/iin/fetch/{iin}',                           'TokenisedIinController@fetchIin'                                     ],
         'update_token_iin'                          =>  ['post',       'tokens/iin/update',                                'TokenisedIinController@updateIin'                                    ],
         'fetch_token_iin_by_range'                  =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
+        'fetch_iin_by_token_iin'                    =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
         'add_token_iin_bulk'                        =>  ['post',       'tokens/bulk/iin',                                  'TokenisedIinController@addIinBulk'                                   ],
         'delete_iin'                                =>  ['post',       'tokens/delete/{id}',                               'TokenisedIinController@deleteIin'                                    ],
         'delete_iin_bulk'                           =>  ['post',       'tokens/bulk/delete/{id}',                          'TokenisedIinController@deleteBulk'                                   ],
@@ -4519,6 +4520,7 @@ class Route
         'internal_merchant_payments_count',
         'api_entity_fetch',
         'cps_iin_flow_disable',
+        'fetch_iin_by_token_iin',
         'merchant_bulk_update_pricing_cron',
         'subscription_registration_nach_migration',
         'subscription_fetch_by_id_data_fix',
@@ -13652,7 +13654,8 @@ class Route
             'cps_card_entity_create',
             'cps_iin_flow_disable',
             'internal_payment_pricing',
-            'internal_merchant_risk_notification'
+            'internal_merchant_risk_notification',
+            'fetch_iin_by_token_iin',
         ],
 
         'nbplus_payment_service' => [

@@ -287,6 +287,11 @@ class Processor
     const MARKETPLACE_CARD_PAYMENTS_VIA_PGROUTER = 'marketplace_v2_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a non saved card tokenised Payment should go via PG Router and CPS or just via API service
+     */
+    const NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER = 'non_saved_tokenised_card_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate if a Fee Bearer Payment should go via PG Router and CPS or just via API service
      */
     const FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER = 'fee_bearer_card_payments_via_pg_router';
@@ -496,6 +501,7 @@ class Processor
                 return true;
             }
 
+
             if (($this->route->isRearchRoute($currentRouteName) == false) or
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::CARD) or
@@ -511,7 +517,8 @@ class Processor
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
                 ($merchant->isRazorpayOrgId() === false) or
                 ($merchant->isFeatureEnabled('openwallet') === true) or
-                (empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false))
+                ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and
+                    empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true))
             {
                 return false;
             }
@@ -663,6 +670,13 @@ class Processor
             }
 
             return ($result === 'on');
+
+            if($this->isPaymentViaTokenisedCard($input)) {
+                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
         }
         catch(\Throwable $e)
         {
@@ -675,6 +689,7 @@ class Processor
 
         return false;
     }
+
 
     private function canRouteThroughNbPlusRearchFlow($input): bool
     {
@@ -7132,5 +7147,16 @@ class Processor
         $url = Request::url();
 
         return starts_with($url, 'https://api-dark.razorpay.com');
+    }
+
+    /**
+     * @param $input
+     * @return bool
+     */
+    private function isPaymentViaTokenisedCard($input): bool
+    {
+        return empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false &&
+            boolval($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === true &&
+            empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === false;
     }
 }
