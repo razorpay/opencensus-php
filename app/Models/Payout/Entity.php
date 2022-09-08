@@ -2553,37 +2553,36 @@ class Entity extends Base\PublicEntity
 
     public function setPublicStatusDetailsAttribute(array &$attributes)
     {
-            if ($this->getStatusDetailsId() === null)
-            {
-                $statusDetailsArray =
-                    [
-                        'reason'        => null,
-                        'description'   => null,
-                        'source'        => null,
-                    ];
-            }
+        if ($this->getStatusDetailsId() === null)
+        {
+            $statusDetailsArray = [
+                'reason'      => null,
+                'description' => null,
+                'source'      => null,
+            ];
+        }
+        else
+        {
+            $statusDetails = (new PayoutsStatusDetails\Repository())->fetchStatusDetailsFromStatusDetailsId($this->getStatusDetailsId());
 
+            if ($statusDetails !== null)
+            {
+                $source = $this->getSourceForStatusDetails($statusDetails);
+            }
             else
             {
-                $statusDetails = (new PayoutsStatusDetails\Repository())->fetchStatusDetailsFromStatusDetailsId($this->getStatusDetailsId());
-
-                if ($statusDetails !== null)
-                {
-                    $source = $this->getSourceForStatusDetails($statusDetails);
-                }
-                else
-                {
-                    $source = null;
-                }
-
-                $statusDetailsArray =
-                    [
-                        'reason'        => $statusDetails['reason'],
-                        'description'   => $statusDetails['description'],
-                        'source'        => $source,
-                    ];
+                $source = null;
             }
-            $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
+
+            $statusDetailsArray =
+                [
+                    'reason' => $statusDetails['reason'],
+                    'description' => $statusDetails['description'],
+                    'source' => $source,
+                ];
+        }
+
+        $attributes[self::STATUS_DETAILS] = $statusDetailsArray;
     }
 
     public function setPublicStatusSummaryAttribute(array &$attributes)

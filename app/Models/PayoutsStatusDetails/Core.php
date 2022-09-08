@@ -8,6 +8,7 @@ use RZP\Models\Payout;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\PayoutSource;
 use Illuminate\Support\Facades\View as View;
 use RZP\Models\FundTransfer\Attempt\Entity as FTAEntity;
 use RZP\Models\PayoutsStatusDetails as PayoutsStatusDetails;
@@ -104,6 +105,34 @@ class Core extends Base\Core
         }
 
         $this->savePayoutStatusDetailsEntity($payout, $status, $reason, $description);
+
+        // currently adding xpayroll source only
+        $whitelistedSourceArray = [
+            PayoutSource\Entity::XPAYROLL,
+        ];
+
+        $sourceDetails = $payout->getSourceDetails();
+
+        foreach ($sourceDetails as $source)
+        {
+            $sourceType = $source->getSourceType();
+
+            if(in_array($sourceType,$whitelistedSourceArray) === true)
+            {
+                /**
+                 * Adding the code for sending update to source for processing status status details because it may happen that
+                 * for a payout for processing status multiple status details update has come. So, internal apps will get
+                 * updated about it from here .
+                 */
+                $mode = app('rzp.mode') ? app('rzp.mode') : Mode::LIVE;
+                $subscriberList = Payout\SourceUpdater\Factory::getUpdaters($payout, $mode);
+
+                foreach ($subscriberList as $subscriber)
+                {
+                    $subscriber->update();
+                }
+            }
+        }
     }
 
     public function savePayoutStatusDetailsEntity($payout, $status, $reason, $description)

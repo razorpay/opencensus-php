@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Mail\PayoutLink\Approval;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\PayoutOutbox\Constants as PayoutOutboxConstants;
 use RZP\Services\DiagClient;
 use RZP\Services\Raven;
@@ -13004,6 +13005,131 @@ class PayoutTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_Hrw2ujXW6LGEk7', $user->getId());
 
         $this->startTest();
+    }
+
+    public function testSameStatusDifferentStatusDetailsInXPayrollWebhook()
+    {
+        $this->testCreateXpayrollPayoutWithSourceDetails();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $xPayrollServiceMock = Mockery::mock('RZP\Services\XPayroll\Service')->makePartial();
+
+        $xPayrollServiceMock->shouldReceive('sendStatusUpdate')
+            ->andReturnUsing(function (array $request) {
+                $statusDetails = $request['status_details'];
+                $statusDetailsId = $request['status_details_id'];
+                $statusDetailsExpected = [
+                    'reason'      => null,
+                    'source'      => null,
+                    'description' => null,
+                ];
+
+                self::assertEquals(null, $statusDetailsId);
+                self::assertArraySubset($statusDetailsExpected, $statusDetails);
+                return [];
+            });
+
+        $this->app->instance('xpayroll', $xPayrollServiceMock);
+        SourceUpdater::update($payout);
+
+        $xPayrollServiceMock1 = Mockery::mock('RZP\Services\XPayroll\Service')->makePartial();
+        $xPayrollServiceMock1->shouldReceive('sendStatusUpdate')
+            ->andReturnUsing(function (array $request) {
+                $statusDetails = $request['status_details'];
+                $statusDetailsId = $request['status_details_id'];
+                $statusDetailsExpected = [
+                    'reason'      => 'payout_bank_processing',
+                    'source'      => 'internal',
+                    'description' => 'Payout is being processed by our partner bank. Please check the final status after some time',
+                ];
+
+                self::assertArraySubset($statusDetailsExpected, $statusDetails);
+                return [];
+            });
+        $this->app->instance('xpayroll', $xPayrollServiceMock1);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'remarks'          => '',
+            'bank_status_code' => 'SUCCESS',
+            'mode'             => 'RTGS',
+            'status_details'   => [
+                'reason'     => 'payout_bank_processing',
+                'parameters' => [
+                    'processed_by_time' => '1636472623',
+                ],
+            ],
+        ]);
+
+        $payout->setStatus('initiated');
+
+        $xPayrollServiceMock2 = Mockery::mock('RZP\Services\XPayroll\Service')->makePartial();
+        $xPayrollServiceMock2->shouldReceive('sendStatusUpdate')
+            ->andReturnUsing(function (array $request) {
+                $statusDetails = $request['status_details'];
+                $statusDetailsId = $request['status_details_id'];
+
+                $statusDetailsExpected = [
+                    'reason'      => 'beneficiary_bank_confirmation_pending',
+                    'source'      => 'beneficiary_bank',
+                    'description' => 'Confirmation of credit to the beneficiary is pending from beneficiary bank. Please check the status after 09th November 2021, 11:45 PM',
+                ];
+
+                self::assertArraySubset($statusDetailsExpected, $statusDetails);
+                return [];
+            });
+
+        $this->app->instance('xpayroll', $xPayrollServiceMock2);
+
+        (new Payout\Core)->updateWithDetailsBeforeFtaRecon($payout, [
+            'source_type'      => 'payout',
+            'source_id'        => $payout->getId(),
+            'fta_status'       => 'initiated',
+            'channel'          => 'rbl',
+            'failure_reason'   => '',
+            'utr'              => 928337183,
+            'mode'             => 'RTGS',
+            'remarks'          => '',
+            'bank_status_code' => 'SUCCESS',
+            'status_details'   => [
+                'reason'     => 'beneficiary_bank_confirmation_pending',
+                'parameters' => [
+                    'processed_by_time' => '1636481743',
+                ],
+            ],
+        ]);
+
+        $xPayrollServiceMock3 = Mockery::mock('RZP\Services\XPayroll\Service')->makePartial();
+        $xPayrollServiceMock3->shouldReceive('sendStatusUpdate')
+            ->andReturnUsing(function (array $request) {
+                $statusDetails = $request['status_details'];
+                $statusDetailsId = $request['status_details_id'];
+
+                $statusDetailsExpected = [
+                    'reason'      => 'payout_processed',
+                    'source'      => 'beneficiary_bank',
+                    'description' => 'Payout is processed and the money has been credited into the beneficiaries account.',
+                ];
+
+                self::assertArraySubset($statusDetailsExpected, $statusDetails);
+                return [];
+            });
+
+        $this->app->instance('xpayroll', $xPayrollServiceMock3);
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'processed',
+            'failure_reason'   => null,
+            'bank_status_code' => null
+        ]);
+
+        SourceUpdater::update($payout);
     }
 
     public function testFetchPayoutsOnPrivateAuth()
