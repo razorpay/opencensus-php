@@ -297,6 +297,14 @@ class Processor
     const FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER = 'fee_bearer_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate which method and gateway are supported by barricade service
+     */
+    const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
+    const BARRICADE_PAYMENT_GATEWAY = 'barricade_supported_gateway';
+    const DEMO_MERCHANT            = 'demo_merchants';
+
+
+    /**
      * User consent flag indicates whether the user has given consent to tokenise
      * the card or not.
      */
@@ -3675,18 +3683,17 @@ class Processor
 
     protected function publishMessageToMetro($payment)
     {
+        $method_result = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
 
-        if (($payment->isCard() === false)
-        and ($payment->isUpi() === false) || $payment->getMerchantId() === "2aTeFCKTYWwfrF")
-        {
+        if ($method_result !== 'on'){
             return;
         }
 
-        if ( ($payment->isCard() === true)  )
-        {
-            if  ($payment->isGatewayCaptured() === false) {
-                return;
-            }
+        $gateway_result = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
+        $demo_merchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
+
+        if ( $gateway_result !== 'on' || $demo_merchant !== 'control'){
+            return;
         }
 
         if ($this->mode !== Mode::LIVE)
