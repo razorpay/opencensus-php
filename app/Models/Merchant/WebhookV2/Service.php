@@ -709,7 +709,8 @@ class Service extends Base\Service
         }
 
         $user                   = $this->repo->user->find($userId, ['email']);
-        $userIdToEmail[$userId] = is_null($user) ? '' : $user->email;
+        $email                  = is_null($user) ? '' : $user->email;
+        $userIdToEmail[$userId] = is_null($email) ? '' : $email;
 
         return $userIdToEmail[$userId];
     }
