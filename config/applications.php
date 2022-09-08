@@ -702,7 +702,7 @@ return [
 
     'banking_account' => [
         'apiKey' => env('GOOGLE_MAP_API_KEY'),
-        'mock' => env('API_MOCK', false)
+        'mock' => env('BANKING_ACCOUNT_GOOGLE_MAPS_MOCK', false)
     ],
 
     'shield' => [

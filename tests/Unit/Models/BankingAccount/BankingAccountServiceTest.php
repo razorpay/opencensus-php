@@ -20,6 +20,7 @@ class BankingAccountServiceTest extends TestCase
         parent::setUp();
 
         $this->app['config']->set('applications.pincodesearcher.mock', true);
+        $this->app['config']->set('applications.banking_account.mock', false);
 
         $this->bankingAccountCoreMock = Mockery::mock('RZP\Models\BankingAccount\Core')->makePartial();
 
