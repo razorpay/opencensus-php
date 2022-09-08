@@ -177,6 +177,9 @@ module.exports = ({ config, project }) => {
   if (IS_WORKBOX_ENABLE.indexOf(project) > -1) {
     config.plugins.push(
       new WorkbboxWebpackPlugin.InjectManifest({
+        modifyURLPrefix: {
+          '/dist/': 'https://cdn.razorpay.com/dashboard/dist/',
+        },
         exclude: [/\.map$/, /asset-manifest\.json$/, /\.(png|jpg|jpeg|svg|gif|html)?$/],
         swSrc: './utils/customWorkbox.js',
         swDest: `sw-utils/sw-${project}.js`,
