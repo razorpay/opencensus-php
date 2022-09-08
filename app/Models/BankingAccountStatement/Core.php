@@ -799,7 +799,15 @@ class Core extends Base\Core
 
     protected function generateNextUnUsedIdForEntity(string $id, array $insertedIds, string $entityName)
     {
-        $attempts = self::RETRY_COUNT_FOR_ID_GENERATION;
+        $attempts = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RETRY_COUNT_FOR_ID_GENERATION
+            ]);
+
+        if (empty($attempts) === true)
+        {
+            $attempts = self::RETRY_COUNT_FOR_ID_GENERATION;
+        }
 
         do
         {
@@ -879,7 +887,7 @@ class Core extends Base\Core
 
         $transaction = $sourceEntity->transaction;
 
-        $transaction->setBalance($basEntity->getBalance());
+        $transaction->setBalance($basEntity->getBalance(), 0, false);
 
         $transaction->setCreatedAt($previousTransactionCreatedAt);
 

@@ -204,6 +204,7 @@ class ConfigKey
     const RX_CA_MISSING_STATEMENTS_ICICI            = self::PREFIX . 'rx_ca_missing_statements_icici';
     const RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS   = self::PREFIX . 'rbl_missing_statements_fetch_max_records';
     const ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS = self::PREFIX . 'icici_missing_statements_fetch_max_records';
+    const RETRY_COUNT_FOR_ID_GENERATION             = self::PREFIX . 'retry_count_for_id_generation';
 
     // this is used to limit the number of records fetched while querying db to get low balance configs in order
     // to reduce the load

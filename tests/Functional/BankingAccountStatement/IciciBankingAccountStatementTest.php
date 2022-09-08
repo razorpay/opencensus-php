@@ -2841,6 +2841,11 @@ class IciciBankingAccountStatementTest extends TestCase
     {
         $this->testIciciAccountStatementCase1();
 
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::RETRY_COUNT_FOR_ID_GENERATION => 100
+            ]);
+
         (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
             '2224440041626905' => [
                 [

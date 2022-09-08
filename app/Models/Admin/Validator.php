@@ -162,6 +162,7 @@ class Validator extends Base\Validator
         ConfigKey::RX_CA_MISSING_STATEMENTS_ICICI            => 'array',
         ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS   => 'filled|integer',
         ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS => 'filled|integer',
+        ConfigKey::RETRY_COUNT_FOR_ID_GENERATION             => 'filled|integer',
         ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => 'array',
