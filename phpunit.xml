@@ -167,7 +167,7 @@
             <directory>./tests/Functional/Merchant/Slabs</directory>
             <directory>./tests/Functional/Merchant/Store</directory>
             <directory>./tests/Functional/Modules/Acs</directory>
-            <directory>./tests/Unit/Models/Merchant/Asv/AsvClient</directory>
+            <directory>./tests/Unit/Models/Merchant/Asv/</directory>
         </testsuite>
         <testsuite name="Payment Test Suite">
             <directory>./tests/Functional/Payment/</directory>

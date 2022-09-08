@@ -7099,6 +7099,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACS_TRIGGER_SYNC_ERROR                                = 'ACS_TRIGGER_SYNC_ERROR';
     const ACS_ENTITY_FETCH                                      = 'ACS_ENTITY_FETCH';
     const ACS_ENTITY_UPDATE                                     = 'ACS_ENTITY_UPDATE';
+    const ACS_ENTITY_UPDATE_EVENT                               = 'ACS_ENTITY_UPDATE_EVENT';
+    const ACS_ENTITY_UPDATE_EVENT_HANDLED                       = 'ACS_ENTITY_UPDATE_EVENT_HANDLED';
+    const EVENT_PROCESSED_BY_LOGGING_EVENT_PROCESSOR            = 'EVENT_PROCESSED_BY_LOGGING_EVENT_PROCESSOR';
     const ACS_ENTITY_FETCH_EXCEPTION                            = 'ACS_ENTITY_FETCH_EXCEPTION';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST                 = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_REQUEST';
     const ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE                = 'ASV_FETCH_UPDATED_ACCOUNT_IDS_RESPONSE';

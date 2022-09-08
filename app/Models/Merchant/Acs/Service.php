@@ -2,16 +2,31 @@
 
 namespace RZP\Models\Merchant\Acs;
 
-use RZP\Constants\Mode;
-use RZP\Jobs\TriggerAcsFullSync;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Jobs\TriggerAcsFullSync;
+use RZP\Exception\LogicException;
 use RZP\Modules\Acs\RecordSyncEvent;
 use RZP\Modules\Acs\SyncEventObserver;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\EventProcessor\EventProcessorFactory;
 
 class Service extends Base\Service
 {
+
+    /**
+     * @var EventProcessorFactory
+     */
+    public $eventProcessorFactory;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->eventProcessorFactory = new EventProcessorFactory();
+    }
+
     public function triggerSync(array $input): array
     {
         $this->trace->info(TraceCode::ACS_TRIGGER_SYNC, $input);
@@ -27,10 +42,8 @@ class Service extends Base\Service
         $outboxJobs = empty($outboxJobs) ? [SyncEventObserver::ACS_OUTBOX_JOB_NAME] : $outboxJobs;
 
         // if account ids present, trigger sync only for those ids
-        if (empty($input['account_ids']) === false)
-        {
-            foreach ($input['account_ids'] as $id)
-            {
+        if (empty($input['account_ids']) === false) {
+            foreach ($input['account_ids'] as $id) {
                 // TODO: should validate if input account_id is present in DB, If yes, create a new event
                 $entity = (new Merchant\Entity)->setConnection($mode)->setId($id);
                 event(new RecordSyncEvent($entity, $outboxJobs));
@@ -45,5 +58,26 @@ class Service extends Base\Service
         TriggerAcsFullSync::dispatch($this->mode, $input);
 
         return [];
+    }
+
+    /**
+     * Generic handler for Account and Related entity update event
+     *
+     * @param array $input
+     * @throws LogicException
+     */
+    public function handleAccountUpdateEvent(array $input)
+    {
+        $this->trace->info(TraceCode::ACS_ENTITY_UPDATE_EVENT, $input);
+
+        $eventProcessors = $this->eventProcessorFactory->GetEventProcessors();
+
+        foreach ($eventProcessors as $eventProcessor) {
+            if ($eventProcessor->ShouldProcess($input) === true) {
+                $eventProcessor->Process($input);
+            }
+        }
+
+        $this->trace->info(TraceCode::ACS_ENTITY_UPDATE_EVENT_HANDLED);
     }
 }

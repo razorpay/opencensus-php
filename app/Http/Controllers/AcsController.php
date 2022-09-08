@@ -27,4 +27,13 @@ class AcsController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function handleAccountUpdateEvent()
+    {
+        $input = Request::all();
+
+        $this->service()->handleAccountUpdateEvent($input);
+
+        return ApiResponse::json();
+    }
 }

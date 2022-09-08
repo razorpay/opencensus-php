@@ -2619,6 +2619,7 @@ class Route
         'account_service_details_fetch'            => ['GET',     'account_service/accounts/{accountId}',            'MerchantController@getMerchantDetailsForAccountService'            ],
         'account_service_trigger_sync'             => ['POST',    'account_service/trigger_sync',                    'AcsController@triggerSync'                                         ],
         'account_service_trigger_full_sync'        => ['POST',    'account_service/trigger_full_sync',               'AcsController@triggerFullSync'                                     ],
+        'account_service_handle_update_event'      => ['POST',    'account_service/handle_update_event',             'AcsController@handleAccountUpdateEvent'                            ],
 
         'account_create_v2'                        => ['post',     'accounts',                                       'AccountControllerV2@createAccount'                                 ],
         'account_fetch_v2'                         => ['get',      'accounts/{id}',                                  'AccountControllerV2@fetchAccount'                                  ],
@@ -4487,6 +4488,7 @@ class Route
 
         // metro routes
         'payout_email_attachments',
+        'account_service_handle_update_event',
 
         // cron for generating merchant report
         'merchant_report',
@@ -9368,6 +9370,7 @@ class Route
 
         'metro' => [
             'payout_email_attachments',
+            'account_service_handle_update_event',
         ],
 
         'vendor_payments' => [
