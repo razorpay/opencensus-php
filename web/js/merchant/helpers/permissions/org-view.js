@@ -13,15 +13,6 @@ const HDFC_restrictedModules = [
 
 const HDFC_restrictedFeatures = ['flashcheckout', 'current_balance', 'external_links'];
 
-const Bajaj_restrictedModules = [
-  'marketplace', //internal name for route feature
-  'accounts',
-  'virtual_accounts',
-  // enabling PP for bajaj temporary change
-  // 'payment_pages',
-  'invoices',
-];
-
 const Bajaj_restrictedFeatures = ['monthlyInvoice', 'external_links'];
 
 /*
@@ -30,7 +21,6 @@ const Bajaj_restrictedFeatures = ['monthlyInvoice', 'external_links'];
 
 export const antiOrgsModules = {
   hdfc: HDFC_restrictedModules,
-  bajaj: Bajaj_restrictedModules,
 };
 
 export const antiOrgsFeatures = {
