@@ -1086,6 +1086,17 @@ return [
         'secret'        => env('SALESFORCE_SECRET'),
     ],
 
+    'salesforce_converge' => [
+        'mock'          => env('SALESFORCE_CONVERGE_MOCK', false),
+        'url'           => env('SALESFORCE_CONVERGE_URL'),
+        'username'      => env('SALESFORCE_CONVERGE_USERNAME'),
+        'password'      => env('SALESFORCE_CONVERGE_PASSWORD'),
+        'client_id'     => env('SALESFORCE_CONVERGE_CLIENT_ID'),
+        'client_secret' => env('SALESFORCE_CONVERGE_CLIENT_SECRET'),
+        // to add internalApp Auth which uses secret field to determine whether It is Internal Auth
+        //'secret'        => env('SALESFORCE_CONVERGE_SECRET'),
+    ],
+
     'terminals_service' => [
         'mock'          => env('TERMINALS_SERVICE_MOCK', false),
         'secret'        => env('TERMINALS_SERVICE_API_SECRET'),

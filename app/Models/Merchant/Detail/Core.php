@@ -22,12 +22,12 @@ use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Metro\Constants as MetroConstants;
 use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\SalesforceConverge\SalesforceConvergeService;
+use RZP\Models\SalesforceConverge\SalesforceMerchantUpdatesRequest;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
-
-
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
@@ -3098,6 +3098,8 @@ class Core extends Base\Core
         SendSubmerchantActivatedEvents::dispatch($merchant, $input[Entity::ACTIVATION_STATUS]);
 
         $this->pushHubspotEvent($merchant, $merchantDetails);
+
+        (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant));
 
         $this->app['diag']->trackOnboardingEvent(EventCode::ACT_CHANGE_ACTIVATION_STATUS_SUCCESS,
                                                  $merchant,

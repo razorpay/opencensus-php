@@ -50,6 +50,7 @@ use RZP\Models\Partner\Activation as PartnerActivation;
 /**
  * @property Org\Entity               $org
  * @property Detail\Entity            $merchantDetail
+ * @property BusinessDetail\Entity    $merchantBusinessDetail
  * @property Methods\Entity           $methods
  * @property BankAccount\Entity       $bankAccount
  * @property Balance\Entity           $bankingBalance

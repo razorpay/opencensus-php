@@ -1,0 +1,59 @@
+<?php
+namespace RZP\Models\SalesforceConverge;
+
+use RZP\Models\Merchant\Entity as MerchantEntity;
+
+class SalesforceMerchantUpdatesRequest
+{
+    public    $merchant_id;
+
+    public    $activated;
+
+    public    $activated_at;
+
+    public    $activation_progress;
+
+    public    $activation_status;
+
+    public    $activation_flow;
+
+    public    $foh;
+
+    public    $lead_score_pg;
+
+    //public    $authToken;
+
+    public function __construct(MerchantEntity $merchant)
+    {
+        $this->merchant_id = $merchant->getId();
+
+        $this->activated = $merchant->isActivated();
+
+        $this->activated_at = date('Y-m-d',$merchant->getActivatedAt());
+
+        $this->activation_progress = $merchant->merchantDetail->getActivationProgress();
+
+        $this->activation_status = $merchant->merchantDetail->getActivationStatus();
+
+        $this->activation_flow = $merchant->merchantDetail->getActivationFlow();
+
+        $this->foh = $merchant->isFundsOnHold();
+
+        $this->lead_score_pg = optional($merchant->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
+
+    }
+
+    public function getPath(): ?string
+    {
+        return "/services/data/v53.0/sobjects/CX_Merchant_Event__e";
+    }
+
+    public function getFormattedRequest(): ?array
+    {
+        $requestArray = (array) $this;
+
+        return [ 'CX_Source__c'     =>  'admindashboard',
+                 'CX_Process__c'    =>  'Activation',
+                 'CX_Payload__c'    =>  json_encode($requestArray)];
+    }
+}
