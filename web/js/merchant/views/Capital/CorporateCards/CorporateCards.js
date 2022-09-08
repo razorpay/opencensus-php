@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-
+import analyticsService from '@razorpay/commander-services/analytics';
+import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import LoanEntity from 'merchant/models/Capital/BaseOrigination';
 
 const LOS_CARDS_LINK = 'https://x.razorpay.com/cards/apply';
 const CARDS_DASHBOARD_LINK = 'https://x.razorpay.com/cards';
 
 const CorporateCards = ({ user }) => {
-  if (!user.isCardsLOSEnabled) return <Redirect to="/" />;
-
   const [loading, setLoading] = useState(true);
   const [ctaText, setCTAText] = useState('Apply Now');
   const [link, setLink] = useState(LOS_CARDS_LINK);
@@ -19,7 +18,7 @@ const CorporateCards = ({ user }) => {
     async function init() {
       if (user.isCardsEnabled) {
         setCTAText('Go to Cards Dashboard');
-        setLink(CARDS_DASHBOARD_LINK)
+        setLink(CARDS_DASHBOARD_LINK);
       } else {
         try {
           const entity = new LoanEntity();
@@ -50,7 +49,9 @@ const CorporateCards = ({ user }) => {
 
           setCTAText(text);
           setLink(link);
-        } catch (err) { }
+        } catch (err) {
+          console.log('Failed to send analytics:', err.message);
+        }
       }
 
       setLoading(false);
@@ -59,6 +60,37 @@ const CorporateCards = ({ user }) => {
     init();
   }, []);
 
+  const handleOnClick = (position) => {
+    let objectName = 'Corporate Cards Button';
+    if (currentCtaText === 'Continue Applying') {
+      objectName = `Continue Applying ${position}`;
+    }
+    try {
+      analyticsService.track({
+        screen: 'PG Dashboard | Corporate Cards | Overview',
+        objectName,
+        actionName: 'Clicked',
+        properties: {
+          location: 'Left Navigation | Corporate Cards',
+          utm_campaign: `cardstab${position === 'Left' ? 1 : 2}`,
+          utm_source: 'growth',
+          utm_medium: 'RZPDashboard',
+          ...getCommonSegmentProperties(window.rzp_user),
+        },
+      });
+    } catch (e) {
+      // handle error
+    }
+  };
+
+  const handleLeftCTAClick = () => {
+    handleOnClick('Left');
+  };
+
+  const handleRightCTAClick = () => {
+    handleOnClick('Right');
+  };
+  if (!user.isCardsLOSEnabled) return <Redirect to="/" />;
   return (
     <div className="corporate-cards-wrapper">
       <div className="corporate-cards__left">
@@ -93,7 +125,7 @@ const CorporateCards = ({ user }) => {
               <img src="/dist/css/assets/capital/cc-deposits.png" />
             </li>
           </ul>
-          <a className="cta secondary" href={link}>
+          <a onClick={handleLeftCTAClick} className="cta secondary" href={link}>
             {currentCtaText}
           </a>
         </div>
@@ -112,7 +144,7 @@ const CorporateCards = ({ user }) => {
               <li>Recurring charges for SaaS & cloud</li>
               <li>International & other digital expenses</li>
             </ul>
-            <a className="cta primary" href={link}>
+            <a onClick={handleRightCTAClick} className="cta primary" href={link}>
               {currentCtaText}
             </a>
           </div>
