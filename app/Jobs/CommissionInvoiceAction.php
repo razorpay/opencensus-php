@@ -79,8 +79,6 @@ class CommissionInvoiceAction extends Job
 
         $pdfPath = $core->createInvoicePdfAndGetFilePath($this->invoice);
 
-        $core->createInvoicePdfAndGetFilePath($this->invoice);
-
         $core->sendCommissionInvoiceEvents($this->invoice, EventCode::PARTNERSHIPS_COMMISSION_INVOICE_GENERATED);
 
         $core->sendCommissionIssuedMail($this->invoice, $pdfPath);
