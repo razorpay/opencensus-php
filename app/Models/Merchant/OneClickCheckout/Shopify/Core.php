@@ -314,6 +314,10 @@ class Core extends Base\Core
 
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
 
+        $stateCode = (new StateMap)->getShopifyStateCode($address['state_code']);
+
+        $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address['state']);
+
         // name and address1 are compulsory fields but we don't collect it from
         // user at this time so we put default value
         // province field can take state code or full state name depending on what is passed
@@ -323,7 +327,7 @@ class Core extends Base\Core
             'address1'  => $address['line1']      ?? 'address not entered',
             'address2'  => $address['line2']      ?? '',
             'country'   => $address['country'],
-            'province'  => $address['state_code'] ?? $address['state'],
+            'province'  => $stateCode ?? $stateCodeFromName,
             'zip'       => $address['zipcode'],
             'city'      => $address['city'],
             'phone'     => $address['contact'] ?? '',

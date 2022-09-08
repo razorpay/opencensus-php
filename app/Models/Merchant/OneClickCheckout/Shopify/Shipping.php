@@ -18,6 +18,10 @@ class Shipping
     {
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
 
+        $stateCode = (new StateMap)->getShopifyStateCode($address['state_code']);
+
+        $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address['state']);
+
         // name and address1 are compulsory fields but we don't collect it from
         // user at this time so we put default value
         $shippingAddress = [
@@ -25,7 +29,7 @@ class Shipping
             'lastName'  => 'not entered',
             'address1'  => 'address not entered',
             'country'   => $address['country'],
-            'province'  => $address['state_code'],
+            'province'  => $stateCode ?? $stateCodeFromName,
             'zip'       => $address['zipcode'],
             'city'      => $address['city'],
         ];
