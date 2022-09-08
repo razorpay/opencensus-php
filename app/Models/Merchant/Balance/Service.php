@@ -320,9 +320,9 @@ class Service extends Base\Service
         }
 
         $input = [
-            Entity::MERCHANT_ID => $merchant->getId(),
-            Entity::BALANCE_ID  => $balance->getId(),
-            EntityConstants::ACTION    => $action,
+            Entity::MERCHANT_ID     => $merchant->getId(),
+            Entity::BALANCE_ID      => $balance->getId(),
+            EntityConstants::ACTION => $action,
         ];
 
         return $this->payoutServiceFreePayoutClient->freePayoutMigrationForMicroservice($input);
@@ -338,17 +338,36 @@ class Service extends Base\Service
 
         $freePayoutsConsumedLastResetAt = $counter->getFreePayoutsConsumedLastResetAt();
 
-        $freePayoutsAttributes = (new FreePayout)->getFreePayoutCountAndSupportedModes($balance);
+        $freePayoutCountRecord = (new FreePayout)->getFreePayoutsCountRecord($balance);
+
+        $freePayoutCount = (int)$freePayoutCountRecord[EntityConstants::VALUE];
+
+        $freePayoutSupportedModesRecord = (new FreePayout)->getFreePayoutsSupportedModesRecord($balance);
+
+        $freePayoutsSupportedModes = explode(',', $freePayoutSupportedModesRecord[EntityConstants::VALUE]);
+
+        $this->trace->info(
+            TraceCode::COUNTER_AND_SETTINGS_RECORDS_FOR_MIGRATION,
+            [
+                'free_payout_count_settings_record'           => $freePayoutCountRecord,
+                'free_payout_supported_modes_settings_record' => $freePayoutSupportedModesRecord,
+            ]);
 
         $input = [
-            Entity::MERCHANT_ID                          => $merchant->getId(),
-            Entity::BALANCE_ID                           => $balance->getId(),
+            EntityConstants::ACTION                             => $action,
+            Entity::MERCHANT_ID                                 => $merchant->getId(),
             EntityConstants::BALANCE_TYPE                       => $balance->getAccountType(),
+            EntityConstants::COUNTER_ID                         => $counter->getId(),
+            Entity::BALANCE_ID                                  => $balance->getId(),
             Counter\Entity::FREE_PAYOUTS_CONSUMED               => $freePayoutsConsumed,
             Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
-            FreePayout::FREE_PAYOUTS_COUNT                      => $freePayoutsAttributes[FreePayout::FREE_PAYOUTS_COUNT],
-            FreePayout::FREE_PAYOUTS_SUPPORTED_MODES            => $freePayoutsAttributes[FreePayout::FREE_PAYOUTS_SUPPORTED_MODES],
-            EntityConstants::ACTION                             => $action,
+            EntityConstants::COUNTER_CREATED_AT                 => $counter->getCreatedAt(),
+
+            FreePayout::FREE_PAYOUTS_COUNT                => $freePayoutCount,
+            EntityConstants::FREE_PAYOUT_COUNT_CREATED_AT => $freePayoutCountRecord[EntityConstants::CREATED_AT],
+
+            FreePayout::FREE_PAYOUTS_SUPPORTED_MODES                => $freePayoutsSupportedModes,
+            EntityConstants::FREE_PAYOUT_SUPPORTED_MODES_CREATED_AT => $freePayoutSupportedModesRecord[EntityConstants::CREATED_AT],
         ];
 
         $response = $this->payoutServiceFreePayoutClient->freePayoutMigrationForMicroservice($input);

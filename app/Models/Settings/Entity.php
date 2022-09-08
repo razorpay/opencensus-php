@@ -28,6 +28,10 @@ class Entity extends Base\PublicEntity
 
     const VALUE = 'value';
 
+    const ENTITY_ID = 'entity_id';
+
+    const ENTITY_TYPE = 'entity_type';
+
     public function getValue(string $key)
     {
         $this->getAttribute(self::KEY);

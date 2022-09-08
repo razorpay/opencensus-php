@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use Requests_Response;
 
 use RZP\Constants\Mode;
-use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Pricing\Fee;
@@ -24,7 +23,8 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\Type as Type;
-use RZP\Jobs\FreePayoutMigrationForPayoutsService;
+use RZP\Models\Counter\Entity as CounterEntity;
+use RZP\Models\Settings\Entity as SettingsEntity;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -44,7 +44,6 @@ use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
 use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
-use RZP\Services\PayoutService\UpdateFreePayout as PayoutServiceUpdateFreePayout;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
@@ -3365,6 +3364,22 @@ class PayoutServiceTest extends TestCase
                                         [
                                             'account_number'   => '2224440041626905',
                                         ], 'live')->first();
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_COUNT,
+            SettingsEntity::VALUE       => '250',
+        ]);
+
+        $this->fixtures->on('live')->create('settings', [
+            SettingsEntity::ENTITY_ID   => $balance->getId(),
+            SettingsEntity::ENTITY_TYPE => EntityConstants::BALANCE,
+            SettingsEntity::MODULE      => FreePayout::FREE_PAYOUT,
+            SettingsEntity::KEY         => FreePayout::FREE_PAYOUTS_SUPPORTED_MODES,
+            SettingsEntity::VALUE       => 'IMPS,NEFT',
+        ]);
 
         $this->testData[__FUNCTION__]['request']['content']['ids'][0][Entity::BALANCE_ID] = $balance->getId();
 

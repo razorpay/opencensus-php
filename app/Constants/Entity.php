@@ -253,6 +253,21 @@ class Entity
     const BALANCE_TYPE      = 'balance_type';
     const COUNTER_MIGRATED  = 'counter_migrated';
     const SETTINGS_MIGRATED = 'settings_migrated';
+    const COUNTERS_ROLLBACK = 'counters_rollback';
+    const SETTINGS_ROLLBACK = 'settings_rollback';
+    const CREATED_AT        = 'created_at';
+    const UPDATED_AT        = 'updated_at';
+    const VALUE             = 'value';
+
+    // free payout migration - counter attributes
+    const COUNTER_ID         = 'counter_id';
+    const COUNTER_CREATED_AT = 'counter_created_at';
+
+    // free payout migration - free payout count - settings attributes
+    const FREE_PAYOUT_COUNT_CREATED_AT  = 'free_payout_count_created_at';
+
+    // free payout migration - free payout supported modes - settings attributes
+    const FREE_PAYOUT_SUPPORTED_MODES_CREATED_AT  = 'free_payout_supported_modes_created_at';
 
     //
     // Workflow Entities

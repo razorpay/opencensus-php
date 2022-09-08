@@ -76,4 +76,10 @@ class Service extends Base\Service
         // so get all the settings for this module, if this key is present in it
         return $this->repo->settings->getSettingsIfKeyPresent($module, $key, $value, $offset, $limit);
     }
+
+    public function getSettings(string $entityId, $module, $key)
+    {
+        return $this->repo->settings->getSettings($entityId, $module, $key);
+    }
+
 }

@@ -4938,11 +4938,16 @@ class Core extends Base\Core
 
                 return [
                     Entity::BALANCE_ID                => $balance->getId(),
-                    EntityConstant::COUNTER_MIGRATED  => true,
-                    EntityConstant::SETTINGS_MIGRATED => true
+                    EntityConstant::COUNTERS_ROLLBACK => true,
+                    EntityConstant::SETTINGS_ROLLBACK => true
                 ];
 
             });
+
+        $this->trace->info(TraceCode::FREE_PAYOUT_ROLLBACK_RESPONSE,
+                           [
+                               'rollback_response' => $response,
+                           ]);
 
         return $response;
     }

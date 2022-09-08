@@ -18,4 +18,14 @@ class Repository extends Base\Repository
                     ->take($limit)
                     ->get();
     }
+
+    public function getSettings(string $entityId, $module, $key)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::MODULE, $module)
+                    ->where(Entity::KEY, $key)
+                    ->firstOrFail();
+    }
+
 }

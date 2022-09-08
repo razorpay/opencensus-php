@@ -484,6 +484,7 @@ class Validator extends Base\Validator
     protected static $rollbackFreePayoutPayoutsServiceRules = [
         Entity::MERCHANT_ID                                => 'required|alpha_num|size:14',
         Entity::BALANCE_ID                                 => 'required|alpha_num|size:14',
+        EntityConstants::BALANCE_TYPE                      => 'required|string',
         CounterEntity::FREE_PAYOUTS_CONSUMED               => 'required|integer',
         CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 'required|epoch',
         Balance\FreePayout::FREE_PAYOUTS_COUNT             => 'required|integer',

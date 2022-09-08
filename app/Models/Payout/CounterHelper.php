@@ -422,7 +422,7 @@ class CounterHelper extends Base\Core
         $this->repo->counter->saveOrFail($counter);
 
         $this->trace->info(
-            TraceCode::FREE_PAYOUTS_ENTITY_ROLLBACK,
+            TraceCode::COUNTER_ENTITY_ROLLBACK,
             [
                 Counter\Entity::FREE_PAYOUTS_CONSUMED               => $counter->getFreePayoutsConsumed(),
                 Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $counter->getFreePayoutsConsumedLastResetAt(),

@@ -2166,6 +2166,7 @@ return [
             'method'  => 'post',
             'content' => [
                 Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
                 CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
                 CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
                 Balance\FreePayout::FREE_PAYOUTS_COUNT             => 300,
@@ -2174,8 +2175,8 @@ return [
         ],
         'response' => [
             'content'     => [
-                EntityConstants::COUNTER_MIGRATED  => true,
-                EntityConstants::SETTINGS_MIGRATED => true
+                EntityConstants::COUNTERS_ROLLBACK  => true,
+                EntityConstants::SETTINGS_ROLLBACK  => true
             ],
             'status_code' => 200,
         ],
@@ -2187,6 +2188,7 @@ return [
             'method'  => 'post',
             'content' => [
                 Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
                 CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
                 Balance\FreePayout::FREE_PAYOUTS_COUNT             => 300,
                 Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => ['IMPS', 'RTGS'],

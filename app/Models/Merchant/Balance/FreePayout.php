@@ -5,14 +5,18 @@ namespace RZP\Models\Merchant\Balance;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Settings;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Mode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Settings\Service as SettingsService;
 
 class FreePayout
 {
+    const FREE_PAYOUT                           = 'free_payout';
+
     // Settings module key
     const FREE_PAYOUTS_COUNT                            = 'free_payouts_count';
 
@@ -169,11 +173,14 @@ class FreePayout
         return Settings\Accessor::for($balance, Settings\Module::FREE_PAYOUT);
     }
 
-    public function getFreePayoutCountAndSupportedModes(Balance\Entity $balance)
+    public function getFreePayoutsCountRecord(Balance\Entity $balance)
     {
-        return [
-            self::FREE_PAYOUTS_COUNT           => $this->getFreePayoutsCount($balance),
-            self::FREE_PAYOUTS_SUPPORTED_MODES => $this->getFreePayoutsSupportedModes($balance),
-        ];
+        return (new SettingsService())->getSettings($balance->getId(), self::FREE_PAYOUT, self::FREE_PAYOUTS_COUNT);
     }
+
+    public function getFreePayoutsSupportedModesRecord(Balance\Entity $balance)
+    {
+        return (new SettingsService())->getSettings($balance->getId(), self::FREE_PAYOUT, self::FREE_PAYOUTS_SUPPORTED_MODES);
+    }
+
 }
