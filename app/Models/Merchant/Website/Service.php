@@ -432,23 +432,23 @@ class Service extends Base\Service
 
         if (empty($businessDetails->getPlaystoreUrl()) === false)
         {
-            $urls[$businessDetails->getPlaystoreUrl()] = 'playstore_url';
+            $urls[trim(strtolower($businessDetails->getPlaystoreUrl()), '/')] = 'playstore_url';
         }
         if (empty($businessDetails->getAppstoreUrl()) === false)
         {
-            $urls[$businessDetails->getAppstoreUrl()] = 'appstore_url';
+            $urls[trim(strtolower($businessDetails->getAppstoreUrl()), '/')] = 'appstore_url';
         }
 
         if (empty($merchantDetails->getWebsite()) === false)
         {
-            $urls[$merchantDetails->getWebsite()] = 'website';
+            $urls[trim(strtolower($merchantDetails->getWebsite()), '/')] = 'website';
         }
 
         if (empty($merchantDetails->getAdditionalWebsites()) === false)
         {
             foreach ($merchantDetails->getAdditionalWebsites() as $url)
             {
-                $urls[$url] = 'website';
+                $urls[trim(strtolower($url), '/')] = 'website';
             }
         }
 
@@ -464,16 +464,29 @@ class Service extends Base\Service
         switch ($urlType)
         {
             case Constants::WEBSITE:
-                $urls   = $merchantDetails->getAdditionalWebsites();
-                $urls[] = $merchantDetails->getWebsite();
+
+                if (empty($merchantDetails->getAdditionalWebsites()) === false)
+                {
+                    foreach ($merchantDetails->getAdditionalWebsites() as $url)
+                    {
+                        $urls[] = trim(strtolower($url), '/');
+                    }
+                }
+
+                $urls[] = trim(strtolower($merchantDetails->getWebsite()), '/');
+
                 break;
 
             case Constants::APPSTORE_URL:
-                $urls[] = $businessDetails->getAppstoreUrl();
+
+                $urls[] = trim(strtolower($businessDetails->getAppstoreUrl()), '/');
+
                 break;
 
             case Constants::PLAYSTORE_URL:
-                $urls[] = $businessDetails->getPlaystoreUrl();
+
+                $urls[] = trim(strtolower($businessDetails->getPlaystoreUrl()), '/');
+
                 break;
         }
 
@@ -609,12 +622,6 @@ class Service extends Base\Service
                                     // $websiteData : "document_id": "JyJ2aph3msZl9r"
                                     if (empty($websiteData) === false)
                                     {
-                                        if (in_array($websiteUrl, $this->getUrls($merchantDetails, $urlType)) === false)
-                                        {
-                                            unset($response[Entity::MERCHANT_WEBSITE_DETAILS][$sectionName][$urlType][$websiteUrl]);
-
-                                            continue;
-                                        }
 
                                         if (($urlType === Constants::APPSTORE_URL or
                                              $urlType === Constants::PLAYSTORE_URL) and
@@ -716,12 +723,6 @@ class Service extends Base\Service
 
                                 if (empty($websiteData) === false)
                                 {
-                                    if (in_array($url, $this->getUrls($merchantDetails, $urlType)) === false)
-                                    {
-                                        unset($response[Entity::ADMIN_WEBSITE_DETAILS][$urlType][$url]);
-
-                                        continue;
-                                    }
 
                                     if (($urlType === Constants::APPSTORE_URL or
                                          $urlType === Constants::PLAYSTORE_URL) and
@@ -1350,7 +1351,7 @@ class Service extends Base\Service
 
         if ($this->app['basicauth']->isProxyAuth() === false)
         {
-            if (optional($websiteDetail)->getSectionStatus($sectionName) !== 3)
+            if (optional($websiteDetail)->getSectionStatus($sectionName) !== 2)
             {
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
             }
@@ -1502,11 +1503,11 @@ class Service extends Base\Service
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
-            $url = $businessDetail->getPlaystoreUrl();
+            $url = trim(strtolower($businessDetail->getPlaystoreUrl()), '/');
         }
         else
         {
-            $url = $businessDetail->getAppstoreUrl();
+            $url = trim(strtolower($businessDetail->getAppstoreUrl()), '/');
         }
 
         if (empty($url) === true)
@@ -1575,11 +1576,11 @@ class Service extends Base\Service
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
-            $url = $businessDetail->getPlaystoreUrl();
+            $url = trim(strtolower($businessDetail->getPlaystoreUrl()), '/');
         }
         else
         {
-            $url = $businessDetail->getAppstoreUrl();
+            $url = trim(strtolower($businessDetail->getAppstoreUrl()), '/');
         }
 
         if (empty($websiteDetail) === true)
@@ -1631,9 +1632,15 @@ class Service extends Base\Service
                 // validate if the url in input is same as either business_Website ot additional_websites
                 $merchantDetail = $merchant->merchantDetail;
 
-                $urls = $merchantDetail->getAdditionalWebsites();
+                if (empty($merchantDetail->getAdditionalWebsites()) === false)
+                {
+                    foreach ($merchantDetail->getAdditionalWebsites() as $url)
+                    {
+                        $urls[] = trim(strtolower($url), '/');
+                    }
+                }
 
-                $urls[] = $merchantDetail->getWebsite();
+                $urls[] = trim(strtolower($merchantDetail->getWebsite()), '/');
 
                 if (in_array($input[Constants::URL], $urls) === false)
                 {
@@ -1870,11 +1877,11 @@ class Service extends Base\Service
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
-            $url = $businessDetail->getPlaystoreUrl();
+            $url = trim(strtolower($businessDetail->getPlaystoreUrl()), '/');
         }
         else
         {
-            $url = $businessDetail->getAppstoreUrl();
+            $url = trim(strtolower($businessDetail->getAppstoreUrl()), '/');
         }
 
         if (empty($url) === true)
@@ -1941,11 +1948,11 @@ class Service extends Base\Service
 
         if ($urlType === Constants::PLAYSTORE_URL)
         {
-            $url = $businessDetail->getPlaystoreUrl();
+            $url = trim(strtolower($businessDetail->getPlaystoreUrl()), '/');
         }
         else
         {
-            $url = $businessDetail->getAppstoreUrl();
+            $url = trim(strtolower($businessDetail->getAppstoreUrl()), '/');
         }
 
         if (empty($url) === true)
