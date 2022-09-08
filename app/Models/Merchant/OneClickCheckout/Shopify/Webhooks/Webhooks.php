@@ -22,8 +22,7 @@ class Webhooks extends Base\Core
 {
 
     const REFUND_CREATED = 'refund/created';
-    const REUND_MUTEX_KEY = 'shopify_1cc_reund_order_mutex';
-    const WEBHOOK_MUTEX_KEY = 'process_webhooks_1cc_mutex';
+    const REUND_MUTEX_KEY = 'shopify_1cc_refund_order_mutex';
 
     const MUTEX_LOCK_TTL_SEC = 60;
     const MAX_RETRY_COUNT = 4;
@@ -127,10 +126,10 @@ class Webhooks extends Base\Core
         if (empty($configs) === true)
         {
             $this->trace->error(
-              TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
-              [
-                'type'  => 'configs_not_found',
-              ]);
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                  'type'  => 'configs_not_found',
+                ]);
             return;
         }
 
@@ -177,6 +176,7 @@ class Webhooks extends Base\Core
                     'type'          => 'non_rzp_order',
                     'authorization' => $txn['authorization'],
                 ]);
+            return;
         }
 
         [$merchantRzpOrderId, $paymentId] = $keys;
@@ -277,6 +277,7 @@ class Webhooks extends Base\Core
         return (new AuthConfig\Core())->getShopify1ccConfigByShopId($shopId);
     }
 
+    // TODO: monitor for fail errors
     protected function findAndSetMerchantOrFail(string $merchantId): void
     {
         $this->merchant = $this->repo->merchant->findOrFail($merchantId);
