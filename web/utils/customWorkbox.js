@@ -15,7 +15,7 @@ self.skipWaiting();
 precacheAndRoute(self.__WB_MANIFEST);
 
 registerRoute(
-  ({ url: { pathname } }) => ENABLED_CDN_ASSETS.test(pathname),
+  ({ url: { href = '' } }) => ENABLED_CDN_ASSETS.test(href),
   new CacheFirst({
     cacheName: 'static-chunks',
     plugins: [
