@@ -793,15 +793,7 @@ class Repository extends Base\Repository
             $query->where(Entity::PRODUCT, $product);
         }
 
-        $mapping =  $query->first();
-
-//        $this->trace->info(
-//            TraceCode::MERCHANT_USER_MAPPING,
-//            [
-//                'mapping' => $mapping,
-//            ]);
-
-        return $mapping;
+        return $query->first();
     }
 
     public function findByIdAndOrgId(string $id, string $orgId)
