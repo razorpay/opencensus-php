@@ -705,7 +705,7 @@ class Processor
 
         $currentRouteName = $this->route->getCurrentRouteName();
         /**
-         * @var Merchant\Entity
+         * @var Merchant\Entity $merchant
          */
         $merchant = $this->app['basicauth']->getMerchant();
 
@@ -788,6 +788,19 @@ class Processor
         }
 
         if ($shouldRoute === false)
+        {
+            return false;
+        }
+
+        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_disable_mid';
+        $variant = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag, $this->mode);
+
+        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
+            'variant'      => $variant,
+            'feature_flag' => $featureFlag,
+        ]);
+
+        if ($variant === 'disable')
         {
             return false;
         }
