@@ -15,6 +15,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Services\RazorXClient;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Models\BankAccount;
@@ -105,8 +106,32 @@ class Service extends Base\Service
             return false;
         }
 
-        if ($merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === true)
+        if (isset($input['line_items_total']) === true)
         {
+            $requeust_data = json_encode(['merchant_id' => $merchant->getId()]);
+            $uniqueId = UniqueIdEntity::generateUniqueId();
+            $experiment_id = $this->app['config']->get('app.1cc_pg_router_ramp_up_exp_id');
+
+            $variant = null;
+            try
+            {
+                $response = $this->app['splitzService']->evaluateRequest([
+                    'id' => $uniqueId,
+                    'experiment_id' => $experiment_id,
+                    'request_data' => $requeust_data,
+                ]);
+                $variant = $response['response']['variant']['name'] ?? null;
+            }
+            catch (\Throwable $e)
+            {
+                $variant = null;
+            }
+
+            if($variant === 'variant_on')
+            {
+                return true;
+            }
+
             return false;
         }
 

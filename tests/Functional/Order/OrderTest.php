@@ -2754,4 +2754,13 @@ class OrderTest extends TestCase
 
         $this->assertEquals($offer->getPublicId(), $response['offer']['id']);
     }
+
+    public function testCanRouteToPgRouterFor1cc()
+    {
+        $this->fixtures->merchant->addFeatures([FeatureConstants::ONE_CLICK_CHECKOUT]);
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+        $orderService = new Order\Service();
+        $result = $orderService->canRouteOrderCreationToPGRouter(['line_items_total' => 2000], $merchant);
+        $this->assertEquals(false, $result);
+    }
 }

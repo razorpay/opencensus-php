@@ -389,6 +389,8 @@ return array(
 
     '1cc_address_flow_exp_splitz_experiment_id' => env('MAGIC_CHECKOUT_ADDRESS_FLOW_EXP_ID'),
 
+    '1cc_pg_router_ramp_up_exp_id' => env('MAGIC_CHECKOUT_PG_ROUTER_RAMP_EXP_ID'),
+
     'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
 
     'global_card_payment_splitz_experiment_id' => env('GLOBAL_CARD_PAYMENT_SPLITZ_EXPERIMENT_ID'),
