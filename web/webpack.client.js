@@ -187,7 +187,7 @@ module.exports = ({ config, project }) => {
         modifyURLPrefix: {
           '/dist/': 'https://cdn.razorpay.com/dashboard/dist/',
         },
-        exclude: [/\.map$/, /asset-manifest\.json$/, /\.(png|jpg|jpeg|svg|gif|html)?$/],
+        include: [/\.(js|css)?$/, /\.(woff|woff2)?$/],
         swSrc: './utils/customWorkbox.js',
         swDest: `sw-utils/sw-${project}.js`,
       }),

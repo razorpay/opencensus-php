@@ -6,7 +6,8 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { BroadcastUpdatePlugin } from 'workbox-broadcast-update';
 
-const STALE_WILE_STRATERGY_ENABLE = ['script', 'style'];
+const ENABLED_CDN_ASSETS = /https:\/\/cdn\.razorpay\.com\/dashboard\/dist\/(js|css)?\/.*\.(js|css)?$/;
+const ENABLED_FONTS = /\.(woff|woff2)?$/;
 
 clientsClaim();
 self.skipWaiting();
@@ -14,7 +15,23 @@ self.skipWaiting();
 precacheAndRoute(self.__WB_MANIFEST);
 
 registerRoute(
-  ({ request: { destination } }) => STALE_WILE_STRATERGY_ENABLE.indexOf(destination) > -1,
+  ({ url: { pathname } }) => ENABLED_CDN_ASSETS.test(pathname),
+  new CacheFirst({
+    cacheName: 'static-chunks',
+    plugins: [
+      new BroadcastUpdatePlugin(),
+      new CacheableResponsePlugin({
+        statuses: [0, 200],
+      }),
+      new ExpirationPlugin({
+        maxAgeSeconds: 60 * 60 * 24 * 30,
+      }),
+    ],
+  }),
+);
+
+registerRoute(
+  new RegExp('https://cdn\\.razorpay\\.com.*/dist/(merchant-entry|merchantLA-entry)?\\.*\\.(js)?$'),
   new StaleWhileRevalidate({
     cacheName: 'static-assets',
     plugins: [new BroadcastUpdatePlugin()],
@@ -22,8 +39,10 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url: { origin } }) =>
-    origin === 'https://fonts.googleapis.com' || origin === 'https://fonts.gstatic.com',
+  ({ url: { origin, pathname } }) =>
+    origin === 'https://fonts.googleapis.com' ||
+    origin === 'https://fonts.gstatic.com' ||
+    ENABLED_FONTS.test(pathname),
   new CacheFirst({
     cacheName: 'fonts',
     plugins: [
