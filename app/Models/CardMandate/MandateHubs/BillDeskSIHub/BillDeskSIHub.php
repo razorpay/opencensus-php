@@ -80,9 +80,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         return $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB, Payment\Action::REPORT_PAYMENT, $billDeskInput, $this->mode);
     }
 
-    public function getValidationBeforeSubsequentPayment(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = [])
+    public function getValidationBeforeSubsequentPayment(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = [], $forceCard = true)
     {
-        $validationInput = $this->getValidationInput($payment, $cardMandate);
+        $validationInput = $this->getValidationInput($payment, $cardMandate, $forceCard);
 
         $response = $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_VERIFY, $validationInput, $this->mode);
 
@@ -265,9 +265,10 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     /**
      * @param Payment\Entity $payment
      * @param CardMandate\Entity $cardMandate
+     * @param bool $forceCard
      * @return array
      */
-    protected function getValidationInput(Payment\Entity $payment, CardMandate\Entity $cardMandate)
+    protected function getValidationInput(Payment\Entity $payment, CardMandate\Entity $cardMandate, $forceCard = true)
     {
 
         $card = $payment->card;
@@ -276,7 +277,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 
         $cardData[Constants::CARD_NUMBER] = $this->getCardNumber($card,$payment->getGateway());
 
-        return [
+        $inputResponse = [
             Constants::PAYMENT      => $payment->toArray(),
             Constants::TERMINAL     => $payment->terminal ? $payment->terminal->toArray() : null,
             Constants::GATEWAY      => MandateHubs::BILLDESK_SIHUB,
@@ -287,6 +288,12 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             Constants::CARD_MANDATE => $cardMandate->toArray(),
         ];
 
+        if ($forceCard === true)
+        {
+            return $inputResponse;
+        }
+
+        return $this->getTokenDetails($payment, $inputResponse);
     }
 
     protected function getTokenDetails(Payment\Entity $payment, array $inputResponse) {

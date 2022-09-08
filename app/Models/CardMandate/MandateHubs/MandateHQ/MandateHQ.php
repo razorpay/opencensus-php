@@ -120,7 +120,7 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         ];
     }
 
-    public function getValidationBeforeSubsequentPayment(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = [])
+    public function getValidationBeforeSubsequentPayment(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = [], $forceCard = true)
     {
         return $this->app->mandateHQ->validatePayment($cardMandate->getMandateId(), $input);
     }

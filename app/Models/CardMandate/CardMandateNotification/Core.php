@@ -199,6 +199,42 @@ class Core extends Base\Core
 
         $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
+        if($cardMandate->getMandateHub() === MandateHubs\MandateHubs::BILLDESK_SIHUB)
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $payment->getMerchantId(),
+                Merchant\RazorxTreatment::SIHUB_VALIDATION_FORCE_TOKEN_INSTRUMENT,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                try
+                {
+                    $validationResponse = $mandateHub->getValidationBeforeSubsequentPayment($cardMandate, $payment, [
+                        CardMandate\MandateHubs\Notification::NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
+                        CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount()
+                    ],false);
+
+                    $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_RESPONSE, [
+                        'payment_id'                   => $payment->getId(),
+                        'card_mandate_notification_id' => $cardMandateNotification->getId(),
+                        'status'                       => $cardMandateNotification->getStatus(),
+                        'response'                     => $validationResponse,
+                    ]);
+
+                    return $cardMandateNotification;
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e,
+                        null,
+                        TraceCode::MISC_TRACE_CODE,
+                        ["failed validating after sending token details" => $payment->getId()]);
+                }
+            }
+        }
+
         $validationResponse = $mandateHub->getValidationBeforeSubsequentPayment($cardMandate, $payment, [
             CardMandate\MandateHubs\Notification::NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
             CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount(),
