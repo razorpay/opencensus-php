@@ -43,8 +43,8 @@ const initFreshchat = (data) => {
       isContextual: isFreshChatbotLive,
     });
     if (isFreshChatbotLive) {
-      window.fcWidget.on('message:received', (data) => {
-        if (CLOSING_TEXTS.includes(data?.message?.messageFragments?.[0]?.content)) {
+      window.fcWidget.on('message:received', (payload) => {
+        if (CLOSING_TEXTS.includes(payload?.message?.messageFragments?.[0]?.content)) {
           window.fcWidget.destroy();
           window.fcWidget.on('widget:destroyed', () => {
             initFreshchat(data);

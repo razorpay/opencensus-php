@@ -157,6 +157,10 @@ export default class Support extends Component {
         this.handleVisibility(false);
       });
 
+      window.fcWidget.on('widget:destroyed', () => {
+        this.handleVisibility(false);
+      });
+
       window.fcWidget.on('unreadCount:notify', (response) => {
         this.setState({ notifyCount: response.count });
       });
