@@ -264,6 +264,7 @@ class Validator extends Base\Validator
     protected static $atomTerminalRules = [
         Entity::GATEWAY                    => 'required|in:atom',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_SECURE_SECRET      => 'required|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
