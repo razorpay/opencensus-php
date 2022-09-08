@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Validator;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\Merchant1ccConfig;
+use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
 
 class Service extends Base\Service
 {
@@ -364,14 +365,13 @@ class Service extends Base\Service
             return $mockResponseObj;
         }
 
-        $method = $request['method'];
-
         try
         {
-            $response = Requests::$method(
+            $response = DomainUtils::sendExternalRequest(
                 $request['url'],
                 $request['headers'],
-                $request['content']
+                $request['content'],
+                $request['method']
             );
         }
         catch (Throwable $e)

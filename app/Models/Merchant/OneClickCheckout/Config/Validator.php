@@ -3,13 +3,16 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Config;
 
 use RZP\Base;
+use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
+    const RZP_DOMAIN_URL_VALIDATION_MESSAGE = "Domain should not belong to razorpay.";
     protected static $nativeRules = [
-        "shipping_info"                  => 'sometimes|url',
-        "list_promotions"                => 'sometimes|url',
-        "apply_promotion"                => 'sometimes|url',
+        "shipping_info"                  => 'sometimes|url|custom:non_rzp_domain',
+        "list_promotions"                => 'sometimes|url|custom:non_rzp_domain',
+        "apply_promotion"                => 'sometimes|url|custom:non_rzp_domain',
         "cod_slabs"                      => 'sometimes|array',
         "shipping_slabs"                 => 'sometimes|array',
         "cod_intelligence"               => 'sometimes|boolean',
@@ -32,4 +35,15 @@ class Validator extends Base\Validator
         "one_cc_capture_billing_address" => 'sometimes|boolean',
         "domain_url"                     => 'sometimes|url',
     ];
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateNonRzpDomain($attribute, $url)
+    {
+        if (DomainUtils::verifyNonRZPDomain($url) === false)
+        {
+            throw new BadRequestValidationFailureException(self::RZP_DOMAIN_URL_VALIDATION_MESSAGE);
+        }
+    }
 }
