@@ -50,6 +50,7 @@ module.exports = {
     __CONFIG__: false,
     __APP_NAME__: false,
     __webpack_public_path__: true,
+    d3: 'readonly',
   },
   overrides: [
     {

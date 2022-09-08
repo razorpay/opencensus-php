@@ -9,6 +9,7 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 export const QR_CODE_CREATE = 'QR_CODE_CREATE';
 export const QR_CODE_UPDATE = 'QR_CODE_UPDATE';
+export const UPI_QR_CODE_CREATE = 'UPI_QR_CODE_CREATE';
 
 export const fetchQRCodes = (params) => {
   const { type, payload } = fetchAll(decodeSensitiveFields(params), QRCode, 'QR_CODES');
@@ -44,6 +45,17 @@ export const saveQRCode = (payload) => {
   };
 };
 
+export const saveUPIQRCode = (payload) => {
+  return {
+    type: UPI_QR_CODE_CREATE,
+    payload: merchantFetch({
+      url: 'virtual_accounts',
+      method: 'post',
+      data: payload,
+    }),
+  };
+};
+
 export const closeQR = (id) => {
   return {
     type: QR_CODE_UPDATE,
@@ -56,6 +68,25 @@ export const closeQR = (id) => {
 
 export default makeActionCollectionReducer('QR_CODES', {
   [`${QR_CODE_CREATE}::SUCCESS`]: (state, action) => {
+    return merge(state, {
+      ...state,
+      items: [action.payload.data, ...state.items],
+    });
+  },
+
+  [`${UPI_QR_CODE_CREATE}::SUCCESS`]: (state, action) => {
+    const newItem = { ...action.payload.data };
+    const receiver = newItem?.receivers?.[0];
+    const requiredData = {
+      image_url: receiver?.short_url,
+      payment_amount: newItem?.amount_expected,
+      payments_amount_received: newItem?.amount_paid,
+      type: receiver?.type || 'upi_qr',
+      usage: receiver?.usage_type,
+      entity: receiver?.entity,
+      id: receiver?.id,
+    };
+    action.payload.data = { ...newItem, ...requiredData };
     return merge(state, {
       ...state,
       items: [action.payload.data, ...state.items],

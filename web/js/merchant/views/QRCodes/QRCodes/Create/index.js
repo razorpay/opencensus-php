@@ -7,38 +7,115 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 import { classList } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { saveQRCode } from 'merchant/reducers/qrCodes/list';
+import { saveQRCode, saveUPIQRCode } from 'merchant/reducers/qrCodes/list';
 import { luminateRow } from 'merchant/reducers/app';
 import QRCodePreviewModal from '../components/QRPreviewModal';
 import Form from './Form';
 import track from './track';
+import { fetchFeatureStatus } from 'merchant/reducers/config';
 
 @withRouter
-@connect(null, {
-  luminateRow,
-  showNotification,
-  saveQRCode,
-  ...ModalActions,
-})
+@connect(
+  (state) => {
+    return {
+      user: state.session.user,
+    };
+  },
+  {
+    luminateRow,
+    showNotification,
+    saveQRCode,
+    saveUPIQRCode,
+    fetchFeatureStatus,
+    ...ModalActions,
+  },
+)
 @RTracking(() => window.rzpQ.component('CreateQRCode'))
 export default class CreateQRCode extends React.Component {
+  state = {
+    isUpiqr: false,
+  };
   isModalView = !!this.props.onClose;
 
   UNSAFE_componentWillMount() {
     track.init({
       track: this.props.tracking.trackEvent,
     });
+    // check upiqr_v1_hdfc MID feature
+    this.fetchFeatureFlagStatus('upiqr_v1_hdfc', 'isUpiqr');
   }
 
-  onSubmit = (reqPayload) => {
-    track.submit();
+  fetchFeatureFlagStatus = (flag, state) => {
+    const { fetchFeatureStatus, user, showNotification } = this.props;
+    fetchFeatureStatus(user?.id, flag)
+      .then((response) => {
+        if (response?.success) {
+          this.setState((prevState) => ({
+            ...prevState,
+            [state]: response?.data?.status,
+          }));
+        }
+      })
+      .catch(({ errors }) => {
+        showNotification({
+          type: 'error',
+          message: `${errors?.join(' ')}`,
+        });
+      });
+  };
 
-    return this.props
-      .saveQRCode(reqPayload)
+  onSubmit = (reqPayload) => {
+    const { isUpiqr } = this.state;
+    track.submit();
+    if (isUpiqr) {
+      return this.onSaveUPIQRCode(reqPayload);
+    } else {
+      return this.onSaveQRCode(reqPayload);
+    }
+  };
+
+  onSaveUPIQRCode = (reqPayload) => {
+    const { saveUPIQRCode, showNotification } = this.props;
+    reqPayload.receivers = {
+      types: ['qr_code'],
+      qr_code: {
+        method: {
+          card: false,
+          upi: true,
+        },
+      },
+    };
+    if (reqPayload.fixed_amount) {
+      reqPayload.amount_expected = reqPayload.payment_amount;
+    }
+    delete reqPayload.type;
+    delete reqPayload.fixed_amount;
+    delete reqPayload.payment_amount;
+    return saveUPIQRCode(reqPayload)
+      .then((resp) => {
+        this.showPreview(resp.data);
+        showNotification({
+          type: 'success',
+          message: 'QR code successfully created.',
+        });
+        track.submitSuccess(reqPayload);
+      })
+      .catch(({ errors }) => {
+        showNotification({
+          type: 'error',
+          message: `${errors?.join(' ')}`,
+        });
+        track.submitFail(errors?.[0]);
+      });
+  };
+
+  onSaveQRCode = (reqPayload) => {
+    const { saveQRCode, showNotification } = this.props;
+    return saveQRCode(reqPayload)
       .then((resp) => {
         this.showPreview(resp.data);
 
-        this.props.showNotification({
+        showNotification({
           type: 'success',
           message: 'QR code successfully created.',
         });
@@ -46,29 +123,27 @@ export default class CreateQRCode extends React.Component {
         track.submitSuccess(reqPayload);
       })
       .catch(({ errors }) => {
-        const error = (errors || [])[0];
-
-        this.props.showNotification({
+        showNotification({
           type: 'error',
-          message: error,
+          message: `${errors.join(' ')}`,
         });
-
-        track.submitFail(error);
+        track.submitFail(errors?.[0]);
       });
   };
 
   showPreview = ({ id, image_url }) => {
-    this.props.openModal({
+    const { openModal, closeModal, history } = this.props;
+    openModal({
       size: 'medium',
       className: 'QRCode--Preview',
       disableClose: true,
       component: (
         <QRCodePreviewModal
           id={id}
-          history={this.props.history}
+          history={history}
           previewImg={image_url}
           closeModal={() => {
-            this.props.closeModal();
+            closeModal();
 
             track.backToDashboard();
           }}
@@ -85,21 +160,25 @@ export default class CreateQRCode extends React.Component {
   };
 
   render() {
+    const { history } = this.props;
     const content = (
       <Form
         isModalView={this.isModalView}
         onClose={this.onClose}
         onSubmit={this.onSubmit}
-        history={this.props.history}
+        history={history}
       />
     );
 
     return this.isModalView ? (
-      <Modal class={classList('QRCode--Create', content && 'animate-down')} showCloseBtn={false}>
+      <Modal
+        className={classList('QRCode--Create', content && 'animate-down')}
+        showCloseBtn={false}
+      >
         <ModalContent>{content}</ModalContent>
       </Modal>
     ) : (
-      <div class="StandAloneContainer">{content}</div>
+      <div className="StandAloneContainer">{content}</div>
     );
   }
 }

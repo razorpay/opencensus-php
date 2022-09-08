@@ -121,7 +121,7 @@ export default class Treemap extends Component {
     if (data !== nextProps.data) {
       return this.renderTreemap(nextProps.data, nextProps.isCurrency);
     } else if (!this.isNewData && currentLevel && nextProps.currentLevel !== currentLevel) {
-      this.treemapApi.transition(nextProps.currentLevel);
+      return this.treemapApi.transition(nextProps.currentLevel);
     }
   }
 
