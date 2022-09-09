@@ -286,10 +286,12 @@ class Repository extends Base\Repository
                 $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
                 $bankingAccountIdForeignColumn = $this->repo->banking_account_state->dbColumn(State\Entity::BANKING_ACCOUNT_ID);
                 $bankingAccountStateStatusColumn = $this->repo->banking_account_state->dbColumn(State\Entity::STATUS);
+                $bankingAccountStateSubStatusColumn = $this->repo->banking_account_state->dbColumn(State\Entity::SUB_STATUS);
 
                 $q2->from($bankingAccountStateTable)
                     ->whereRaw($bankingAccountIdColumn.' = '.$bankingAccountIdForeignColumn)
                     ->where($bankingAccountStateStatusColumn, '=', Status::INITIATED)
+                    ->whereNull($bankingAccountStateSubStatusColumn)
                     ->latest(State\Entity::CREATED_AT)
                     ->limit(1);
 
@@ -485,6 +487,7 @@ class Repository extends Base\Repository
         $subquery = DB::table($bankingAccountState)
                 ->select($bankingAccountId, DB::raw('max(created_at) as sent_to_bank_date'))
                 ->where(State\Entity::STATUS, '=', Status::INITIATED)
+                ->whereNull(State\Entity::SUB_STATUS)
                 ->groupBy($bankingAccountId);
 
         $query->joinSub($subquery, $bankingAccountState, function($join)

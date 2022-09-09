@@ -8064,6 +8064,15 @@ class BankingAccountTest extends TestCase
 
         $state_timestamp = $this->getDbLastEntity('banking_account_state');
 
+        sleep(3);
+
+        // Attach Sub-merchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::INITIATED,
+            null, Status::BANK_PICKED_UP_DOCS,
+            null, null,
+            $response);
+
         $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
 
         $this->ba->addXBankLMSOriginHeader();
@@ -8109,9 +8118,7 @@ class BankingAccountTest extends TestCase
             null, null,
             null, null,
             $response);
-
-        $state_timestamp = $this->getDbLastEntity('banking_account_state');
-
+            
         sleep(3);
 
         // Attach Sub-merchant to RBl Merchant
@@ -8120,6 +8127,8 @@ class BankingAccountTest extends TestCase
             null, Status::BANK_PICKED_UP_DOCS,
             null, null,
             $response);
+
+        $state_timestamp = $this->getDbLastEntity('banking_account_state');
 
         $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
 
