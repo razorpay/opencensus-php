@@ -22,7 +22,7 @@ class Constants
     const NAME                          = 'name';
     const EMAIL                         = 'email';
     const INTERNAL_ACTOR_NAME           = 'internalsystem';
-    const PAYOUTS_APPROVAL_CONFIG_TYPE  = 'payouts-approval';
+    const PAYOUT_APPROVAL_CONFIG_TYPE   = 'payout-approval';
 
     const WORKFLOW_ID           = 'workflow_id';
     const STATUS                = 'status';

@@ -52,7 +52,7 @@ class Core extends Base\Core
         // Duplicating code, since the old flow will be removed in future
         // todo: Remove this comment post removal of old flow
 
-        $config_type = Constants::PAYOUTS_APPROVAL_CONFIG_TYPE;
+        $config_type = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
 
         // config type will be passed from Admin dashboard for ICICI config
         if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
@@ -71,7 +71,7 @@ class Core extends Base\Core
 
     public function updateWorkflowConfig(array $input): array
     {
-        $config_type = Constants::PAYOUTS_APPROVAL_CONFIG_TYPE;
+        $config_type = Constants::PAYOUT_APPROVAL_CONFIG_TYPE;
 
         // config type will be passed from Admin dashboard for ICICI config
         if (array_key_exists(Constants::CONFIG_TYPE, $input) === true && is_null($input[Constants::CONFIG_TYPE]) == false)
