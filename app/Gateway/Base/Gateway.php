@@ -1984,6 +1984,10 @@ class Gateway
                 $data = ['method' => $method];
             }
 
+            if(isset($response['meta_data']) === true) {
+                $data = array_merge($response['meta_data'], $data);
+            }
+
             throw new Exception\GatewayErrorException(
                 $response['error']['internal_error_code'] ?? 'BAD_REQUEST_PAYMENT_FAILED',
                 $response['error']['gateway_error_code'] ?? 'gateway_error_code',

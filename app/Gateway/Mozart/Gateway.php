@@ -99,7 +99,21 @@ class Gateway extends Base\Gateway
                 'response' => $traceRes,
             ]);
 
-        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+        if ($response['success'] !== true and $input['method'] === Payment\Gateway::PAYLATER and
+            ($input['provider'] === Payment\Processor\PayLater::ICICI or $input['provider'] === Payment\Processor\PayLater::GETSIMPL))
+        {
+            $meta_data = [];
+
+            if(array_key_exists('order_id', $input))
+            {
+                $meta_data['order_id'] = $input['order_id'];
+            }
+            $meta_data['payment_id'] = $input['payment']['id'];
+
+            $response['meta_data'] = $meta_data;
+        }
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response, null);
 
         $attributes = $this->getMappedAttributes($response);
 

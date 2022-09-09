@@ -1090,10 +1090,24 @@ class Validator extends Base\Validator
                 'business_type' => $this->entity->merchant->merchantDetail->getBusinessType() ?? '',
             ]);
 
+            $meta_data = [];
+
+            if (($method === Payment\Method::PAYLATER) and (isset($input[Entity::PROVIDER]) and
+                    (($input[Entity::PROVIDER] === Payment\Processor\PayLater::ICICI ) or
+                        ($input[Entity::PROVIDER] === Payment\Processor\PayLater::GETSIMPL)))) {
+
+                if(array_key_exists('order_id', $input))
+                {
+                    $meta_data['order_id'] = $input['order_id'];
+                }
+            }
+
+            $meta_data['amount'] = $amount;
+
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
                 'amount',
-                ['amount' => $amount]);
+                $meta_data);
         }
         // check for min amount >1 Rupee for non-inr
         if ( $currency != Currency::INR && ($baseAmount < 100) === true)
