@@ -127,8 +127,8 @@ class UserController extends Controller
                 if ($this->redirectionApplicableForGuest() === true)
                 {
                     $redirectPath = env('EASY_DASHBOARD_URL') . \Request::getRequestUri();
-
-                    $redirectPath = preg_replace('/signup/', 'onboarding', $redirectPath);
+                    $redirectPath = preg_replace('/\?/', '&', $redirectPath); // because we are adding a new query param at the begining 
+                    $redirectPath = preg_replace('/signup/', 'onboarding?source=website', $redirectPath);
 
                     return redirect($redirectPath);
                 }
