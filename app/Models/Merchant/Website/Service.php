@@ -266,6 +266,11 @@ class Service extends Base\Service
             //run experiment from every flow except for admin dashboard
             if ($admin === false)
             {
+                if ($merchant->isBusinessBankingEnabled() === true)
+                {
+                    return false;
+                }
+
                 try
 
                 {
@@ -313,12 +318,6 @@ class Service extends Base\Service
 
             if ($result === true)
             {
-
-                if ($merchant->isBusinessBankingEnabled() === true)
-                {
-                    return false;
-                }
-
                 if (empty($merchant->merchantDetail->getAttribute(
                         DEntity::BUSINESS_WEBSITE)) === false)
                 {
