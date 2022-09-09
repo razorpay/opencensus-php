@@ -1128,6 +1128,8 @@ class UserRolesScope
             '1cc_disable_magic'                                   => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_list'                  => [Role::OWNER, Role::ADMIN],
+            '1cc_merchant_file_upload_audit_create'               => [Role::OWNER, Role::ADMIN],
+            '1cc_merchant_file_upload_audit_list'                 => [Role::OWNER, Role::ADMIN],
             '1cc_rto_dashboard_list'                              => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_upsert_bulk'           => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_delete'                => [Role::OWNER, Role::ADMIN],

@@ -3764,6 +3764,9 @@ class Route
         '1cc_cod_eligibility_attribute_delete'              => ['delete', '1cc/rto_prediction_service/cod_eligibility_attribute/{id}',        'CODEligibilityAttributeController@delete'     ],
         '1cc_cod_eligibility_attribute_delete_by_attribute' => ['delete',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/{attribute_type}/{attribute_value}',        'CODEligibilityAttributeController@deleteByAttribute'     ],
 
+        '1cc_merchant_file_upload_audit_create'        => ['post', '1cc/rto_prediction_service/file_upload_audits/create', 'RtoMerchantFileUploadAuditsController@createFileUploadAudit'],
+        '1cc_merchant_file_upload_audit_list'          => ['get', '1cc/rto_prediction_service/file_upload_audits/list', 'RtoMerchantFileUploadAuditsController@listFileUploadAudits'],
+
         '1cc_rto_dashboard_list'                     => ['post',   '1cc/rto_prediction_service/dashboard', 'RtoDashboardController@list' ],
 
         // 1 click checkout shopify integration
@@ -6126,6 +6129,8 @@ class Route
         '1cc_cod_eligibility_attribute_delete_by_attribute',
         '1cc_cod_eligibility_attribute_upsert_batch',
         '1cc_rto_dashboard_list',
+        '1cc_merchant_file_upload_audit_create',
+        '1cc_merchant_file_upload_audit_list',
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -10669,6 +10674,8 @@ class Route
             'country_fetch',
             'state_fetch',
             '1cc_rto_dashboard_list',
+            '1cc_merchant_file_upload_audit_create',
+            '1cc_merchant_file_upload_audit_list',
 
             'growth_get_public_asset_details',
 
