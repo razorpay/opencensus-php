@@ -51,7 +51,4 @@ export const status = {
     }),
 };
 
-export const fileName = {
-  title: 'File Name',
-  value: (item) => (item.name.length > 20 ? `${item.name.substring(0, 20)}...` : item.name),
-};
+export const fileName = { title: 'File Name', value: (item) => item.name };

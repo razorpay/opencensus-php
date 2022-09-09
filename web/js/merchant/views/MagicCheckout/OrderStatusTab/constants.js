@@ -4,5 +4,3 @@ export const BATCH_STATUS = {
   FAILED: 'failed',
   CANCELLED: 'cancelled',
 };
-
-export const LIMIT = '1 million';

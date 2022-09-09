@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DataTable from 'common/ui/Table/DataTable';
@@ -10,7 +11,10 @@ import {
   actions,
   fileName,
 } from 'merchant/views/MagicCheckout/OrderStatusTab/components/cellItem';
-import { createOrderStatusBatch } from 'merchant/reducers/magicCheckout/bulk_order_statuses';
+import {
+  fetchAllOrderStatusBatches,
+  createOrderStatusBatch,
+} from 'merchant/reducers/magicCheckout/bulk_order_statuses';
 import { batchDownload } from 'merchant/reducers/batches';
 import { batchId } from 'common/ui/item/pair';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -18,7 +22,13 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 const DEFAULT_ERROR_MESSAGE = 'Something went wrong. Please try again later.';
 
 const BatchListContainer = (props) => {
-  const { sampleUrl, items, maxRows } = props;
+  const { sampleUrl, fetchAll, loading, items } = props;
+
+  useEffect(() => {
+    if (fetchAll) {
+      fetchAll();
+    }
+  }, [fetchAll]);
 
   const onBatchDownloadClick = (id) => () => {
     props
@@ -38,8 +48,8 @@ const BatchListContainer = (props) => {
 
   return (
     <>
-      {!items.length ? (
-        <EmptyComponent sampleUrl={sampleUrl} maxRows={maxRows} />
+      {!loading && !items.length ? (
+        <EmptyComponent sampleUrl={sampleUrl} />
       ) : (
         <DataTable
           title="Batch Uploads"
@@ -52,7 +62,6 @@ const BatchListContainer = (props) => {
             status,
             actions({ onClick: onBatchDownloadClick }),
           ]}
-          customClass="delivery-status-table"
           {...props}
         />
       )}
@@ -61,12 +70,13 @@ const BatchListContainer = (props) => {
 };
 
 const mapStateToProps = (state) => {
-  return { mode: state.session.mode, user: state.session.user };
+  return { mode: state.session.mode, user: state.session.user, ...state.orderStatusBatches };
 };
 
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
+      fetchAll: fetchAllOrderStatusBatches,
       createOrderStatusBatch,
       batchDownload,
       ...NotificationsActions,

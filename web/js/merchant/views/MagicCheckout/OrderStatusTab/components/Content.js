@@ -18,6 +18,9 @@ export const validateModalInfo = (maxRows, sampleUrl) => (
   </div>
 );
 
-export const EmptyComponent = ({ sampleUrl, maxRows }) => (
-  <div className="magic-empty-batch-list">{validateModalInfo(maxRows, sampleUrl)}</div>
+export const EmptyComponent = ({ sampleUrl }) => (
+  <div className="magic-empty-batch-list">
+    <h4>Bulk Upload Delivery Statuses</h4>
+    {validateModalInfo('1M', sampleUrl)}
+  </div>
 );
