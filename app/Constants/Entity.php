@@ -713,11 +713,14 @@ class Entity
     const TOKENISED                 = 'tokenised';
 
     // Ledger
-    const JOURNAL           = 'journal';
-    const LEDGER_ENTRY      = 'ledger_entry';
-    const ACCOUNT_DETAIL    = 'account_detail';
-    const LEDGER_ACCOUNT    = 'ledger_account';
-    const LEDGER_STATEMENT  = 'ledger_statement';
+    const JOURNAL               = 'journal';
+    const LEDGER_ENTRY          = 'ledger_entry';
+    const ACCOUNT_DETAIL        = 'account_detail';
+    const LEDGER_ACCOUNT        = 'ledger_account';
+    const LEDGER_STATEMENT      = 'ledger_statement';
+    const FTS_FUND_ACCOUNT_ID   = 'fts_fund_account_id';
+    const FTS_ACCOUNT_TYPE      = 'fts_account_type';
+    const FTS_STATUS            = 'fts_status';
 
     const MERCHANT_1CC_AUTH_CONFIGS    = 'merchant_1cc_auth_configs';
     const DIRECT_ACCOUNT_STATEMENT = 'direct_account_statement';
