@@ -1,0 +1,223 @@
+.delivery-status-container,
+.rto-history-container
+  padding: 20px
+
+  .tab-header
+    margin-bottom: 30px
+
+    .heading
+      font-size: 16px
+      font-weight: 700
+      color: #262D3A
+      line-height: 20px
+
+    .upload-cta
+      .i-plus
+        margin-right: 4px
+
+    .sub-text
+      margin-top: 8px
+      line-height: 20px
+      color: #162F56BD
+      text-align: start
+
+  .magic-empty-batch-list
+    .modal-info > .validate-modal-ul
+      padding-left: 12px
+
+.nav-container
+  width: 100%
+  min-height: 400px
+  position: relative
+  background-color: #FFF
+
+  .nav-sidebar
+    background-color: #F3F4F6
+    border: 1px solid #E0E8F4
+    border-top-width: 0
+    border-bottom-width: 0
+    padding-top: 10px
+    width: 175px
+
+    .nav-item
+      background-color: transparent
+      border-left: 4px solid transparent
+      padding: 12px 16px
+      line-height: 32px
+      cursor: pointer
+      margin-bottom: 4px
+      color: #999
+      font-weight: bold
+      font-size: 14px
+
+      &.active
+        background-color: #FFF
+        border-color: #528FF0
+        color: #528FF0
+        font-weight: 600
+        border-right: 1px solid #FFF
+
+  .tab-content
+    width: 100%
+
+    .content-loader
+      min-height: 400px
+      display: flex
+      justify-content: center
+      align-items: center
+
+.table.delivery-status-table
+  th
+    max-width: fit-content
+
+  td
+    max-width: fit-content
+
+.table.rto-history-table
+  th
+    &:last-child
+      text-align: end
+
+  td
+    width: 30%
+
+    &:last-child
+      text-align: end
+      width: 10%
+
+      .status-label
+        display: inline-block
+        font-size: 12px
+        padding-top: 5px
+        padding-bottom: 5px
+        border-radius: 20px
+        background-color: #5EBE5B
+        color: #FFF
+        text-align: center
+        font-weight: 700
+        line-height: 1
+
+.delivery-status-upload
+  .modal-header
+    color: #162F56DE
+
+  .modal-body
+    .modal-heading
+      margin: 14px 0
+      color: #162F56DE
+      text-align: start
+      text-transform: lowercase
+
+      &::first-line
+        text-transform: capitalize
+
+    .modal-file
+      margin: 0
+      width: 100%
+
+    .modal-info > .validate-modal-ul
+      padding-left: 12px
+
+.rto-history-upload
+  .modal-header
+    color: #162F56DE
+
+  .validate-body
+    display: flex
+    flex-direction: column-reverse
+
+    .modal-body
+      padding: 14px 24px 24px
+
+      .modal-heading
+        margin: 14px 0
+        color: #162F56DE
+        text-align: start
+        text-transform: lowercase
+
+        &::first-line
+          text-transform: capitalize
+
+      .modal-file
+        margin: 0
+        width: 100%
+
+        .notification
+          text-align: start
+          margin: 14px 0
+          font-size: 12px
+          color: #162F5694
+
+        .i-info-circle
+          display: none
+
+      .modal-info > .validate-modal-ul
+        padding-left: 12px
+
+    .input-selector
+      display: flex
+      align-items: center
+      margin: 32px 0 0 24px
+
+      .control-label
+        color: #162F56DE
+        margin-right: 24px
+        font-weight: 600
+        font-size: 14px
+
+      .modal-select
+        border: 1px solid #162F561A
+        padding: 6px 12px
+        width: 204px
+        height: 38px
+
+        .Input
+          margin: 0
+          position: relative
+          top: -6px
+
+        .Input-el
+          border: none
+          padding: 0
+
+        .form-control
+          border: none
+          padding: 0
+          height: initial
+
+      .error
+        border: 1px solid #EE6D69
+
+    .field-msg
+      color: #EE6D69
+      padding: 5px 0
+      margin-left: 160px
+
+    .hide-msg
+      display: none
+
+  .modal-actions
+    display: flex
+    justify-content: end
+    padding: 15px 24px
+    background-color: #528FF01A
+
+    .Button
+      margin-right: 0
+
+    .cancel-cta
+      border: 1px solid #0B70E7BD
+      background-color: #0B70E70D
+      color: #0B70E7BD
+      margin-right: 30px
+      font-weight: 700
+
+    .confirm-cta
+      font-weight: 700
+
+    .disable
+      background-color: #A2C9F6
+
+.ReactModal__Content.rto-history-upload-modal
+  width: 600px
+  transform: translateY(-20px)

@@ -41,9 +41,12 @@ class BatchValidateModal extends Component {
       batchClass,
       acceptFileInfo,
       accept,
+      disabled,
       onDocumentClick = () => {},
       onError = () => {},
       onSuccess = () => {},
+      isDragDropDisabled,
+      hideCloseBtn,
     } = this.props;
 
     let { batchTypeText = '' } = this.props;
@@ -68,12 +71,14 @@ class BatchValidateModal extends Component {
             stagedFileStatus={stagedFileStatus}
             uploadedBytes={fileUploadProgress}
             files={files}
-            showCloseBtn={true}
+            showCloseBtn={!hideCloseBtn}
             batchType={batchType}
             showStagedFileStatus
             showFileSize={false}
             onError={onError}
             onSuccess={onSuccess}
+            disabled={disabled}
+            isDragDropDisabled={isDragDropDisabled}
           />
           {notifyMsg && (
             <h5 className={`notification ${status}`}>

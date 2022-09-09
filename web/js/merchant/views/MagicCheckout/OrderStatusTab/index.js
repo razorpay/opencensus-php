@@ -1,17 +1,18 @@
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
-import HeaderAction from 'common/ui/HeaderAction';
 import OrderStatusList from 'merchant/views/MagicCheckout/OrderStatusTab/containers/List';
 import { validateModalInfo } from 'merchant/views/MagicCheckout/OrderStatusTab/components/Content';
 
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import Spinner from 'common/ui/Spinner';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import {
+  fetchAllOrderStatusBatches,
   createOrderStatusBatch,
   validateOrderStatusBatch,
 } from 'merchant/reducers/magicCheckout/bulk_order_statuses';
-
+import { LIMIT } from 'merchant/views/MagicCheckout/OrderStatusTab/constants';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
 const gaEvents = setGaTrack('Dashboard - Magic Checkout - BU - Order Status');
@@ -21,10 +22,11 @@ const SAMPLE_BATCH_UPLOAD_FILE =
 const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
   openModal({
     size: 'large',
+    className: 'delivery-status-upload',
     component: (
       <BatchUpload
         sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}
-        closeUrl="/magic/delivery-status"
+        closeUrl="/magic/order-status"
         ctaText="Create Batch"
         title="Upload Delivery Statuses"
         pendingText="Creating & Sending..."
@@ -33,30 +35,51 @@ const openBatchUploadModal = (createBatch, validateBatch, openModal) => {
         createBatch={createBatch}
         validateBatch={validateBatch}
         gaEvents={gaEvents}
-        validateModalInfo={validateModalInfo('1 million', SAMPLE_BATCH_UPLOAD_FILE)}
+        validateModalInfo={validateModalInfo(LIMIT, SAMPLE_BATCH_UPLOAD_FILE)}
         maxFileSize={52428800} // 50MB
       />
     ),
   });
 };
 
-const OrderStatuses = ({ openModal, createBatch, validateBatch }) => {
+const OrderStatuses = ({ openModal, createBatch, validateBatch, fetchAll, orderStatusData }) => {
+  const { loading, items, error } = orderStatusData;
+
+  useEffect(() => {
+    if (fetchAll) fetchAll();
+  }, [fetchAll]);
+
   const onUploadClick = useCallback(() => {
     openBatchUploadModal(createBatch, validateBatch, openModal);
   }, [createBatch, validateBatch, openModal]);
-  return (
-    <div className="content-wrapper">
-      <HeaderAction responsive>
-        <div className="pull-right MultiBatch--action">
+  return loading ? (
+    <div className="content-loader">
+      <Spinner />
+    </div>
+  ) : (
+    <div className="delivery-status-container content-wrapper">
+      <div className="tab-header">
+        <span className="heading">Delivery Statuses</span>
+        <span className="pull-right upload-cta">
           <button className="btn btn-primary" onClick={onUploadClick}>
-            Upload Delivery Status File
+            <i className="i i-plus" />
+            Upload Delivery Statuses
           </button>
-        </div>
-      </HeaderAction>
-      <OrderStatusList sampleUrl={SAMPLE_BATCH_UPLOAD_FILE} />
+        </span>
+      </div>
+      <OrderStatusList
+        sampleUrl={SAMPLE_BATCH_UPLOAD_FILE}
+        maxRows={LIMIT}
+        items={items}
+        error={error}
+      />
     </div>
   );
 };
+
+const mapStateToProps = (state) => ({
+  orderStatusData: state.orderStatusBatches,
+});
 
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
@@ -64,8 +87,9 @@ const mapDispatchToProps = (dispatch) =>
       ...ModalActions,
       createBatch: createOrderStatusBatch,
       validateBatch: validateOrderStatusBatch,
+      fetchAll: fetchAllOrderStatusBatches,
     },
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(OrderStatuses);
+export default connect(mapStateToProps, mapDispatchToProps)(OrderStatuses);

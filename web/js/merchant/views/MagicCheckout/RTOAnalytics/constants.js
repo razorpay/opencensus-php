@@ -48,7 +48,7 @@ export const FEEDBACKRATE_INFO_TEXTS = {
   incomplete: (
     <p>
       RTO insights depends on data shared by you.{' '}
-      <NavLink className="feedbackRate-links" to="/magic/delivery-status">
+      <NavLink className="feedbackRate-links" to="/magic/order-status">
         Upload your data
       </NavLink>{' '}
       now or directly integrate a{' '}

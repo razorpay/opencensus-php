@@ -12,6 +12,8 @@ const notificationMsgs = {
   exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
 };
 
+const REMOVE_EXTENSION_REGEX = /\.[^/.]+$/;
+
 class BatchValidate extends Component {
   state = {
     status: null,
@@ -20,19 +22,27 @@ class BatchValidate extends Component {
     stagedFileStatus: null,
   };
 
+  getMsg = (status) => {
+    const { displayMsgs } = this.props;
+    return displayMsgs ? displayMsgs[status] : notificationMsgs[status];
+  };
+
+  getErrorMsg = (errorMsg, status) => {
+    return errorMsg ? `${errorMsg}. ${this.getMsg(status)}` : `${this.getMsg(status)}`;
+  };
+
   changeBatchState = (status = null, errorMsg = null, fileUrl = null) => {
-    const newState = {};
-    newState.status = status;
-    newState.stagedFileStatus = status;
-    newState.notifyMsg = status
-      ? (errorMsg ? `${errorMsg}. ` : '') + notificationMsgs[status]
-      : null;
+    const newState = {
+      status,
+      stagedFileStatus: status,
+      fileUrl,
+    };
+    newState.notifyMsg = status ? this.getErrorMsg(errorMsg, status) : null;
     // handle server error 500 message
     if (newState.notifyMsg && newState.notifyMsg.indexOf('Server error response') > -1) {
       newState.notifyMsg =
         'There was an error while processing the file. Please try again after some time.';
     }
-    newState.fileUrl = fileUrl;
     this.setState(newState);
   };
 
@@ -44,8 +54,10 @@ class BatchValidate extends Component {
       secondsSinceStart++;
     }, 1000);
 
-    return this.props
-      .validateBatch(file, progressTracker)
+    const { validateBatch, gaEvents, processFile, onValidation, onValidationFail } = this.props;
+    const status = processFile ? 'validate' : 'create';
+
+    return validateBatch(file, progressTracker)
       .then((response) => {
         clearInterval(t);
         if (response.data.error_count) {
@@ -54,23 +66,24 @@ class BatchValidate extends Component {
             'Some fields have invalid entries',
             response.data.signed_url,
           );
-          this.props.gaEvents.trackUploadBatchFile(
+          gaEvents?.trackUploadBatchFile(
             'error',
             'Some fields have invalid entries',
             secondsSinceStart,
           );
         } else {
           this.changeBatchState('success');
-          this.props.gaEvents.trackUploadBatchFile('success', undefined, secondsSinceStart);
-          this.props.onValidation(response.data, file.name.replace(/\.[^/.]+$/, ''));
+          gaEvents?.trackUploadBatchFile('success', undefined, secondsSinceStart);
+          onValidation(response.data, file.name.replace(REMOVE_EXTENSION_REGEX, ''), status);
         }
         return response;
       })
       .catch((error) => {
-        this.changeBatchState('error', error.errors[0] ?? '');
-        if (this.props.onValidationFail) this.props.onValidationFail(error.errors[0] ?? '');
+        const errorMsg = error.errors[0] ?? '';
+        this.changeBatchState('error', errorMsg);
+        if (onValidationFail) onValidationFail(errorMsg);
         clearInterval(t);
-        this.props.gaEvents.trackUploadBatchFile('error', error.errors[0] ?? '', secondsSinceStart);
+        gaEvents?.trackUploadBatchFile('error', errorMsg, secondsSinceStart);
         return error;
       });
   };
@@ -80,7 +93,7 @@ class BatchValidate extends Component {
   };
 
   handleErrorReportDownload = () => {
-    this.props.gaEvents.trackDownloadErrorReport();
+    this.props.gaEvents?.trackDownloadErrorReport();
   };
 
   handleCloseClick = () => {
@@ -89,9 +102,10 @@ class BatchValidate extends Component {
   };
 
   onSampleFileDownload = () => {
-    this.props.gaEvents.trackSampleFileDownload('From New Modal');
-    if (this.props.sampleFileDownloadAnalytics) {
-      this.props.sampleFileDownloadAnalytics();
+    const { gaEvents, sampleFileDownloadAnalytics } = this.props;
+    gaEvents?.trackSampleFileDownload('From New Modal');
+    if (sampleFileDownloadAnalytics) {
+      sampleFileDownloadAnalytics();
     }
   };
 
@@ -102,22 +116,25 @@ class BatchValidate extends Component {
   };
 
   render() {
-    const { component } = this.props;
+    const { component, modalActions } = this.props;
     const { status } = this.state;
     return (
       <>
-        <BatchValidateModal
-          onLoadMore={this.handleLoadMore}
-          onFileChange={this.handleBatchValidation}
-          onBiggerFileSize={this.handleBiggerFileSize}
-          onCloseClick={this.handleCloseClick}
-          onSampleFileDownload={this.onSampleFileDownload}
-          onErrorReportDownload={this.handleErrorReportDownload}
-          onClickUpload={this.onClickUpload}
-          {...this.state}
-          {...this.props}
-        />
-        {!status ? component : null}
+        <div className="validate-body">
+          <BatchValidateModal
+            onLoadMore={this.handleLoadMore}
+            onFileChange={this.handleBatchValidation}
+            onBiggerFileSize={this.handleBiggerFileSize}
+            onCloseClick={this.handleCloseClick}
+            onSampleFileDownload={this.onSampleFileDownload}
+            onErrorReportDownload={this.handleErrorReportDownload}
+            onClickUpload={this.onClickUpload}
+            {...this.state}
+            {...this.props}
+          />
+          {!status && component}
+        </div>
+        {modalActions ?? null}
       </>
     );
   }
