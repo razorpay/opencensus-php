@@ -1094,7 +1094,7 @@ return [
         'client_id'     => env('SALESFORCE_CONVERGE_CLIENT_ID'),
         'client_secret' => env('SALESFORCE_CONVERGE_CLIENT_SECRET'),
         // to add internalApp Auth which uses secret field to determine whether It is Internal Auth
-        //'secret'        => env('SALESFORCE_CONVERGE_SECRET'),
+        'secret'        => env('SALESFORCE_CONVERGE_SECRET'),
     ],
 
     'terminals_service' => [

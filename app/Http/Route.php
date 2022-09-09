@@ -363,6 +363,7 @@ class Route
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fire_hubspot_event'              => ['post',     'merchants/fire_hubspot_event',                   'MerchantController@fireHubspotEventFromDashboard'                  ],
         'merchant_create_lead_to_salesforce'       => ['post',     'merchants/lead_to_salesforce',                   'MerchantController@createSalesforceLeadFromDashboard'              ],
+        'salesforce_converge_get_merchant_details' => ['get',      'merchants/{id}/sf_converge_get_merchant_details','MerchantController@getMerchantDetailsForSFConverge'               ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
@@ -4438,6 +4439,7 @@ class Route
         'merchant_la_fetch',
         'collect_info_merchant_details_internal',
         'generate_gifu_file',
+        'salesforce_converge_get_merchant_details',
         'generate_nium_settlement_file',
         'merchant_settlements_events_cron',
         'create_test_payouts_for_downtime_detection_icici',
@@ -12813,6 +12815,10 @@ class Route
             'banking_account_create_salesforce',
             'banking_account_get_salesforce',
             'bas_internal_salesforce',
+        ],
+
+        'salesforce_converge' => [
+            'salesforce_converge_get_merchant_details',
         ],
 
         'mock_gateways' => [

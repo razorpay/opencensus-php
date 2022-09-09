@@ -9045,6 +9045,23 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function getMerchantDetailsForSFConverge(string $mid): array
+    {
+        //$this->app['rzp.mode'] = Mode::LIVE;
+        //$this->core()->setModeAndDefaultConnection(Mode::LIVE);
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+        if($merchant !== null){
+            $this->merchant = $merchant;
+            $this->auth->setMerchant($merchant);
+        }
+
+        $data = $this->getMerchantDetails();
+        $data['pricing_details'] = $this->getPricingPlan($mid);
+        $data['documents'] = (new Document\Service())->fetchActivationFilesFromDocument($mid);
+
+        return $data;
+    }
+
     public function getPurposeCodeDetails(): array
     {
         $data = [];

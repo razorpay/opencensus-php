@@ -2883,6 +2883,13 @@ class MerchantController extends Controller
         return $this->service()->createSalesforceLeadFromDashboard($input);
     }
 
+    public function getMerchantDetailsForSFConverge($id)
+    {
+        $response = $this->service()->getMerchantDetailsForSFConverge($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function handleMerchantActionNotificationCron()
     {
         $response = $this->service()->handleMerchantActionNotificationCron();
