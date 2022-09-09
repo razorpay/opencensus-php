@@ -3,6 +3,7 @@ import {
   listFetchPendingState,
   listFetchSuccessState,
   listFetchErrorState,
+  addUniqueEntityToList,
 } from 'merchant/reducers/collection';
 import Customer from 'merchant/models/Customer';
 
@@ -11,13 +12,13 @@ export const CUSTOMER_FETCH = 'CUSTOMER_FETCH';
 export const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH';
 export const CUSTOMER_CREATE = 'CUSTOMER_CREATE';
 export const CUSTOMER_EDIT = 'CUSTOMER_EDIT';
+export const CUSTOMERS_UPDATE = 'CUSTOMERS_UPDATE';
 export const CUSTOMER_DELETED = 'CUSTOMER_DELETED';
 export const CUSTOMER_ADDRESS_FETCH = 'CUSTOMER_ADDRESS_FETCH';
 export const CUSTOMER_ADDRESS_ADD = 'CUSTOMER_ADDRESS_ADD';
 
 export const fetchCustomers = (params) => {
-  let customer = new Customer();
-
+  const customer = new Customer();
   return {
     type: CUSTOMERS_FETCH,
     payload: customer.fetchAll(params),
@@ -25,7 +26,7 @@ export const fetchCustomers = (params) => {
 };
 
 export const fetchCustomer = (id) => {
-  let customer = new Customer();
+  const customer = new Customer();
 
   return {
     type: CUSTOMER_FETCH,
@@ -34,8 +35,7 @@ export const fetchCustomer = (id) => {
 };
 
 export const fetchCustomersApi = (params) => {
-  let customer = new Customer();
-
+  const customer = new Customer();
   return customer.fetchForAutocomplete(params);
 };
 
@@ -47,7 +47,7 @@ export const fetchCustomersForAutocomplete = (params) => {
 };
 
 export const saveCustomer = (params) => {
-  let customer = new Customer(params);
+  const customer = new Customer(params);
 
   return {
     type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
@@ -55,8 +55,17 @@ export const saveCustomer = (params) => {
   };
 };
 
+export const appendCustomerInList = (data) => {
+  const customer = new Customer(data);
+
+  return {
+    type: CUSTOMERS_UPDATE,
+    payload: customer,
+  };
+};
+
 export const deleteCustomer = (params) => {
-  let customer = new Customer(params);
+  const customer = new Customer(params);
 
   return {
     type: CUSTOMER_DELETED,
@@ -65,12 +74,12 @@ export const deleteCustomer = (params) => {
   };
 };
 
-/**
+/*
  * Fetches customer's addresses.
  * @param {Customer} params
  */
 export const fetchCustomerAddresses = (params) => {
-  let customer = new Customer(params);
+  const customer = new Customer(params);
 
   return {
     type: CUSTOMER_ADDRESS_FETCH,
@@ -78,13 +87,13 @@ export const fetchCustomerAddresses = (params) => {
   };
 };
 
-/**
+/*
  * Adds a customer's address.
  * @param {Customer} customerParams
  * @param {Object} address
  */
 export const addCustomerAddress = (customerParams, address) => {
-  let customer = new Customer(customerParams);
+  const customer = new Customer(customerParams);
 
   return {
     type: CUSTOMER_ADDRESS_ADD,
@@ -96,4 +105,5 @@ export default makeActionCollectionReducer('CUSTOMERS', {
   [`${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`]: listFetchPendingState,
   [`${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`]: listFetchSuccessState,
   [`${CUSTOMERS_AUTOCOMPLETE_FETCH}::ERROR`]: listFetchErrorState,
+  [CUSTOMERS_UPDATE]: addUniqueEntityToList,
 });

@@ -96,6 +96,11 @@ export const appendEntityToList = (state, action) => {
   return set(state, 'items', unshift(state.items, action.payload));
 };
 
+export const addUniqueEntityToList = (state, action) => {
+  const itemIndex = state.items.findIndex((item) => item.id === action.payload.id);
+  return itemIndex < 0 ? set(state, 'items', [...state.items, action.payload]) : state;
+};
+
 export const updateEntityInList = (state, action) => {
   const itemIndex = state.items.findIndex((item) => item.id === action.payload.id);
   if (itemIndex < 0) return state;

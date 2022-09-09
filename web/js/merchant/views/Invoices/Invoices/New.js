@@ -18,7 +18,6 @@ import {
   findBy,
   getKeysSeparatedByPipe,
   getGSTSlabs,
-  stringifyAddress,
   capitalize,
   isAddressValid,
   calculateTax,
@@ -40,6 +39,7 @@ import {
   fetchCustomersApi,
   fetchCustomersForAutocomplete,
   fetchCustomerAddresses,
+  appendCustomerInList,
 } from 'merchant/reducers/customers';
 import { fetchItemsForAutocomplete } from 'merchant/reducers/items';
 import { saveInvoice, deleteInvoice } from 'merchant/reducers/invoices/list';
@@ -49,6 +49,8 @@ import * as InvoiceActions from 'merchant/reducers/invoices/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { SingleDatePicker } from 'react-dates';
+import BillingAddress from 'merchant/views/Invoices/Invoices/components/BillingAddress';
+import ShippingAddress from 'merchant/views/Invoices/Invoices/components/ShippingAddress';
 import AddressSelectionModal from './components/AddressSelectionModal/index';
 import EditInvoiceLabelModal from './components/EditInvoiceLabel';
 import AddressDisplay from 'merchant/views/Invoices/Invoices/components/AddressDisplay';
@@ -127,6 +129,7 @@ const selector = formValueSelector('newInvoice');
     fetchCustomersForAutocomplete,
     fetchItemsForAutocomplete,
     fetchCustomerAddresses,
+    appendCustomerInList,
     saveInvoice,
     deleteInvoice,
     fetchStates,
@@ -261,7 +264,7 @@ export default class InvoicesNewContainer extends Component {
    */
   _initialize(invoice) {
     this.props.initialize(invoice);
-
+    this.props.appendCustomerInList(invoice.customer_details);
     // Set issue date.
     if (invoice.date) {
       this.pickIssueDate(moment(invoice.date * 1000), false);
@@ -1554,6 +1557,11 @@ export default class InvoicesNewContainer extends Component {
   };
 
   handleSelectCustomer = ({ option }) => {
+    /* Info : we are doing this `appendCustomerInList` here because of a bug , when we select a customer the previous logic
+    search for the customer in the cutomers list hence return an undefined. By doing this we add that customer in customers list
+    */
+
+    this.props.appendCustomerInList(option);
     this.typeAheadSkin.classList.remove('hide');
 
     if (option) {
@@ -1567,7 +1575,6 @@ export default class InvoicesNewContainer extends Component {
     this.setState({ selectedCustomerDisplay: option });
 
     const customerDetails = option;
-
     if (customerDetails) {
       const customer =
         this.props.customers.items &&
@@ -1576,7 +1583,6 @@ export default class InvoicesNewContainer extends Component {
       if (customer) {
         const billingAddress = customerDetails.billing_address_id;
         const shippingAddress = customerDetails.shipping_address_id;
-
         this.onSelectCustomer(customer, billingAddress, shippingAddress, false);
       }
     }
@@ -1702,6 +1708,9 @@ export default class InvoicesNewContainer extends Component {
       customersList = this.state.customersList || this.props.customers.items;
     }
 
+    const customerEmail = customer.email;
+    const customerGstin = customer.gstin;
+    const customerContact = customer.contact;
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -1865,16 +1874,12 @@ export default class InvoicesNewContainer extends Component {
                             </div>
                             {hasCustomerSelected && (
                               <div class="inv__customerdetails">
-                                {customer.name && <div>{customer.contact}</div>}
-                                {customer.name || customer.contact ? (
-                                  <div>{customer.email}</div>
-                                ) : (
-                                  ''
-                                )}
-                                {customer.gstin && showGstn && (
+                                {customerContact && <div>{customerContact}</div>}
+                                {customerEmail ? <div>{customerEmail}</div> : ''}
+                                {customerGstin && showGstn && (
                                   <div>
                                     <span class="tax-heading">GSTIN - </span>
-                                    {customer.gstin}
+                                    {customerGstin}
                                   </div>
                                 )}
                               </div>
@@ -1976,118 +1981,26 @@ export default class InvoicesNewContainer extends Component {
                         <div class="col-md-6">
                           <div class="row">
                             <div class="col-md-12">
-                              <div class="inv__address-container">
-                                <label class="text-uppercase">Billing Address</label>
-                                <span
-                                  class={`two-btn-group ${
-                                    areBillingAddressActionsVisible ? '' : 'invisible'
-                                  }`}
-                                >
-                                  <button
-                                    class="btn btn-sm btn-link"
-                                    onClick={this.showSelectAddressModal('billing')}
-                                    type="button"
-                                  >
-                                    Change
-                                  </button>
-                                  <button
-                                    class="btn btn-sm btn-link"
-                                    onClick={() => {
-                                      this.selectBillingAddress(null);
-                                      track({
-                                        eventAction: 'Remove Address',
-                                        eventLabel: 'Billing',
-                                      });
-                                    }}
-                                    type="button"
-                                  >
-                                    Remove
-                                  </button>
-                                </span>
-                                <div class="inv__address-container">
-                                  {selectedBillingAddress ? (
-                                    stringifyAddress(selectedBillingAddress)
-                                  ) : (
-                                    <div class="light-placeholder">
-                                      {isFetchingAddresses ? (
-                                        <Fragment>Loading...</Fragment>
-                                      ) : !isDisabled ? (
-                                        customer && customer.id ? (
-                                          <button
-                                            class="btn btn-link"
-                                            onClick={this.showSelectAddressModal('billing')}
-                                            type="button"
-                                          >
-                                            + Add Billing Address
-                                          </button>
-                                        ) : (
-                                          <Fragment>
-                                            Select customer to add Billing Address
-                                          </Fragment>
-                                        )
-                                      ) : (
-                                        <Fragment>Billing Address not applicable.</Fragment>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              <div class="inv__address-container inv__address-container-shipping">
-                                <label class="text-uppercase">Shipping Address</label>
-                                <span
-                                  class={`two-btn-group ${
-                                    areShippingAddressActionsVisible ? '' : 'invisible'
-                                  }`}
-                                >
-                                  <button
-                                    class="btn btn-sm btn-link"
-                                    onClick={this.showSelectAddressModal('shipping')}
-                                    type="button"
-                                  >
-                                    Change
-                                  </button>
-                                  <button
-                                    class="btn btn-sm btn-link"
-                                    onClick={() => {
-                                      this.selectShippingAddress(null);
-                                      track({
-                                        eventAction: 'Remove Address',
-                                        eventLabel: 'Shipping',
-                                      });
-                                    }}
-                                    type="button"
-                                  >
-                                    Remove
-                                  </button>
-                                </span>
-                                <div class="inv__address-container">
-                                  {selectedShippingAddress ? (
-                                    stringifyAddress(selectedShippingAddress)
-                                  ) : (
-                                    <div class="light-placeholder">
-                                      {isFetchingAddresses ? (
-                                        <Fragment>Loading...</Fragment>
-                                      ) : !isDisabled ? (
-                                        customer && customer.id ? (
-                                          <button
-                                            class="btn btn-link"
-                                            onClick={this.showSelectAddressModal('shipping')}
-                                            type="button"
-                                          >
-                                            + Add Shipping Address
-                                          </button>
-                                        ) : (
-                                          <Fragment>
-                                            Select customer to add Shipping Address
-                                          </Fragment>
-                                        )
-                                      ) : (
-                                        <Fragment>Shipping Address not applicable.</Fragment>
-                                      )}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                              <BillingAddress
+                                isFetchingAddresses={isFetchingAddresses}
+                                isDisabled={isDisabled}
+                                customer={customer}
+                                showSelectAddressModal={this.showSelectAddressModal}
+                                areBillingAddressActionsVisible={areBillingAddressActionsVisible}
+                                selectBillingAddress={this.selectBillingAddress}
+                                selectedBillingAddress={selectedBillingAddress}
+                                track={track}
+                              />
+                              <ShippingAddress
+                                isFetchingAddresses={isFetchingAddresses}
+                                isDisabled={isDisabled}
+                                customer={customer}
+                                showSelectAddressModal={this.showSelectAddressModal}
+                                areShippingAddressActionsVisible={areShippingAddressActionsVisible}
+                                selectShippingAddress={this.selectShippingAddress}
+                                selectedShippingAddress={selectedShippingAddress}
+                                track={track}
+                              />
                               {merchantGSTIN && showGstn && (
                                 <div class="inv__place-of-supply-container">
                                   <label class="text-uppercase">Place of Supply</label>
@@ -2270,7 +2183,9 @@ export default class InvoicesNewContainer extends Component {
                             <AsyncButton
                               type="button"
                               class="btn btn-primary btn-block btn-lg"
-                              disabled={this.state.isSaving || this.props.invalid}
+                              disabled={
+                                this.state.isSaving || this.props.invalid || !hasCustomerSelected
+                              }
                               onClick={handleSubmit((props) => {
                                 return this.saveAndIssue({
                                   ...props,
