@@ -80,6 +80,15 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function automateAccountStatementsReconByChannel(string $channel)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->automateAccountStatementsReconByChannel($channel, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function insertMissingStatements()
     {
         $input = Request::all();

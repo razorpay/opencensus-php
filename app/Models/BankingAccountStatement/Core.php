@@ -36,6 +36,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
+use RZP\Models\BankingAccountStatement\Constants as BASConstants;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\Gateway as RblGateway;
@@ -3383,24 +3384,24 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_DISPATCH_JOB_REQUEST,
             [
-                Entity::CHANNEL        => $channel,
-                Entity::ACCOUNT_NUMBER => $input[Entity::ACCOUNT_NUMBER],
-                'expected_attempts'    => $expectedAttempts,
-                Entity::FROM_DATE      => $input[Entity::FROM_DATE],
-                Entity::TO_DATE        => $input[Entity::TO_DATE],
-                self::DELAY            => $delay,
-                'pagination_key'       => $paginationKey,
-                Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS],
+                Entity::CHANNEL                 => $channel,
+                Entity::ACCOUNT_NUMBER          => $input[Entity::ACCOUNT_NUMBER],
+                BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
+                Entity::FROM_DATE               => $input[Entity::FROM_DATE],
+                Entity::TO_DATE                 => $input[Entity::TO_DATE],
+                self::DELAY                     => $delay,
+                BASConstants::PAGINATION_KEY    => $paginationKey,
+                Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
             ]);
 
         BankingAccountStatementRecon::dispatch($this->mode, [
-            Entity::CHANNEL        => $channel,
-            Entity::ACCOUNT_NUMBER => $input[Entity::ACCOUNT_NUMBER],
-            Entity::FROM_DATE      => $input[Entity::FROM_DATE],
-            Entity::TO_DATE        => $input[Entity::TO_DATE],
-            'expected_attempts'    => $expectedAttempts,
-            'pagination_key'       => $paginationKey,
-            Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS],
+            Entity::CHANNEL                 => $channel,
+            Entity::ACCOUNT_NUMBER          => $input[Entity::ACCOUNT_NUMBER],
+            Entity::FROM_DATE               => $input[Entity::FROM_DATE],
+            Entity::TO_DATE                 => $input[Entity::TO_DATE],
+            BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
+            BASConstants::PAGINATION_KEY    => $paginationKey,
+            Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
         ])->delay($delay);
 
         $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_JOB_DISPATCHED);

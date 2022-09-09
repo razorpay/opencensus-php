@@ -3,9 +3,13 @@
 namespace RZP\Models\BankingAccountStatement;
 
 use Cache;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Constants\Mode as EnvMode;
 
 class Service extends Base\Service
 {
@@ -39,6 +43,110 @@ class Service extends Base\Service
         (new Validator())->validateInput(Validator::FETCH_MISSING_STATEMENTS, $input + ['channel' => $channel]);
 
         $response = $this->core()->fetchMissingAccountStatementsForChannel($channel, $input);
+
+        return $response;
+    }
+
+    public function automateAccountStatementsReconByChannel(string $channel, array $input)
+    {
+        (new Validator())->validateInput(Validator::AUTOMATE_ACCOUNT_STATEMENT_RECON, $input + ['channel' => $channel]);
+
+        $this->trace->info(
+            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_INITIATED,
+            [
+                Entity::CHANNEL                    => $channel,
+                Constants::ACCOUNT_NUMBERS_PRESENT => count($input[Constants::ACCOUNT_NUMBERS]),
+            ]);
+
+        $attempts = [];
+
+        $response = [];
+
+        $maxExpectedAttempts = 0;
+
+        foreach ($input[Constants::ACCOUNT_NUMBERS] as $accountNumber)
+        {
+            try
+            {
+                $fetchInput = [
+                    Entity::CHANNEL        => $channel,
+                    Entity::ACCOUNT_NUMBER => $accountNumber,
+                    Entity::FROM_DATE      => Carbon::now(Timezone::IST)->startOfDay()->getTimestamp(),
+                    Entity::TO_DATE        => Carbon::now(Timezone::IST)->endOfDay()->getTimestamp(),
+                    Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS] ?? true
+                ];
+
+                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput)[Constants::EXPECTED_ATTEMPTS];
+
+                $maxExpectedAttempts = max($maxExpectedAttempts, $attempts[$accountNumber][Constants::EXPECTED_ATTEMPTS]);
+
+                $response[$accountNumber][Constants::FETCH_MISSING_STATEMENT] = Constants::SUCCESS;
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_FAILED,
+                    [
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        Entity::CHANNEL        => $channel
+                    ]
+                );
+
+                $response[$accountNumber][Constants::FETCH_MISSING_STATEMENT] = Constants::FAILURE;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_SUCCESS,
+            [
+                Entity::CHANNEL => $channel,
+            ]);
+
+        if (($this->app->environment('testing') === false) and
+            ($this->mode === EnvMode::LIVE))
+        {
+            sleep(Carbon::SECONDS_PER_MINUTE * 3 * $maxExpectedAttempts);
+        }
+
+        foreach ($attempts as $accountNumber => $expectedAttempts)
+        {
+            try
+            {
+                // We have added 80 secs as request timeout for mozart request, and since there can be 2 retries
+                // setting the delay as 3 mins
+                $updateInput = [
+                    Entity::CHANNEL        => $channel,
+                    Entity::ACCOUNT_NUMBER => (string) $accountNumber,
+                    Constants::ACTION      => $input[Constants::ACTION] ?? Constants::INSERT
+                ];
+
+                $this->insertMissingStatements($updateInput);
+
+                $response[$accountNumber][Constants::UPDATE_MISSING_STATEMENT] = Constants::SUCCESS;
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_UPDATE_DISPATCH_FAILED,
+                    [
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        Entity::CHANNEL        => $channel
+                    ]
+                );
+
+                $response[$accountNumber][Constants::UPDATE_MISSING_STATEMENT] = Constants::FAILURE;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_UPDATE_DISPATCH_SUCCESS,
+            [
+                Entity::CHANNEL => $channel,
+            ]);
 
         return $response;
     }
@@ -116,7 +224,7 @@ class Service extends Base\Service
 
         $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel);
 
-        if ($input['action'] === 'fetch')
+        if ($input[Constants::ACTION] === Constants::FETCH)
         {
             return [
                 'number_of_missing_statements' => count($missingStatements),
@@ -133,7 +241,7 @@ class Service extends Base\Service
 
         $dryRunMode = false;
 
-        if ($input['action'] === 'dry_run')
+        if ($input[Constants::ACTION] === Constants::DRY_RUN)
         {
             $dryRunMode = true;
         }
@@ -151,8 +259,8 @@ class Service extends Base\Service
                 null,
                 TraceCode::INSERT_AND_UPDATE_BAS_FAILURE,
                 [
-                    'account_number' => $accountNumber,
-                    'channel'        => $channel
+                    Entity::ACCOUNT_NUMBER => $accountNumber,
+                    Entity::CHANNEL        => $channel
                 ]
             );
 

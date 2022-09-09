@@ -35,6 +35,8 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Mail\BankingAccount\StatementMail;
+use RZP\Jobs\BankingAccountStatementRecon;
+use RZP\Jobs\BankingAccountStatementUpdate;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
@@ -11154,6 +11156,112 @@ class RblBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
+    }
+
+    public function testRblAutomatedReconForMissingStatements()
+    {
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '10000',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429654',
+                                    'balance'                   => 10000,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861681,
+                                    'bank_serial_number'        => 1,
+                                    'description'               => 'Credit to account',
+                                    'category'                  => 'customer_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                    'transaction_id'            => 'KCNbM1N21uQq6E',
+                                    'entity_id'                 => 'KCNbO1N21uYq6T',
+                                    'entity_type'               => 'external',
+                                    'created_at'                => 1656861881,
+                                    'updated_at'                => 1656861881
+                                ]);
+
+        $this->fixtures->create('transaction',
+                                [
+                                    'id'          => 'KCNbM1N21uQq6E',
+                                    'merchant_id' => '10000000000000',
+                                    'balance'     => 10000,
+                                    'posted_at'   => 1656861681,
+                                    'created_at'  => 1656861881,
+                                    'updated_at'  => 1656861881
+                                ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'credit',
+                                    'amount'                    => '11450',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S429655',
+                                    'balance'                   => 21450,
+                                    'transaction_date'          => 1656786600,
+                                    'posted_date'               => 1656861781,
+                                    'bank_serial_number'        => 2,
+                                    'description'               => 'CREDIT NEFT',
+                                    'category'                  => 'bank_initiated',
+                                    'bank_instrument_id'        => '',
+                                    'balance_currency'          => 'INR',
+                                    'transaction_id'            => 'KCNbM1N21uQq6T',
+                                    'entity_id'                 => 'KCNbM1N21uZq6T',
+                                    'entity_type'               => 'external',
+                                    'created_at'                => 1656861881,
+                                    'updated_at'                => 1656861881
+                                ]);
+
+        $this->fixtures->create('transaction',
+                                [
+                                    'id'          => 'KCNbM1N21uQq6T',
+                                    'merchant_id' => '10000000000000',
+                                    'balance'     => 21450,
+                                    'posted_at'   => 1656861681,
+                                    'created_at'  => 1656861881,
+                                    'updated_at'  => 1656861881
+                                ]);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL => [
+                    '2224440041626905' => [
+                        [
+                            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+                            BasEntity::BANK_TRANSACTION_ID => 'S807089',
+                            BasEntity::TYPE                => 'debit',
+                            BasEntity::AMOUNT              => 5000,
+                            BasEntity::BALANCE             => 5000,
+                            BasEntity::POSTED_DATE         => 1656861683,
+                            BasEntity::TRANSACTION_DATE    => 1656786600,
+                            BasEntity::DESCRIPTION         => 'DEBIT IMPS 20000324344829',
+                            BasEntity::CHANNEL             => 'rbl',
+                            BasEntity::BANK_SERIAL_NUMBER  => '2',
+                            basEntity::CURRENCY            => 'INR',
+                            basEntity::BALANCE_CURRENCY    => 'INR',
+                        ],
+                    ],
+                ]
+            ]);
+
+        $this->ba->cronAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        $this->assertEmpty($merchantMissingStatementList['2224440041626905']);
+
+        Queue::assertPushed(BankingAccountStatementRecon::class, 1);
+
+        Queue::assertPushed(BankingAccountStatementUpdate::class, 1);
     }
 
     public function testRblMissingAccountStatementWithCronAuth()

@@ -3049,6 +3049,7 @@ class Route
         'banking_account_statement_insert_missing_cron' => ['post',     'banking_account_statement/cron/insert_missing',             'BankingAccountStatementController@insertMissingStatements'                   ],
         'banking_account_statement_fetch_missing'       => ['post',     'banking_account_statement/fetch_missing/{channel}',         'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
         'banking_account_statement_fetch_missing_cron'  => ['post',     'banking_account_statement/cron/fetch_missing/{channel}',    'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
+        'banking_account_statement_automate_recon_cron' => ['post',     'banking_account_statement/cron/automate_recon/{channel}',   'BankingAccountStatementController@automateAccountStatementsReconByChannel'   ],
         'banking_account_statement_details_create'      => ['post',     'banking_account_statement/details',                         'BankingAccountStatementController@createBankingAccountStatementDetails'      ],
 
         'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
@@ -4754,6 +4755,7 @@ class Route
         'merchant_banking_accounts_webhook',
         'banking_account_statement_process_cron',
         'banking_account_statement_fetch_missing_cron',
+        'banking_account_statement_automate_recon_cron',
         'banking_account_statement_process_pool',
         'banking_account_send_notification_to_spoc_cron',
         'banking_account_statement_channel_fetch',
@@ -12934,6 +12936,7 @@ class Route
             'merchant_onboarding_crons',
             'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',
+            'banking_account_statement_automate_recon_cron',
             'create_test_payouts_for_downtime_detection_icici',
             'create_test_payouts_for_downtime_detection_yesb',
             'check_status_of_test_payouts',

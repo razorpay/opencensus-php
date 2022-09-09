@@ -1055,6 +1055,28 @@ return [
         ]
     ],
 
+    'testRblAutomatedReconForMissingStatements' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/cron/automate_recon/rbl',
+            'content' => [
+                'account_numbers' => [
+                    '2224440041626905'
+                ],
+                'save_in_redis'   => true,
+                'action'          => 'insert'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '2224440041626905' => [
+                    'fetch_missing_statement'  => 'success',
+                    'update_missing_statement' => 'success'
+                ]
+            ]
+        ]
+    ],
+
     'testfetchRblMissingAccountStatementWithInvalidDateRange' => [
         'request'  => [
             'method'  => 'POST',

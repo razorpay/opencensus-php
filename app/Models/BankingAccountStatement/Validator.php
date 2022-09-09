@@ -19,6 +19,8 @@ class Validator extends Base\Validator
 
     const FETCH_MISSING_STATEMENTS = 'fetchMissingStatements';
 
+    const AUTOMATE_ACCOUNT_STATEMENT_RECON = 'automateAccountStatementRecon';
+
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
@@ -55,6 +57,14 @@ class Validator extends Base\Validator
         Entity::SAVE_IN_REDIS        => 'required|boolean'
     ];
 
+    protected static $automateAccountStatementReconRules = [
+        Entity::CHANNEL                  => 'required|string|custom',
+        Constants::ACCOUNT_NUMBERS       => 'required|array',
+        Constants::ACCOUNT_NUMBERS . '*' => 'required|string|between:5,40',
+        Constants::ACTION                => 'required|in:insert,fetch,dry_run',
+        Entity::SAVE_IN_REDIS            => 'required|boolean'
+    ];
+
     protected static $accountStatementGenerateValidators = [
         'channel_format'
     ];
@@ -71,9 +81,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $insertStatementRules = [
-        Entity::CHANNEL             => 'required|string|custom',
-        Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
-        'action'                    => 'required|in:insert,fetch,dry_run',
+        Entity::CHANNEL        => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER => 'required|string|max:40',
+        Constants::ACTION      => 'required|in:insert,fetch,dry_run'
     ];
 
     public function validateCreditBas($current_status, array $input)
