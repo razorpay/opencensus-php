@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Exception;
 use RZP\Diag\EventCode;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Action;
 
 trait Omnichannel
@@ -14,6 +15,25 @@ trait Omnichannel
         if ($payment->isUpi() === false)
         {
             return false;
+        }
+
+        if ($payment->hasTerminal() === true)
+        {
+            // skip upi omnichannel flow for Optimizer payments
+            $terminalTypeArray = array();
+
+            $terminalTypeArray = $payment->terminal->getType();
+
+            if (($terminalTypeArray !== null) && (in_array('optimizer', $terminalTypeArray) === true))
+            {
+                 $this->trace->info(TraceCode::OPTIMIZER_PAYMENT_SKIPPING_UPI_OMNICHANNEL,
+                 [
+                    'payment_id' => $payment->getId(),
+                    'terminal_id' => $payment->terminal->getId(),
+                 ]);
+
+                return false;
+            }
         }
 
         $upiProvider = $payment->getMetadata(Payment\Entity::UPI_PROVIDER, null);
