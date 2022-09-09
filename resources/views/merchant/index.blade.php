@@ -24,15 +24,12 @@
   @include('partials/new-auth')
   <!-- register service worker on dashboard.razorpay.com login page -->
   @if(env('APP_ENV') === 'production')
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw-merchant.js');
+    <script type="module">
+        import {Workbox} from 'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-window.prod.mjs';
 
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.active.onerror = (event) => {
-                console.log('An error occurred in the service worker!');
-                };
-            });
+        if ('serviceWorker' in navigator) {
+            const wb = new Workbox('/sw-merchant.js');
+            wb.register();
         }
     </script>
   @endif
