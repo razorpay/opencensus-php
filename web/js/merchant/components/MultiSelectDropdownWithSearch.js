@@ -5,6 +5,7 @@ import debounce from 'lodash/debounce';
 
 /**
  * Dropdown for multi select options with search functionality
+ * @param {object} labelMapping labels to show - mapping with options - can be undefined
  * @param {object} options dropdown options - array of strings
  * @param {object} selected dropdown selected options - array of strings
  * @param {boolean} disabled component disabled or not
@@ -14,6 +15,7 @@ import debounce from 'lodash/debounce';
  * @returns {JSX.Element} JSX element
  */
 export const MultiSelectDropdownWithSearch = ({
+  labelMapping,
   options,
   selected,
   disabled,
@@ -30,12 +32,12 @@ export const MultiSelectDropdownWithSearch = ({
       const { value } = event.target;
       if (value) {
         const pattern = new RegExp(`${value}`, 'i');
-        setFilteredOptions(options.filter((item) => pattern.test(item)));
+        setFilteredOptions(options.filter((item) => pattern.test(labelMapping?.[item] || item)));
       } else {
         setFilteredOptions(options);
       }
     },
-    [options],
+    [labelMapping, options],
   );
 
   // To collapse the dropdown options
@@ -63,7 +65,7 @@ export const MultiSelectDropdownWithSearch = ({
     return (
       <div className="col-xs-6" key={`${item}-${Number(checked)}`}>
         <Input.Check
-          fieldLabel={titleCase(item)}
+          fieldLabel={labelMapping?.[item] || titleCase(item)}
           checkboxMaskLabel={false}
           checked={checked}
           onChange={(e) => handleCheckBoxChange(e, item)}
@@ -81,7 +83,7 @@ export const MultiSelectDropdownWithSearch = ({
         className={`status-label label option-pill${disabled ? ' option-pill-disabled' : ''}`}
         onClick={!disabled ? (e) => removeOption(e, item) : null}
       >
-        {titleCase(item)}
+        {labelMapping?.[item] || titleCase(item)}
         <i className="i i-close" />
       </span>
     );

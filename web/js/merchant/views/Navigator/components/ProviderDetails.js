@@ -8,7 +8,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import PropTypes from 'prop-types';
 import { titleCase } from 'common/utils/rzp-utils';
-import { gatewayLogos } from './util';
+import { gatewayLogos, WalletLabels } from './util';
 
 @withRouter
 @connect(
@@ -40,6 +40,7 @@ export default class ProviderDetails extends Component {
     if (provider) {
       const detailsKeys = Object.keys(provider.Gateway_details);
       const wallets = provider.Gateway_details?.wallet_metadata?.wallets || [];
+      const walletsNames = wallets.map((wallet) => WalletLabels[wallet] || titleCase(wallet));
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
           {this.props.provider_detail_loading ? (
@@ -92,9 +93,12 @@ export default class ProviderDetails extends Component {
                       value={() => provider.Gateway_details['Payment Methods'].join(', ')}
                     />
                   </div>
-                  {wallets?.length > 0 && (
+                  {walletsNames?.length > 0 && (
                     <div className="list-group details-row-container">
-                      <EntityDetailRow label="Wallets Enabled" value={() => wallets.join(', ')} />
+                      <EntityDetailRow
+                        label="Wallets Enabled"
+                        value={() => walletsNames.join(', ')}
+                      />
                     </div>
                   )}
                   <div className="list-group details-row-container">

@@ -1193,3 +1193,20 @@ export const shouldShowRules = (user) => user?.isOptimizerEnabled;
 
 export const shouldShowOnBoarding = (user) =>
   user?.isOptimizerOnboardingEnabled && !user?.isOptimizerEnabled;
+
+export const WalletLabels = {
+  itzcash: 'ItzCash',
+  payzapp: 'PayZapp',
+  olamoney: 'OlaMoney',
+  jiomoney: 'JioMoney',
+  amazonpay: 'Amazon Pay',
+  phonepe: 'PhonePe',
+  airtelmoney: 'Airtel Money',
+  amexeasyclick: 'AMEX ezeClick',
+  paycash: 'PayCash',
+  citibankrewards: 'Citi Bank Reward Points',
+  paytm: 'Paytm',
+  mobikwik: 'MobiKwik',
+  freecharge: 'Freecharge',
+  oxigen: 'Oxigen',
+};

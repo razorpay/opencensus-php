@@ -1,5 +1,6 @@
 import React from 'react';
 import { MultiSelectDropdownWithSearch } from 'merchant/components/MultiSelectDropdownWithSearch';
+import { WalletLabels } from '../util';
 
 export const WalletsMultiSelect = ({
   walletOptions,
@@ -15,6 +16,7 @@ export const WalletsMultiSelect = ({
         </div>
         <div className="col-xs-6">
           <MultiSelectDropdownWithSearch
+            labelMapping={WalletLabels}
             options={walletOptions}
             selected={walletSelected}
             disabled={disabled}
