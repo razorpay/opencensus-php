@@ -101,7 +101,7 @@ export const updateTwoFactorVerified = ({ twoFactorVerified }) => ({
 
 export const triggerOtpOnMobileForVerification = () =>
   triggerOtpForVerification({
-    action: 'verify_user',
+    action: 'verify_contact',
     medium: 'sms',
   });
 
