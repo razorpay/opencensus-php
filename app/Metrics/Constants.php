@@ -68,6 +68,9 @@ class Constants
   const USER_OAUTH_SIGNUP_FAILED_COUNT                  = 'user_oauth_signup_failed_count';
   const API_CIRCUIT_BREAKER_STATE_COUNT                 = 'api_circuit_breaker_state';
   const API_CIRCUIT_BREAKER_REQUEST_RESULT_COUNT        = 'api_circuit_breaker_request_result';
+  const INVALID_PASSPORT_FOR_OAUTH_ROUTE                = 'invalid_passport_for_oauth_route';
+  const INVALID_PASSPORT_FOR_MOBILE_OAUTH_ROUTE         = 'invalid_passport_for_mobile_oauth_route';
+  const PASSPORT_MISSING_FOR_OAUTH_ROUTE                = 'passport_missing_for_oauth_route';
 
   // Metric Lables
   const LOGIN_METHOD                = 'login_method';

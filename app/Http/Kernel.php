@@ -53,14 +53,14 @@ class Kernel extends HttpKernel {
 
         'graph_oauth' => [
             \App\Http\Middleware\Cors::class,
-            \App\Http\Middleware\EdgePreAuthenticate::class,
+            \App\Http\Middleware\AuthenticateOauth::class,
             \App\Http\Middleware\GraphRequestAuthCheck::class,
             \App\Http\Middleware\CacheControl::class,
         ],
 
         'web_oauth' => [
             \App\Http\Middleware\Cors::class,
-            \App\Http\Middleware\EdgePreAuthenticate::class,
+            \App\Http\Middleware\AuthenticateOauth::class,
             \App\Http\Middleware\CacheControl::class,
         ],
     ];

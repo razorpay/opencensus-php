@@ -67,33 +67,31 @@ class Tracing
     // all routes which are to be included from distributed tracing
     public static function getOauthRoutesToInclude(): array
     {
-        $routesToInclude = array_merge([
+        $oauthRoutesToInclude = array_merge([
                 'graph_oauth',
-                'user_register',
-                'user_pre_signup',
-                'user_verify_email',
-                'user_logout',
-                'user_details',
-                'merchant_experiments',
-                'merchant_features',
-                'merchant_details',
-                'merchant',
-                'get_org',
-                'user_keep_alive',
-                'user',
-                'user_signin_otp',
-                'user_oauth_signin',
-                'user_signin_otp_verify',
-                'user_signin',
-                'user_2fa_otp_resned',
-                'user_verify_user_otp',
-                'user_verify_user_otp_verify',
-                'post_setup_2fa_verify_otp',
-                'post_otp_login_2fa_password',
+                'oauth_user_pre_signup',
+                'oauth_user_verify_email',
+                'oauth_user_logout',
+                'oauth_user_details',
+                'oauth_merchant_experiments',
+                'oauth_merchant_features',
+                'oauth_merchant_details',
+                'oauth_merchant',
+                'oauth_get_org',
+                'oauth_user',
+                'oauth_user_signin_otp',
+                'oauth_user_oauth_signin',
+                'oauth_user_signin_otp_verify',
+                'oauth_user_signin',
+                'oauth_user_2fa_otp_resned',
+                'oauth_user_verify_user_otp',
+                'oauth_user_verify_user_otp_verify',
+                'oauth_post_setup_2fa_verify_otp',
+                'oauth_post_otp_login_2fa_password',
             ]
         );
 
-        return $routesToInclude;
+        return $oauthRoutesToInclude;
     }
 
     public static function getServiceName($app): string

@@ -25,7 +25,9 @@ class Verified
             $isUserVerified = (
                 ($user->confirmed) ||
                 ($user->contact_mobile_verified) ||
-                ($routeName === 'merchant' && $xSignUpFlowV2 === 'true')
+                (($routeName === 'merchant' ||
+                  $routeName === 'oauth_merchant') &&
+                  $xSignUpFlowV2 === 'true')
             );
 
             if ($isUserVerified === true)

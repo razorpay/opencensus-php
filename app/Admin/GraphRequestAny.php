@@ -310,6 +310,7 @@ class GraphRequestAny
                         'url'           => $baseAppUrl.'/user/signin',
                         'status'        => 401,
                         'statusText'    => 'Unauthorized',
+                        'is_oauth'      => app('request.ctx')->isOauthRequest(),
                     ]
                 ]
             ],

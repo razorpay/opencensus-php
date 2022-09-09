@@ -280,7 +280,7 @@ class UserController extends Controller
         $experimentId = config('splitz.experiments')['WEBSITE_COMPLIANCE_FLOW_EXP'];
 
         $data = (new SplitzService())->getVariantBulk($details['current'], [$experimentId], [], "splitz/bulkEvaluate");
-        
+
         if ((($data[$experimentId]['variables']['result'] ?? null) === 'on') and
             ($activationFormMilestone == 'L1' or $activationFormMilestone == 'L2')) {
             return true;
@@ -849,7 +849,7 @@ class UserController extends Controller
     {
         $genericController = new GenericController();
 
-        return $genericController->handleAny('live', 'users/logout/oauth');
+        return $genericController->handleAny('live', 'users/mobile_oauth/logout');
     }
 
     public function postOauthSignIn()

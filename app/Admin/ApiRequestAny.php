@@ -118,14 +118,21 @@ class ApiRequestAny
         {
             $routeName = Route::currentRouteName();
 
-            if (in_array($routeName, ['merchant', 'admin', 'extension_merchant'], true) === false)
+            if (in_array($routeName, ['merchant', 'admin', 'extension_merchant', 'oauth_merchant', 'oauth_user_logout'], true) === false)
             {
                 // Default
                 $this->clientType = 'user';
             }
             else
             {
-                $this->clientType = $routeName;
+                if (in_array($routeName,  ['oauth_merchant', 'oauth_user_logout']))
+                {
+                    $this->clientType = 'merchant';
+                }
+                else
+                {
+                    $this->clientType = $routeName;
+                }
             }
         }
         else

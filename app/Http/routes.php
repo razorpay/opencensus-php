@@ -289,33 +289,41 @@ Route::group(['middleware'  => 'graph_oauth'], function()
 
 Route::group(['middleware' => 'web_oauth', 'prefix' => 'oauth'], function()
 {
+    // Dashboard routes hit by X Mobile App's webview
     Route::options('/{path?}', 'GenericController@handleAny')
-        ->where(['path' => '.*'])->name('oauth_pre_flight');
-    Route::post('/user/register', 'UserController@postRegister')->name('user_register');
-    Route::post('/user/pre_signup', 'MerchantController@postSignup')->name('user_pre_signup');
-    Route::post('/user/verify_email', 'UserController@verifyEmailOtp')->name('user_verify_email');
-    Route::post('/user/logout', 'UserController@oauthLogout')->name('user_logout');
-    Route::get('/user', 'UserController@getUserDetailsV2')->name('user_details');
-    Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments')->name('merchant_experiments');
-    Route::get('/merchant/features', 'MerchantController@getMerchantFeatures')->name('merchant_features');;
-    Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('merchant_details');
+        ->where(['path' => '.*'])->name('oauth_pre_flight'); // Bearer auth token sent by Mobile App's webview
+
+    // Adding this for handling web view logout, since webview uses /user endpoint
+    // but for oauth_logout we need to make a proxy call, therefore route_name is merchant
+    // Refer ApiRequestAny constructor
+    Route::post('/user/logout', 'UserController@oauthLogout')->name('oauth_user_logout'); // Bearer auth token sent by Mobile App's webview
+    Route::post('/user/pre_signup', 'MerchantController@postSignup')->name('oauth_user_pre_signup'); // Bearer auth token sent by Mobile App's webview
+    Route::post('/user/verify_email', 'UserController@verifyEmailOtp')->name('oauth_user_verify_email'); // Bearer auth token sent by Mobile App's webview
+    Route::get('/user', 'UserController@getUserDetailsV2')->name('oauth_user_details'); // Bearer auth token sent by Mobile App's webview
+    Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments')->name('oauth_merchant_experiments'); // Bearer auth token sent by Mobile App's webview
+    Route::get('/merchant/features', 'MerchantController@getMerchantFeatures')->name('oauth_merchant_features');; // Bearer auth token sent by Mobile App's webview
+    Route::get('/merchant/details', 'MerchantController@getMerchantDetails')->name('oauth_merchant_details'); // Bearer auth token sent by Mobile App's webview
     Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
-        ->name('merchant');
+        ->name('oauth_merchant'); // Bearer auth token sent by Mobile App's webview
+
     // Dashboard routes hit by GQL
-    Route::get('/org', 'AdminController@getOrg')->name('get_org');
-    Route::get('/user/keepalive', 'UserController@getKeepAlive')->name('user_keep_alive');
+    Route::get('/org', 'AdminController@getOrg')->name('oauth_get_org'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+
+    // refresh_access_token, email_reset_password
     Route::any('/user/api/{mode}/{path}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
-        ->name('user');
-    Route::post('/user/signin/otp', 'UserController@postSendLoginOtp')->name('user_signin_otp');
-    Route::post('/user/oauth-signin', 'UserController@postOauthSignIn')->name('user_oauth_signin');
-    Route::post('/user/signin/otp/verify', 'UserController@postVerifyLoginOtp')->name('user_signin_otp_verify');
-    Route::post('/user/signin', 'UserController@postSignin')->name('user_signin');
-    Route::post('/user/2fa/otp-resend', 'UserController@postResendOtp')->name('user_2fa_otp_resned');
-    Route::post('/user/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp')->name('user_verify_user_otp');
-    Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('user_verify_user_otp_verify');
-    // Partial 2FA
-    Route::post('/user/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('post_setup_2fa_verify_otp');
-    Route::post('/user/signin/otp/2fa', 'UserController@postOtpLogin2faPassword')->name('post_otp_login_2fa_password');
+        ->name('oauth_user'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+
+    Route::post('/user/signin/otp', 'UserController@postSendLoginOtp')->name('oauth_user_signin_otp'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    Route::post('/user/oauth-signin', 'UserController@postOauthSignIn')->name('oauth_user_oauth_signin'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    Route::post('/user/signin', 'UserController@postSignin')->name('oauth_user_signin'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    Route::post('/user/signin/otp/verify', 'UserController@postVerifyLoginOtp')->name('oauth_user_signin_otp_verify'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    Route::post('/user/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp')->name('oauth_user_verify_user_otp'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('oauth_user_verify_user_otp_verify'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+
+    // 2FA Oauth Routes
+    Route::post('/user/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('oauth_post_setup_2fa_verify_otp'); // Bearer auth 2fa token sent by GQL
+    Route::post('/user/signin/otp/2fa', 'UserController@postOtpLogin2faPassword')->name('oauth_post_otp_login_2fa_password'); // Bearer auth 2fa token sent by GQL
+    Route::post('/user/2fa/otp-resend', 'UserController@postResendOtp')->name('oauth_user_2fa_otp_resned'); // Bearer auth 2fa token sent by GQL
 });
