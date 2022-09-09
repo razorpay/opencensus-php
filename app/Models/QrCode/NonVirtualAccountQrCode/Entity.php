@@ -262,6 +262,11 @@ class Entity extends QrCode\Entity
         return (empty($partner) === false);
     }
 
+    public function isCheckoutQrCode(): bool
+    {
+        return $this->getRequestSource() === RequestSource::CHECKOUT;
+    }
+
     public function hasFixedAmount()
     {
         return $this->getAttribute(self::FIXED_AMOUNT);

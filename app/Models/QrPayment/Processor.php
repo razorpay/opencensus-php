@@ -18,7 +18,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
-use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
 use RZP\Models\QrCodeConfig\Repository as QrConfigRepo;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -134,6 +133,16 @@ class Processor extends Base\Core
 
                 return $payment;
             });
+
+        if (
+            $qrPayment->qrCode->isCheckoutQrCode() &&
+            $qrPayment->isExpected()
+        ) {
+            (new Service())->setQrCodePaymentStatusInCache(
+                $qrPayment->qrCode->getId(),
+                $qrPayment->payment
+            );
+        }
 
         $this->refundOrCapturePayment($qrPayment);
 

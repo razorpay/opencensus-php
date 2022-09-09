@@ -9,14 +9,25 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2;
 use RZP\Models\QrPaymentRequest;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Trace\Tracer;
+use RZP\Trace\TraceCode;
+use Illuminate\Support\Facades\Cache;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
     const UNPROCESSED_RESPONSE = 'unprocessed';
     const RAZORPAY_PAYMENT_ID  = 'razorpay_payment_id';
+
+    public static function getCacheKeyForQRCodeId(string $qrCodeId): string
+    {
+        QrV2::verifyIdAndStripSign($qrCodeId);
+
+        return 'payment:qr_code.polling.' . $qrCodeId . '.status';
+    }
 
     public function fetchPaymentsForQrCode($input, $id)
     {
@@ -105,26 +116,129 @@ class Service extends Base\Service
         return $gatewayResponse;
     }
 
-    public function fetchCapturedPaymentByQrCodeId($qrCodeId)
+    public function fetchPaymentStatusByQrCodeId(string $qrCodeId)
     {
-        $paymentId = $this->repo->qr_payment->getLatestExpectedPaymentIdForQrCodeId($qrCodeId);
+        $paymentId = $this->getPaymentIdFromQRCodeId($qrCodeId);
 
-        if ($paymentId === null)
+        if ($paymentId === '')
         {
             return [Payment\Entity::STATUS => self::UNPROCESSED_RESPONSE];
         }
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $this->merchant->getId());
+        return (new Payment\Service())->fetchStatus(Payment\Entity::getSignedId($paymentId));
+    }
 
-        if (($payment === null) or ($payment->getStatus() !== Payment\Status::CAPTURED))
-        {
-            return [Payment\Entity::STATUS => self::UNPROCESSED_RESPONSE];
+    public function isPaymentSuccessful(?Payment\Entity $payment = null): bool
+    {
+        return $payment &&
+            in_array(
+                $payment->getStatus(),
+                [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED],
+                true
+            );
+    }
+
+    public function setQrCodePaymentStatusInCache(string $qrCodeId, ?Payment\Entity $payment = null): void
+    {
+        $paymentId = $payment ? $payment->getId() : '';
+
+        $status = Constants::CREATED;
+
+        $ttl = Constants::CREATED_STATUS_TTL;
+
+        if ($this->isPaymentSuccessful($payment)) {
+            $status = $payment->getStatus();
+
+            $ttl = Constants::SUCCESS_STATUS_TTL;
         }
 
-        return [
-            self::RAZORPAY_PAYMENT_ID  => $payment->getPublicId(),
-            Payment\Entity::STATUS     => $payment->getStatus(),
-            Payment\Entity::CREATED_AT => $payment->getCreatedAt()
-        ];
+        $this->putPaymentStatusInCache($qrCodeId, $status, $paymentId, $ttl);
+    }
+
+    private function getPaymentIdFromCacheValue($cacheValue): string
+    {
+        return explode(Constants::CACHE_VALUE_SEPARATOR, $cacheValue)[1] ?? '';
+    }
+
+    private function getPaymentIdFromQRCodeId(string $qrCodeId): string
+    {
+        $key = self::getCacheKeyForQRCodeId($qrCodeId);
+
+        $cacheValue = Cache::get($key);
+
+        if ($cacheValue === null) {
+            return $this->handleIfCacheExpired($qrCodeId, $this->merchant->getId());
+        }
+
+        return $this->getPaymentIdFromCacheValue($cacheValue);
+    }
+
+    protected function handleIfCacheExpired(string $qrCodeId, string $merchantId): string
+    {
+        return  $this->getPaymentIdFromDataBase($qrCodeId, $merchantId);
+    }
+
+    protected function getPaymentIdFromDataBase(string $qrCodeId, string $merchantId): string
+    {
+        try
+        {
+            $paymentId = $this->repo->qr_payment->getLatestExpectedPaymentIdForQrCodeId($qrCodeId) ?? '';
+
+            if (!empty($paymentId)) {
+                $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $merchantId);
+
+                if ($this->isPaymentSuccessful($payment)) {
+                    $this->setQrCodePaymentStatusInCache($qrCodeId, $payment);
+
+                    return $payment->getId();
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_DB_CALL_FAILED
+            );
+        }
+
+        $this->setQrCodePaymentStatusInCache($qrCodeId);
+
+        return '';
+    }
+
+    /**
+     * @param string $qrCodeId
+     * @param string $status
+     * @param string|null $paymentId
+     * @param int $ttl
+     * @return void
+     */
+    protected function putPaymentStatusInCache(
+        string  $qrCodeId,
+        string  $status,
+        ?string $paymentId = null,
+        int     $ttl = Constants::DEFAULT_CACHE_TTL
+    ): void
+    {
+        $cacheValue = $status . Constants::CACHE_VALUE_SEPARATOR . $paymentId;
+
+        try
+        {
+            Cache::put(
+                self::getCacheKeyForQRCodeId($qrCodeId),
+                $cacheValue,
+                $ttl
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::QR_PAYMENT_CACHE_UPDATE_FAILED
+            );
+        }
     }
 }

@@ -7710,10 +7710,9 @@ trait Authorize
                 $this->fillReturnDataWithInvoice($payment, $returnData);
             }
             else if (($payment->hasOrder() === true) &&
-                     ($payment->isUpiTransfer() === false) &&
-                     ($payment->isQrV2UpiPayment() === false))
-            {
-                // adding isUpiTransfer and QrV2 check because icici upi transfer callback happens in direct auth
+                     ($payment->isUpiTransfer() === false)
+            ) {
+                // adding isUpiTransfer check because icici upi transfer callback happens in direct auth
                 // this is a hack. other upi va callbacks might not need this check
                 // because they might come under isProxyOrPrivilegeAuth check
                 // but there's nothing to sign here and va doesnt care about the return response

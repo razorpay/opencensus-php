@@ -108,6 +108,10 @@ class Service extends QrCode\Service
 
         $this->handleReminderForQrCode($qrCode);
 
+        if ($qrCode->isCheckoutQrCode()) {
+            (new QrPayment\Service())->setQrCodePaymentStatusInCache($qrCode->getId());
+        }
+
         $this->trace->info(TraceCode::QR_CODE_CHECKOUT_CREATED, $qrCode->toArrayPublic());
 
         return $qrCode->toArrayPublic();

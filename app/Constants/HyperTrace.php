@@ -59,6 +59,7 @@ class HyperTrace
 
     const QR_PAYMENT_FETCH_MULTIPLE_PAYMENTS                    = 'qrv2_qr_payment.fetchMultiplePayments';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_CODE_ID                = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';
+    const QR_PAYMENT_FETCH_PAYMENT_STATUS_BY_QR_CODE_ID         = 'qrv2_qr_payment.fetchPaymentStatusByQrCodeId';
     const QR_PAYMENT_FETCH_PAYMENT_BY_QR_PAYMENT_ID             = 'qrv2_qr_payment.fetchCapturedPaymentByQrCodeId';
 
     /*Onboarding APIs traces names*/

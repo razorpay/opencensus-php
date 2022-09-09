@@ -85,11 +85,10 @@ class Repository extends Base\Repository
     {
         QrV2\Entity::verifyIdAndStripSign($qrCodeId);
 
-        return $this->newQuery()
+        return $this->newQueryOnSlave()
                     ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
                     ->where(Entity::EXPECTED, '=', 1)
                     ->latest()
-                    ->get()
                     ->pluck(Entity::PAYMENT_ID)
                     ->first();
     }

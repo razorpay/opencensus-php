@@ -5,7 +5,14 @@ namespace RZP\Models\QrPayment;
 use App;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrCodeV2;
 
+/**
+ * @property-read QrCodeV2 $qrCode
+ * @property-read Payment  $payment
+ * @property-read BankAccount\Entity $payerBankAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const GATEWAY               = 'gateway';

@@ -31,10 +31,10 @@ class QrPaymentController extends Controller
         return ApiResponse::json($entities);
     }
 
-    public function fetchCapturedPaymentByQrCodeId($qrCodeId)
+    public function fetchCheckoutPaymentStatusByQrCodeId($qrCodeId)
     {
-        $response = Tracer::inspan(['name' => HyperTrace::QR_PAYMENT_FETCH_PAYMENT_BY_QR_CODE_ID], function () use ($qrCodeId) {
-            return (new Service())->fetchCapturedPaymentByQrCodeId($qrCodeId);
+        $response = Tracer::inspan(['name' => HyperTrace::QR_PAYMENT_FETCH_PAYMENT_STATUS_BY_QR_CODE_ID], function () use ($qrCodeId) {
+            return (new Service())->fetchPaymentStatusByQrCodeId($qrCodeId);
         });
 
         return ApiResponse::json($response);
