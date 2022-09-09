@@ -39,11 +39,15 @@ class SendSubmerchantActivatedEvents extends Job
     public function handle()
     {
         parent::handle();
+
+        $merchantCore = new Merchant\Core();
+        $app          = App::getFacadeRoot();
+
         try
         {
             if (in_array($this->currentActivationStatus, [Status::INSTANTLY_ACTIVATED, Status::ACTIVATED, Status::ACTIVATED_MCC_PENDING]))
             {
-                $partners = $this->repoManager->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($this->merchant->getId());
+                $partners = $merchantCore->fetchAffiliatedPartners($this->merchant->getId());
                 foreach ($partners as $partner)
                 {
                     $properties = [
@@ -59,10 +63,12 @@ class SendSubmerchantActivatedEvents extends Job
                         'count_of_activated_subm' => $count_of_activated_subm
                     ];
 
-                    $this->sendSegmentEvent($properties);
+                    $app['segment-analytics']->pushIdentifyAndTrackEvent(
+                        $partner, $properties, SegmentEvent::SUBMERCHANT_ACTIVATED);
                 }
+                // Fire all pushed events in a single request.
+                $app['segment-analytics']->buildRequestAndSend();
             }
-
         }
         catch (\Throwable $e)
         {
@@ -106,19 +112,4 @@ class SendSubmerchantActivatedEvents extends Job
         return count($submerchantIds);
     }
 
-    protected function sendSegmentEvent($properties)
-    {
-        try
-        {
-            $app = App::getFacadeRoot();
-            $app['segment-analytics']->pushIdentifyAndTrackEvent(
-                $this->merchant, $properties, SegmentEvent::SUBMERCHANT_ACTIVATED);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException($e, null,
-                                         TraceCode::SEGMENT_EVENT_PUSH_FAILURE
-            );
-        }
-    }
 }
