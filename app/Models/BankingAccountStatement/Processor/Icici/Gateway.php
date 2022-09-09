@@ -136,10 +136,31 @@ class Gateway extends BaseProcessor
         return $bankResponse;
     }
 
-    protected function shouldRetryMozartRequest(string $errorCode): bool
+    protected function shouldRetryMozartRequest(string $errorCode, $requestData): bool
     {
         if (in_array($errorCode, $this->mozartNonRetriableCode, true) === true)
         {
+            if ($errorCode === TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTIONS_DO_NOT_EXIST_WITH_THE_GIVEN_CRITERIA)
+            {
+                $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+
+                // Bank has kept a constraint that max difference between from_date and to_date can be 365 days.
+                $allowedDateDiff = 365 * $secondsPerDay;
+
+                if ((isset($requestData[Fields::ATTEMPT][Fields::FROM_DATE]) === true) and
+                    (isset($requestData[Fields::ATTEMPT][Fields::TO_DATE]) === true))
+                {
+                    $fromDate = $this->getTimestampFromDateString($requestData[Fields::ATTEMPT][Fields::FROM_DATE]);
+
+                    $toDate = $this->getTimestampFromDateString($requestData[Fields::ATTEMPT][Fields::TO_DATE]);
+
+                    if($toDate - $fromDate >= $allowedDateDiff)
+                    {
+                        return true;
+                    }
+                }
+            }
+
             return false;
         }
 
@@ -191,6 +212,8 @@ class Gateway extends BaseProcessor
 
         $previousLasttrid = null;
 
+        $requestData = null;
+
         $credentials = $this->getCredentialsFromBAS();
 
         do
@@ -199,7 +222,7 @@ class Gateway extends BaseProcessor
             // We don't have any bank response for the first request.
             $lastFormattedResponse = last($finalFormattedResponse) ?: $lastBankTransaction;
 
-            $requestData = $this->getRequestDataForMozart($lastFormattedResponse, $previousLasttrid, $credentials);
+            $requestData = $this->getRequestDataForMozart($requestData, $lastFormattedResponse, $previousLasttrid, $credentials);
 
             try
             {
@@ -228,7 +251,7 @@ class Gateway extends BaseProcessor
                     $errorCodeAndDescription = $ex->getGatewayErrorCodeAndDesc();
                     $errorCode = $errorCodeAndDescription[0];
 
-                    $shouldRetry = $this->shouldRetryMozartRequest($errorCode);
+                    $shouldRetry = $this->shouldRetryMozartRequest($errorCode, $requestData);
 
                     if ($shouldRetry === true)
                     {
@@ -399,7 +422,7 @@ class Gateway extends BaseProcessor
                     $errorCodeAndDescription = $ex->getGatewayErrorCodeAndDesc();
                     $errorCode               = $errorCodeAndDescription[0];
 
-                    $shouldRetry = $this->shouldRetryMozartRequest($errorCode);
+                    $shouldRetry = $this->shouldRetryMozartRequest($errorCode, $requestData);
 
                     if ($shouldRetry === true)
                     {
@@ -511,11 +534,35 @@ class Gateway extends BaseProcessor
         (new Validator)->validateInput('icici_credentials', $input);
     }
 
-    protected function getRequestDataForMozart(array $lastTransaction, $previousLasttrid, array $credentials)
+    protected function getRequestDataForMozart($requestData, array $lastTransaction, $previousLasttrid, array $credentials)
     {
-        $from_date = $this->getStatementStartTime($lastTransaction);
+        $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
 
-        $to_date = Carbon::today(Timezone::IST)->format('d-m-Y');
+        // Bank has kept a constraint that max difference between from_date and to_date can be 365 days.
+        $allowedDateDiff = 365 * $secondsPerDay;
+
+        $startTime = $this->getStatementStartTime($lastTransaction);
+
+        if ((isset($requestData[Fields::ATTEMPT][Fields::FROM_DATE]) === true) and
+            (isset($requestData[Fields::ATTEMPT][Fields::TO_DATE]) === true))
+        {
+            $fromDate = $this->getTimestampFromDateString($requestData[Fields::ATTEMPT][Fields::FROM_DATE]);
+
+            $toDate = $this->getTimestampFromDateString($requestData[Fields::ATTEMPT][Fields::TO_DATE]);
+
+            if($toDate - $fromDate >= $allowedDateDiff)
+            {
+                $startTime = $toDate + $secondsPerDay;
+            }
+        }
+
+        $endTime = Carbon::today(Timezone::IST)->getTimestamp();
+
+        $from_date = $this->getDateTimeStringFromTimestamp($startTime, self::DATE_FORMAT);
+
+        $to_date = $this->getDateTimeStringFromTimestamp(
+            min($endTime, $startTime + $allowedDateDiff),
+            self::DATE_FORMAT);
 
         $data = [
             Fields::ATTEMPT => [
@@ -686,8 +733,6 @@ class Gateway extends BaseProcessor
             // for icici this column stores output of value_date from bank's response
             $startTime = $lastTransaction[Entity::TRANSACTION_DATE];
         }
-
-        $startTime = $this->getDateTimeStringFromTimestamp($startTime, self::DATE_FORMAT);
 
         return $startTime;
     }
