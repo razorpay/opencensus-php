@@ -546,7 +546,7 @@ class App extends Component {
         }
       }
       const newIsPartnerModeEnabled =
-        location.pathname.startsWith('/partners/') && user.isIndependentPartnerKYCEnabled;
+        location.pathname.startsWith('/partners') && user.isIndependentPartnerKYCEnabled;
       if (isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,

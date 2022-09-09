@@ -7,7 +7,7 @@ import useActivation from './useActivation';
 export default function usePartnerActivation(): any {
   const snackbar = useSnackbar();
   const {
-    user: { isIndependentPartnerKYCEnabled },
+    user: { isIndependentPartnerKYCEnabled, partner_type },
     submerchantId,
   } = useApp();
   let partnerActivationStatus: null | string = null;
@@ -17,7 +17,9 @@ export default function usePartnerActivation(): any {
   const { data }: any = useQuery(
     `partnerActivationDetails`,
     async () => {
-      if (!isIndependentPartnerKYCEnabled || submerchantId) {
+      // submerchantId - present when reseller kyc form loaded
+      // partner_type - to check if merchant is partner
+      if (!isIndependentPartnerKYCEnabled || submerchantId || !partner_type) {
         return null;
       }
       const fetchPartnerActivationDetails = await fetch({
