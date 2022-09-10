@@ -178,6 +178,8 @@ class Base extends BaseProcessor
 
         $ids = array_unique(array_merge($paymentIds, $refundPaymentIds));
 
+        $ids = array_values($ids);
+
         if(count($ids) === 0)
         {
             $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_EMPTY_DATA, [
