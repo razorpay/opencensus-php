@@ -6784,17 +6784,26 @@ class RblBankingAccountStatementTest extends TestCase
     // 4. when GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT is greater than
     //    STATEMENT_CLOSING_BALANCE_CHANGE_AT but less than LAST_STATEMENT_ATTEMPT_AT, means we have fetched full statement
     //    of the merchant. This case arises when gateway balance cron gets delayed. Hence merchant is non-transacting.
+    //    INACTIVE_TIME is calculated as the difference between CURRENT_TIME and max(GATEWAY_BALANCE_CHANGE_AT, STATEMENT_CLOSING_BALANCE_CHANGE_AT)
+    // 5. If the merchant is inactive for more than a limit (default being 1 hour), and statement has been fetched once between the
+    //    current time and max(GATEWAY_BALANCE_CHANGE_AT, STATEMENT_CLOSING_BALANCE_CHANGE_AT) then the merchant is allowed to be satisfy
+    //    criteria. Hence Points 1,2,3,4 need to satisfy this criteria so that merchants with permanent discrepancies don't block
+    //    bandwidth for other merchants
     //
     // Step by step cron dispatch logic on this test scenario (explained by ID).
-    // 1. xba00000000001 is a transacting merchant and gets picked (Criterion point 1.)
+    // 1. xba00000000001 is a transacting merchant and gets picked (Criterion point 1 and 5)
     // 2. xba00000000003 not a transacting merchant (Criterion point 3.)
-    // 3. xba00000000004 is a transacting merchant (Criterion point 2.)
+    // 3. xba00000000004 is a transacting merchant (Criterion point 2 and 5)
     // 4. xba00000000002 not a transacting merchant (Criterion point 3.)
     // 5. xba00000000005 not a transacting merchant (Criterion point 4.)
     // 6. Since we can dispatch 3 account numbers and there are only 2 transacting merchants xba00000000003 gets picked
     //    up on the basis of oldest LAST_STATEMENT_ATTEMPT_AT.
     public function testStatementFetchDispatchUsingBASDetailsTable()
     {
+        $setDate = Carbon::createFromTimestamp(123500, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 3]);
 
         $this->fixtures->create('banking_account_statement_details', [
@@ -6875,6 +6884,8 @@ class RblBankingAccountStatementTest extends TestCase
         $this->startTest();
 
         Queue::assertPushed(BankingAccountStatementJob::class, 3);
+
+        Carbon::setTestNow();
     }
 
     public function testStatementFetchDispatchUsingBASDetailsTablePoolAccounts()

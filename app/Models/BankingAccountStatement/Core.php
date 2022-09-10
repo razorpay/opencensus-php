@@ -57,6 +57,11 @@ class Core extends Base\Core
 
     const DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT = 6;
 
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_RESERVE_PERCENTAGE = 95;
+
+    // Setting it to 1 hour in seconds
+    const DEFAULT_BANKING_ACCOUNT_STATEMENT_INACTIVE_DURATION_RATE_LIMIT = 3600;
+
     const DEFAULT_RX_BAS_FORCED_FETCH_TIME_IN_HOURS = 8;
 
     // account numbers are selected for statement fetch based on these rules.
@@ -3222,6 +3227,11 @@ class Core extends Base\Core
     // 4. when GATEWAY_BALANCE == STATEMENT_CLOSING_BALANCE and GATEWAY_BALANCE_CHANGE_AT is greater than
     //    STATEMENT_CLOSING_BALANCE_CHANGE_AT but less than LAST_STATEMENT_ATTEMPT_AT, means we have fetched full statement
     //    of the merchant. This case arises when gateway balance cron gets delayed. Hence merchant is non-transacting.
+    //    INACTIVE_TIME is calculated as the difference between CURRENT_TIME and max(GATEWAY_BALANCE_CHANGE_AT, STATEMENT_CLOSING_BALANCE_CHANGE_AT)
+    // 5. If the merchant is inactive for more than a limit (default being 1 hour), and statement has been fetched once between the
+    //    current time and max(GATEWAY_BALANCE_CHANGE_AT, STATEMENT_CLOSING_BALANCE_CHANGE_AT) then the merchant is allowed to be satisfy
+    //    criteria. Hence Points 1,2,3,4 need to satisfy this criteria so that merchants with permanent discrepancies don't block
+    //    bandwidth for other merchants
     //
     // Create and dispatch jobs to pull data for those MIDs
     // Return accountNumbers dispatched for processing for the route response
@@ -3230,11 +3240,28 @@ class Core extends Base\Core
     {
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
 
-        $limit = empty($input['limit']) === false ? $input['limit'] : $limit;
+        $limit = (empty($input['limit']) === false) ? $input['limit'] : $limit;
+
+        // Reserve Banking account statement fetch for some percentage of merchants which satisfy statement fetch criteria in one run
+        $reservePercentage = (empty($input['reserve_percent']) === false) ? $input['reserve_percent'] : null;
+
+        // Shifting priority during statement fetch from merchants who are inactive for than this limit in seconds, but still have a
+        // balance mismatch. This was earlier leading to other merchants not getting picked for statement fetch
+        $inactiveDurationLimit = (empty($input['inactive_duration_limit']) === false) ? $input['inactive_duration_limit'] : null;
 
         if (empty($limit) === true)
         {
             $limit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RATE_LIMIT;
+        }
+
+        if (empty($reservePercentage) === true)
+        {
+            $reservePercentage = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_RESERVE_PERCENTAGE;
+        }
+
+        if (empty($inactiveDurationLimit) === true)
+        {
+            $inactiveDurationLimit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_INACTIVE_DURATION_RATE_LIMIT;
         }
 
         $this->trace->info(
@@ -3242,7 +3269,9 @@ class Core extends Base\Core
             [
                 'channel'                              => $channel,
                 'banking_account_statement_rate_limit' => $limit,
-                'input'                                => $input
+                'reserve_percentage'                   => $reservePercentage,
+                'inactive_limit_in_seconds'            => $inactiveDurationLimit,
+                'input'                                => $input,
             ]);
 
         $accountType = array_pull($input, BASDetails\Entity::ACCOUNT_TYPE, BASDetails\AccountType::DIRECT);
@@ -3255,6 +3284,10 @@ class Core extends Base\Core
 
         $numberOfAccountsSelected = 0;
 
+        $minimumNumberOfOtherAccountsAllowed = (int) (round(((100 - $reservePercentage)/100) * $limit));
+
+        $minimumNumberOfCriteriaSatisfyingAccountsAllowed = (int) (round(($reservePercentage)/100) * $limit);
+
         $currentTime = Carbon::now()->getTimestamp();
 
         foreach ($bankingAccountDetails as $bankingAccountDetail)
@@ -3264,20 +3297,8 @@ class Core extends Base\Core
                 continue;
             }
 
-            $gatewayBalance = $bankingAccountDetail->getGatewayBalance();
-
-            $statementClosingBalance = $bankingAccountDetail->getStatementClosingBalance();
-
-            $gatewayBalanceChangeAt = $bankingAccountDetail->getGatewayBalanceChangeAt();
-
-            $statementClosingBalanceChangeAt = $bankingAccountDetail->getStatementClosingBalanceChangeAt();
-
-            $lastStatementAttemptAt = $bankingAccountDetail->getLastStatementAttemptAt();
-
-            if (($gatewayBalance !== $statementClosingBalance) or
-                ($gatewayBalance === $statementClosingBalance and
-                 $gatewayBalanceChangeAt > $statementClosingBalanceChangeAt and
-                 $gatewayBalanceChangeAt > $lastStatementAttemptAt))
+            if (($this->checkIfAccountNumberSatisfiesSelectionCriteria($bankingAccountDetail, $currentTime, $inactiveDurationLimit) === true) and
+                ($numberOfAccountsSelected < $minimumNumberOfCriteriaSatisfyingAccountsAllowed))
             {
                 $accountNumbersToDispatch[$numberOfAccountsSelected] = [
                     BASDetails\Entity::ACCOUNT_NUMBER => $bankingAccountDetail->getAccountNumber(),
@@ -3298,7 +3319,8 @@ class Core extends Base\Core
                 ]);
             }
 
-            if ($numberOfAccountsSelected >= $limit)
+            if (($numberOfAccountsSelected >= $minimumNumberOfCriteriaSatisfyingAccountsAllowed) and
+                (count($otherAccounts) > $minimumNumberOfOtherAccountsAllowed))
             {
                 break;
             }
@@ -3342,6 +3364,36 @@ class Core extends Base\Core
         }
 
         return ['accounts_processed' => $accountNumbersDispatched];
+    }
+
+    public function checkIfAccountNumberSatisfiesSelectionCriteria($bankingAccountDetail, $currentTime, $inactiveLimit)
+    {
+        $gatewayBalance = $bankingAccountDetail->getGatewayBalance();
+
+        $statementClosingBalance = $bankingAccountDetail->getStatementClosingBalance();
+
+        $gatewayBalanceChangeAt = $bankingAccountDetail->getGatewayBalanceChangeAt();
+
+        $statementClosingBalanceChangeAt = $bankingAccountDetail->getStatementClosingBalanceChangeAt();
+
+        $lastStatementAttemptAt = $bankingAccountDetail->getLastStatementAttemptAt();
+
+        // Checking this to avoid merchants with permanent discrepancies to be picked up by the cron
+        // and taking other merchants bandwidth
+        $inactiveTime = $currentTime - max($gatewayBalanceChangeAt, $statementClosingBalanceChangeAt);
+
+        $isCriteriaSatisfiedWithBalanceMismatch = ($gatewayBalance !== $statementClosingBalance);
+
+        $isCriteriaSatisfiedWithBalanceMatch = (($gatewayBalance === $statementClosingBalance) and
+                                                ($gatewayBalanceChangeAt > $statementClosingBalanceChangeAt) and
+                                                ($gatewayBalanceChangeAt > $lastStatementAttemptAt));
+
+        $isMerchantInactive = (($inactiveTime > $inactiveLimit) and
+                               ($lastStatementAttemptAt > max($gatewayBalanceChangeAt, $statementClosingBalanceChangeAt)));
+
+        return ((($isCriteriaSatisfiedWithBalanceMismatch === true) or
+                 ($isCriteriaSatisfiedWithBalanceMatch === true)) and
+                ($isMerchantInactive === false));
     }
 
     public function fetchMissingAccountStatementsForChannel($channel, $input)
