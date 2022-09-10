@@ -1676,6 +1676,8 @@ class Route
 
         'payouts_summary'                          => ['get',      'payouts/_meta/summary',                          'PayoutController@getSummary'                                       ],
         'payouts_workflow_summary'                 => ['get',      'payouts/_meta/workflows',                        'PayoutController@getWorkflowSummary'                               ],
+        'payouts_workflow_config_get'              => ['get',      'payouts/_meta/wf_config',                              'PayoutController@getWorkflowSummaryByType'                               ],
+        'admin_payouts_workflow_config_get'        => ['get',      'admin-workflows/payouts/wf_config',              'PayoutController@getWorkflowSummaryByType'                               ],
         'payouts_scheduled_time_slots'             => ['get',      'payouts/schedule/timeslots',                     'PayoutController@getScheduleSlotsForPayouts'                       ],
         'payouts_bulk_sample_file'                 => ['post',     'payouts/bulk/sample_file',                       'PayoutController@getSampleFileForBulkPayouts'                      ],
         'payouts_bulk_amount_type'                 => ['post',     'payouts/bulk/amount_type',                       'PayoutController@postBulkPayoutsAmountType'                        ],
@@ -5761,6 +5763,7 @@ class Route
         'payout_update_status',
         'payouts_summary',
         'payouts_workflow_summary',
+        'payouts_workflow_config_get',
         'payment_page_images',
         'commissions_get_multiple',
         'subscription_payment_fetch_by_id',
@@ -6171,6 +6174,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_payouts_workflow_config_get',
         'linked_account_reference_data_create',
         'amc_linked_account_create',
         'admin_website_section_action',
@@ -7506,6 +7510,7 @@ class Route
         'workflow_payout_amount_rules_create'      => Permission::CREATE_WORKFLOW,
         'workflow_get'                             => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_get_admin'   => Permission::VIEW_WORKFLOW,
+        'admin_payouts_workflow_config_get'        => Permission::VIEW_WORKFLOW,
         'workflow_payout_amount_rules_edit'        => Permission::EDIT_WORKFLOW,
         'workflow_get_multiple'                    => Permission::VIEW_ALL_WORKFLOW,
         'workflow_merchants_create_payout_get'     => Permission::VIEW_ALL_WORKFLOW,
@@ -8774,6 +8779,7 @@ class Route
         'payout_fetch_reversals'                       => Permission::VIEW_PAYOUT_REVERSAL,
         'payouts_summary'                              => Permission::VIEW_PAYOUT_SUMMARY,
         'payouts_workflow_summary'                     => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
+        'payouts_workflow_config_get'                  => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
         'wfs_config_get'                               => Permission::VIEW_PAYOUT_WORKFLOW_SUMMARY,
         'payout_links_fetch_multiple'                  => Permission::VIEW_PAYOUT_LINKS,
         'payout_links_fetch_by_id'                     => Permission::VIEW_PAYOUT_LINKS,
@@ -10281,6 +10287,7 @@ class Route
             'payouts_scheduled_time_slots',
             'payouts_summary',
             'payouts_workflow_summary',
+            'payouts_workflow_config_get',
             'pending_survey_get',
             'pincode_get',
             'plan_create',
@@ -10705,6 +10712,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'admin_payouts_workflow_config_get',
             'merchant_website_section_action',
             'merchant_website_section_save',
             'merchant_website_section_fetch',
@@ -12042,6 +12050,7 @@ class Route
             'payouts_scheduled_time_slots',
             'payouts_summary',
             'payouts_workflow_summary',
+            'payouts_workflow_config_get',
             'permission_create',
             'permission_delete',
             'permission_edit',
@@ -14511,7 +14520,7 @@ class Route
         'payout_service_process_scheduled_payout',
         'payouts_summary',
         'payouts_workflow_summary',
-
+        'payouts_workflow_config_get',
         'payout_links_fetch_multiple',
         'payout_links_fetch_by_id',
         'payout_links_create',

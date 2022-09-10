@@ -10,6 +10,7 @@ class Constants
 
     const WORKFLOW_TYPE                 = 'workflow_type';
     const PAYOUT_APPROVAL_TYPE          = 'payout-approval';
+    const ICICI_PAYOUT_APPROVAL_TYPE    = 'icici-payout-approval';
 
     const SUCCESS_STATUS_CODES          = 'success_status_codes';
 

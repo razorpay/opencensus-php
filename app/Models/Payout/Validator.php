@@ -22,6 +22,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
+use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Constants\Entity as EntityConstants;
@@ -121,6 +122,8 @@ class Validator extends Base\Validator
 
     const MAX_COUNT_DATA_CONSISTENCY_CHECKER_PAYOUT_IDS = 1000;
     const DATA_CONSISTENCY_CHECKER_PAYOUTS_DETAIL_FETCH = 'data_consistency_checker_payouts_detail_fetch';
+
+    const WFS_CONFIG_FETCH = 'wfs_config_fetch';
 
     //
     // This is required for build. Currently, build does not
@@ -507,6 +510,10 @@ class Validator extends Base\Validator
     protected static $dataConsistencyCheckerPayoutsDetailFetchRules = [
         Entity::PAYOUT_IDS        => 'required|array|max:' . self::MAX_COUNT_DATA_CONSISTENCY_CHECKER_PAYOUT_IDS,
         Entity::PAYOUT_IDS . '.*' => 'required|string|size:14',
+    ];
+
+    protected static $wfsConfigFetchRules = [
+        Entity::CONFIG_TYPE     => 'required|string|in:'.(Adapter\Constants::PAYOUT_APPROVAL_TYPE).','.(Adapter\Constants::ICICI_PAYOUT_APPROVAL_TYPE)
     ];
 
     protected static $payout2faOtpSendRequestRules = [

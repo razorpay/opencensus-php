@@ -60,6 +60,7 @@ use RZP\Jobs\ScheduledPayoutsProcess;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
 use RZP\Models\BankingAccountStatement;
+use RZP\Models\Workflow\Service\Adapter;
 use RZP\Exception\ServerErrorException;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\PartnerBankHealth\Events;
@@ -5838,13 +5839,13 @@ class Core extends Base\Core
         return $this->payoutRetryServiceClient->retryPayoutViaMicroservice($input);
     }
 
-    public function getFetchWorkflowSummary($skipFetchFromWfs = false)
+    public function getFetchWorkflowSummary($skipFetchFromWfs = false, $configType = Adapter\Constants::PAYOUT_APPROVAL_TYPE)
     {
         // if the flag $skipFetchFromWfs is set to false then we only fetch the workflow summary from the api db's workflow tables. If set true we fetch from Workflow service as well
         if (($skipFetchFromWfs === false) and
             ($this->isWorkflowServiceEnabled() === true))
         {
-            return (new WorkflowConfigService)->getConfigByType('payout-approval', $this->merchant->getId());
+            return (new WorkflowConfigService)->getConfigByType($configType, $this->merchant->getId());
         }
 
         $permissionId = $this->repo

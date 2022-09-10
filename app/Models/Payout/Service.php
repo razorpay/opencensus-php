@@ -43,6 +43,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Merchant\Account as Account;
 use RZP\Models\Payout\Batch as PayoutsBatch;
@@ -1458,6 +1459,20 @@ class Service extends Base\Service
         }
 
         return $this->core->getFetchWorkflowSummary();
+    }
+
+    public function getWorkflowSummaryByType($input)
+    {
+        // For test mode, we haven't enabled workflows yet
+        // therefore returning empty array
+        if ($this->mode === Constants\Mode::TEST)
+        {
+            return [];
+        }
+
+        (new Validator)->validateInput(Validator::WFS_CONFIG_FETCH, $input);
+
+        return $this->core->getFetchWorkflowSummary(false, $input[Entity::CONFIG_TYPE]);
     }
 
     public function processEventNotificationFromFts(array $input)

@@ -399,6 +399,15 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getWorkflowSummaryByType()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getWorkflowSummaryByType($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function processInitiateForQueuedPayouts()
     {
         $input = Request::all();

@@ -1916,7 +1916,18 @@ class Base extends BaseCore
      */
     protected function handleWorkflowCreationWithWorkflowService(Payout\Entity $payout, array $input = [])
     {
-        $input += [Adapter\Constants::WORKFLOW_TYPE => Adapter\Constants::PAYOUT_APPROVAL_TYPE];
+        $isIcici2faEnabled = $this->merchant->isFeatureEnabled(Features::ICICI_2FA);
+
+        if ($payout->balance->isAccountTypeDirect() === true &&
+            $payout->balance->getChannel() === Balance\Channel::ICICI &&
+            $isIcici2faEnabled === true)
+        {
+            $input += [Adapter\Constants::WORKFLOW_TYPE => Adapter\Constants::ICICI_PAYOUT_APPROVAL_TYPE];
+        }
+        else
+        {
+            $input += [Adapter\Constants::WORKFLOW_TYPE => Adapter\Constants::PAYOUT_APPROVAL_TYPE];
+        }
 
         $res = (new WorkflowServiceClient)->createWorkflow($payout, $input);
 

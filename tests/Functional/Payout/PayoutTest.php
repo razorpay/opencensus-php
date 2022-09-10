@@ -8232,6 +8232,33 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetPayoutMetaWorkflowProxyAuthByType()
+    {
+        $config = $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000',[],'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_10000000000000', $merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetPayoutMetaWorkflowAdminAuthByType()
+    {
+        $this->ba->adminAuth();
+
+        $this->ba->addAccountAuth('10000000000000');
+
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        $this->startTest();
+    }
+
     public function testDefaultWorkflowBehaviourForAPIRequest()
     {
         //
@@ -27257,5 +27284,96 @@ class PayoutTest extends OAuthTestCase
         $this->assertFalse(array_key_exists('workflow_history', $payouts['items'][0]));
     }
 
+    public function testCreatePayoutWithWorkflowForIciciCA()
+    {
+        $this->liveSetUp();
+
+        $secondBankingBalance = $this->fixtures->on('live')->create(
+            'balance',
+            [
+                'type'             => 'banking',
+                'merchant_id'      => '10000000000000',
+                'balance'          => 1000000,
+                'account_type'     => 'direct',
+                'channel'          => 'icici',
+            ]);
+
+        $secondBankingAccountAttributes = [
+            'id'             => 'DEcba4321DEcba',
+            'account_number' => '2224440041626999',
+            'balance_id'     => $secondBankingBalance->getId(),
+            'account_type'   => 'current',
+        ];
+
+        $secondBankingBalance->setAccountNumber(2224440041626999);
+
+        $secondBankingBalance->save();
+
+        $secondBankingAccount = $this->createBankingAccount($secondBankingAccountAttributes, 'live');
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'   => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at'  => 1598967657,
+                'config_type' => 'icici-payout-approval'
+            ]);
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $secondQueuedPayoutAttributes = [
+            'account_number'       => '2224440041626999',
+            'amount'               => 12345,
+            'queue_if_low_balance' => 1,
+            'merchant_id'          => 10000000000000,
+        ];
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $workflowServiceClientMock->shouldReceive('request')->with("twirp/rzp.workflows.workflow.v1.WorkflowAPI/Create",
+            Mockery::on(function ( $payload)
+            {
+                $this->assertArraySelectiveEquals(['workflow' => ['config_id'=>'FVLeJYoM0GPWUc']], $payload);
+
+                return true;
+            }))->andReturn($this->sendWFCreateMockResponse());
+
+        $this->fixtures->on('live')->create('banking_account_statement_details', [
+            Details\Entity::ID             => 'xbas0000000002',
+            Details\Entity::MERCHANT_ID    => '10000000000000',
+            Details\Entity::BALANCE_ID     => $secondBankingBalance->getId(),
+            Details\Entity::ACCOUNT_NUMBER => '2224440041626999',
+            Details\Entity::CHANNEL        => Details\Channel::ICICI,
+            Details\Entity::STATUS         => Details\Status::ACTIVE,
+        ]);
+
+        $payout = $this->createQueuedOrPendingPayout($secondQueuedPayoutAttributes, 'rzp_live_TheLiveAuthKey');
+    }
+
+    private function sendWFCreateMockResponse($configId = null): Requests_Response
+    {
+        $response = new Requests_Response();
+
+        $configId = $configId ?? "DGbcgfTgBCGDTJ";
+
+        $response->body = '{
+                                "id": "FQE6Xw4ZpoM21X",
+                                "status": "created",
+                                "domain_status": "created",
+                                "config_id":'.$configId.'}';
+
+        $response->status_code = 200;
+
+        return $response;
+    }
  }
 

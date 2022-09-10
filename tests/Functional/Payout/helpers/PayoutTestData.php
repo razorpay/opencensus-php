@@ -7417,6 +7417,37 @@ return [
         ],
     ],
 
+    'testGetPayoutMetaWorkflowProxyAuthByType' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                "config_type" => "payout-approval"
+            ],
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/wf_config',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetPayoutMetaWorkflowAdminAuthByType' => [
+        'request'  => [
+            'content' => [
+                "config_type" => "payout-approval"
+            ],
+            'method'  => 'GET',
+            'url'     => '/admin-workflows/payouts/wf_config',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testGetPayoutMetaWorkflowPrivateAuth' => [
         'request'  => [
             'method'  => 'GET',

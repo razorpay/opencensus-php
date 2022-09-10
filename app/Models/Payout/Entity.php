@@ -331,6 +331,8 @@ class Entity extends Base\PublicEntity
     //App Framework
     const BULK_PAYOUT_APP           = 'bulk_payout_app';
 
+    const CONFIG_TYPE               = 'config_type';
+
     // Attribute exposed in public response for proxy auth for ICICI 2FA enabled merchants.
     // This attribute indicates the reason why a payout is in pending state.
     const PENDING_REASON            = 'pending_reason';

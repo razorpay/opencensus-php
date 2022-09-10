@@ -40,6 +40,6 @@ class Repository extends Base\Repository
                     ->where($merchantIdColumn, '=', $merchantId)
                     ->where($enabledColumn, '=', 1)
                     ->orderBy($createdAtColumn, 'desc')
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 }
