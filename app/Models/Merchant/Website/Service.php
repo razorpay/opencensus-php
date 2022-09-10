@@ -1641,7 +1641,9 @@ class Service extends Base\Service
 
                 $urls[] = trim(strtolower($merchantDetail->getWebsite()), '/');
 
-                if (in_array($input[Constants::URL], $urls) === false)
+                $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO ,["urls"=>$urls,"input url"=>$input[Constants::URL]]);
+
+                if (in_array(trim(strtolower($input[Constants::URL]), '/'), $urls) === false)
                 {
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                 }
@@ -1653,6 +1655,8 @@ class Service extends Base\Service
                 // validate if the playstore_url exists for the merchant
                 if (empty($businessDetails->getPlaystoreUrl()) === true)
                 {
+                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR ,["input url"=>$input[Constants::URL]]);
+
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                 }
 
@@ -1663,6 +1667,8 @@ class Service extends Base\Service
                 // validate if the url in input exists for the merchant
                 if (empty($businessDetails->getAppstoreUrl()) === true)
                 {
+                    $this->trace->info(TraceCode::WEBSITE_SECTION_ERROR ,["input url"=>$input[Constants::URL]]);
+
                     throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
                 }
 
