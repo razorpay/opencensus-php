@@ -150,15 +150,12 @@ class Sbi extends Base
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
 
-            // Create output file by masking the card numbers in the data
-            $dataForOutputFile = $this->replaceCardNumbers($fileData);
-
             $fileName = $this->getFileToWriteName();
 
             $creator = new FileStore\Creator;
 
             $creator->extension(static::EXTENSION)
-                    ->content($dataForOutputFile)
+                    ->content($fileData)
                     ->name($fileName)
                     ->store(FileStore\Store::S3)
                     ->type(static::FILE_TYPE_OUTPUT)
@@ -270,7 +267,7 @@ class Sbi extends Base
                         'DD' .    // record type always DD
                         'R' . $this->numpad($uniqueReferenceNum, 14) .
                         $this->strpad('Razor Pay', 40) .
-                        $this->numpad($this->getCardNumber($card, $emiPayment->getGateway()), 19) .
+                        $this->numpad($card->getLast4(), 19) .
                         $this->numpad($principalAmount, 17) .
                         $this->numpad($tenure, 3) .
                         $this->strpad($this->getAuthCode($emiPayment), 6) .

@@ -466,7 +466,7 @@ class GatewayEmiFileTest extends TestCase
         $amountData = [58846,44894];
         $merchantNames = ['A WEIRD MERCH NT NAME  W TH SPECIAL CHAR'];
 
-        $cardNumbers = ['0004006660000086709'];
+        $cardNumbers = ['0000000000000006709'];
 
         $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers);
 
