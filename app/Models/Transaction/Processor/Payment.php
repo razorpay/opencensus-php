@@ -19,6 +19,8 @@ use RZP\Models\Schedule\Library as ScheduleLibrary;
 
 class Payment extends Base
 {
+    const CGST_PERCENTAGE = 1800;
+
     public function updateTransaction()
     {
         $this->trace->info(
@@ -394,20 +396,6 @@ class Payment extends Base
 
         $netAmount = 0;
 
-        switch (true)
-        {
-            case ($this->source->isHdfcVasDSCustomerFeeBearerSurcharge()):
-            case ($this->isVasMerchantWithDirectSettlement()):
-            case ($this->txn->isPostpaid() === true):
-            case ($this->txn->getCreditType() === Transaction\CreditType::FEE):
-            case (($this->source->isCardlessEmiWalnut369()) and ($this->source->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true)):
-            case ($this->txn->getCreditType() === Transaction\CreditType::AMOUNT):
-                $netAmount = $amount;
-                break;
-
-            default:
-                $netAmount = $amount - $this->fees;
-        }
         // READ THIS TO UNDERSTAND THE CRED DISCOUNT LOGIC
         // Transaction for cred case is created after payment is captured.
         // We receive discount data in callback step.
@@ -417,7 +405,27 @@ class Payment extends Base
         // On the other hand, if we set a fixed pricing(P1 * 0.15), the possible coin spent by customer is also taxed as per pricing.
         $payment = $this->source;
         $discountAmount = $this->getDiscountIfApplicable($payment);
+
+        switch (true)
+        {
+            case ($this->source->isHdfcVasDSCustomerFeeBearerSurcharge()):
+            case ($this->isVasMerchantWithDirectSettlement()):
+            case ($this->txn->isPostpaid() === true):
+            case ($this->txn->getCreditType() === Transaction\CreditType::FEE):
+            case ($this->txn->getCreditType() === Transaction\CreditType::AMOUNT):
+                $netAmount = $amount;
+                break;
+
+            default:
+                $netAmount = $amount - $this->fees;
+        }
+
         $netAmount -= $discountAmount;
+
+        if (($payment->isCardlessEmiWalnut369() === true) and ($payment->merchant->isFeatureEnabled(Feature\Constants::SOURCED_BY_WALNUT369) === true))
+        {
+            $netAmount += $discountAmount;
+        }
 
         $this->trace->debug(TraceCode::NET_AMOUNT_FOR_TRANSACTION,
             [
@@ -500,11 +508,24 @@ class Payment extends Base
 
             if ($discount !== null)
             {
+                /* For the walnut369 sourced merchants, we have to deduct the discount from mdr/subvention percentage and the tax
+                 * on discount Amount from credit. Hence, fee from Rzp is populated as discount + tax amount on discount.
+                 * Tax is 0.18% of discount amount. Credit for walnut sourced merchant = total_amount - discount - tax on discount.
+                 * */
+
+                $discountAmount = $discount->getAmount();
+                $fee = $discountAmount * (1 + (self::CGST_PERCENTAGE / 10000));
+                $tax = $discountAmount * (self::CGST_PERCENTAGE / 10000);
+
+                $this->fees = $fee;
+                $this->tax = $tax;
+
+                return $discountAmount;
+            }
+            else
+            {
                 $this->fees = 0;
-
                 $this->tax = 0;
-
-                return $discount->getAmount();
             }
         }
 
