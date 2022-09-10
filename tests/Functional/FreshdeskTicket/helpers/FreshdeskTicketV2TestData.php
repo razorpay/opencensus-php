@@ -1106,6 +1106,24 @@ return [
         ],
     ],
 
+    'testGetAgentsFilterInternalAuth' => [
+        'request'  => [
+            'url'     => '/internal/fd/support_dashboard/agent?email=vinita.nirmal@razorpay.com&fd_instance=rzpind',
+            'method'  => \Requests::GET,
+        ],
+        'response' => [
+            'content' => [
+                "count" => 1,
+                "items" => [
+                    [
+                        "agent_id" => 14000004891643,
+                        "email" => "vinita.nirmal@razorpay.com"
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testGetAgentDetailForTicketInternalAuth' => [
         'request'  => [
             'url'     => '/fd/ticket/1234/agent',

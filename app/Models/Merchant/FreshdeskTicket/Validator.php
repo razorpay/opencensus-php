@@ -272,6 +272,11 @@ class Validator extends Base\Validator
         'status'                => 'sometimes|integer|min:2|max:5|nullable',
     ];
 
+    protected static $getSupportDashboardAgentsRules          = [
+        Constants::EMAIL       => 'required|string',
+        Constants::FD_INSTANCE => 'required|custom',
+    ];
+
     protected static $createSupportDashboardGrievanceRules = [
         'description'           => 'required|string',
         'attachments'           => 'sometimes',

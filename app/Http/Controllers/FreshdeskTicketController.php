@@ -169,6 +169,15 @@ class FreshdeskTicketController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getAgents($type)
+    {
+        $input = Request::all();
+
+        $response = (new FreshdeskTicketService)->getAgents($input, $type);
+
+        return ApiResponse::json($response);
+    }
+
     public function getConversations($type, $id)
     {
         $input = Request::all();

@@ -2459,4 +2459,44 @@ class Service extends Base\Service
 
         return $variant === Constants::ENABLE;
     }
+
+    public function getAgents(array $input, $type)
+    {
+        (new Validator)->validateInput('get_' . studly_case($type) . '_agents', $input);
+
+        $queryParams = 'email=' . urlencode($input[Constants::EMAIL]);
+
+        $url = Constants::FRESHDESK_INSTANCES[$type][$input[Constants::FD_INSTANCE]];
+
+        $agents = $this->app[Constants::FRESHDESK_CLIENT]->getAgents($queryParams, $url);
+
+        $this->trace->info(TraceCode::FRESHDESK_GET_AGENTS_RESPONSE, [
+            "size_of_agents" => sizeof($agents),
+        ]);
+
+        return $this->rewriteAgentsResponse($agents);
+    }
+
+    protected function rewriteAgentsResponse(array $response)
+    {
+        $filteredAgents = [];
+
+        if (empty($response) === false)
+        {
+            foreach ($response as $agent)
+            {
+                $filteredAgent = [
+                    Constants::AGENT_ID => $agent[Entity::ID],
+                    Constants::EMAIL    => $agent[Constants::CONTACT][Constants::EMAIL],
+                ];
+
+                array_push($filteredAgents, $filteredAgent);
+            }
+        }
+
+        return [
+            'count' => sizeof($filteredAgents),
+            'items' => $filteredAgents
+        ];
+    }
 }

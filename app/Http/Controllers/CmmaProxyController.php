@@ -8,6 +8,7 @@ use RZP\Models\Admin\Permission\Name;
 class CmmaProxyController extends BaseProxyController
 {
     const CRON_UPDATE_PROCESS_ASSIGNED_TO = 'CronUpdateProcessAssignedTo';
+    const UPDATE_PROCESS_ASSIGNED_TO      = 'UpdateProcessAssignedTo';
     const GET_PROCESS_INSTANCE            = 'GetProcessInstanceById';
     const FETCH_PROCESS_INSTANCES         = 'FetchProcessInstances';
     const CREATE_PROCESS_INSTANCE         = 'CreateProcessInstance';
@@ -27,6 +28,7 @@ class CmmaProxyController extends BaseProxyController
         self::GET_USER_TASK_QUERY             => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskQuery/',
         self::GET_USER_TASK_BY_ID             => '/twirp\/rzp.cmma.userTask.v1.UserTaskService\/GetUserTaskById/',
         self::CRON_UPDATE_PROCESS_ASSIGNED_TO => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/UpdateProcessAssignedTo/",
+        self::UPDATE_PROCESS_ASSIGNED_TO      => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/UpdateProcessAssignment/",
         self::FETCH_PROCESS_INSTANCES         => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/FetchProcessInstances/",
         self::GET_PROCESS_INSTANCE_DETAILS    => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetProcessInstanceDetails/",
         self::GET_PROCESS_INSTANCE_RESOURCES  => "/twirp\/rzp.cmma.process.v1.ProcessManagementServiceAdminCalls\/GetResources/",
@@ -43,6 +45,7 @@ class CmmaProxyController extends BaseProxyController
         self::GET_PROCESS_INSTANCE_RESOURCES,
         self::UPDATE_TASK,
         self::UPDATE_USER_TASK_LIST,
+        self::UPDATE_PROCESS_ASSIGNED_TO,
     ];
 
     const CRON_ROUTES   = [
@@ -60,6 +63,7 @@ class CmmaProxyController extends BaseProxyController
         self::GET_PROCESS_INSTANCE_DETAILS   => Name::CMMA_PROCESS_VIEW,
         self::GET_PROCESS_INSTANCE_RESOURCES => Name::CMMA_PROCESS_VIEW,
         self::UPDATE_USER_TASK_LIST          => Name::CMMA_PROCESS_EDIT,
+        self::UPDATE_PROCESS_ASSIGNED_TO     => Name::CMMA_PROCESS_EDIT,
     ];
 
 

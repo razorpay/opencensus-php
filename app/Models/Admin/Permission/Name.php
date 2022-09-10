@@ -1027,10 +1027,11 @@ class Name
     const SET_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS  = 'set_blacklisted_vpa_regexes_for_merchants';
 
     //cmma admin permission
-    const CMMA_PROCESS_VIEW                    = 'cmma_process_view';
-    const CMMA_PROCESS_EDIT                    = 'cmma_process_edit';
-    const CMMA_USER_TASK_VIEW                  = 'cmma_user_task_view';
-    const CMMA_SERVICE_PROXY_ACCESS            = 'cmma_service_proxy_access';
+    const CMMA_PROCESS_VIEW         = 'cmma_process_view';
+    const CMMA_PROCESS_EDIT         = 'cmma_process_edit';
+    const CMMA_USER_TASK_VIEW       = 'cmma_user_task_view';
+    const CMMA_SERVICE_PROXY_ACCESS = 'cmma_service_proxy_access';
+    const CMMA_LEADS_SOP            = 'leads_sop';
 
     const DEBUG_NOCODE_ROUTES                   = 'debug_nocode_routes';
 

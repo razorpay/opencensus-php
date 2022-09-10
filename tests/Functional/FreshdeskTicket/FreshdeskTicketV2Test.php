@@ -49,10 +49,12 @@ class FreshdeskTicketV2Test extends TestCase
 
     const RZP_GET_TICKET_BY_ID                 = 'rzp_get_ticket_by_id';
 
-    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET                          = 'rzp_fetch_ticket_filter_agent_created_ticket';
-    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT           = 'rzp_fetch_ticket_filter_agent_created_ticket_wrong_merchant';
-    const RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET                = 'rzp_fetch_ticket_filter_paginated_agent_created_ticket';
-    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED                   = 'rzp_fetch_ticket_filter_agent_created_ticket_mapped';
+    const RZP_GET_AGENTS_FILTER = 'RZP_GET_AGENTS_FILTER';
+
+    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET                = 'rzp_fetch_ticket_filter_agent_created_ticket';
+    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_WRONG_MERCHANT = 'rzp_fetch_ticket_filter_agent_created_ticket_wrong_merchant';
+    const RZP_FETCH_TICKET_FILTER_PAGINATED_AGENT_CREATED_TICKET      = 'rzp_fetch_ticket_filter_paginated_agent_created_ticket';
+    const RZP_FETCH_TICKET_FILTER_AGENT_CREATED_TICKET_MAPPED         = 'rzp_fetch_ticket_filter_agent_created_ticket_mapped';
 
     const RZP_FETCH_UNASSIGNED_TICKET_BY_ID                                     = 'rzp_fetch_unassigned_ticket_by_id';
     const RZP_FETCH_AGENT_BY_FRESHDESK_AGENT_ID                                 = 'rzp_fetch_agent_by_freshdesk_agent_id';
@@ -879,6 +881,18 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents/123456789', 'GET', 'rzpind',
             $expectedRequestResponse['request'], $expectedRequestResponse['response']);
+
+        $this->startTest();
+    }
+
+    public function testGetAgentsFilterInternalAuth()
+    {
+        $this->ba->cmmaAppAuth();
+
+        $expectedRequestResponse = $this->getExpectedRequestResponse(self::RZP_GET_AGENTS_FILTER);
+
+        $this->checkFreshdeskCorrectInstanceCallAndRespondWith('agents?email=vinita.nirmal%40razorpay.com', 'GET', 'rzpind',
+                                                               $expectedRequestResponse['request'], $expectedRequestResponse['response']);
 
         $this->startTest();
     }
@@ -2341,6 +2355,39 @@ class FreshdeskTicketV2Test extends TestCase
                     'priority'      => 1,
                     'responder_id'  => 123456789,
                 ],
+
+            ];
+        }
+        else if ($key === self::RZP_GET_AGENTS_FILTER)
+        {
+            return [
+                'request'  => [],
+                'response' => [[
+                                   "available"       => false,
+                                   "occasional"      => false,
+                                   "id"              => 14000004891643,
+                                   "ticket_scope"    => 1,
+                                   "created_at"      => "2021-09-20T08:42:13Z",
+                                   "updated_at"      => "2022-08-26T09:56:37Z",
+                                   "last_active_at"  => "2022-08-26T09:56:37Z",
+                                   "available_since" => "2022-04-25T08:32:16Z",
+                                   "type"            => "support_agent",
+                                   "contact"         => [
+                                       "active"        => true,
+                                       "email"         => "vinita.nirmal@razorpay.com",
+                                       "job_title"     => null,
+                                       "language"      => "en",
+                                       "last_login_at" => "2022-08-25T07:41:22Z",
+                                       "mobile"        => null,
+                                       "name"          => "Vinita.nirmal",
+                                       "phone"         => null,
+                                       "time_zone"     => "New Delhi",
+                                       "created_at"    => "2021-09-20T08:42:12Z",
+                                       "updated_at"    => "2021-09-20T08:49:09Z"
+                                   ],
+                                   "signature"       => "<div dir=\"ltr\"><p><br><\/p>\n<\/div>"
+
+                               ]],
 
             ];
         }
