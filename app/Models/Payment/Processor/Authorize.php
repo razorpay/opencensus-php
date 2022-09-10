@@ -7006,6 +7006,15 @@ trait Authorize
                 {
                     return;
                 }
+
+                $variant = $this->app->razorx->getTreatment($token->card->getIin(),
+                    Merchant\RazorxTreatment::RECURRING_TOKENISATION,
+                    $this->mode);
+
+                if (strtolower($variant) !== 'on')
+                {
+                    return;
+                }
             }
 
             if ($core->checkIfTokenisationApplicable($token) === false)
