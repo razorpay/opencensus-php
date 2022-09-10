@@ -5326,8 +5326,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = parent::toArrayWebhook();
 
-        if (($this->getCurrency() === Currency\Currency::INR) and
-            ($this->getStatus() === Status::FAILED))
+        if ((($this->getCurrency() === Currency\Currency::INR) and
+            ($this->getStatus() === Status::FAILED)) OR
+            ($this->getStatus() === Status::AUTHORIZED))
         {
             unset($data[self::BASE_AMOUNT]);
         }
@@ -5335,6 +5336,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if ($this->getStatus() === Status::FAILED)
         {
             unset($data[self::AMOUNT_TRANSFERRED]);
+        }
+
+        if ($this->getStatus() === Status::CAPTURED)
+        {
+            $data[self::BASE_AMOUNT] = $this->getBaseAmount();
         }
 
         return $data;
