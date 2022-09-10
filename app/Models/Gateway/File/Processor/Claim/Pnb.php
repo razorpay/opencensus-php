@@ -124,7 +124,8 @@ class Pnb extends NetbankingBase
 
     protected function fetchBankPaymentId($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway'][Netbanking::BANK_TRANSACTION_ID]; // payment through nbplus service
         }
@@ -134,7 +135,8 @@ class Pnb extends NetbankingBase
 
     protected function fetchBankAccountNumber($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['gateway'][Netbanking::BANK_ACCOUNT_NUMBER]; // payment through nbplus service
         }
@@ -144,7 +146,8 @@ class Pnb extends NetbankingBase
 
     protected function fetchDate($data)
     {
-        if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
+        if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
+            ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
             return $data['payment']['created_at']; // payment through nbplus service
         }
