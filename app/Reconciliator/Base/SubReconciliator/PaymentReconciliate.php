@@ -1330,7 +1330,9 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
         }
 
-        if ((empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false) and ($this->payment->getMethod() === Payment\Method::UPI))
+        if ((empty($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false) and
+            (($this->payment->getMethod() === Payment\Method::UPI) or 
+             ($this->payment->getMethod() === Payment\Method::CARD)))
         {
             $this->setPaymentReference16($rowDetails[BaseReconciliate::REFERENCE_NUMBER]);
         }

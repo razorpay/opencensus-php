@@ -32,6 +32,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_MSG_TYPE       = 'msg_type';
     const COLUMN_MID            = 'mid';
     const COLUMN_ARN            = 'arn';
+    const COLUMN_RRN            = 'rrn no';
     const COLUMN_AUTH_CODE      = 'appr_code';
 
     const PREAUTH               = 'PREAUTH';
@@ -438,6 +439,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $row[self::COLUMN_ARN];
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[self::COLUMN_RRN] ?? null;
     }
 
     protected function getAuthCode($row)

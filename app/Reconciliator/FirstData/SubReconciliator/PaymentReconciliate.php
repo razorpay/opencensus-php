@@ -26,6 +26,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_CURRENCY                       = 'transaction_currency';
     const COLUMN_PAYMENT_AMOUNT                 = 'transaction_amt';
     const COLUMN_INTERNATIONAL_PAYMENT_AMOUNT   = 'transaction_amt';
+    const COLUMN_RRN                            = 'ret_ref_num';
 
     /**
      * In actual MIS file we still get Caps PID,
@@ -257,6 +258,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return $row[self::COLUMN_AUTH_CODE];
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[self::COLUMN_RRN] ?? null;
     }
 
     protected function getArn($row)

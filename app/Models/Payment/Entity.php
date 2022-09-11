@@ -1964,6 +1964,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 {
                     $authenticationData = (new Payment\Service)->getAuthenticationEntityForAcquirerData($this->getId());
                 }
+
                 if ((isset($authenticationData) == true) &&
                     (empty($authenticationData['gateway_reference_id2']) == false)) {
                     $acquirerData['authentication_reference_number'] = $authenticationData['gateway_reference_id2'];
@@ -2040,6 +2041,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 }
 
                 break;
+        }
+
+        // flipkart use case
+        if (($this->isMethodCardOrEmi() === true) and 
+            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_RRN) === true))
+        {
+            if (empty($this->getReference1()) === false)
+            {
+                $acquirerData['arn'] = $this->getReference1();
+            }
+
+            if (empty($this->getReference16()) === false)
+            {
+                $acquirerData['rrn'] = $this->getReference16();
+            }    
         }
 
         return (new Dictionary($acquirerData));

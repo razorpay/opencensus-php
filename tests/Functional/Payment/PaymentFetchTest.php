@@ -2025,6 +2025,26 @@ class PaymentFetchTest extends TestCase
         $this->assertLessThanOrEqual( $threshold, $timeLag);
     }
 
+    public function testFetchPaymentWithExposeArn()
+    {   
+        $this->fixtures->merchant->addFeatures([Feature::EXPOSE_RRN]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+            
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->fixtures->edit('payment',$paymentEntity['id'],[
+            'reference1' => 'doc_10000011111112',
+            'reference16' => 'rrn_10000011111112'
+        ]);
+
+        $paymentFetchResponse = $this->fetchPayment($paymentEntity['id']);
+
+        $this->assertNotNull($paymentFetchResponse['acquirer_data']['rrn']);
+        $this->assertNotNull($paymentFetchResponse['acquirer_data']['arn']);
+    }
+
     private function mockRazorxWith(string $featureUnderTest, string $value = 'on')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)

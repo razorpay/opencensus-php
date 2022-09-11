@@ -1556,6 +1556,11 @@ class Constants
      */
     const CONSOLIDATED_ORG_REPORTS = 'consolidated_org_reports';
 
+    /**
+     * Feature flag to to expose arn and rrn in payment acquirer data.
+     */
+    const EXPOSE_RRN = 'expose_rrn';
+
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -2125,6 +2130,7 @@ class Constants
         self::ICICI_2FA                       => true,
         self::BSE_MERCHANT_REPORT             => true,
         self::CONSOLIDATED_ORG_REPORTS        => true,
+        self::EXPOSE_RRN                      => true,
     ];
 
     // Entity type constants
