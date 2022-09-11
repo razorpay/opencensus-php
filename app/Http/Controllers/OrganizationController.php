@@ -84,6 +84,33 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function createOrgBankAccount()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ORG)->createOrgBankAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
+
+    public function getOrgBankAccount($id)
+    {
+        $data = $this->service(E::ORG)->getOrgBankAccount($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateOrgBankAccount($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ORG)->updateOrgBankAccount($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+
     public function deleteAdmin($adminId)
     {
         $data = $this->service(E::ADMIN)->deleteAdmin($adminId);

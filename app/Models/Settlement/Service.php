@@ -2286,6 +2286,25 @@ class Service extends Base\Service
         );
     }
 
+    public function readCustomSettlementsFile(array $input)
+    {
+        $this->trace->info(
+            TraceCode::LAMBDA_REQUEST,
+            [
+                'input'      => $input,
+            ]
+        );
+
+        $req = [
+            'bucket_name' => $input['bucket'],
+            'file_name'   => $input['key'],
+        ];
+
+        app('settlements_api')->forwardCustomSettlementFileReadRequest($req, $this->mode);
+
+        return [];
+    }
+
     public function processPosFile(array $input, $batchType): array
     {
         $this->trace->info(

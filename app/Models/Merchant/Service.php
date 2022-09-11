@@ -8082,14 +8082,15 @@ class Service extends Base\Service
             "business_address"     => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
             "global_hold_status"   => $merchant->getHoldFunds(),
             "global_hold_reason"   => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
-            "settle_to_org"        => $this->getMerchantOrgSettleValue($merchant)
+            "settle_to_org"        => $this->getMerchantOrgSettleValue($merchant),
+            "org_id"               => $merchant->getOrgId()
         ];
     }
 
     private function getMerchantOrgSettleValue($merchant)
     {
         return (($merchant->isFeatureEnabled(Feature\Constants::CANCEL_SETTLE_TO_BANK) === false) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_SETTLE_TO_BANK) === true));
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_SETTLE_TO_BANK) === true) and ($merchant->isFeatureEnabled(Feature\Constants::OLD_CUSTOM_SETTL_FLOW) === false));
     }
 
     public function getPersonalisedMethods($input)

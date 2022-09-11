@@ -2576,6 +2576,31 @@ class SettlementTest extends TestCase
     }
 
 
+    public function testSettleToOrgAttributeNegative2()
+    {
+        $this->ba->settlementsAuth();
+
+        // set feature flag on both merchant and org
+        $this->fixtures->create('feature', [
+            'name' => Constants::ORG_SETTLE_TO_BANK,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => Constants::OLD_CUSTOM_SETTL_FLOW,
+            'entity_id' => '100000Razorpay',
+            'entity_type' => 'merchant',
+        ]);
+
+        $result = $this->getGlobalConfig('100000Razorpay');
+
+        $this->assertEquals(false, $result["settle_to_org"]);
+    }
+
+
+
+
     public function testSettlementAdminDashboardAction()
     {
         $this->ba->adminAuth();

@@ -368,6 +368,9 @@ class Route
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
         'proxy_merchant_get_pricing'               => ['get',      'proxy/merchants/pricing',                        'MerchantController@proxyGetPricingPlan'                            ],
         'merchant_bank_account_create'             => ['post',     'merchants/bank_account',                         'MerchantController@postBankAccount'                                ],
+        'org_bank_account_create'                  => ['post',     'org/bank_account',                               'OrganizationController@createOrgBankAccount'                       ],
+        'org_fetch_bank_account'                   => ['get',      'org/{id}/bank_account',                          'OrganizationController@getOrgBankAccount'                          ],
+        'org_update_bank_account'                  => ['put',      'org/{id}/bank_account',                          'OrganizationController@updateOrgBankAccount'                       ],
         'merchant_bank_account_update'             => ['post',     'merchants/bank_account/update',                  'MerchantController@putBankAccountUpdate',                          ],
         'merchant_edit_bank_account'               => ['put',      'bank_accounts/{id}',                             'MerchantController@putBankAccount'                                 ],
         'merchant_bank_account_change_status'      => ['get',      'merchants/{id}/bank_account_change/status',      'MerchantController@getBankAccountChangeStatus'                     ],
@@ -863,6 +866,7 @@ class Route
         'setl_transaction_replay_admin'            => ['post',     'settlement/transactions/replay/admin',           'SettlementController@replaySettlementTransactionsAdmin'            ],
 
         'setl_process_pos_file'                    => ['post',     'pos_settlements/validate/file',                  'SettlementController@processPosSettlementFile'                     ],
+        'custom_setl_read_file'                    => ['post',     'custom_settlements/file',                        'SettlementController@readCustomSettlementsFile'                     ],
         'setl_pos_create'                          => ['post',     'pos_settlements/create',                         'SettlementController@createPosSettlement'                          ],
 
 //    deprecating this route since it is not in use
@@ -4570,6 +4574,7 @@ class Route
         'bank_transfer_process_file_rbl',
         'bank_transfer_process_file_yesbank',
         'setl_process_pos_file',
+        'custom_setl_read_file',
         'bank_transfer_process_rbl_internal',
         'bank_transfer_process_icici',
         'bank_transfer_process_icici_internal',
@@ -6174,6 +6179,9 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'org_bank_account_create',
+        'org_fetch_bank_account',
+        'org_update_bank_account',
         'admin_payouts_workflow_config_get',
         'linked_account_reference_data_create',
         'amc_linked_account_create',
@@ -7555,6 +7563,9 @@ class Route
         'non_org_admin_fetch_terminal_by_id'       => Permission::VIEW_TERMINAL_EXTERNAL_ORG,
         'merchant_bank_account_create'             => Permission::MERCHANT_BANK_ACCOUNT_DETAIL_CREATE,
         'merchant_bank_account_update'             => Permission::MERCHANT_BANK_ACCOUNT_DETAIL_UPDATE,
+        'org_bank_account_create'                  => Permission::MERCHANT_BANK_ACCOUNT_DETAIL_CREATE,
+        'org_fetch_bank_account'                   => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
+        'org_update_bank_account'                  => Permission::MERCHANT_BANK_ACCOUNT_EDIT,
         'admin_fetch_terminal_by_id'               => Permission::PAYMENTS_TERMINAL_FETCH_BY_ID,
         'merchants_update_bulk'                    => Permission::EDIT_BULK_MERCHANT,
         'merchants_update_channel'                 => Permission::EDIT_BULK_MERCHANT_CHANNEL,
@@ -11525,6 +11536,9 @@ class Route
             'merchant_bank_account_change_status',
             'merchant_bank_account_create',
             'merchant_bank_account_update',
+            'org_bank_account_create',
+            'org_fetch_bank_account',
+            'org_update_bank_account',
             'merchant_batches',
             'merchant_beneficiary_file',
             'merchant_billing_label_suggestions',
@@ -13481,6 +13495,7 @@ class Route
             'bank_transfer_process_file_yesbank',
             'bank_transfer_process_file',
             'setl_process_pos_file',
+            'custom_setl_read_file',
             'segment_create_update',
             'firs_document_categorize',
             'automate_merchant_master_firs',

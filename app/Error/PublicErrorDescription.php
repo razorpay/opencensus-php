@@ -1188,6 +1188,11 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_BATCH_TYPE_FOR_PAYOUT_LINK_CREATE_BATCH          = 'Invalid batch type for Payout Links Batch';
     const BAD_REQUEST_BATCH_ID_MISSING_FOR_PAYOUT_LINK_PROCESS_BATCH           = 'Batch ID missing for Payout Links Process Batch';
 
+    const BAD_REQUEST_BANK_ACCOUNT_TYPE_MISMATCH                               = 'Request object does not has \'type\' field set to \'org\'';
+    const BAD_REQUEST_BANK_ACCOUNT_TYPE_NOT_FOUND                              = 'Request object does not has \'type\' field';
+    const BAD_REQUEST_BANK_ACCOUNT_ENTITY_ID_NOT_PRESENT                       = 'Request object does not has \'entity_id\' which is a required field';
+    const BAD_REQUEST_ORG_BANK_ACCOUNT_ALREADY_EXISTS                          = 'Org bank account with the given org id already exists';
+    const BAD_REQUEST_ORG_NO_BANK_ACCOUNT_FOUND                                = 'Org bank account not found';
     const BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION                        = 'Contact Id missing for vendor portal invitation';
     const BAD_REQUEST_CONTACT_WITHOUT_EMAIL                                    = 'Contact does not have email id';
 

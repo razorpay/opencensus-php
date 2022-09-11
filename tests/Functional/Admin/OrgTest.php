@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Admin;
 
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\Settlements;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -19,6 +20,55 @@ class OrgTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth('test');
+    }
+
+    public function mockSettlementsForOrgBankAccount() {
+        $settlementsDashboardMock = $this->getMockBuilder( Settlements\Dashboard::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+        $settlementsApiMock = $this->getMockBuilder( Settlements\Api::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();;
+
+        $this->app->instance('settlements_dashboard', $settlementsDashboardMock);
+
+        $this->app->instance('settlements_api', $settlementsApiMock);
+
+        $this->app->settlements_dashboard->method('orgBankAccountUpdate')->willReturn([]);
+
+        $this->app->settlements_dashboard->method('createBankAccount')->willReturn([]);
+    }
+
+    public function testCreateOrgBankAccount()
+    {
+        $this->mockSettlementsForOrgBankAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetOrgBankAccount()
+    {
+        $this->mockSettlementsForOrgBankAccount();
+
+        $this->testCreateOrgBankAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateOrgBankAccount()
+    {
+        $this->mockSettlementsForOrgBankAccount();
+
+        $this->testCreateOrgBankAccount();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testCreateOrg()

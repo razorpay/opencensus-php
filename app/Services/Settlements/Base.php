@@ -25,6 +25,9 @@ class Base
     const MERCHANT_CONFIG_BULK_UPDATE       = '/twirp/rzp.settlements.merchant_config.v1.MerchantConfigService/BulkUpdate';
 
     const BANK_ACCOUNT_CREATE               = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/Create';
+    const ORG_BANK_ACCOUNT_CREATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Create';
+    const ORG_BANK_ACCOUNT_UPDATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Update';
+    const PROCESS_CUSTOM_SETTLEMENTS_FILE   = '/twirp/rzp.settlements.org_settlements.v1.OrgSettlementsService/UpdateSettlementStatus';
 
     const LEDGER_RECON_ACTIVE_MTU_CHECK     = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/CheckActiveMtu';
     const LEDGER_RECON_ACTIVE_MTU_ADD       = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/Create';
@@ -387,7 +390,7 @@ class Base
         return $beneName;
     }
 
-    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout')
+    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout', $isOrgAccount = false)
     {
         $beneCityPattern    = '/[^a-zA-Z0-9 _-]/';
 
@@ -419,8 +422,12 @@ class Base
 
         $beneCity           = $this->getBAAttributeAppropriateToNSS($beneCity,  $beneCityPattern,' ',30);
 
+        $entityIdentifier =  $isOrgAccount ?  'org_id' : 'merchant_id';
+
+        $entityIdentifierValue = $isOrgAccount ?  $ba->getEntityId() : $ba->getMerchantId();
+
         return [
-            'merchant_id'         => $ba->getMerchantId(),
+            $entityIdentifier     => $entityIdentifierValue ,
             'account_number'      => $ba->getAccountNumber(),
             'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
             'ifsc_code'           => $ba->getIfscCode(),
