@@ -11,14 +11,14 @@ class TerminalsEventListener
     {
         $entity = $event->entity;
 
-        app('trace')->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, ['terminal_id' => $entity->getId(),]);
+        (new Terminal\Service())->logRouteName($entity->getId());
     }
 
     public function onSaved(Terminal\EventSaved $event)
     {
         $entity = $event->entity;
 
-        app('trace')->info(TraceCode::TERMINALS_SAVED_EVENT, ['terminal_id' => $entity->getId(),]);
+        (new Terminal\Service())->logRouteName($entity->getId());
     }
 
 }

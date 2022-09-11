@@ -1556,6 +1556,20 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function logRouteName(string $terminalId)
+    {
+        $app = App::getFacadeRoot();
+
+        $ba = $app['basicauth'];
+
+        $routeName =  $app['request.ctx']->getRoute();
+
+        $this->trace->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, [
+            'terminal_id' => $terminalId,
+            'route_name'  => $routeName,
+        ]);
+    }
+
     public function consumeInstrumentRulesEvent(string $merchantId, bool $forceTrigger = false): array
     {
         $start = millitime();
