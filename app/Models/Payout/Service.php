@@ -2275,6 +2275,8 @@ class Service extends Base\Service
     {
         $input = PayoutBatchHelper::getPayoutInput($entry, $fundAccount->toArrayPublic(), $this->merchant);
 
+        $this->checkIfPayoutIsAllowed(false, $input);
+
         return $this->core->createPayoutToFundAccount($input, $this->merchant, $batchId);
     }
 
@@ -3088,9 +3090,14 @@ class Service extends Base\Service
         return $this->core->updatePayoutEntry($payoutId, $input);
     }
 
-    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, Merchant\Balance\Entity $balance)
+    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, Merchant\Balance\Entity $balance = null)
     {
         $payoutMode = $input[Payout\Entity::MODE] ?? null;
+
+        if ($balance === null)
+        {
+            $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
+        }
 
         if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true)
         {
