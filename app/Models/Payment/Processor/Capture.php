@@ -469,8 +469,6 @@ trait Capture
             }
             else
             {
-                $this->rollbackExternalOrder($this->payment);
-
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
@@ -1297,27 +1295,7 @@ trait Capture
             }
         }
     }
-
-    protected function rollbackExternalOrder(Payment\Entity $payment)
-    {
-        if ($payment->hasOrder() === false)
-        {
-            return;
-        }
-
-        $order = $payment->order;
-
-        if ($order->isExternal() === true)
-        {
-            $input = [
-                Order\Entity::AMOUNT_PAID => $order->getAmount() - $payment->getAmount(),
-                Order\Entity::STATUS      => Order\Status::ATTEMPTED,
-                'rollback'                => true
-            ];
-
-            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
-        }
-    }
+    
     /**
      * Update attributes of Order entity post corresponding payment is captured.
      *
