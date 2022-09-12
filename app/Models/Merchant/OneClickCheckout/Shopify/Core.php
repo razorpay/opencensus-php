@@ -432,12 +432,14 @@ class Core extends Base\Core
         $this->trace->info(
              TraceCode::SHOPIFY_1CC_API_SHIPPING_ERROR,
              [
-                 'type'       => 'rety_limit_exceeded_fetching_rates',
+                 'type'       => 'retry_limit_exceeded_fetching_rates',
                  'checkoutId' => $checkoutId,
                  'retries'    => $currentTries,
                  'time'       => millitime() - $start,
              ]
         );
+
+        $this->monitoring->addTraceCount(Metric::RETRY_LIMIT_EXCEEDED_RATES_ERROR_COUNT,['error_type'=>'retry_limit_exceeded_fetching_rates'] );
 
         return [
             'serviceable'  => false,

@@ -147,11 +147,13 @@ final class Metric
     const UPDATE_SHIPPING_ADDRESS_REQUEST_COUNT         = 'update_shipping_address_request_count';
     const UPDATE_SHIPPING_ADDRESS_CALL_TIME             = 'update_shipping_address_call_time';
 
+    const RETRY_LIMIT_EXCEEDED_RATES_ERROR_COUNT        = 'retry_limit_exceeded_rates_error_count';
+
     const SHOPIFY_APPLY_COUPONS_REQUEST_COUNT           = 'shopify_apply_coupons_request_count';
     const SHOPIFY_APPLY_COUPONS_CALL_TIME               = 'shopify_apply_coupons_call_time';
 
-    const SHOPIFY_REMOVE_COUPONS_REQUEST_COUNT           = 'shopify_remove_coupons_request_count';
-    const SHOPIFY_REMOVE_COUPONS_CALL_TIME               = 'shopify_remove_coupons_call_time';
+    const SHOPIFY_REMOVE_COUPONS_REQUEST_COUNT          = 'shopify_remove_coupons_request_count';
+    const SHOPIFY_REMOVE_COUPONS_CALL_TIME              = 'shopify_remove_coupons_call_time';
 
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_duration_millis';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_failure_count';
