@@ -31,7 +31,8 @@ class CheckoutExperiment
         // initialise with default values which we want to see if experiment fails for some reason
         $this->experimentResults = [
             'checkout_redesign_v1_5' => false,
-            'upi_ux'                 => 'existing_variant'
+            'upi_ux'                 => 'existing_variant',
+            'emi_ux_revamp'          => false,
         ];
     }
 
@@ -39,7 +40,7 @@ class CheckoutExperiment
      * This method is used to gather data for all experiments, make bulk evaluate call,
      * Compile all the experiment's results in array and return it.
      *
-     * sample output: ['checkout_redesign_v1_5' => true, 'upi_ux' => 'variant_2']
+     * sample output: ['checkout_redesign_v1_5' => true, 'upi_ux' => 'variant_2', 'emi_ux_revamp' => true]
      * @return array
      */
     public function getCheckoutExperimentsResults(): array
@@ -79,6 +80,8 @@ class CheckoutExperiment
         $this->experimentsData[] = $this->fillCheckoutRedesignExperimentData();
 
         $this->experimentsData[] = $this->fillUpiUxExperimentData();
+
+        $this->experimentsData[] = $this->fillEmiRevampExperimentData();
     }
 
     private function fillCheckoutRedesignExperimentData(): array
@@ -97,6 +100,14 @@ class CheckoutExperiment
         ];
     }
 
+    private function fillEmiRevampExperimentData(): array
+    {
+        return [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.checkout_emi_ui_revamp_splitz_experiment_id'),
+        ];
+    }
+
     /**
      * This method just goes through all experiments responses and allows us to handle
      * those responses the way we want for each experiment. if you are creating new
@@ -109,6 +120,7 @@ class CheckoutExperiment
     {
         $checkoutRedesignExperimentId = $this->app['config']->get('app.checkout_redesign_v1_5_splitz_experiment_id');
         $upiUxExperimentId            = $this->app['config']->get('app.checkout_upi_ux_splitz_experiment_id');
+        $emiRevampExperimentId        = $this->app['config']->get('app.checkout_emi_ui_revamp_splitz_experiment_id');
 
         foreach ($response['response']['bulk_evaluate_response'] as $experimentResponse)
         {
@@ -119,6 +131,10 @@ class CheckoutExperiment
             elseif ($experimentResponse['experiment']['id'] === $upiUxExperimentId)
             {
                 $this->experimentResults['upi_ux'] = $this->handleUpiUxResponse($experimentResponse);
+            }
+            elseif ($experimentResponse['experiment']['id'] === $emiRevampExperimentId)
+            {
+                $this->experimentResults['emi_ux_revamp'] = $this->handleCheckoutRedesignResponse($experimentResponse);
             }
         }
 
