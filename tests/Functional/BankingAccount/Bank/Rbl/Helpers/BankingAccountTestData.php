@@ -77,6 +77,36 @@ return [
         ],
     ],
 
+    'testBankLmsEndToEndForGetBranchList' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/bank_branches',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                  //  'count' => 495, checking this value in the test itself
+                    'data' => [],
+            ],
+        ],
+    ],
+
+    'testBankLmsEndToEndForGetRmList' => [
+        'request'  => [
+            'url'     => '/banking_accounts/rbl/lms/bank_pocs',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                //  'count' => , checking this value in the test itself
+                'data' => [],
+            ],
+        ],
+    ],
+
     'testCreateBankingAccountAdmin' => [
         'request'  => [
             'url'     => '/banking_accounts_admin',

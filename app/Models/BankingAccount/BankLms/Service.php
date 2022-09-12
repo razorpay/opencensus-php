@@ -18,6 +18,10 @@ class Service extends BankingAccount\Service
     protected $repository;
 
     protected $partnerBankMerchant;
+    /** @var  BranchMaster $branchMaster*/
+    protected $branchMaster;
+    /** @var RmMaster $rmMaster*/
+    protected $rmMaster;
 
     /**
      * @throws BadRequestException
@@ -29,6 +33,10 @@ class Service extends BankingAccount\Service
         $this->core = new Core();
 
         $this->validator = new Validator();
+
+        $this->branchMaster = new BranchMaster();
+
+        $this->rmMaster = new RmMaster();
 
         $partnerBankMerchantId = $this->validator->validateOnlyOneCaBankPartnerAndReturn();
 
@@ -69,6 +77,30 @@ class Service extends BankingAccount\Service
             $this->attachCaApplicationMerchantToBankPartner([BankingAccount\Entity::BANKING_ACCOUNT_ID => $banking_account_id]);
         }
         return ['success' => true];
+    }
+
+    /**
+     * @return  array
+     */
+    public function fetchBranchList(): array
+    {
+        $data = $this->branchMaster->getBranches();
+        return [
+            'count' => sizeof($data),
+            'data' => $data
+        ];
+    }
+
+    /**
+     * @return  array
+     */
+    public function fetchRmList(): array
+    {
+        $data = $this->rmMaster->getRms();
+        return [
+            'count' => sizeof($data),
+            'data' => $data
+        ];
     }
 
     /**

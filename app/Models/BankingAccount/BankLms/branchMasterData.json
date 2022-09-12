@@ -1,0 +1,4952 @@
+[
+  {
+    "branch_code": 1,
+    "name": "Shahupuri",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Atish Sharad Pansare",
+    "branch_manager_phone": 9604549972,
+    "address": "RBL Bank Ltd., 1st Lane, Shahupuri, Kolhapur 416 001",
+    "pincode": 416001
+  },
+  {
+    "branch_code": 2,
+    "name": "Kop.City(Laxmipuri)",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "RBL Bank Ltd., CTS No. 1414, Shop No. 1 to 5, Om Estate, C Ward, Laxmipuri, Kolhapur 416 002",
+    "pincode": 416002
+  },
+  {
+    "branch_code": 3,
+    "name": "Sangli Main",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Yogesh Kulkarni",
+    "branch_manager_phone": 9923406006,
+    "address": "RBL Bank Ltd., Sukh-Shanti Heights, College Corner, Aamrai Road, Shivaji Nagar (North), Sangli 416 416",
+    "pincode": 416416
+  },
+  {
+    "branch_code": 4,
+    "name": "Miraj",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Prashant Deokar",
+    "branch_manager_phone": 9421127298,
+    "address": "RBL Bank Ltd., High School Road, Jawahar Chowk, Shivraj Complex, Miraj 416 410",
+    "pincode": 416410
+  },
+  {
+    "branch_code": 5,
+    "name": "Jaysingpur",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Dnyaneshwar Salokhe",
+    "branch_manager_phone": 9922900341,
+    "address": "RBL Bank Ltd., A.B.Patil Complex, Subhash Road, Jaysingpur 416 101",
+    "pincode": 416101
+  },
+  {
+    "branch_code": 6,
+    "name": "Pethvadgaon",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Nilesh Salokhe",
+    "branch_manager_phone": 7028591347,
+    "address": "RBL Bank Ltd., R S No. 126, Bavadekar Complex, Near Bus Stand, Peth Vadgaon, Tal. Hatkanangle, Kolhapur, Maharashtra 415 112",
+    "pincode": 416112
+  },
+  {
+    "branch_code": 7,
+    "name": "Hupari",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Ajinkya Jadhav",
+    "branch_manager_phone": 9764939696,
+    "address": "RBL Bank Ltd., CTS No. 3105\/C, Plot No. 108, Mahaveer Nagar, Opp. Hutatma Main Road, Hupari, Tal. Hatkangale, Kolhapur 416 203",
+    "pincode": 416203
+  },
+  {
+    "branch_code": 8,
+    "name": "Rukadi",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Chandrakant Magdum",
+    "branch_manager_phone": 8291282008,
+    "address": "RBL Bank Ltd., Main Road A\/P- Rukadi. Tal: Hatkangle, Kolhapur 416 118",
+    "pincode": 416118
+  },
+  {
+    "branch_code": 9,
+    "name": "Ichalkaranji",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Vinayak Agawekar",
+    "branch_manager_phone": 9922877399,
+    "address": "RBL Bank Ltd., Shop No 3,4,5 Hira Towers, Ward No 12, Opp Aram Lodge\nNear Janata Chowk, Shahu Corner, Ichalkaranji 416115\n0230 2433853 Mob:-91 8291282009",
+    "pincode": 416115
+  },
+  {
+    "branch_code": 10,
+    "name": "M.Y.Kolhapur",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Mahendra Potnis",
+    "branch_manager_phone": 8530195301,
+    "address": "RBL Bank Ltd., Shop No. 6,7&8, Siddivinayak Apartment, CTS No. 233, Plot No. 12\/13, Tarabai Park, Kolhapur 416 003",
+    "pincode": 416003
+  },
+  {
+    "branch_code": 11,
+    "name": "M.Y.Sangli",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Jayant Apte",
+    "branch_manager_phone": 9850936365,
+    "address": "RBL Bank Ltd., Plot No. 88, Bank Building, Market Yard, Sangli 416 416",
+    "pincode": 416416
+  },
+  {
+    "branch_code": 12,
+    "name": "Mhaisal",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Rajendra Darure",
+    "branch_manager_phone": 7829910428,
+    "address": "RBL Bank Ltd., Ground Floor, CS No. 386, Parampujya Shati Sagar Muni Road, Near Vijapur-Miraj Highway, Mhiasal 416 409",
+    "pincode": 416409
+  },
+  {
+    "branch_code": 13,
+    "name": "Kalbadevi",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "GORAKH JHA",
+    "branch_manager_phone": 9819444761,
+    "address": "RBL Bank Ltd., Shop No. 222\/224, Ground floor, Zaveri Bazar Mumbai 400 002\u00a0",
+    "pincode": 400002
+  },
+  {
+    "branch_code": 14,
+    "name": "Bhilavdi",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Rakesh Patil",
+    "branch_manager_phone": 9657838625,
+    "address": "RBL Bank Ltd., Dakshin Bhag Bhilwadi Vikas Society Building, Bhilwadi 416 303. Taluka: Palus, Dist: Sangli",
+    "pincode": 416303
+  },
+  {
+    "branch_code": 15,
+    "name": "Nandre",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Anil Patil",
+    "branch_manager_phone": 9225822599,
+    "address": "RBL Bank Ltd., 249, E Ward, Society Building, A\/P: Nandre 416 423. Taluka: Miraj, Dist: Sangli",
+    "pincode": 416423
+  },
+  {
+    "branch_code": 16,
+    "name": "Samdoli",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Shital Patil",
+    "branch_manager_phone": 8291282016,
+    "address": "RBL Bank Ltd., A\/P: Samdoli 416 427. Taluka: Miraj. Dist: Sangli",
+    "pincode": 416427
+  },
+  {
+    "branch_code": 17,
+    "name": "Ingali",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Chetan Jayawant Sawant",
+    "branch_manager_phone": 8291282017,
+    "address": "RBL Bank Ltd., 446, A\/P: Ingali 416 202. Taluka: Hatkanangale, Dist: Kolhapur",
+    "pincode": 416202
+  },
+  {
+    "branch_code": 18,
+    "name": "Vasagade",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Sudhir Gurav",
+    "branch_manager_phone": 8291282018,
+    "address": "RBL Bank Ltd., A\/P: Vasgade, Taluka: Karveer, Dist: Kolhapur 416 204",
+    "pincode": 416204
+  },
+  {
+    "branch_code": 19,
+    "name": "Gandhinagar",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Pradip Shirolkar",
+    "branch_manager_phone": 8291282019,
+    "address": "RBL Bank Ltd., Main Road, Gandhinagar. Taluka: Karveer, Dist: Kolhapur 416 119.",
+    "pincode": 416119
+  },
+  {
+    "branch_code": 20,
+    "name": "Rajarampuri",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Swapna Jadhav",
+    "branch_manager_phone": 8291282020,
+    "address": "RBL Bank Ltd., Vitthal Complex, 9th Lane, Rajarampuri, Kolhapur 416 008",
+    "pincode": 416008
+  },
+  {
+    "branch_code": 21,
+    "name": "Haladi",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Abhijit chougle",
+    "branch_manager_phone": 8291282021,
+    "address": "RBL Bank Ltd., Plot No. 667, Survey No. 104, Haladi, Tal: Karveer, Dist: Kolhapur 416 001",
+    "pincode": 416001
+  },
+  {
+    "branch_code": 22,
+    "name": "Inam Dhamni",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Pradip Mane",
+    "branch_manager_phone": 9422409045,
+    "address": "RBL Bank Ltd., A\/P: Inam Dhamani, Tal: Miraj, Dist: Sangli 416 416",
+    "pincode": 416416
+  },
+  {
+    "branch_code": 23,
+    "name": "Arjunwad",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Rajkumar Bhoee",
+    "branch_manager_phone": 9970609643,
+    "address": "RBL Bank Ltd., A\/P: Arjunwad. Taluka: Shirol, Dist: Kolhapur 416 120",
+    "pincode": 416120
+  },
+  {
+    "branch_code": 24,
+    "name": "Belgaum",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Tasnim Yargatti",
+    "branch_manager_phone": 9591069252,
+    "address": "RBL Bank Ltd., Ground & Second Floor, CTS No. 3939\/1A, Club Road, Belagavi, Karnataka 590 001",
+    "pincode": 590001
+  },
+  {
+    "branch_code": 25,
+    "name": "Islampur",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Raviraj Belgoje",
+    "branch_manager_phone": 8291282025,
+    "address": "RBL Bank Ltd., CTS No. 4467, Ground Floor, Siddhanath Sankul, A Wing, Commercial Complex, Opp. Bus Stand, At Post Islampur, Taluka: Walwa, District: Sangli 415 409",
+    "pincode": 415409
+  },
+  {
+    "branch_code": 26,
+    "name": "Rangoli",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Yogesh Sasane",
+    "branch_manager_phone": 8975762286,
+    "address": "RBL Bank Ltd., A\/P: Rangoli,Taluka: Hatkanangale, Dist: Kolhapur",
+    "pincode": 416143
+  },
+  {
+    "branch_code": 27,
+    "name": "Shamnewadi",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Nikhil Powar",
+    "branch_manager_phone": 9922960096,
+    "address": "RBL Bank Ltd., 1145, Khemalapure Building, Near Bedkihal Circle, Main Road, Shamanewadi, Tal: Chikodi, Dist: Belgaum 591 214",
+    "pincode": 591214
+  },
+  {
+    "branch_code": 28,
+    "name": "Khupire",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Manojkumar Mane",
+    "branch_manager_phone": 9158515599,
+    "address": "RBL Bank Ltd., C\/o Shri Balbhim VKS Vikas Seva Sanstha, Khupire, Taluka: Karveer, Kolhapur 416 205",
+    "pincode": 416205
+  },
+  {
+    "branch_code": 29,
+    "name": "Ghotawade",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Sudhir Bodde",
+    "branch_manager_phone": 8291282029,
+    "address": "RBL Bank Ltd., Bapu Dongale Building, Main Road, Ghotawade, Taluka: Radhanagari, Dist: Kolhapur 416 230",
+    "pincode": 416230
+  },
+  {
+    "branch_code": 30,
+    "name": "Akkiwat",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Dhanyakumar Patil",
+    "branch_manager_phone": 8975762406,
+    "address": "RBL Bank Ltd., A\/P - Akkiwat, Tal: Shirol, Dist: Kolhapur 416 108",
+    "pincode": 416108
+  },
+  {
+    "branch_code": 31,
+    "name": "Nanapeth,Pune(Icc)",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Surya Ji Mane",
+    "branch_manager_phone": 9372667208,
+    "address": "RBL Bank Ltd., MCCIA Trade Tower, Off International Conventinal Centre, Showroom No. 5, Senapati Bhapat Road, Pune 411 016",
+    "pincode": 411016
+  },
+  {
+    "branch_code": 32,
+    "name": "Burli",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Abhinandan Ashok Wadkar",
+    "branch_manager_phone": 8291282032,
+    "address": "RBL Bank Ltd., A\/P: Burli 416 308. Tal: Palus, Dist.: Sangli 416 308",
+    "pincode": 416308
+  },
+  {
+    "branch_code": 33,
+    "name": "Shedbal",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Bharatesh Kalyani",
+    "branch_manager_phone": 8105721008,
+    "address": "RBL Bank Ltd., Bazar Peth, Shedbal,Tal.: Athani, Dist.: Belgaum 591 315",
+    "pincode": 591315
+  },
+  {
+    "branch_code": 34,
+    "name": "Shirguppi",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Raj Patil",
+    "branch_manager_phone": 9923080321,
+    "address": "RBL Bank Ltd., 289\/2 Bazar Peth, A\/P: Shirguppi ,Tal.: Athani, Dist.: Belgaum 591 242",
+    "pincode": 591242
+  },
+  {
+    "branch_code": 35,
+    "name": "Aitawade Budruk",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Sandeep banne",
+    "branch_manager_phone": 8975762272,
+    "address": "RBL Bank Ltd., 529, Society Bldg. No.2,A\/P - Aitawade Budru, Tal: Walwa, Dist: Sangli",
+    "pincode": 415401
+  },
+  {
+    "branch_code": 36,
+    "name": "Nerle",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Neminath Hatgine",
+    "branch_manager_phone": 7588064237,
+    "address": "RBL Bank Ltd., A\/P: Nerle 415 406. Tal.: Walwa, Dist.: Sangli",
+    "pincode": 415406
+  },
+  {
+    "branch_code": 37,
+    "name": "Dudhagaon",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Sachin S. Patil",
+    "branch_manager_phone": 8975762290,
+    "address": "RBL Bank Ltd., 395\/2, A\/P: Dudhagaon 416 315. Taluka: Miraj, Dist.: Sangli",
+    "pincode": 416315
+  },
+  {
+    "branch_code": 38,
+    "name": "Ankali(Sangli)",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Sanjay Magdum",
+    "branch_manager_phone": 9922900745,
+    "address": "RBL Bank Ltd., 178, A\/P: Ankali, Taluka: Miraj, Dist.: Sangli",
+    "pincode": 416416
+  },
+  {
+    "branch_code": 39,
+    "name": "Bellad-Bagewadi",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Ashok B K",
+    "branch_manager_phone": 8291282039,
+    "address": "RBL Bank Ltd., 395, A\/P: Bellad Bagewadi 591 305, Tal.: Hukeri, Dist.: Belgaum",
+    "pincode": 591305
+  },
+  {
+    "branch_code": 40,
+    "name": "Kabnur",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Chandrakant Zore",
+    "branch_manager_phone": 9922634849,
+    "address": "RBL Bank Ltd., Opposite Marathi Primary School, Ichalkaranji, Kolhapur Road, Kabnur, Tal: Hatkanangale, Dist: Kolhapur 416 138",
+    "pincode": 416138
+  },
+  {
+    "branch_code": 41,
+    "name": "Bhose",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Yogesh Dixit",
+    "branch_manager_phone": 9823361180,
+    "address": "RBL Bank Ltd., A\/P: CS. No. 191, Gandhi Chowk, Bhose, Tal: Miraj, Dist.: Sangli 416 420",
+    "pincode": 416420
+  },
+  {
+    "branch_code": 42,
+    "name": "Hingangaon",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Arihant Vhasukale",
+    "branch_manager_phone": 8291282042,
+    "address": "RBL Bank Ltd., 53, Grampanchayat Building, A\/P: Hingangaon,Taluka: Kavathe-Mahankal, Dist.: Sangli 416 405",
+    "pincode": 416405
+  },
+  {
+    "branch_code": 43,
+    "name": "Gaonbagh Sangli",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Nilesh Dalal",
+    "branch_manager_phone": 7774942800,
+    "address": "RBL Bank Ltd., CS.No. 966 & 967, Mehendale - Kulkarni Bhavan, Gaonbhag, Sangli 416 416",
+    "pincode": 416416
+  },
+  {
+    "branch_code": 44,
+    "name": "Gokak",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Chandragouda Patil",
+    "branch_manager_phone": 9986537822,
+    "address": "RBL Bank Ltd., CST. No.3195\/B\/2B, Opp Court, Main Road, Hospet Galli, Gokak 591 307",
+    "pincode": 591307
+  },
+  {
+    "branch_code": 45,
+    "name": "Unchagaon",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Amol Sawant",
+    "branch_manager_phone": 9527515200,
+    "address": "RBL Bank Ltd., Seema Pride, Plot No. 5, RS No. 350A, Village Unchagoan, Tal: Karveer, Dist.: Kolhapur, 416 005",
+    "pincode": 416005
+  },
+  {
+    "branch_code": 46,
+    "name": "Ankali(Belgaum)",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Anand Badanikai",
+    "branch_manager_phone": 9448821850,
+    "address": "RBL Bank Ltd., A\/P: Ankali 591 213, Tal.: Chikodi, Dis.: Belgaum",
+    "pincode": 591213
+  },
+  {
+    "branch_code": 47,
+    "name": "Nipani",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Rajagouda Patil",
+    "branch_manager_phone": 9620810937,
+    "address": "RBL Bank Ltd., 228, Padmaraj Bldg, Sakharwadi, Pune-Bangalore Road, Nipani 591 237. Dist.: Belgaum",
+    "pincode": 591237
+  },
+  {
+    "branch_code": 48,
+    "name": "Hubli",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sangappa Ukkali",
+    "branch_manager_phone": 8618139006,
+    "address": "RBL Bank Ltd., CTS. No. 4634, No. 10, Hotel Shri Krishna Bhavan Compound, Lamington Road, Hubballi 580 020",
+    "pincode": 580020
+  },
+  {
+    "branch_code": 49,
+    "name": "Borpadale",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Sachin Pawar",
+    "branch_manager_phone": 8291282049,
+    "address": "RBL Bank Ltd., A\/P: Borpadale. Taluka: Panhala, Dist.: Kolhapur 416 213",
+    "pincode": 416213
+  },
+  {
+    "branch_code": 50,
+    "name": "M.Y.Poona(Swargate)",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Pawan Wadhwani",
+    "branch_manager_phone": 9371307204,
+    "address": "RBL Bank Ltd, Shop No.1, Grace Platina, CTS 712\/B\/C, Bhawani Peth, Opp. Kumar Pacific Mall, Pune - 411042",
+    "pincode": 411042
+  },
+  {
+    "branch_code": 51,
+    "name": "Madilge",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Kiran Jambhale",
+    "branch_manager_phone": 8975762408,
+    "address": "The RBL BANK Ltd,A\/P : Gadhinglaj -Ajara Road, A\/P- Madilage, Tal- Ajara Dist- Kolhapur, Pin - 416505",
+    "pincode": 416505
+  },
+  {
+    "branch_code": 52,
+    "name": "Chinchwad",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "The RBL BANK Ltd. 'Ashirwaad', Plot No. 199\/a, Old Pune-Mumbai Highway, Near Hans Electricals, Chinchwad Station Road, Pune - 411 019",
+    "pincode": 411019
+  },
+  {
+    "branch_code": 53,
+    "name": "Kandiwali",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Varsha Malu",
+    "branch_manager_phone": 9920733166,
+    "address": "RBL BANK Limited, Shop no.1, 2 & 3 Grishma Heights, M.G. Road, Kandivali West, Mumbai \u2013 400067",
+    "pincode": 400067
+  },
+  {
+    "branch_code": 54,
+    "name": "Bhadavan",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Ramesh Patil",
+    "branch_manager_phone": 9823240529,
+    "address": "The RBL BANK Ltd,A\/P : Shop No. 1 & 2, Ground floor, CTS No. 999\/c, Milkat No. 1022 at Bhadvan, Tal \u2013 Ajara, Dist \u2013 Kolhapur 416 505",
+    "pincode": 416505
+  },
+  {
+    "branch_code": 55,
+    "name": "Visapur",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Nitin Desai",
+    "branch_manager_phone": 7020308615,
+    "address": "The RBL BANK Ltd,A\/P : VISAPUR \u2013 416 314.Taluka: Tasgaon, Dist. : Sangli",
+    "pincode": 416314
+  },
+  {
+    "branch_code": 56,
+    "name": "Dharwad",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "NAVEEN H N",
+    "branch_manager_phone": 8291282056,
+    "address": "The RBL BANK Ltd, Kabadi Mansion, Kosmos Club Road, Behind Court, Dharwad-580 001",
+    "pincode": 580001
+  },
+  {
+    "branch_code": 57,
+    "name": "Bangalore",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Maruti Moger",
+    "branch_manager_phone": 9980394036,
+    "address": "The RBL BANK Ltd. 178, 6Th Cross, 2nd main road Gandhinagar, Banglore - 560009",
+    "pincode": 560009
+  },
+  {
+    "branch_code": 58,
+    "name": "Thane",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Aslam Sayed",
+    "branch_manager_phone": 8291282058,
+    "address": "The RBL BANK Ltd. Laxmi Market, Pokharan Road No 1, Vartak Nagar, Thane (W) - 400606.",
+    "pincode": 400606
+  },
+  {
+    "branch_code": 59,
+    "name": "Baramati",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Sagar Gaikwad",
+    "branch_manager_phone": "98238 58958",
+    "address": "Shantilal Shaha (Pandarkar) Bldg.,Mahavir Path, Shantilal Shaha (Pandarkar) Bldg.Baramati",
+    "pincode": 413102
+  },
+  {
+    "branch_code": 60,
+    "name": "Solapur",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Sushilkumar Mahindrakar",
+    "branch_manager_phone": 7020305441,
+    "address": "The RBL Bank Ltd., Ground Floor, Hotel Dhruva Building, 157\/1 Railway Lines, Solapur-413 001",
+    "pincode": 413001
+  },
+  {
+    "branch_code": 61,
+    "name": "Margoa",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Parmanand Chaudhari",
+    "branch_manager_phone": 8408078647,
+    "address": "The RBL BANK Ltd. Vasant Arcade, Behind Police Station, Comba, Margoa - 403 601",
+    "pincode": 403601
+  },
+  {
+    "branch_code": 62,
+    "name": "Boriwali",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Mrudula Batwalkar",
+    "branch_manager_phone": 8291282062,
+    "address": "The RBL BANK Ltd. Shop No. 2 To 6, Shroff Arcade, Sodawala Lane, Near Thakare Hall, Boriwali (W), Mumbai - 400092.",
+    "pincode": 400092
+  },
+  {
+    "branch_code": 63,
+    "name": "Akluj",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Amol Suryavanshi",
+    "branch_manager_phone": 9420334797,
+    "address": "The RBL BANK Ltd,R.S. No.2258\/4A,Mahaveer Path,Akluj\u2013 413 101.Tal. \u2013 Malshiras, Dist. Solapur",
+    "pincode": 413101
+  },
+  {
+    "branch_code": 64,
+    "name": "Harogeri",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Bahubali Gane",
+    "branch_manager_phone": 9422656205,
+    "address": "The RBL BANK Ltd., VPC No.3096, Ground Floor, Sadalagi Building, Athani Road, HARUGERI, Taluka Raibag, District Belgaum-591 220",
+    "pincode": 591220
+  },
+  {
+    "branch_code": 65,
+    "name": "Ahmedabad",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Rajendra Bohara",
+    "branch_manager_phone": "8291282244",
+    "address": "The RBL BANK Ltd. Shop no. 8,9,10,13 & 14, Mallinath Complex, Opp. Sujata Flats, Shahibaug, Ahmedabad - 380004.",
+    "pincode": 380004
+  },
+  {
+    "branch_code": 66,
+    "name": "Vasai",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Wilbur Dcunha",
+    "branch_manager_phone": 9594436464,
+    "address": "GROUND FLOOR, SHOP NO. 2 & 3, NIKUNJ SIGNATURE, AMBADI ROAD, VASAI (W), THANE - 421 202",
+    "pincode": 401202
+  },
+  {
+    "branch_code": 67,
+    "name": "Panvel",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "The RBL BANK Ltd.Shop no 1 & 2 Crown Plaza Uran naka circle, Old Panvel - 410206",
+    "pincode": 410206
+  },
+  {
+    "branch_code": 68,
+    "name": "Vileparle",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Keyur dharia",
+    "branch_manager_phone": 9820245756,
+    "address": "The RBL BANK Ltd, Ground Floor, Everest Square Building, Shraddhanand Road, Near Shiv Sagar Hotel, Vileparle [E] - Mumbai - 400057",
+    "pincode": 400057
+  },
+  {
+    "branch_code": 69,
+    "name": "Nasik",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Purushottam Dange",
+    "branch_manager_phone": 8291282069,
+    "address": "RBL Bank Ltd, Nashik Branch, Shop No G-01, Ground Floor, Sahyadree Business Park INN, Near MICO Circle, Nashik - 422 002.",
+    "pincode": 422002
+  },
+  {
+    "branch_code": 70,
+    "name": "Fort",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Devendra Rathod",
+    "branch_manager_phone": 9820755304,
+    "address": "RBL Bank LTD-Dhannur House, 15, Sir P M Road, Fort, Mumbai - 400001",
+    "pincode": 400001
+  },
+  {
+    "branch_code": 71,
+    "name": "Karol Bagh",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Ashish Dubey",
+    "branch_manager_phone": "8291282071\u00a0",
+    "address": "The RBL BANK Ltd. 17 A\/53, Ground Floor, W.E.A. Karol Bagh, Opp. Jessaram Hospital, Guradwar Road, New Delhi - 110005.",
+    "pincode": 110005
+  },
+  {
+    "branch_code": 72,
+    "name": "Davangere",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Prasanna H S",
+    "branch_manager_phone": 9743474994,
+    "address": "The RBL BANK Ltd. 718\/1, Subhash Road,Mandi Peth,Davangere - 577 001.",
+    "pincode": 577001
+  },
+  {
+    "branch_code": 73,
+    "name": "Nerul",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Rohan Ghodke",
+    "branch_manager_phone": 7738826660,
+    "address": "The RBL BANK Ltd. Millenium Park, Plot No.17, Sector-25, Nerul, Navi Mumbai - 400706.",
+    "pincode": 400706
+  },
+  {
+    "branch_code": 74,
+    "name": "Tasgaon",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "Vaibhav Mane",
+    "branch_manager_phone": 8291282074,
+    "address": "The RBL BANK Ltd,1565-A, Siddheshwar Chowk, A\/P : Tasgaon. Dist. Sangli.",
+    "pincode": 416312
+  },
+  {
+    "branch_code": 75,
+    "name": "Ponda",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Kapil Shetkar",
+    "branch_manager_phone": 9423888940,
+    "address": "The RBL BANK Ltd. Dr. Dada Vaidya Chowk,Main Road, Ponda (Goa) - 403 401.",
+    "pincode": 403401
+  },
+  {
+    "branch_code": 76,
+    "name": "Kalyaninagar",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Anubhav Katyal",
+    "branch_manager_phone": 9811198714,
+    "address": "The RBL BANK Ltd. Shop No. 126 &127, Vitoria-I, Fortaleza, Central Avenue Road, Kalyaninagar, Pune - 411006.",
+    "pincode": 411006
+  },
+  {
+    "branch_code": 77,
+    "name": "Mapusa",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Avinash Manerikar",
+    "branch_manager_phone": 9422077533,
+    "address": "The RBL BANK Ltd., Shop No.S1, Mapusa Trade Centre, Morod, Mapusa, Bardez, Goa - 403 507",
+    "pincode": 403507
+  },
+  {
+    "branch_code": 78,
+    "name": "Kharghar",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Vivek Agrawal",
+    "branch_manager_phone": 8408886630,
+    "address": "The RBL BANK Ltd. Surya Koti Building, Surya Chs Ltd. Plot No.16, Sector 19, Kharghar, Navi Mumbai - 410 210. Tal.Panvel, Dist. Raigad.",
+    "pincode": 410210
+  },
+  {
+    "branch_code": 79,
+    "name": "Karad",
+    "cluster": "Sangli",
+    "region": "West Region",
+    "branch_manager_name": "SAMEER PATIL",
+    "branch_manager_phone": 8380082530,
+    "address": "The RBL BANK Ltd. Shop No. 1,2&3, Janaki Palza, Near Kolhapur Naka, Behind Mahatma Gandhi Statue, Karad - 415 110.",
+    "pincode": 415110
+  },
+  {
+    "branch_code": 80,
+    "name": "Silvassa",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Omprakash Sharma",
+    "branch_manager_phone": 8238096823,
+    "address": "The RBL BANK Ltd. Unit No.1,2 & 7, Roshan Avenue, Silvassa-Vapi Road, Silvassa - 396230.",
+    "pincode": 396230
+  },
+  {
+    "branch_code": 81,
+    "name": "Dombivali",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Abhishek Patil",
+    "branch_manager_phone": 8291282084,
+    "address": "The RBL BANK Ltd. Atma Tara, Ground Floor, Subhash Road, Vishnunagar, Dombivali (W) - 421202.",
+    "pincode": 421202
+  },
+  {
+    "branch_code": 82,
+    "name": "Panjim",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Soloman Makasare",
+    "branch_manager_phone": 9767892110,
+    "address": "The RBL BANK Ltd. Shop No.G-10 & 11,Nizamar Centre,Ground Floor, Dr. Atmaram Road,Panaji, Goa - 403 001.",
+    "pincode": 403001
+  },
+  {
+    "branch_code": 86,
+    "name": "Banerpune",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Abhijeet Sinha",
+    "branch_manager_phone": 9049352934,
+    "address": "The RBL BANK Ltd. A' Wing, Anmol Pride, Survey No. 270, Hissa No. 1\/16, Opp Bharat Petrol Pump, Baner, Pune - 411045.",
+    "pincode": 411045
+  },
+  {
+    "branch_code": 87,
+    "name": "Virar",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "ANKIT RAJ",
+    "branch_manager_phone": 9594601166,
+    "address": "The RBL BANK Ltd. Sumant Chaya, Purandarewadi, Next To Railway Stn, Near Talathi Office Bazarward, Virar (E) - 410303.",
+    "pincode": 410303
+  },
+  {
+    "branch_code": 88,
+    "name": "Lowerparel",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Shakti Pratap Singh",
+    "branch_manager_phone": 9764593300,
+    "address": "The RBL BANK Ltd. One Indiabulls Centre, Tower 2, 3Rd Floor, 841 Senapati Bapat Marg, Lower Parel (W), Mumbai - 400013.",
+    "pincode": 400013
+  },
+  {
+    "branch_code": 89,
+    "name": "Thanenavpada",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Vidya Monde",
+    "branch_manager_phone": 9673434446,
+    "address": "The RBL BANK Ltd. Gr Floor, Shankeshwar Arcade, Ram Ganesh Gadkari Path, Ram Maruti Cross Road, Thane(W) - 400602.",
+    "pincode": 400602
+  },
+  {
+    "branch_code": 91,
+    "name": "Koramangala",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "AjayKumar SM",
+    "branch_manager_phone": "7259680550\u00a0",
+    "address": "The RBL BANK Ltd.# 135 MIG,60ft road, 1st cross rd , KHB colony, 5th block near jyothi nivas college back gate,\u00a0 koramangala 560095",
+    "pincode": 560095
+  },
+  {
+    "branch_code": 94,
+    "name": "Malkapur",
+    "cluster": "Kolhapur 2",
+    "region": "West Region",
+    "branch_manager_name": "Deepak Ekshinge",
+    "branch_manager_phone": 9923424646,
+    "address": "The RBL BANK Ltd,More Building, CTS No.215,B ward, Malkapur, Tal \u2013 ShahuwadiDist \u2013 Kolhapur",
+    "pincode": 415101
+  },
+  {
+    "branch_code": 95,
+    "name": "Saneguruji",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Yuvaraj Powar",
+    "branch_manager_phone": 9130093021,
+    "address": "The RBL BANK Ltd. Plot No 9, RS No 1012, A Ward, Sadashiv Jadhav Housing Society, Radhanagari Road, Sane Guruji Vashat ,Kolhapur - 416012.",
+    "pincode": 416012
+  },
+  {
+    "branch_code": 96,
+    "name": "Kagal",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Mahadeo Chikurdekar",
+    "branch_manager_phone": 8291282004,
+    "address": "The RBL BANK Ltd,Ameya Complex,C S No.3611, 3612, 3613Brahmapuri, Kagal, Dist \u2013 Kolhapur \u2013 416 126",
+    "pincode": 416126
+  },
+  {
+    "branch_code": 97,
+    "name": "Kapurbawadi,Thane",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Gaurav Ramesh Patkar",
+    "branch_manager_phone": 8356813051,
+    "address": "The RBL BANK Ltd. SKYLINE ARCADE, GOUND FLOOR, GOPAL BAUGH, GHODBUNDER ROAD, OPP CINE WONDER, KAPURBAWADI, THANE (W) \u2013 400 607",
+    "pincode": 400608
+  },
+  {
+    "branch_code": 98,
+    "name": "Omerga",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Sachin Takbhate",
+    "branch_manager_phone": 9370180193,
+    "address": "The RBL BANK Ltd,Omerga Branch,Mane Hospital Building No 20\/21,Ward No 13, Main Road,Omerga 413 606 ,Dist - Osmanabad",
+    "pincode": 413606
+  },
+  {
+    "branch_code": 99,
+    "name": "Kurundwad",
+    "cluster": "Kolhapur 1",
+    "region": "West Region",
+    "branch_manager_name": "Mahaveer Chougule",
+    "branch_manager_phone": 8698818787,
+    "address": "The RBL BANK Ltd,123, B, Bhau Smruti, Near Play Groud,Kurundwad - 416 106,Tal Shirol, Dist Kolhapur",
+    "pincode": 416106
+  },
+  {
+    "branch_code": 100,
+    "name": "Capitol Point",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Yasser Rehman",
+    "branch_manager_phone": 9971500822,
+    "address": "Ground Floor, DLF Capitol Point, Baba Kharag Singh Marg, New Delhi 110 001",
+    "pincode": 110001
+  },
+  {
+    "branch_code": 101,
+    "name": "Dodballarpur",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Mithun M",
+    "branch_manager_phone": 9986862886,
+    "address": "The RBL BANK Ltd, 6th Cross Sahajananda Nagar,\n'D' Cross, (Near LIC office) Doddaballapur -561203",
+    "pincode": 561203
+  },
+  {
+    "branch_code": 102,
+    "name": "Vashi,Navimumbai",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Gayatri Pai",
+    "branch_manager_phone": 7738390986,
+    "address": "The RBL Bank Ltd, Shop no.25, Arenja Corner, Plot no 71, Sector 17, Vashi, Navi Mumbai - 400703",
+    "pincode": 400703
+  },
+  {
+    "branch_code": 103,
+    "name": "Badlapur",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "The RBL BANK Ltd Nisarg Pratiksha Apartments Old D P Road, Katrap,Badlapur East, Thane 421 503",
+    "pincode": 421503
+  },
+  {
+    "branch_code": 104,
+    "name": "Aurangabad",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "NISHIGANDH SOMWANSHI",
+    "branch_manager_phone": 9595149696,
+    "address": "The RBL BANK Ltd, Gr Floor N-3, Plot no 303,Cidco Jalna Road, Aurangabad - 431001",
+    "pincode": 431001
+  },
+  {
+    "branch_code": 106,
+    "name": "Bhiwadi(Ex-Herohonda)",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Ravi Bajaj",
+    "branch_manager_phone": 9587777087,
+    "address": "The RBL Bank Ltd,\nA-4, Ground Floor, Bhagat Singh Colny, Alwar Bypass Roadl,Bhiwadi- 301019, Dist- Alwar, Rajasthan.",
+    "pincode": 301019
+  },
+  {
+    "branch_code": 107,
+    "name": "Boisar",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Kamlesh Malvankar",
+    "branch_manager_phone": 8788431169,
+    "address": "The RBL Bank Ltd,Ameya Park Near Hotel Boisar Navapur Road Boisar Thane 401501",
+    "pincode": 401501
+  },
+  {
+    "branch_code": 108,
+    "name": "Surat",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Kishor Welekar",
+    "branch_manager_phone": "+91 9825118907",
+    "address": "The RBL BANK Ltd\nShowroom No 4, Ground Floor,\nTwin Tower A, Sahara Darwaja,\nRing Road, Surat - 395002.",
+    "pincode": 395002
+  },
+  {
+    "branch_code": 109,
+    "name": "Ahmednagar",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Ranjan Belwalkar",
+    "branch_manager_phone": "0241-2421047\/2421048",
+    "address": "The RBL BANK Ltd, Sai Icon, Opp Mauli Sankul,Savedi Road, Ahmednagar - 414003",
+    "pincode": 414003
+  },
+  {
+    "branch_code": 110,
+    "name": "Ramnagaram",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Jagannatha S",
+    "branch_manager_phone": 9538234691,
+    "address": "The RBL Bank Ltd,, Khata No.169\/1789\/1736, Ground Floor, GNR Complex, I stage, B M Road, Ramanagara-562159",
+    "pincode": 562159
+  },
+  {
+    "branch_code": 112,
+    "name": "Hyderabad",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sumeeth Chilkuri",
+    "branch_manager_phone": 9963477217,
+    "address": "D No: 6-3-865, Ground Floor,My Home Jupally,Opp Green Park,Green Lands, Ameerpet, Hyderabad - 500 016",
+    "pincode": 500016
+  },
+  {
+    "branch_code": 113,
+    "name": "Chennai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "PAWAN DAYAL",
+    "branch_manager_phone": 9840231054,
+    "address": "The RBL BANK Ltd, Sai Kalyani Towers, Old Door No. 105, New Door No. 56, G N Chetty Road, T Nagar, Chennai - 600 017",
+    "pincode": 600017
+  },
+  {
+    "branch_code": 114,
+    "name": "Noida",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Rahul Srivastava",
+    "branch_manager_phone": 7982535808,
+    "address": "The RBL BANK Ltd., P-7, Sector-18,Noida,P-7, Sector-18,Uttar Pradesh 201301",
+    "pincode": 201301
+  },
+  {
+    "branch_code": 116,
+    "name": "Gurgaon",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Verma",
+    "branch_manager_phone": 9599709002,
+    "address": "The RBL BANK Ltd., Ground Floor, Block A, Unit no \u2013 7 & 14 IFFCO Chowk, Gurgaon \u2013 122001 Haryana, India",
+    "pincode": 122001
+  },
+  {
+    "branch_code": 117,
+    "name": "Mandideep",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Prakash Natta",
+    "branch_manager_phone": 8291282117,
+    "address": "The RBL BANK Ltd.,Plot No. 1, Ward No. 12, Sector-A, Indiranagar, Tehsil Goharganj, Dist. Raisen, Mandhideep, Madhya Pradesh-462 046",
+    "pincode": 462046
+  },
+  {
+    "branch_code": 118,
+    "name": "Munoli",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Atul Desai",
+    "branch_manager_phone": 9538050921,
+    "address": "The RBL BANK Ltd., No. 2577\/2512\/1B, N C Yaligar Building, Panchaligershwar Temple Road, Manoli-597 117, Tal. Saudatti, Dist. Belgaum, Karnataka",
+    "pincode": 591117
+  },
+  {
+    "branch_code": 120,
+    "name": "Thirumala",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "VINODKUMAR K",
+    "branch_manager_phone": 9390765805,
+    "address": "The RBL BANK Ltd, Plot No. 87, Motor Workers Colony, Padmathipuram, Tirupati-Tiruchanur Road, Tirupati - 517 502",
+    "pincode": 517502
+  },
+  {
+    "branch_code": 121,
+    "name": "Bagalkot",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Pandhari Deshpande",
+    "branch_manager_phone": 8291302121,
+    "address": "The RBL BANK Ltd,T.P. No. 163A\/2B, Near Lions School, Bagalkot, Kartakata-587 101",
+    "pincode": 587101
+  },
+  {
+    "branch_code": 122,
+    "name": "Panruti",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "BALAMURUGAN.R",
+    "branch_manager_phone": 9655019389,
+    "address": "The RBL BANK Ltd, 68\/7, Kamaraj Nagar,\nAnnai Indira Gandhi Salai, Panruti,\nCuddalore District Tamilnadu 607106",
+    "pincode": "607106"
+  },
+  {
+    "branch_code": 123,
+    "name": "Pipariya",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Tariq Ali",
+    "branch_manager_phone": 8291282123,
+    "address": "The RBL BANK Ltd,Ground Floor, Murli Tower, Cement Road, Pipariya, Madhya Pradesh - 461 775",
+    "pincode": 461775
+  },
+  {
+    "branch_code": 124,
+    "name": "Mudhol",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Rajendra Shinde",
+    "branch_manager_phone": 8073500810,
+    "address": "The RBL BANK Ltd, CTS 4026\/3\/D\/6, Near Ranna Circle, Mudhol, District Bagalkot, Karnataka - 587 313",
+    "pincode": 587313
+  },
+  {
+    "branch_code": 126,
+    "name": "Vapi",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Rohit Kavediya",
+    "branch_manager_phone": 9586770921,
+    "address": "The RBL BANK Ltd,9\/10\/11 Sahara Market, Ground Floor, Vapi-Silvassa Road, Vapi, Gujarat - 396 191",
+    "pincode": 396191
+  },
+  {
+    "branch_code": 127,
+    "name": "Chincoli",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Sohel Deshmukh",
+    "branch_manager_phone": 8888896229,
+    "address": "Gut No. 111, Plot No. 5 & 6, Jalgaon Aurangabad Road, Chincholi Village, Jalgaon-425 003",
+    "pincode": 425003
+  },
+  {
+    "branch_code": 128,
+    "name": "Kadi",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Rakeshkumar Patel",
+    "branch_manager_phone": 9426460555,
+    "address": "The RBL BANK Ltd,Shop Nos. 9A,9B,10,10A & 10B, Diamond Plaza, Thol Road, Opp. Arts & Commercial College, Near Ankur Society, Kadi, Gujarat-382 715",
+    "pincode": 382715
+  },
+  {
+    "branch_code": 129,
+    "name": "Inchageri ( Bijapur )",
+    "cluster": "Belgaum",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Satyappa Uppar",
+    "branch_manager_phone": 8867599593,
+    "address": "Ground Floor, Gram Panchayat, Inchagri Village, Indi Taluk, Bijapur, Karnataka-586 117",
+    "pincode": 586117
+  },
+  {
+    "branch_code": 130,
+    "name": "Daman",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Abhay Singh",
+    "branch_manager_phone": 9913612499,
+    "address": "The RBL BANK Ltd, Ground Floor, Shop No. 1,2,3, Plot No. 758\/7 ad 758\/8 at VillageDabhel, Somnath Temple Road, Daman - 396 210",
+    "pincode": 396210
+  },
+  {
+    "branch_code": 131,
+    "name": "Bardoli",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "PARIMALSINH SOLANKI",
+    "branch_manager_phone": 9825109390,
+    "address": "The RBL BANK Ltd, U01 & U02 Empire Plaza, Opp. Vamdoor Petrol Pump, Station Road, Bardoli, District Surat, Gujarat - 394 601",
+    "pincode": 394601
+  },
+  {
+    "branch_code": 132,
+    "name": "Deesa",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "Rajesh Patel",
+    "branch_manager_phone": 9725053053,
+    "address": "The RBL BANK Ltd, Shop No. 9-10, Kiran Complex, Near Gayatri Temple, Hihway Road, Deesa, Gujarat-385 535",
+    "pincode": 385535
+  },
+  {
+    "branch_code": 134,
+    "name": "Unjha",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "Pratik Shah",
+    "branch_manager_phone": 9099081618,
+    "address": "The RBL BANK Ltd,Plot No. 82, Survey No. 8-5-27, Opp. Unjha Pharmacy, Station Road, Unjha, Guajrat-384 170",
+    "pincode": 384170
+  },
+  {
+    "branch_code": 135,
+    "name": "Peravaram",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Bezawada Raghavendra",
+    "branch_manager_phone": 9533033030,
+    "address": "Door No. 2-43, R.S. No. 117\/14, Main Road, Peravaram Village, Atreyapuram Mandal, East Godavari District, Andheri Pradesh-533 235",
+    "pincode": 533235
+  },
+  {
+    "branch_code": 136,
+    "name": "Calangute",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Shidesh Shirodkar",
+    "branch_manager_phone": 9823529635,
+    "address": "Shop No. 7,8,9,10, Ground and First Floor, Simplex Complex Phase 2, Calangute, Bardez, Goa - 403 516",
+    "pincode": 402516
+  },
+  {
+    "branch_code": 137,
+    "name": "Parvolim",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Samved Umarye",
+    "branch_manager_phone": 9834618576,
+    "address": "House No. 456, Near Chodankar Nursing Home, Alto Porvorim, Bardez, Goa-403521",
+    "pincode": 403521
+  },
+  {
+    "branch_code": 138,
+    "name": "Jainpurwas",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Avinash Sharma",
+    "branch_manager_phone": 7056296900,
+    "address": "Grand Sapphire Infotech Pvt Ltd, Village jainpurwas, NH-8 highway, Tehsil Behror, District Alwar, 301701",
+    "pincode": 301701
+  },
+  {
+    "branch_code": 139,
+    "name": "Chak Kamed (Hamukhedi)",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "PREETI BHADOURIA",
+    "branch_manager_phone": 8291282139,
+    "address": "Ground Floor, Survey No. 283\/2, Gram Chak Kamed, Tehsil Gathiya, District Ujjain, Madhya Pradesh-456 006",
+    "pincode": 456006
+  },
+  {
+    "branch_code": 140,
+    "name": "Kamtoon",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Ankur Sahu",
+    "branch_manager_phone": 9326649956,
+    "address": "Flat no 1, Mahesh Pueam Colony, Near New Holland Showroom village Kamtoon, JJ road, Tehsil - Bareli District Raisen MP-464668",
+    "pincode": 464668
+  },
+  {
+    "branch_code": 141,
+    "name": "Delhi Hauj Khas",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Vikas Mohan",
+    "branch_manager_phone": 9711716615,
+    "address": "Ground floor, M-6 Hauz Khas, New Delhi 110016",
+    "pincode": 110016
+  },
+  {
+    "branch_code": 142,
+    "name": "Delhi Rajouri Garden",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Hemani Suri",
+    "branch_manager_phone": 9999857791,
+    "address": "J-13\/52, Basement & Ground floor, Rajouri Garden 110027",
+    "pincode": 110027
+  },
+  {
+    "branch_code": 143,
+    "name": "Vadodara",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Palak Sharma",
+    "branch_manager_phone": 9925041149,
+    "address": "Ground Floor, Chitrakut Complex, Near Pashabhai park and Natubhai Circle, Race Course Circle Road, Vadodara-390 007",
+    "pincode": 390007
+  },
+  {
+    "branch_code": 145,
+    "name": "Moradabad",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Kashif Lohani",
+    "branch_manager_phone": 0,
+    "address": "Gate No.431, Chhawani, near Pilli Kothi, Civil Lines, Moradabad, Uttar Pradesh - 244001",
+    "pincode": 244001
+  },
+  {
+    "branch_code": 146,
+    "name": "Panipat",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "RBL Bank ltd, Dayal Building, Near Ahuja Petrol Pump, G.T. Road, Panipat -132103",
+    "pincode": 132103
+  },
+  {
+    "branch_code": 147,
+    "name": "Salem",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "RBL Bank Ltd\nNo:22,Kandaswarna Beemaratha Arcade,\nIndhira Gandhi Road,\nFairlands,Salem \u2013 636016.",
+    "pincode": 636016
+  },
+  {
+    "branch_code": 148,
+    "name": "Udaipur",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Mahendra Pareek",
+    "branch_manager_phone": 9460712331,
+    "address": "GROUND FLOOR, PLOT NO. 99, L ROAD, BHUPALPURA, VERMA CIRCLE, OPP. COLLECTOR BUNGALOW, UDAIPUR - 313001",
+    "pincode": 313001
+  },
+  {
+    "branch_code": 150,
+    "name": "Basoda",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Amit Shrivastava",
+    "branch_manager_phone": 8291282150,
+    "address": "Ground Floor, Ward No. 12. Station Road, Ganj Basoda, Madhya Pradesh - 464 221",
+    "pincode": 464221
+  },
+  {
+    "branch_code": 151,
+    "name": "Dhar",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "SATISH PATWARI",
+    "branch_manager_phone": 8291232151,
+    "address": "Shop 21-22, Kashi Baghh, Dhar, Madhya Pradesh - 454 001",
+    "pincode": 454001
+  },
+  {
+    "branch_code": 152,
+    "name": "Bhopal",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Megha Rajput",
+    "branch_manager_phone": 8291282152,
+    "address": "Ground Floor, Plot No. 2, Akanksha Complex, Front Right side portion, Zone-1, M.P. Nagar, Bhopal-462 011",
+    "pincode": 462011
+  },
+  {
+    "branch_code": 153,
+    "name": "Seoni Malwa",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Kaushik",
+    "branch_manager_phone": 8291282153,
+    "address": "New address \u2013 RBL Bank Limited Khasra No 92\/12, Ground Floor Ward No 15, Main road, Seoni Malwa, Near Of Do Pipalwala Baba, Madhya Pradesh - 461223",
+    "pincode": 461223
+  },
+  {
+    "branch_code": 154,
+    "name": "Narmadapuram",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Manish Pandey",
+    "branch_manager_phone": 8291282154,
+    "address": "Plot No. 34\/1, Al Aziz Tower, Babai Piparya Road, Anand Nagar, Hoshangabad - 461 001",
+    "pincode": 461001
+  },
+  {
+    "branch_code": 155,
+    "name": "Mumbai Sakar Bhawan",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Chirag Vaya",
+    "branch_manager_phone": 9322768436,
+    "address": "Office No. 1\/A, Ground Floor, Mittal Court, 224 Nariman Point, Mumbai 400 021",
+    "pincode": 400021
+  },
+  {
+    "branch_code": 156,
+    "name": "Prestige Towers, Bangalore",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Anoop A",
+    "branch_manager_phone": 9535661919,
+    "address": "Ground Floor, G-13, G-14,G-15 & G-17 Prestige Towers, 99 & 100 Residency Road, Bangalore-560 025",
+    "pincode": 560025
+  },
+  {
+    "branch_code": 157,
+    "name": "Pune Camp, Pune",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Arunkumar Dubey",
+    "branch_manager_phone": "020-66461613 - 15",
+    "address": "Ground Floor, 11, Moledina Road, Pune - 411 001",
+    "pincode": 411001
+  },
+  {
+    "branch_code": 158,
+    "name": "Ahmedabad Viva Complex",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Shailendra Chadha",
+    "branch_manager_phone": 8291282158,
+    "address": "Viva Complex, Ellisbridge, Opp. Parimal Garden, Ahmedabad-380 006",
+    "pincode": 380006
+  },
+  {
+    "branch_code": 159,
+    "name": "Andheri (West)",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Siddharth Sinha",
+    "branch_manager_phone": 8291282159,
+    "address": "Ground Floor, Ghanshyam Chambers Plot No. B-12, Link Road Opp. Citi Mall, Andheri West Mumbai 400 053",
+    "pincode": 400053
+  },
+  {
+    "branch_code": 160,
+    "name": "Makroniya",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhinay Thakur",
+    "branch_manager_phone": 8291282160,
+    "address": "Ground Floor, Khasra No. 174\/21, 174\/23, 172\/2, Patwari Halka No.72, Makronia, Madhya Pradesh- 470001",
+    "pincode": 470001
+  },
+  {
+    "branch_code": 161,
+    "name": "Barbourne Road ,Kolkata",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Gyan Prakash Jain",
+    "branch_manager_phone": 9830170808,
+    "address": "Thapar House, 25 Barbourne Road, Kolkatta - 700 001",
+    "pincode": 700001
+  },
+  {
+    "branch_code": 162,
+    "name": "Borgaon Dharmale",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Mohammad Irshad",
+    "branch_manager_phone": "TBH",
+    "address": "Shop No. 13, A Wing, Citiland Complex, Borgaon Village (Borgaon Dharmale), Dist. Amravati - 444 907",
+    "pincode": 444709
+  },
+  {
+    "branch_code": 163,
+    "name": "Nagpur (Ramdaspeth)",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Ritesh Juneja",
+    "branch_manager_phone": 7798807863,
+    "address": "3,4,5, Ground Floor, Aditya Enclave, Plot No. 20-A, Central Bazar, Ramdaspeth, Nagpur \u2013 440 010",
+    "pincode": 440010
+  },
+  {
+    "branch_code": 164,
+    "name": "Indore",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Vivek Jain",
+    "branch_manager_phone": 8291282164,
+    "address": "RBL Bank Ltd., Ground Floor, Fortune Business Center, 165 RNT Marg, Indore \u2013 452001, Madhya Pradesh",
+    "pincode": 452001
+  },
+  {
+    "branch_code": 165,
+    "name": "Kovvada,Kakinada (E. Godavari)",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Venkata Kishore Pamarthi",
+    "branch_manager_phone": 9701760860,
+    "address": "Door No. 1-93, Kovvada Panchayat, Kakinada Rural Mandal, East Godavadi District, Andhra Pradesh-533 006",
+    "pincode": 533006
+  },
+  {
+    "branch_code": 166,
+    "name": "Lalupuram,Guntur",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Gopinath Kanuganti",
+    "branch_manager_phone": 8142367778,
+    "address": "Door No. 6-48A, Ground Floor, Survey No. 333, Lalupuram Village, Guntur Rural Mandal, Guntur District, Andhra Pradesh-522 017",
+    "pincode": 522017
+  },
+  {
+    "branch_code": 167,
+    "name": "Horizon Building, Kolkatta",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Stafford Ireland",
+    "branch_manager_phone": 9830707015,
+    "address": "Ground Floor, Horizon Building, 57 Jawaharlal Nehru Road, Kolkata 700 071",
+    "pincode": 700071
+  },
+  {
+    "branch_code": 168,
+    "name": "Nanjai Pugalur, Karur",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Prabhu S",
+    "branch_manager_phone": 9865297771,
+    "address": "Survey No. 596\/2A, N.H 7, Bye Pass Road, Nanjai Pugalur, Karur Taluk and District, Tamil Nadu-639 113",
+    "pincode": 639113
+  },
+  {
+    "branch_code": 169,
+    "name": "Vengangudi, Tiruchirapalli",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "ArunAnandh S",
+    "branch_manager_phone": 9655527603,
+    "address": "Sasha Complex, Mannachanallur Road, Vengangudi Village, Samayapuram Post, District Tiruchirapalli, Tamil Nadu-621 112",
+    "pincode": 621112
+  },
+  {
+    "branch_code": 170,
+    "name": "Aladikkumulai, Thanjavur",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Premkumar Seetharaman",
+    "branch_manager_phone": 8291282170,
+    "address": "221\/7 Ranganatha Vellalar Complex, Thanjavur Main Road, Aladikkumulai, Pattukkotai Taluk, Thanjavur District, Tamil Nadu-614 615",
+    "pincode": 614615
+  },
+  {
+    "branch_code": 171,
+    "name": "Coimbatore",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Clement peter G",
+    "branch_manager_phone": 9894222022,
+    "address": "R.G. Chambers, 726 Avinashi Road, New T.S. No. 1\/1396\/3B, Coimbatore, Tamil Nadu - 641 018",
+    "pincode": 641018
+  },
+  {
+    "branch_code": 172,
+    "name": "Bhirandiyara, Bhuj",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "Harsh Mehta",
+    "branch_manager_phone": 9638397591,
+    "address": "Behind Sarhad Dairy, Bhuj-Khavda Highway, Near Bhirandiyara Bus Stand, BhIrandiyara, District Bhuj, Gujarat-370 510",
+    "pincode": 370510
+  },
+  {
+    "branch_code": 173,
+    "name": "Khambala, Rajkot",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "Hitesh Teraiya",
+    "branch_manager_phone": 9825285086,
+    "address": "Umiya Nivas, Main Bazar, Village Khambala, Taluka Paddhari, District Rajkot, Gujarat-360 110",
+    "pincode": 360110
+  },
+  {
+    "branch_code": 174,
+    "name": "Agra",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Arun Verma",
+    "branch_manager_phone": 0,
+    "address": "Ground Floor, Block No: 41\/4, Sanjay Place-Shop no.5,6,7,8 and Basement Floor-Shop no.5 & 7, Agra-282002, Uttar Pradesh",
+    "pincode": 282002
+  },
+  {
+    "branch_code": 175,
+    "name": "Chittorgarh",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground Floor, Plot No.2, Sukhshanti Colony, Bhilwara Road, Opposite Sub Jail- Chittorgarh- 312001 , Rajasthan",
+    "pincode": 312001
+  },
+  {
+    "branch_code": 176,
+    "name": "Mohanpura, Ajmer",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Shalini Chauhan",
+    "branch_manager_phone": 9828511486,
+    "address": "Village Mohanpura, Khasra No.374\/264, Part C-1, Ground Floor,District-Ajmer, Pin code- 305801, Rajasthan",
+    "pincode": 305801
+  },
+  {
+    "branch_code": 177,
+    "name": "Seenta, Bundhi",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Bhupendra Bhatia",
+    "branch_manager_phone": 9694552224,
+    "address": "Ground floor,Patta No.7, Village Seenta, Tehsil- Talera, District- Bundhi- Pin code-323021, Rajasthan",
+    "pincode": 323021
+  },
+  {
+    "branch_code": 178,
+    "name": "Shirgao, Goa",
+    "cluster": "Goa",
+    "region": "South & Goa Region",
+    "branch_manager_name": "SOHAN PANGAM",
+    "branch_manager_phone": 7875691776,
+    "address": "House No.12\/1, Wadacha Wada, Shirgaon, Assonora, Goa - 403 503",
+    "pincode": 403503
+  },
+  {
+    "branch_code": 180,
+    "name": "Nungambakkam, Chennai",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "M Yasar Hussain",
+    "branch_manager_phone": 9840042848,
+    "address": "First Floor, Rashmi Towers, No.1, Valluvarkottam High Road, Nungambakkam, Chennai \u2013 600034",
+    "pincode": 600034
+  },
+  {
+    "branch_code": 181,
+    "name": "Himatnagar, Gujrat",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "Nishant Rajput",
+    "branch_manager_phone": 9909115766,
+    "address": "Shop No. 7,8 & 9, Ashok Vatika, Block-A, Ground Floor, Sahkari Jin Road, Himatnagar, Gujarat-383 001",
+    "pincode": 383001
+  },
+  {
+    "branch_code": 182,
+    "name": "Vasant Vihar",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Roma Banga",
+    "branch_manager_phone": 9958001544,
+    "address": "23 Community Center, Basant Lok, Vasant Vihar, New Delhi- 110 057",
+    "pincode": 110057
+  },
+  {
+    "branch_code": 183,
+    "name": "Valetva, Nadiad",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Shop No. 1 & 2, First Floor, Atmiya Enclave, Valetva Cross Road, Nadiad Petlad Road, Valetva, Nadiad Taluka, Kheds District, Gujarat-388 440",
+    "pincode": 388440
+  },
+  {
+    "branch_code": 184,
+    "name": "Dadar",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Sanchita Mhatre ( Acting BM )",
+    "branch_manager_phone": 8169494458,
+    "address": "Plot No. 399, Gokhale Road South, Opp. BMC School, Dadar (West), Mumbai \u2013 400 028",
+    "pincode": 400028
+  },
+  {
+    "branch_code": 185,
+    "name": "Adyar",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Madan Mohan S",
+    "branch_manager_phone": 7200121121,
+    "address": "RBL Bank Ltd. (Formerly: The RBL BANK Ltd), Ground Floor, Nibhav Building No. 11, L.B. Road, Adyar,Chennai \u2013 600020",
+    "pincode": 600020
+  },
+  {
+    "branch_code": 186,
+    "name": "Parrys Corner",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Palaniappan Pillai",
+    "branch_manager_phone": 9884491363,
+    "address": "Dass India Towers, No.3, Second Line Beach,Parrys Corner, Chennai \u2013 600001",
+    "pincode": 600001
+  },
+  {
+    "branch_code": 187,
+    "name": "Anna Nagar",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Alexander VS",
+    "branch_manager_phone": 9962388999,
+    "address": "1st floor,Old No. A\/ B, 134-136, New No. AB, 106-108, Fourth Avenue Shanti colony, Anna Nagar, Chennai - 600040",
+    "pincode": 600040
+  },
+  {
+    "branch_code": 188,
+    "name": "Ghatkopar East",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Kalpesh Desai",
+    "branch_manager_phone": 9224169039,
+    "address": "13-13A, Zest Business Spaces, M.G.Road, Ghatkopar (East), Mumbai - 400077",
+    "pincode": 400077
+  },
+  {
+    "branch_code": 189,
+    "name": "Chandni Chowk, Delhi",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Gaurav Nagpal",
+    "branch_manager_phone": 9999228864,
+    "address": "450\/454, Ground Floor Kucha Brij Nath, Chandini Chowk, Delhi - 110006.",
+    "pincode": 110006
+  },
+  {
+    "branch_code": 190,
+    "name": "Pitampura",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Jagga",
+    "branch_manager_phone": 9899403829,
+    "address": "Upper Ground Floor, 16 Engineers Enclave, Road No. 44, Pitampura, Delhi.",
+    "pincode": 110034
+  },
+  {
+    "branch_code": 191,
+    "name": "Faridabad, Haryana",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Bhupender Rana",
+    "branch_manager_phone": 9910982008,
+    "address": "RBL Bank Ltd. (Formerly: Ratnakar Bank Ltd.),Shop No.G-01 TO G-05 and G-09 TO G-10 , SCO No.101, Sector - 16, Faridabad, Haryana - 121002",
+    "pincode": 121002
+  },
+  {
+    "branch_code": 192,
+    "name": "Andheri (East)",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Nikunj Saraiya",
+    "branch_manager_phone": 8291282192,
+    "address": "2, Balaji Business Park, Andheri Kurla Rd,CTS No. 785, Marol, Andheri E, Mumbai 59",
+    "pincode": 400059
+  },
+  {
+    "branch_code": 193,
+    "name": "Crawford Market",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Asha Mandal ( Acting BM )",
+    "branch_manager_phone": 9920550257,
+    "address": "190\/194, Sardar Griha, L.T.Marg, Crawford Market, Mumbai - 400002",
+    "pincode": "400002"
+  },
+  {
+    "branch_code": 194,
+    "name": "Shankar Vihar, Vikas Marg",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Ravi Kapoor",
+    "branch_manager_phone": 9910044865,
+    "address": "6 Shankar Vihar, Vikas Marg, Delhi 110092",
+    "pincode": 110092
+  },
+  {
+    "branch_code": 195,
+    "name": "Jp Nagar",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Venkatathri B",
+    "branch_manager_phone": 8861591505,
+    "address": "Upper Ground And Mez Floor), N-15, 24Th Main, J.P. Nagar, I Phase, Aurobido Marg, Bangalore - 560 078",
+    "pincode": 560078
+  },
+  {
+    "branch_code": 196,
+    "name": "Gariahat, Kolkata",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Moumita Mukherjee",
+    "branch_manager_phone": 9051359666,
+    "address": "Plot No.9\/3 A, Ground Floor, Main Road Facing, Gariahat Road, Kolkata,",
+    "pincode": 700019
+  },
+  {
+    "branch_code": 197,
+    "name": "Kalakar Street (Bysack Street), Kolkata",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Sanjay Singh",
+    "branch_manager_phone": 9831092886,
+    "address": "Property No.19, First Floor, Bysack Street, Kolkata 700007",
+    "pincode": 700007
+  },
+  {
+    "branch_code": 198,
+    "name": "Sadar Bazar",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Amit Shrivastava",
+    "branch_manager_phone": 9910010178,
+    "address": "RBL Bank , Ground floor, Sadar Bazar, Plot number 4, 5332 Sadar Thana Road,\u00a0Delhi 110006",
+    "pincode": 110006
+  },
+  {
+    "branch_code": 199,
+    "name": "Raipur",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Vikas Varlyani",
+    "branch_manager_phone": 9522556639,
+    "address": "Gr Floor, Shop No 3 & 5, Raheja Extension, M G Road, Raipur - 492001",
+    "pincode": 492001
+  },
+  {
+    "branch_code": 200,
+    "name": "Ariyappampalayam",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Elanchezhian R",
+    "branch_manager_phone": 9865037636,
+    "address": "121 A, Sathy Erode Highways, Ariyappampalayam, Sathyamangalam Tk, Erode Dt-638402",
+    "pincode": 638402
+  },
+  {
+    "branch_code": 201,
+    "name": "Raskapalayam",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "R Mahendran",
+    "branch_manager_phone": 9698858587,
+    "address": "2\/139, Sree Mahalakshmi Amman Complex, Rasakapalayam, Puliampatti (PO), Pollachi-642002",
+    "pincode": 642002
+  },
+  {
+    "branch_code": 202,
+    "name": "Chandigarh",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Ashish Ahuja",
+    "branch_manager_phone": 8291282202,
+    "address": "RBL BANK LIMITED SCO 135-136 SECTOR 9-C MADHYA MARG,CHANDIGARH",
+    "pincode": 160009
+  },
+  {
+    "branch_code": 203,
+    "name": "Ludhiana",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhineet Chopra",
+    "branch_manager_phone": 9815335252,
+    "address": "RBL BANK LIMITED SCO NO 18-19C CANAL COLONY GREEN PARK AVENUE PAKHOWAL ROAD LUDHIANA -141001",
+    "pincode": 141001
+  },
+  {
+    "branch_code": 204,
+    "name": "Noida, Sector 63",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Rupesh Pandey",
+    "branch_manager_phone": 9999100690,
+    "address": "RBL BANK LIMITED GROUND FLOOR H 1A\/28 SECTOR 63 NOIDA-201301",
+    "pincode": 201301
+  },
+  {
+    "branch_code": 205,
+    "name": "Ambur",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "S Mahaveer Chand",
+    "branch_manager_phone": 9080400500,
+    "address": "No.73, S S Avenue, By Pass Road, Melkrishnapuram, Ambur \u2013 635802",
+    "pincode": 635802
+  },
+  {
+    "branch_code": 206,
+    "name": "Madurai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Manikandan.A",
+    "branch_manager_phone": 9894360015,
+    "address": "N0.98, Vakil New Street Madurai 625001",
+    "pincode": 625001
+  },
+  {
+    "branch_code": 207,
+    "name": "Indiranagar",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Kumari Sweta",
+    "branch_manager_phone": 9742385206,
+    "address": "546, CMH Road, Indiranagar, Bangalore",
+    "pincode": 560038
+  },
+  {
+    "branch_code": 208,
+    "name": "Kukatpally",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Anand Alathurthi",
+    "branch_manager_phone": 9885526511,
+    "address": "NO: 10B, GROUND FLOOR, SURVEY NO 1051&1060, MANJEERA MAJESTIC COMMERCIAL MALL, KUKATPALLY, HYDERABAD - 500072",
+    "pincode": 500072
+  },
+  {
+    "branch_code": 209,
+    "name": "Madhapur",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "P Jagadeesh",
+    "branch_manager_phone": 9494923939,
+    "address": "GROUND FLOOR, MSR BLOCK, KRISHE SAPPHIRE, SURVEY NO 88, HITECH CITY MAIN ROAD, MADHAPUR, HYDERABAD- 500081",
+    "pincode": 500081
+  },
+  {
+    "branch_code": 210,
+    "name": "Malleswaram",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Chandrugouda Kallanagoudar",
+    "branch_manager_phone": 9986310101,
+    "address": "KOMARLA PLAZA,\nNo: 141, 3rd Main, Margosa Road,\nMalleswaram,\nBangalore 560003",
+    "pincode": 560003
+  },
+  {
+    "branch_code": 211,
+    "name": "Santacruz West, Mumbai",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Vanita Sajnani",
+    "branch_manager_phone": 7666131440,
+    "address": "Shop No. 3, Ground floor, Greenfield, S V Road, Santacruz West, Mumbai - 400054",
+    "pincode": 400054
+  },
+  {
+    "branch_code": 212,
+    "name": "Mira Road, Thane",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Virendra Shukla",
+    "branch_manager_phone": 9833545999,
+    "address": "Shop No. 21 to 25, Ground floor, Irasia Co-op Housing Society Ltd, Beverly Park, Near Kanakia Police Station, Opp Cinemax, Dist Thane, Mira Road - 400107",
+    "pincode": 401107
+  },
+  {
+    "branch_code": 213,
+    "name": "Jaipur",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Amardeep Soni",
+    "branch_manager_phone": 9928331199,
+    "address": "Shop No. 1, Ground Floor, Silver Square, Bhagwan Das Road, Jaipur - 302001",
+    "pincode": 302001
+  },
+  {
+    "branch_code": 214,
+    "name": "Jagriti enclave",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Himanshu Gupta",
+    "branch_manager_phone": 9999595958,
+    "address": "183, UPPER GROUND FLOOR, JAGRITI ENCLAVE, DELHI - 110092",
+    "pincode": 110092
+  },
+  {
+    "branch_code": 215,
+    "name": "Budge Budge",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Sribroto Chakraborty",
+    "branch_manager_phone": 9477044378,
+    "address": "Shubham Building, 523\/2\/1 & 523\/2\/2, M.G.Road, Chowrasta, Budge Budge Road, Kolkata - - 700137 (West Bengal)",
+    "pincode": 700137
+  },
+  {
+    "branch_code": 216,
+    "name": "Malad West, Mumbai",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Roshan Poojari",
+    "branch_manager_phone": 9987017430,
+    "address": "Shop No.16 and Shop No.17. Simplex KhushAangan, 82 Vijaykarwadi, S.V Road, Malad West, Mumbai - 400064",
+    "pincode": 400064
+  },
+  {
+    "branch_code": 217,
+    "name": "Gk2 Delhi",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Sharma",
+    "branch_manager_phone": 7982155264,
+    "address": "M-2, GROUND FLOOR & BASEMENT, GREATER KAILASH PART 2, NEW DELHI - 110048",
+    "pincode": 110048
+  },
+  {
+    "branch_code": 218,
+    "name": "Golf Course Gurgaon",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Hemant Kapoor",
+    "branch_manager_phone": 9555880268,
+    "address": "UNIT NO. TGF 4 & 5, GROUND FLOOR, OCUS TECHNOPOLIS GOLF COURSE ROAD, SECTOR 54, GURGAON, HARYANA - 122003",
+    "pincode": 122003
+  },
+  {
+    "branch_code": 219,
+    "name": "Vizag",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Nagaraja Chegu",
+    "branch_manager_phone": 9966133342,
+    "address": "47-10\u20141\/4, BHUVANESHWARI PLAZA, DIAMOND PARK MAIN ROAD, DWARAKANAGAR, VISAKHAPATNAM - 530016",
+    "pincode": 530016
+  },
+  {
+    "branch_code": 220,
+    "name": "Cochin",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "ANOOB K T",
+    "branch_manager_phone": 9645557515,
+    "address": "GROUND & FIRST FLOOR PALAL ARCADE, Opp to Hotel The Avenue Regent, M. G. ROAD,DIST - ERNAKULAM,TAL -KANAYANUR,VILLAGE - KARITHALA, COCHIN - 682016",
+    "pincode": 682016
+  },
+  {
+    "branch_code": 221,
+    "name": "Kagam Erode, Tamil Nadu",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "A Sriram",
+    "branch_manager_phone": null,
+    "address": "49\/A, MANALKATTU THOTTAM, ELLAKADAI, KAGAM ERODE, TAMIL NADU - 638109",
+    "pincode": 638109
+  },
+  {
+    "branch_code": 222,
+    "name": "Kamalpur",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "SHOP NO. 7 & 8, FIRST FLOOR, SAKAL AVENUE,KAMALPUR, TAL - PRANTIJ,DIST - SABARKANTHA, GUJARAT - 383205",
+    "pincode": 383205
+  },
+  {
+    "branch_code": 223,
+    "name": "Khalikpur",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "Pankajkumar Panchal",
+    "branch_manager_phone": 8291282223,
+    "address": "SHOP NO. 16 & 17, GROUND FLOOR, SANSKRUTI COMPLEX, NR SHUYOG PETROL PUMP, MALPUR ROAD, KHALIKPUR, DIST - ARAVALI, GUJARAT \u2013 383315",
+    "pincode": 383315
+  },
+  {
+    "branch_code": 224,
+    "name": "Maduravoyal",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Pappulakshmi A",
+    "branch_manager_phone": 9965895444,
+    "address": "NO. 135\/A, P H ROAD, MADURAVOYAL, CHENNAI 600095",
+    "pincode": 600095
+  },
+  {
+    "branch_code": 225,
+    "name": "Dankuni Kolkata",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Amit Chatterjee",
+    "branch_manager_phone": null,
+    "address": "FLAT NO. 101 & 102, SHREYA APARTMENTS, 1ST FLOOR, T. N. MUKHERJEE ROAD, LICHUBAGAN, OPP. RAMSITA MANDIR, DANKUNI, HOOGLY PIN 712311",
+    "pincode": 712311
+  },
+  {
+    "branch_code": 226,
+    "name": "South Bopal",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "SHOP NO. 8 AND 9, GROUND FLOOR, ORCHID CENTRE, SOUTH BOPAL, MOUJE BOPAL, TALUKA DASKROI, AHMEDABAD, GUJARAT \u2013 380058",
+    "pincode": 380058
+  },
+  {
+    "branch_code": 227,
+    "name": "Ankleshvar Bharuch",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Manoj Bhatia",
+    "branch_manager_phone": 9879504144,
+    "address": "C-BLOCK, SHOP NO. 1 TO 5, MAYUR NAGAR, OPP. LORDS PLAZA, OLD N H NO. 08, VILLAGE PIRAMAN, TAL. ANKLESHWAR,DIST. BHARUCH 393002",
+    "pincode": 393002
+  },
+  {
+    "branch_code": 228,
+    "name": "Rajpura",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Harjeet Kaur",
+    "branch_manager_phone": 8685005000,
+    "address": "GROUND FLOOR, D-21, CALIBRE MARKET, RAJPURA, PIN CODE:140401",
+    "pincode": 140401
+  },
+  {
+    "branch_code": 229,
+    "name": "Phagwara Kapurthala",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Silky Jain",
+    "branch_manager_phone": 9872291919,
+    "address": "GROUND FLOOR, CITY CENTRE TOWER, 338, GURU HARGOBIND NAGAR, PHAGWARA, PIN CODE:144401",
+    "pincode": 144401
+  },
+  {
+    "branch_code": 230,
+    "name": "Nanasa",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhinandan Shroti",
+    "branch_manager_phone": 9179578018,
+    "address": "VILLAGE NANASA\u00a0 P.H. NO. 21, TEHSIL KANNOD, DISTRICT DEWAS, MADHYA PRADESH PINCODE 455336",
+    "pincode": 455336
+  },
+  {
+    "branch_code": 231,
+    "name": "Bawarikheda",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Rajkumar Patel",
+    "branch_manager_phone": 7217776879,
+    "address": "GRAM PANCHAYAT BAWARIKHEDA, DIST. DEWAS, MADHYA PRADESH, PINCODE 455332",
+    "pincode": 455332
+  },
+  {
+    "branch_code": 232,
+    "name": "Bhojpura",
+    "cluster": "Gujarat 2",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "R.S. NO \u2013 58\/3, PLOT NO \u2013 6, NR. GALAXY PETROL PUMP, NATIONAL HIGHWAY 27, VILLAGE \u2013 BHOJPARA,TALUKA \u2013 GONDAL, DISTRICT \u2013 RAJKOT, PIN CODE - 360311",
+    "pincode": 360311
+  },
+  {
+    "branch_code": 233,
+    "name": "Zirakpur Punjab",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Sunny sood",
+    "branch_manager_phone": 9501188066,
+    "address": "SCO 1&2, GROUND FLOOR, ORBIT APARTMENTS, VIP ROAD, ZIRAKPUR DISTRICT, MOHALI 140603",
+    "pincode": 140603
+  },
+  {
+    "branch_code": 234,
+    "name": "Harota,Chomu",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Rahul Yadav",
+    "branch_manager_phone": 7976362813,
+    "address": "GROUND FLOOR, NEAR ANJANI HANUMAN MANDIR AT POST:HAROTA, TEHSIL : CHOMU, DISTRICT: JAIPUR (RAJASTHAN) PIN CODE 303705",
+    "pincode": 303705
+  },
+  {
+    "branch_code": 235,
+    "name": "Chak 7-Z,Sriganganagar",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Vinit Sharma",
+    "branch_manager_phone": 9587002100,
+    "address": "GROUND FLOOR, MURRABA NO. 42 & 26 \u2013 SHOP NO. 18-21, CHAK 7-Z, TEHSIL & DIST SRIGANGANAGAR (RAJASTHAN). PIN CODE 335001",
+    "pincode": 335001
+  },
+  {
+    "branch_code": 236,
+    "name": "Kalyani, Kolkata",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "SOURAV GHOSH",
+    "branch_manager_phone": 9836459993,
+    "address": "B-7\/20(S), KALYANI, BESIDES BERI HONDA SHOWROOM, P.O. KALYANI, DIST NADIA, PIN 741235",
+    "pincode": 741235
+  },
+  {
+    "branch_code": 237,
+    "name": "Vallabh Vidyanagar",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Jigneshkumar Patel",
+    "branch_manager_phone": 9925110601,
+    "address": "\u201cNILKANTH ESTATE\u201d PLOT NO.154\/155, GROUND FLOOR, SHOP NO G-3, NANA BAZAR, OPPOSITE UNIVERSITY GIRLS HOSTEL, VALLABH VIDYANAGAR 388120",
+    "pincode": 388120
+  },
+  {
+    "branch_code": 238,
+    "name": "Krishnagiri",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "P Kottalamuthu",
+    "branch_manager_phone": 9659298501,
+    "address": "VASAVI COMPLEX, ROYAOTTA ROAD, KRISHNAGIRI - 635001",
+    "pincode": 635001
+  },
+  {
+    "branch_code": 239,
+    "name": "Sadaiyampattu",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sathish Senthil Kumar V",
+    "branch_manager_phone": 8489973300,
+    "address": "NO.127\/2, NEAR OM SAKTHI KOVIL, KACHIRAYAPALAYAM MAIN ROAD, KATTUKOTTAI, SADAIYAMPATTU VILLAGE, SOMANDARKUDI POST, KALLAKURICHI TK, KALLAKURICHI DISTRICT - 606213",
+    "pincode": 606213
+  },
+  {
+    "branch_code": 240,
+    "name": "Saltlake",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Sougat Paul",
+    "branch_manager_phone": 9830218555,
+    "address": "Salt Lake Electronics Complex,Block EP & GP,Plot No-X1-16,Sector-V,Salt Lake,Kolkata-700091",
+    "pincode": 700091
+  },
+  {
+    "branch_code": 241,
+    "name": "Vijaywada",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Battu Venkata Jayaram",
+    "branch_manager_phone": 9642999177,
+    "address": "D.NO: #40-5-1, TIKKLE ROAD, OPP. DV MANOR, VIJAYAWADA, PIN - 520010",
+    "pincode": 520010
+  },
+  {
+    "branch_code": 242,
+    "name": "Sirsama",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Mohita Gera",
+    "branch_manager_phone": 9729411647,
+    "address": "RBL Bank limited, Ground Floor, Pipli - Ladwa Road, Near Milan Palace, Village - Sirsama, Tehsil - Thanesar, Distt- Kurukshetra, Haryana \u2013 136131",
+    "pincode": 136131
+  },
+  {
+    "branch_code": 243,
+    "name": "Rajkot",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Pravin Khanderiya",
+    "branch_manager_phone": 9825222506,
+    "address": "Ground Floor, Shop No 4, Business Park,\u00a0Opp TVS\u00a0Jivrajani Show Room,\u00a0Kalawad Road, Rajkot 360001",
+    "pincode": 360001
+  },
+  {
+    "branch_code": 244,
+    "name": "Prahlad Nagar",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Tejas\u00a0kumar Patel",
+    "branch_manager_phone": 9099918333,
+    "address": "GROUND FLOOR, SHOP NO. 1,\u00a0SAFAL PEGASUS,\u00a0PRAHLAD NAGAR",
+    "pincode": 380015
+  },
+  {
+    "branch_code": 245,
+    "name": "R A Puram - Chennai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Mahalakshmi Srinivas",
+    "branch_manager_phone": 8939119444,
+    "address": "Oxford centre,ground floor,62\/63 C P Ramaswamy road Alwarpet Chennai-600018",
+    "pincode": 600018
+  },
+  {
+    "branch_code": 246,
+    "name": "Girish Park",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Subhash Agarwal",
+    "branch_manager_phone": 9830083695,
+    "address": "187, C R Avenue, Groundfloor (formerly 11 & 12 Parbati Ghosh Lane), Kolkata - 700007",
+    "pincode": 700007
+  },
+  {
+    "branch_code": 247,
+    "name": "Palm Square, Golf Course Extension Road",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Anupam Mohla",
+    "branch_manager_phone": 8860092413,
+    "address": "Ground Floor, Emaar MGF Palm Square, \nGolf Course Extn Road, Sector-66 Gurugram \u2013\n122102",
+    "pincode": 122102
+  },
+  {
+    "branch_code": 248,
+    "name": "Lamington Road Branch",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Vinod Padwal ( Acting BM)",
+    "branch_manager_phone": 9773112862,
+    "address": "UNIT NO.G1 AND G-2,GROUND FLOOR, SIMLIM SQUARE PREMISES CO-OP, SOC, LTD., LAMINGTON ROAD, GRANT ROAD (EAST), MUMBAI - 400007.",
+    "pincode": 400007
+  },
+  {
+    "branch_code": 249,
+    "name": "Saravanampatti",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sunil kumar",
+    "branch_manager_phone": 9894677868,
+    "address": "RBL Bank Ltd. No.37,Sathy Main Road, Sivanandhapuram, Saravanampatti, Coimbatore 641 035",
+    "pincode": 641035
+  },
+  {
+    "branch_code": 250,
+    "name": "Rdc Ghaziabad",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Narendra Singh",
+    "branch_manager_phone": 9810841204,
+    "address": "GROUND FLOOR, D-33, RAJ NAGAR DISTRICT CENTRE (RDC), GHAZIABAD - 201002",
+    "pincode": 201002
+  },
+  {
+    "branch_code": 251,
+    "name": "Model Town, Jalandhar",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Divya Nanda",
+    "branch_manager_phone": 8054043600,
+    "address": "GROUND FLOOR, 265 R, MODEL TOWN, JALANDHAR - 144003",
+    "pincode": 144003
+  },
+  {
+    "branch_code": 252,
+    "name": "Bandra",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Switesh Parikh",
+    "branch_manager_phone": 9833470120,
+    "address": "UNIT NO.2 AND 3,GROUND FLOOR, KALA KUNJ BUILDING, PLOT NO.710. LINKING ROAD, KHAR WEST, MUMBAI - 400052.",
+    "pincode": 400052
+  },
+  {
+    "branch_code": 253,
+    "name": "Hoskote, Bengaluru",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "RAMESH V",
+    "branch_manager_phone": 9738784851,
+    "address": "Plot No 4189\/6275\/2\/ Survey No 125, Ground floor Opp Sadana Theatre, N H Road, KND Complex, Haskote Town, Bengaluru \u2013 562114.",
+    "pincode": 562114
+  },
+  {
+    "branch_code": 254,
+    "name": "Hsr Layout, Bengaluru",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sangeetha Vijayakrishnan",
+    "branch_manager_phone": 9845299125,
+    "address": "Ground Floor, SS Arcade, 257, 14th Main, HSR Sector 7, Bengaluru \u2013 560102",
+    "pincode": 560102
+  },
+  {
+    "branch_code": 255,
+    "name": "Maninagar",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Asfak Zakaria",
+    "branch_manager_phone": 9825731786,
+    "address": "SHOP NO. 3, SPARSH, JAI HIND CHAR RASTA, MANI NAGAR, AHMEDABAD - 380008",
+    "pincode": 380008
+  },
+  {
+    "branch_code": 256,
+    "name": "Tiruchengode, Tn",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Velmurugan K",
+    "branch_manager_phone": 9865240545,
+    "address": "Door No 180, Bangala Street,Erode Main Road, Tiruchengode 637211,Namakkal District, Tamilnadu State",
+    "pincode": 637211
+  },
+  {
+    "branch_code": 257,
+    "name": "Lajpat Nagar",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Gaurav Jain",
+    "branch_manager_phone": 9999630444,
+    "address": "GROUND FLOOR & BASEMENT FLOOR, L-96, LAJPAT NAGAR-II, NEW DELHI - 110024",
+    "pincode": 110024
+  },
+  {
+    "branch_code": 258,
+    "name": "C G Road (Chembur)",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Ajit Pandey",
+    "branch_manager_phone": 7045272700,
+    "address": "GROUND FLOOR, G 28 TO G 31, MERCANTILE APARTMENT, DR. C.P. GIDWANI ROAD, NEAR GURUKRUPA HALL, CHEMBUR, MUMBAI - 400074",
+    "pincode": 400074
+  },
+  {
+    "branch_code": 259,
+    "name": "Shyambazar",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Jagabandhu Biswas",
+    "branch_manager_phone": 9733001900,
+    "address": "Ground and First Floor, 128B Bidhan Sarani, Kolkata",
+    "pincode": 700004
+  },
+  {
+    "branch_code": 260,
+    "name": "Secunderabad",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sourav Jain",
+    "branch_manager_phone": 8142533330,
+    "address": "No.50,Ground Floor, M G Road, Secunderabad-500003",
+    "pincode": 500003
+  },
+  {
+    "branch_code": 261,
+    "name": "Bommasandra, Bangalore",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "S Prabhakaran",
+    "branch_manager_phone": 9449358815,
+    "address": "Shop No.3, Bhavani Tower, Survey No.61\/13,Ananth Nagar Main Road, Huskur Gate, Electronic City, Bangalore - 560100.",
+    "pincode": 560100
+  },
+  {
+    "branch_code": 262,
+    "name": "Kothrud, Pune",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Vinod Rathod",
+    "branch_manager_phone": 9372667208,
+    "address": "GROUND FLOOR, SHOP NO.6 & 7, PARIJAT APARTMENT, SHIVTEERTH NAGAR, KOTHRUD, PUNE - 411038",
+    "pincode": 411038
+  },
+  {
+    "branch_code": 263,
+    "name": "Ropar Branch",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "GROUND FLOOR, SCO NO.36, BEANT SINGH AMAN NAGAR, BELA ROAD, ROPAR \u2013 140001",
+    "pincode": 140001
+  },
+  {
+    "branch_code": 264,
+    "name": "Mandi Gobindgarh Branch",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Bhupinder Singh",
+    "branch_manager_phone": 9988814013,
+    "address": "GROUND FLOOR, PLOT NO 416, SECTOR-3,BLOCK C, OPPOSITE HDFC BANK, MANDI GOBINDGARH - 147301",
+    "pincode": 147301
+  },
+  {
+    "branch_code": 265,
+    "name": "Manimajra Branch",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "NITIN GROVER",
+    "branch_manager_phone": 8427373377,
+    "address": "GROUND FLOOR, SCO 830, NAC MANIMAJRA, CHANDIGARH \u2013 160101",
+    "pincode": 160101
+  },
+  {
+    "branch_code": 266,
+    "name": "Dwarka Branch",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "mukul bindal",
+    "branch_manager_phone": 9971400550,
+    "address": "PART GROUND FLOOR, PLOT NO.12B\/58, DWARKA, NEW DELHI - 110075",
+    "pincode": 110075
+  },
+  {
+    "branch_code": 268,
+    "name": "Tripuri, Patiala",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Parvinder Kakkar",
+    "branch_manager_phone": 9815617666,
+    "address": "DLF Colony Banking Lane, Ground floor, SCO No.13, DLF Banking Lane, Tripuri, Patiala 147001",
+    "pincode": 147001
+  },
+  {
+    "branch_code": 269,
+    "name": "Punjabi Bagh Branch",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Preet Singh",
+    "branch_manager_phone": 9810666244,
+    "address": "Ground floor, 39 West Avenue Road, Punjabi Bagh, New Delhi 110026",
+    "pincode": 110026
+  },
+  {
+    "branch_code": 270,
+    "name": "Janakpuri Branch",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Kamal Kumar",
+    "branch_manager_phone": 9871001289,
+    "address": "Ground floor, B-1\/511, Janakpuri, New Delhi 110058",
+    "pincode": 110058
+  },
+  {
+    "branch_code": 271,
+    "name": "Jasola Branch",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Nadim Akhter",
+    "branch_manager_phone": 9599927964,
+    "address": "RBL Bank Ltd : Unit No . JA0028 & JA0029, DLF Tower A, Jasola, New Delhi 110025",
+    "pincode": 110025
+  },
+  {
+    "branch_code": 272,
+    "name": "Gujrawala, Model Town",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Amit Vaid",
+    "branch_manager_phone": 9999012431,
+    "address": "Ground floor, B-11, Gujranwala, Model Town, New Delhi 110009",
+    "pincode": 110009
+  },
+  {
+    "branch_code": 273,
+    "name": "Bhubaneshwar Branch",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Stalin Behera",
+    "branch_manager_phone": 9937009449,
+    "address": "Ground Floor HIG-16, Jaydev vihar, Bhubaneshwar Odisha 751013",
+    "pincode": 751013
+  },
+  {
+    "branch_code": 274,
+    "name": "Hirapur",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Anmol Mishra",
+    "branch_manager_phone": 9926555001,
+    "address": "GRAM PANCHAYAT BHAWAN, INFRONT OF KRISHI UPAJ MANDI, MAIN ROAD, VILLAGE - HIRAPUR, BLOCK- MAKADI, DIST-KONDAGAON, CHHATTISHGARH - 494226",
+    "pincode": 494226
+  },
+  {
+    "branch_code": 275,
+    "name": "Vaishali Nagar",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Jitendra Pareek",
+    "branch_manager_phone": 8875000170,
+    "address": "SHOP NO. C, GROUND FLOOR, PLOT NO C1, C-BLOCK, VAIBHAV COMPLEX, GAUTAM MARG, VAISHALI NAGAR, JAIPUR - 302021",
+    "pincode": 302021
+  },
+  {
+    "branch_code": 276,
+    "name": "Kolawal",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Yadu",
+    "branch_manager_phone": 8878026026,
+    "address": "Main Road, Infront of Haat Bazaar, Block - Bakawand, Kolawal ,Dist- Bastar, Chhattisgarh,Bastar",
+    "pincode": 494222
+  },
+  {
+    "branch_code": 277,
+    "name": "Shimla",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "SUDHIR SHARMA",
+    "branch_manager_phone": 9418673556,
+    "address": "LEVEL 1, BLOCK \u2018B\u2019,CRAIGS COURT, KHASRAN NO.159 TO 165, THE MALL, SHIMLA, HIMACHAL PRADESH - 171001.",
+    "pincode": 171001
+  },
+  {
+    "branch_code": 278,
+    "name": "Viman Nagar Branch",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "IYER, JAYATHRATHAN",
+    "branch_manager_phone": 9923346245,
+    "address": "Alfa Premio,Shop No.5, Near Datta Mandir,Opp. Khalsa Dairy,Viman Nagar,Pune-411014",
+    "pincode": 411014
+  },
+  {
+    "branch_code": 279,
+    "name": "Magarpatta, Pune",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Rajnish Sinha",
+    "branch_manager_phone": 9284175040,
+    "address": "Ground Floor, Farena Corporate Park, Sr. No. 135 & 136, Hissa No. 1A\/2, Magarpatta Road, Hadapsar, Pune 411028.",
+    "pincode": 411028
+  },
+  {
+    "branch_code": 280,
+    "name": "New Alipore",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Navleen Singh",
+    "branch_manager_phone": 9830702542,
+    "address": "FIRST FLOOR PREMISES NO: 51, BANKIM MUKHERJEE SARANI, WARD NO. 81, (41F BLOCK \u2013 C) NEW ALIPORE, KOLKATA - 700053.",
+    "pincode": 700053
+  },
+  {
+    "branch_code": 281,
+    "name": "Saket",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Prayas Saxena",
+    "branch_manager_phone": 9818314485,
+    "address": "GROUND FLOOR, 214 BLOCK J, SAKET, NEW DELHI - 110017.",
+    "pincode": 110017
+  },
+  {
+    "branch_code": 282,
+    "name": "Sion East Branch",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Amol Jadhav",
+    "branch_manager_phone": 9820632470,
+    "address": "Unit No. 1, Ground & First Floor, Regal Heights Chs, Plot No. 268, Road No. 31, Sion-Matunga, Estate Scheme No. 6, Sion (East), Mumbai 400022.",
+    "pincode": 400022
+  },
+  {
+    "branch_code": 283,
+    "name": "Aundh Branch",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Siddharth Gangal",
+    "branch_manager_phone": 7755994744,
+    "address": "SHOWROOM NO. 02, VARSHA AVENUE, PLOT NO. 104, CTS NO. 1132\/1133, ANAND PARK, AUNDH, PUNE - 411007",
+    "pincode": 411007
+  },
+  {
+    "branch_code": 284,
+    "name": "Ambedkar Garden Branch",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Jitendra Singh",
+    "branch_manager_phone": 9920665143,
+    "address": "SAMRUDDHI, PLOT NO. 157, 18TH ROAD, NEAR AMBEDKAR GARDEN, CHEMBUR EAST MUMBAI - 400071.",
+    "pincode": 400071
+  },
+  {
+    "branch_code": 285,
+    "name": "Bhulabhai Desai Road Branch",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Ankur Udeshi",
+    "branch_manager_phone": 9167555009,
+    "address": "SHOP NO 3 GROUND FLOOR, SMRUTI APARTMENTS, MAHALAXMI MANDIR MARG, Bhulabhai Desai road, MUMBAI - 400026",
+    "pincode": 400026
+  },
+  {
+    "branch_code": 286,
+    "name": "Mazgaon",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Abhishek Pujari ( Acting BM )",
+    "branch_manager_phone": 9867351333,
+    "address": "230, Mount Road, Near Gst Bhavan, Mazgaon, Mumbai",
+    "pincode": 400010
+  },
+  {
+    "branch_code": 288,
+    "name": "Banashankari Branch",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Vinayak SR",
+    "branch_manager_phone": 9986514007,
+    "address": "108, GROUND FLOOR, 100 FT. RING ROAD, BSK 3RD STAGE, KATHRIGUPPE, BANGALORE \u2013 560085",
+    "pincode": 560085
+  },
+  {
+    "branch_code": 289,
+    "name": "Brookefields Branch",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Gopinath Mahankali",
+    "branch_manager_phone": 9900066297,
+    "address": "SURAKSHA DE VENETIAN, NO. 605, AECS LAYOUT, KUNDALAHALLI, BROOK FIELD, BANGALORE \u2013 560037",
+    "pincode": 560037
+  },
+  {
+    "branch_code": 290,
+    "name": "Rajajinagar Branch",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "C Lakshmi Kishore",
+    "branch_manager_phone": 9246999437,
+    "address": "SHANTI TOWER,#257\/18, 10TH CROSS ROAD, 1ST \u201cN\u201d BLOCK, WARD NO 14, RAJAJI NAGAR, BANGALORE - 560010",
+    "pincode": 560010
+  },
+  {
+    "branch_code": 291,
+    "name": "Wakad Branch",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Vikas Kulkarni",
+    "branch_manager_phone": 9923123393,
+    "address": "SHOWROOM NO. 1C, GROUND FLOOR, GO SQUARE MALL, NEXT TO CROMA, HINJEWADI WAKAD ROAD, WAKAD, PUNE \u2013 411057",
+    "pincode": 411057
+  },
+  {
+    "branch_code": 292,
+    "name": "Defence Colony",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Arun Kumar",
+    "branch_manager_phone": 9358532345,
+    "address": "GROUND FLOOR, E-10, DEFENCE COLONY, NEW DELHI - 110024",
+    "pincode": 110024
+  },
+  {
+    "branch_code": 294,
+    "name": "Meera Bagh, Paschim Vihar Branch",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Vivek Chauhan",
+    "branch_manager_phone": 9910933640,
+    "address": "B-376, MEERA BAGH, PASCHIM VIHAR, NEW DELHI - 110087",
+    "pincode": 110087
+  },
+  {
+    "branch_code": 295,
+    "name": "Kirti Nagar Branch",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Pawan Mehta",
+    "branch_manager_phone": 8800198320,
+    "address": "GROUND FLOOR, F-43, KIRTI NAGAR, NEW DELHI - 110015",
+    "pincode": 110015
+  },
+  {
+    "branch_code": 296,
+    "name": "Dariyaganj",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "JAYANT ASNANI",
+    "branch_manager_phone": 9811613174,
+    "address": "Ground floor, 2\/3619 Faiz Bazar, Daryaganj , New Delhi \u2013 110002.",
+    "pincode": 110002
+  },
+  {
+    "branch_code": 297,
+    "name": "Mohali",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Kunjan Nassa",
+    "branch_manager_phone": 9814592825,
+    "address": "Ground floor, S.C.F 116, 3B2 Mohali - 160059.",
+    "pincode": 160059
+  },
+  {
+    "branch_code": 298,
+    "name": "Panchkula",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Varun Sharma",
+    "branch_manager_phone": 9923725709,
+    "address": "Ground floor, S.C.O No. 15,\u00a0Sector 11, Panchkula - 134109.",
+    "pincode": 134109
+  },
+  {
+    "branch_code": 299,
+    "name": "Sector 35 Chandigarh",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Kuldeep Kumar",
+    "branch_manager_phone": 8146306790,
+    "address": "Ground floor, S.C.O no 329, sector 35B, Chandigarh - 160035.",
+    "pincode": 160022
+  },
+  {
+    "branch_code": 300,
+    "name": "Ashok Nagar",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Arun P N",
+    "branch_manager_phone": 9841273305,
+    "address": "Ground floor, 11th NRD Tower, 100 ft Road, 1st Avenue Ashok Nagar, Chennai \u2013 600 083.",
+    "pincode": 600083
+  },
+  {
+    "branch_code": 301,
+    "name": "Gandhi Maidan Branch",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground A, Space No 1,2,3,4, Twin Tower, South Gandhi Maidan, Patna",
+    "pincode": 800003
+  },
+  {
+    "branch_code": 302,
+    "name": "Naraina",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Priya Lakhani",
+    "branch_manager_phone": 8860005980,
+    "address": "Ground Floor, C-126, Naraina Industrial Area, Phase-1, New Delhi \u2013 110028.",
+    "pincode": 110028
+  },
+  {
+    "branch_code": 303,
+    "name": "Noida Sector 50",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Sumit Virmani",
+    "branch_manager_phone": 9599229748,
+    "address": "Ground floor, B 258, Sector \u2013 50, Noida \u2013 201301.",
+    "pincode": 201301
+  },
+  {
+    "branch_code": 304,
+    "name": "Neelangarai",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Praveen Radhakrishnan\u00a0",
+    "branch_manager_phone": "9962978430\u00a0",
+    "address": "1st Floor, 145, East Coast Road, Neelangarai, Kancheepuram Sholinganallur -600115.",
+    "pincode": 600115
+  },
+  {
+    "branch_code": 305,
+    "name": "Millers Road Branch",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Prathap Reddy",
+    "branch_manager_phone": 6363196214,
+    "address": "Ground Floor Unit no 1,SBT Offices, No. 4\/2, Millers Road, Bengaluru, Karnataka 560052.",
+    "pincode": 560052
+  },
+  {
+    "branch_code": 306,
+    "name": "Kilpauk branch",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Murali Krishnan N S",
+    "branch_manager_phone": 9840701977,
+    "address": "Shop No. 73 ( New No. 58),First Floor, Sreerosh Madhav, New Avadi Road, Kilpauk , Chennai",
+    "pincode": 600010
+  },
+  {
+    "branch_code": 307,
+    "name": "Pondicherry branch",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sudarsanan R",
+    "branch_manager_phone": 8754988388,
+    "address": "Shop No. 12 (Old No. 6),Ground Floor, Padmini Complex, 100 ft road, Village No. 37, Pudupalayam Revenue Village,\u00a0 Ellaipillaichavady, Nellithope, Puducherry",
+    "pincode": 605005
+  },
+  {
+    "branch_code": 308,
+    "name": "Jajpur Road Branch",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Amitabh Acharya",
+    "branch_manager_phone": 7894477046,
+    "address": "Plot No 1253\/2117,Ground Floor, Chorada Main Road, Jajpur Road,",
+    "pincode": 755019
+  },
+  {
+    "branch_code": 309,
+    "name": "Amritsar",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Vishal Vermani",
+    "branch_manager_phone": 9356446060,
+    "address": "Upper Ground floor, Unit No.1, SRK Mall, Mall Road, Amritsar-143001.",
+    "pincode": 143001
+  },
+  {
+    "branch_code": 310,
+    "name": "Borivali West Link Road",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Mayank Shivalkar",
+    "branch_manager_phone": 8291282310,
+    "address": "AHCL Homes, Shop No 5 & First Floor, Opp MTNL, Shimpoli Naka, Link Road Borivali West, Mumbai -400068",
+    "pincode": 400092
+  },
+  {
+    "branch_code": 311,
+    "name": "Rash Bihari",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Sharma",
+    "branch_manager_phone": 9830230959,
+    "address": "8A, Rashbehari Avenue, Kolkata",
+    "pincode": 700026
+  },
+  {
+    "branch_code": 312,
+    "name": "Manjalpur Branch",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Somendra Srivastava",
+    "branch_manager_phone": 9599051283,
+    "address": "Shop No.G01 & G02, Ground Floor, Pinnacle Business park, Nr- Tulsidham Char Rasta, manjalpur, Vadodara-390011",
+    "pincode": 390011
+  },
+  {
+    "branch_code": 313,
+    "name": "Varachha Surat Branch",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Brijesh Trivedi",
+    "branch_manager_phone": 9712311100,
+    "address": "RBL BANK LTD, 5 - GROUND FLOOR, MANGALDEEP COMPLEX, NR. HIRABAUG CIRCLE, VARACHHA ROAD, SURAT, GUJARAT. - 395 006",
+    "pincode": 395006
+  },
+  {
+    "branch_code": 314,
+    "name": "Kailash Colony",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Md Faisal Abbasi",
+    "branch_manager_phone": 9891172750,
+    "address": "A-13 , Front Portion & Ground Floor, Kailash colony New Delhi 110048.",
+    "pincode": 110048
+  },
+  {
+    "branch_code": 315,
+    "name": "Kamla Nagar",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Gaurav Asnani",
+    "branch_manager_phone": 9711202809,
+    "address": "Ground Floor, 4\/3 Roop Nagar, Kamla Nagar, New Delhi 110007.",
+    "pincode": 110007
+  },
+  {
+    "branch_code": 316,
+    "name": "Bund Garden",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Anshul Kumar",
+    "branch_manager_phone": 9922055655,
+    "address": "COMMERCIAL UNIT NO. 8,P T GERA CENTRE, OPP. WADIA COLLEGE, BUND GARDEN ROAD, PUNE 411001",
+    "pincode": 411001
+  },
+  {
+    "branch_code": 317,
+    "name": "Vile Parle East Sahar Road",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Shailesh Walendra",
+    "branch_manager_phone": 9819479874,
+    "address": "Shop No A\/11, Gokul Arcade Premises Csl, Opp Garware House,Vile Parle(East),Mumbai 400057",
+    "pincode": 400057
+  },
+  {
+    "branch_code": 318,
+    "name": "Khar West",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Dhirendra Singh",
+    "branch_manager_phone": 9867567558,
+    "address": "Ground Floor, Bhawan Mahal, Plot No. 130, Swami Vivekanand Road, Khar (West), Mumbai 400052.",
+    "pincode": 400052
+  },
+  {
+    "branch_code": 319,
+    "name": "Solan",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Vinay Kumar",
+    "branch_manager_phone": 9805524009,
+    "address": "Shop No. 1& 2,Ground Floor, Khasra No.8469\/520, Maujajawahar Park, Solan, Himachal Pradesh - 173212",
+    "pincode": 173211
+  },
+  {
+    "branch_code": 320,
+    "name": "Gopalapuram Branch",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Arunkumar A M",
+    "branch_manager_phone": 8144284448,
+    "address": "Ground Floor & First floor, Old No.117, New No. 211, Avvai Shanmugam Salai, Gopalapuram",
+    "pincode": 600086
+  },
+  {
+    "branch_code": 321,
+    "name": "West Patel Nagar Branch",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Jaspreet Singh",
+    "branch_manager_phone": 8291282321,
+    "address": "2\/12, Ground Floor, West Patel Nagar, Main Patel Road, New Delhi \u2013 110008.",
+    "pincode": 110008
+  },
+  {
+    "branch_code": 322,
+    "name": "Faridabad Nit",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Shrawan Dwivedi",
+    "branch_manager_phone": 9971985147,
+    "address": "Shop No 20,21,53,54, Ground floor, Lower Ground and Mezzanine Floor, Tikona Park, NIT Faridabad 121001.",
+    "pincode": 121001
+  },
+  {
+    "branch_code": 323,
+    "name": "Vasant Kunj",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Rohit Khullar",
+    "branch_manager_phone": 9891408658,
+    "address": "Ground floor, 2, Nelson Mandela Marg, Vasant Kunj, New Delhi \u2013 110070.",
+    "pincode": 110070
+  },
+  {
+    "branch_code": 324,
+    "name": "Andheri East - Kanakia Wallstreet Branch",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Unit No 8, Ground Floor, A-Wing, Kanakia Wallstreet, Andheri Kurla Road, Andheri East, Mumbai",
+    "pincode": 400093
+  },
+  {
+    "branch_code": 325,
+    "name": "Juhu Tara Road Branch",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Dipankar Mondal",
+    "branch_manager_phone": 9836754488,
+    "address": "SHOP NO. 1, GROUND FLOOR, RATNADEEP BUILDING, PLOT NO. 29 OF TPS II, JUHU TARA ROAD, SANTACRUZ (WEST), MUMBAI 400049.",
+    "pincode": 400049
+  },
+  {
+    "branch_code": 326,
+    "name": "Tirupur Branch",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Ramkumar N",
+    "branch_manager_phone": 9944611411,
+    "address": "Shop No .9, (Old No:8), 9(1), Ground Floor, Universal Theatre Road, Tirupur-641601",
+    "pincode": 641601
+  },
+  {
+    "branch_code": 327,
+    "name": "Himayat Nagar Branch",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Mukesh shinde",
+    "branch_manager_phone": 9849991039,
+    "address": "3-5-926\/(1) to (4), Himayat Nagar, Hyderabad 500029",
+    "pincode": 500029
+  },
+  {
+    "branch_code": 328,
+    "name": "Kozhikode Branch",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "A K SAJITH",
+    "branch_manager_phone": 9846773656,
+    "address": "Ground Floor, AKS Enclave, Mini Bypass Road, Puthiyara Junction, Puthiyara, Kozhiode, Kerala - 673004.",
+    "pincode": 673004
+  },
+  {
+    "branch_code": 329,
+    "name": "Thrissur Branch",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Dheepak K G",
+    "branch_manager_phone": 9895756707,
+    "address": "Ground floor, Aricaria, Jyoti Nest, Survey No. 1866\/10 and 1866\/11,Premji Road (formerly Sitaram Mill Road), Punkunnam, Thrissur- 680002",
+    "pincode": 680002
+  },
+  {
+    "branch_code": 330,
+    "name": "Dilsukhnagar Branch",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sheik Kaleem",
+    "branch_manager_phone": 9885073830,
+    "address": "Shop No. 001, Ground Floor, Srinivasa Tower, #16-11-1\/1\/2, Saleem Nagar, Malakpet Main Road, Hyderabad 500036.",
+    "pincode": 500036
+  },
+  {
+    "branch_code": 331,
+    "name": "Jubilee Hills Branch",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Stiphen Mohanty",
+    "branch_manager_phone": 9338762992,
+    "address": "G7 ,Ground Floor , Empire Square Building , Road no 36 , Jubilee Hills , Hyderabad 500033",
+    "pincode": 500033
+  },
+  {
+    "branch_code": 332,
+    "name": "PRABHADEVI",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Surpreet Malhotra",
+    "branch_manager_phone": 9833064695,
+    "address": "SHOP NO- G002 PART, GROUND FLOOR, RAJAN HOUSE, RAJAN HOUSE CONDOMINIUM, APPASAHEB MARATHE MARG, BABASAHEB WORLIKAR CHOWK, MUMBAI - 400025.",
+    "pincode": 400025
+  },
+  {
+    "branch_code": 333,
+    "name": "PARK STREET",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Pritam Mukherjee",
+    "branch_manager_phone": 9830601301,
+    "address": "101, Ground floor, Siddha Point, Park Street, Kolkata",
+    "pincode": 700016
+  },
+  {
+    "branch_code": 334,
+    "name": "JAYANAGAR BRANCH",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Vajra Jayanthi",
+    "branch_manager_phone": 9845441448,
+    "address": "NO.20, GROUND FLOOR, 10TH MAIN, 4TH BLOCK, JAYANAGAR, BANGALORE - 560011.",
+    "pincode": 560011
+  },
+  {
+    "branch_code": 335,
+    "name": "Sector 14, Gurgaon",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Arun Kumar",
+    "branch_manager_phone": 8291282335,
+    "address": "Ground Floor, SCO-15, Sector-14, Gurugram 122001.",
+    "pincode": 122001
+  },
+  {
+    "branch_code": 336,
+    "name": "Prashant Vihar",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Akshay Bagai",
+    "branch_manager_phone": 7678425278,
+    "address": "UPPER GROUND FLOOR, E-7, PRASHANT VIHAR, OUTER RING ROAD, NEW DELHI - 110085",
+    "pincode": 110085
+  },
+  {
+    "branch_code": 337,
+    "name": "BASAVANAGUDI BRANCH",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "SANDESH BL",
+    "branch_manager_phone": 9844335915,
+    "address": "98\/1 GANDHI BAZAAR, MAIN ROAD, BASAVANAGUDI, BANGALORE - 560004.",
+    "pincode": 560004
+  },
+  {
+    "branch_code": 338,
+    "name": "Shivalik",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Jasjeet Singh",
+    "branch_manager_phone": 8527998426,
+    "address": "GROUND FLOOR, C-11, \u00a0SHIVALIK, NEW DELHI - 110017",
+    "pincode": 110017
+  },
+  {
+    "branch_code": 339,
+    "name": "RT NAGAR BRANCH",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Saif Ahmed Hazarika",
+    "branch_manager_phone": 9845120894,
+    "address": "NO.300, SANMRUDHI, 1ST BLOCK, 3RD MAIN, RT NAGAR, BANGALORE - 560032.",
+    "pincode": 560032
+  },
+  {
+    "branch_code": 340,
+    "name": "THIRUVANANTHAPURAM",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Hariharan S",
+    "branch_manager_phone": 9847407981,
+    "address": "KGS PLAZZA, SASTHAMANGALAM, THRIVUVANANTHAPURAM , KERALA - 695010.",
+    "pincode": 695010
+  },
+  {
+    "branch_code": 341,
+    "name": "Banjara Hills",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "VENKATARAMAN KRISHNAMURTHY",
+    "branch_manager_phone": 8008503253,
+    "address": "Ground Floor, NSL Icon, 8-2-684\/2\/A, Road No.12, Banjara Hills, Hyderabad 500034",
+    "pincode": 500034
+  },
+  {
+    "branch_code": 342,
+    "name": "SUPERMART DLF PHASE IV, GURGAON",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Dev Tanwar",
+    "branch_manager_phone": 9910044865,
+    "address": "Upper Ground Floor, Unit No-A 202 to A204 Super Mart , DLF Phase IV, Sector 43, Gurugram- 122003",
+    "pincode": 122003
+  },
+  {
+    "branch_code": 343,
+    "name": "PURASAIWALKAM",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TMZ ABUL KALAAM",
+    "branch_manager_phone": 8778760535,
+    "address": "First Floor, New No.16, Old No 86, Millers Road, Purasaiwalakam, Chennai - 600010.",
+    "pincode": 600010
+  },
+  {
+    "branch_code": 344,
+    "name": "Boring Road,Patna",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Himanshu Agarwal",
+    "branch_manager_phone": 9955062625,
+    "address": "Parnheet Commercial, West Boring Canal Road, Patna ,Bihar 800001.",
+    "pincode": 800001
+  },
+  {
+    "branch_code": 345,
+    "name": "GOLPARK",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Shamimul Alam",
+    "branch_manager_phone": 9051359666,
+    "address": "38\/3A, GARIAHAT ROAD SOUTH, KOLKATA \u2013 700068",
+    "pincode": 700068
+  },
+  {
+    "branch_code": 346,
+    "name": "SV ROAD, ANDHERI WEST",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Rahul Bajaj",
+    "branch_manager_phone": 9969799536,
+    "address": "B\/2, RATANDEEP COSMOPOLITAN CHS LTD,140\/141, S.V. ROAD, ANDHERI WEST, MUMBAI - 400058",
+    "pincode": 400058
+  },
+  {
+    "branch_code": 347,
+    "name": "Sarat Bose Road",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "26, \u00a0SARAT BOSE ROAD, \u00a0KOLKATA - 700020.",
+    "pincode": 700020
+  },
+  {
+    "branch_code": 348,
+    "name": "VIJAY NAGAR, INDORE",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Parag Ojha",
+    "branch_manager_phone": 8291282348,
+    "address": "RBL Bank Ltd. Showroom No.1,\u201dVishal Astra\u201d, Scheme No.54,Satya Sai Square, Vijay Nagar, A.B.Road, Indore-452001",
+    "pincode": 452001
+  },
+  {
+    "branch_code": 349,
+    "name": "BESANT NAGAR",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Archana Ganesan",
+    "branch_manager_phone": 9381737381,
+    "address": "GROUND FLOOR, NO. E\/147, 2ND AVENUE, BESANT NAGAR, CHENNAI \u2013 600090",
+    "pincode": 600090
+  },
+  {
+    "branch_code": 350,
+    "name": "Velachery",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Jaiganesh B",
+    "branch_manager_phone": 9176622200,
+    "address": "BLOCK NO. 222, 1ST FLOOR, PLOT NO II, TARAMANI LINK ROAD,VELACHERY, CHENNAI - 600042.",
+    "pincode": 600042
+  },
+  {
+    "branch_code": 351,
+    "name": "Ninex Mall Gurgaon",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "p v k sathyanarayana",
+    "branch_manager_phone": 9818890909,
+    "address": "Shop No.22 A and 24, Ground floor, Ninex City Mart Mall, Sohna Road, Gurugram - 122001",
+    "pincode": 122001
+  },
+  {
+    "branch_code": 352,
+    "name": "Peenya, Bangalore",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Irfan Mohammed",
+    "branch_manager_phone": 9535336824,
+    "address": "HOTEL UJJWALA INTERNATIONAL, GROUND FLOOR NO. V-2,1ST STATE, TVS CROSS, PEENYA INDUSTRIAL AREA, PEENYA, BANGALORE - 560058.",
+    "pincode": 560058
+  },
+  {
+    "branch_code": 353,
+    "name": "Majalgaon, Beed",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Umesh Dhokane",
+    "branch_manager_phone": 9922943957,
+    "address": "Shop No. 1 to 4, Ground Floor, Mauli Complex, Georai road, Majalgaon,, Beed, Maharashtra",
+    "pincode": 431131
+  },
+  {
+    "branch_code": 354,
+    "name": "Central Avenue Powai",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Nikita Mishra",
+    "branch_manager_phone": 9820657778,
+    "address": "Shop No.9, Wing B,Ventura Shopping, Central Avenue, Hiranandani Business Park, \u00a0Powai, Mumbai - 400076",
+    "pincode": 400076
+  },
+  {
+    "branch_code": 355,
+    "name": "G C Avenue",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Prashant Sharma",
+    "branch_manager_phone": 8240304077,
+    "address": "65 Ganesh Chandra Avenue, Kolkata - 700013.",
+    "pincode": 700013
+  },
+  {
+    "branch_code": 356,
+    "name": "SR Nagar",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "PRAVEEN SAYINI",
+    "branch_manager_phone": 9849282591,
+    "address": "No.7-1-621\/275, Mig 260\/3Rt,Besides Pizza hut, Police station Road,\u00a0SR Nagar, Hyderabad - 500038",
+    "pincode": 500038
+  },
+  {
+    "branch_code": 357,
+    "name": "Greater Kailash 1",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "KAILASH BISHT",
+    "branch_manager_phone": 9711140399,
+    "address": "H.S M-62 Greater Kailash 1, Market New Delhi \u2013 110048",
+    "pincode": 110048
+  },
+  {
+    "branch_code": 358,
+    "name": "F.C. Road, Pune",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Mirza Beig",
+    "branch_manager_phone": 9890904978,
+    "address": "Shop No. 1, Lower Ground Floor, B-Wing, Aditya Centeegra, Plot No. 314, Shivaji Nagar, F.C. Road, Pune\u2013 411016.",
+    "pincode": 411016
+  },
+  {
+    "branch_code": 359,
+    "name": "Bhosari, Pune",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Abhimanyu Mane",
+    "branch_manager_phone": 9987652542,
+    "address": "Godown No. 114-115, M.D. Babar Business Centre, Plot No, Bgp-109, Midc Landewadi, Bhosari, Pune 411026.",
+    "pincode": 411026
+  },
+  {
+    "branch_code": 360,
+    "name": "Tilak Nagar",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Kuldeep Goel",
+    "branch_manager_phone": 9899742754,
+    "address": "Ground Floor, Wz-112, Meenakshi Garden, Tilak Nagar, Delhi - 110018",
+    "pincode": 110018
+  },
+  {
+    "branch_code": 361,
+    "name": "Karelibaug, Vadodara",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Mitesh Chauhan",
+    "branch_manager_phone": 8291282361,
+    "address": "Shop No. 1, Ground Floor, Shukan Ananta Complex, Muktanand Circle, Karelibaug, Vadodara - 390018.",
+    "pincode": 390018
+  },
+  {
+    "branch_code": 362,
+    "name": "Kotturpuram",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Varadharajan R",
+    "branch_manager_phone": 8291299362,
+    "address": "Ground Floor, No-35, Gandhi Mandapam Road, Kotturpuram, Chennai - 600085.",
+    "pincode": 600085
+  },
+  {
+    "branch_code": 363,
+    "name": "New Friends Colony",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Chandan.Shingari",
+    "branch_manager_phone": 9999752947,
+    "address": "17, FRIENDS COLONY\u00a0 COMMUNITY CENTER, NEW DELHI \u2013 110025.",
+    "pincode": 110025
+  },
+  {
+    "branch_code": 364,
+    "name": "Chandanagar",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Narsingoju Balaji Rao",
+    "branch_manager_phone": 7799904700,
+    "address": "Shop No.5-4\/10 & 5-4\/11, Ground Floor, Chandanagar, Hyderabad, Telangana - 500050.",
+    "pincode": 500050
+  },
+  {
+    "branch_code": 365,
+    "name": "Nacharam",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Mahender Annam",
+    "branch_manager_phone": 7569592110,
+    "address": "Ground Floor, 4-7-42\/1\/G3, Sri Balaji Trade Centre, Bapuji Nagar, Nacharam, Hyderabad - 500076.",
+    "pincode": 500076
+  },
+  {
+    "branch_code": 366,
+    "name": "Kondapur",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Saiprasad Tammala",
+    "branch_manager_phone": 9542358828,
+    "address": "Sri Mythri Square, S. No. 35&36, Kothaguda, Kondapur, Opposite To Sarath City Capital Mall, Hyderabad \u2013 500084.",
+    "pincode": 500084
+  },
+  {
+    "branch_code": 367,
+    "name": "TONK ROAD, JAIPUR",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Shalu Benawat",
+    "branch_manager_phone": 9672281116,
+    "address": "Showroom No \u2013 110, Ground Floor, Apex Mall, Main Tonk Road, Jaipur \u2013 302005.",
+    "pincode": 302005
+  },
+  {
+    "branch_code": 368,
+    "name": "Jayanagar 7Th Block",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sangmesh",
+    "branch_manager_phone": 7676204435,
+    "address": "Ground Floor,80\/A, New No.13, 32Nd Cross Road, 7Th Block, Jayanagar, Bangalore \u2013 560082.",
+    "pincode": 560082
+  },
+  {
+    "branch_code": 369,
+    "name": "HRBR Layout Branch",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "S.Lakshmikanth",
+    "branch_manager_phone": 9019208553,
+    "address": "No.104, Ground Floor, HRBR Layout 3Rd Block, Bangalore - 560043.",
+    "pincode": 560043
+  },
+  {
+    "branch_code": 370,
+    "name": "Trichy Road, Coimbatore",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "GOPINATH L",
+    "branch_manager_phone": 9884062115,
+    "address": "Ground Floor, Ptr Complex, 751, Trichy Road, Sowripalayam Pirivu, Ramanathapuram, Coimbatore - 641045.",
+    "pincode": 641045
+  },
+  {
+    "branch_code": 371,
+    "name": "Kollam",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "RBL Bank Limited, Ground Floor, Sugatha Arcade Ashramam Road, Near Quilon Radio Service, Kollam -691 001",
+    "pincode": 691001
+  },
+  {
+    "branch_code": 372,
+    "name": "Karapakkam Omr",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "No. 55, First Floor (Above Stilt),Rajiv Gandhi Road, OMR Karapakkam, Chennai \u2013 600097",
+    "pincode": 600097
+  },
+  {
+    "branch_code": 373,
+    "name": "Kottayam",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "SOJU ABRAHAM",
+    "branch_manager_phone": 9744113361,
+    "address": "Karimattam Plazza, Ground floor, Kottayam Railway Station-Private Bus Stand Road, Nagampadam, Kottayam, Kerala - 686001.",
+    "pincode": 686001
+  },
+  {
+    "branch_code": 374,
+    "name": "Palakkad",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "SATHEESH MANGHAT",
+    "branch_manager_phone": 9790013151,
+    "address": "Sanjoe Tower, Ground Floor, Room No. 40\/83,84,85, Opposite KSRTC Bus Stand, Shoranur Road, Noorani Post Palakkad - 678014.",
+    "pincode": 678014
+  },
+  {
+    "branch_code": 375,
+    "name": "Salt Lake Sector II",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Arindam Das Gupta",
+    "branch_manager_phone": 9830291418,
+    "address": "CG 221 Salt Lake city, Sector 2 Kolkata 700091.",
+    "pincode": 700091
+  },
+  {
+    "branch_code": 376,
+    "name": "Somajiguda",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Jose John",
+    "branch_manager_phone": 9866989006,
+    "address": "No.6-3-1239\/2, Amar Building, Ground Floor, Raj Bhavan Road, Somajiguda, Hyderabad - 500082.",
+    "pincode": 500082
+  },
+  {
+    "branch_code": 377,
+    "name": "Shivaji Park",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Ajay Sehgal",
+    "branch_manager_phone": 9918526777,
+    "address": "Shop No. 2, Ground Floor, Shiv Kutir, Veer Savarkar Marg, Cadel Road, Shivaji Road, Dadar (West), Mumbai 400028.",
+    "pincode": 400028
+  },
+  {
+    "branch_code": 378,
+    "name": "NM road,Chennai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "S Sivakumar",
+    "branch_manager_phone": 9655240616,
+    "address": "Ground Floor, No.32, Nelson Manickam Road, Aminjikarai, Chennai \u2013 600029.",
+    "pincode": 600029
+  },
+  {
+    "branch_code": 380,
+    "name": "DB Gupta Road, Delhi",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Arpith Agarwal",
+    "branch_manager_phone": 9999006404,
+    "address": "54\/7, DB GUPTA ROAD, KAROL BAGH, DELHI \u2013 110005.",
+    "pincode": 110005
+  },
+  {
+    "branch_code": 381,
+    "name": "CBD Belapur",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "SYLVESTER FERANNDES",
+    "branch_manager_phone": "9833788661",
+    "address": "Shop No. 8, Trishul Goldmine, Plot No.4, Sector 15, CBD Belapur, Navi Mumbai 400614.",
+    "pincode": 400614
+  },
+  {
+    "branch_code": 382,
+    "name": "ASHOK VIHAR",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Prashant Saini",
+    "branch_manager_phone": 9873916541,
+    "address": "B-2\/15, Ashok Vihar, Phase 2, Delhi 110052.",
+    "pincode": 110052
+  },
+  {
+    "branch_code": 383,
+    "name": "Koramangala - 80 Ft road",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Shishir Mishra",
+    "branch_manager_phone": 7349282380,
+    "address": "Ground Floor, No.14,4th Block, S.T Bed, 80ft Road, Koramangala, Banglaore \u2013 560034.",
+    "pincode": 560034
+  },
+  {
+    "branch_code": 384,
+    "name": "Perambur, Chennai",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground Floor, Plot No. 15 Door - 14\/2 & 15\/2, Siva Elango Salai, 70 Feet Road, Jawahar Nagar, Perambur, Chennai - 600082.",
+    "pincode": 600082
+  },
+  {
+    "branch_code": 385,
+    "name": "GREEN PARK NEW DELHI",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Hafij Khan",
+    "branch_manager_phone": 7800734123,
+    "address": "S-35, Main Green Park Market, New Delhi - 110016.",
+    "pincode": 110016
+  },
+  {
+    "branch_code": 386,
+    "name": "Mulund",
+    "cluster": "Mumbai 4",
+    "region": "West Region",
+    "branch_manager_name": "Anita Iyer",
+    "branch_manager_phone": 9930631805,
+    "address": "SHOP NO. 1&2, GROUND FLOOR, KONARK DARSHAN, ZAVER ROAD, MULUND (WEST), MUMBAI - 400080.",
+    "pincode": 400080
+  },
+  {
+    "branch_code": 387,
+    "name": "Saveetha (Deemed) University, Chennai",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "MOUNAGEETHA SARAVANAN",
+    "branch_manager_phone": null,
+    "address": "SAVEETHA INSTITUTE OF MEDICAL AND TECHNICAL SCIENCES, SAVEETHA NAGAR, THANDALAM POST, MEVALURKUPPAM, CHENNAI- 602105.",
+    "pincode": 602105
+  },
+  {
+    "branch_code": 388,
+    "name": "Kaipuzha",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Taison Alex",
+    "branch_manager_phone": 8848661006,
+    "address": "Pulickal Building, Ward No. 11\/220B, Kaipuzha, P.O. Kottayam-686601",
+    "pincode": 686601
+  },
+  {
+    "branch_code": 389,
+    "name": "Lalpur",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Anand Bahety",
+    "branch_manager_phone": 9826160881,
+    "address": "Shop No.20, Progressive Point Complex, Abhanpur Road, Lalpur, Raipur, Chhhatisgarh- 492101",
+    "pincode": 492101
+  },
+  {
+    "branch_code": 390,
+    "name": "Patliputra",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Kumar Abhishek",
+    "branch_manager_phone": "TBH",
+    "address": "169, Pataliputra Colony, Behind Haldiram,Patna, Bihar - 800013",
+    "pincode": 800001
+  },
+  {
+    "branch_code": 391,
+    "name": "Ahiyapur",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Purushottam Priyadarshi",
+    "branch_manager_phone": "93868 22882",
+    "address": "Ground Floor, East of Petrol Pump, New Zero Mile, Ahiyapur, Darbhanga Road, Muzaffarpur",
+    "pincode": 842001
+  },
+  {
+    "branch_code": 392,
+    "name": "Nanganallur",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Venkatesh Srinivasan",
+    "branch_manager_phone": 8291282392,
+    "address": "FIRST FLOOR, NO.1, FIRST MAIN ROAD, NANGANALLUR, CHENNAI - 600061",
+    "pincode": 600061
+  },
+  {
+    "branch_code": 393,
+    "name": "KODAMBAKKAM",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Prashanth Mallya",
+    "branch_manager_phone": 9962016131,
+    "address": "FIRST FLOOR, NEW NO.341, OLD NO.69, ARCOT ROAD, KODAMBAKKAM, CHENNAI - 600024",
+    "pincode": 600024
+  },
+  {
+    "branch_code": 394,
+    "name": "VALASARAVAKKAM",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Anu K v",
+    "branch_manager_phone": 9843699790,
+    "address": "GROUND FLOOR,175, ARCOT ROAD, PALANIAPPA NAGAR, VALASARAVAKKAM, CHENNAI - 600087",
+    "pincode": 600087
+  },
+  {
+    "branch_code": 395,
+    "name": "Hazratganj",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Ziyauddin Khan",
+    "branch_manager_phone": 0,
+    "address": "1A, GROUND FLOOR, SAPRU MARG, LUCKNOW - 226001.",
+    "pincode": 226001
+  },
+  {
+    "branch_code": 396,
+    "name": "Mandaveli",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "BALA T R",
+    "branch_manager_phone": 9786759814,
+    "address": "Old no.47, New No.30, Venkatakrishna Iyer Road, RA Puram, Mandaveli, Chennai \u2013 600028",
+    "pincode": 600028
+  },
+  {
+    "branch_code": 397,
+    "name": "Aliganj",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "PAWAN SINGH",
+    "branch_manager_phone": 0,
+    "address": "B 1\/9, SECTOR-F, KAPOORTHALA, ALIGANJ, LUCKNOW - 226024.",
+    "pincode": 226024
+  },
+  {
+    "branch_code": 398,
+    "name": "Kanpur Mall Road",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "17\/3-B, THE MALL, KANPUR - 208001.",
+    "pincode": 208001
+  },
+  {
+    "branch_code": 399,
+    "name": "Anna Nagar 2",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Anitha Ayyappan",
+    "branch_manager_phone": 9841347880,
+    "address": "New no 96, Old no 15, S Block, 5th avenue, Anna Nagar west, Chennai 600040",
+    "pincode": 600040
+  },
+  {
+    "branch_code": 400,
+    "name": "Malcha Marg",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Bandyopadhyay Maushumi",
+    "branch_manager_phone": 9999874443,
+    "address": "21\/48, MALCHA MARG MARKET, NEW DELHI - 110021",
+    "pincode": 110021
+  },
+  {
+    "branch_code": 401,
+    "name": "Sector 31, Gurgaon",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Sco 31, Sector 31, Gurgaon - 122003",
+    "pincode": 122003
+  },
+  {
+    "branch_code": 402,
+    "name": "Lokhandwala Market",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Shruti Jain",
+    "branch_manager_phone": 9819180907,
+    "address": "SHOP NO. G-1C & S-9, WOODROSE CO-OPERATIVE HOUSING SOCIETY LIMITED, PLOT NO. 320, LOKHANDWALA COMPLEX, J.P. ROAD, FOUR BUNGALOWS, ANDHERI (W), MUMBAI - 400058.",
+    "pincode": 400058
+  },
+  {
+    "branch_code": 403,
+    "name": "Turner Road, Bandra West",
+    "cluster": "Mumbai 1",
+    "region": "West Region",
+    "branch_manager_name": "Lalit Kumar",
+    "branch_manager_phone": 9930906667,
+    "address": "SHOP NO. 10, GROUND FLOOR, DARVESH ROYALE, TURNER ROAD, BANDRA (WEST), MUMBAI - 400050",
+    "pincode": 400050
+  },
+  {
+    "branch_code": 404,
+    "name": "N47 Connaught Place",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Sidarth Raina",
+    "branch_manager_phone": "\u00a09810743977",
+    "address": "N - 47 CONNAUGHT PLACE , NEW DELHI -110001",
+    "pincode": 110001
+  },
+  {
+    "branch_code": 405,
+    "name": "Begumpet",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Umesh Kandula",
+    "branch_manager_phone": 9642992534,
+    "address": "Ground Floor, No.1-8-304 to to 307 & 444, Gowra Plaza, SP Road, Begumpet, Secunderabad - 500003",
+    "pincode": 500003
+  },
+  {
+    "branch_code": 406,
+    "name": "Whitefield",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Vedavyas Mishra",
+    "branch_manager_phone": 8088621340,
+    "address": "260,ASR Tower, Ground Floor Brook Bond Whitefield Main Road, Opp. Hindustan Unilever, Bangalore",
+    "pincode": 560066
+  },
+  {
+    "branch_code": 407,
+    "name": "Sanjay Nagar",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Jayanthi Umesh",
+    "branch_manager_phone": 9845733880,
+    "address": "Ground Floor, No.1, NGEF Layout, Opp To Vaibhav Theatre, Sanjay Nagar, Bangalore - 560094",
+    "pincode": 560094
+  },
+  {
+    "branch_code": 408,
+    "name": "Frazer Town",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Saurabh Mukherjee",
+    "branch_manager_phone": 7019775613,
+    "address": "Ground Floor, #85, Coles Road, Pulikeshi Nagar, Frazer Town, Bangalore - 560005",
+    "pincode": 560005
+  },
+  {
+    "branch_code": 409,
+    "name": "BTM Layout",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Puja Kumari",
+    "branch_manager_phone": 7022347305,
+    "address": "Ground & First Floor, Shop No.1, # 805, 7th Cross, 2nd Stage, BTM Layout, Bangalore - 560076",
+    "pincode": 560076
+  },
+  {
+    "branch_code": 410,
+    "name": "Domlur",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "ANIRBAN ACHERJEE",
+    "branch_manager_phone": 9007424665,
+    "address": "Ground Floor, Unit No.17 & 18, No.1, Carlton Tower, Old Airport Road, Domlur, Bangalore - 560008",
+    "pincode": 560008
+  },
+  {
+    "branch_code": 411,
+    "name": "Prashahan Nagar",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Marreddy Gade",
+    "branch_manager_phone": 8686954048,
+    "address": "Ground Floor, Plot no.5, Prashashan Nagar Colony, Road no.72, Jubilee Hills, Hyderabad - 500033",
+    "pincode": 500033
+  },
+  {
+    "branch_code": 412,
+    "name": "Banjara Hills Road No. 1",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Kittu Khore",
+    "branch_manager_phone": 9030010377,
+    "address": "Ground Floor, 8-2-672\/5&6\/4 ,Part 6\/3A, Ilyas Mohammed Khan Estate, Road No.1, Banjara Hills, Hyderabad - 500034",
+    "pincode": 500034
+  },
+  {
+    "branch_code": 413,
+    "name": "Palarivattom",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Mishal Bablu",
+    "branch_manager_phone": 7900101153,
+    "address": "RBL Bank Ltd, Ground Floor, No 35\/265, 267\/268, Arum Chambers, Edapally \u2013 Aluva Road, Palarivattom, Kochi",
+    "pincode": 682025
+  },
+  {
+    "branch_code": 414,
+    "name": "Mayur Vihar II",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Anurag Mishra",
+    "branch_manager_phone": 9711598371,
+    "address": "G-1, PLOT NO.10, LSC MARKET,\u00a0 POCKET B, MAYUR VIHAR PHASE \u2013 II, NEW DELHI 110091",
+    "pincode": 110091
+  },
+  {
+    "branch_code": 415,
+    "name": "Malad Link road",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Anand Shobhit",
+    "branch_manager_phone": 9022036916,
+    "address": "SHOP NO. 7, GROUND FLOOR, BHAGAT GRANDEUR, OPP. INFINITI MALL LINK ROAD, MALAD WEST, MUMBAI - 400064",
+    "pincode": 400064
+  },
+  {
+    "branch_code": 416,
+    "name": "Nehru Enclave",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Kumar Ratna",
+    "branch_manager_phone": 9953740994,
+    "address": "CC-24, KALKAJI, OPPOSITE MODI TOWERS, NEW DELHI - 110019",
+    "pincode": 110019
+  },
+  {
+    "branch_code": 417,
+    "name": "MAYUR VIHAR I",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Divesh Jain",
+    "branch_manager_phone": 9999819776,
+    "address": "RBL Bank Limited , A-10, UG and First Floor, Rajnish Complex, Acharya Niketan, Mayur Vihar Phase -1 , Delhi \u2013 110091",
+    "pincode": 110091
+  },
+  {
+    "branch_code": 418,
+    "name": "Gomti Nagar",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Sachin Tripathi",
+    "branch_manager_phone": 0,
+    "address": "4\/2 Vipul Khand, Gomti Nagar, District- Lucknow, Lucknow - 226010",
+    "pincode": 226010
+  },
+  {
+    "branch_code": 419,
+    "name": "Vijayhata",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Raj Kumar",
+    "branch_manager_phone": "97091 01710",
+    "address": "Ground Floor, Beside Lakhichand Hospital, Doctors Colony Chowk, Vijayhata, Gaushala Road, Siwan",
+    "pincode": 841227
+  },
+  {
+    "branch_code": 420,
+    "name": "Ashiyana, Lucknow",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "B-72, Sector, B, Kanpur Road, Scheme, Lucknow 226012.",
+    "pincode": 226012
+  },
+  {
+    "branch_code": 421,
+    "name": "South Ex - II",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Deepak Arora",
+    "branch_manager_phone": 9818011576,
+    "address": "D-15, South Ext-2, New Delhi - 110049",
+    "pincode": 110049
+  },
+  {
+    "branch_code": 422,
+    "name": "Lahartara",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Suraj Rai\u00a0",
+    "branch_manager_phone": 0,
+    "address": "Upper Ground Floor, H .No-D65\/245-B-2, Lahartara,Varanasi-221002",
+    "pincode": 221002
+  },
+  {
+    "branch_code": 423,
+    "name": "Raghunathpur",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Sambit Choudhury",
+    "branch_manager_phone": "98538 66944",
+    "address": "Govind Bhavan, Ground Floor, Raghunathpur, District-Khorda, Bhubaneswar, Odisha-754005",
+    "pincode": 754005
+  },
+  {
+    "branch_code": 424,
+    "name": "Bannerghatta Road",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Avishek Sarkar",
+    "branch_manager_phone": 8123874706,
+    "address": "Ground Floor, No.8, Liss Arcade, Bannerghatta Main Road, Arekere, Bangalore \u2013 560076",
+    "pincode": 560076
+  },
+  {
+    "branch_code": 425,
+    "name": "Teynampet",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "MATHIVANAN KANNAN",
+    "branch_manager_phone": 9843273611,
+    "address": "Ground Floor,\u00a0 Karumuttu Center, Old No.498,New No. 634, Anna Salai, Satya Murthy Nagar, Teynampet, Chennai - 600035",
+    "pincode": 600035
+  },
+  {
+    "branch_code": 426,
+    "name": "Yelahanka",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Joel C Ben",
+    "branch_manager_phone": 9964091753,
+    "address": "GF-1, Ground Floor, No.2, Maaruthi Complex, 1st A Main Road, HIG A Sector, Yelahanka New Town, Bangalore \u2013 560064",
+    "pincode": 560064
+  },
+  {
+    "branch_code": 427,
+    "name": "Basaveshwar Nagar",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground Floor, 15\/28, Havanur Complex, 2nd Stage, KHB Colony, Basaveshwar Nagar, Bangalore - 560079",
+    "pincode": 560079
+  },
+  {
+    "branch_code": 428,
+    "name": "2nd Stage,\u00a0Banashankari",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Shankar Prasad B",
+    "branch_manager_phone": 8904498201,
+    "address": "Ground Floor, no 431,24th Cross Road, Banashankari 2nd Stage, Bangalore - 560070",
+    "pincode": 560070
+  },
+  {
+    "branch_code": 429,
+    "name": "Dwarka Sector 7",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "RUCHIKA MANCHANDA",
+    "branch_manager_phone": 9899672149,
+    "address": "D-414, Ramphal Chowk,Sector-7, Dwarka,New Delhi- 110075",
+    "pincode": 110075
+  },
+  {
+    "branch_code": 430,
+    "name": "Indirapuram Ghaziabad",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Pankil Gupta",
+    "branch_manager_phone": 8882161284,
+    "address": "AG-16, AG-33 & AG-15C, Block-A, Aditya City Center, Plot No.-C\/GH-3, Vaibhav Khand, Indirapuram, Ghaziabad UP -201012",
+    "pincode": 201012
+  },
+  {
+    "branch_code": 431,
+    "name": "Allahabad",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "27\/17, Ground Floor, Elgin Road, Civil Lines, Allahabad \u2013 211001",
+    "pincode": 211001
+  },
+  {
+    "branch_code": 432,
+    "name": "Vikas Puri",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Sarabjeet Talwar",
+    "branch_manager_phone": 9899886142,
+    "address": "C-8, Vikas Puri, New Delhi \u2013 110018",
+    "pincode": 110018
+  },
+  {
+    "branch_code": 433,
+    "name": "4th Phase, JP Nagar",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sujay Rautela",
+    "branch_manager_phone": 8884444153,
+    "address": "Ground Floor, Site No 42, 100Ft Ring Road, 4Th Phase, JP Nagar Bangalore - 560078",
+    "pincode": 560078
+  },
+  {
+    "branch_code": 434,
+    "name": "Vasant Square Mall Branch",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Ashish Agrawal",
+    "branch_manager_phone": 9873254400,
+    "address": "G-7, Vasant Square Mall, Sector B, Pocket 5, Vasant Kunj New Delhi- 110070",
+    "pincode": 110070
+  },
+  {
+    "branch_code": 435,
+    "name": "Najafgarh Road, Rajouri Garden",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Santosh Kumar",
+    "branch_manager_phone": 9911958595,
+    "address": "J-2\/2, Bk Dutta Market, Rajouri Garden, New Delhi - 110027",
+    "pincode": 110027
+  },
+  {
+    "branch_code": 436,
+    "name": "Jwala Heri Market",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Ankitt Ajmani",
+    "branch_manager_phone": 9899595918,
+    "address": "B-2\/1, Paschim Vihar, New Delhi \u2013 110063",
+    "pincode": 110063
+  },
+  {
+    "branch_code": 437,
+    "name": "Korattur",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "E V Sureshkumar",
+    "branch_manager_phone": 7358066088,
+    "address": "GROUND FLOOR NO L -18 EAST AVENUE ROAD KORATTUR CHENNAI 600080",
+    "pincode": 600080
+  },
+  {
+    "branch_code": 438,
+    "name": "Income Tax Colony, Malviya Nagar",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Ajay Udawat",
+    "branch_manager_phone": 9828774222,
+    "address": "K-47, Sl Marg, Malviya Nagar, Income Tax Colony, Jaipur-302018",
+    "pincode": 302018
+  },
+  {
+    "branch_code": 439,
+    "name": "Gachibowli",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Nagaraj Tipparthi",
+    "branch_manager_phone": 9885574262,
+    "address": "Ground Floor, Plot No 1 & 2 (Part), Indiranagar Gachibowli Road, Hyderabad Telangana",
+    "pincode": 500032
+  },
+  {
+    "branch_code": 440,
+    "name": "Perungudi",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Rajamohan M N",
+    "branch_manager_phone": 9841018418,
+    "address": "Ground Floor, No F1\/F2, Rajiv Gandhi Salai, Omr, Perungudi",
+    "pincode": 600096
+  },
+  {
+    "branch_code": 441,
+    "name": "Marathahalli",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground Floor,Marathahalli - Sarjapur Outer Ring Road, Chandana Kadabeesanahalli, Bangalore - 560103",
+    "pincode": 560103
+  },
+  {
+    "branch_code": 442,
+    "name": "Kumarapark",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Haribansh Kumar Roy",
+    "branch_manager_phone": 9902146002,
+    "address": "Ground Floor, 53, Railway Parallel Road, Kumara Park West, Bangalore - 560020",
+    "pincode": 560020
+  },
+  {
+    "branch_code": 443,
+    "name": "Vidyaranyapura",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "T N Latharani",
+    "branch_manager_phone": 9739297171,
+    "address": "Ground Floor, No 959, New Municipal No. 857\/959, Vidyaranyapura Layout, Yelahanka Hobli, Bangalore North, Bangalore\u00a0 - 560097",
+    "pincode": 560097
+  },
+  {
+    "branch_code": 444,
+    "name": "Mahadevapura",
+    "cluster": "Blr 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Vijayalakshmi",
+    "branch_manager_phone": 9916500009,
+    "address": "Ground Floor, Site No 2,2\/A, Mahadevapura - Orr, Near More Mega Store, Bangalore - 560048",
+    "pincode": 560048
+  },
+  {
+    "branch_code": 445,
+    "name": "6th Phase, J P Nagar",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Harish S",
+    "branch_manager_phone": 9620020020,
+    "address": "Ground Floor, Sy. No 50\/2, Site No 40, Kanakapura Main Road, Sarakki, J.P.Nagar 6Th Phase Bangalore - 560078",
+    "pincode": 560078
+  },
+  {
+    "branch_code": 446,
+    "name": "6th Block, Koramangala",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "K N Naveen Raj",
+    "branch_manager_phone": 9611511119,
+    "address": "Ground Floor, 422, 80Ft Road, Near Ngv, Koramangala 6Th Block, Bangalore - 560095",
+    "pincode": 560095
+  },
+  {
+    "branch_code": 447,
+    "name": "Arjun Marg, DLF Ph1",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Jatin Sethi",
+    "branch_manager_phone": 8802562482,
+    "address": "Shop No A-1, Shopping Mall, Arjun Marg, Dlf Phase I, Gurugram Haryana-122002",
+    "pincode": 122002
+  },
+  {
+    "branch_code": 448,
+    "name": "Thakur Village, Kandivali East",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Atul Ashtekar",
+    "branch_manager_phone": 9821815975,
+    "address": "Shop no 21,22 & 23 Ground floor, Bldg no 6, F wing, Evershine Hailly, Gokul towers Road, Evershine Millenium Paradise, Thakur Village, Kandivali East, Mumbai 400101.",
+    "pincode": 400101
+  },
+  {
+    "branch_code": 449,
+    "name": "Mahmoorganj- Varanasi",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Chaurasiya",
+    "branch_manager_phone": 0,
+    "address": "D 63\/ 6-B-1, Plot No.1, Shivaji Nagar Colony, Mehmoorganj, Varanasi \u2013 221010.",
+    "pincode": 221010
+  },
+  {
+    "branch_code": 450,
+    "name": "Kharghar Sector 12",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Sameer Dalvi",
+    "branch_manager_phone": 9769335645,
+    "address": "Shop No. 9, SKP Co-op. Housing Society Ltd, Plot No. 69, Sector 12, Kharghar, Navi Mumbai \u2013 410210.",
+    "pincode": 410210
+  },
+  {
+    "branch_code": 451,
+    "name": "Ayanavaram",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground Floor , No:336, Konnur High Road,Chennai",
+    "pincode": 600023
+  },
+  {
+    "branch_code": 452,
+    "name": "Santhome",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "VargheseCharles KV",
+    "branch_manager_phone": 9884222800,
+    "address": "Door No 38 , Santhome High road Santhome chennai",
+    "pincode": 600004
+  },
+  {
+    "branch_code": 453,
+    "name": "Electronic City Phase- 1",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "R Nayaz Ali",
+    "branch_manager_phone": 7676311246,
+    "address": "Ground Floor, No.21, Neeladri Road, Electronics City Phase 1, Bangalore - 560100",
+    "pincode": 560100
+  },
+  {
+    "branch_code": 454,
+    "name": "Alpha-1",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Amit Bawa",
+    "branch_manager_phone": 9654364000,
+    "address": "RBL Bank Ltd. Shop no. 19,20,21,22,26 & 27, Tradex Tower-2, Plot No. B4, Alpha Commercial Belt, Greater Noida",
+    "pincode": 201310
+  },
+  {
+    "branch_code": 455,
+    "name": "Tripunithura",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Firoz P Latheef",
+    "branch_manager_phone": 8086780222,
+    "address": "Ground Floor, Santhi Karthedath Avenue, North Fort Gate, Tripunithura, Ernakulam, Kerala",
+    "pincode": 682301
+  },
+  {
+    "branch_code": 456,
+    "name": "Swaroop Nagar, Kanpur",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Ankit Mishra",
+    "branch_manager_phone": 0,
+    "address": "113\/147, Gutaiya Scheme No. VII, Block-C, Swaroop Nagar, Kanpur - 208002.",
+    "pincode": 208002
+  },
+  {
+    "branch_code": 457,
+    "name": "Shalimar Bagh",
+    "cluster": "Delhi 4",
+    "region": "North & East Region",
+    "branch_manager_name": "Geetika Puri",
+    "branch_manager_phone": 9899519951,
+    "address": "AM -195, Shalimar Bagh, Near Dlf City Centre Mall, Delhi -110088.",
+    "pincode": 110088
+  },
+  {
+    "branch_code": 458,
+    "name": "G. S. Road Guwahati",
+    "cluster": "East 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Anoop Sarmah",
+    "branch_manager_phone": null,
+    "address": "SB Estate, House No 617, ABC Bus Stand, G.S Road, Opp. Rajiv Bhawan, \nGuwahati 781 005",
+    "pincode": 781005
+  },
+  {
+    "branch_code": 459,
+    "name": "Churchgate",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Ubed Shaikh",
+    "branch_manager_phone": 9920821985,
+    "address": "Apt 1, Ground Floor, Moti Mahal, J Tata Road, Churchgate, Mumbai 400020.",
+    "pincode": 400020
+  },
+  {
+    "branch_code": 460,
+    "name": "Karve Road",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Pritam Dey",
+    "branch_manager_phone": "020-29999312",
+    "address": "Showroom No 101\/A, First Floor, Vijayshree, Final Plot No 62\/10, S No 41\/10, Tarte Colony, Karve Road Pune 411 004",
+    "pincode": 411004
+  },
+  {
+    "branch_code": 461,
+    "name": "Pimple Saudagar",
+    "cluster": "Pune 2",
+    "region": "West Region",
+    "branch_manager_name": "Kumari Jaya",
+    "branch_manager_phone": 7758937988,
+    "address": "Shop Nos. 1-4, Rose Icon Commercial, Next to Rajveer Palace, Kunal Icon Road, Pimple Saudagar, Pune \u2013 411027.\u00a0",
+    "pincode": 411027
+  },
+  {
+    "branch_code": 462,
+    "name": "Indira Nagar",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "Diwakar Dubey",
+    "branch_manager_phone": 0,
+    "address": "594\/3, Ground Floor, Faizabad Road, Indira Nagar, Lucknow - 226 016",
+    "pincode": 226016
+  },
+  {
+    "branch_code": 463,
+    "name": "Laketown",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Arka Dasgupta",
+    "branch_manager_phone": null,
+    "address": "Ground Floor, Abhinandan Apt, P-870, Lake Town Block A, Near Jaya Cinema, Kolkata - 700089",
+    "pincode": 700089
+  },
+  {
+    "branch_code": 464,
+    "name": "Millerganj, Ludhiana",
+    "cluster": "Punjab 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Gautam Nayyar",
+    "branch_manager_phone": 9592811012,
+    "address": "Ground Floor, Imperia Tower, BXV 79\/A\/1, VISHWAKRMA CHOWK, MILLERGANJ, LUDHIANA-141003",
+    "pincode": 141003
+  },
+  {
+    "branch_code": 465,
+    "name": "Ranjit Avenue, Amritsar",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Amit Mehra",
+    "branch_manager_phone": 9988195670,
+    "address": "Ground Floor, Sco-34, 97-Acre Scheme, Ranjit Avenue, Near Verka Booth, Amritsar -143001",
+    "pincode": 143001
+  },
+  {
+    "branch_code": 466,
+    "name": "Satellite",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Deepti Nair",
+    "branch_manager_phone": 8980093665,
+    "address": "RBL Bank Ltd, Shop No 7\/8 , Ground Floor, Iskon Park, Opposite Star Bazar, Satellite, Ahmedabad, Gujarat - 380015",
+    "pincode": 380015
+  },
+  {
+    "branch_code": 467,
+    "name": "Vesu",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "Hitesh Patwala",
+    "branch_manager_phone": 9825572537,
+    "address": "Shop No.8, Ground Floor, Shubh Universal, Opp. Vijayalaxmi Hall, Vesu Main Road, Surat - 395007.",
+    "pincode": 395007
+  },
+  {
+    "branch_code": 468,
+    "name": "Vasna",
+    "cluster": "Gujarat 3",
+    "region": "West Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "1, Ground floor,Shreenidhi Gallery, Opp Bina Nagar, Vasna Road, Vadodara - 390007",
+    "pincode": 390007
+  },
+  {
+    "branch_code": 469,
+    "name": "Ambedkar Road, Ghaziabad",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Rahul Dhar",
+    "branch_manager_phone": 7825889469,
+    "address": "H-1, Ground Floor -2, Ambedkar Road, Ghaziabad 201 001",
+    "pincode": 201001
+  },
+  {
+    "branch_code": 470,
+    "name": "Erode",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "vijay Eswaramoorthy",
+    "branch_manager_phone": 9739566600,
+    "address": "Ground Floor, Akhil Plaza Complex, 121, Perundurai Road, Erode.",
+    "pincode": 638011
+  },
+  {
+    "branch_code": 471,
+    "name": "Gandhipuram, Coimbatore",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Rajaram R",
+    "branch_manager_phone": 9500122634,
+    "address": "Ground Floor, 562, Dr. Nanjappa Road, Opposite Town Bus Stand, Gandhipuram, Coimbatore.",
+    "pincode": 641018
+  },
+  {
+    "branch_code": 472,
+    "name": "R.S. Puram, Coimbatore",
+    "cluster": "Tamil Nadu",
+    "region": "South & Goa Region",
+    "branch_manager_name": "S Shreeramkumaar Sukumar",
+    "branch_manager_phone": "\u00a09894480809",
+    "address": "Ground Floor, 9 Aurum Building, Kannusamy Road, R.S.Puram, Coimbatore.",
+    "pincode": 641002
+  },
+  {
+    "branch_code": 473,
+    "name": "SILIGURI, PANITANKI MORE",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Amartya Sengupta",
+    "branch_manager_phone": null,
+    "address": "Ground Floor, Hotel Dolly (P) Ltd, Bidhan Road, Near Pani Tanki More, Siliguri-734001",
+    "pincode": 734001
+  },
+  {
+    "branch_code": 474,
+    "name": "KAKURGACHI, KOLKATA",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Debabrata Chowdhury",
+    "branch_manager_phone": null,
+    "address": "P-183A, Ground and First Floor, CIT Road, Scheme No.VI (M), Kolkata-700054",
+    "pincode": 700054
+  },
+  {
+    "branch_code": 475,
+    "name": "HOWRAH, DOBSON ROAD",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Rakesh Gupta",
+    "branch_manager_phone": null,
+    "address": "Sriniketan, Block A, Ground Floor, 20 Dobson Road, Howrah Kolkata-711101",
+    "pincode": 711101
+  },
+  {
+    "branch_code": 476,
+    "name": "Bhubaneswar Janpath Road Branch",
+    "cluster": "East 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Sunil Mohanty",
+    "branch_manager_phone": null,
+    "address": "Sashi Bhawan, Ground Floor, Plot No. 12, Janpath, Bapuji Nagar, \nBhubaneshwar, Odisha 751 009",
+    "pincode": 751009
+  },
+  {
+    "branch_code": 477,
+    "name": "Kannur",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Sreekanth Surendranath",
+    "branch_manager_phone": 9633053546,
+    "address": "Ground Floor, No.50\/62, Hotel Malabar Residency, Thavakkara Road, Kannur",
+    "pincode": "\u00a0670001"
+  },
+  {
+    "branch_code": 478,
+    "name": "Thiruvalla",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Seenu Krishnan",
+    "branch_manager_phone": 9895971659,
+    "address": "Ground Floor, Old Survey No.130\/2C, Re-Survey No.5, 5\/1 And 4\/2, Opposite Hdfc Bank, Near \u00a0Kalyan Silks, \u00a0Ramanchira, Thiruvalla.",
+    "pincode": 689101
+  },
+  {
+    "branch_code": 479,
+    "name": "Tirur",
+    "cluster": "Kerala",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Vinod C\u00a0",
+    "branch_manager_phone": 9048393380,
+    "address": "RBL Bank Ltd, Ground Floor, Bheemas Building , Govt,Hopsital road, Near to Municipal Ofiice ,Tirur,\u00a0 Malappuram Dist,\u00a0\u00a0Kerala-676101",
+    "pincode": 676101
+  },
+  {
+    "branch_code": 480,
+    "name": "Vashi Sector 28",
+    "cluster": "Mumbai 2",
+    "region": "West Region",
+    "branch_manager_name": "Umesh Nadar",
+    "branch_manager_phone": 9594377003,
+    "address": "Plot 26 & 27, Sector 28, Alpha Apartment, Megamart Shop, Vashi, Navi Mumbai - 400703.",
+    "pincode": 400703
+  },
+  {
+    "branch_code": 481,
+    "name": "Kamla Nagar, Agra",
+    "cluster": "Lucknow",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "1 Shop No.3,4, & 5,\u00a0 Ground Floor, Plot No. B-2\/15 and B-2\/16, Central Business Park, Kamla Nagar, Agra - 282004",
+    "pincode": "282004"
+  },
+  {
+    "branch_code": 482,
+    "name": "Science City, Ahmedabad",
+    "cluster": "Gujarat 1",
+    "region": "West Region",
+    "branch_manager_name": "Narendra Busa",
+    "branch_manager_phone": 9898961510,
+    "address": "GF, SHOP NO.3, SATYAMEV EMINENCE, NR. SHUKAN MALL, SCIENCE CITY ROAD,AHMEDABAD,GUJARAT-380060",
+    "pincode": 380060
+  },
+  {
+    "branch_code": 483,
+    "name": "Mysore",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Vijaykiran Patil",
+    "branch_manager_phone": 9880733400,
+    "address": "Ground Floor, 2918, Ch-51\/1B, 1St Main, Kanthraja Urs Road, Saraswathipuram, Mysore-570009",
+    "pincode": 570009
+  },
+  {
+    "branch_code": 484,
+    "name": "Sadashiv Nagar, Bangalore",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Pratheep H B",
+    "branch_manager_phone": 9731120343,
+    "address": "Ground Floor, #32, 2nd Main Road, Near Bhashyam Circle,Vyalikaval Extension, Sadashiv Nagar, Bangalore-560003",
+    "pincode": 560003
+  },
+  {
+    "branch_code": 485,
+    "name": "Hosur",
+    "cluster": "Blr 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "SANDEEP K",
+    "branch_manager_phone": null,
+    "address": "Ground Floor, Radha's Tower, Next To LIC Office, Hosur-Krishnagiri By-Pass Main Road, NH7, Hosur-635109",
+    "pincode": 635109
+  },
+  {
+    "branch_code": 486,
+    "name": "Mogappair, Chennai",
+    "cluster": "Chennai 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Ground Floor, Plot No.6, Block no 6,Mogappair West, Chennai-600037",
+    "pincode": 600037
+  },
+  {
+    "branch_code": 487,
+    "name": "Greams Road, Chennai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": null,
+    "branch_manager_phone": null,
+    "address": "Ground Floor, Greams Dugar Building, 64, Greams Road, Chennai-600006",
+    "pincode": 600006
+  },
+  {
+    "branch_code": 488,
+    "name": "Triplicane, Chennai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": null,
+    "branch_manager_phone": null,
+    "address": "Ground Floor, No.283, Pycrofts Road, Triplicane, Chennai-600005",
+    "pincode": 600005
+  },
+  {
+    "branch_code": 489,
+    "name": "T Nagar 2, North Usman Road, Chennai",
+    "cluster": "Chennai 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Ramkumar S",
+    "branch_manager_phone": 9840822448,
+    "address": "Ground Floor, No.29\/47, North Usman Road, T Nagar, Chennai-600017",
+    "pincode": 600017
+  },
+  {
+    "branch_code": 490,
+    "name": "Arera Colony, Bhopal",
+    "cluster": "MP",
+    "region": "North & East Region",
+    "branch_manager_name": "Ajay Shrivastava",
+    "branch_manager_phone": 6261906550,
+    "address": "Ground Floor, E4\/57, Arera Colony, Bhopal - 462016",
+    "pincode": 462016
+  },
+  {
+    "branch_code": 491,
+    "name": "Kottivakkam, Chennai",
+    "cluster": "Chennai 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": null,
+    "branch_manager_phone": null,
+    "address": "Ground Floor, Block 4, 4\/222, East Coast Road, Palavakkam, Chennai \u00a0- 600041.",
+    "pincode": 600041
+  },
+  {
+    "branch_code": 492,
+    "name": "Palam Vihar, Gurugram",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Rahul Bahl",
+    "branch_manager_phone": 9958002066,
+    "address": "Gf-4A & 4B, Global Foyer, Palam Vihar, Gurugram-122017",
+    "pincode": 122017
+  },
+  {
+    "branch_code": 493,
+    "name": "Sector 21C, Faridabad",
+    "cluster": "Delhi 3",
+    "region": "North & East Region",
+    "branch_manager_name": "Pradeep Sharma",
+    "branch_manager_phone": 7825889493,
+    "address": "Sco-151, Sec-21C Huda Market, Faridabad-121001",
+    "pincode": 121001
+  },
+  {
+    "branch_code": 494,
+    "name": "Manikonda, Hyderabad",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Peddapanga Vijay Kumar",
+    "branch_manager_phone": 9000952617,
+    "address": "Ground Floor, H No 8-1-284\/Oue\/23, O U Colony, Manikonda Road, Shaikpet, Hyderabad - 500008.",
+    "pincode": 500008
+  },
+  {
+    "branch_code": 495,
+    "name": "Trimulgherry, Hyderabad",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "K Siva Prasad",
+    "branch_manager_phone": 8309491432,
+    "address": "Ground Floor, Survey No.55, Part Of Glr Survey No.368, Secunderabad Cantonment, Plot No.2, Annapura Complex, Chandragiri Colony, Trimulgherry-500015",
+    "pincode": 500015
+  },
+  {
+    "branch_code": 496,
+    "name": "Film Nagar, Hyderabad",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Gandla Kiran Bhagath",
+    "branch_manager_phone": 9393935612,
+    "address": "Ground Floor, Plot No.B-49, Journalist Colony, Jubilee Hills, Film Nagar, Hyderabad-500096",
+    "pincode": 500096
+  },
+  {
+    "branch_code": 497,
+    "name": "Vanasthalipuram, Hyderabad",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Srikanth Kumar PVS",
+    "branch_manager_phone": 7825889497,
+    "address": "Ground Floor, Laxmi Gayatri Towers, Plot No.26, Hig, 6-1-200\/12, Vanasthalipuram Colony, Hyderabad-500070",
+    "pincode": 500070
+  },
+  {
+    "branch_code": 498,
+    "name": "Uppal, Hyderabad",
+    "cluster": "TAP 2",
+    "region": "South & Goa Region",
+    "branch_manager_name": "P Srinivasa Prakash",
+    "branch_manager_phone": 8978889587,
+    "address": "Ground Floor, Nirmala Kuber Heights, Unit No.G1,G8 & G9. Sy No.36\/A, Peerzadiguda Village And Gram Panchayat, Uppal, Hyderabad-500039",
+    "pincode": 500039
+  },
+  {
+    "branch_code": 499,
+    "name": "Bala Nagar - Chintal, Hyderabad",
+    "cluster": "TAP 1",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Ashish Puri",
+    "branch_manager_phone": 6300631323,
+    "address": "Ground Floor, No. 4, Hmt Road, Pawar Estate, Chintal, Hyderabad-500054",
+    "pincode": 500054
+  },
+  {
+    "branch_code": 500,
+    "name": "Hansalaya House",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Puneet Verma",
+    "branch_manager_phone": 9999217365,
+    "address": "Hansalaya Building,Ground Floor Connaught Place New Delhi",
+    "pincode": 110001
+  },
+  {
+    "branch_code": 501,
+    "name": "Safdurjung Enclave, New Delhi",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "Abhishek Nagpal",
+    "branch_manager_phone": 9810190978,
+    "address": "B-1\/3, Safarjung Enclave, Africa Avenue Road, New Delhi-110016",
+    "pincode": 110016
+  },
+  {
+    "branch_code": 502,
+    "name": "C R Park, New Delhi",
+    "cluster": "Delhi 5",
+    "region": "North & East Region",
+    "branch_manager_name": "PRASHANT SHARMA",
+    "branch_manager_phone": 9999704009,
+    "address": "K-1\/15, Cr Park, New Delhi-110019",
+    "pincode": 110019
+  },
+  {
+    "branch_code": 503,
+    "name": "Tardeo, Mumbai",
+    "cluster": "Mum South",
+    "region": "West Region",
+    "branch_manager_name": "Preeti CHAUDHARY",
+    "branch_manager_phone": 8424051889,
+    "address": "Nr No.1 & 101, Ground & First Floor, Imperia, 655-B, Wadia Street, 141, Tardeo Road, Mumbai - 400034",
+    "pincode": 400034
+  },
+  {
+    "branch_code": 505,
+    "name": "Janakpuri C block",
+    "cluster": "Delhi 6",
+    "region": "North & East Region",
+    "branch_manager_name": "Komal Mehra Batra",
+    "branch_manager_phone": 9250544073,
+    "address": "C3\/4, JANAKPURI, NEW DELHI-110058",
+    "pincode": null
+  },
+  {
+    "branch_code": 506,
+    "name": "I C Colony, Mumbai",
+    "cluster": "Mumbai 3",
+    "region": "West Region",
+    "branch_manager_name": "Deepak Verma",
+    "branch_manager_phone": 9920388228,
+    "address": "Shop No.1, Ground Floor, Buena Viesta Co-Operative Housing Society Limited, Cross Road, I C \u00a0Colony, Borivali (W), Mumbai \u2013 400103.",
+    "pincode": 400103
+  },
+  {
+    "branch_code": 507,
+    "name": "Wanowrie, Pune",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Ashish Mishra",
+    "branch_manager_phone": 9922917474,
+    "address": "Picasso Kedari Landmark, Shop No.3, Sr No. 65, Kedari Nagar, Bapusaheb Kedari Marg, \u00a0Wanaworie, Pune \u2013 411040.",
+    "pincode": 411040
+  },
+  {
+    "branch_code": 508,
+    "name": "Bibwewadi",
+    "cluster": "Pune 1",
+    "region": "West Region",
+    "branch_manager_name": "Amam Mazhar",
+    "branch_manager_phone": 8806340024,
+    "address": "Bibwewadi Shop no 2, Crystal Corporate, Bibwewadi Kondhwa Road Vasant Baug, Bibwewadi Pune 411037",
+    "pincode": 411037
+  },
+  {
+    "branch_code": 516,
+    "name": "Sector 26 Noida",
+    "cluster": "Delhi 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Navneet Singh",
+    "branch_manager_phone": "85270 95598",
+    "address": "A-40, Sector-26, Noida - 201301",
+    "pincode": 201301
+  },
+  {
+    "branch_code": 517,
+    "name": "Raja Park, Jaipur",
+    "cluster": "Rajasthan",
+    "region": "North & East Region",
+    "branch_manager_name": "Gagan Deep",
+    "branch_manager_phone": 9828937883,
+    "address": "B-26, Shop No.G-2, Sdc Prime, Govind Marg, Adarsh Nagar, Raja Park, Jaipur-302004",
+    "pincode": 302004
+  },
+  {
+    "branch_code": 518,
+    "name": "Sirsa",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "VISHWAS MEHTA",
+    "branch_manager_phone": 9253989000,
+    "address": "Khatoni No. 475\/607, Khasra No. 170, Guru Nanank Nagar,\u00a0Hisar Road, Kheirpur Sirsa, Near Sbi, Haryana -125055",
+    "pincode": 125055
+  },
+  {
+    "branch_code": 519,
+    "name": "Shankar Road",
+    "cluster": "Delhi 1",
+    "region": "North & East Region",
+    "branch_manager_name": "Rajat Abrol",
+    "branch_manager_phone": 9810060691,
+    "address": "4A\/60, Shankar Road, Rajender Nagar, New Delhi - 110060",
+    "pincode": 110060
+  },
+  {
+    "branch_code": 520,
+    "name": "Keshave Branch, Begusarai",
+    "cluster": "East 3",
+    "region": "North & East Region",
+    "branch_manager_name": "TBH",
+    "branch_manager_phone": "TBH",
+    "address": "Shop No2, Sushil Nagar, NH 31, Near Gloccal Hospital, Keshave, Begusarai - 851134",
+    "pincode": 851134
+  },
+  {
+    "branch_code": 521,
+    "name": "New Leela Bhawan, Patiala",
+    "cluster": "Punjab 2",
+    "region": "North & East Region",
+    "branch_manager_name": "Sunny Mehta",
+    "branch_manager_phone": 9814538877,
+    "address": "SCO 85-86, New\u00a0Leela\u00a0Bhawan,\u00a0Patiala, Punjab - 147001",
+    "pincode": 147001
+  },
+  {
+    "branch_code": 522,
+    "name": "Old Kesare",
+    "cluster": "Blr 3",
+    "region": "South & Goa Region",
+    "branch_manager_name": "Krishna D S",
+    "branch_manager_phone": 9900938899,
+    "address": "Ground Floor (Part), No. 68 & 101, Main Road Old Kesare,\u00a0Siddalingapura Gram \u00a0\u00a0Panchayat, Kasaba \u00a0Hobli, Mysore -\u00a0Karnataka - 570003.",
+    "pincode": 570003
+  }
+]

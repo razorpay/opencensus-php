@@ -8294,6 +8294,75 @@ class BankingAccountTest extends TestCase
 
     }
 
+    public function testBankLmsEndToEndForGetBranchList()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Attach Submerchant to RBl Merchant
+       $expected =  (new BankingAccount\BankLms\BranchMaster())->getBranches();
+
+        $dataToReplace = [
+                'url'     => '/banking_accounts/rbl/lms/bank_branches',
+                'method'  => 'GET',
+
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+       // print_r($response);
+
+       // $this->startTest($dataToReplace);
+       $this->assertEquals(sizeof($expected), $response['count']);
+
+    }
+
+    public function testBankLmsEndToEndForGetRmList()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        // Attach Submerchant to RBl Merchant
+        $expected =  (new BankingAccount\BankLms\RmMaster())->getRms();
+
+        $dataToReplace = [
+                'url'     => '/banking_accounts/rbl/lms/bank_pocs',
+                'method'  => 'GET',
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+        $this->assertEquals(sizeof($expected), $response['count']);
+    }
+
     public function testBankLmsEndToEndForFetchCommentsById()
     {
         // Make merchant as Bank CA Onboarding Partner

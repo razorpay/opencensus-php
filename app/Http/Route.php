@@ -3074,6 +3074,8 @@ class Route
         'banking_account_bank_lms_assign_bank_poc'        => ['patch', 'banking_accounts/rbl/lms/activation/{id}/bank_poc', 'BankingAccountController@assignBankPocUserToApplication'],
         'update_to_ca_onboarding_partner_type'            => ['patch', 'banking_accounts/rbl/lms/merchant/admin/partner_type', 'BankingAccountController@updatePartnerTypeToMerchantBankCaOnboarding'],
         'create_invitation_for_ca_onboarding_partner'     => ['post', 'banking_accounts/rbl/lms/merchant/admin/invitation', 'InvitationController@sendBankLmsInvitations'],
+        'fetch_branch_list'                               => ['get','banking_accounts/rbl/lms/bank_branches','BankingAccountController@fetchBranchList'],
+        'fetch_rm_list'                                   => ['get','banking_accounts/rbl/lms/bank_pocs','BankingAccountController@fetchRmList'],
         'banking_account_bank_lms_assign_to_partner_bulk' => ['post', 'banking_accounts/rbl/lms/banking_account/assign_partner', 'BankingAccountController@attachCaApplicationMerchantToBankPartnerBulk'],
 
         'banking_account_statement_source_update'            => ['post',   'banking_account_statement/source/update',                  'BankingAccountStatementController@updateSourceLinking'            ],
@@ -5788,6 +5790,8 @@ class Route
         'banking_account_bank_lms_fetch_multiple',
         'banking_account_bank_lms_fetch_by_id',
         'banking_account_bank_lms_comments_list',
+        'fetch_branch_list',
+        'fetch_rm_list',
         'banking_account_bank_lms_download_mis',
         'banking_account_bank_lms_assign_bank_poc',
         'banking_account_create_dashboard',
@@ -8668,6 +8672,8 @@ class Route
         'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE_MANAGE_LEAD,
         'banking_account_bank_lms_download_mis'        => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
         'merchant_fetch_users'                         => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+        'fetch_branch_list'                            => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+        'fetch_rm_list'                                => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
     ];
 
     public static $bankingRoutePermissions = [
@@ -9587,6 +9593,8 @@ class Route
             'banking_account_bank_lms_fetch_multiple',
             'banking_account_bank_lms_fetch_by_id',
             'banking_account_bank_lms_comments_list',
+            'fetch_branch_list',
+            'fetch_rm_list',
             'banking_account_bank_lms_download_mis',
             'banking_account_bank_lms_assign_bank_poc',
             'banking_account_service_pincode_serviceability_check_bulk',
@@ -13989,6 +13997,8 @@ class Route
         'banking_account_bank_lms_comments_list'        => [Feature::RBL_BANK_LMS_DASHBOARD],
         'banking_account_bank_lms_download_mis'         => [Feature::RBL_BANK_LMS_DASHBOARD],
         'banking_account_bank_lms_assign_bank_poc'      => [Feature::RBL_BANK_LMS_DASHBOARD],
+        'fetch_branch_list'                             => [Feature::RBL_BANK_LMS_DASHBOARD],
+        'fetch_rm_list'                                 => [Feature::RBL_BANK_LMS_DASHBOARD],
         //
         'capital_cards_service'                => [Feature::CAPITAL_CARDS],
         'capital_cards_onboarding'             => [Feature::CAPITAL_CARDS_ELIGIBLE],
@@ -14703,6 +14713,8 @@ class Route
         'banking_account_bank_lms_fetch_multiple',
         'banking_account_bank_lms_fetch_by_id',
         'banking_account_bank_lms_comments_list',
+        'fetch_branch_list',
+        'fetch_rm_list',
         'banking_account_bank_lms_download_mis',
         'banking_account_bank_lms_assign_bank_poc',
         'get_banking_account_slot_booking_details',

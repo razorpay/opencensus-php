@@ -53,6 +53,18 @@ class BankingAccountController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchBranchList()
+    {
+        $response = $this->bankLmsService->fetchBranchList();
+        return ApiResponse::json($response);
+    }
+
+    public function fetchRmList()
+    {
+        $response = $this->bankLmsService->fetchRmList();
+        return ApiResponse::json($response);
+    }
+
     public function attachCaApplicationMerchantToBankPartnerBulk()
     {
         $input = Request::all();
