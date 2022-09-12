@@ -18,7 +18,7 @@ const CurrencyField = (props) => {
         step="0.01"
         required
         disabled={disabled}
-        defaultValue={paiseToRupees(dispute?.evidence?.amount || dispute?.amount)?.toFixed(2)}
+        defaultValue={paiseToRupees(dispute?.amount)?.toFixed(2)}
         description={
           <>
             Enter amount less than&nbsp;
@@ -49,12 +49,8 @@ const CurrencyField = (props) => {
   else
     return (
       <>
-        <Amount value={dispute?.evidence?.amount || dispute.amount} currency={dispute.currency} />
-        <input
-          type="hidden"
-          name="amount"
-          value={paiseToRupees(dispute?.evidence?.amount || dispute?.amount)}
-        />
+        <Amount value={dispute?.amount} currency={dispute?.currency} />
+        <input type="hidden" name="amount" value={paiseToRupees(dispute?.amount)} />
         {isDipsuteOpen && !disabled && (
           <div>
             <a class="bold" onClick={() => setShowEditDisputeAmount(true)}>
