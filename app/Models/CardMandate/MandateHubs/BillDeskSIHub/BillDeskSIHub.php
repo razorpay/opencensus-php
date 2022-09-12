@@ -271,7 +271,7 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     protected function getValidationInput(Payment\Entity $payment, CardMandate\Entity $cardMandate, $forceCard = true)
     {
 
-        $card = $payment->card;
+        $card = $payment->localToken->card;
 
         $cardData = $card->toArray();
 
@@ -303,7 +303,18 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         if ($token->card->isRzpSavedCard() == false)
         {
             try {
-                $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
+                if($token->cardMandate->getVaultTokenPan() !== null)
+                {
+                    $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
+
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHub($recurringTokenNumber);
+                }
+                else
+                {
+                    $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
+
+                    (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $tokenInput);
+                }
                 $networkToken = $tokenInput['token'];
                 $tokenData = array_merge($inputResponse[Constants::TOKEN], $networkToken);
                 $inputResponse[Constants::TOKEN] = $tokenData;

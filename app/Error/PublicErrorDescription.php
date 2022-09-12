@@ -203,6 +203,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED      = 'The feature force_terminal_id is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_NOT_SENT                = 'Payment debit notification failed to deliver to customer';
     const BAD_REQUEST_PAYMENT_CARD_MANDATE_NOTIFICATION_VERIFY_FAILED           = 'Payment debit notification failed to verify';
+    const BAD_REQUEST_TOKEN_BASED_CARD_MANDATE                                  = 'The request failed as card mandate is token based.';
+    const BAD_REQUEST_TOKEN_NOT_REPORTED_TO_MANDATE_HUB                         = 'The request failed as token is not reported to the mandate hub.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY                              = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_WALLET_PAYMENT_PAGE                  = 'Payment was not completed on time.';

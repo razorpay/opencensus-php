@@ -614,6 +614,6 @@ final class RazorxTreatment
     const SHOW_BILLING_LABEL_OVER_MERCHANT_LABEL_FOR_RECURRING = 'show_billing_label_over_merchant_label_for_recurring';
 
     // Experiment to use card / token for sihub validation calls
-    const SIHUB_VALIDATION_FORCE_TOKEN_INSTRUMENT = 'sihub_validation_force_token_instrument';
+    const SIHUB_VALIDATION_FORCE_CARD_INSTRUMENT_FIRST = 'sihub_validation_force_card_instrument_first';
 
 }

@@ -199,22 +199,27 @@ class Core extends Base\Core
 
         $mandateHub = (new CardMandate\MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        if($cardMandate->getMandateHub() === MandateHubs\MandateHubs::BILLDESK_SIHUB)
+        $forceCard = true;
+
+        if(($cardMandate->getMandateHub() === MandateHubs\MandateHubs::BILLDESK_SIHUB) and
+           ($payment->localToken->card->isRzpSavedCard() === false))
         {
             $variant = $this->app['razorx']->getTreatment(
                 $payment->getMerchantId(),
-                Merchant\RazorxTreatment::SIHUB_VALIDATION_FORCE_TOKEN_INSTRUMENT,
+                Merchant\RazorxTreatment::SIHUB_VALIDATION_FORCE_CARD_INSTRUMENT_FIRST,
                 $this->mode
             );
 
-            if (strtolower($variant) === 'on')
+            if (strtolower($variant) !== 'control')
             {
+                $forceCard = (strtolower($variant) === 'true');
+
                 try
                 {
                     $validationResponse = $mandateHub->getValidationBeforeSubsequentPayment($cardMandate, $payment, [
                         CardMandate\MandateHubs\Notification::NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
                         CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount()
-                    ],false);
+                    ],$forceCard);
 
                     $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_RESPONSE, [
                         'payment_id'                   => $payment->getId(),
@@ -230,15 +235,40 @@ class Core extends Base\Core
                     $this->trace->traceException($e,
                         null,
                         TraceCode::MISC_TRACE_CODE,
-                        ["failed validating after sending token details" => $payment->getId()]);
+                        [
+                            "failed validating after sending card instrument details" => $forceCard,
+                            "paymentId" => $payment->getId()
+                        ]);
+
+                    $retryForErrors = [ErrorCode::BAD_REQUEST_TOKEN_BASED_CARD_MANDATE, ErrorCode::BAD_REQUEST_TOKEN_NOT_REPORTED_TO_MANDATE_HUB];
+
+                    if(in_array($e->getCode(),$retryForErrors) === false)
+                    {
+                        $this->trace->info(
+                            TraceCode::MISC_TRACE_CODE,
+                            [
+                                "no retry after actual expected errors" => $e->getMessage(),
+                                "paymentId" => $payment->getId()
+                            ]);
+
+                        throw $e;
+                    }
+
+                    $forceCard = !$forceCard;
+
+                    $this->trace->info(
+                        TraceCode::MISC_TRACE_CODE,
+                        [
+                            "second try. trying validating with card now" => $forceCard
+                        ]);
                 }
             }
         }
 
         $validationResponse = $mandateHub->getValidationBeforeSubsequentPayment($cardMandate, $payment, [
             CardMandate\MandateHubs\Notification::NOTIFICATION_ID => $cardMandateNotification->getNotificationId(),
-            CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount(),
-        ]);
+            CardMandate\MandateHubs\Notification::AMOUNT          => $cardMandateNotification->getAmount()
+        ],$forceCard);
 
         $this->trace->info(TraceCode::CARD_MANDATE_VERIFY_NOTIFICATION_RESPONSE, [
             'payment_id'                   => $payment->getId(),
