@@ -2658,9 +2658,19 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testInsertIciciMissingAccountStatement()
     {
-        $this->markTestSkipped('The flakiness in the testcase needs to be fixed. Skipping as its impacting dev-productivity.');
+//        $this->markTestSkipped('The flakiness in the testcase needs to be fixed. Skipping as its impacting dev-productivity.');
+
+        $oldDateTime = Carbon::create(2022, 8, 1, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
 
         $this->testIciciAccountStatementCase1();
+
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
         (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
             '2224440041626905' => [
@@ -2685,17 +2695,24 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $initialCount = count($initialBasEntries);
 
-        $initialGroupedBasEntities = $initialBasEntries->groupBy('bank_transaction_id')->toArray();
-
         $initialBasDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $initialStatementClosingBalance = $initialBasDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
 
-        $initialStatement1 = $initialGroupedBasEntities['S71034864'];
+        $initialStatement1 = $this->getDbEntities('banking_account_statement', [
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034864'
+        ])[0];
 
-        $initialStatement2 = $initialGroupedBasEntities['S74203578'];
+        $initialStatement2 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S74203578'
+        ])[0];
 
-        $initialStatement3 = $initialGroupedBasEntities['S86758818'];
+        $initialStatement3 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S86758818'
+        ])[0];
 
         $this->ba->adminAuth();
 
@@ -2710,39 +2727,102 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
-        $groupedBasEntities = $basEntries->groupBy('bank_transaction_id')->toArray();
+        $this->assertCount($initialCount + 1, $basEntries);
 
         $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $finalStatementClosingBalance = $basDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
 
-        $this->assertCount($initialCount + 1, $basEntries);
-
         $this->assertEquals($initialStatementClosingBalance + 100, $finalStatementClosingBalance);
 
-        $this->assertArrayHasKey('S71034964', $groupedBasEntities);
+        $finalStatement1 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S71034864'
+        ])[0];
 
-        $finalStatement1 = $groupedBasEntities['S71034864'];
+        $finalStatement2 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S74203578'
+        ])[0];
 
-        $finalStatement2 = $groupedBasEntities['S74203578'];
+        $finalStatement3 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S86758818'
+        ])[0];
 
-        $finalStatement3 = $groupedBasEntities['S86758818'];
+        $insertedStatement = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S71034964'
+        ])[0];
 
-        $insertedStatement = $groupedBasEntities['S71034964'];
+        $externalEntries = $this->getDbEntities('external', ['banking_account_statement_id' => $insertedStatement[BasEntity::ID]])[0];
 
-        $this->assertEquals($initialStatement1[0][BasEntity::BALANCE], $finalStatement1[0][BasEntity::BALANCE]);
+        $this->assertEquals($initialStatement1->getBalance(), $finalStatement1->getBalance());
 
-        $this->assertEquals($initialStatement2[0][BasEntity::BALANCE] + 100, $finalStatement2[0][BasEntity::BALANCE]);
+        $this->assertEquals($initialStatement2->getBalance() + 100, $finalStatement2->getBalance());
 
-        $this->assertEquals($initialStatement3[0][BasEntity::BALANCE] + 100, $finalStatement3[0][BasEntity::BALANCE]);
+        $this->assertEquals($initialStatement3[BasEntity::BALANCE] + 100, $finalStatement3[BasEntity::BALANCE]);
 
-        $this->assertGreaterThan($initialStatement1[0][BasEntity::ID], $insertedStatement[0][BasEntity::ID]);
+        $this->assertGreaterThan($initialStatement1[BasEntity::ID], $insertedStatement[BasEntity::ID]);
 
-        $this->assertLessThan($initialStatement2[0][BasEntity::ID], $insertedStatement[0][BasEntity::ID]);
+        $this->assertLessThan($initialStatement2[BasEntity::ID], $insertedStatement[BasEntity::ID]);
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+        ];
+
+        $transactorIdArray = [
+            $externalEntries->getPublicId(),
+        ];
+
+        $commissionArray = [
+            '',
+        ];
+
+        $taxArray = [
+            '',
+        ];
+
+        $apiTransactionIdArray = [
+            $externalEntries->getTransactionId(),
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($commissionArray[$index], $ledgerRequestPayload['commission']);
+            $this->assertEquals($taxArray[$index], $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            if (!empty($apiTransactionIdArray[$index]))
+            {
+                $this->assertEquals($apiTransactionIdArray[$index], $ledgerRequestPayload['api_transaction_id']);
+            }
+            else
+            {
+                $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload['additional_params']);
+            }
+        }
+
+        Carbon::setTestNow();
     }
 
     public function testViewIciciMissingAccountStatementsFromRedis()
     {
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
+
         $statement = [
             'type'                      => 'credit',
             'amount'                    => '100',
@@ -2840,6 +2920,12 @@ class IciciBankingAccountStatementTest extends TestCase
     public function testDryRunInsertMissingAccountStatement()
     {
         $this->testIciciAccountStatementCase1();
+
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(0, $ledgerSnsPayloadArray);
 
         (new AdminService)->setConfigKeys(
             [
