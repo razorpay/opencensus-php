@@ -379,10 +379,12 @@ class Core extends Base\Core
             and count($value[Order1cc\Fields::PROMOTIONS]) > 0)
         {
             $discount = $value[Order1cc\Fields::PROMOTIONS][0][Order1cc\Fields::PROMOTIONS_VALUE];
+
         }
 
         $subTotal = $lineItemsTotal + $shippingFee;
-        $netPrice = max($subTotal - $discount, 1);
+        $afterDiscountCartAmount = max(0,$lineItemsTotal-$discount);
+        $netPrice = max(100, $afterDiscountCartAmount + $shippingFee);
 
         $value[Order1cc\Fields::NET_PRICE] = $netPrice;
         $value[Order1cc\Fields::SUB_TOTAL] = $subTotal;
