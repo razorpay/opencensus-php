@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use RZP\Trace\TraceCode;
 
 class MandateHQ
 {
@@ -85,6 +86,7 @@ class MandateHQ
         $this->testModeBaseUrl = $this->config['test_mode_url'];
         $this->testModeKey     = $this->config['test_mode_username'];
         $this->testModeSecret  = $this->config['test_mode_password'];
+        $this->trace = $app['trace'];
     }
 
     public function shouldSkipSummaryPage(): bool
@@ -208,6 +210,39 @@ class MandateHQ
         );
 
         $response = $this->sendMandateHQRequest($request);
+
+        switch (true)
+        {
+            case stristr($url, 'register'):
+                $requesturl = "mandate_register";
+                break;
+            case stristr($url, 'notifications'):
+                $requesturl = "create_pre_debit_notification";
+                break;
+            case stristr($url, 'payments'):
+                $requesturl = "report_payment";
+                break;
+            case stristr($url, 'cancel'):
+                $requesturl = "cancel_mandate";
+                break;
+            case stristr($url, 'validate'):
+                $requesturl = "validate_payment";
+                break;
+            case stristr($url, 'update_token'):
+                $requesturl = "update_card_token";
+                break;
+            case stristr($url, 'iins'):
+                $requesturl = "check_bin";
+                break;
+            default :
+                $requesturl = $url;
+                break;
+        }
+        $dimensions = [
+            'status' => $response->status_code,
+            'request' => $requesturl
+        ];
+        $this->trace->count(TraceCode::MANDATEHQ_REQUEST_COUNT, $dimensions);
 
         if ($response->status_code !== 200)
         {

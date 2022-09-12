@@ -5609,6 +5609,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_RECURRING_REMINDER_SERVICE_TIMEOUT_CALLBACK       = 'UPI_RECURRING_REMINDER_SERVICE_TIMEOUT_CALLBACK';
     const DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY            = 'DEFAULT_CAPTURE_SETTING_CONFIG_UPI_AUTOPAY';
 
+    //MHQ Metrics
+    const MANDATEHQ_REQUEST_COUNT                               = 'MANDATEHQ_REQUEST_COUNT';
+
     const CARD_MANDATE_CREATE_REQUEST                           = 'CARD_MANDATE_CREATE_REQUEST';
     const CARD_MANDATE_CREATED                                  = 'CARD_MANDATE_CREATED';
     const CARD_MANDATE_TERMINAL_LOG                             = 'CARD_MANDATE_TERMINAL_LOG';
