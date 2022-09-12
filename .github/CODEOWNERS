@@ -104,7 +104,7 @@ app/Models/Transaction/                                prashanth.yv@razorpay.com
 app/Models/Transfer/                                   soutreya.kundu@razorpay.com
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/Upi/                                        nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Models/User/                                       pankaj.kumar@razorpay.com                               vivek.kumar@razorpay.com
+app/Models/User/                                       @razorpay/acquisition-be                                vivek.kumar@razorpay.com
 app/Models/VirtualAccount/                             @razorpay/TechVirtualAccounts
 app/Models/Workflow/                                   praveen.patlola@razorpay.com
 
