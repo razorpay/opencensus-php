@@ -346,7 +346,7 @@ class UserRolesScope
             'bank_transfer_process_test'                    => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'batch_stats'                                   => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP,],
             'batch_validate_file'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::LINKED_ACCOUNT_OWNER,],
-            'beta_account_fetch'                            => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
+            'beta_account_fetch'                            => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT, Role::SELLERAPP_PLUS,],
             'bulk_invoice_create'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS,],
             'can_merchant_submit_support_call_request'      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR,],
             'care_service_dashboard_proxy'                  => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR,],
