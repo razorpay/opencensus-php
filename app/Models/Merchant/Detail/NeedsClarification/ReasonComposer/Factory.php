@@ -138,7 +138,7 @@ class Factory
         if (empty($noDocData) === false and isset($needsClarificationMetaData[DEConstants::DEDUPE_CHECK_KEY]) === true)
         {
             $fieldName = $needsClarificationMetaData[DEConstants::DEDUPE_CHECK_KEY];
-            if ($noDocData[DEConstants::DEDUPE][$fieldName][DEConstants::RETRY_COUNT] > 0 and $noDocData[DEConstants::DEDUPE][$fieldName][DEConstants::STATUS] === RetryStatus::PENDING)
+            if (isset($noDocData[DEConstants::DEDUPE][$fieldName]) === true and $noDocData[DEConstants::DEDUPE][$fieldName][DEConstants::RETRY_COUNT] > 0 and $noDocData[DEConstants::DEDUPE][$fieldName][DEConstants::STATUS] === RetryStatus::PENDING)
             {
                 return true;
             }

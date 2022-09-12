@@ -4637,6 +4637,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AUTO_NC_TAG_ADDED                                     = 'AUTO_NC_TAG_ADDED';
     const PARTNER_AUTO_NC_TAG_ADDED                             = 'PARTNER_AUTO_NC_TAG_ADDED';
     const AUTO_NC_EVENT_FAILED                                  = 'AUTO_NC_EVENT_FAILED';
+    const TRIGGER_UPDATE_MERCHANT_CONTEXT_JOB                   = 'TRIGGER_UPDATE_MERCHANT_CONTEXT_JOB';
+    const MERCHANT_CONTEXT_KYC_CLARIFICATION_REASON             = 'MERCHANT_CONTEXT_KYC_CLARIFICATION_REASON';
 
     // Salesforce integration
     const SALESFORCE_ACCESS_TOKEN_ERROR                         = 'SALESFORCE_ACCESS_TOKEN_ERROR';

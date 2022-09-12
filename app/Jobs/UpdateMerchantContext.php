@@ -59,8 +59,10 @@ class UpdateMerchantContext extends Job
         {
             $tracePayload = [
                 Entity::MERCHANT_ID => $this->merchantId,
-                'bvs_validation_id' => $this->validationId
+                'bvs_validation_id' => $this->validationId,
             ];
+
+            $this->trace->info(TraceCode::TRIGGER_UPDATE_MERCHANT_CONTEXT_JOB, $tracePayload);
 
             $this->trace->debug(TraceCode::UPDATE_MERCHANT_CONTEXT_JOB, $tracePayload);
 
@@ -85,7 +87,8 @@ class UpdateMerchantContext extends Job
                 TraceCode::UPDATE_MERCHANT_CONTEXT_JOB_ERROR,
                 [
                     'merchant_id'       => $this->merchantId,
-                    'bvs_validation_id' => $this->validationId
+                    'bvs_validation_id' => $this->validationId,
+                    'attempts'          => $this->attempts()
                 ]);
         }
 
@@ -141,6 +144,11 @@ class UpdateMerchantContext extends Job
 
                         $kycClarificationReasons = (new DetailCore())
                             ->getUpdatedKycClarificationReasons($input, $merchantDetail->getId(), DetailConstant::SYSTEM);
+
+                        $this->trace->info(TraceCode::MERCHANT_CONTEXT_KYC_CLARIFICATION_REASON, [
+                            'merchant_id'              => $merchant->getId(),
+                            'kycClarificationReasons'  => $kycClarificationReasons
+                        ]);
 
                         $merchantDetail->setKycClarificationReasons($kycClarificationReasons);
 

@@ -45,7 +45,7 @@ class Core extends Base\Core
         /*
            If we have already raised needs clarification flow once then don't raise it again
         */
-        if ($needsClarificationCount >= 1)
+        if ($entity->merchant->isNoDocOnboardingEnabled() === false and  $needsClarificationCount >= 1)
         {
             return false;
         }
