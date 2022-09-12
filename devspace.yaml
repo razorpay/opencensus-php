@@ -15,7 +15,7 @@ dev:
   #       name: ${APP_NAME}-${DEVSTACK_LABEL}
   #     namespace: ${NAMESPACE}
   #     reverseForward:
-  #       - port: 9000
+  #       - port: 9008
   #         remotePort: 9000
   sync:
     - labelSelector:

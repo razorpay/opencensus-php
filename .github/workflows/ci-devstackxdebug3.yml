@@ -1,0 +1,60 @@
+name: CI-devstack
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'Dockerfile.devstackxdebug3'
+      - 'environment/**'
+      - 'config/**'
+
+jobs:
+  cancel:
+    runs-on: [self-hosted]
+    name: Cancel Previous Runs
+    if: always()
+    timeout-minutes: 1
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          all_but_latest: true
+          workflow_id: "build_images.yml"
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+
+  build-docker-image:
+    runs-on: [ self-hosted ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Devstack xdebug3 Web Harbor
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: build
+        uses: docker/build-push-action@v2
+        with:
+          tags: c.rzp.io/razorpay/api:devstackxdebug3
+          push: true
+          file: ./Dockerfile.devstackxdebug3
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
+            GIT_USERNAME=rzp
+            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+            ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+            OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28

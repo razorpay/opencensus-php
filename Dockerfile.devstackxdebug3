@@ -1,0 +1,62 @@
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-7.2-api-web-v3
+ARG ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+
+FROM $ARMORY_IMAGE as wkhtmltopdf
+
+FROM $ONGGI_IMAGE as opencensus-ext
+WORKDIR /
+ARG OPENCENSUS_VERSION_TAG=v0.7.6.4
+RUN set -eux && \
+    wget -O - https://github.com/razorpay/opencensus-php/tarball/"${OPENCENSUS_VERSION_TAG}" | tar xz --strip=1
+RUN cd /ext && phpize && ./configure --enable-opencensus && make install
+
+FROM $ONGGI_IMAGE
+
+ARG GIT_COMMIT_HASH
+ARG GIT_TOKEN
+ARG GIT_USERNAME
+ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
+
+WORKDIR /app
+
+COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
+
+COPY composer.json composer.lock /app/
+
+RUN set -eu && \
+    composer --version && \
+    git config --global user.name ${GIT_USERNAME} && \
+    composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer config -g repos.packagist composer "https://packagist.rzp.io" && \
+    composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
+    rm -rf /root/.composer && \
+    composer clear-cache && \
+    pear config-set php_ini /etc/php7/php.ini && \
+    pecl install opencensus-alpha && \
+    mkdir -p public && echo "${GIT_COMMIT_HASH}" > public/commit.txt
+
+COPY --from=opencensus-ext /usr/lib/php7/modules/opencensus.so /usr/lib/php7/modules
+
+COPY --chown=apache:www-data . /app/
+
+RUN cp dockerconf/default.conf dockerconf/mpm.conf /etc/apache2/conf.d/ && \
+    composer dump-autoload -o
+
+RUN apk add make git
+ADD Makefile /app
+ADD error_modules /app
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
+RUN make error-module-clean
+RUN make error-module-fetch
+
+# Install and configure XDebug
+RUN pecl install xdebug
+
+RUN echo -e 'zend_extension=/usr/lib/php7/modules/xdebug.so\nxdebug.client_port=9000\nxdebug.mode=debug\nxdebug.start_with_request=yes\nxdebug.idekey=PHPSTORM\nxdebug.log=/tmp/xdebug.log' >> /etc/php7/conf.d/xdebug.ini
+
+ENV XDEBUG_SESSION=1
+ENV PHP_IDE_CONFIG serverName=Devstack
+
+EXPOSE 80
+
+ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/dockerconf/entrypoint.web.sh"]
