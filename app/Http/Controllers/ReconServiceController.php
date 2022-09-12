@@ -78,6 +78,16 @@ class ReconServiceController extends Controller
             '^extraction_item\/[[:alnum:]]{14}$',
             '^extraction_config\/[[:alnum:]]{14}$',
             '^workspaces\/[[:alnum:]]{14}$',
+        ],
+        self::DELETE => [
+            '^file_types\/[[:alnum:]]{14}$',
+            '^recon_rules$',
+            '^recon_rules\/\d+$',
+            '^rule_state_map\/\d+$',
+            '^recon_state\/\d+$',
+            '^extraction_item\/[[:alnum:]]{14}$',
+            '^extraction_config\/[[:alnum:]]{14}$',
+            '^workspaces\/[[:alnum:]]{14}$',
         ]
     ];
 
