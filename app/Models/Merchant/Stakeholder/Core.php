@@ -100,6 +100,12 @@ class Core extends Base\Core
                     $accountV2Core->updateNCFieldsAcknowledgedIfApplicable($merchantDetailInput, $merchant);
                 });
 
+                $this->trace->info(TraceCode::UPDATED_KYC_CLARIFICATION_REASONS, [
+                    'merchant_id'                   => $merchantId,
+                    'stakeholder_id'                => $id,
+                    'kyc_clarification_reasons'     => $merchantDetails->getKycClarificationReasons() ?? []
+                ]);
+
                 AutoUpdateMerchantProducts::dispatch(Product\Status::STAKEHOLDER_SOURCE, $merchant, $merchantDetails);
             }
 
