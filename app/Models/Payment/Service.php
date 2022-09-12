@@ -4556,18 +4556,20 @@ class Service extends Base\Service
             return $data;
         }
 
-        // Skipping Payment Verification for UPI Authorized Payment
-        // to prevent creating multiple refunds for unexpected payments.
-        if (($payment->getMethod() === Method::UPI) and
-            ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT) and
-            ($payment->getStatus() === Payment\Status::AUTHORIZED))
+        // Skipping Payment Verification for non card authorized payments.
+        // to prevent issue in updating gateway entities for failed verify authorized payments.
+        if (($payment->getMethod() !== Method::CARD) and
+            (($payment->getStatus() === Payment\Status::AUTHORIZED) or
+                ($payment->getStatus() === Payment\Status::CAPTURED)))
         {
             $data['retry_verify'] = false;
 
             $this->trace->info(
-                TraceCode::PAYMENT_VERIFY_DEMO_MERCHANT,
+                TraceCode::PAYMENT_VERIFY_DISABLED_FOR_SUCCESS_NON_CARD_PAYMENTS,
                 [
-                    'payment_id' => $id
+                    'payment_id' => $id,
+                    'method' => $payment->getMethod(),
+                    'gateway' => $payment->getGateway()
                 ]);
 
             return $data;
