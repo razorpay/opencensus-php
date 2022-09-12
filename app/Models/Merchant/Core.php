@@ -113,6 +113,7 @@ use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntit
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
 use RZP\Trace\Tracer;
+use RZP\Models\Merchant\Detail\BusinessCategory;
 
 class Core extends Base\Core
 {
@@ -1520,40 +1521,51 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant)
+    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $feeBearer = FeeBearer::PLATFORM, $businessCategory = BusinessCategory::ECOMMERCE)
     {
-        $feeBearer = FeeBearer::PLATFORM;
-
-        if (isset($subMerchant['fee_bearer']) === true )
-        {
-            $feeBearer = $subMerchant['fee_bearer'];
-        }
+        $this->trace->info(
+            TraceCode::MERCHANT_SCHEDULE_UPDATED,
+            [
+                'fee bearer' => $feeBearer,
+                'category' => $businessCategory,
+            ]);
 
         if ($feeBearer === FeeBearer::DYNAMIC)
         {
             return;
         }
 
-        $category2 = Category::ECOMMERCE;
+        $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[$feeBearer][$businessCategory] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[FeeBearer::PLATFORM][BusinessCategory::ECOMMERCE];
 
-        if (isset($subMerchant['category2']) === true)
-        {
-            $category2 = $subMerchant['category2'];
-        }
-
-        $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[$feeBearer][$category2] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[FeeBearer::PLATFORM][Category::ECOMMERCE];
+        $this->trace->info(
+            TraceCode::MERCHANT_SCHEDULE_UPDATED,
+            [
+                'pricing plan name' => $pricingPlanName,
+            ]);
 
         $pricingPlans = (new Pricing\Repository)->getPlanByName($pricingPlanName);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_SCHEDULE_UPDATED,
+            [
+                'pricing plans' => $pricingPlans,
+            ]);
 
         if ($pricingPlans->count() === 0)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_BUY_PRICING_PLAN_WITH_NAME_DOES_NOT_EXIST);
+                ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT);
         }
 
-        (new Pricing\Validator())->validBuyPricingRules($pricingPlans->toArray());
+        (new Merchant\Service())->validatePricingPlanForFeeBearer($subMerchant, $pricingPlans);
 
         $pricingPlanId = $pricingPlans->getId();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_SCHEDULE_UPDATED,
+            [
+                'pricing plan id' => $pricingPlanId,
+            ]);
 
         $subMerchant->setPricingPlan($pricingPlanId);
 
@@ -2133,7 +2145,7 @@ class Core extends Base\Core
                 {
                     if ((isset($input[Entity::FEE_BEARER]) === true) or (isset($input[Entity::CATEGORY2]) === true))
                     {
-                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant);
+                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant,$input[Entity::FEE_BEARER] ?? FeeBearer::PLATFORM, $input[Entity::CATEGORY2] ?? BusinessCategory::ECOMMERCE);
                     }
                 }
             }

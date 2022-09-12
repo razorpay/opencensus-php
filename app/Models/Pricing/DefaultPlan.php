@@ -4,7 +4,7 @@ namespace RZP\Models\Pricing;
 
 use RZP\Http\BasicAuth;
 
-use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Payout;
 use RZP\Models\Admin\Org;
@@ -23,31 +23,32 @@ class DefaultPlan
 
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN          = 'EGBQtZbvBrGPHf';
 
-    //TODO - add B2B, govt e tendering
+    //TODO - add MUTUAL_FUNDS, CORPORATE
+    //TODO - sub INSURANCE, TRAVEL_AGENCY
     const SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP = [
         FeeBearer::PLATFORM => [
-            Category::ECOMMERCE => 'EcomPLATnewINTMAIN',
-            Category::UTILITIES => 'UtilityPlatNewINTone',
-            Category::INSURANCE => 'InsurPLAT',
-            Category::MUTUAL_FUNDS => 'MutualFundPLAT',
-            Category::EDUCATION => 'NewICICEduPLATINTOne',
-            Category::GOVERNMENT => 'GovPlatNewINTONE',
-            Category::GROCERY => 'ICICIgroceryPLATint',
-            Category::HOUSING => 'ICICIHousplatNewINT',
-            Category::TRAVEL_AGENCY => 'ICICtoursPLTintNEW',
-            Category::CORPORATE => 'B2BplatNewINT',
+            BusinessCategory::ECOMMERCE => 'EcomPLATnewINTMAIN',
+            BusinessCategory::UTILITIES => 'UtilityPlatNewINTone',
+            //BusinessCategory::INSURANCE => 'InsurPLAT',
+            //BusinessCategory::MUTUAL_FUNDS => 'MutualFundPLAT',
+            BusinessCategory::EDUCATION => 'NewICICEduPLATINTOne',
+            BusinessCategory::GOVERNMENT => 'GovPlatNewINTONE',
+            BusinessCategory::GROCERY => 'ICICIgroceryPLATint',
+            BusinessCategory::HOUSING => 'ICICIHousplatNewINT',
+            //BusinessCategory::TRAVEL_AGENCY => 'ICICtoursPLTintNEW',
+            //BusinessCategory::CORPORATE => 'B2BplatNewINT',
         ],
         FeeBearer::CUSTOMER => [
-            Category::ECOMMERCE => 'EcomCustNewINT',
-            Category::UTILITIES => 'UtilityCustNewINTone',
-            Category::INSURANCE => 'InsurCUST',
-            Category::MUTUAL_FUNDS => 'MutualFundCUST',
-            Category::EDUCATION => 'NewICICEDUcustNewINT',
-            Category::GOVERNMENT => 'GovCUSTNewINTONe',
-            Category::GROCERY => 'ICICIgroceryCUSTint',
-            Category::HOUSING => 'ICICIHousCustNewINT',
-            Category::TRAVEL_AGENCY => 'ICICtoursCUSintNEW',
-            Category::CORPORATE => 'B2BcustNewINT',
+            BusinessCategory::ECOMMERCE => 'EcomCustNewINT',
+            BusinessCategory::UTILITIES => 'UtilityCustNewINTone',
+            //BusinessCategory::INSURANCE => 'InsurCUST',
+            //BusinessCategory::MUTUAL_FUNDS => 'MutualFundCUST',
+            BusinessCategory::EDUCATION => 'NewICICEDUcustNewINT',
+            BusinessCategory::GOVERNMENT => 'GovCUSTNewINTONe',
+            BusinessCategory::GROCERY => 'ICICIgroceryCUSTint',
+            BusinessCategory::HOUSING => 'ICICIHousCustNewINT',
+            //BusinessCategory::TRAVEL_AGENCY => 'ICICtoursCUSintNEW',
+            //BusinessCategory::CORPORATE => 'B2BcustNewINT',
         ],
     ];
 

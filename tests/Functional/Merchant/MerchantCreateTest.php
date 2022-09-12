@@ -1204,7 +1204,7 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($submerchantDetail[MerchantDetail::ACTIVATION_STATUS], MerchantDetailStatus::ACTIVATED);
     }
 
-    public function testCreateSubMerchantWithAutoPricingPlanByAdminForAggregatorBatch()
+    public function testCreateSubMerchantWithAutoPricingPlanByAdminBatch()
     {
         $this->fixtures->create('feature', [
             'name' => FeatureConstants::SUB_MERCHANT_PRICING_AUTOMATION,
@@ -1214,7 +1214,7 @@ class MerchantCreateTest extends TestCase
 
         Mail::fake();
 
-        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $configAttributes = [
             PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -1233,7 +1233,7 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals('1ycviEdCgurrFI', $submerchant['pricing_plan_id']);
     }
 
-    public function testCreateSubMerchantWithAutoFeeBearerByAdminForAggregatorBatch()
+    public function testCreateSubMerchantWithAutoFeeBearerByAdminBatch()
     {
         $this->fixtures->create('feature', [
             'name' => FeatureConstants::SUB_MERCHANT_PRICING_AUTOMATION,
@@ -1243,7 +1243,7 @@ class MerchantCreateTest extends TestCase
 
         Mail::fake();
 
-        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed');
 
         $configAttributes = [
             PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
@@ -1253,7 +1253,7 @@ class MerchantCreateTest extends TestCase
 
         $this->ba->batchAppAuth();
 
-        $this->fixtures->pricing->createPricingPlanForICICISubMerchant();
+        $this->fixtures->pricing->createPricingPlanForICICISubMerchant('customer');
 
         $this->startTest();
 

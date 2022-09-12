@@ -33,6 +33,8 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Jobs\SubMerchantBatchUploadValidationStatusUpdater;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
+use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Models\Merchant\FeeBearer;
 
 class SubMerchantBatchUtility extends Base\Core
 {
@@ -480,7 +482,11 @@ class SubMerchantBatchUtility extends Base\Core
                 $this->merchantCore->updateSubMerchantFeeBearer($subMerchant, $entry[Header::FEE_BEARER]);
             }
 
-            $this->merchantCore->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant);
+            $subMerchantDetails = (new MerchantDetailCore)->getMerchantDetails($subMerchant);
+
+            $businessCategory = $subMerchantDetails->getBusinessCategory();
+
+            $this->merchantCore->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $subMerchant->getFeeBearer() ?? FeeBearer::PLATFORM, $businessCategory ?? BusinessCategory::ECOMMERCE);
         }
 
         if (($this->useMerchantEmailAsDummy === true) and (empty($entry[Header::MERCHANT_EMAIL]) === false))

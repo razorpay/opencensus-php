@@ -718,7 +718,7 @@ class Pricing extends Base
         $this->addPricingRulesToDb($rows);
     }
 
-    public function createPricingPlanForICICISubMerchant()
+    public function createPricingPlanForICICISubMerchant($feeBearer = 'platform')
     {
         $rows = [
             [
@@ -729,6 +729,7 @@ class Pricing extends Base
                 'payment_method'      => 'fund_transfer',
                 'percent_rate'        => 200,
                 'org_id'              => '100000razorpay',
+                'fee_bearer'          => $feeBearer,
             ],
         ];
 

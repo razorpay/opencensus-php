@@ -1632,7 +1632,7 @@ return [
         ],
     ],
 
-    'testCreateSubMerchantWithAutoPricingPlanByAdminForAggregatorBatch' => [
+    'testCreateSubMerchantWithAutoPricingPlanByAdminBatch' => [
         'request'  => [
             'url'     => '/submerchants_bulk_onboard/batch',
             'method'  => 'POST',
@@ -1693,7 +1693,7 @@ return [
         ],
     ],
 
-    'testCreateSubMerchantWithAutoFeeBearerByAdminForAggregatorBatch' => [
+    'testCreateSubMerchantWithAutoFeeBearerByAdminBatch' => [
         'request'  => [
             'url'     => '/submerchants_bulk_onboard/batch',
             'method'  => 'POST',
