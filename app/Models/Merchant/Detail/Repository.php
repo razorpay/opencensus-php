@@ -452,7 +452,7 @@ class Repository extends Base\Repository
     }
 
     /*
-     * $limit is optional here. Used for 
+     * $limit is optional here. Used for
     */
     public function getSubmerchantIdsByActivationStatus(string $partnerMerchantId, array $activationStatusList, int $limit = null): array
     {
@@ -543,6 +543,31 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::MERCHANT_ID,$merchantIds)
                     ->get()
                     ->toArray();
+    }
+
+    public function findMerchantByActivationStatusAndActivationFormMileStone(array $activationStatusList,
+                                                                             array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID],
+                                                                             int $updatedAt = null,
+                                                                             string $activationMilestone = "L2"): array
+    {
+        $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantParentIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
+
+        $query = $this->newQuery()
+            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+            ->whereIn($merchantOrgIdColumn, $orgIdList)
+            ->where($merchantParentIdColumn, '=', null)
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::ACTIVATION_STATUS, $activationStatusList)
+            ->Where(Entity::ACTIVATION_FORM_MILESTONE, '=', $activationMilestone)
+            ->Where($this->dbColumn(Entity::UPDATED_AT), '>=', $updatedAt);
+
+
+        return $query->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 
 }

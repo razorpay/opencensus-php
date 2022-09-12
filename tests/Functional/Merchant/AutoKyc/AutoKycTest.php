@@ -12,6 +12,8 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\POIStatus;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Cron\Core as CronJobHandler;
+use RZP\Models\Merchant\Cron\Constants as CronConstants;
 
 
 class AutoKycTest extends TestCase
@@ -86,6 +88,45 @@ class AutoKycTest extends TestCase
         ]);
 
         $this->assertNotEquals(Status::ACTIVATED_MCC_PENDING, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testNoMerchantFoundAutoKycTriggerCMMA()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::INDIVIDUAL),
+            Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+        ]);
+
+        // this will not throw any error
+        (new CronJobHandler())->handleCron(CronConstants::MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME, []);
+        $this->assertNotEquals(Status::ACTIVATED_MCC_PENDING, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testValidMerchantFoundAutoKycTriggerCMMA()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setNonImpersonatedMerchant();
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+            Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+            Entity::POA_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+            Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+            Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+            Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+        ]);
+
+        (new CronJobHandler())->handleCron(CronConstants::MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME, []);
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, (new DetailCore)->getApplicableActivationStatus($merchantDetails));
     }
 
     protected function mockRazorxAndMerchantRiskClient()

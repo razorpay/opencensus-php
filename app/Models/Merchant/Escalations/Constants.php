@@ -54,6 +54,7 @@ class Constants
     const HARD_LIMIT_LEVEL_1 = 'hard_limit_level_1';
     const CMMA_SOFT_LIMIT_BREACH = 'SOFT-LIMIT-BREACH-LV1';
     const CMMA_HARD_LIMIT_BREACH = 'HARD-LIMIT-BREACH-LV1';
+    const AUTO_KYC_FAILURE_TRIGGER = 'AUTO-KYC-FAILURE';
     const ACTIVATION = 'activation';
     const CMMA_ROUTE = 'twirp/rzp.cmma.process.v1.ProcessManagementService/CreateProcessInstance';
     const UNDEFINED = 'undefined';
@@ -85,6 +86,7 @@ class Constants
     const CMMA_SOFT_LIMIT_EXPERIMENT_ID = 'app.cmma_soft_limit_breach_trigger_experiment_id';
     const CMMA_AMP_EXPERIMENT_ID = 'app.cmma_amp_trigger_experiment_id';
     const CMMA_NEW_EXPERIMENT_ID_KEY = 'app.cmma_limit_breach_trigger_new_experiment_id';
+    const CMMA_AUTO_KYC_FAILURE_EXPERIMENT_ID = 'app.cmma_auto_kyc_failure_trigger_experiment_id';
 
     const TAG          = 'tag';
 

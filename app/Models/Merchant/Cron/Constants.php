@@ -26,5 +26,17 @@ class Constants
     const WEBSITE_COMPLIANCE_GRACE_PERIOD_REMINDER_JOB               = 'website_compliance_grace_period_reminder_job';
     const L1_FORM_EMAIL_TRIGGER_CRON_JOB_NAME                        = 'l1_form_email_trigger_cron_job';
     const MERCHANT_FIRST_TRANSACTION_POST_EVENT_CRON                 = 'merchant-first-transaction-post-event-cron';
+    const MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME                    = 'merchant_auto_kyc_failure_cron';
+
+    # map keys
+    const AUTO_KYC_FAILURE_DATA = "auto_kyc_failure_data";
+    const MERCHANT_IDS          = "merchant_ids";
+    const CASE_TYPE            = "case_type";
+    const LEVEL                 = 1;
+
+    # cron cache keys
+    const MERCHANT_AUTO_KYC_FAILURE_TIMESTAMP = "merchant_auto_kyc_failure_timestamp";
+
+    const  AUTO_KYC_LAST_CRON_DEFAULT_VALUE = 1;
 
 }

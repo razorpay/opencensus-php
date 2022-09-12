@@ -4,33 +4,34 @@
 namespace RZP\Models\Merchant\Cron;
 
 use RZP\Base\RuntimeManager;
-use RZP\Models\Merchant\Cron\Jobs\AppsflyerUninstallCronJob;
+use RZP\Models\Merchant\Cron\Jobs\BvsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MonthFirstMtuCronJob;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Models\Merchant\Cron\Jobs\L1FormEmailTriggerCronJob;
-use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
-use RZP\Models\Merchant\Cron\Jobs\BankDetailsNotSubmittedCronJob;
-use RZP\Models\Merchant\Cron\Jobs\BvsCronJob;
-use RZP\Models\Merchant\Cron\Jobs\EmailNotVerfiedCronJob;
-use RZP\Models\Merchant\Cron\Jobs\FirstTouchProductCronJob;
-use RZP\Models\Merchant\Cron\Jobs\WebsiteCompliancePaymentsEnabledCronJob;
-use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
-use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1DayCronJob;
-use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1HourCronJob;
-use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycEscalationsCronJob;
-use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycSoftLimitCronJob;
-use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycHardLimitCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedCronJob;
-use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
-use RZP\Models\Merchant\Cron\Jobs\SignupAttributedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupStartedCronJob;
-use RZP\Models\Merchant\Cron\Jobs\TransactionDetailsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
-use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
+use RZP\Models\Merchant\Cron\Jobs\EmailNotVerfiedCronJob;
+use RZP\Models\Merchant\Cron\Jobs\SignupAttributedCronJob;
+use RZP\Models\Merchant\Cron\Jobs\FirstTouchProductCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstPaymentOfferCronJob;
+use RZP\Models\Merchant\Cron\Jobs\TransactionDetailsCronJob;
+use RZP\Models\Merchant\Cron\Jobs\AppsflyerUninstallCronJob;
+use RZP\Models\Merchant\Cron\Jobs\L1FormEmailTriggerCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MtuTransactedEventReconJob;
+use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1DayCronJob;
+use RZP\Models\Merchant\Cron\Jobs\L1NotSubmittedIn1HourCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycFailureCronJob;
+use RZP\Models\Merchant\Cron\Jobs\BankDetailsNotSubmittedCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycSoftLimitCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycHardLimitCronJob;
+use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
+use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycEscalationsCronJob;
+use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
+use RZP\Models\Merchant\Cron\Jobs\WebsiteCompliancePaymentsEnabledCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
+use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
 use RZP\Models\Merchant\Cron\Jobs\WebsiteComplianceGracePeriodReminderCronJob;
 
@@ -110,6 +111,8 @@ class Factory
                 return (new WebsiteCompliancePaymentsEnabledCronJob($input));
             case Constants::WEBSITE_COMPLIANCE_GRACE_PERIOD_REMINDER_JOB:
                 return (new WebsiteComplianceGracePeriodReminderCronJob($input));
+            case Constants::MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME:
+                return (new MerchantAutoKycFailureCronJob($input) );
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

@@ -7,6 +7,7 @@ class Constants
     const SOFT_LIMIT = 'soft_limit';
     const HARD_LIMIT = 'hard_limit';
     const AMP = 'AMP';
+    const AUTO_KYC_FAILURE = 'AUTO_KYC_FAILURE';
 
     // available escalation types
     const ESCALATION_TYPES = [

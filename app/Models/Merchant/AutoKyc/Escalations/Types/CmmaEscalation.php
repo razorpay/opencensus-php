@@ -126,6 +126,20 @@ class CmmaEscalation
                             $cmmaProxyController->handleInternalCronProxyRequests(Constants::CMMA_ROUTE, $escalationPayload);
                         }
 
+                    } elseif ($type === AutoKycConstants::AUTO_KYC_FAILURE)
+                    {
+                        // hide AUTO_KYC_FAILURE breaches behind an experiment
+                        $autoKycFailureExperimentEnabled = self::isCMMAEscalationExperimentEnabled($merchantId,
+                            Constants::CMMA_AUTO_KYC_FAILURE_EXPERIMENT_ID);
+
+                        if ($autoKycFailureExperimentEnabled === true) {
+
+                            // call CMMA with Auto Kyc Failure payload
+                            $escalationPayload['variables']['triggeredOn'] = Constants::AUTO_KYC_FAILURE_TRIGGER;
+
+                            $cmmaProxyController->handleInternalCronProxyRequests(Constants::CMMA_ROUTE, $escalationPayload);
+                        }
+
                     }
                 }
             } catch (\Throwable $err) // Exception in this flow should not affect the primary escalation flow

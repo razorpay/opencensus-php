@@ -411,6 +411,8 @@ return array(
 
     'cmma_amp_trigger_experiment_id' => env('CMMA_AMP_TRIGGER_EXPERIMENT_ID'),
 
+    'cmma_auto_kyc_failure_trigger_experiment_id' => env('CMMA_AUTO_KYC_FAILURE_TRIGGER_EXPERIMENT_ID'),
+
     'cmma_escalation_new_process_id' => env('CMMA_ESCALATION_NEW_PROCESS_ID'),
 
     'cmma_escalation_process_id' => env('CMMA_ESCALATION_PROCESS_ID'),
