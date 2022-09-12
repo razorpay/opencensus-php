@@ -35,11 +35,10 @@ export default class RefundStatusTimeline extends React.Component {
               <div>
                 Refund speed updated to Normal &nbsp;
                 <span>
-                  <i class="i i-help" />
+                  <i className="i i-help" />
                   <PopoverComponent align="right" theme="dark">
                     <PopoverBody>
-                      &nbsp; Instant Refund was unsuccessful, the fee &nbsp; for instant refund has
-                      been reversed.
+                      Instant Refund was unsuccessful, the fee for instant refund has been reversed.
                     </PopoverBody>
                   </PopoverComponent>
                 </span>
@@ -134,9 +133,9 @@ export default class RefundStatusTimeline extends React.Component {
                 <div className="refund-timeline-status">
                   <RefundStatusLabel status={item.status} />
                   {showProcessingTooltip && (
-                    <span>
-                      <i className="i i-help refund-status-help" />
-                      <PopoverComponent align="top">
+                    <span className="refund-timeline-text refund-status-help">
+                      <i className="i i-help" />
+                      <PopoverComponent align="top" theme="dark">
                         <PopoverBody>
                           The refund has been initiated. Once the refund is completed, the status of
                           the refund will change to &#39;Processed&#39;.
