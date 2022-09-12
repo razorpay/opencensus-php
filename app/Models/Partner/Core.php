@@ -1048,6 +1048,7 @@ class Core extends Detail\Core
             list($defaultConfig, $accessMaps, $subMs) = $this->validateAndFetchPartnerEntities(
                 $existingAppId, $merchant
             );
+
             return $this->createAndUpdateSupportingEntitiesForNewAuth(
                 $merchant, $existingAppId, $defaultConfig, $accessMaps, $subMs
             );
@@ -1181,7 +1182,8 @@ class Core extends Detail\Core
             )
             {
                 $this->updatePartnerEntities(
-                    $partner, $existingAppId, $newManagedAppId, $newReferredAppId, $defaultConfig, $accessMaps, $subMerchants
+                    $partner, $existingAppId, $newManagedAppId, $newReferredAppId,
+                    $defaultConfig, $accessMaps, $subMerchants, true
                 );
                 app('authservice')->deleteApplication($existingAppId, $partner->getId());
             });
@@ -1231,7 +1233,7 @@ class Core extends Detail\Core
             {
                 $this->updatePartnerEntities(
                     $partner, $existingAppIds[0], $deletedAppIds[0], $deletedAppIds[1],
-                    $defaultConfig, $accessMaps, $subMerchants
+                    $defaultConfig, $accessMaps, $subMerchants, false
                 );
 
                 $this->merchantAppCore->deleteMultipleApplications($existingAppIds);
@@ -1252,20 +1254,22 @@ class Core extends Detail\Core
 
     /**
      * Updates the partner entities for migrating aggregator-turned reseller back to aggregator type.
-     * @param   Merchant\Entity     $partner       the partner merchant
-     * @param   string              $existingAppId  the existing application ID of Reseller partner
-     * @param   string              $managedAppId   the managed application ID when partner was Aggregator
-     * @param   string              $referredAppId  the referred application ID when partner was Aggregator
-     * @param   Config\Entity       $defaultConfig  the default partner config of partner
-     * @param   PublicCollection    $accessMaps     the access maps of partner
-     * @param   PublicCollection    $subMerchants   the sub-merchants of the partner
+     * @param   Merchant\Entity     $partner                the partner merchant
+     * @param   string              $existingAppId          the existing application ID of Reseller partner
+     * @param   string              $managedAppId           the managed application ID when partner was Aggregator
+     * @param   string              $referredAppId          the referred application ID when partner was Aggregator
+     * @param   Config\Entity       $defaultConfig          the default partner config of partner
+     * @param   PublicCollection    $accessMaps             the access maps of partner
+     * @param   PublicCollection    $subMerchants           the sub-merchants of the partner
+     * @param   bool                $createReferredConfig   whether to create referred config for aggregator
      *
      * @return  void
      * @throws  LogicException
      */
     private function updatePartnerEntities(
         Merchant\Entity $partner, string $existingAppId, string $managedAppId, string $referredAppId,
-        PartnerConfig\Entity $defaultConfig, PublicCollection $accessMaps, PublicCollection $subMerchants
+        PartnerConfig\Entity $defaultConfig, PublicCollection $accessMaps, PublicCollection $subMerchants,
+        bool $createReferredConfig
     )
     {
         $this->merchantCore->createMerchantApplication(
@@ -1275,7 +1279,11 @@ class Core extends Detail\Core
             $partner, $referredAppId, MerchantApplicationsEntity::REFERRED
         );
 
-        $this->createPartnerConfigFromExistingConfig($partner, $defaultConfig, $referredAppId);
+        if ($createReferredConfig)
+        {
+            $this->createPartnerConfigFromExistingConfig($partner, $defaultConfig, $referredAppId);
+        }
+
         $this->trace->info(TraceCode::RESELLER_TO_AGGREGATOR_APPLICATION_CREATED, [
                 'old_application_id' => $existingAppId,
                 'new_application_ids' => [$managedAppId, $referredAppId]

@@ -368,6 +368,7 @@ class PartnerCoreTest extends OAuthTestCase
         $accessMapId = $this->getDbEntities('merchant_access_map', ['entity_owner_id' => $partnerId])->getIds()[0];
         $this->fixtures->edit('merchant_access_map', $accessMapId, [ "entity_id" => $resellerApp->getId() ]);
 
+        $this->createConfigForPartnerApp($aggregatorAppIds[1]);
         $this->createConfigForPartnerApp($resellerApp->getId());
         $this->createConfigForPartnerApp($resellerApp->getId(), $submerchantId);
 

@@ -285,7 +285,7 @@ class Service extends Base\Service
     {
         if ($this->isPartnerTypeMigrationExpEnabled() === false)
         {
-            return ['success' => true, 'errorMessage' => null];
+            return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration."];
         }
 
         $traceInfo = ['params' => $input];
