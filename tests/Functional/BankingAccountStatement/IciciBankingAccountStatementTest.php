@@ -2658,8 +2658,6 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testInsertIciciMissingAccountStatement()
     {
-//        $this->markTestSkipped('The flakiness in the testcase needs to be fixed. Skipping as its impacting dev-productivity.');
-
         $oldDateTime = Carbon::create(2022, 8, 1, 12, 0, 0, Timezone::IST);
 
         Carbon::setTestNow($oldDateTime);

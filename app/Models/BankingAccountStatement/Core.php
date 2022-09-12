@@ -84,6 +84,8 @@ class Core extends Base\Core
 
     const RETRY_COUNT_FOR_ID_GENERATION = 100;
 
+    const DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT = 50;
+
     // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
     // gateway ref no while recon.
     // ex: SAMPLE NARRATION RZPTESTIFT123
@@ -458,6 +460,18 @@ class Core extends Base\Core
 
     public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
     {
+        $insertLimit = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_MISSING_STATEMENTS_INSERTION_LIMIT
+            ]);
+
+        if (empty($insertLimit) === true)
+        {
+            $insertLimit = self::DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT;
+        }
+
+        $missingStatements = array_slice($missingStatements, 0, $insertLimit);
+
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
             function () use ($channel, $accountNumber, $missingStatements, $dryRunMode)

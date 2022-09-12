@@ -11171,6 +11171,11 @@ class RblBankingAccountStatementTest extends TestCase
 
     public function testRblAutomatedReconForMissingStatements()
     {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 10
+            ]);
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'credit',
