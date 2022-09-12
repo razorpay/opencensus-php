@@ -114,7 +114,7 @@ class MtuTransactedAction extends BaseAction
 
                 $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
                     'merchant'         => $merchant->getId(),
-                    'type'             => 'website_Adherence_coomunication',
+                    'type'             => 'website_adherence_communication',
                     'args'             => $this->args,
                 ]);
 

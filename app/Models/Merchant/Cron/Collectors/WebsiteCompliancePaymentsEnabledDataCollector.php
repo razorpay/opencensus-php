@@ -17,10 +17,49 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
     {
         $this->app['rzp.mode'] = Mode::LIVE;
 
-        // fetch all merchants who are not activated
-        $merchantIdList = $this->repo->merchant_detail->fetchMerchantIdsByActivationStatus(
-            DetailStatus::SUBMERCHANT_OPEN_STATUSES, OrgEntity::ORG_ID_LIST
-        );
+        //fetch merchants who has payments enabled
+        $merchantIdList = $this->repo->state->fetchPaymentsEnabledMerchants($startTime, $endTime);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                'merchants_count' => 0,
+                'args'            => $this->args,
+                'reason'          => 'no liveInIntervalMerchants found'
+            ]);
+
+            return CollectorDto::create([]);
+        }
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'merchants_count' => ($merchantIdList),
+            'filter'          => 'liveInIntervalMerchants',
+            'args'            => $this->args
+        ]);
+
+        //filter merchants whose first time payments enabled
+        $merchantIdList = $this->repo->state->filterPaymentsEnabledMerchants($merchantIdList,$startTime, $endTime);
+
+        if (empty($merchantIdList) === true)
+        {
+            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+                'merchants_count' => 0,
+                'args'            => $this->args,
+                'reason'          => 'no liveInIntervalMerchants found'
+            ]);
+
+            return CollectorDto::create([]);
+        }
+
+        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
+            'merchants_count' => ($merchantIdList),
+            'filter'          => 'liveInIntervalMerchants',
+            'args'            => $this->args
+        ]);
+
+        // filter all merchants who are not activated
+        $merchantIdList = $this->repo->merchant_detail->filterMerchantIdsByActivationStatus(
+            $merchantIdList, DetailStatus::SUBMERCHANT_OPEN_STATUSES);
 
         if (empty($merchantIdList) === true)
         {
@@ -56,25 +95,6 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
         $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
             'merchants_count' => count($merchantIdList),
             'filter'          => 'LiveMerchants',
-            'args'            => $this->args
-        ]);
-
-        $merchantIdList = $this->repo->state->filterPaymentsEnabledMerchants($merchantIdList, $startTime, $endTime);
-
-        if (empty($merchantIdList) === true)
-        {
-            $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-                'merchants_count' => 0,
-                'args'            => $this->args,
-                'reason'          => 'no liveInIntervalMerchants found'
-            ]);
-
-            return CollectorDto::create([]);
-        }
-
-        $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-            'merchants_count' => ($merchantIdList),
-            'filter'          => 'liveInIntervalMerchants',
             'args'            => $this->args
         ]);
 

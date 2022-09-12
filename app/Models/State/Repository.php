@@ -57,6 +57,17 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function fetchPaymentsEnabledMerchants(int $from,int $to)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+                    ->whereIn(Entity::NAME, Status::PAYMENTS_ENABLED_STATUSES)
+                    ->where(Entity::CREATED_AT, '>=', $from)
+                    ->where(Entity::CREATED_AT, '<=', $to)
+                    ->get()
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+    }
+
     public function filterPaymentsEnabledMerchants(array $merchantIdList,int $from,int $to)
     {
         return $this->newQueryWithConnection($this->getMasterReplicaConnection())
