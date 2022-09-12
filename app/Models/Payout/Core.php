@@ -704,14 +704,11 @@ class Core extends Base\Core
         {
             case Status::PROCESSED:
                 $oldStatus = $payout->getStatus();
-
-                $this->handlePayoutProcessed($payout, null, $ftaStatus, $ftsSourceAccountInformation);
-
+                $this->handlePayoutProcessed($payout, null, $ftsSourceAccountInformation);
                 if ($this->isHighTpsMerchantWithSubBalance($payout) === false)
                 {
                     $this->processTdsForPayout($payout, $oldStatus);
                 }
-
                 break;
 
             case Status::REVERSED:
@@ -734,11 +731,7 @@ class Core extends Base\Core
 
             case Status::FAILED:
                 // Not handling this in ledger reverse shadow, as VA payouts don't get marked as FAILED.
-                $this->handlePayoutFailed($payout,
-                                          $ftaFailureReason,
-                                          $ftaBankStatusCode,
-                                          $ftaStatus,
-                                          $ftsSourceAccountInformation);
+                $this->handlePayoutFailed($payout, $ftaFailureReason, $ftaBankStatusCode, $ftsSourceAccountInformation);
                 break;
 
             case Status::CREATED:
@@ -2702,11 +2695,7 @@ class Core extends Base\Core
         return $payoutInput;
     }
 
-    public function handlePayoutProcessed(
-        Entity $payout,
-        $debit_bas = null,
-        string $ftaStatus = null,
-        array $ftsSourceAccountInformation = [])
+    public function handlePayoutProcessed(Entity $payout, $debit_bas = null, array $ftsSourceAccountInformation = [])
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -2720,7 +2709,7 @@ class Core extends Base\Core
 
         if ($payout->getIsPayoutService() === true)
         {
-            $this->handlePayoutProcessedForPayoutService($payout, $ftaStatus, $ftsSourceAccountInformation);
+            $this->handlePayoutProcessedForPayoutService($payout);
         }
         else
         {
@@ -3489,12 +3478,7 @@ class Core extends Base\Core
         // check using service
         if ($payout->getIsPayoutService() === true)
         {
-            $this->handlePayoutReversedForPayoutService($payout,
-                                                        $ftaFailureReason,
-                                                        $ftaBankStatusCode,
-                                                       $reversal,
-                                                        $ftaStatus,
-                                                        $ftsSourceAccountInformation);
+            $this->handlePayoutReversedForPayoutService($payout, $ftaFailureReason, $ftaBankStatusCode, $reversal);
         }
         else
         {
@@ -3660,7 +3644,6 @@ class Core extends Base\Core
     protected function handlePayoutFailed(Entity $payout,
                                           string $ftaFailureReason = null,
                                           string $ftaBankStatusCode = null,
-                                          string $ftaStatus = null,
                                           array $ftsSourceAccountInformation = [])
     {
         // will be removed after new error object is released.
@@ -3729,10 +3712,6 @@ class Core extends Base\Core
 
         if ($payout->getIsPayoutService() === true)
         {
-            $ftsInfo = [
-                Constants\Entity::FTS_STATUS => $ftaStatus
-            ];
-
             $app = App::getFacadeRoot();
 
             // using function stack trace to identify the caller
@@ -3748,8 +3727,7 @@ class Core extends Base\Core
                     $payout->getId(),
                     Status::FAILED,
                     $ftaFailureReason,
-                    $ftaBankStatusCode,
-                    $ftsInfo + $ftsSourceAccountInformation);
+                    $ftaBankStatusCode);
             }
             else
             {
@@ -3764,8 +3742,7 @@ class Core extends Base\Core
                         $payout->getId(),
                         Status::FAILED,
                         $ftaFailureReason,
-                        $ftaBankStatusCode,
-                        $ftsInfo + $ftsSourceAccountInformation);
+                        $ftaBankStatusCode);
                 }
             }
 
@@ -4399,7 +4376,7 @@ class Core extends Base\Core
         switch ($status)
         {
             case Status::PROCESSED:
-                $this->handlePayoutProcessed($payout, null, null, $ftsSourceInformation);
+                $this->handlePayoutProcessed($payout, null, $ftsSourceInformation);
                 break;
 
             case Status::REVERSED:
@@ -5420,9 +5397,7 @@ class Core extends Base\Core
     public function reversePayoutService(Entity $payout,
                                          string $reverseReason = null,
                                          $ftaBankStatusCode = null,
-                                         Reversal\Entity &$reversal = null,
-                                         string $ftaStatus = null,
-                                         array $ftsSourceAccountInformation = [])
+                                         Reversal\Entity &$reversal = null)
     {
         $this->trace->info(
             TraceCode::PAYOUT_REVERSAL_INITIATED,
@@ -5440,7 +5415,7 @@ class Core extends Base\Core
         // saved in the database.
         $this->mutex->acquireAndRelease(
             'reversal_payout_id_' . $payout->getId(),
-            function () use ($payout, $reverseReason, $ftaBankStatusCode, &$reversal, $ftsSourceAccountInformation, $ftaStatus) {
+            function () use ($payout, $reverseReason, $ftaBankStatusCode, &$reversal) {
 
                 $payout->reload();
 
@@ -5457,7 +5432,7 @@ class Core extends Base\Core
                 }
 
                 $reversal = $this->repo->transaction(
-                    function () use ($payout, $reverseReason, $ftaBankStatusCode, $ftsSourceAccountInformation, $ftaStatus) {
+                    function () use ($payout, $reverseReason, $ftaBankStatusCode) {
 
                         $reversalRequest = [
                             'failure_reason' => $reverseReason,
@@ -5467,17 +5442,11 @@ class Core extends Base\Core
 
                         $payout->setStatusCode($ftaBankStatusCode);
 
-                        $ftsInfo = [
-                            Constants\Entity::FTS_STATUS => $ftaStatus
-                        ];
-
                         // error will be handled by service
                         $response = $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
                             $payout->getId(),
                             Status::REVERSED,
-                            $reverseReason,
-                            "",
-                            $ftsInfo + $ftsSourceAccountInformation);
+                            $reverseReason);
 
                         $balance = $payout->balance;
 
@@ -5520,7 +5489,6 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaInitiatedForPayoutService(Entity $payout)
     {
-        // no need to pass fts info for initiated status.
         $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
             $payout->getId(),
             Status::INITIATED);
@@ -5611,20 +5579,13 @@ class Core extends Base\Core
         }
     }
 
-    public function handlePayoutProcessedForPayoutService(
-        Entity $payout,
-        string $ftaStatus = null,
-        array $ftsSourceAccountInformation = [])
+    public function handlePayoutProcessedForPayoutService(Entity $payout)
     {
         $app = App::getFacadeRoot();
 
         // using function stack trace to identify the caller
         $dbt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
         $caller = $dbt[2]['function'] ?? null;
-
-        $ftsInfo = [
-            Constants\Entity::FTS_STATUS => $ftaStatus
-        ];
 
         // this is done so that status updates are send to payout service in case the caller is from manual status
         // update action via admin dashboard
@@ -5633,9 +5594,7 @@ class Core extends Base\Core
             $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
                 $payout->getId(),
                 Status::PROCESSED,
-                "",
-                "",
-                $ftsInfo + $ftsSourceAccountInformation);
+                "");
         }
         else
         {
@@ -5648,9 +5607,7 @@ class Core extends Base\Core
                 $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
                     $payout->getId(),
                     Status::PROCESSED,
-                    "",
-                    "",
-                    $ftsInfo + $ftsSourceAccountInformation);
+                    "");
             }
         }
 
@@ -5666,9 +5623,7 @@ class Core extends Base\Core
     public function handlePayoutReversedForPayoutService(Entity $payout,
                                                          string $ftaFailureReason = null,
                                                          string $ftaBankStatusCode = null,
-                                                         Reversal\Entity &$reversal = null,
-                                                         string $ftaStatus = null,
-                                                         array $ftsSourceAccountInformation = [])
+                                                         Reversal\Entity &$reversal = null)
     {
         $ftaFailureReason = $this->getPublicErrorMessage($payout, $ftaFailureReason, $ftaBankStatusCode);
 
@@ -5680,12 +5635,7 @@ class Core extends Base\Core
             ]);
 
         // webhook fired via payout service
-        $this->reversePayoutService($payout,
-                                    $ftaFailureReason,
-                                    $ftaBankStatusCode,
-                                    $reversal,
-                                    $ftaStatus,
-                                    $ftsSourceAccountInformation);
+        $this->reversePayoutService($payout, $ftaFailureReason, $ftaBankStatusCode, $reversal);
     }
 
     public function checkIfBeneBankIsDown(Entity $payout)
