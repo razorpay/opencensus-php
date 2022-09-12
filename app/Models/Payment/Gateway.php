@@ -3472,6 +3472,11 @@ class Gateway
         Currency::USD,
     ];
 
+    // List of partially migrated gateways
+    const PARTIALLY_MIGRATED_PAYMENTGATEWAY = [
+        Gateway::WALLET_PAYPAL
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);

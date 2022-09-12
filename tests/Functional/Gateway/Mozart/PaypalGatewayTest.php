@@ -5,7 +5,8 @@ namespace RZP\Tests\Functional\Gateway\Mozart;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-
+use RZP\Services\SplitzService;
+use Mockery;
 
 class PaypalGatewayTest extends TestCase
 {
@@ -39,6 +40,7 @@ class PaypalGatewayTest extends TestCase
     {
         $payment = $this->payment;
 
+        $this->disablePayPalMigrationExperiment();
         $response = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -59,6 +61,7 @@ class PaypalGatewayTest extends TestCase
 
         $payment['contact'] = '491761552902';
 
+        $this->disablePayPalMigrationExperiment();
         $payment = $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -75,6 +78,7 @@ class PaypalGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
+        $this->disablePayPalMigrationExperiment();
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->payment = $this->refundPayment($payment['id']);
@@ -87,7 +91,7 @@ class PaypalGatewayTest extends TestCase
     public function testVerifyPayment()
     {
         $payment = $this->payment;
-
+        $this->disablePayPalMigrationExperiment();
         $authPayment = $this->doAuthPayment($payment);
 
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
@@ -109,6 +113,7 @@ class PaypalGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($testData, function()
         {
+            $this->disablePayPalMigrationExperiment();
             $this->doAuthPayment($this->payment);
         });
 
@@ -131,6 +136,7 @@ class PaypalGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($testData, function ()
         {
+            $this->disablePayPalMigrationExperiment();
             $this->doPaypalAuthAndCapturePayment();
         });
     }
@@ -148,6 +154,7 @@ class PaypalGatewayTest extends TestCase
 
     public function testVerifyRefundFailedOnGateway()
     {
+        $this->disablePayPalMigrationExperiment();
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->mockServerContentFunction(function (& $content, $action = null)
@@ -262,5 +269,25 @@ class PaypalGatewayTest extends TestCase
         $payment = $this->getDefaultWalletPaymentArray('paypal');
         $payment['currency'] = "USD";
         $this->doAuthAndCapturePayment($payment,$payment['amount'],$payment['currency']);
+    }
+
+    protected function disablePayPalMigrationExperiment(){
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" =>'',
+                ]
+            ]
+        ];
+
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->atLeast()
+            ->once()
+            ->andReturn($output);
     }
 }

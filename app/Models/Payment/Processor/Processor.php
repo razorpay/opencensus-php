@@ -2698,11 +2698,18 @@ class Processor
             Payment\Gateway::WALLET_AMAZONPAY,
         ];
 
+        $shouldRoutePayPalViaNbPlus = false;
+        if((in_array($payment->getGateway(),Payment\Gateway::PARTIALLY_MIGRATED_PAYMENTGATEWAY,true)) &&
+            $this->shouldUseNbPlusForPayPal($payment)) {
+            $shouldRoutePayPalViaNbPlus = true;
+        }
+
         if (((in_array($method, $cpsEnabledMethods, true) === false) or
                 ($payment->isGooglePayCard() === true) or
                 (empty($payment->getGooglePayMethods()) === false) or
                 ($payment->isAppCred() === true)) and
-            (in_array($payment->getGateway(), $cpsEnabledWallets, true) === false))
+                (in_array($payment->getGateway(), $cpsEnabledWallets, true) === false)
+                and !$shouldRoutePayPalViaNbPlus)
         {
             $payment->disableCpsRoute();
             return;
@@ -2723,10 +2730,17 @@ class Processor
             return;
         }
 
-        if ((Payment\Gateway::isNbPlusServiceGateway($payment->getGateway(), $payment) === true) and
+        if (((Payment\Gateway::isNbPlusServiceGateway($payment->getGateway(), $payment) === true) or
+                ($shouldRoutePayPalViaNbPlus === true)) and
             ((Service::isNbplusSupportedMethods($method)) === true))
         {
             $this->handleNbPlusServiceGateways($payment, $gatewayInput);
+
+            // this is done for setting nbplus as service for paypal for migration
+            // this change will be removed once experiment is removed
+            if($shouldRoutePayPalViaNbPlus === true) {
+                $this->setPaymentService($payment, 'nbplusps');
+            }
 
             if ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE)
             {
@@ -2917,6 +2931,42 @@ class Processor
 
             $this->setPaymentService($payment, $variant);
         }
+    }
+
+    /**
+     * shouldUseNbPlusForPayPal: this function is responsible for
+     * returning boolean result based on an experiment running for paypal
+     * migration. The split service is called only when the gateway is paypal else it by default
+     * returns false.
+     */
+    protected function shouldUseNbPlusForPayPal($payment): bool
+    {
+        if($payment->getGateway()!== Payment\Gateway::WALLET_PAYPAL) {
+            return false;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.paypal_migration_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::PAYPAL_PAYMENT_VIA_NBPLUS_SPLITZ_ERROR
+            );
+        }
+        return false;
     }
 
     protected function isCardPaymentServiceConfigEnabled(): bool
@@ -4389,7 +4439,8 @@ class Processor
         else if ($this->isRoutedThroughNbPlusService($action, $gatewayData) === true)
         {
             if (($this->isNbPlusServiceConfigEnabled() === true) or
-                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank(), $this->payment) === true))
+                (Payment\Gateway::gatewaysAlwaysRoutedThroughNbplusService($this->payment->getGateway(), $this->payment->getBank(), $this->payment) === true) or
+                ($this->payment->getGateway()=== Payment\Gateway::WALLET_PAYPAL))
             {
                 $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
             }

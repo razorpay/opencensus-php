@@ -6,6 +6,8 @@ use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Services\SplitzService;
+use Mockery;
 
 class PaypalCurrencyWrapperTest extends TestCase
 {
@@ -50,6 +52,7 @@ class PaypalCurrencyWrapperTest extends TestCase
         $payment['dcc_currency'] = $walletCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 
+        $this->disablePayPalMigrationExperiment();
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -138,5 +141,25 @@ class PaypalCurrencyWrapperTest extends TestCase
         $this->runRequestResponseFlow($testData, function () use ($payment) {
             $this->doAuthPayment($payment);
         });
+    }
+
+    protected function disablePayPalMigrationExperiment(){
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" =>'',
+                ]
+            ]
+        ];
+
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->atLeast()
+            ->once()
+            ->andReturn($output);
     }
 }

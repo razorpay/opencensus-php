@@ -35,6 +35,9 @@ class Service extends NbPlusService
             case Payment\Method::APP;
                 $class = new AppMethod();
                 break;
+            case Payment\Method::WALLET:
+                $class = new Wallet();
+                break;
             default:
                 throw new Exception\LogicException('Should not have reached here');
         }

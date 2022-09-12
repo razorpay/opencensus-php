@@ -35,6 +35,25 @@ class Wallet extends WalletBase
 
     public function authorize($input)
     {
+        if($input['gateway'] === 'wallet_paypal') {
+            return [
+                'response' => [
+                    'data' => [
+                        'next' => [
+                            'redirect' => [
+                                'url'      => 'https://api.razorpay.com/v1/gateway/mock/mozart/wallet_paypal?callbackUrl='.($this->app['api.route']->getPublicCallbackUrlWithHash(
+                                    $input['input']['payment']['public_id'],
+                                    'rzp_test_TheTestAuthKey')
+                                ),
+                                'method'  => 'get',
+                                'content' => []
+                            ]
+                        ]
+                    ]
+                ],
+                'error' => null
+            ];
+        }
         if ($input['input']['token'] === null)
         {
             $url = $this->app['api.route']->getPublicCallbackUrlWithHash(
@@ -114,7 +133,7 @@ class Wallet extends WalletBase
             ];
         }
 
-        if (isset($input['input']['gateway']) && $input['input']['gateway']['otp'] === "200000")
+        if (isset($input['input']['gateway']) && isset($input['input']['gateway']['otp']) && $input['input']['gateway']['otp'] === "200000")
         {
             return [
                 'response' => null,
@@ -126,7 +145,7 @@ class Wallet extends WalletBase
                 ]
             ];
         }
-        elseif (isset($input['input']['gateway']) && $input['input']['gateway']['type'] === "otp") {
+        elseif (isset($input['input']['gateway']) && isset($input['input']['gateway']['type']) && $input['input']['gateway']['type'] === "otp") {
             return [
                 'response' => [
                     'data' => [
