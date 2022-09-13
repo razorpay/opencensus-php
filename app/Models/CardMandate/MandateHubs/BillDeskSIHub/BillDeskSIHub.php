@@ -51,7 +51,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             $this->mode
         );
 
-        if (strtolower($variant) === 'on') {
+        if ((strtolower($variant) === 'on') and
+            (isset($billDeskInput[Constants::CARD])))
+        {
             unset($billDeskInput[Constants::CARD]);
         }
 
@@ -314,7 +316,9 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         if ($token->card->isRzpSavedCard() == false)
         {
             try {
-                if($token->cardMandate->getVaultTokenPan() !== null)
+                if((isset($token->cardMandate)) and
+                   ($token->cardMandate !== null) and
+                   ($token->cardMandate->getVaultTokenPan() !== null))
                 {
                     $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
 
@@ -324,7 +328,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
                 {
                     $tokenInput = $token->card->buildTokenisedTokenForMandateHub();
 
-                    (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $tokenInput);
+                    if((isset($token->cardMandate)) and
+                       ($token->cardMandate !== null))
+                    {
+                        (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $tokenInput);
+                    }
                 }
                 $networkToken = $tokenInput['token'];
                 $tokenData = array_merge($inputResponse[Constants::TOKEN], $networkToken);
