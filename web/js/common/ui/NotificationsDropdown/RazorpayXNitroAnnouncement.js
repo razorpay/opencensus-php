@@ -613,6 +613,7 @@ class DetailView extends React.Component {
         cta_text: 'Get Offer Now',
         pageUrl: window.location.href,
         formId: 'NitroV1-Bangalore-v1',
+        trackingID: 'NitroV1-Bangalore-v1',
         status,
         form_version: this.props.user.isNitroFormFillEnabled ? 'with_fields' : 'without_fields',
         ...nitroCampaignId(),

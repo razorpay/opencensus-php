@@ -71,7 +71,7 @@ export default class AnnouncementDetails extends React.Component {
     const { id, tracking } = this.props;
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.card.l2.display', {
-        card_id: id,
+        trackingID: id,
         title: this.props.announcements?.find((notification) => notification.id === id)?.l2_content
           ?.title,
         whats_new: isWhatsNewSection(id),

@@ -33,7 +33,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         cta_text: label,
         pageUrl: window.location.href,
-        id,
+        trackingID: id,
       }),
     );
   };
@@ -55,7 +55,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         cta_text: label,
         pageUrl: window.location.href,
-        id,
+        trackingID: id,
       }),
     );
   };

@@ -366,7 +366,7 @@ class WhatsNew extends Component {
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('dashboard.click.notification.tab', {
-        ID,
+        trackingID: ID,
         readID,
         unreadID,
         experimentVersion: getExperimentVersion(user),
@@ -390,21 +390,32 @@ class WhatsNew extends Component {
     });
   };
 
-  trackEvents = (value, url, type, id, notification) => {
+  trackEvents = (value, url, type, id, notification, image_url, video_url) => {
     const { tracking, user } = this.props;
 
     const eventName =
       type === 'button'
         ? 'dashboard.click.notification.card.cta1'
         : 'dashboard.click.notification.card.cta2';
+    let mediaType = '';
+    if (image_url && video_url) {
+      mediaType = 'video&image';
+    } else if (image_url) {
+      mediaType = 'only-image';
+    } else if (video_url) {
+      mediaType = 'only-video';
+    } else {
+      mediaType = 'no-media';
+    }
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(eventName, {
         CTAValue: value,
         url,
         ...getNotificationTrackingProperties(notification, eventName),
-        id,
+        trackign_ID: id,
         lazy: true,
         growth_service: user.isGSAnnouncementsEnabled,
+        mediaType,
       }),
     );
   };
@@ -443,7 +454,7 @@ class WhatsNew extends Component {
         const eventName = 'dashboard.click.notification.card.viewed';
         this.props.tracking.trackEvent(
           window.rzpQ.merchantActions().success(eventName, {
-            Card_ID: cardElement.getAttribute('id'),
+            trackingID: cardElement.getAttribute('id'),
             position,
             ...getNotificationTrackingProperties(
               this.props.announcements[index],
@@ -572,7 +583,7 @@ const NotificationCard = ({
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().success('dashboard.notification_section.card.display', {
-        card_id: id,
+        trackingID: id,
         video_url,
         ...(whatsNew && { whats_new: true }),
       }),
@@ -612,7 +623,7 @@ const NotificationCard = ({
       const eventName = 'dashboard.click.notification.card.viewed';
       tracking.trackEvent(
         window.rzpQ.merchantActions().success(eventName, {
-          Card_ID: id,
+          trackingID: id,
           position: index + 1,
           ...getNotificationTrackingProperties(notificationRef[index], eventName),
         }),

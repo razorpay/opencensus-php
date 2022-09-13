@@ -51,7 +51,7 @@ const GrowthServiceModal = ({
     growthServiceCTAHandler(gs_modals?.offer_cta?.handler, history, tracking_id);
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
-        id: gs_modals?.id ? gs_modals?.id : tracking_id,
+        trackingID: gs_modals?.id || tracking_id,
         cta_text: gs_modals?.footer_data?.label,
         pageUrl: window.location.href,
       }),

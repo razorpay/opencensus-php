@@ -19,7 +19,7 @@ function _track(source, user) {
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_banner_cta1', {
         mode,
         banner_text: bannerText,
-        card_id: cardId,
+        trackingID: cardId,
         cta_value: cta1Text,
         link_url: cta1Link,
         source,

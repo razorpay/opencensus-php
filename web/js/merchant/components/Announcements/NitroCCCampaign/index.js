@@ -23,7 +23,7 @@ function _track(source, merchant_id) {
       window.rzpQ.merchantActions().success('merchant_dashboard.display_banner', {
         mode,
         banner_text: bannerText,
-        card_id: cardId,
+        trackingID: cardId,
         source,
         merchant_id,
       }),
@@ -35,7 +35,7 @@ function _track(source, merchant_id) {
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_banner_cta1', {
         mode,
         banner_text: bannerText,
-        card_id: cardId,
+        trackingID: cardId,
         cta_value: cta1Text,
         source,
         merchant_id,

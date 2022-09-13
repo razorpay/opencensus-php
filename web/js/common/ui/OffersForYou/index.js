@@ -50,7 +50,7 @@ const OffersForYou = ({
       const id = exclusive_offers?.id ? exclusive_offers.id : getCampaignID();
       tracking.trackEvent(
         window.rzpQ.merchantActions().success(eventName, {
-          ID: id,
+          trackingID: id,
           flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
           ...getAssetTrackingProperties(id, exclusive_offers.tracking_data, {}, eventName),
         }),
@@ -172,7 +172,7 @@ const OffersForYou = ({
 
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_offer_for_you', {
-        ID: exclusive_offers?.id ? exclusive_offers.id : getCampaignID(),
+        trackingID: exclusive_offers?.id || getCampaignID(),
         flow_type: user.isPartOfNeostone ? 'self_serve' : 'sales_led',
       }),
     );

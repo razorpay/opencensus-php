@@ -38,7 +38,7 @@ const BannerComponent = ({
   const trackingData = {
     title,
     banner_text: content?.description,
-    card_id: id,
+    trackingID: id,
     source: fromWhere,
     ...getAssetTrackingProperties(id, tracking_data),
   };

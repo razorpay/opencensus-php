@@ -86,7 +86,7 @@ export const getAssetTrackingProperties = (
 
   const growth_event_type = getGrowthEventTypeFromEvent(event_name);
   return {
-    id,
+    trackingID: id,
     campaign,
     campaign_description,
     version: sub_campaign || version,

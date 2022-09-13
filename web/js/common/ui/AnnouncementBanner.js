@@ -74,7 +74,7 @@ class Announcement extends Component {
         this.timeoutID = setTimeout(() => {
           const { card_id, tracking, trackingData } = this.props;
           const title = this.getTitle();
-          const payload = trackingData ? { ...trackingData } : { title, card_id };
+          const payload = trackingData ? { ...trackingData } : { title, trackingID: card_id };
           const eventName = 'merchant_dashboard.impression_banner';
           tracking?.trackEvent(
             window.rzpQ?.merchantActions().success(eventName, {
@@ -93,7 +93,9 @@ class Announcement extends Component {
     const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
     const title = this.getTitle();
     const banner_text = bannerContainer?.querySelector('.content')?.textContent;
-    const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
+    const payload = trackingData
+      ? { ...trackingData }
+      : { title, trackingID: card_id, banner_text };
 
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().success('merchant_dashboard.display_banner', payload),
@@ -116,7 +118,9 @@ class Announcement extends Component {
     const bannerContainer = document.getElementById(`announcement-banner-${card_id}`);
     const title = this.getTitle();
     const banner_text = bannerContainer?.querySelector('.content')?.textContent;
-    const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
+    const payload = trackingData
+      ? { ...trackingData }
+      : { title, trackingID: card_id, banner_text };
     const eventName = 'merchant_dashboard.banner_close';
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().success(eventName, {
@@ -132,7 +136,7 @@ class Announcement extends Component {
     this.setState({
       hovered: true,
     });
-    const payload = trackingData ? { ...trackingData } : { title, card_id };
+    const payload = trackingData ? { ...trackingData } : { title, trackingID: card_id };
     const eventName = 'merchant_dashboard.hover_banner';
     tracking.trackEvent(
       window.rzpQ?.merchantActions().success(eventName, {
@@ -171,7 +175,9 @@ class Announcement extends Component {
     const title = this.getTitle();
     const banner_text = e.target?.closest('.content')?.textContent;
     const cta_value = e.target?.textContent?.trim();
-    const payload = trackingData ? { ...trackingData } : { title, card_id, banner_text };
+    const payload = trackingData
+      ? { ...trackingData }
+      : { title, trackingID: card_id, banner_text };
 
     tracking?.trackEvent(
       window.rzpQ?.merchantActions().initiated('merchant_dashboard.click_banner_cta', {

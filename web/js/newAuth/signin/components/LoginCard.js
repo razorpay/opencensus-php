@@ -14,7 +14,7 @@ const LoginCard = ({ cardData, cardOrder }) => {
       if (window.rzpQ.push) {
         window.rzpQ.push(
           window.rzpQ.onbr().success('login.non_login_card.hover', {
-            CardID: id,
+            trackingID: id,
             mode: 'live',
           }),
         );
@@ -30,7 +30,7 @@ const LoginCard = ({ cardData, cardOrder }) => {
           action: `click Promotion ${cardOrder} CTA`,
           mode: 'live',
           promotion_title: title,
-          CardID: id,
+          trackingID: id,
         }),
       );
     }
@@ -40,7 +40,7 @@ const LoginCard = ({ cardData, cardOrder }) => {
     if (window.rzpQ.push) {
       window.rzpQ.push(
         window.rzpQ.onbr().success('login.non_login_card.shown', {
-          CardID: id,
+          trackingID: id,
           mode: 'live',
         }),
       );

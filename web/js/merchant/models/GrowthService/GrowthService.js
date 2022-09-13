@@ -66,7 +66,7 @@ export default class GrowthService extends GenericEntity {
           assetEntry.templates.forEach((template) => {
             Object.assign(assetEntry.tracking_data, {
               template_id: template.id,
-              channel_id: template.channel_id,
+              channel_id,
             });
             assetData.push({
               ...template.data,
