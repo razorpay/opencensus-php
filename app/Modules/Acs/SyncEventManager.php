@@ -41,6 +41,8 @@ class SyncEventManager
 
     public $syncDeviationAsvClient;
 
+    public $repo;
+
 
     // accountIds are stored as [id => [outboxJob1, outboxJob2, ...]]
     protected $liveAccountIds = [];
@@ -55,6 +57,7 @@ class SyncEventManager
         $this->outbox = $this->app['outbox'];
         $this->splitzService =  $this->app['splitzService'];
         $this->syncDeviationAsvClient = new AsvClient\SyncAccountDeviationAsvClient();
+        $this->repo = $this->app['repo'];
     }
 
     public function __destruct()
@@ -188,6 +191,31 @@ class SyncEventManager
         $asvSplitzExperimentId = $this->app['config']->get('applications.acs.splitz_experiment_id');
 
         foreach ($this->liveAccountIds as $accountId => $outboxJobs) {
+
+            // We record an account id to report a change to ASV if any save entity function is called on one of the
+            // merchant entities, however, one or more save function can exist in a transaction. If one of the save
+            // call fails, entire transaction is reverted. However, in this case, account_id can be recorded from one
+            // of the previous save calls. Giving us an account_id that does not exist in DB, and an unnecessary call to
+            // ASV. This call is also recorded a false error, increases error rates on ASV.
+            try {
+                $this->trace->info(TraceCode::ASV_FIND_ACCOUNT_IN_DB, ['id' => $accountId]);
+
+                $this->repo->merchant->findOrFail($accountId);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ASV_COULD_NOT_FIND_ACCOUNT,
+                    [
+                        'id'  => $accountId,
+                    ]
+                );
+
+                continue;
+            }
+
             foreach ($outboxJobs as $outboxJob)  {
                 switch ($outboxJob) {
                     case SyncEventObserver::ACS_OUTBOX_JOB_NAME:

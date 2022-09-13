@@ -7156,6 +7156,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ASV_SPLITZ_REQUEST                                    = 'ASV_SPLITZ_REQUEST';
     const ASV_SPLITZ_RESPONSE                                   = 'ASV_SPLITZ_RESPONSE';
     const ASV_SPLITZ_ERROR                                      = 'ASV_SPLITZ_ERROR';
+    const ASV_COULD_NOT_FIND_ACCOUNT                            = 'ASV_COULD_NOT_FIND_ACCOUNT';
+    const ASV_FIND_ACCOUNT_IN_DB                                = 'ASV_FIND_ACCOUNT_IN_DB';
 
 
     # Onboarding APIs

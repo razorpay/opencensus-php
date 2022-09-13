@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Modules\Acs;
 
 use Config;
+use Mockery;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Email;
@@ -129,50 +130,63 @@ class SyncEventManagerTest extends TestCase
         $manager->expects($this->never())
             ->method('publishOutboxJob');
         $manager->publishOutboxJobs($metadata);
-        // T1 ends
+         //T1 ends
 
         // T2 starts - Sync Deviation Call - Off
-        $liveAccountIds = ['Live1'];
+        $merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepoMock->shouldReceive('findOrFail')->with("7thBRSDf3F7NHL")->andReturn("");
+        $liveAccountIds = ['7thBRSDf3F7NHL'];
         $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, [], ['isSplitzOn', 'publishOutboxJob'], $allOutboxJobs);
         $acsPayload = array_merge(['account_id' => $liveAccountIds[0]], $acsBasePayload);
         $credcasePayload = array_merge(['owner_id' => $liveAccountIds[0]], $credcaseBasePayload);
-        $manager->expects($this->exactly(1))->method('isSplitzOn')->withConsecutive([$asvSplitzExperimentId, 'Live1'])->willReturn(false);
+        $manager->expects($this->exactly(1))->method('isSplitzOn')->withConsecutive([$asvSplitzExperimentId, '7thBRSDf3F7NHL'])->willReturn(false);
         $manager->expects($this->exactly(2))
             ->method('publishOutboxJob')
             ->withConsecutive(
                 [$acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME, $acsPayload, Mode::LIVE, $metadata],
                 [$credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME, $credcasePayload, Mode::LIVE, $metadata]
             );
+
+        $manager->repo->merchant = $merchantRepoMock;
         $manager->publishOutboxJobs($metadata);
         // T2 ends
 
         // T3 starts - Sync Deviation Call - On - Successfully Synced
-        $liveAccountIds = ['Live1'];
+        $merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepoMock->shouldReceive('findOrFail')->with("7thBRSDf3F7NHD")->andReturn("");
+        $liveAccountIds = ['7thBRSDf3F7NHD'];
         $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, [], ['isSplitzOn','syncAccountDeviation', 'publishOutboxJob'], [SyncEventObserver::ACS_OUTBOX_JOB_NAME]);
         $acsPayload = array_merge(['account_id' => $liveAccountIds[0]], $acsBasePayload);
-        $manager->expects($this->exactly(1))->method('isSplitzOn')->withConsecutive([$asvSplitzExperimentId, 'Live1'])->willReturn(true);
+        $manager->expects($this->exactly(1))->method('isSplitzOn')->withConsecutive([$asvSplitzExperimentId, '7thBRSDf3F7NHD'])->willReturn(true);
         $manager->expects($this->exactly(1))->method('syncAccountDeviation')->withConsecutive([$acsSyncEnabled, $acsPayload, Mode::LIVE, $metadata])->willReturn(true);
         $manager->expects($this->never())
             ->method('publishOutboxJob');
+        $manager->repo->merchant = $merchantRepoMock;
         $manager->publishOutboxJobs($metadata);
         // T3 ends
 
 
         // T4 starts - Sync Deviation Call - On - Failed to Sync - Push to Outbox
-        $liveAccountIds = ['Live1'];
+        $merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepoMock->shouldReceive('findOrFail')->withAnyArgs()->andReturn("");
+        $liveAccountIds = ['7thBRSDf3F7NHL'];
         $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, [], ['isSplitzOn','syncAccountDeviation', 'publishOutboxJob'], [SyncEventObserver::ACS_OUTBOX_JOB_NAME]);
         $acsPayload = array_merge(['account_id' => $liveAccountIds[0]], $acsBasePayload);
-        $manager->expects($this->exactly(1))->method('isSplitzOn')->withConsecutive([$asvSplitzExperimentId, 'Live1'])->willReturn(true);
+        $manager->expects($this->exactly(1))->method('isSplitzOn')->withConsecutive([$asvSplitzExperimentId, '7thBRSDf3F7NHL'])->willReturn(true);
         $manager->expects($this->exactly(1))->method('syncAccountDeviation')->withConsecutive([$acsSyncEnabled, $acsPayload, Mode::LIVE, $metadata])->willReturn(false);
         $manager->expects($this->exactly(1))
             ->method('publishOutboxJob')
             ->withConsecutive(
                 [$acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME, $acsPayload, Mode::LIVE, $metadata]
             );
+        $manager->repo->merchant = $merchantRepoMock;
         $manager->publishOutboxJobs($metadata);
-        // T4 ends
+         //T4 ends
+
 
         // T5 starts - For Test Account Ids
+        $merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepoMock->shouldNotReceive('findOrFail')->withAnyArgs()->andReturn("");
         $testAccountIds = ['Test1'];
         $manager = $this->getMockedManagerWithAccountIds([], $testAccountIds, ['isSplitzOn','syncAccountDeviation', 'publishOutboxJob'], $allOutboxJobs);
         $manager->expects($this->never())
@@ -181,10 +195,13 @@ class SyncEventManagerTest extends TestCase
             ->method('isSplitzOn');
         $manager->expects($this->never())
             ->method('syncAccountDeviation');
+        $manager->repo->merchant = $merchantRepoMock;
         $manager->publishOutboxJobs($metadata);
         // T5 ends
 
         // T6 starts - Mix of Live and Test Account Ids
+        $merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepoMock->shouldReceive('findOrFail')->withAnyArgs()->andReturn("");
         $liveAccountIds = ['Live1', 'Live2'];
         $testAccountIds = ['Test1', 'Test2'];
         $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, $testAccountIds, ['isSplitzOn', 'publishOutboxJob'], $allOutboxJobs);
@@ -201,8 +218,25 @@ class SyncEventManagerTest extends TestCase
                 [$acsSyncEnabled, SyncEventObserver::ACS_OUTBOX_JOB_NAME, $acsPayload1, Mode::LIVE, $metadata],
                 [$credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME, $credcasePayload1, Mode::LIVE, $metadata]
             );
+        $manager->repo->merchant = $merchantRepoMock;
         $manager->publishOutboxJobs($metadata);
         // T6 ends
+
+        // T7 do not process call if account not found
+        $merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
+        $merchantRepoMock->shouldReceive('findOrFail')->with("MID1")->andReturn("");
+        $liveAccountIds = ['MID2'];
+        $manager = $this->getMockedManagerWithAccountIds($liveAccountIds, [], ['isSplitzOn','syncAccountDeviation', 'publishOutboxJob'], [SyncEventObserver::ACS_OUTBOX_JOB_NAME]);
+        $acsPayload = array_merge(['account_id' => $liveAccountIds[0]], $acsBasePayload);
+        $manager->expects($this->never())
+            ->method('publishOutboxJob');
+        $manager->expects($this->never())
+            ->method('isSplitzOn');
+        $manager->expects($this->never())
+            ->method('syncAccountDeviation');
+        $manager->repo->merchant = $merchantRepoMock;
+        $manager->publishOutboxJobs($metadata);
+        // T7 end
     }
 
     public function testIsSplitzOn()
