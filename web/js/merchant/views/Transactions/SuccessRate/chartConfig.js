@@ -270,7 +270,8 @@ export const piePlugins = [
 
         point2Y = suitableY;
 
-        const edgePointX = point2X < chartCenterPoint.x ? 50 : chart.width - 50;
+        // Added 15 to prevent overlapping of labels if they are on the same side and too close to each other.
+        const edgePointX = point2X + 15 < chartCenterPoint.x ? 50 : chart.width - 50;
 
         if (point2X < chartCenterPoint.x) {
           leftLabelCoordinates.push(point2Y);

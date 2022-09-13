@@ -3,9 +3,10 @@ import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { getFixedNumber } from 'common/utils/rzp-utils';
 import OverviewGraph from './OverviewGraph';
+import { METHOD_HELP_TEXT } from '../constants';
 
 const MetricsCard = ({ isLoading, metric, isActive }) => {
-  const { title = '', helpText = '', sr = '', overviewHistogram = {} } = metric;
+  const { title = '', sr = '', overviewHistogram = {} } = metric;
   const { datasets = [] } = overviewHistogram;
   const noData = !isLoading && datasets?.length === 0;
 
@@ -14,12 +15,12 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
       {!isLoading ? (
         <div className="metrics-card__title">
           <p className="display-text">{title}</p>
-          {isActive && helpText && (
+          {isActive && (
             <small className="help-content">
-              <i class="i i-help-outline" />
+              <i className="i i-help-outline" />
               <Popover align="right">
                 <PopoverBody>
-                  <div>{helpText}</div>
+                  <div>{METHOD_HELP_TEXT}</div>
                 </PopoverBody>
               </Popover>
             </small>

@@ -20,7 +20,6 @@ import {
   tabsOrder,
   tabMeta,
   metricsCard,
-  tabsHelpTextMap,
   tabsTitleMap,
   SR_FILTERS,
 } from 'merchant/views/Transactions/SuccessRate/constants';
@@ -258,7 +257,6 @@ const getInitialState = () => {
       ...metricsCard,
       name: tabName,
       title: tabsTitleMap[tabName],
-      helpText: tabsHelpTextMap[tabName],
     };
     state.tabs[tabName] = {
       ...tabMeta,

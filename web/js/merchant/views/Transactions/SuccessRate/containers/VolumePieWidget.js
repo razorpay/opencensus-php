@@ -19,7 +19,7 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
     <div key={`${name}___${index}`} className="col-md-4 info-card">
       <StyledHeader text={label} />
       <div className="info-card__label">
-        <p className="label-text">Successful / Total Attempts</p>
+        <p className="label-text">Successful / Total attempts</p>
       </div>
       <div className="info-card__value">
         <p>
@@ -53,7 +53,7 @@ const VolumePieWidget = (props) => {
       <div className="row">
         <div className="col-sm-12 col-md-5">
           <div className="chart-col">
-            <StyledHeader text="Volume of attempts" />
+            <StyledHeader text="Overall payment attempts" />
             {!isEmpty(compactData) && (
               <div className="pie-chart">
                 <Pie data={pieChartData} options={options} plugins={plugins} />
@@ -80,7 +80,7 @@ const VolumePieWidget = (props) => {
                   <PlaceholderLoader />
                 ) : (
                   <div className="info-card__label">
-                    <p className="label-text">Successful / Total Attempts</p>
+                    <p className="label-text">Successful / Total attempts</p>
                   </div>
                 )}
                 {isLoading ? (

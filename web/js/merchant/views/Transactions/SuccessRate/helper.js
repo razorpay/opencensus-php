@@ -293,13 +293,15 @@ export const getMetricsData = ({ metrics, data, payload, breakdown, group_by }) 
 };
 
 export const getSuitableY = (y, yArray = [], direction) => {
+  const offset = 10;
   let result = y;
+
   yArray.forEach((existedY) => {
-    if (existedY - 14 < result && existedY + 14 > result) {
+    if (existedY - offset < result && existedY + offset > result) {
       if (direction === 'right') {
-        result = existedY + 14;
+        result = existedY + offset;
       } else {
-        result = existedY - 14;
+        result = existedY - offset;
       }
     }
   });
@@ -322,7 +324,7 @@ export const getPieChartData = (groupData = []) => {
       if (!datapoint?.sr) return accumulator;
       const _backgroundColor = pieChartStyle?.[idx]?.backgroundColor ?? backgroundColor;
       const _borderColor = pieChartStyle?.[idx]?.borderColor ?? borderColor;
-      const percentage = (datapoint?.successful / totalSum) * 100 || 0;
+      const percentage = (datapoint?.total / totalSum) * 100 || 0;
       const percentageValue = percentage.toFixed(2);
       const label = getTagLabel(datapoint?.name);
       accumulator?.labels?.push(label);

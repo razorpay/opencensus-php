@@ -31,7 +31,7 @@ function VTab(props) {
         <ReasonsPanel
           isLoading={isLoading}
           title={title}
-          heading={`Payment failures: ${title}`}
+          heading={`Top payment failure reasons: ${title}`}
           data={content}
         />
       </TabContent>

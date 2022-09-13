@@ -21,7 +21,7 @@ const GraphIntervals = (props) => {
         return (
           <Btn key={`${item.value}_${index}`} {...btnProps}>
             <span>{item.title}</span>
-            {!isEnabled && <GenericTooltip align="bottom">{item.disabledText}</GenericTooltip>}
+            {!isEnabled && <GenericTooltip align="top">{item.disabledText}</GenericTooltip>}
           </Btn>
         );
       })}

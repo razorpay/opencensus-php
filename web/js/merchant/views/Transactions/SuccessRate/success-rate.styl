@@ -206,14 +206,14 @@ $spacer = 8px
   align-items: center
   flex-wrap: wrap
   flex-basis: 60%
+  gap: $spacer
 
   &__item
     display: inline-block
     font-size: 14px
     font-weight: normal
     line-height: 20px
-    margin-right: $spacer
-    margin-bottom: $spacer
+    margin-bottom: 0
     cursor: pointer
 
     input[type="checkbox"],
@@ -297,7 +297,7 @@ $spacer = 8px
     &:first-child .styled-header
       color: $border-blue
 
-.sr-dashboard .reasons-container
+.sr-dashboard .box-widget.reasons-container
   padding: 0
 
   .rp-panel

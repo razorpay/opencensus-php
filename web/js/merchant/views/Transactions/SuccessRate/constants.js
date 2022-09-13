@@ -36,6 +36,7 @@ export const TAG_MAP = {
   debit: 'Debit',
   prepaid: 'Prepaid',
   others: 'Others',
+  MasterCard: 'Mastercard',
 };
 
 export const TAG_OVERALL_MAP = {
@@ -44,7 +45,7 @@ export const TAG_OVERALL_MAP = {
   upi_type: 'All flows',
   network: 'All networks',
   issuer: 'All banks',
-  type: 'All cards type',
+  type: 'All cards types',
   bank: 'All banks',
 };
 
@@ -59,16 +60,8 @@ export const tabsTitleMap = {
   Netbanking: 'Netbanking',
 };
 
-export const tabsHelpTextMap = {
-  Overall:
-    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
-  UPI:
-    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
-  Card:
-    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
-  Netbanking:
-    'The success rate of a transaction is measured as a percentage based on the number of successful transactions divided by the total number of transactions.',
-};
+export const METHOD_HELP_TEXT =
+  'The percentage of attempted transactions that ended with a successful payment transfer for all payment methods. Calculated as successful payments/total attempted transactions.';
 
 export const tabMeta = {
   name: '',
@@ -98,13 +91,13 @@ export const graphIntervals = {
   hourly: {
     value: 'hourly',
     title: 'Hourly',
-    disabledText: 'Only available for minimum 6 hours till maximum 1 day (24 hours) duration',
+    disabledText: 'Hourly data is available only if selected date range is less than 1 day',
     isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') <= 1,
   },
   daily: {
     value: 'daily',
     title: 'Daily',
-    disabledText: 'Only available minimum 2 days to maximum 24 days duration',
+    disabledText: 'Daily data is available only if selected date range is between 2 and 14 days',
     isEnabled: (startDate, endDate) => {
       const diff = endDate.diff(startDate, 'days');
       return diff > 1 && diff <= 14;
@@ -113,7 +106,7 @@ export const graphIntervals = {
   weekly: {
     value: 'weekly',
     title: 'Weekly',
-    disabledText: 'Available for minimum 14 days duration',
+    disabledText: ' Weekly data is available only if selected date range is between 14 and 90 days',
     isEnabled: (startDate, endDate) => {
       const diff = endDate.diff(startDate, 'days');
       return diff >= 14;
@@ -123,7 +116,7 @@ export const graphIntervals = {
     value: 'monthly',
     isEnabled: (startDate, endDate) => endDate.diff(startDate, 'days') >= 60,
     title: 'Monthly',
-    disabledText: 'Available for minimum 60 days duration',
+    disabledText: ' Monthly data is available only if selected date range is more than 2 months',
   },
 };
 
@@ -265,13 +258,13 @@ export const ERROR_CATEGORIES_VS_DISPLAY_TEXT = {
 
 export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
   [ERROR_CATEGORIES.CUSTOMER]:
-    "Customer-related failures occur from the customer's side, like customer cancellations, incorrect CVV, insufficient funds.",
+    'These payment failures may happen due to incorrect card details or OTP, insufficient bank balance, or payment cancellation by the customer.',
   [ERROR_CATEGORIES.BANKING]:
-    'Banking-related failures occur due to issues at the customer’s bank, UPI app, wallets.',
+    'These failures happen due to technical or system issues at the customer’s bank end.',
   [ERROR_CATEGORIES.BUSINESS]:
-    'Business-related failures occur due to the non-activation of payment methods, international payments.',
+    'These failures may happen due to technical issues from your end such as non-activation of a payment method, or international payments.',
   [ERROR_CATEGORIES.OTHER]:
-    'Other failures include errors due to fraud detection, internal provider issues.',
+    'These failures may happen due to provider or security issues such as fraud detections.',
 };
 
 /******************************************************************************************/
@@ -281,7 +274,7 @@ export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
 export const CARD_GROUPING_DATA = [
   {
     value: 'type',
-    text: 'Card Type',
+    text: 'Card Types',
     query: 'filter',
   },
   {
