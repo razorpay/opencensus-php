@@ -56,6 +56,10 @@
 
   <!-- Preload FA icons CSS -->
   <link rel="preload" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
+  @if(env('APP_ENV') === 'production')
+    <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff2" as="style">
+    <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff" as="style">
+  @endif
 @endif
 
 <!-- head tag ends here -->
