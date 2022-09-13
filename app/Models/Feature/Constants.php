@@ -1105,6 +1105,8 @@ class Constants
 
     const ONE_CC_FB_ANALYTICS = 'one_cc_fb_analytics';
 
+    const ONE_CC_COUPON_DISABLE_COD = 'one_cc_coupon_disable_cod';
+
     const ORG_EMAIL_UPDATE_2FA_ENABLED = 'email_update_2fa_enabled';
 
     const ORG_TPV_DISABLE    = 'axis_tpv';
@@ -1601,7 +1603,8 @@ class Constants
         self::ONE_CC_REPORTING_TEST,
         self::ONE_CLICK_OVERRIDE_THEME,
         self::ONE_CC_INPUT_ENGLISH,
-        self::ONE_CC_STORE_ACCOUNT
+        self::ONE_CC_STORE_ACCOUNT,
+        self::ONE_CC_COUPON_DISABLE_COD,
     ];
 
     const ONE_CC_FEATURES = [
@@ -1615,7 +1618,8 @@ class Constants
         self::ONE_CC_REPORTING_TEST,
         self::ONE_CLICK_OVERRIDE_THEME,
         self::ONE_CC_INPUT_ENGLISH,
-        self::ONE_CC_STORE_ACCOUNT
+        self::ONE_CC_STORE_ACCOUNT,
+        self::ONE_CC_COUPON_DISABLE_COD,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2126,6 +2130,7 @@ class Constants
         self::KFIN_MERCHANT_REPORT            => true,
         self::NETBANKING_CORPORATE_DELAY_REFUND => false,
         self::ONE_CC_STORE_ACCOUNT            => true,
+        self::ONE_CC_COUPON_DISABLE_COD       => true,
         self::CAMS_MERCHANT_REPORT            => true,
         self::ICICI_2FA                       => true,
         self::BSE_MERCHANT_REPORT             => true,
