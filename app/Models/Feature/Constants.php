@@ -2949,6 +2949,11 @@ class Constants
             'display_name'  => 'Disable Non-3ds card processing',
             'documentation' => '',
         ],
+        self::ICICI_2FA => [
+            'feature'       => self::ICICI_2FA,
+            'display_name'  => 'Feature for enabling ICICI 2FA flow for payouts',
+            'documentation' => '',
+        ],
     ];
 
     /**
