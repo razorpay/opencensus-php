@@ -3751,7 +3751,10 @@ class Processor
         if ($method_result !== 'on'){
             return;
         }
-
+        if ( $payment->isCard() === true && $payment->isGatewayCaptured() === false)
+        {
+            return;
+        }
         $gateway_result = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
         $demo_merchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
 
