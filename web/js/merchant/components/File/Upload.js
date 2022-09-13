@@ -333,6 +333,7 @@ export default class FileUpload extends React.Component {
       removeFileButtonLabel,
       hideLoader,
       customClassName = '', // for adding custom css over the fileupload component
+      isDragDropDisabled,
     } = this.props;
     const { isDocPreUploaded } = this.state;
 
@@ -360,7 +361,7 @@ export default class FileUpload extends React.Component {
           <label
             className={classList(
               'Dropzone-cavity',
-              this.state.isFileDraggedInside && 'Dropzone-cavity--highlight',
+              this.state.isFileDraggedInside && !isDragDropDisabled && 'Dropzone-cavity--highlight',
             )}
             onClick={() => {
               window.rzpAnalytics?.({
@@ -370,9 +371,11 @@ export default class FileUpload extends React.Component {
               });
             }}
             for={`fileInput-${name}`}
-            onDrop={isDocPreUploaded ? undefined : this.handleDrop}
-            onDragOver={isDocPreUploaded ? undefined : this.handleDragOver}
-            onDragEnter={isDocPreUploaded ? undefined : this.toggleDragWithFile}
+            onDrop={isDocPreUploaded || isDragDropDisabled ? undefined : this.handleDrop}
+            onDragOver={isDocPreUploaded || isDragDropDisabled ? undefined : this.handleDragOver}
+            onDragEnter={
+              isDocPreUploaded || isDragDropDisabled ? undefined : this.toggleDragWithFile
+            }
           >
             <div className={`Dropzone-content ${size}`}>
               {!children ? (

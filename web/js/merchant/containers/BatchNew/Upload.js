@@ -35,11 +35,11 @@ class BatchUpload extends Component {
     batch: null,
   };
 
-  handleValidation = (batch, batchName) => {
+  handleValidation = (batch, batchName, status) => {
     this.setState({
       batch,
       batchName,
-      currentStatus: 'create',
+      currentStatus: status,
     });
   };
 
@@ -55,7 +55,7 @@ class BatchUpload extends Component {
   };
 
   componentDidMount() {
-    this.props.gaEvents.trackUploadBatch('Open');
+    this.props.gaEvents?.trackUploadBatch('Open');
   }
 
   onModalClose = () => {
@@ -98,6 +98,12 @@ class BatchUpload extends Component {
       successText,
       batchListClass,
       pendingText,
+      disabled,
+      processFile,
+      modalActions,
+      displayMsgs,
+      isDragDropDisabled,
+      hideCloseBtn,
     } = this.props;
 
     const { batchName, batch, currentStatus } = this.state;
@@ -132,6 +138,12 @@ class BatchUpload extends Component {
                   acceptFileInfo={acceptFileInfo}
                   modalInfo={validateModalInfo}
                   component={component}
+                  disabled={disabled}
+                  modalActions={modalActions}
+                  processFile={processFile}
+                  displayMsgs={displayMsgs}
+                  isDragDropDisabled={isDragDropDisabled}
+                  hideCloseBtn={hideCloseBtn}
                 />
               );
             case 'create':
