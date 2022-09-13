@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { Link } from 'react-router-dom';
+import moment from 'moment';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
@@ -15,6 +16,7 @@ import Alert from 'common/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Banner from 'common/ui/Banner';
 import ProcessInvoice from './ProcessInvoice';
+import store from 'merchant/store';
 
 import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
 
@@ -48,7 +50,7 @@ const Columns = {
         </small>
       </>
     ),
-    value: (item) => <Amount value={item.gross_amount} currency={'INR'} />,
+    value: (item) => <Amount value={item.gross_amount} currency="INR" />,
   },
 
   ProcessInvoice: {
@@ -62,8 +64,21 @@ const Columns = {
   fetchCommissionInvoices,
 })
 class CommissionInvoicesList extends ListContainer {
+  updateParams = (params) => {
+    const user = store.getState().session.user;
+    const { isShowInvoiceCurrentFY } = user;
+    const newParams = { ...params };
+    // range for a financial year (excluding April)
+    if (isShowInvoiceCurrentFY) {
+      newParams.from = moment().month('May').startOf('month').unix();
+      newParams.to = moment().add(1, 'year').month('March').endOf('month').unix();
+    }
+
+    return newParams;
+  };
+
   fetchEntityList(params) {
-    return this.props.fetchCommissionInvoices(params);
+    return this.props.fetchCommissionInvoices(this.updateParams(params));
   }
 
   render() {
@@ -74,8 +89,8 @@ class CommissionInvoicesList extends ListContainer {
       <>
         <div className="TestModeBanner">
           <Banner>
-            <i className="i i-info-outline" />&nbsp; Invoices are generated only if the monthly
-            commission is greater than 1 Rupee
+            <i className="i i-info-outline" />
+            &nbsp; Invoices are generated only if the monthly commission is greater than 1 Rupee
           </Banner>
         </div>
         <div class="content-wrapper">

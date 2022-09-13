@@ -1680,6 +1680,11 @@ export default class User {
       getSplitzExperimentVariant('shopify_reports_transactions_page')?.variables?.result === 'on'
     );
   }
+
+  get isShowInvoiceCurrentFY() {
+    const variant = getSplitzExperimentVariant('invoice_currentFY');
+    return variant?.name === 'exposed';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
