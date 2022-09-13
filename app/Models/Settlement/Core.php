@@ -792,8 +792,6 @@ class Core extends Base\Core
                                     Constants::ES_AUTOMATIC_THREE_PM,
                                 ] , $mode);
 
-        $scheduleMapping = $this->getScheduleMappingForMethodNewService($merchant, $mode, $featureResult);
-
         try
         {
             $response = app('settlements_api')->migrateMerchantConfigCreate($req, $mode);
@@ -802,11 +800,42 @@ class Core extends Base\Core
             $response =  app('settlements_api')->merchantConfigGet($req, $mode);
         }
 
-        foreach ($scheduleMapping as $type => $methods)
-        {
-            foreach ($methods as $method => $scheduleId)
-            {
-                $response['config']['schedules'][$type][$method] = $scheduleId;
+        $setSchedulesFromParentConfig = false;
+
+        $parentMerchantID = $merchant->getParentId();
+
+        if(empty($parentMerchantID) === false) {
+            $setSchedulesFromParentConfig = true;
+        }
+
+        // if a parent is present use Parent's schedules
+        if($setSchedulesFromParentConfig) {
+            $parentReq = [
+                'merchant_id' => $parentMerchantID
+            ];
+            try {
+                $parentConfig = app('settlements_api')->merchantConfigGet($parentReq, $mode);
+                $this->trace->debug(TraceCode::SETTING_SCHEDULES_FROM_PARENT, [
+                    'schedules' => $parentConfig['config']['schedules']
+                ]);
+                $response['config']['schedules'] = $parentConfig['config']['schedules'];
+            } catch (\Throwable $e) {
+                $this->trace->info(
+                    TraceCode::FAILED_TO_FETCH_PARENT_MERCHANT_CONFIG,
+                    [
+                        'merchant_id' => $merchant->getId(),
+                        'parent_id' => $parentMerchantID,
+                        'mode' => $mode,
+                    ]);
+                throw new Exception\LogicException(SettlementServiceMigration::FAILED_TO_FETCH_PARENT_CONFIG);
+            }
+
+        } else {
+            $scheduleMapping = $this->getScheduleMappingForMethodNewService($merchant, $mode, $featureResult);
+            foreach ($scheduleMapping as $type => $methods) {
+                foreach ($methods as $method => $scheduleId) {
+                    $response['config']['schedules'][$type][$method] = $scheduleId;
+                }
             }
         }
 

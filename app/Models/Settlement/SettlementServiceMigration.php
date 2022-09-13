@@ -16,6 +16,8 @@ class SettlementServiceMigration
 
     const NO_SCHEDULE_MAPPING_PRESENT = 'no schedule mapping present';
 
+    const FAILED_TO_FETCH_PARENT_CONFIG = 'failed to fetch parent config';
+
     const REGEX_MATCH_FAILURE_FOR_MERCHANT = 'regex match failing for merchant bank account name';
 
     const scheduleIdMapping = [
