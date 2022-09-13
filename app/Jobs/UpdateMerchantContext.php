@@ -90,9 +90,9 @@ class UpdateMerchantContext extends Job
                     'bvs_validation_id' => $this->validationId,
                     'attempts'          => $this->attempts()
                 ]);
-        }
 
-        $this->checkRetry();
+            $this->checkRetry();
+        }
     }
 
     /**
