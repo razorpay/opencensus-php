@@ -39,8 +39,15 @@ class ValidationBaseResponseV2 implements Response
     {
         $responseData = [
             Entity::VALIDATION_ID     => $this->response->getValidationId(),
-            Entity::VALIDATION_STATUS => $this->response->getStatus(),
+            Entity::VALIDATION_STATUS => $this->response->getStatus()
         ];
+
+        if (empty($this->response->getRuleExecutionList()) === false)
+        {
+            $ruleExecutionList = json_decode($this->response->getRuleExecutionList()->serializeToJsonString(), true);
+
+            $responseData[Constant::RULE_EXECUTION_LIST] = $ruleExecutionList;
+        }
 
         if ($enrichmentDetails === true)
         {

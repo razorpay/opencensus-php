@@ -47,6 +47,9 @@ class CreateBvsValidationTable extends Migration
             $table->integer(Entity::UPDATED_AT);
 
             $table->index([Entity::OWNER_ID]);
+
+            $table->integer(Entity::FUZZY_SCORE)
+                  ->nullable();
         });
     }
 

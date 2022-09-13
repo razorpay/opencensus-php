@@ -274,8 +274,40 @@ class Core extends Base\Core
             BvsValidation\Entity::ARTEFACT_TYPE   => $input[Constant::ARTEFACT_TYPE],
             BvsValidation\Entity::VALIDATION_UNIT => $input[Constant::VALIDATION_UNIT],
             BvsValidation\Entity::OWNER_TYPE      => Constant::MERCHANT,
-            BvsValidation\Entity::PLATFORM        => Constant::PG,
+            BvsValidation\Entity::PLATFORM        => Constant::PG
         ];
+
+        $responseData = $response->getResponseData();
+
+        if(isset($responseData[Constant::RULE_EXECUTION_LIST]) === true &&
+            $responseData[Constant::RULE_EXECUTION_LIST] !== null)
+        {
+            $details = $responseData[Constant::RULE_EXECUTION_LIST][Constant::DETAILS];
+            $count = count($details);
+
+            $fuzzy_score = 0;
+
+            for ($counter=0; $counter < $count; $counter++)
+            {
+                $ans = $details[$counter][Constant::RULE_EXECUTION_RESULT][Constant::REMARKS][Constant::MATCH_PERCENTAGE];
+                $fuzzy_score = max($fuzzy_score, $ans);
+            }
+
+            $this->trace->info(TraceCode::BVS_FETCH_FUZZY_SCORE, [
+                'count' => $count,
+                'fuzzyScore' => $fuzzy_score
+                ]);
+
+            $validationObject[BvsValidation\Entity::FUZZY_SCORE ] = $fuzzy_score;
+
+        }
+
+        else
+            {
+            $this->trace->info(TraceCode::BVS_FETCH_FUZZY_SCORE, [
+                'message' => 'Rule execution list is not present in BVS response'
+            ]);
+        }
 
         if (array_key_exists(Constant::OWNER_TYPE, $input) === true)
         {

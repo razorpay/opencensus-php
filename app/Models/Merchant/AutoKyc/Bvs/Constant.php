@@ -57,6 +57,11 @@ class Constant
 
     const ENRICHMENT_DETAIL_FIELDS = "enrichment_details_fields";
 
+    const RULE_EXECUTION_LIST      = 'rule_execution_list';
+    const RULE_EXECUTION_RESULT    = 'rule_execution_result';
+    const REMARKS                  = 'remarks';
+    const MATCH_PERCENTAGE         = 'match_percentage';
+
     const BANK_ACCOUNT             = 'bank_account';
     const ACCOUNT_NUMBER           = 'account_number';
     const IFSC                     = 'ifsc';

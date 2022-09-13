@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -171,6 +172,29 @@ class Repository extends Base\Repository
             ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])
             ->whereNull(Entity::DELETED_AT)
             ->orderBy(Entity::CREATED_AT, 'desc')
+            ->get()
+            ->first();
+    }
+
+    /**
+     * Returns all non deleted documents for given merchantIds
+     *
+     * @param string $merchantId
+     * @param array $documentTypes
+     *
+     * @return mixed
+     */
+    public function findNonDeletedDocumentsForMerchantId(string $merchantId, array $documentTypes, string $connectionType = null)
+    {
+        if($connectionType === null)
+        {
+            $connectionType = ConnectionType::REPLICA;
+        }
+
+        return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereIn(Entity::DOCUMENT_TYPE, $documentTypes)
+            ->whereNull(Entity::DELETED_AT)
             ->get()
             ->first();
     }

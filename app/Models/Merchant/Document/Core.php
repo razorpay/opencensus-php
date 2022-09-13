@@ -20,6 +20,7 @@ use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Detail\Service as DetailService;
 
 class Core extends Base\Core
 {
@@ -153,6 +154,7 @@ class Core extends Base\Core
         $this->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $entity, $validateLock, $document);
 
         return $merchantDetailCore->createResponse($merchantDetails);
+
     }
 
     // Upload the document to s3 bucket save the details in merchant documents table
@@ -332,11 +334,23 @@ class Core extends Base\Core
         foreach ($documents as $document)
         {
             $documentMetaData = [
-                Entity::ID            => $document->getId(),
+                Entity::ID => $document->getId(),
                 Entity::FILE_STORE_ID => $document->getFileStoreId(),
-                Entity::MERCHANT_ID   => $document->getMerchantId(),
-                Entity::CREATED_AT    => $document->getCreatedAt()
+                Entity::MERCHANT_ID => $document->getMerchantId(),
+                Entity::CREATED_AT => $document->getCreatedAt(),
             ];
+
+            //fetch signed url for given file store id and merchant id
+            try {
+                $documentMetaData[Entity::SIGNED_URL] = (new DetailService)->getSignedUrl($document->getFileStoreId(), $document->getMerchantId());
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->info(TraceCode::SIGNED_URL_NOT_FOUND, [
+                    "error"       => $e->getMessage(),
+                    "merchant_id" => $document->getMerchantId()
+                ]);
+            }
 
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
             {

@@ -3384,7 +3384,7 @@ class ActivationTest extends OAuthTestCase
     {
         // feature not being used
         $this->markTestSkipped();
-        
+
         $data = [
             'submitted'             => 1,
             'activation_status'     => 'under_review'

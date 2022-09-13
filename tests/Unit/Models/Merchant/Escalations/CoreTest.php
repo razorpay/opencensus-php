@@ -305,6 +305,11 @@ class CoreTest extends TestCase
             'gstin_verification_status'     => 'verified'
         ]);
 
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => $merchant['id']
+        ]);
+
         $this->createTransaction($merchant->getId(), 'payment', 556000);
 
         (new Escalations\Core())->handleNoDocLimitBreach();
@@ -329,6 +334,11 @@ class CoreTest extends TestCase
         ]);
 
         $randomApplicationId = str_random(14);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => $merchant['id']
+        ]);
 
         $this->fixtures->create('merchant_access_map', [
             'entity_owner_id' => '10000000000000',

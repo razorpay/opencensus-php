@@ -24,6 +24,7 @@ class PoiVerificationTest extends TestCase
     {
         Config::set('applications.kyc.mock', true);
         Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.sync.flow', true);
         Config::set('services.bvs.response', 'success');
         Mail::fake();
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -62,6 +63,11 @@ class PoiVerificationTest extends TestCase
             'merchant_id' => $merchantId,
             'user_id' => $merchantUser->getId(),
             'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => $merchantId
         ]);
 
         return [$merchantDetail];

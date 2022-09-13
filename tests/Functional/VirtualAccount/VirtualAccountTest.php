@@ -3606,6 +3606,7 @@ class VirtualAccountTest extends TestCase
         $closeBy = Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
 
         $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+
         $this->assertEquals($closeBy, $vaCloseByDate);
     }
 

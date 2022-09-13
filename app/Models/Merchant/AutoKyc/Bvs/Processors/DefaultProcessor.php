@@ -282,6 +282,11 @@ class DefaultProcessor implements Processor
 
     protected function requestMode()
     {
+        if ($this->app['config']['services.bvs.sync.flow'] == true)
+        {
+            return Constant::SYNC;
+        }
+
         if ((empty($this->merchant) === true) or
             (empty($this->merchant->getMerchantId()) === true) or
             (empty($this->experimentMap) === true) or
@@ -294,11 +299,6 @@ class DefaultProcessor implements Processor
         )
         {
             return Constant::ASYNC;
-        }
-
-        if ($this->app['config']['services.bvs.sync.flow'] == true)
-        {
-            return Constant::SYNC;
         }
 
         $experiment = $this->experimentMap[$this->configName];

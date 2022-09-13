@@ -81,6 +81,11 @@ class BvsVerificationTest extends TestCase
 
         $merchantId = $merchantDetail->getMerchantId();
 
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => $merchantId
+        ]);
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
         $this->fixtures->create('user_device_detail', [
@@ -141,6 +146,11 @@ class BvsVerificationTest extends TestCase
             'bank_account_number'              => '1234567890', ]);
 
         $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => $merchantId
+        ]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 

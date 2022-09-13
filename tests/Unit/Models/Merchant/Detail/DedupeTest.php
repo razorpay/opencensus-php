@@ -21,7 +21,7 @@ class DedupeTest extends OAuthTestCase
 
     protected function mockMerchantRiskClient(string $merchantId, array $fields = [])
     {
-        
+
         $mockMR = $this->getMockBuilder(MerchantRiskClient::class)
             ->setMethods(['getMerchantRiskScores'])
             ->getMock();
@@ -298,7 +298,7 @@ class DedupeTest extends OAuthTestCase
 
     public function testL2FormSubmitWithDedupeFalse()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchantDetail = $this->createFixtures();
 
         $merchant = $merchantDetail->merchant;
 
@@ -311,7 +311,7 @@ class DedupeTest extends OAuthTestCase
     {
         $this->mockRazorx('ok');
 
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchantDetail = $this->createFixtures();
 
         $merchant = $merchantDetail->merchant;
 
@@ -332,7 +332,7 @@ class DedupeTest extends OAuthTestCase
 
     public function testL2FormSubmitWithDedupeTrueAndDeactivateAction()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $merchantDetail = $this->createFixtures();
         $merchant = $merchantDetail->merchant;
 
         $mocks = $this->createAndFetchMocks(true, ['match','isDedupeBlocked']);
@@ -360,9 +360,20 @@ class DedupeTest extends OAuthTestCase
 
     public function testL2FormSubmitWithDedupeTrueAndUnRegDeactivateAction()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
-            'business_type' => BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED)
+        $this->fixtures->create('merchant', [
+            'id' => 'KFMWFIqabujap8'
         ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => 'KFMWFIqabujap8'
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type' => BusinessType::getIndexFromKey(BusinessType::NOT_YET_REGISTERED),
+            'merchant_id' => 'KFMWFIqabujap8'
+        ]);
+
         $merchant = $merchantDetail->merchant;
 
         $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
@@ -390,7 +401,20 @@ class DedupeTest extends OAuthTestCase
 
     public function testL2FormSubmitWithDedupeTrueAndNoAction()
     {
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
+        $this->fixtures->create('merchant', [
+            'id' => 'KFMWFIqabujap8'
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+            [
+                'merchant_id' => 'KFMWFIqabujap8'
+            ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => 'KFMWFIqabujap8'
+        ]);
+
         $merchant = $merchantDetail->merchant;
 
         $mocks = $this->createAndFetchMocks(true, ['match', 'isDedupeBlocked']);
@@ -457,8 +481,18 @@ class DedupeTest extends OAuthTestCase
 
     public function testL2FormSubmitWithDedupeTrueAndUnderReviewPaymentBlocked()
     {
+        $this->fixtures->create('merchant', [
+            'id' => 'KFMWFIqabujap8'
+        ]);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
-            'business_type' => 4
+            'business_type' => 4,
+            'merchant_id' => 'KFMWFIqabujap8'
+        ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => 'KFMWFIqabujap8'
         ]);
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetail->getId(), [
@@ -493,8 +527,18 @@ class DedupeTest extends OAuthTestCase
 
     public function testIsDedupeBlockAfterL1Submission()
     {
+        $this->fixtures->create('merchant', [
+            'id' => 'KFMWFIqabujap8'
+        ]);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
-            'activation_form_milestone' => 'L1'
+            'activation_form_milestone' => 'L1',
+            'merchant_id' => 'KFMWFIqabujap8'
+        ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => 'KFMWFIqabujap8'
         ]);
 
         $mocks = $this->createAndFetchMocks(true, ['isMerchantImpersonated', 'isDedupeBlocked']);
@@ -519,8 +563,18 @@ class DedupeTest extends OAuthTestCase
 
     public function testIsDedupeBlockAfterL2Submission()
     {
+        $this->fixtures->create('merchant', [
+            'id' => 'KFMWFIqabujap8'
+        ]);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
-            'activation_form_milestone' => 'L2'
+            'activation_form_milestone' => 'L2',
+            'merchant_id' => 'KFMWFIqabujap8'
+        ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => 'KFMWFIqabujap8'
         ]);
 
         $mocks = $this->createAndFetchMocks(true, ['isMerchantImpersonated', 'isDedupeBlocked']);
@@ -586,5 +640,23 @@ class DedupeTest extends OAuthTestCase
             ->will($this->returnCallback(function($mid, $feature, $mode) use($variant) {
                 return $variant;
             }));
+    }
+
+    private function createFixtures()
+    {
+        $this->fixtures->create('merchant', [
+            'id' => 'KFMWFIqabujap8'
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => 'KFMWFIqabujap8'
+        ]);
+
+        $this->fixtures->on('live')->create('file_store', [
+            'id'            => 'abcdef12345678',
+            'merchant_id'   => 'KFMWFIqabujap8'
+        ]);
+
+        return $merchantDetail;
     }
 }

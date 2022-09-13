@@ -30,4 +30,5 @@ class Constants
 
     const CONTENT_DISPOSITION        = 'Content-Disposition';
     const CONTENT_DISPOSITION_INLINE = 'inline';
+    const SIGNED_URL                 = 'signed_url';
 }

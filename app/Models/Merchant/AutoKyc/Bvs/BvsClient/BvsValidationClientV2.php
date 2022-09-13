@@ -205,6 +205,11 @@ class BvsValidationClientV2 extends BaseClient
             $createValidation->setMetadata($metadata);
         }
 
+        if ($artefact->getType() == Constant::BANK_ACCOUNT)
+        {
+            $createValidation->setRuleExecutionListRequired(true);
+        }
+
         return $createValidation;
     }
 

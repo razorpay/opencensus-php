@@ -16,11 +16,13 @@ class Entity extends PublicEntity
     const ERROR_CODE            = 'error_code';
     const ERROR_DESCRIPTION     = 'error_description';
     const RULE_EXECUTION_LIST   = 'rule_execution_list';
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'updated_at';
-    protected $primaryKey = self::VALIDATION_ID;
+    const CREATED_AT            = 'created_at';
+    const UPDATED_AT            = 'updated_at';
+    const FUZZY_SCORE           = 'fuzzy_score';
 
-    protected $entity = 'bvs_validation';
+    protected $primaryKey       = self::VALIDATION_ID;
+
+    protected $entity           = 'bvs_validation';
 
     protected $fillable = [
         self::VALIDATION_ID,
@@ -33,6 +35,7 @@ class Entity extends PublicEntity
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::RULE_EXECUTION_LIST,
+        self::FUZZY_SCORE
     ];
 
     protected $public = [
@@ -47,6 +50,7 @@ class Entity extends PublicEntity
         self::RULE_EXECUTION_LIST,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::FUZZY_SCORE
     ];
 
     protected $casts = [
@@ -116,5 +120,10 @@ class Entity extends PublicEntity
     public function getRuleExecutionList()
     {
         return $this->getAttribute(self::RULE_EXECUTION_LIST);
+    }
+
+    public function getFuzzyScore()
+    {
+        return $this->getAttribute(self::FUZZY_SCORE);
     }
 }

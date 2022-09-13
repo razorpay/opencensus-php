@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer;
 
 use App;
+use RZP\Base\ConnectionType;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
@@ -15,12 +16,18 @@ use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Document\Type as Document;
+use RZP\Base\RepositoryManager;
 
 class BankAccountClarificationComposer extends BaseClarificationReasonComposer
 {
 
     protected $merchantDetails;
 
+    /**
+     * Repository manager instance
+     * @var RepositoryManager
+     */
     protected $repo;
 
     /**
@@ -76,6 +83,15 @@ class BankAccountClarificationComposer extends BaseClarificationReasonComposer
     public function getClarificationReason(): array
     {
         if (empty($this->clarificationMetaData) === true)
+        {
+            return [];
+        }
+
+        $documentType = array(Document::CANCELLED_CHEQUE, Document::BANK_VERIFICATION_LETTER);
+
+        $document = $this->repo->merchant_document->findNonDeletedDocumentsForMerchantId($this->merchantDetails->getMerchantId(), $documentType, ConnectionType::REPLICA);
+
+        if (empty($document) === false)
         {
             return [];
         }

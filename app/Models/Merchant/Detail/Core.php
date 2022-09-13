@@ -3692,6 +3692,8 @@ class Core extends Base\Core
             }
         }
 
+        $response[BvsValidationConstants::BANK_DETAILS_FUZZY_SCORE] = $this->getBankDetailsFuzzyScore($merchantDetails);
+
         $currentActivationState = $merchant->currentActivationState();
 
         if ((empty($currentActivationState) === false) and
@@ -4265,6 +4267,11 @@ class Core extends Base\Core
         //do not perform penny testing
         if ($pennyTestingAttemptsCount >= $maxPennyTestCountAllowed)
         {
+            $this->trace->info(TraceCode::PENNY_TESTING_ATTEMPT_EXCEEDED, [
+                'merchant_id'       => $merchantDetails->getId(),
+                'message'           => 'The number of penny testing attempt allowed has increased the maximum number.',
+            ]);
+
             return;
         }
 
@@ -7146,6 +7153,23 @@ class Core extends Base\Core
         }
 
         return $error_description;
+    }
+
+    public function getBankDetailsFuzzyScore(Entity $merchantDetails)
+    {
+        $validation
+            = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerIdAndOwnerType(
+            $merchantDetails->getId(),
+            Constant::MERCHANT,
+            Constant::BANK_ACCOUNT
+        );
+        if ($validation === null)
+        {
+            return null;
+        }
+
+        return $validation->getFuzzyScore();
+
     }
 
     public function getBusinessTypes($merchantId): array

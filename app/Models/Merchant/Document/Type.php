@@ -48,6 +48,7 @@ class Type
     const MEMORANDUM_OF_ASSOCIATION      = 'memorandum_of_association';
     const ARTICLE_OF_ASSOCIATION         = 'article_of_association';
     const BOARD_RESOLUTION               = 'board_resolution';
+    const BANK_VERIFICATION_LETTER       = 'bank_verification_letter';
 
     // For KYC service integration
     const PERSONAL_PAN                   = 'personal_pan';
@@ -141,6 +142,7 @@ class Type
         self::VOTER_ID_FRONT,
         self::VOTER_ID_BACK,
         self::CANCELLED_CHEQUE,
+        self::BANK_VERIFICATION_LETTER,
         self::BUSINESS_PROOF_URL,
         self::BUSINESS_OPERATION_PROOF_URL,
         self::BUSINESS_PAN_URL,
@@ -209,6 +211,7 @@ class Type
         self::VOTER_ID_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::VOTER_ID_BACK                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
         self::CANCELLED_CHEQUE                => self::ADDITIONAL_DOCUMENTS,
+        self::BANK_VERIFICATION_LETTER        => self::ADDITIONAL_DOCUMENTS,
         self::BUSINESS_PROOF_URL              => self::BUSINESS_PROOF_OF_IDENTIFICATION,
         self::BUSINESS_OPERATION_PROOF_URL    => self::ADDITIONAL_DOCUMENTS,
         self::BUSINESS_PAN_URL                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
