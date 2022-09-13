@@ -1415,4 +1415,9 @@ return [
     'consumer_app' => [
       'secret'  => env('CONSUMER_APP_SERVICE_SECRET')
     ],
+
+    'similarweb' => [
+        'url'       => env('SIMILARWEB_API_URL'),
+        'api_key'   => env('SIMILARWEB_API_KEY')
+    ],
 ];

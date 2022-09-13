@@ -18,15 +18,13 @@ class Gstin extends BaseConfig
         'online_provider' => [
             'required_fields' => [
                 'gstin.aggregate_turnover',
-                'gstin.gross_total_income',
-                'gstr.e_filing_detail'
+                'gstin.gross_total_income'
             ],
             'enrichment_details_fields' => [
                 "online_provider.details.trade_name.value",
                 "online_provider.details.legal_name.value",
                 "online_provider.details.aggregate_turnover",
                 "online_provider.details.gross_total_income",
-                "online_provider.details.e_filing_detail",
                 "online_provider.details.registration_date.value",
             ]
         ]

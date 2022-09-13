@@ -26,8 +26,13 @@ class Constants
     const ANDROID_APP_PRESENT        = 'android_app_present';
     const IOS_APP_PRESENT            = 'ios_app_present';
     const OTHERS_PRESENT             = 'others_present';
+
+    // Lead Score Components
     const GSTIN_SCORE                = 'gstin_score';
     const DOMAIN_SCORE               = 'domain_score';
+    const REGISTERED_YEAR            = 'registered_year';
+    const AGGREGATED_TURNOVER_SLAB   = 'aggregated_turnover_slab';
+    const WEBSITE_VISITS             = 'website_visits';
 
     //app_urls
     const PLAYSTORE_URL    = 'playstore_url';

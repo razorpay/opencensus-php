@@ -29,6 +29,8 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Factory;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
+use RZP\Models\SimilarWeb\SimilarWebRequest;
+use RZP\Models\SimilarWeb\SimilarWebService;
 use RZP\Trace\Tracer;
 use RZP\Models\State;
 use RZP\Models\Coupon;
@@ -7640,29 +7642,29 @@ class Core extends Base\Core
 
     public function generateLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
     {
-        $updateAndPushToSegment = false;
         $gstinLeadScore = 0;
+
         $domainLeadScore = 0;
 
         try
         {
-            $gstinLeadScore = optional($merchantDetails->businessDetail)->getValueFromLeadScoreComponents(BusinessDetailConstants::GSTIN_SCORE);
+            [$gstinLeadScoreComponents, $updateAndPushToSegmentGSTINScore] = $this->generateGSTINLeadScoreForMerchant($merchant, $merchantDetails);
 
-            //Check if GSTIN lead score is already calculated, if yes, we won't recalculate
-            if (empty($gstinLeadScore) === true)
+            $gstinLeadScore = $gstinLeadScoreComponents[BusinessDetailConstants::GSTIN_SCORE];
+
+            [$domainLeadScoreComponents, $updateAndPushToSegmentDomainScore] = $this->generateDomainLeadScoreForMerchant($merchant, $merchantDetails);
+
+            $domainLeadScore = $domainLeadScoreComponents[BusinessDetailConstants::DOMAIN_SCORE];
+
+            if ($updateAndPushToSegmentGSTINScore === true or $updateAndPushToSegmentDomainScore === true)
             {
-                $gstinLeadScore = $this->generateGSTINLeadScoreForMerchant($merchant, $merchantDetails);
-
-                if (!empty($gstinLeadScore))
-                {
-                    $updateAndPushToSegment = true;
-                }
-            }
-
-            if ($updateAndPushToSegment === true)
-            {
-                $leadScoreComponents = [BusinessDetailConstants::GSTIN_SCORE => $gstinLeadScore,
-                    BusinessDetailConstants::DOMAIN_SCORE => $domainLeadScore];
+                $leadScoreComponents = [
+                    BusinessDetailConstants::GSTIN_SCORE                => $gstinLeadScore,
+                    BusinessDetailConstants::REGISTERED_YEAR            => $gstinLeadScoreComponents[BusinessDetailConstants::REGISTERED_YEAR],
+                    BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB   => $gstinLeadScoreComponents[BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB],
+                    BusinessDetailConstants::DOMAIN_SCORE               => $domainLeadScore,
+                    BusinessDetailConstants::WEBSITE_VISITS             => $domainLeadScoreComponents[BusinessDetailConstants::WEBSITE_VISITS]
+                ];
 
                 (new BusinessDetailCore())->updateLeadScoreComponents($merchantDetails, $leadScoreComponents);
 
@@ -7672,10 +7674,16 @@ class Core extends Base\Core
                 ]);
 
                 $properties = [];
-                $properties['gstin_lead_score'] = $gstinLeadScore;
-                $properties['domain_lead_score'] = $domainLeadScore;
-                $properties['total_lead_score'] = $gstinLeadScore + $domainLeadScore;
+                $properties['gstin_lead_score']                                     = $gstinLeadScore;
+                $properties['domain_lead_score']                                    = $domainLeadScore;
+                $properties['total_lead_score']                                     = $gstinLeadScore + $domainLeadScore;
+                $properties[BusinessDetailConstants::REGISTERED_YEAR]               = $gstinLeadScoreComponents[BusinessDetailConstants::REGISTERED_YEAR];
+                $properties[BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB]      = $gstinLeadScoreComponents[BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB];
+                $properties[BusinessDetailConstants::WEBSITE_VISITS]                = $domainLeadScoreComponents[BusinessDetailConstants::WEBSITE_VISITS];
+
                 $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
+
+                (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant));
             }
         }
         catch (\Exception $e)
@@ -7689,8 +7697,18 @@ class Core extends Base\Core
         return $gstinLeadScore + $domainLeadScore;
     }
 
-    protected function generateGSTINLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    protected function generateGSTINLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails): ?array
     {
+        $gstinLeadScore = optional($merchantDetails->businessDetail)->getValueFromLeadScoreComponents(BusinessDetailConstants::GSTIN_SCORE);
+
+        if (empty($gstinLeadScore) === false)
+        {
+            //Not fetching registered_year and aggregated_turnover_slab separately as these need not be updated in this case.
+            return [[BusinessDetailConstants::GSTIN_SCORE                => $gstinLeadScore,
+                     BusinessDetailConstants::REGISTERED_YEAR            => null,
+                     BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB   => ''], false];
+        }
+
         $this->trace->info(TraceCode::LEAD_SCORE_CALCULATION_ATTEMPT, [
             'merchantId'            => $merchant->getId(),
             'calculatingFor'        => BusinessDetailConstants::GSTIN_SCORE
@@ -7709,10 +7727,11 @@ class Core extends Base\Core
             if (empty($gstDetails) === true)
             {
                 //No GST associated with PAN found
-                return 0;
+                return [[BusinessDetailConstants::GSTIN_SCORE                => 0,
+                        BusinessDetailConstants::REGISTERED_YEAR            => null,
+                        BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB   => ''], false];
             }
 
-            //$gstDetails
             $payload = $requestCreator->getRequestPayload();
             $ownerId = $merchantDetails->getEntityId();
             $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
@@ -7762,7 +7781,9 @@ class Core extends Base\Core
         if (empty($oldestRegisteredYear) === true)
         {
             //GSTIN Validation API failed and got no enrichment details
-            return 0;
+            return [[BusinessDetailConstants::GSTIN_SCORE                => 0,
+                    BusinessDetailConstants::REGISTERED_YEAR            => null,
+                    BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB   => ''], false];
         }
 
         //By now we should have populated the $oldestRegisteredYear and $aggregatedTurnoverSlab, calculate lead_score based on that.
@@ -7797,6 +7818,36 @@ class Core extends Base\Core
             $aggregatedTurnoverScore = 50;
         }
 
-        return $ageScore + $aggregatedTurnoverScore;
+        return [[BusinessDetailConstants::GSTIN_SCORE                => $ageScore + $aggregatedTurnoverScore,
+                BusinessDetailConstants::REGISTERED_YEAR            => $oldestRegisteredYear,
+                BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB   => $aggregatedTurnoverSlab], ($ageScore + $aggregatedTurnoverScore > 0)];
+    }
+
+    protected function generateDomainLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails): ?array
+    {
+
+        $domainLeadScore = optional($merchantDetails->businessDetail)->getValueFromLeadScoreComponents(BusinessDetailConstants::DOMAIN_SCORE);
+
+        if (empty($domainLeadScore) === false)
+        {
+            //Not fetching visits separately as it doesn't need to be updated in this case.
+            return [[BusinessDetailConstants::DOMAIN_SCORE   => $domainLeadScore,
+                     BusinessDetailConstants::WEBSITE_VISITS => 0], false];
+        }
+
+        $domainLeadScore = 0;
+        $visits = (new SimilarWebService())->fetchVisitsForDomain(new SimilarWebRequest($merchant));
+
+        if ($visits > 0 and $visits < 5000)
+        {
+            $domainLeadScore = 10;
+        }
+        elseif ($visits >= 5000)
+        {
+            $domainLeadScore = 40;
+        }
+
+        return [[BusinessDetailConstants::DOMAIN_SCORE   => $domainLeadScore,
+                BusinessDetailConstants::WEBSITE_VISITS => $visits], ($visits > 0)];
     }
 }

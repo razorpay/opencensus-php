@@ -6174,6 +6174,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEAD_SCORE_CALCULATION_SUCCESS            = 'LEAD_SCORE_CALCULATION_SUCCESS';
     const LEAD_SCORE_CALCULATION_FAILURE            = 'LEAD_SCORE_CALCULATION_FAILURE';
 
+    const SIMILARWEB_REQUEST                    = 'SIMILARWEB_REQUEST';
+    const SIMILARWEB_REQUEST_FAILURE            = 'SIMILARWEB_REQUEST_FAILURE';
+    const SIMILARWEB_RESPONSE                   = 'SIMILARWEB_RESPONSE';
+    const SIMILARWEB_RESPONSE_SUCCESS           = 'SIMILARWEB_RESPONSE_SUCCESS';
+
     // Adding Logs for debugging issue: https://razorpay.atlassian.net/browse/PCORE-526
     const SETTING_TRANSACTION_CREDITS   = 'SETTING_TRANSACTION_CREDITS';
     const CALCULATED_FEES_FOR_PAYMENT   = 'CALCULATED_FEES_FOR_PAYMENT';
