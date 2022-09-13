@@ -62,6 +62,8 @@ class Core extends Base\Core
 
     protected $merchant;
 
+    use Payment\Processor\Capture;
+
     public function __construct()
     {
         parent::__construct();
@@ -188,8 +190,12 @@ class Core extends Base\Core
 
             $txn =  $this->createTransactionForCapturedPayment($payment);
 
-            $this->repo->transaction(function() use ($payment)
+            $this->createLedgerEntriesForGatewayCapture($payment);
+            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+
+            $this->repo->transaction(function() use ($payment,$txn)
             {
+
                 $processor = new Processor($payment->merchant);
 
                 $processor->createPartnerCommission($payment);
