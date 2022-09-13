@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT          => 'filled|integer',
         ConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP                  => 'filled|bool',
         ConfigKey::NO_DOC_ONBOARDING_INFO                           => 'filled|array',
+        ConfigKey::POLICY_DATA                                      => 'filled|array',
         ConfigKey::GET_COMPANY_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT   => 'filled|integer',
         ConfigKey::GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT  => 'filled|integer',
         ConfigKey::PROMOTER_PAN_NAME_SUGGESTED                      => 'sometimes|string',

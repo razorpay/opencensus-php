@@ -16,7 +16,9 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Utility;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Notifications\Onboarding\Events;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Document\Entity as DocEntity;
 use RZP\Models\Merchant\Document\Constants as DocConstant;
 use RZP\Models\Merchant\Detail\Entity as DEntity;
@@ -24,6 +26,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -2135,39 +2138,72 @@ class Service extends Base\Service
     }
 
     // if merchant has any published pages send that information to checkout preferences
-    public function checkAndFillMerchantPolicyPage(MerchantEntity $merchant, array &$data)
+    // if merchant is activated save to redis and fetch from redis
+    public function checkAndFillMerchantPolicyPage(MerchantEntity $merchant)
     {
         try
         {
             if ($this->isWebsiteSectionsApplicable($merchant) === false)
             {
-                return;
+                return null;
             }
 
-            $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
+            $merchantDetail = $merchant->merchantDetail;
 
-            if (empty($websiteDetail) === true or
-                empty(optional($websiteDetail)->getStatus()) === true)
+            $data = null;
+
+            if ($merchantDetail->getActivationStatus() === Status::ACTIVATED)
             {
-                return;
+
+                $data = (new StoreCore)->fetchValuesFromStore($merchant->getId(),
+                                                              ConfigKey::ONBOARDING_NAMESPACE,
+                                                              [ConfigKey::POLICY_DATA],
+                                                              StoreConstants::INTERNAL);
+
+                $data = $data[ConfigKey::POLICY_DATA];
+
             }
 
-            foreach (explode(',', Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+            if (empty($data) === true)
             {
+                $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchant->getId());
 
-                $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
-
-                $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
-
-                if ($sectionStatus === 3 and empty($publishedWebsite) === false)
+                if (empty($websiteDetail) === true or
+                    empty(optional($websiteDetail)->getStatus()) === true)
                 {
-                    $data["merchant_policy"]["url"] = $published_url = $this->host . '/policy/' . $websiteDetail->getId();
+                    return null;
+                }
 
-                    $data["merchant_policy"]["display_name"] = "About " . (strlen($merchant->getName()) > 15 ? 'Merchant' : $merchant->getName());
+                foreach (explode(',', Constants::VALID_MERCHANT_SECTIONS) as $sectionName)
+                {
 
-                    return;
+                    $sectionStatus = $websiteDetail->getSectionStatus($sectionName);
+
+                    $publishedWebsite = $websiteDetail->getPublishedUrl($sectionName);
+
+                    if ($sectionStatus === 3 and empty($publishedWebsite) === false)
+                    {
+                        $data["url"] = $published_url = $this->host . '/policy/' . $websiteDetail->getId();
+
+                        $data["display_name"] = "About " . (strlen($merchant->getName()) > 15 ? 'Merchant' : $merchant->getName());
+
+                        if ($merchantDetail->getActivationStatus() === Status::ACTIVATED)
+                        {
+                            $storeData = [
+                                StoreConstants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
+                                ConfigKey::POLICY_DATA    => $data
+                            ];
+
+                            $storeData = (new StoreCore())->updateMerchantStore($merchant->getId(),
+                                                                                $storeData,
+                                                                                StoreConstants::INTERNAL);
+                        }
+
+                    }
                 }
             }
+
+            return $data;
         }
         catch (\Throwable $e)
         {
@@ -2177,5 +2213,7 @@ class Service extends Base\Service
                 TraceCode::WEBSITE_SECTION_ERROR,
                 ['merchant_id' => $merchant->getId()]);
         }
+
+        return null;
     }
 }

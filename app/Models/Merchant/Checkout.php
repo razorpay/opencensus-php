@@ -195,9 +195,28 @@ class Checkout
 
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
-        //(new Website\Service())->checkAndFillMerchantPolicyPage($merchant, $data);
+        $this->fillMerchantPolicyPage($merchant,$data);
 
         return $data;
+    }
+    protected function fillMerchantPolicyPage(Entity $merchant, array & $data): void
+    {
+        try
+        {
+            $policyData = (new Website\Service())->checkAndFillMerchantPolicyPage($merchant);
+
+            if (empty($policyData) === false)
+            {
+                $data["merchant_policy"]["url"] = $policyData["url"];
+
+                $data["merchant_policy"]["display_name"] = $policyData["display_name"];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e, Trace::WARNING, TraceCode::WEBSITE_SECTION_ERROR);
+        }
     }
 
     protected function fillRTBDetails(Entity $merchant, array & $data): void

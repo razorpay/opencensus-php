@@ -10034,7 +10034,72 @@ return [
             ],
         ],
     ],
+    'testGetCheckoutPreferencesExperimentDisabled' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testGetCheckoutPreferencesWithoutMerchantPolicy' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testGetCheckoutPreferencesWithMerchantPolicyActivatedMerchant' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 
+    'testGetCheckoutPreferencesWithPublishedWebsiteMerchantPolicy' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesWithoutPublishedWebsiteMerchantPolicy' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testGetCheckoutPreferencesWithPublishedWebsiteMerchantPolicyFromCache' => [
+        'request'  => [
+            'url'    => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'merchant_policy' =>[
+                    'url' => 'http://merchant.razorpay.com/policy/10000000000000',
+                    'display_name' => 'About Merchant'
+                ]
+            ],
+        ],
+    ],
     'testMerchantSupportOptionDedupeMerchant' => [
 
         'request' => [

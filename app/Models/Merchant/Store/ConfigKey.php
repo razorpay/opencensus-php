@@ -29,6 +29,7 @@ class ConfigKey
     const REFERRAL_AMOUNT              = 'referral_amount';
     const REFERRAL_AMOUNT_CURRENCY     = 'referral_amount_currency';
     const IS_SIGNED_UP_REFEREE         = 'is_signed_up_referee';
+    const POLICY_DATA                  = 'policy_data';
 
     const WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT = 'website_incomplete_soft_nudge_count';
     const WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP = 'website_incomplete_soft_nudge_timestamp';
@@ -179,7 +180,13 @@ class ConfigKey
                 Constants::STORE => Constants::REDIS,
                 Constants::WRITE => [Constants::INTERNAL],
                 Constants::READ => [Constants::INTERNAL]
-            ]
+            ],
+            self::POLICY_DATA => [
+                Constants::STORE => Constants::REDIS,
+                Constants::READ  => [Constants::INTERNAL],
+                Constants::WRITE => [Constants::INTERNAL],
+                Constants::TTL   => Constants::STORE_MERCHANT_DETAILS_TTL_IN_SECONDS
+            ],
         ]
     ];
 

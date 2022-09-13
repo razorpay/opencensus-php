@@ -10,6 +10,8 @@ use Redis;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Merchant\Store\ConfigKey;
+use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\TrustedBadge\Entity as TrustedBadge;
 use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
@@ -33,6 +35,7 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Tests\Functional\Helpers\MocksRedisTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Models\Key;
@@ -2077,6 +2080,282 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesWithoutCovidReliefFeatureOff()
     {
         $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
+    public function testGetCheckoutPreferencesExperimentDisabled()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->ba->publicAuth();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey('merchant_policy', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithoutMerchantPolicy()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->ba->publicAuth();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey('merchant_policy', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithMerchantPolicyActivatedMerchant()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $merchantId = '10000000000000';
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/' . $merchantId . '/contact_us'
+                ]
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls'    => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url'  => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->create('merchant_detail', [
+            "merchant_id"       => $merchantId,
+            'business_website'  => "http://hello.com",
+            "activation_status" => "activated"]);
+
+        $this->ba->publicAuth();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('merchant_policy', $response);
+        $this->assertArrayHasKey('url', $response['merchant_policy']);
+        $this->assertArrayHasKey('display_name', $response['merchant_policy']);
+    }
+
+    public function testGetCheckoutPreferencesWithPublishedWebsiteMerchantPolicy()
+    {
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $merchantId='10000000000000';
+
+        $this->fixtures->edit('merchant',$merchantId, []);
+
+        $this->fixtures->create('merchant_detail', ["merchant_id"=> $merchantId,
+                                                    'business_website' => "http://hello.com"]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'           => $merchantId,
+            'status'      => 'submitted',
+            "shipping_period"          => "3-5 days",
+             "refund_request_period"    => "3-5 days",
+             "refund_process_period"    => "3-5 days",
+             "additional_data"          => [
+                 "support_contact_number" => "9980004017",
+                 "support_email"          => "kakarla.vasanthi@razorpay.com"
+             ],
+             "merchant_website_details" => [
+                 "contact_us" => [
+                     "section_status" => 3,
+                     "status"         => "submitted",
+                     "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/'.$merchantId.'/contact_us'
+                 ]
+             ]
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls' => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url' => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+
+
+        $this->ba->publicAuth();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('merchant_policy', $response);
+        $this->assertArrayHasKey('url', $response['merchant_policy']);
+        $this->assertArrayHasKey('display_name', $response['merchant_policy']);
+    }
+
+    public function testGetCheckoutPreferencesWithoutPublishedWebsiteMerchantPolicy()
+    {
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $merchantId = '10000000000000';
+
+        $this->fixtures->edit('merchant', $merchantId, []);
+
+        $this->fixtures->create('merchant_detail', ["merchant_id"      => $merchantId,
+                                                    'business_website' => "http://hello.com"]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 2,
+                    "status"         => "submitted",
+                    "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/' . $merchantId . '/contact_us'
+                ]
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls'    => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url'  => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
+
+        $this->ba->publicAuth();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey('merchant_policy', $response);
+    }
+
+    public function testGetCheckoutPreferencesWithPublishedWebsiteMerchantPolicyFromCache()
+    {
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $merchantId = '10000000000000';
+
+        $this->fixtures->edit('merchant', $merchantId, []);
+
+        $this->fixtures->create('merchant_detail', [
+            "merchant_id"       => $merchantId,
+            'business_website'  => "http://hello.com",
+            "activation_status" => "activated"]);
+
+        $data = [
+            StoreConstants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::POLICY_DATA    => [
+                "url"          => "http://merchant.razorpay.com/policy/" . $merchantId,
+                "display_name" => "About Merchant"
+            ]
+        ];
+
+        $data = (new StoreCore())->updateMerchantStore($merchantId, $data, StoreConstants::INTERNAL);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+            'status'                   => 'submitted',
+            "shipping_period"          => "3-5 days",
+            "refund_request_period"    => "3-5 days",
+            "refund_process_period"    => "3-5 days",
+            "additional_data"          => [
+                "support_contact_number" => "9980004017",
+                "support_email"          => "kakarla.vasanthi@razorpay.com"
+            ],
+            "merchant_website_details" => [
+                "contact_us" => [
+                    "section_status" => 3,
+                    "status"         => "submitted",
+                    "published_url"  => env(\RZP\Models\Merchant\Website\Constants::MERCHANT_POLICIES_SUBDOMAIN) . '/compliance/' . $merchantId . '/contact_us'
+                ]
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchantId,
+            'app_urls'    => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app.dummy',
+                'appstore_url'  => 'https://play.google.com/store/apps/details?id=com.dummy123123',
+            ]
+        ]);
 
         $this->ba->publicAuth();
 
