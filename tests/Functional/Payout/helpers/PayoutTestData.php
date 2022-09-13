@@ -14219,11 +14219,11 @@ return [
                 'entity' => [
                     'entity' => 'payout',
                     'status' => 'reversed',
-                    'failure_reason' => 'Transaction not permitted to beneficiary account.',
+                    'failure_reason' => 'Technical issue at beneficiary bank. Please retry after 30 mins.',
                     'error'  => [
                         'source' => 'beneficiary_bank',
                         'reason' =>  'beneficiary_bank_rejected',
-                        'description' => 'Payout rejected by beneficiary bank. Please contact beneficiary bank.'
+                        'description' => 'Technical issue at beneficiary bank. Please retry after 30 mins.'
                     ]
                 ],
             ],

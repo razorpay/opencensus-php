@@ -15278,7 +15278,7 @@ class PayoutTest extends OAuthTestCase
         $statusDetails = $this->getDbLastEntity('payouts_status_details');
 
         $this->assertEquals('beneficiary_bank_rejected', $statusDetails['reason']);
-        $this->assertEquals('Payout rejected by beneficiary bank. Please contact beneficiary bank.', $statusDetails['description']);
+        $this->assertEquals('Technical issue at beneficiary bank. Please retry after 30 mins.', $statusDetails['description']);
 
         $payoutResponse = $payout->toArrayPublic();
         $this->assertEquals('beneficiary_bank', $payoutResponse['status_details']['source']);

@@ -10,7 +10,7 @@
     "failed": {
       "source": "beneficiary_bank",
       "reason": "beneficiary_bank_rejected",
-      "description": "Payout rejected by beneficiary bank. Please contact beneficiary bank."
+      "description": "Technical issue at beneficiary bank. Please retry after 30 mins."
     }
   },
   "INVALID_ACCOUNT_NUMBER": {
@@ -74,9 +74,9 @@
   },
   "TXN_REJECTED": {
     "failed": {
-      "source": "beneficiary_bank",
-      "reason": "beneficiary_bank_failure",
-      "description": "Payout failed at beneficiary bank due to technical issue. Please retry."
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Technical issue at partner bank. Please retry after 30 mins."
     }
   },
   "BENE_PSP_OFFLINE": {
