@@ -22,6 +22,11 @@ class Repository extends Base\Repository
         return $this->buildQueryToFetchExternalComment(null,'external','desc')->get();
     }
 
+    public function fetchComments(string $bankingAccountId, string $commentType = null)
+    {
+        return $this->buildQueryToFetchExternalComment($bankingAccountId, $commentType,'desc')->get();
+    }
+
     public function fetchLatestComment(string $bankingAccountId, string $commentType = null)
     {
         return $this->buildQueryToFetchExternalComment($bankingAccountId, $commentType,'desc')->first();

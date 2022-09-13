@@ -98,7 +98,9 @@ class Entity extends Base\PublicEntity
 
     const ADDITIONAL_DETAILS = 'additional_details';
 
-    const COMMENT = 'comment';
+    const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility
+
+    const COMMENTS = 'comments'; //All comments
 
     // team that is currently assigned to work on this
     const ASSIGNEE_TEAM = 'assignee_team';
@@ -208,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::BOOKING_DATE_AND_TIME,
         self::COMMENT,
+        self::COMMENTS,
         self::RM_NAME,
         self::BANK_POC_USER_ID,
         self::DECLARATION_STEP,
@@ -250,6 +253,7 @@ class Entity extends Base\PublicEntity
         self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
         self::COMMENT,
+        self::COMMENTS,
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
@@ -261,7 +265,7 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ADDITIONAL_DETAILS,
-        self::COMMENT,
+        self::COMMENTS,
     ];
 
     protected $dates = [
@@ -379,25 +383,23 @@ class Entity extends Base\PublicEntity
         return '';
     }
 
-    public function setPublicCommentAttribute(array &$array)
+    public function setPublicCommentsAttribute(array &$array)
     {
         $bankingAccountID = $this->getBankingAccountId();
 
         if (app('basicauth')->isAdminAuth() === true)
         {
-            //get latest from all comments
-            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccountID);
+            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchComments($bankingAccountID);
         } else
         {
-            //get latest external comment
-            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccountID, 'external');
+            $bankingAccountComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchComments($bankingAccountID, 'external');
         }
 
         // First comment on lead is saved as internal comment. TBD: Understand why it needs to be internal comment.
         // If there are no other external comment, we have to return the first comment
         if (is_null($bankingAccountComment) === false)
         {
-            $array[self::COMMENT] = $bankingAccountComment->getComment();
+            $array[self::COMMENTS] = $bankingAccountComment->toArrayCaPartnerBankPoc();
         }
         return $bankingAccountComment;
     }

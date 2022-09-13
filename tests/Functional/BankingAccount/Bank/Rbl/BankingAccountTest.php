@@ -8804,7 +8804,6 @@ class BankingAccountTest extends TestCase
         ];
 
         $response = $this->makeRequestAndGetContent($request);
-
         $this->assertNotEmpty($response['id']);
 
         return $response;

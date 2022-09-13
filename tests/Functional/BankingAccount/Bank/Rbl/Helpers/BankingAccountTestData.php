@@ -4225,7 +4225,15 @@ return [
             'content'     => [
                 'status' => 'initiated',
                 'banking_account_activation_details' => [
-                    'comment' => 'second comment on lead - external'
+                    'comments' => [
+                        'entity' => 'collection',
+                        'count'  => 1,
+                        'items'  => [
+                            [
+                                'comment' => 'second comment on lead - external'
+                            ]
+                        ]
+                    ]
                 ]
             ],
             'status_code' => 200,
@@ -4243,7 +4251,15 @@ return [
         'response' => [
             'content' =>  [
                         'banking_account_activation_details'      => [
-                            'comment' => 'fourth comment on lead - external'
+                            'comments' => [
+                                'entity' => 'collection',
+                                'count'  => 4,
+                                'items'  => [
+                                    [
+                                        'comment' => 'fourth comment on lead - external'
+                                    ]
+                                ]
+                            ]
                         ]
                     ],
             ],
