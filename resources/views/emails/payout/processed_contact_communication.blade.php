@@ -405,10 +405,11 @@
                                                                      style="color:rgba(22, 47, 86, 0.87); display: inline-block; font-weight: 400; max-width: 50%;">
                                                                     {{ $payout_narration }}</div>
                                                             </div>
-                                                        @endif
+                                                        @endisset
 
                                                     </div>
 
+                                                    @isset($merchant_website)
                                                     <div
                                                         style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; text-align: center; display: flex; align-items: center; background: #f9fbfe; background-color: #f9fbfe; padding-top: 16px; padding-left:24px; padding-bottom: 19px; padding-right: 24px;">
                                                         <img src="https://cdn.razorpay.com/static/assets/razorpayx/emails/contacts_zap.png"
@@ -416,19 +417,20 @@
                                                              style="width:32px; height:32px; margin-right:12px;" />
 
                                                         <span
-                                                            style="font-weight: 400; font-size: 12px; line-height: 18px; color: rgba(22, 47, 86, 0.54); text-align: left;">
+                                                            style="vertical-align: middle; font-weight: 400; font-size: 12px; display: inline-block; line-height: 18px; color: rgba(22, 47, 86, 0.54); text-align: left;">
  For any product/service query contact
  <a style="color: #0B70E7; text-decoration: none;"
     href="{{ $merchant_website }}">{{
- $merchant_website }},</a>
- <span style="color: #0B70E7;">
+ $merchant_website }}</a>
+ <!-- <span style="color: #0B70E7;">
  {{ $merchant_phone }}</span>
  or
  <a style="color: #0B70E7; text-decoration: none;"
     href="mailto:{{ $merchant_email }}">{{
- $merchant_email }}</a>
+ $merchant_email }}</a> -->
  </span>
                                                     </div>
+                                                    @endisset
 
                                                 </div>
 
