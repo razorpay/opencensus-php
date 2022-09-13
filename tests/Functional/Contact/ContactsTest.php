@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use PHPUnit\Framework\Assert;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Contact\Core;
 use RZP\Models\Feature;
@@ -58,7 +59,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('getVendorByContactId')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1, 'expense_id' => '1', 'gstin' => 'test_gstin']);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_1000000contact', 'payment_terms' => 10, 'tds_category' => 1, 'expense_id' => '1', 'gstin' => '22AAAAA0000A1Z5']);
 
         $this->startTest();
     }
@@ -84,7 +85,7 @@ class ContactsTest extends TestCase
                 'payment_terms'        => 10,
                 'tds_category'         => 1,
                 'expense_id'           => '1',
-                'gstin'                => 'test_gstin',
+                'gstin'                => '22AAAAA0000A1Z5',
                 'pan'                  => 'test_pan',
                 'vendor_portal_status' => 'INVITED'
             ]);
@@ -166,7 +167,7 @@ class ContactsTest extends TestCase
                     'entity' => 'collection',
                     'count' => 1,
                     'items' => [
-                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '1234', 'pan' => 'ABCD']
+                        ['id' => '2', 'contact_id' => 'cont_1000001contact', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '22AAAAA0000A1Z5', 'pan' => 'ABCD']
                     ]
                 ]
             );
@@ -176,7 +177,7 @@ class ContactsTest extends TestCase
 
     public function testFetchContactsWithTypeVendorAndProxyAuth()
     {
-        $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X', 'type' => 'vendor']);
+        $r = $this->fixtures->create('contact', ['id' => '1000001contact', 'name' => 'Contact X', 'type' => 'vendor', 'gstin' => '22AAAAA0000A1Z5']);
         $this->fixtures->create('contact', ['id' => '1000002contact', 'name' => 'Contact Y', 'type' => 'customer']);
 
         $this->ba->proxyAuth();
@@ -201,7 +202,7 @@ class ContactsTest extends TestCase
                             'payment_terms'        => 10,
                             'tds_category'         => 1,
                             'expense_id'           => '1',
-                            'gstin'                => 'test_gstin',
+                            'gstin'                => '22AAAAA0000A1Z4',
                             'pan'                  => 'test_pan',
                             'vendor_portal_status' => 'INVITED'
                         ]
@@ -283,6 +284,136 @@ class ContactsTest extends TestCase
     {
         $this->startTest();
     }
+
+    public function testCreateContactWithGstinInternalAuth()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+        $this->startTest();
+    }
+
+    public function testCreateContactWithGstinProxyAuth()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreateContactWithInvalidGstinProxyAuth()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+    }
+
+    public function testCreateContactWithGstinPrivateAuth()
+    {
+        $request = [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+        self::assertArrayNotHasKey('gstin', $response);
+    }
+
+    public function testFetchContactWithGstinInternalAuth()
+    {
+        $this->testCreateContactWithGstinInternalAuth();
+        /* @var $contact Entity */
+        $contact = $this->getDbLastEntity('contact');
+
+        $testData = $this->testData['testFetchContactWithGstinInternalAuth'];
+        $testData['request']['url'] = '/contacts_internal/'. $contact->getPublicId();
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+        $this->startTest();
+    }
+
+    public function testFetchContactWithGstinProxyAuth()
+    {
+        $this->testCreateContactWithGstinProxyAuth();
+        /* @var $contact Entity */
+        $contact = $this->getDbLastEntity('contact');
+
+        $testData = $this->testData['testFetchContactWithGstinProxyAuth'];
+        $testData['request']['url'] = '/contacts/'. $contact->getPublicId();
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuthTest();
+        $this->startTest();
+    }
+
+    public function testFetchContactWithGstinPrivateAuth()
+    {
+        $this->testCreateContactWithGstinPrivateAuth();
+        /* @var $contact Entity */
+        $contact = $this->getDbLastEntity('contact');
+
+        $request = [
+            'url'     => '/contacts/'.$contact->getPublicId(),
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        self::assertArrayNotHasKey('gstin', $response);
+        Assert::assertEquals($contact->getPublicId(), $response['id']);
+    }
+
+    public function testEditContactWithGstinInternalAuth()
+    {
+        $this->testCreateContactWithGstinInternalAuth();
+
+        $contact = $this->getDbLastEntity('contact');
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+        $testData = $this->testData['testEditContactWithGstinInternalAuth'];
+        $testData['request']['url'] = '/contacts_internal/'. $contact->getPublicId();
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testEditContactWithGstinProxyAuth()
+    {
+        $this->testCreateContactWithGstinProxyAuth();
+
+        $contact = $this->getDbLastEntity('contact');
+        $testData = $this->testData['testEditContactWithGstinProxyAuth'];
+        $testData['request']['url'] = '/contacts/'. $contact->getPublicId();
+        $this->testData[__FUNCTION__] = $testData;
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testEditContactWithGstinPrivateAuth()
+    {
+        $this->testCreateContactWithGstinPrivateAuth();
+        /* @var $contact Entity */
+        $contact = $this->getDbLastEntity('contact');
+
+        $request = [
+            'url'     => '/contacts/'.$contact->getPublicId(),
+            'method'  => 'PATCH',
+            'content' => [
+                'gstin' => '22AAAAA0000A1Z6',
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        self::assertArrayNotHasKey('gstin', $response);
+        Assert::assertEquals($contact->getPublicId(), $response['id']);
+    }
+
 
     public function testCreateContactWithNbsp()
     {
@@ -448,7 +579,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '1234', 'pan' => 'ABCD']);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '22AAAAA0000A1Z5', 'pan' => 'ABCD']);
 
         $this->startTest();
     }
@@ -472,7 +603,7 @@ class ContactsTest extends TestCase
                 'payment_terms'        => 10,
                 'tds_category'         => 1,
                 'expense_id'           => '1',
-                'gstin'                => 'test_gstin',
+                'gstin'                => '22AAAAA0000A1Z5',
                 'pan'                  => 'test_pan',
                 'vendor_portal_status' => 'INVITED'
             ]);
@@ -513,7 +644,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 0, 'tds_category' => 1, 'gstin' => 'test_gstin', 'pan' => 'test_pan']);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 0, 'tds_category' => 1, 'gstin' => '22AAAAA0000A1Z5', 'pan' => 'test_pan']);
 
         $this->startTest();
     }
@@ -531,7 +662,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 0, 'gstin' => 'test_gstin', 'pan' => 'test_pan']);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 0, 'gstin' => '22AAAAA0000A1Z5', 'pan' => 'test_pan']);
 
         $this->startTest();
     }
@@ -567,7 +698,7 @@ class ContactsTest extends TestCase
 
         $vendorPaymentServiceMock->expects($this->once())
             ->method('createVendor')
-            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => 'test_gstin', 'pan' => null]);
+            ->willReturn(['id' => '1', 'contact_id' => 'cont_xyz', 'payment_terms' => 10, 'tds_category' => 1, 'gstin' => '22AAAAA0000A1Z5', 'pan' => null]);
 
         $this->startTest();
     }

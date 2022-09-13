@@ -3,6 +3,7 @@
 namespace RZP\Models\Contact;
 
 use RZP\Base;
+use Lib\Gstin;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -35,7 +36,7 @@ class Validator extends Base\Validator
         Entity::TDS_CATEGORY            => 'sometimes|numeric|integer|min:0',
         Entity::PAN                     => 'sometimes|string|min:0|max:40',
         Entity::EXPENSE_ID              => 'sometimes|string|max:40',
-        Entity::GST_IN                  => 'sometimes|string|max:40',
+        Entity::GST_IN                  => 'sometimes|string|max:40|custom',
     ];
 
     protected static $editRules = [
@@ -49,7 +50,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_TERMS => 'sometimes|numeric|integer|min:0',
         Entity::TDS_CATEGORY  => 'sometimes|numeric|integer|min:0',
         Entity::EXPENSE_ID    => 'sometimes|string|max:40',
-        Entity::GST_IN        => 'sometimes|string|max:40',
+        Entity::GST_IN        => 'sometimes|string|max:40|custom',
         Entity::PAN           => 'sometimes|string|min:0|max:40',
     ];
 
@@ -66,6 +67,18 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The name field is invalid.',
                 Entity::NAME);
+        }
+    }
+
+    protected function validateGstin($attribute, $value)
+    {
+        $isValidGstin = Gstin::isValid($value);
+
+        if ($isValidGstin === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The gstin field is invalid.',
+                Entity::GST_IN);
         }
     }
 }

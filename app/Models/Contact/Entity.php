@@ -74,7 +74,8 @@ class Entity extends Base\PublicEntity
         self::REFERENCE_ID,
         self::ACTIVE,
         self::NOTES,
-        self::IDEMPOTENCY_KEY
+        self::IDEMPOTENCY_KEY,
+        self::GST_IN
     ];
 
     protected $public = [
@@ -282,9 +283,21 @@ class Entity extends Base\PublicEntity
 
     public function setPublicGstinAttribute(array &$attributes)
     {
-        if ($this->shouldVendorDetailsBeAdded($attributes))
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        // Earlier gstin was not stored in contacts and other services stored extra metadata on
+        // their service. gstin was one such metadata. Now gstin is stored in contacts and we would
+        // prefer returning whatever comes from other services instead of contacts table for
+        // backward compatibility
+        if (($this->shouldGstinBeAdded($attributes)) or
+            ($this->shouldVendorDetailsBeAdded($attributes)))
         {
-            $attributes[self::GST_IN] = $this->gstIn;
+            $attributes[self::GST_IN] = $this->gstIn === null ? $this->getAttribute(self::GST_IN):$this->gstIn;
+        }
+        else if ($basicAuth->isPrivateAuth() === true)
+        {
+            unset($attributes[self::GST_IN]);
         }
     }
 
@@ -362,6 +375,14 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        return $basicAuth->isProxyOrPrivilegeAuth() === true;
+    }
+
+    private function shouldGstinBeAdded(array &$attributes): bool
+    {
         /** @var BasicAuth $basicAuth */
         $basicAuth = app('basicauth');
 

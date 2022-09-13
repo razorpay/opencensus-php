@@ -53,6 +53,9 @@ class CreateContacts extends Migration
             $table->tinyInteger(Contact::ACTIVE)
                   ->default(1);
 
+            $table->char(Contact::GST_IN, 15)
+                  ->nullable();
+
             $table->integer(Contact::CREATED_AT);
 
             $table->integer(Contact::UPDATED_AT);

@@ -49,7 +49,7 @@ return [
                 'vendor'        => [
                     'payment_terms'        => 10,
                     'tds_category'         => 1,
-                    'gstin'                => 'test_gstin',
+                    'gstin'                => '22AAAAA0000A1Z5',
                     'expense_id'           => '1',
                     'pan'                  => 'test_pan',
                     'vendor_portal_status' => 'INVITED',
@@ -169,12 +169,12 @@ return [
                         'type'          => 'vendor',
                         'payment_terms' => 10,
                         'tds_category'  => 1,
-                        'gstin'         => 'test_gstin',
+                        'gstin'         => '22AAAAA0000A1Z4',
                         'expense_id'    => '1',
                         'vendor'        => [
                             'payment_terms'        => 10,
                             'tds_category'         => 1,
-                            'gstin'                => 'test_gstin',
+                            'gstin'                => '22AAAAA0000A1Z4',
                             'expense_id'           => '1',
                             'pan'                  => 'test_pan',
                             'vendor_portal_status' => 'INVITED',
@@ -401,6 +401,159 @@ return [
         ],
     ],
 
+    'testCreateContactWithInvalidGstinProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => 'hello'
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The gstin field is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateContactWithGstinProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'url'     => '/contacts',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testCreateContactWithGstinInternalAuth' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'url'     => '/contacts_internal',
+            'server'  =>  [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+            'status_code' => '201'
+        ],
+    ],
+
+    'testEditContactWithGstinProxyAuth' => [
+        'request'  => [
+            'content' => [
+                'gstin' => '22AAAAA0000A1Z6'
+            ],
+            'url'     => '/contacts/cont_1',
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z6'
+            ],
+            'status_code' => '200'
+        ],
+    ],
+
+    'testEditContactWithGstinInternalAuth' => [
+        'request'  => [
+            'content' => [
+                'gstin' => '22AAAAA0000A1Z6'
+            ],
+            'url'     => '/contacts_internal/cont_1',
+            'server'  =>  [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z6'
+            ],
+            'status_code' => '200'
+        ],
+    ],
+
     'testCreateContactWithNbsp' => [
         'request'  => [
             'content' => [
@@ -535,7 +688,7 @@ return [
                 'contact'       => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
-                'gstin'        => '1234',
+                'gstin'        => '22AAAAA0000A1Z5',
                 'pan'          => 'ABCD',
                 'notes'         => [
                     'test1' => 'One',
@@ -570,7 +723,7 @@ return [
                 'contact'      => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
-                'gstin'        => '1234',
+                'gstin'        => '22AAAAA0000A1Z5',
                 'pan'          => 'ABCD',
 
                 'notes'        => [
@@ -593,7 +746,7 @@ return [
                 'vendor'        => [
                     'payment_terms'        => 10,
                     'tds_category'         => 1,
-                    'gstin'                => 'test_gstin',
+                    'gstin'                => '22AAAAA0000A1Z5',
                     'expense_id'           => '1',
                     'pan'                  => 'test_pan',
                     'vendor_portal_status' => 'INVITED',
@@ -650,7 +803,7 @@ return [
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
                 'tds_category'  => 1,
-                'gstin'        => '1234',
+                'gstin'        => '22AAAAA0000A1Z5',
                 'pan'          => 'ABCD',
                 'notes'        => [
                     'test1' => 'One',
@@ -672,7 +825,7 @@ return [
                 'vendor'        => [
                     'payment_terms'        => 0,
                     'tds_category'         => 1,
-                    'gstin'                => 'test_gstin',
+                    'gstin'                => '22AAAAA0000A1Z5',
                     'pan'                  => 'test_pan',
                     'id'                   => '1',
                     'contact_id'           => 'cont_xyz'
@@ -695,7 +848,7 @@ return [
                 'email'        => 'asd@abc.com',
                 'contact'      => '9123456789',
                 'payment_terms'=> 10,
-                'gstin'        => '1234',
+                'gstin'        => '22AAAAA0000A1Z5',
                 'pan'          => 'ABCD',
                 'notes'        => [
                     'test1' => 'One',
@@ -716,7 +869,7 @@ return [
                 'tds_category'  => 0,
                 'vendor'        => [
                     'payment_terms'        => 10,
-                    'gstin'                => 'test_gstin',
+                    'gstin'                => '22AAAAA0000A1Z5',
                     'pan'                  => 'test_pan',
                     'id'                   => '1',
                     'contact_id'           => 'cont_xyz'
@@ -785,7 +938,7 @@ return [
                 'contact'      => '9123456789',
                 'payment_terms' => 10,
                 'tds_category'  => 1,
-                'gstin'        => '1234',
+                'gstin'        => '22AAAAA0000A1Z5',
                 'notes'        => [
                     'test1' => 'One',
                 ],
@@ -806,7 +959,7 @@ return [
                 'vendor'        => [
                     'payment_terms'        => 10,
                     'tds_category'         => 1,
-                    'gstin'                => 'test_gstin',
+                    'gstin'                => '22AAAAA0000A1Z5',
                     'pan'                  => null,
                     'id'                   => '1',
                     'contact_id'           => 'cont_xyz'
@@ -2216,6 +2369,53 @@ return [
                 'entity' => 'contact',
                 'id'     => 'cont_1000002contact',
                 'email'  => 'random@test.com',
+            ],
+        ],
+        'status_code' => '200'
+    ],
+
+    'testFetchContactWithGstinProxyAuth' => [
+        'request'  => [
+            'url'    => '/contacts/cont_1000002contact',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
+            ],
+        ],
+        'status_code' => '200'
+    ],
+
+    'testFetchContactWithGstinInternalAuth' => [
+        'request'  => [
+            'url'    => '/contacts_internal/cont_1000002contact',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'contact',
+                'name'         => 'Test / Contact',
+                'type'         => 'self',
+                'reference_id' => '#123abc',
+                'email'        => 'asd@abc.com',
+                'contact'      => '9123456789',
+                'notes'        => [
+                    'test1' => 'One',
+                ],
+                'gstin' => '22AAAAA0000A1Z5'
             ],
         ],
         'status_code' => '200'

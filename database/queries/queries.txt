@@ -7034,3 +7034,6 @@ ALTER TABLE bvs_validation
 
 ALTER TABLE card_mandates
     ADD COLUMN vault_token_pan varchar(50) DEFAULT NULL;
+
+ALTER TABLE `contacts`
+      ADD COLUMN `gstin` char(15) DEFAULT NULL
