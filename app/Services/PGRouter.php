@@ -69,6 +69,8 @@ class PGRouter
 
     const PGRouterPaymentCancel = '/v1/payments/%s/cancel';
 
+    const PGRouterPaymentAuthenticate = '/v1/payments/%s/authenticate';
+
     const PGRouterCreateOrder = 'v1/orders';
 
     const PGRouterPaymentCreateJson = 'v1/payments/create/json';
@@ -223,6 +225,23 @@ class PGRouter
         }
 
         $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure);
+
+        return $output['body'];
+    }
+
+     /**
+     * @param array $input
+     * @param bool  $throwExceptionOnFailure
+     *
+     * @return array
+     */
+    public function paymentAuthenticate(string $id, array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $this->updateIpandUserAgent($input, true);
+
+        $url = sprintf(self::PGRouterPaymentAuthenticate, $id);
+
+        $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
     }

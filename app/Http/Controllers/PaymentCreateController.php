@@ -779,6 +779,18 @@ class PaymentCreateController extends Controller
     {
         $input = Request::all();
 
+        if (empty($input['rearch']) === false)
+        {
+            $data = $this->app['pg_router']->paymentAuthenticate($id, [], true);            
+
+            if (empty($data['html']) === false) 
+            {
+                return $data['html'];
+            }
+            
+            return $data;
+        }
+
         //This is to ensure nothing is breaking in existing flows
         if (!((isset($input['provider']) === true) and ($input['provider'] === Payment\Gateway::GETSIMPL)))
         {
