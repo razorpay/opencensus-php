@@ -191,7 +191,7 @@ class Checkout
 
         $this->fill1ccAddressOptExperiment($merchant, $data);
 
-        $this->fillCheckoutExperiments($data);
+        $this->fillCheckoutExperiments($input, $data, $merchant->getId());
 
         $this->fillCovidReliefDetails($merchant, $data, $mode);
 
@@ -343,9 +343,17 @@ class Checkout
      *
      * @return void
      */
-    protected function fillCheckoutExperiments(array &$data): void
+    /**
+     * This method is used to fill checkout experiment's results into $data
+     * @param  array  $input
+     * @param  array  $data
+     * @param  string  $merchantId
+     *
+     * @return void
+     */
+    protected function fillCheckoutExperiments(array $input, array &$data, string $merchantId): void
     {
-        $data['experiments'] = (new CheckoutExperiment())->getCheckoutExperimentsResults();
+        $data['experiments'] = (new CheckoutExperiment($input, $merchantId))->getCheckoutExperimentsResults();
     }
 
     protected function checkAndFillAppDetails(array $input, Entity $merchant, array &$data, $mode)

@@ -452,6 +452,8 @@ return array(
 
     'checkout_upi_ux_splitz_experiment_id'        => env('CHECKOUT_UPI_UX_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_upi_qr_v2_splitz_experiment_id'     => env('CHECKOUT_UPI_QR_V2_SPLITZ_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'checkout_emi_ui_revamp_splitz_experiment_id' => env('CHECKOUT_EMI_UI_REVAMP_SPLITZ_EXPERIMENT_ID'),

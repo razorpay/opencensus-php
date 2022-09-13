@@ -18,11 +18,17 @@ class CheckoutExperiment
      */
     protected $trace;
 
+    /** @var array */
+    protected $input;
+
+    /** @var string */
+    protected $merchantId;
+
     protected $experimentsData;
 
     protected $experimentResults;
 
-    public function __construct()
+    public function __construct(array $input, string $merchantId)
     {
         $this->app = App::getFacadeRoot();
 
@@ -33,7 +39,12 @@ class CheckoutExperiment
             'checkout_redesign_v1_5' => false,
             'upi_ux'                 => 'existing_variant',
             'emi_ux_revamp'          => false,
+            'upi_qr_v2'              => false,
         ];
+
+        $this->input = $input;
+
+        $this->merchantId = $merchantId;
     }
 
     /**
@@ -82,6 +93,11 @@ class CheckoutExperiment
         $this->experimentsData[] = $this->fillUpiUxExperimentData();
 
         $this->experimentsData[] = $this->fillEmiRevampExperimentData();
+
+        if ($this->shouldIncludeUpiQrV2Experiment())
+        {
+            $this->experimentsData[] = $this->fillUpiQrV2ExperimentData();
+        }
     }
 
     private function fillCheckoutRedesignExperimentData(): array
@@ -108,6 +124,20 @@ class CheckoutExperiment
         ];
     }
 
+    private function fillUpiQrV2ExperimentData(): array
+    {
+        return [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.checkout_upi_qr_v2_splitz_experiment_id'),
+            'request_data'  => json_encode(['merchant_id' => $this->merchantId]),
+        ];
+    }
+
+    private function shouldIncludeUpiQrV2Experiment(): bool
+    {
+        return filter_var($this->input['qr_required'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    }
+
     /**
      * This method just goes through all experiments responses and allows us to handle
      * those responses the way we want for each experiment. if you are creating new
@@ -121,20 +151,27 @@ class CheckoutExperiment
         $checkoutRedesignExperimentId = $this->app['config']->get('app.checkout_redesign_v1_5_splitz_experiment_id');
         $upiUxExperimentId            = $this->app['config']->get('app.checkout_upi_ux_splitz_experiment_id');
         $emiRevampExperimentId        = $this->app['config']->get('app.checkout_emi_ui_revamp_splitz_experiment_id');
+        $upiQrV2ExperimentId          = $this->app['config']->get('app.checkout_upi_qr_v2_splitz_experiment_id');
 
         foreach ($response['response']['bulk_evaluate_response'] as $experimentResponse)
         {
-            if ($experimentResponse['experiment']['id'] === $checkoutRedesignExperimentId)
+            $experimentId = $experimentResponse['experiment']['id'];
+
+            if ($experimentId === $checkoutRedesignExperimentId)
             {
                 $this->experimentResults['checkout_redesign_v1_5'] = $this->handleCheckoutRedesignResponse($experimentResponse);
             }
-            elseif ($experimentResponse['experiment']['id'] === $upiUxExperimentId)
+            elseif ($experimentId === $upiUxExperimentId)
             {
                 $this->experimentResults['upi_ux'] = $this->handleUpiUxResponse($experimentResponse);
             }
-            elseif ($experimentResponse['experiment']['id'] === $emiRevampExperimentId)
+            elseif ($experimentId === $emiRevampExperimentId)
             {
                 $this->experimentResults['emi_ux_revamp'] = $this->handleCheckoutRedesignResponse($experimentResponse);
+            }
+            elseif ($experimentId === $upiQrV2ExperimentId)
+            {
+                $this->experimentResults['upi_qr_v2'] = $this->handleUpiQrV2Response($experimentResponse);
             }
         }
 
@@ -146,11 +183,17 @@ class CheckoutExperiment
         $variant = $response['variant']['name'] ?? '';
 
         return $variant === 'variant_on';
-
     }
 
     private function handleUpiUxResponse($response): string
     {
         return $response['variant']['name'] ?? 'existing_variant';
+    }
+
+    private function handleUpiQrV2Response($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 }
