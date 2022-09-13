@@ -113,6 +113,20 @@ class PaymentEvent extends Event
             ];
         }
 
+
+        $terminal_id = "";
+
+        // updating terminal id if available
+        if (($payment->hasTerminal() === true) && ($payment->terminal !== null))
+        {
+            $terminal_id = $payment->terminal->getId();
+        }
+
+        $properties['payment'] += [
+            'terminal_id'       => $terminal_id,
+        ];
+
+
         // card properties
         if ($payment->hasCard() === true)
         {
