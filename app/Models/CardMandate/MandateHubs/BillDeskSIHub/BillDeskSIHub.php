@@ -16,6 +16,7 @@ use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant;
 
 class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
 {
@@ -43,6 +44,16 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
     public function RegisterMandate(CardMandate\Entity $cardMandate, Payment\Entity $payment, $input = []): Mandate
     {
         $billDeskInput = $this->getRegisterInput($payment, $cardMandate);
+
+        $variant = $this->app['razorx']->getTreatment(
+            $payment->getMerchantId(),
+            Merchant\RazorxTreatment::SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION,
+            $this->mode
+        );
+
+        if (strtolower($variant) === 'on') {
+            unset($billDeskInput[Constants::CARD]);
+        }
 
         $response = $this->app['gateway']->call(MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_CREATE, $billDeskInput, $this->mode);
 

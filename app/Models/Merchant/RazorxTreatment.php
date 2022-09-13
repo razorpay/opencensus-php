@@ -616,4 +616,7 @@ final class RazorxTreatment
     // Experiment to use card / token for sihub validation calls
     const SIHUB_VALIDATION_FORCE_CARD_INSTRUMENT_FIRST = 'sihub_validation_force_card_instrument_first';
 
+    //Experiment to disable card flow for sihub post tokenization deadline
+    const SIHUB_DISABLE_CARD_FLOW_POST_TOKENIZATION = 'sihub_disable_card_flow_post_tokenization';
+
 }
