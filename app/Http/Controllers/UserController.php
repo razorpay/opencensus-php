@@ -215,7 +215,7 @@ class UserController extends Controller
     {
         $uri = trim(\Request::getRequestUri(), '/');
 
-        if (preg_match('/(\br=partner\b)|(\bauth_source\b)|(\breferral_code\b)|(\bcoupon_code\b)/', $uri))
+        if (preg_match('/(\br=partner\b)|(\bauth_source\b)|(\breferral_code\b)|(\breferralCode\b)|(\bcoupon_code\b)/', $uri))
         {
             return true;
         }
