@@ -406,27 +406,29 @@ class CardPaymentService
                 {
                     $initialPayment = (new Payment\Repository)->fetchInitialPaymentIdForToken($input['token']['id'], $input['merchant']['id']);
 
-                    $paymentId = $initialPayment->getId();
-
-                    $request = [
-                        'fields'      => ['network_transaction_id'],
-                        'payment_ids' => [$paymentId],
-                    ];
-
                     $input['payment']['network_transaction_id'] = '039217544591994';
 
-                    $response = $this->app['card.payments']->fetchAuthorizationData($request);
+                    if (!empty($initialPayment)) {
+                        $paymentId = $initialPayment->getId();
 
-                    $this->trace->info(
-                        TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
-                        [
-                            'info_code' => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
-                            'response' => $response,
-                        ]);
+                        $request = [
+                            'fields'      => ['network_transaction_id'],
+                            'payment_ids' => [$paymentId],
+                        ];
 
-                    if ($response[$paymentId]['network_transaction_id'] !== "")
-                    {
-                        $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
+                        $response = $this->app['card.payments']->fetchAuthorizationData($request);
+
+                        $this->trace->info(
+                            TraceCode::HITACHI_DATA_CPS_REQUEST_RESPONSE,
+                            [
+                                'info_code' => InfoCode::CPS_RESPONSE_AUTHORIZATION_DATA,
+                                'response' => $response,
+                            ]);
+
+                        if ($response[$paymentId]['network_transaction_id'] !== "")
+                        {
+                            $input['payment']['network_transaction_id'] = $response[$paymentId]['network_transaction_id'];
+                        }
                     }
                 }
                 catch (\Exception $ex)
