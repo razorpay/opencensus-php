@@ -3,10 +3,12 @@
 namespace RZP\Services\Settlements;
 
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class Reminder extends Base
 {
     const EXECUTION_TRIGGER         = '/twirp/rzp.settlements.execution.v1.ExecutionService/Trigger';
+    const ENTITY_SCHEDULER_TRIGGER  = '/twirp/rzp.settlements.entity_scheduler.v1.EntityScheduler/Trigger';
 
     public function __construct($app)
     {
@@ -23,5 +25,18 @@ class Reminder extends Base
     public function executionReminder(array $input) : array
     {
         return $this->makeRequest(self::EXECUTION_TRIGGER, $input, self::SERVICE_REMINDER);
+    }
+
+    public function entitySchedulerReminder(array $data,string $id) : array
+    {
+        $input=$data;
+        $input['id']=$id;
+        $this->trace->info(TraceCode::SETTLEMENT_REMINDER_CALLBACK_RECEIVED,
+                           [
+                               'entity'    => $input,
+                               'msg'       => 'entity scheduler trigger received calling nss'
+                           ]
+        );
+        return $this->makeRequest(self::ENTITY_SCHEDULER_TRIGGER, $input, self::SERVICE_REMINDER);
     }
 }

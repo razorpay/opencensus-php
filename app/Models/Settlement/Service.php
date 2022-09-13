@@ -1510,6 +1510,16 @@ class Service extends Base\Service
         return app('settlements_dashboard')->bulkRegisterReminder($input);
     }
 
+    public function bulkRegisterEntitySchedulerReminder(array $input) : array
+    {
+        return app('settlements_dashboard')->bulkRegisterEntitySchedulerReminder($input);
+    }
+
+    public function entitySchedulerTriggerMultiple(array $input) : array
+    {
+        return app('settlements_dashboard')->entitySchedulerTriggerMultiple($input);
+    }
+
     public function transactionHold(array $input) : array
     {
         return app('settlements_dashboard')->transactionHold($input);

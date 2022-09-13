@@ -473,5 +473,7 @@ class RouteTeamMap
         'toggle_transaction_hold'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'toggle_transaction_release'                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_amount_check'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_bulk_reminder_es_registration'              => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'setl_trigger_es_multiple'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
     ];
 }

@@ -2,9 +2,9 @@
 
 namespace RZP\Services\Settlements;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount\Type;
 use RZP\Exception\RuntimeException;
-use RZP\Trace\TraceCode;
 
 class Dashboard extends Base
 {
@@ -28,6 +28,8 @@ class Dashboard extends Base
     const EXECUTION_TRIGGER_MULTIPLE   = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
     const EXECUTION_RESUME             = '/twirp/rzp.settlements.execution.v1.ExecutionService/Resume';
     const BULK_REGISTRATION_REMINDER   = '/twirp/rzp.settlements.execution.v1.ExecutionService/BulkRegisterReminders';
+    const BULK_REGISTRATION_ENTITY_SCHEDULER_REMINDER = '/twirp/rzp.settlements.entity_scheduler.v1.EntityScheduler/BulkRegisterEntitySchedulerReminders';
+    const ENTITY_SCHEDULER_TRIGGER_MULTIPLE = '/twirp/rzp.settlements.entity_scheduler.v1.EntityScheduler/TriggerMultiple';
 
     const CHANNEL_STATUS_UPDATE        = '/twirp/rzp.settlements.transfer.v1.TransferService/SetChannelState';
     const CHANNEL_STATUS_GET           = '/twirp/rzp.settlements.transfer.v1.TransferService/GetChannelState';
@@ -46,18 +48,24 @@ class Dashboard extends Base
     const MIGRATE_TO_PAYOUT                = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/MigrateToPayout';
 
     const ENTITIES = 'entities';
+    const CONFIG   = 'config';
     const TYPES = 'types';
+    const INITIATE_TYPES ='initiate_types';
+    const SETTLE_TO_ORG ='settle_to_org';
     const AGGREGATE = 'aggregate';
     const ENABLE = 'enable';
+    const SCHEDULE_ID ='schedule_id';
     const TRANSACTION_LEVEL = 'transaction_level';
     const PREFERENCES = 'preferences';
     const ZERO_DS_IGNORE = 'zero_ds_ignore';
     const DEFAULT = 'default';
+    const DELAYED = 'delayed';
     const FEATURES = 'features';
     const BLOCK = 'block';
     const HOLD = 'hold';
     const STATUS = 'status';
     const AGGREGATE_SETTLEMENT_PARENT = 'aggregate_settlement_parent';
+    const DAILY_SETTLEMENT ='daily_settlement';
 
     public function __construct($app)
     {
@@ -198,6 +206,10 @@ class Dashboard extends Base
      */
     public function merchantConfigUpdate(array $input, $mode = null) : array
     {
+        $this->trace->debug(TraceCode::SETTLEMENT_DEBUG_LOG, [
+            'INPUT' => $input,
+            'msg'=> 'data req',
+        ]);
         return $this->makeRequest(self::MERCHANT_CONFIG_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
     /**
@@ -223,6 +235,14 @@ class Dashboard extends Base
         {
             $input[self::ENTITIES][self::TYPES][self::TRANSACTION_LEVEL][self::ENABLE]  = ($input[self::ENTITIES][self::TYPES][self::TRANSACTION_LEVEL][self::ENABLE] == true);
         }
+        if (isset($input[self::ENTITIES][self::INITIATE_TYPES][self::DEFAULT][self::ENABLE]) === true)
+        {
+            $input[self::ENTITIES][self::INITIATE_TYPES][self::DEFAULT][self::ENABLE]  = ($input[self::ENTITIES][self::INITIATE_TYPES][self::DEFAULT][self::ENABLE] == true);
+        }
+        if (isset($input[self::ENTITIES][self::INITIATE_TYPES][self::DELAYED][self::ENABLE]) === true)
+        {
+            $input[self::ENTITIES][self::INITIATE_TYPES][self::DELAYED][self::ENABLE]  = ($input[self::ENTITIES][self::INITIATE_TYPES][self::DELAYED][self::ENABLE] == true);
+        }
         if (isset($input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE]) === true)
         {
             $input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE]  = ($input[self::ENTITIES][self::PREFERENCES][self::ZERO_DS_IGNORE] == true);
@@ -239,6 +259,11 @@ class Dashboard extends Base
         {
             $input[self::ENTITIES][self::PREFERENCES][self::AGGREGATE_SETTLEMENT_PARENT]  = ($input[self::ENTITIES][self::PREFERENCES][self::AGGREGATE_SETTLEMENT_PARENT] == true);
         }
+        if (isset($input[self::ENTITIES][self::PREFERENCES][self::DAILY_SETTLEMENT]) === true)
+        {
+            $input[self::ENTITIES][self::PREFERENCES][self::DAILY_SETTLEMENT]  = ($input[self::ENTITIES][self::PREFERENCES][self::DAILY_SETTLEMENT] == true);
+        }
+
         return $this->makeRequest(self::MERCHANT_CONFIG_BULK_UPDATE, $input, self::SERVICE_DASHBOARD, $mode);
     }
 
@@ -424,6 +449,17 @@ class Dashboard extends Base
     public function bulkRegisterReminder(array $input) : array
     {
         return $this->makeRequest(self::BULK_REGISTRATION_REMINDER, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function bulkRegisterEntitySchedulerReminder(array $input) :array
+    {
+        return $this->makeRequest(self::BULK_REGISTRATION_ENTITY_SCHEDULER_REMINDER, $input, self::SERVICE_DASHBOARD);
+    }
+
+    public function entitySchedulerTriggerMultiple(array $input) : array
+    {
+        $input['entity_type']='settlement';
+        return $this->makeRequest(self::ENTITY_SCHEDULER_TRIGGER_MULTIPLE, $input, self::SERVICE_DASHBOARD);
     }
 
     /**

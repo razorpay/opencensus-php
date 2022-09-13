@@ -635,6 +635,24 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkRegisterEntitySchedulerReminder()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkRegisterEntitySchedulerReminder($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function entitySchedulerTriggerMultiple()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->entitySchedulerTriggerMultiple($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function transactionHold()
     {
         $input = Request::all();
