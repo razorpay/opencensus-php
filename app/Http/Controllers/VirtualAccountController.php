@@ -292,7 +292,13 @@ class VirtualAccountController extends Controller
                 null, 'SERVER_ER');
         }
 
-        return ApiResponse::json($response);
+        $resp = ApiResponse::json($response);
+
+        $resp->headers->set('content-security-policy', "default-src 'self' https:");
+
+        $resp->headers->set('x-content-type-options', "nosniff");
+
+        return $resp;
 
     }
 
