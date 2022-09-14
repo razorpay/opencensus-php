@@ -472,6 +472,8 @@ class Core extends Base\Core
 
         $missingStatements = array_slice($missingStatements, 0, $insertLimit);
 
+        $missingStatementsBeforeDedupe = $missingStatements;
+
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
             function () use ($channel, $accountNumber, $missingStatements, $dryRunMode)
@@ -489,6 +491,15 @@ class Core extends Base\Core
                 $insertedBasEntities = $this->saveMissingAccountStatements($accountNumber, $channel, $missingStatements);
 
                 $this->pushMissingStatementsLinkingEventsToLedger($accountNumber, $channel, $insertedBasEntities);
+
+                if (empty($insertedBasEntities) === true)
+                {
+                    $response = [
+                        'message' => 'All the missing statements found where already inserted.'
+                    ];
+
+                    return [$response, []];
+                }
 
                 $basIdToAmountMap = [];
 
@@ -548,13 +559,16 @@ class Core extends Base\Core
 
         try
         {
-            BankingAccountStatementUpdate::dispatch($this->mode, $params)->delay(10);
+            if (empty($params) === false)
+            {
+                BankingAccountStatementUpdate::dispatch($this->mode, $params)->delay(10);
 
-            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
-                [
-                    'account_number' => $accountNumber,
-                    'params'         => $params
-                ]);
+                $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
+                                   [
+                                       'account_number' => $accountNumber,
+                                       'params'         => $params
+                                   ]);
+            }
         }
         catch(\Exception $exception)
         {
@@ -574,7 +588,7 @@ class Core extends Base\Core
 
         try
         {
-            $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatements);
+            $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatementsBeforeDedupe);
         }
         catch(\Exception $exception)
         {

@@ -102,6 +102,8 @@ class Service extends Base\Service
             TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_SUCCESS,
             [
                 Entity::CHANNEL => $channel,
+                'environment'   => $this->app->environment('testing'),
+                'mode'          => $this->mode
             ]);
 
         if (($this->app->environment('testing') === false) and
