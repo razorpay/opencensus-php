@@ -668,6 +668,13 @@ class Processor
                 return ($result === 'on');
             }
 
+            if ($this->isPaymentViaTokenisedCard($input)) 
+            { 
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
             if ($this->app['basicauth']->isPrivateAuth() === false)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
@@ -679,11 +686,7 @@ class Processor
 
             return ($result === 'on');
 
-            if($this->isPaymentViaTokenisedCard($input)) {
-                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::NON_SAVED_TOKENISED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                return ($result === 'on');
-            }
 
         }
         catch(\Throwable $e)
