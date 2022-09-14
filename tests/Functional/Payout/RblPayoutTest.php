@@ -647,7 +647,7 @@ class RblPayoutTest extends TestCase
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',
             'balance_id'            => $bankingBalance->getId(),
-            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         ]);
 
         $this->ba->privateAuth();
@@ -713,7 +713,7 @@ class RblPayoutTest extends TestCase
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',
             'balance_id'            => $bankingBalance->getId(),
-            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         ]);
 
         $this->ba->privateAuth();

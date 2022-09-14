@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Merchant\Balance;
 
+use App;
+use Carbon\Carbon;
 use Razorpay\Spine\DataTypes\Dictionary;
 
+use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Exception\BadRequestException;
@@ -15,6 +19,17 @@ use RZP\Models\Settings\Service as SettingsService;
 
 class FreePayout
 {
+    /**
+     * The application instance.
+     *
+     * @var Application
+     */
+    protected $app;
+
+    const SLAB1 = 'slab1';
+
+    const SLAB2 = 'slab2';
+
     const FREE_PAYOUT                           = 'free_payout';
 
     // Settings module key
@@ -23,13 +38,19 @@ class FreePayout
     const FREE_PAYOUTS_SUPPORTED_MODES                  = 'free_payouts_supported_modes';
 
     // Default free shared account payouts allowed per merchant in a month.
-    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT     = 300;
+    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1     = 300;
 
     // Default free direct account payouts allowed per merchant in a month.
-    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = 500;
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1   = 500;
 
     // Default free direct account payouts allowed per merchant in a month for ICICI
-    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI = 500;
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB1 = 500;
+
+    const DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2       = 0;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2   = 250;
+
+    const DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB2 = 250;
 
     // Count of the number of free shared account payouts allowed per merchant in a month.
     const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT             = 'free_shared_account_payouts_count';
@@ -40,6 +61,17 @@ class FreePayout
     // Default free payouts supported modes.
     const DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES          = [Mode::IMPS, Mode::NEFT, Mode::RTGS, Mode::UPI, Mode::IFT];
 
+    const FREE_PAYOUT_SLAB2_ROLLOUT_TIMESTAMP = [
+        'day'   => 5,
+        'month' => 9,
+        'year'  => 2022
+    ];
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+    }
+
     public function getFreePayoutsKeyAndDefaultCount(Balance\Entity $balance)
     {
         $accountType = $balance->getAccountType();
@@ -48,39 +80,96 @@ class FreePayout
 
         $defaultCount = null;
 
-        if ($accountType === AccountType::SHARED)
+        try
         {
-            $configKey = ConfigKey::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
-
-            $defaultCount = self::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+            $slab = $this->getFreePayoutsSlab($balance);
         }
-        else if ($accountType === AccountType::DIRECT)
+        catch (\Throwable $throwable)
         {
-            $channel = $balance->getChannel();
-
-            $channel = strtoupper(trim($channel));
-
-            $configKey = constant(
-                ConfigKey::class . '::' .
-                strtoupper(self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT) . '_' .
-                $channel);
-
-            $defaultCount = constant(
-                self::class . '::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_' .
-                $channel);;
+            $slab = self::SLAB1;
         }
-        else
+
+        $slab = strtoupper(trim($slab));
+
+        switch ($accountType)
         {
-            throw new BadRequestException(
-                'Invalid account type: ' . $accountType,
-                Entity::ACCOUNT_TYPE,
-                [
-                    Entity::ID               => $balance->getPublicId(),
-                    Entity::ACCOUNT_TYPE     => $accountType
-                ]);
+            case AccountType::SHARED:
+                $configKey = constant(ConfigKey::class . '::' .
+                    strtoupper(self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT) . '_' . $slab);
+
+                $defaultCount = constant(self::class . '::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT' . '_' . $slab);
+
+                break;
+
+            case AccountType::DIRECT:
+                $channel = $balance->getChannel();
+
+                $channel = strtoupper(trim($channel));
+
+                $configKey = constant(ConfigKey::class . '::' .
+                    strtoupper(self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT) . '_' . $channel . '_' . $slab);
+
+                $defaultCount = constant(
+                    self::class . '::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_' . $channel  . '_' . $slab);
+
+                break;
+
+            default:
+                throw new BadRequestException(
+                    'Invalid account type: ' . $accountType,
+                    Entity::ACCOUNT_TYPE,
+                    [
+                        Entity::ID               => $balance->getPublicId(),
+                        Entity::ACCOUNT_TYPE     => $accountType
+                    ]);
         }
+
+        $this->app['trace']->info(TraceCode::FREE_PAYOUT_DEFAULT_VALUE_AND_CONFIG_KEY,
+            [
+                'balance_id'       => $balance->getId(),
+                'merchant_id'      => $balance->getMerchantId(),
+                'free_payout_slab' => $slab,
+                'default_value'    => $defaultCount,
+                'redis_key'        => $configKey,
+            ]);
 
         return [$configKey, $defaultCount];
+    }
+
+    protected function getFreePayoutsSlab(Balance\Entity $balance)
+    {
+        $this->app['trace']->info(TraceCode::FREE_PAYOUT_SLAB_CHECK_REQUEST,
+            [
+                'balance_id'  => $balance->getId(),
+                'merchant_id' => $balance->getMerchantId(),
+            ]);
+
+        $slab = self::SLAB1;
+
+        $merchantId = $balance->getMerchantId();
+
+        $merchantCreatedAt = (new Merchant\Repository)->getCreatedAtForTheMerchant($merchantId);
+
+        $freePayoutSlab2RolloutTimestamp = Carbon::create(
+            self::FREE_PAYOUT_SLAB2_ROLLOUT_TIMESTAMP['year'],
+            self::FREE_PAYOUT_SLAB2_ROLLOUT_TIMESTAMP['month'],
+            self::FREE_PAYOUT_SLAB2_ROLLOUT_TIMESTAMP['day'],
+            00, 0, 0, Timezone::IST)->getTimestamp();
+
+        if (($merchantCreatedAt !== null) and
+            ($merchantCreatedAt > $freePayoutSlab2RolloutTimestamp))
+        {
+            $slab = self::SLAB2;
+        }
+
+        $this->app['trace']->info(TraceCode::FREE_PAYOUT_SLAB_ASSIGNED,
+            [
+                'balance_id'       => $balance->getId(),
+                'merchant_id'      => $balance->getMerchantId(),
+                'free_payout_slab' => $slab
+            ]);
+
+        return $slab;
     }
 
     /*

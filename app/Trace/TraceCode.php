@@ -2168,6 +2168,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MFN_WEBHOOK_CREATE_SUCCESS                            = 'MFN_WEBHOOK_CREATE_SUCCESS';
     const MFN_WEBHOOK_CREATE_FAILURE                            = 'MFN_WEBHOOK_CREATE_FAILURE';
 
+    const FREE_PAYOUT_SLAB_CHECK_REQUEST                        = 'FREE_PAYOUT_SLAB_CHECK_REQUEST';
+    const FREE_PAYOUT_SLAB_ASSIGNED                             = 'FREE_PAYOUT_SLAB_ASSIGNED';
+    const FREE_PAYOUT_DEFAULT_VALUE_AND_CONFIG_KEY              = 'FREE_PAYOUT_DEFAULT_VALUE_AND_CONFIG_KEY';
+
     /**
      * New Composite API Trace Codes
      */

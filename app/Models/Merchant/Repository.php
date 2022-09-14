@@ -523,6 +523,16 @@ class Repository extends Base\Repository
     {
         return  $this->findOrFail($merchantId);
     }
+
+    public function getCreatedAtForTheMerchant($merchantId)
+    {
+        return $this->newQuery()
+                    ->select(Entity::CREATED_AT)
+                    ->where(Entity::ID, $merchantId)
+                    ->get()
+                    ->pluck(Entity::CREATED_AT)
+                    ->pop();
+    }
     /**
      * Fetches merchant records which have features assigned in chunks of 200
      * records and passes that to the closure argument for processing

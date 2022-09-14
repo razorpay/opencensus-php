@@ -726,8 +726,8 @@ class PayoutServiceTest extends TestCase
         {
             $response->body        = json_encode(
                 [
-                    'free_payouts_count'           => FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
-                    'free_payouts_consumed'        => FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
+                    'free_payouts_count'           => FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1,
+                    'free_payouts_consumed'        => FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1,
                     'free_payouts_supported_modes' => FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES,
                 ]);
             $response->status_code = 200;
@@ -3564,10 +3564,10 @@ class PayoutServiceTest extends TestCase
         $testData['request']['url'] = '/admin/payouts/' . $balance[Balance::ID] . '/free_payout';
 
         $testData['response']['content']['free_payouts_count'] =
-            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
         $testData['response']['content']['free_payouts_consumed'] =
-            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
         $testData['response']['content']['free_payouts_supported_modes'] =
             FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
@@ -3597,10 +3597,10 @@ class PayoutServiceTest extends TestCase
         $testData['request']['url'] = '/payouts/' . $balance[Balance::ID] . '/free_payout';
 
         $testData['response']['content']['free_payouts_count'] =
-            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
         $testData['response']['content']['free_payouts_consumed'] =
-            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+            FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
         $testData['response']['content']['free_payouts_supported_modes'] =
             FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;

@@ -11919,6 +11919,16 @@ return [
         ],
     ],
 
+    'testGetFreePayoutsAttributesForNewSlabMerchants' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/{balance_id}/free_payout',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testGetFreePayoutsAttributesOnProxyAuthViewOnlyUser' => [
         'request'  => [
             'method' => 'GET',

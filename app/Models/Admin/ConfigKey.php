@@ -220,13 +220,19 @@ class ConfigKey
     const BATCH_PAYOUTS_FETCH_LIMIT                     = self::PREFIX . 'batch_payouts_fetch_limit';
 
     // Count of the number of free shared account payouts allowed per merchant in a month.
-    const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT = self::PREFIX . FreePayout::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+    const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1 = self::PREFIX . FreePayout::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT . '_' . FreePayout::SLAB1;
 
     // Count of the number of free direct account payouts allowed per merchant in a month.
-    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::RBL;
+    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::RBL . '_' . FreePayout::SLAB1;
 
     // Count of the number of free direct account payouts for ICICI allowed per merchant in a month.
-    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::ICICI;
+    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB1 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::ICICI . '_' . FreePayout::SLAB1;
+
+    const FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2 = self::PREFIX . FreePayout::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT . '_' . FreePayout::SLAB2;
+
+    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::RBL . '_' . FreePayout::SLAB2;
+
+    const FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB2 = self::PREFIX . FreePayout::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT . '_' . Channel::ICICI . '_' . FreePayout::SLAB2;
 
     const FREE_PAYOUTS_SUPPORTED_MODES = self::PREFIX . FreePayout::FREE_PAYOUTS_SUPPORTED_MODES;
 
@@ -389,9 +395,12 @@ class ConfigKey
         self::MERCHANT_NOTIFICATION_CONFIG_FETCH_LIMIT,
         self::BATCH_PAYOUTS_FETCH_LIMIT,
         self::ENABLE_NB_KOTAK_ENCRYPTED_FLOW,
-        self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT,
-        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
-        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI,
+        self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1,
+        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
+        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB1,
+        self::FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2,
+        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB2,
+        self::FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_ICICI_SLAB2,
         self::FREE_PAYOUTS_SUPPORTED_MODES,
         self::DOWNTIME_SLACK_NOTIFICATION_CHANNELS,
         self::ENABLE_PAYMENT_DOWNTIME_CARD,

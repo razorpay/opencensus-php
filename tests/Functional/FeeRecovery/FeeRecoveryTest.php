@@ -1489,7 +1489,7 @@ class FeeRecoveryTest extends TestCase
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
         $bankingBalance->save();
 
-        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT';
+        $defaultFreePayoutsCountConstantName = 'DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1';
 
         $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
 

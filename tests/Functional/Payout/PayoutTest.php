@@ -3286,6 +3286,9 @@ class PayoutTest extends OAuthTestCase
 
         $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
 
+        $this->setFreePayoutsCountInAdminKey(AccountType::DIRECT, Details\Channel::RBL);
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED);
+
         $secondBankingBalance = $this->createDirectBankingBalance();
 
         $balanceId1 = $this->bankingBalance->getId();
@@ -7767,7 +7770,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',
             'balance_id'            => $bankingBalance->getId(),
-            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         ]);
 
         $this->ba->privateAuth();
@@ -9369,7 +9372,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',
             'balance_id'            => $bankingBalance->getId(),
-            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         ]);
 
         $bankingBalance->setAccountNumber($virtualAccount->bankAccount->getAccountNumber());
@@ -9896,7 +9899,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->create('counter', [
             'account_type'          => 'direct',
             'balance_id'            => $bankingBalance->getId(),
-            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL,
+            'free_payouts_consumed' => FreePayout::DEFAULT_FREE_DIRECT_ACCOUNT_PAYOUTS_COUNT_RBL_SLAB1,
         ]);
 
         $this->ba->privateAuth();
@@ -12041,6 +12044,14 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetFreePayoutsAttributesOnProxyAuthOwnerUser()
     {
+        // Setting the time to before september because
+        // we are assigning different free payout slabs based on merchant entity creation time
+        // we have free_payouts_slab1 for old merchants and free_payouts_slab2 for new merchants
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2022, 8, 25, 00, 0, 0, Timezone::IST)
+                                    ->getTimestamp(),
+        ]);
+
         $this->mockRazorxTreatment();
 
         $this->ba->proxyAuth();
@@ -12053,9 +12064,37 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
 
-        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
-        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
+
+        $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+    }
+
+    public function testGetFreePayoutsAttributesForNewSlabMerchants()
+    {
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->ba->addXOriginHeader();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2022, 9, 6, 00, 0, 0, Timezone::IST)
+                                          ->getTimestamp(),
+        ]);
+
+        $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
+
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB2;
 
         $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
 
@@ -12066,6 +12105,14 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetFreePayoutsAttributesOnAdminAuth()
     {
+        // Setting the time to before september because
+        // we are assigning different free payout slabs based on merchant entity creation time
+        // we have free_payouts_slab1 for old merchants and free_payouts_slab2 for new merchants
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2022, 8, 25, 00, 0, 0, Timezone::IST)
+                            ->getTimestamp(),
+        ]);
+
         $this->ba->adminAuth();
 
         $testData = $this->testData['testGetFreePayoutsAttributesOnProxyAuthOwnerUser'];
@@ -12074,9 +12121,9 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['url'] = '/admin/payouts/' . $balanceId . '/free_payout';
 
-        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
-        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
         $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
 
@@ -12087,6 +12134,14 @@ class PayoutTest extends OAuthTestCase
 
     public function testGetFreePayoutsAttributesOnProxyAuthAdminUser()
     {
+        // Setting the time to before september because
+        // we are assigning different free payout slabs based on merchant entity creation time
+        // we have free_payouts_slab1 for old merchants and free_payouts_slab2 for new merchants
+        $this->fixtures->edit('merchant', $this->bankingBalance->getMerchantId(), [
+            'created_at' => Carbon::create(2022, 8, 25, 00, 0, 0, Timezone::IST)
+                            ->getTimestamp(),
+        ]);
+
         $this->mockRazorxTreatment();
 
         $adminRoleUser = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'admin');
@@ -12101,9 +12156,9 @@ class PayoutTest extends OAuthTestCase
 
         $testData['request']['url'] = '/payouts/' . $balanceId . '/free_payout';
 
-        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+        $testData['response']['content']['free_payouts_count'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
-        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT;
+        $testData['response']['content']['free_payouts_consumed'] = FreePayout::DEFAULT_FREE_SHARED_ACCOUNT_PAYOUTS_COUNT_SLAB1;
 
         $testData['response']['content']['free_payouts_supported_modes'] = FreePayout::DEFAULT_FREE_PAYOUTS_SUPPORTED_MODES;
 
@@ -18616,6 +18671,8 @@ class PayoutTest extends OAuthTestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->ba->payoutLinksAppAuth();
+
+        $this->setFreePayoutsCountInAdminKey(AccountType::SHARED);
 
         $this->startTest();
     }

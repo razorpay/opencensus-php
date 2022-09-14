@@ -540,6 +540,8 @@ trait TestsBusinessBanking
             $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_' . strtoupper($channel);
         }
 
+        $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_SLAB1';
+
         $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
 
         return $defaultFreePayoutsCount;
@@ -567,7 +569,8 @@ trait TestsBusinessBanking
 
         (new Admin\Service)->setConfigKeys(
             [
-                constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName) => 300
+                constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName . '_SLAB1') => 300,
+                constant(Admin\ConfigKey::class . '::' . $freePayoutsCountConstantName . '_SLAB2')  => 300,
             ]);
     }
 
@@ -610,6 +613,8 @@ trait TestsBusinessBanking
         {
             $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_' . strtoupper($channel);
         }
+
+        $defaultFreePayoutsCountConstantName = $defaultFreePayoutsCountConstantName . '_SLAB1';
 
         $defaultFreePayoutsCount = constant(FreePayout::class . '::' . $defaultFreePayoutsCountConstantName);
 
