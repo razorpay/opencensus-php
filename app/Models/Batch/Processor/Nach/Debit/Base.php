@@ -333,4 +333,12 @@ class Base extends BaseProcessor
             $instrumentationData["api_error_code"]          = $this->getApiErrorCode($content);
         }
     }
+
+    public function getPaymentDetails(array $entries){
+        foreach ($entries as &$entry)
+        {
+            $content = $this->getDataFromRow($entry);
+            return $this->getPayment($content);
+        }
+    }
 }

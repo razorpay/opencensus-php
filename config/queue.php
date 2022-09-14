@@ -515,6 +515,10 @@ return [
         'live'       => env('AWS_EMANDATE_FILES_INSTRUMENTATION_LIVE_QUEUE'),
     ],
 
+    'nach_batch_process_async_balance' => [
+        'test'       => env('AWS_NACH_BATCH_PROCESS_ASYNC_BAL_TEST_QUEUE'),
+        'live'       => env('AWS_NACH_BATCH_PROCESS_ASYNC_BAL_LIVE_QUEUE'),
+    ],
 
     'art_recon_entity_update'  => [
         'test'       => env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE'),
