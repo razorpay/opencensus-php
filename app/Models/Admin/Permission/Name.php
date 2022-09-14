@@ -1062,6 +1062,10 @@ class Name
     const VIEW_PRIVILEGES                       = 'view_privileges';
     const FETCH_MISSING_BAS                     = 'fetch_missing_bas';
 
+    // This permission is intentionally not mapped to any route, this is purely for FE to consume,
+    // actual route authorization is done at the microservice layer.
+    const ACCOUNTS_RECEIVABLE_ADMIN             = 'accounts_receivable_admin';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

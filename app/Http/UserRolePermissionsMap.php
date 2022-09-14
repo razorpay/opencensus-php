@@ -181,7 +181,9 @@ class UserRolePermissionsMap
                  Permission::DELETE_ROLE,
                  Permission::EDIT_ROLE,
                  Permission::VIEW_PRIVILEGES,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
              ],
 
              BankingRole::ADMIN => [
@@ -315,7 +317,9 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ROLE,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -428,7 +432,9 @@ class UserRolePermissionsMap
                  Permission::HAS_APP_ACCESS,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ROLE,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
              ],
 
              BankingRole::OPERATIONS => [
@@ -494,7 +500,9 @@ class UserRolePermissionsMap
                  Permission::FILL_KYC,
                  Permission::HAS_APP_ACCESS,
                  Permission::VIEW_PRIVILEGES,
-                 Permission::VIEW_ALL_ROLES
+                 Permission::VIEW_ALL_ROLES,
+
+                 Permission::ACCOUNTS_RECEIVABLE_ADMIN
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
