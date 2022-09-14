@@ -162,8 +162,9 @@ class Webhooks extends Base\Core
             return;
         }
 
-        $refundFromTxn = (int)(floatval($txn['amount']) * 100);
-        $refundFromWebhook = (int)(floatval($input['transactions'][0]['amount']) * 100);
+        // amount will always have 2 decimals as string
+        $refundFromTxn = floatval($txn['amount']) * 100;
+        $refundFromWebhook = floatval($input['transactions'][0]['amount']) * 100;
 
         $keys = explode('|', $txn['authorization']);
 
