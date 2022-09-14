@@ -78,9 +78,8 @@ _dcs.account = '9421167';
 })();
 
 </script>
-
-@if ($newAuthRoute !== 'signup' && $newAuthRoute !== 'resetpassword')
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
+@if ($newAuthRoute !== 'signup')
+  <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}

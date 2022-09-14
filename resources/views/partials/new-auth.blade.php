@@ -1,4 +1,4 @@
-@if ($newAuthRoute !== 'signup' && $newAuthRoute !== 'resetpassword')
+@if ($newAuthRoute !== 'signup')
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
