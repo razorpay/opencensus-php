@@ -395,6 +395,35 @@ class Repository extends Base\Repository
                      ->get();
     }
 
+    public function fetchQueuedAndOnHoldPayouts(string $merchantId,
+                                                string $balanceType = Balance\Type::BANKING)
+    {
+        // select(payouts.*) because if we don't restrict to payouts table columns,
+        // collection_item->balance will return the balance field from joined table
+        // as opposed to the expected eager-loaded balance entity
+
+        $statusColumn     = $this->repo->payout->dbColumn(Entity::STATUS);
+        $merchantIdColumn = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+        $createdAtColumn  = $this->repo->payout->dbColumn(Entity::CREATED_AT);
+
+        $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->with(['balance', 'merchant'])
+            ->select($this->getTableName() . ".*")
+            ->where($createdAtColumn, '>=', $afterDate)
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->wherein($statusColumn, [Status::QUEUED, Status::ON_HOLD]);
+
+        $this->joinQueryBalance($query);
+
+        $balanceTypeColumn = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $query->where($balanceTypeColumn, '=', $balanceType);
+
+        return $query->get();
+    }
+
     public function fetchOptimisedQueuedAndOnHoldPayouts(string $merchantId,
                                                          string $balanceType = Balance\Type::BANKING)
     {
@@ -438,6 +467,30 @@ class Repository extends Base\Repository
                     ->merchantId($merchantId)
                     ->limit(self::SCHEDULED_PAYOUTS_FETCH_LIMIT)
                     ->get();
+    }
+
+    public function checkIfPendingPayoutsExist(string $merchantId,
+                                               string $balanceType = Balance\Type::BANKING)
+    {
+        $statusColumn                = $this->repo->payout->dbColumn(Entity::STATUS);
+        $createdAtColumn             = $this->repo->payout->dbColumn(Entity::CREATED_AT);
+        $merchantIdColumn            = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+        $balanceIdPayoutsTableColumn = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+        $balanceTable                = $this->repo->balance->getTableName();
+        $balanceIdColumn             = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ID);
+        $balanceTypeColumn           = $this->repo->balance->dbColumn(Merchant\Balance\Entity::TYPE);
+
+        $afterDate = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->join($balanceTable, $balanceIdPayoutsTableColumn, '=', $balanceIdColumn)
+            ->where($statusColumn, '=',Status::PENDING)
+            ->where($createdAtColumn, '>=', $afterDate)
+            ->where($merchantIdColumn,'=', $merchantId)
+            ->where($balanceTypeColumn, '=', $balanceType)
+            ->limit(1)
+            ->get();
+
     }
 
     /**

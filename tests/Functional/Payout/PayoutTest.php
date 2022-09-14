@@ -2596,6 +2596,14 @@ class PayoutTest extends OAuthTestCase
 
     }
 
+    public function testDashboardSummaryWithExperimentEnabled()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SUMMARY_API_EXPERIMENT => 'on',
+            RazorxTreatment::NEFT_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->testDashboardSummary();
+    }
+
     public function testDashboardSummary()
     {
         $this->mockLedgerSns(0);
@@ -2717,6 +2725,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($queuedSummaryFirstAccount['low_balance']['balance'], "10000000");
 
         $this->assertEquals($pendingSummaryFirstAccount['count'], 1);
+
         $this->assertEquals($pendingSummaryFirstAccount['total_amount'], 54321);
 
         $this->assertEquals($queuedSummarySecondAccount['low_balance']['count'], 1);

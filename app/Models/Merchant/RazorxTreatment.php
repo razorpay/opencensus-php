@@ -167,6 +167,9 @@ final class RazorxTreatment
     // Fund transfer request from payout to fts in sync mode
     const PAYOUT_TO_FTS_SYNC_MODE = 'payout_to_fts_sync_mode';
 
+    //experiment temperarily added to observe behaviour of different queries for certain merchants
+    const SUMMARY_API_EXPERIMENT = 'summary_api_experiment';
+
     // New user EmailVerify through OTP
     const EMAIL_VERIFICATION_USING_OTP = 'email_verification_using_otp';
 
