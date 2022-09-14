@@ -146,9 +146,9 @@ class Entity extends BankingAccount\Entity
 
     public function setPublicSentToBankDateAttribute(array & $array)
     {
-        $sentToBankLog = $this->activationStates
+        $sentToBankLog = $this->activationStates()
             ->where(self::STATUS, '=', BankingAccount\Status::INITIATED)
-            ->whereNull(self::SUB_STATUS);
+            ->whereRaw('( `sub_status` IS NULL or `sub_status` = \'none\' )');
 
         if(empty($sentToBankLog))
         {

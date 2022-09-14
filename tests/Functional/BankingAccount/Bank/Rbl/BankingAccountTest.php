@@ -8094,7 +8094,6 @@ class BankingAccountTest extends TestCase
 
     public function testBankLmsEndToEndForLeadReceivedDateFiltersNegativecase()
     {
-        $this->markTestSkipped();
         // Make merchant as Bank CA Onboarding Partner
         $response = $this->makeMerchantAsBankCAOnboardingPartner();
 
