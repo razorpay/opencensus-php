@@ -87,20 +87,30 @@ class BasicAuth
 
     const KEY                     = 'key';
     const KEY_ID                  = 'key_id';
+    const MERCHANT_ID             = 'merchant_id';
+    const ENTITY_ID               = 'entity_id';
     const ACCOUNT_ID              = 'account_id';
     const SECRET                  = 'secret';
     const PUBLIC_KEY              = 'public_key';
-    const AUTH_TYPE               = 'auth_type';
 
     // Used in requestContext for request metrics
     const OAUTH                 = 'oauth';
     const PARTNER               = 'partner';
-    const PUBLIC           = 'public';
+    const PUBLIC                = 'public';
+
+    // Used in logs to detect which auth was used.
+    // Route list will not help identify the above as there is a fallback mechanism added apart from route lists.
+    const KEYLESS_AUTH          = 'keyless_auth';
+    const KEY_AUTH              = 'key_auth';
+    const DIRECT_AUTH           = 'direct_auth';
+    const AUTH_TYPE             = 'auth_type';
 
     const ROUTE_PARAM           = 'route_param';
     const QUERY_PARAM           = 'query_param';
     const BODY_PARAM            = 'body_param';
     const AUTH_HEADER           = 'auth_header';
+
+    const ROUTE                 = 'route';
 
     // Public key used in public auth, and callback route param can be one of these forms.
     const PARTNER_KEY_REGEX = '/^(rzp_(test|live)_partner_([a-zA-Z0-9]{14}))[-~](acc_[a-zA-Z0-9]{14})$/';
@@ -880,6 +890,12 @@ class BasicAuth
         }
 
         $this->setKeylessPublicAuthAttributes($entityId);
+        $this->trace->info(
+            TraceCode::AUTH_TYPE_USED, [
+                self::AUTH_TYPE => self::KEYLESS_AUTH,
+                self::ENTITY_ID => $entityId,
+                self::ROUTE     => app('request.ctx')->getRoute()
+            ]);
 
         $this->authCreds = new KeyAuthCreds($this->app);
 
@@ -915,6 +931,12 @@ class BasicAuth
             return $res;
         }
 
+        $this->trace->info(
+            TraceCode::AUTH_TYPE_USED, [
+            self::AUTH_TYPE => self::KEY_AUTH,
+            self::ROUTE     => app('request.ctx')->getRoute()
+        ]);
+
         // Else continues with verifying key existence etc.. and sets all the instance variables accordingly
         $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
 
@@ -945,6 +967,11 @@ class BasicAuth
             return $this->publicAuth();
         }
 
+        $this->trace->info(
+            TraceCode::AUTH_TYPE_USED, [
+            self::AUTH_TYPE => self::DIRECT_AUTH,
+            self::ROUTE     => app('request.ctx')->getRoute()
+        ]);
         $this->authCreds = new KeyAuthCreds($this->app);
 
         $this->setType(Type::DIRECT_AUTH);

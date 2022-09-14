@@ -2278,6 +2278,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LA_REFERENCE_DATA_CREATE_REQUEST_RECEIVED             = 'LA_REFERENCE_DATA_CREATE_REQUEST_RECEIVED';
     const LA_REFERENCE_DATA_CREATION_FAILED                     = 'LA_REFERENCE_DATA_CREATION_FAILED';
 
+    const AUTH_TYPE_USED                                        = 'AUTH_TYPE_USED';
+
     const NODAL_INTEGRATION_ERROR                               = 'NODAL_INTEGRATION_ERROR';
     const REPORTING_SERVICE_API_REQUEST                         = 'REPORTING_SERVICE_API_REQUEST';
     const REPORTING_SERVICE_API_RESPONSE                        = 'REPORTING_SERVICE_API_RESPONSE';
