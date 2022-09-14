@@ -1066,7 +1066,11 @@ class Service extends Base\Service
 
         $user = $this->repo->user->findOrFailPublic($id);
 
+        $this->trace->info(TraceCode::UPDATE_USER_MERCHANT_MAPPING_REQUEST);
+
         $user = $this->core->updateUserMerchantMapping($user, $input);
+
+        $this->trace->info(TraceCode::UPDATE_USER_MERCHANT_MAPPING_SUCCESS);
 
         return $user->toArrayPublic();
     }

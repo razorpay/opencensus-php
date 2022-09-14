@@ -3722,11 +3722,15 @@ class Core extends Base\Core
 
         $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $this->trace->info(TraceCode::MERCHANT_USER_MAPPING_QUERY);
+
         // On PG, X a user can have only 1 role. If we user with any role is already present throw an exception
         $mapping = $this->repo->merchant->getMerchantUserMapping($merchantId,
                                                                  $user->getId(),
                                                                  null,
                                                                  $product);
+
+        $this->trace->info(TraceCode::MERCHANT_USER_MAPPING_QUERY_SUCCESSFUL);
 
         // Adding an experiment to restrict this behaviour in production if required
         // Ideally this should never happen, but we do have some users which have multiple roles per merchant, product
@@ -3740,7 +3744,13 @@ class Core extends Base\Core
 
         $this->repo->attach($user, $product . Entity::MERCHANTS, [$merchantId => $mappingParams]);
 
-        return $user->toArrayPublic();
+        $this->trace->info(TraceCode::MERCHANT_USER_ATTACH_SUCCESSFUL);
+
+        $response = $user->toArrayPublic();
+
+        $this->trace->info(TraceCode::MERCHANT_USER_ENTITY_RESPONSE);
+
+        return $response;
     }
 
      /**

@@ -8022,6 +8022,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PARTNER_FETCH_SUBMERCHANTS_LIST                             = 'PARTNER_FETCH_SUBMERCHANTS_LIST';
     const PARTNER_FETCH_SUBMERCHANTS_DATA                             = 'PARTNER_FETCH_SUBMERCHANTS_DATA';
 
+    const UPDATE_USER_MERCHANT_MAPPING_REQUEST                        = 'UPDATE_USER_MERCHANT_MAPPING_REQUEST';
+    const UPDATE_USER_MERCHANT_MAPPING_SUCCESS                        = 'UPDATE_USER_MERCHANT_MAPPING_SUCCESS';
+    const MERCHANT_USER_MAPPING_QUERY                                 = 'MERCHANT_USER_MAPPING_QUERY';
+    const MERCHANT_USER_MAPPING_QUERY_SUCCESSFUL                      = 'MERCHANT_USER_MAPPING_QUERY_SUCCESSFUL';
+    const MERCHANT_USER_ATTACH_SUCCESSFUL                             = 'MERCHANT_USER_ATTACH_SUCCESSFUL';
+    const MERCHANT_USER_ENTITY_RESPONSE                               = 'MERCHANT_USER_ENTITY_RESPONSE';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
