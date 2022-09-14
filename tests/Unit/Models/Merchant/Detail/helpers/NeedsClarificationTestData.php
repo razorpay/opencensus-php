@@ -152,5 +152,142 @@ return [
         ],
     ],
 
+    'testComposerForNcBvsEntity'        => [
+        'artefact_type' => 'gstin',
+        'error_code'    => 'RULE_EXECUTION_FAILED',
+        'rule_execution_list' => [
+            0 => [
+                'rule' => [
+                    'rule_type' => 'string_comparison_rule',
+                    'rule_def' => [
+                        'or' => [
+                            0 => [
+                                'fuzzy_wuzzy' => [
+                                    0 => [
+                                        'var' => 'artefact.details.legal_name.value',
+                                    ],
+                                    1 => [
+                                        'var' => 'enrichments.online_provider.details.legal_name.value',
+                                    ],
+                                    2 => 70,
+                                ],
+                            ],
+                            1 => [
+                                'fuzzy_wuzzy' => [
+                                    0 => [
+                                        'var' => 'artefact.details.trade_name.value',
+                                    ],
+                                    1 => [
+                                        'var' => 'enrichments.online_provider.details.trade_name.value',
+                                    ],
+                                    2 => 70,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'rule_execution_result' => [
+                    'result' => false,
+                    'operator' => 'or',
+                    'operands' => [
+                        'operand_1' => [
+                            'result' => false,
+                            'operator' => 'fuzzy_wuzzy',
+                            'operands' => [
+                                'operand_1' => 'Rzp Test QA Merchant',
+                                'operand_2' => 'RAZORPAY SOFTWARE PRIVATE LIMITED',
+                                'operand_3' => 70,
+                            ],
+                            'remarks' => [
+                                'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                'match_percentage'      => 45,
+                                'required_percentage'   => 70,
+                            ],
+                        ],
+                        'operand_2' => [
+                            'result' => false,
+                            'operator' => 'fuzzy_wuzzy',
+                            'operands' => [
+                                'operand_1' => 'CHIZRINZ INFOWAY PRIVATE LIMITED',
+                                'operand_2' => 'RAZORPAY SOFTWARE PRIVATE LIMITED',
+                                'operand_3' => 70,
+                            ],
+                            'remarks' => [
+                                'algorithm_type'       => 'fuzzy_wuzzy_default_algorithm',
+                                'match_percentage'     => 68,
+                                'required_percentage'  => 70,
+                            ],
+                        ],
+                    ],
+                    'remarks' => [
+                        'algorithm_type'      => 'fuzzy_wuzzy_default_algorithm',
+                        'match_percentage'    => 68,
+                        'required_percentage' => 70,
+                    ],
+                ],
+                'error' => '',
+            ],
+            1 => [
+                'rule' => [
+                    'rule_type' => 'array_comparison_rule',
+                    'rule_def' => [
+                        'some' => [
+                            0 => [
+                                'var' => 'enrichments.online_provider.details.signatory_names',
+                            ],
+                            1 => [
+                                'fuzzy_wuzzy' => [
+                                    0 => [
+                                        'var' => 'each_array_element',
+                                    ],
+                                    1 => [
+                                        'var' => 'artefact.details.legal_name.value',
+                                    ],
+                                    2 => 70,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'rule_execution_result' => [
+                    'result' => false,
+                    'operator' => 'some',
+                    'operands' => [
+                        'operand_1' => [
+                            'result' => false,
+                            'operator' => 'fuzzy_wuzzy',
+                            'operands' => [
+                                'operand_1' => 'HARSHILMATHUR ',
+                                'operand_2' => 'Rzp Test QA Merchant',
+                                'operand_3' => 70,
+                            ],
+                            'remarks' => [
+                                'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                'match_percentage'      => 30,
+                                'required_percentage'   => 70,
+                            ],
+                        ],
+                        'operand_2' => [
+                            'result' => false,
+                            'operator' => 'fuzzy_wuzzy',
+                            'operands' => [
+                                'operand_1' => 'Shashank kumar ',
+                                'operand_2' => 'Rzp Test QA Merchant',
+                                'operand_3' => 70,
+                            ],
+                            'remarks' => [
+                                'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                'match_percentage'      => 29,
+                                'required_percentage'   => 70,
+                            ],
+                        ],
+                    ],
+                    'remarks' => null,
+                ]
+            ]
+        ],
+        'validation_status' => 'failed'
+    ]
+
 
 ];

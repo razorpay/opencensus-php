@@ -3,9 +3,15 @@
 namespace RZP\Tests\Unit\Models\Merchant\Detail;
 
 use RZP\Constants\Mode;
+use Mockery\MockInterface;
 use RZP\Models\Feature\Entity;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Store;
+use RZP\Models\Merchant\Service;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\Store\ConfigKey;
@@ -17,6 +23,9 @@ use RZP\Models\Merchant\Detail\NeedsClarification\Constants;
 
 class NeedsClarificationTest extends TestCase
 {
+
+    use OAuthTrait;
+    use BatchTestTrait;
 
     protected function setUp(): void
     {
@@ -1784,143 +1793,12 @@ class NeedsClarificationTest extends TestCase
 
         (new \RZP\Models\Feature\Core())->create($featureParams,true);
 
-        $this->fixtures->create('bvs_validation', [
-            'owner_id'      => $mid,
-            'artefact_type' => 'gstin',
-            'error_code'    => 'RULE_EXECUTION_FAILED',
-            'rule_execution_list' => [
-                0 => [
-                    'rule' => [
-                        'rule_type' => 'string_comparison_rule',
-                        'rule_def' => [
-                            'or' => [
-                                0 => [
-                                    'fuzzy_wuzzy' => [
-                                        0 => [
-                                            'var' => 'artefact.details.legal_name.value',
-                                        ],
-                                        1 => [
-                                            'var' => 'enrichments.online_provider.details.legal_name.value',
-                                        ],
-                                        2 => 70,
-                                    ],
-                                ],
-                                1 => [
-                                    'fuzzy_wuzzy' => [
-                                        0 => [
-                                            'var' => 'artefact.details.trade_name.value',
-                                        ],
-                                        1 => [
-                                            'var' => 'enrichments.online_provider.details.trade_name.value',
-                                        ],
-                                        2 => 70,
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                    'rule_execution_result' => [
-                        'result' => false,
-                        'operator' => 'or',
-                        'operands' => [
-                            'operand_1' => [
-                                'result' => false,
-                                'operator' => 'fuzzy_wuzzy',
-                                'operands' => [
-                                    'operand_1' => 'Rzp Test QA Merchant',
-                                    'operand_2' => 'RAZORPAY SOFTWARE PRIVATE LIMITED',
-                                    'operand_3' => 70,
-                                ],
-                                'remarks' => [
-                                    'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
-                                    'match_percentage'      => 45,
-                                    'required_percentage'   => 70,
-                                ],
-                            ],
-                            'operand_2' => [
-                                'result' => false,
-                                'operator' => 'fuzzy_wuzzy',
-                                'operands' => [
-                                    'operand_1' => 'CHIZRINZ INFOWAY PRIVATE LIMITED',
-                                    'operand_2' => 'RAZORPAY SOFTWARE PRIVATE LIMITED',
-                                    'operand_3' => 70,
-                                ],
-                                'remarks' => [
-                                    'algorithm_type'       => 'fuzzy_wuzzy_default_algorithm',
-                                    'match_percentage'     => 68,
-                                    'required_percentage'  => 70,
-                                ],
-                            ],
-                        ],
-                        'remarks' => [
-                            'algorithm_type'      => 'fuzzy_wuzzy_default_algorithm',
-                            'match_percentage'    => 68,
-                            'required_percentage' => 70,
-                        ],
-                    ],
-                    'error' => '',
-                ],
-                1 => [
-                    'rule' => [
-                        'rule_type' => 'array_comparison_rule',
-                        'rule_def' => [
-                            'some' => [
-                                0 => [
-                                    'var' => 'enrichments.online_provider.details.signatory_names',
-                                ],
-                                1 => [
-                                    'fuzzy_wuzzy' => [
-                                        0 => [
-                                            'var' => 'each_array_element',
-                                        ],
-                                        1 => [
-                                            'var' => 'artefact.details.legal_name.value',
-                                        ],
-                                        2 => 70,
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
-                    'rule_execution_result' => [
-                        'result' => false,
-                        'operator' => 'some',
-                        'operands' => [
-                            'operand_1' => [
-                                'result' => false,
-                                'operator' => 'fuzzy_wuzzy',
-                                'operands' => [
-                                    'operand_1' => 'HARSHILMATHUR ',
-                                    'operand_2' => 'Rzp Test QA Merchant',
-                                    'operand_3' => 70,
-                                ],
-                                'remarks' => [
-                                    'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
-                                    'match_percentage'      => 30,
-                                    'required_percentage'   => 70,
-                                ],
-                            ],
-                            'operand_2' => [
-                                'result' => false,
-                                'operator' => 'fuzzy_wuzzy',
-                                'operands' => [
-                                    'operand_1' => 'Shashank kumar ',
-                                    'operand_2' => 'Rzp Test QA Merchant',
-                                    'operand_3' => 70,
-                                ],
-                                'remarks' => [
-                                    'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
-                                    'match_percentage'      => 29,
-                                    'required_percentage'   => 70,
-                                ],
-                            ],
-                        ],
-                        'remarks' => null,
-                    ]
-                ]
-            ],
-            'validation_status' => 'failed'
-        ]);
+        $bvsTestData = $this->testData['testComposerForNcBvsEntity'];
+
+        $bvsTestData['owner_id'] = $mid;
+
+        $this->fixtures->create('bvs_validation',  $bvsTestData);
+
 
         $this->mockRazorxTreatment('on');
 
@@ -1942,8 +1820,259 @@ class NeedsClarificationTest extends TestCase
             ]];
 
         $this->assertEquals($expectedReasons, $reason);
-
     }
 
+    public function testNoDocDedupeFailure()
+    {
+        $input = [
+            'poi_verification_status'                => 'verified',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantDetail->getMerchantId()]);
+
+        $noDocData = [
+            'dedupe'    => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'contact_mobile' => [
+                    'retryCount' => 1,
+                    'status' => 'pending',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $requiredFields = [
+            'contact_mobile'
+        ];
+
+        $dedupeResponse = [
+            'fields' => [
+                [
+                    'field' => 'contact_mobile',
+                    'matched_entity' => [
+                        'key' => 'contact_mobile',
+                        'value'=> '9790058643'
+                    ]
+                ]
+            ]
+        ];
+
+        (new DetailCore())->getMerchantAndSetBasicAuth($mid);
+
+        $this->app['rzp.mode'] = 'live';
+
+        (new DetailCore())->processDedupeResponse($requiredFields, $dedupeResponse, $noDocData);
+
+        $this->assertEquals($noDocData['dedupe']['contact_mobile']['status'], 'failed');
+    }
+
+    public function testShouldTriggerNCForDedupeCheck()
+    {
+        $input = [
+            'poi_verification_status'                => 'verified',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $merchant = $this->getDbEntity('merchant', ['id' => $merchantDetail->getMerchantId()]);
+
+        $noDocData = [
+            'dedupe'    => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'contact_mobile' => [
+                    'retryCount' => 1,
+                    'status' => 'pending',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        (new DetailCore())->getMerchantAndSetBasicAuth($mid);
+
+        $shouldTriggerNC =  (new Core())->shouldTriggerNeedsClarification($merchantDetail);
+
+        $this->assertEquals($shouldTriggerNC, true);
+    }
+
+    public function testNoDocNCForDedupeFirstTimeFail()
+    {
+        $input = [
+            'poi_verification_status'                => 'verified',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $value = [
+            'value' => ['09AAACR5055K1Z5'],
+            'current_index' =>0,
+            'retryCount' => 0,
+            'status' => 'passed',
+        ];
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => $value,
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ],
+            'dedupe'    => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'contact_mobile' => [
+                    'retryCount' => 1,
+                    'status' => 'pending',
+                ],
+                'promoter_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'company_pan' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+                'bank_account_number' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ]
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        // Test KYC clarification reasons for Partner activation
+        $partnerActivationInput = [
+            'merchant_id'       => $mid,
+            'activation_status' => 'under_review',
+            'submitted'         => true
+        ];
+
+        $partnerActivation = $this->fixtures->create('partner_activation', $partnerActivationInput);
+
+        $partnerKycClarificationReasons =  (new Core())->composeNeedsClarificationReason($partnerActivation);
+
+        $expectedPartnerKycClarificationReasons = [
+            'clarification_reasons' => [
+                'contact_mobile' =>  [
+                    [
+                        'reason_type' => "predefined",
+                        'field_type' => "text",
+                        'reason_code' => "merchant_already_exist_with_same_field_value"
+                    ]
+                ]
+            ]
+        ];
+
+        $this->assertEquals($partnerKycClarificationReasons, $expectedPartnerKycClarificationReasons);
+    }
+
+
+    protected function getDbEntity(string $entity, array $input = array(), $mode = 'test')
+    {
+        return $this->getEntityObjectForMode($entity, $mode)
+                    ->where($input)
+                    ->get()
+                    ->last();
+    }
 
 }
