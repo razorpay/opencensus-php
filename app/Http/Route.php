@@ -3048,7 +3048,6 @@ class Route
         'banking_account_activation_details'.
         '_via_batch'                              => ['post',     'banking_accounts/activation/details/batch',                'BankingAccountController@postUpdateActivationDetailsFromBatchService' ],
 
-        'banking_account_statement_process'             => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
         'banking_account_statement_generate'            => ['post',     'banking_account_statement/generate',                        'BankingAccountStatementController@generate'                                  ],
         'banking_account_statement_process_cron'        => ['post',     'banking_account_statement/process',                         'BankingAccountStatementController@fetchStatementForAccount'                  ],
 
