@@ -4462,6 +4462,76 @@ class Service extends Base\Service
         }
     }
 
+    public function sendNotificationCron(array $input)
+    {
+        if ((isset($input['event']) === false) or
+            (isset($input['event_type']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException("Event or Event Type is missing");
+        }
+
+        $event = $input['event'];
+
+        $eventType = $input['event_type'];
+
+        $paymentsArrString = $input['payments_arr'];
+
+        $paymentsArr = explode(',', $paymentsArrString);
+
+        for ($i = 0; $i < count($paymentsArr); $i++)
+        {
+            $currentPaymentId = $paymentsArr[$i];
+
+            $payment = $this->repo->payment->findByPublicId($currentPaymentId);
+
+            $merchant = $this->repo->merchant->findByPublicId($payment->getMerchantId());
+
+            if ($payment->isCard() === true)
+            {
+                $cardDetails = $this->repo->card->fetchForPayment($payment);
+
+                $payment->card()->associate($cardDetails);
+            }
+
+            $payment->merchant()->associate($merchant);
+
+            if ($eventType === "webhook")
+            {
+                $processor = new Payment\Processor\Processor($merchant);
+
+                $processor->setPayment($payment);
+
+                switch ($event)
+                {
+                    case "payment_created_event":
+                        $processor->eventPaymentCreated();
+                        break;
+                    case "payment_authorized_event":
+                        $processor->eventPaymentAuthorized();
+                        break;
+                    case "payment_captured_event":
+                        $processor->eventPaymentCaptured();
+                        break;
+                    case "payment_failed_event":
+                        $processor->eventPaymentFailed(null);
+                        break;
+                    case "order_paid":
+                        $processor->eventOrderPaid();
+                        break;
+                    default:
+                        $this->trace->info(TraceCode::INVALID_WEBHOOK_EVENT_NAME_FROM_PG_ROUTER,
+                            ["event_name" => $event]);
+                        return;
+                }
+
+            }
+            else if ($eventType === "mail")
+            {
+                (new Notify($payment))->trigger($event);
+            }
+        }
+    }
+
     public function internalPricingFetchForPayment($id, $input)
     {
         if (isset($id) === false)

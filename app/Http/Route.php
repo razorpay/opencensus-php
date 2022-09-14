@@ -97,6 +97,7 @@ class Route
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'           ],
         'internal_transactions'                    => ['post',     'internal/transactions',                          'TransactionController@postInternalTransaction'       ],
         'internal_transactions_cron'               => ['post',     'internal/transactions/cron',                          'TransactionController@postInternalTransactionCron'       ],
+        'payments_notify_cron'                      => ['post',     'payments/notify/cron',                          'PaymentController@sendNotificationCron'       ],
         // @todo: Require feature S2S for payment_create_private route.
         'payment_create_private'                   => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
         'payment_create_private_json'              => ['post',     'payments/create/json',                           'PaymentCreateController@postCreateS2SJsonPayment'                  ],
@@ -5214,6 +5215,7 @@ class Route
         'guest_pincode_get',
 
         'internal_transactions_cron',
+        'payments_notify_cron',
 
         'contact_fetch_address',
 
@@ -12983,6 +12985,7 @@ class Route
             'check_status_of_test_payouts',
             'add_balance_to_source_for_test_payouts',
             'internal_transactions_cron',
+            'payments_notify_cron',
             'merchant_settlements_events_cron',
             'coupon_expiry_alert',
             'fd_consume_webhook',
