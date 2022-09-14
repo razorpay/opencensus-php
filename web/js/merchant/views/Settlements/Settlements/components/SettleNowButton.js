@@ -64,6 +64,8 @@ const SettleNowButton = ({
           }
         })
         .catch(noop);
+    } else {
+      setDisabled(ondemandDisabled);
     }
   }, [user.isOndemandRouteSettlementsEnabled, ondemandDisabled]);
 
