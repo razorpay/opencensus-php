@@ -16,16 +16,17 @@
 
 
     if (window.razorpayAnalytics) {
-        let trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit', 'criteo']
-         if(window.loadHubspot){
-            trackers.push('hubspot');
-         }
+        let trackers = [];
 
          if (window.location.href.indexOf('resetpassword') === -1) {
+          trackers = ['perf', 'ga', 'fb', 'twitter', 'linkedin', 'bing', 'lj', 'quora', 'reddit'];
+          if(window.loadHubspot){
+            trackers.push('hubspot');
+          }
            trackers.push('twitterAgency');
          }
 
-        razorpayAnalytics.init(
+         razorpayAnalytics.init(
           trackers,
           {
             ga: appEnvironment === 'prod' ? 'UA-53341507-2' : 'UA-53341507-4',
@@ -228,19 +229,21 @@
             return filteredURL;
         }
 
-        ga('create', 'UA-53341507-1', 'auto', 'old');
+        if (location.pathname !== '/resetpassword') {
+          ga('create', 'UA-53341507-1', 'auto', 'old');
 
-        var path = getPathWithoutPrivateData();
+          var path = getPathWithoutPrivateData();
 
-        ga('set', 'page', path);
-        ga('old.set', 'page', path);
+          ga('set', 'page', path);
+          ga('old.set', 'page', path);
 
-        window.addEventListener('load', function() {
-            razorpayAnalytics.track('ga', 'pageview');
-            razorpayAnalytics.track('reddit', 'PageVisit');
-            razorpayAnalytics.track('quora', 'ViewContent');
-            razorpayAnalytics.track('bing', {action: 'pageLoad', path: path});
-        });
+          window.addEventListener('load', function() {
+              razorpayAnalytics.track('ga', 'pageview');
+              razorpayAnalytics.track('reddit', 'PageVisit');
+              razorpayAnalytics.track('quora', 'ViewContent');
+              razorpayAnalytics.track('bing', {action: 'pageLoad', path: path});
+          });
+        }
 
         try {
           var pendingAction = JSON.parse(razorpayAnalytics.utils.getCookie('pendingAction'));

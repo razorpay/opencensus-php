@@ -23,12 +23,12 @@
         location.href = location.href.replace('//signup', "/signup");
     }
   </script>
-  @if(env('APP_ENV') === 'production')
+  @if(env('APP_ENV') === 'production' && $newAuthRoute !== 'resetpassword')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
-  @else
-    <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q" defer></script>
+  @elseif($newAuthRoute !== 'resetpassword')
+    <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q"></script>
   @endif
-  <script src="https://wchat.freshchat.com/js/widget.js" defer></script>
+  <script src="https://wchat.freshchat.com/js/widget.js" async defer></script>
   <script type="text/javascript">
         var _hsq = window._hsq = window._hsq || [];
 
