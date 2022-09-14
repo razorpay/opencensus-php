@@ -3189,4 +3189,132 @@ class UserTest extends TestCase
 
         return $this->createConfiguredMock(Entity::class, array_merge($content, $input));
     }
+
+    private function getDummyUser($index)
+    {
+        $email = 'dummy'.$index.'User@example.com';
+
+        $userData = [
+            'name'                  => 'dummy',
+            'email'                 => $email,
+            'password'              => 'blahblah123',
+            'password_confirmation' => 'blahblah123',
+            'contact_mobile'        => '8888888888',
+            'confirm_token'         => 'hello123',
+            'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+        ];
+
+        return ((new Core())->create($userData));
+    }
+
+    private function getDummyMerchant($index)
+    {
+        $email = 'dummy'.$index.'Merchant@example.com';
+
+        $merchantData = [
+            'name'                  => 'dummy',
+            'email'                 => $email,
+            'org_id'                => 'org100razorpay',
+            'signup_source'         => 'banking',
+        ];
+
+        return (new MerchantEntity())->build($merchantData);
+    }
+
+    public function testGetContextFromActionForPayoutLinkCreation()
+    {
+        $input = [
+            'action'            => 'create_payout_link',
+            'amount'            => 100,
+            'purpose'           => 'refund',
+            'account_number'    => '4564563559247998',
+            'contact'           => [
+                'contact'   => '9999999999',
+                'email'     => 'test@razorpay.com',
+            ]
+        ];
+
+        $user = $this->getDummyUser(1);
+
+        $merchant = $this->getDummyMerchant(1);
+
+        $token = Entity::generateUniqueId();
+
+        $r = $this->getReflectionObj('RZP\Models\User\Core', 'getContextFromAction');
+
+        $response = $r->invoke($this->coreMock, $merchant, $user, $input, $token);
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                           $merchant->getId(),
+                           $user->getId(),
+                           Constants::CREATE_PAYOUT_LINK,
+                           $input[Constants::ACCOUNT_NUMBER],
+                           $token,
+                           100,
+                           "9999999999");
+
+        $this->assertEquals(hash('sha3-512', $expectedContext), $response);
+    }
+
+    public function testGetContextFromActionForPayoutLinkCreationNoContactNumber()
+    {
+        $input = [
+            'action'            => 'create_payout_link',
+            'amount'            => 100,
+            'purpose'           => 'refund',
+            'account_number'    => '4564563559247998',
+            'contact'           => [
+                'email'     => 'test@razorpay.com',
+            ]
+        ];
+
+        $user = $this->getDummyUser(2);
+
+        $merchant = $this->getDummyMerchant(2);
+
+        $token = Entity::generateUniqueId();
+
+        $r = $this->getReflectionObj('RZP\Models\User\Core', 'getContextFromAction');
+
+        $response = $r->invoke($this->coreMock, $merchant, $user, $input, $token);
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   $merchant->getId(),
+                                   $user->getId(),
+                                   Constants::CREATE_PAYOUT_LINK,
+                                   $input[Constants::ACCOUNT_NUMBER],
+                                   $token,
+                                   100,
+                                   "test@razorpay.com");
+
+        $this->assertEquals(hash('sha3-512', $expectedContext), $response);
+    }
+
+    public function testGetContextFromActionForPayoutLinkCreationNoContactInRequest()
+    {
+        $input = [
+            'action'            => 'create_payout_link',
+            'amount'            => 100,
+            'purpose'           => 'refund',
+            'account_number'    => '4564563559247998'
+        ];
+
+        $user = $this->getDummyUser(3);
+
+        $merchant = $this->getDummyMerchant(3);
+
+        $token = Entity::generateUniqueId();
+
+        $r = $this->getReflectionObj('RZP\Models\User\Core', 'getContextFromAction');
+
+        $response = $r->invoke($this->coreMock, $merchant, $user, $input, $token);
+
+        $expectedContext = sprintf('%s:%s:%s:%s',
+                                   $merchant->getId(),
+                                   $user->getId(),
+                                   Constants::CREATE_PAYOUT_LINK,
+                                   $token);
+
+        $this->assertEquals($expectedContext, $response);
+    }
 }

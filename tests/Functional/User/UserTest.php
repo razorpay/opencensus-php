@@ -5806,14 +5806,14 @@ class UserTest extends TestCase
 
         $testData = $this->testData['testSendOtpForCreatePayoutWithoutMobileNumberInReceiver'];
 
-        $testData['request']['content']['action'] = 'create_payout_link';
+        $testData['request']['content']['action'] = 'create_workflow_config';
 
         $testData['request']['content']['token'] = 'QtrxYjsbrs';
 
         $expectedContext = sprintf('%s:%s:%s:%s',
                                    '10000000000000',
                                    $user->getId(),
-                                   'create_payout_link',
+                                   'create_workflow_config',
                                    'QtrxYjsbrs');
 
         $this->mockRaven($expectedContext, '123456789');

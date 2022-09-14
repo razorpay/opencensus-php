@@ -24,6 +24,7 @@ use RZP\Mail\PayoutLink\SendLink;
 use RZP\Models\PayoutLink\Entity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\PayoutLink\CustomerOtp;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Permission\Name as AdminPermission;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutLink\TokenService;
@@ -4140,6 +4141,143 @@ class PayoutLinkTest extends TestCase
             ]);
 
         $this->startTest();
+    }
+
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'off')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                              {
+                                  if (array_key_exists($feature, $razorxTreatment) === true)
+                                  {
+                                      return $razorxTreatment[$feature];
+                                  }
+
+                                  return strtolower($defaultBehaviour);
+                              }));
+    }
+
+    protected function mockRavenVerifyOtp($expectedContext, $receiver = null, $source = 'api')
+    {
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('verifyOtp')
+                  ->andReturnUsing(function(array $request) use ($expectedContext, $receiver, $source) {
+                      try
+                      {
+                          self::assertEquals($request['receiver'], $receiver);
+                          self::assertEquals($request['context'], $expectedContext);
+                          self::assertEquals($request['source'], $source);
+                      }
+                      catch(\Exception $e)
+                      {
+                          throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                      }
+
+                      return [
+                          'success' => true
+                      ];
+                  });
+
+        $this->app->instance('raven', $ravenMock);
+    }
+
+    protected function mockRavenGenerateAndVerifyOtp()
+    {
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '0007']);
+
+        $ravenMock->shouldReceive('verifyOtp')->andReturn(['success' => true]);
+
+        $this->app->instance('raven', $ravenMock);
+    }
+
+    public function testGenerateAndVerifyOtpForCreatePayoutLinkWithSecureOtpContext()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andReturn(['id' => 'poutlk_ABCDE12345']);
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking raven
+        $this->mockRavenGenerateAndVerifyOtp();
+
+        // generate-otp flow
+        $this->ba->proxyAuth();
+
+        $generateOtpResponse = $this->sendRequest($this->testData['testGenerateOtpForCreatePayoutLinkWithSecureOtpContext']['request']);
+
+        $this->assertEquals(200, $generateOtpResponse->getStatusCode());
+
+        $generateOtpResponseContent = json_decode($generateOtpResponse->getContent(), true);
+
+        $this->assertArrayHasKey('token', $generateOtpResponseContent);
+
+        // verify otp flow
+        $createPlTestData = $this->testData['testPayoutLinkCreationWithSecureOtpContext'];
+        $createPlTestData['request']['content']['token'] = $generateOtpResponseContent['token'];
+
+        $this->ba->proxyAuth();
+
+        $createPlResponse = $this->sendRequest($createPlTestData['request']);
+
+        $this->assertEquals(200, $createPlResponse->getStatusCode());
+
+        $createPlResponseContent = json_decode($createPlResponse->getContent(), true);
+
+        $this->assertEquals(['id' => 'poutlk_ABCDE12345'], $createPlResponseContent);
+
+        $plMock->shouldHaveReceived('create');
+    }
+
+    public function testPayoutLinkCreationWithSecureOtpContext()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andReturn(['id' => 'poutlk_ABCDE12345']);
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking raven
+        $expectedContext = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   '10000000000000',
+                                   'MerchantUser01',
+                                   'create_payout_link',
+                                   '4564563559247998',
+                                   'BUIj3m2Nx2VvVj',
+                                   100,
+                                   "9090909090");
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $user = $this->getDbEntity('user', ['id' => 'MerchantUser01']);
+
+        $this->mockRavenVerifyOtp($expectedContext, $user->getEmail());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $plMock->shouldHaveReceived('create');
     }
 }
 

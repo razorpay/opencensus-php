@@ -89,10 +89,17 @@ class Constants
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID_X_IOS      = 'oauth.merchant_oauth_client_id_x_ios';
     const OAUTH_MERCHANT_OAUTH_MOCK                 = 'oauth.merchant_oauth_mock';
 
+    // payout links constants
+    const CONTACT                   = 'contact';
+    const ACCOUNT_NUMBER            = 'account_number';
+    const AMOUNT                    = 'amount';
+    const CONFIG                    = 'config';
+
     // OTP Actions
 
     const CREATE_PAYOUT                = 'create_payout';
     const APPROVE_PAYOUT               = 'approve_payout';
+    const CREATE_PAYOUT_LINK           = 'create_payout_link';
 
     // oauth constants end
 

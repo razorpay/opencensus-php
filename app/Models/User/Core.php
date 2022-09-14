@@ -45,6 +45,7 @@ use RZP\Models\Workflow\Service\Adapter;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Mail\User\OtpSignup as OtpSignup;
+use RZP\Models\Batch\Entity as BatchEntity;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -4280,7 +4281,8 @@ class Core extends Base\Core
             if ((empty($receiver) === true) and
                 (((isset($input['medium']) === true) and
                 ($input['medium'] === 'sms_and_email')) ||
-                ($input[Entity::ACTION] === 'create_payout')))
+                ($input[Entity::ACTION] === 'create_payout') ||
+                ($input[Entity::ACTION] === 'create_payout_link')))
             {
                 $this->trace->info(TraceCode::SUCCESSFUL_OTP_GENERATION_WITHOUT_CONTACT, [
                     Entity::USER_ID => $user->getId(),
@@ -4351,6 +4353,11 @@ class Core extends Base\Core
                 }
 
                 break;
+
+            case Constants::CREATE_PAYOUT_LINK:
+                $context = $this->getContextFromActionForPayoutLinkCreation($merchant, $user, $input, $token);
+                break;
+
             default:
                 // Fallback to default context
                 $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
@@ -5605,5 +5612,43 @@ class Core extends Base\Core
     public function getBankingUsersForMerchantRoles(array $merchantIdToRolesMapping): Base\PublicCollection
     {
         return $this->repo->merchant_user->getBankingUsersForMerchantRoles($merchantIdToRolesMapping);
+    }
+
+    protected function getContextFromActionForPayoutLinkCreation($merchant, $user, $input, $token)
+    {
+        $requiredParams = [Constants::AMOUNT,
+                           Constants::CONTACT];
+
+        if (empty(array_diff_key(array_flip($requiredParams), $input)) === true)
+        {
+            $amount = $input[Constants::AMOUNT];
+
+            $beneficiary = $input[Constants::CONTACT][Constants::CONTACT] ??
+                           $input[Constants::CONTACT][Constants::EMAIL];
+
+            if (empty($amount) === false and empty($beneficiary) === false)
+            {
+                $context = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                                   $merchant->getId(),
+                                   $user->getId(),
+                                   Constants::CREATE_PAYOUT_LINK,
+                                   $input[Constants::ACCOUNT_NUMBER],
+                                   $token,
+                                   $amount,
+                                   $beneficiary);
+
+                $context = hash('sha3-512', $context);
+            }
+            else
+            {
+                $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, Constants::CREATE_PAYOUT_LINK, $token);
+            }
+        }
+        else
+        {
+            $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, Constants::CREATE_PAYOUT_LINK, $token);
+        }
+
+        return $context;
     }
 }

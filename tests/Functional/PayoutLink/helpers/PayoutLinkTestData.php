@@ -3343,4 +3343,50 @@ return [
             ],
         ]
     ],
+
+    'testGenerateOtpForCreatePayoutLinkWithSecureOtpContext' => [
+        'request' => [
+            'url' => '/users/otp/send',
+            'method' => 'POST',
+            'content' => [
+                'action' => 'create_payout_link',
+                'purpose' => 'refund',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'otp' => '0007'
+            ]
+        ]
+    ],
+
+    'testPayoutLinkCreationWithSecureOtpContext' => [
+        'request' => [
+            'url' => '/payout-links',
+            'method' => 'POST',
+            'content' => [
+                'otp' => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'poutlk_ABCDE12345'
+            ]
+        ]
+    ],
 ];
