@@ -143,14 +143,8 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
     {
         try
         {
-            $experimentKey = implode('_', [
-                $card->getNetworkCode(),
-                $card->getIssuer(),
-                $card->getType()
-            ]);
-
             $variant = $this->app['razorx']->getTreatment(
-                $experimentKey,
+                $card->getIin(),
                 Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD,
                 $this->mode
             );
