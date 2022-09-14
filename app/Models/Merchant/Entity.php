@@ -32,6 +32,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Detail;
 use Illuminate\Database\Eloquent\Collection;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -2566,7 +2567,7 @@ class Entity extends Base\PublicEntity
     {
         $mccMarkdownPaymentConfigEntity = $this->latestMccMarkdownPaymentConfig();
 
-        if($mccMarkdownPaymentConfigEntity === null) 
+        if($mccMarkdownPaymentConfigEntity === null)
         {
             $mccMarkdownFromConfig = ConfigKey::get(ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE);
 
@@ -2582,7 +2583,7 @@ class Entity extends Base\PublicEntity
 
         return $data[self::MCC_MARKDOWN_PERCENTAGE];
     }
-    
+
     public function getDccMarkupPercentageForIntlBankTransfer()
     {
         return self::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_INTL_BANK_TRANSFER;
@@ -3515,6 +3516,24 @@ class Entity extends Base\PublicEntity
             app('trace')->traceException($exception, Logger::ERROR, TraceCode::TOKEN_INTEROPERABILITY_FETCH_PARTNER_EXCEPTION);
             return $merchant;
         }
+    }
+
+    public function getMerchantLegalEntityName()
+    {
+        $name = null;
+
+        switch ($this->merchantDetail->getBusinessType())
+        {
+            case BusinessType::INDIVIDUAL:
+            case BusinessType::NOT_YET_REGISTERED:
+                $name = $this->getBillingLabel();
+                break;
+            default:
+                $name = $this->merchantDetail->getBusinessName();
+                break;
+        }
+
+        return $name;
     }
 
 }

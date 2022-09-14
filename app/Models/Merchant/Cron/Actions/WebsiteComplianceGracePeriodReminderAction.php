@@ -44,6 +44,7 @@ class WebsiteComplianceGracePeriodReminderAction extends BaseAction
 
                 $files    = [];
                 $sections = [];
+
                 foreach (explode(',', WebsiteConstants::VALID_MERCHANT_SECTIONS) as $sectionName)
                 {
 
@@ -56,7 +57,7 @@ class WebsiteComplianceGracePeriodReminderAction extends BaseAction
                     $htmlContent = view('merchant.website.policy',
                                         [
                                             "data" => [
-                                                'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
+                                                'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
                                                 'updated_at'                 => Carbon::createFromTimestamp($updatedAt)->isoFormat('MMM Do YYYY'),
                                                 'sectionName'                => $sectionName,
                                                 'logo_url'                   => $merchant->getFullLogoUrlWithSize(),

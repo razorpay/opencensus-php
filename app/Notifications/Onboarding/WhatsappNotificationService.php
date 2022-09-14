@@ -57,9 +57,9 @@ class WhatsappNotificationService extends BaseNotificationService
 
         if (array_key_exists($this->event, Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE) === true)
         {
-            $args[Constants::IS_CTA_TEMPLATE] = true;
+            $payload[Constants::IS_CTA_TEMPLATE] = true;
 
-            $args[Constants::BUTTON_URL_PARAM] = Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[$this->event];
+            $payload[Constants::BUTTON_URL_PARAM] = Events::WHATSAPP_TEMPLATES_CTA_TEMPLATE[$this->event];
         }
 
         return $payload;

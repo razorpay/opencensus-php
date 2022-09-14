@@ -504,7 +504,7 @@ class Service extends Base\Service
 
             $response["isWebsiteSectionsApplicable"] = true;
             $response["isGracePeriodApplicable"]     = false;
-            $response["canActivateMerchant"]         = $this->canActivateMerchant($merchantDetails, $websiteDetail);
+            //$response["canActivateMerchant"]         = $this->canActivateMerchant($merchantDetails, $websiteDetail);
 
             $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, ["response"    => $response,
                                                                    "merchant_id" => $merchantDetails->getMerchantId()]);
@@ -848,48 +848,51 @@ class Service extends Base\Service
     //activated - verified
     private function getWebsiteStatus($merchantDetails, $merchantWebsite)
     {
-        $status = $merchantWebsite->getStatus();
+        $status = optional($merchantWebsite->getStatus());
 
         try
         {
-            switch ($merchantDetails->getActivationStatus())
+            if (empty($status) === false)
             {
-                case Status::NEEDS_CLARIFICATION:
+                switch ($merchantDetails->getActivationStatus())
+                {
+                    case Status::NEEDS_CLARIFICATION:
 
-                    if ($this->isNeedsClarificationOnWebsite($merchantDetails))
-                    {
-                        $status = Status::NEEDS_CLARIFICATION;
-                    }
-                    else
-                    {
+                        if ($this->isNeedsClarificationOnWebsite($merchantDetails))
+                        {
+                            $status = Status::NEEDS_CLARIFICATION;
+                        }
+                        else
+                        {
+                            $status = Status::UNDER_REVIEW;
+                        }
+                        break;
+
+                    case Status::ACTIVATED:
+                        $status = 'approved';
+                        break;
+
+                    case Status::REJECTED:
                         $status = Status::UNDER_REVIEW;
-                    }
-                    break;
+                        break;
 
-                case Status::ACTIVATED:
-                    $status = 'approved';
-                    break;
+                    case Status::UNDER_REVIEW:
+                    case Status::ACTIVATED_MCC_PENDING:
+                    case Status::ACTIVATED_KYC_PENDING:
+                        if ($merchantWebsite->getStatus() === Constants::SUBMITTED)
+                        {
+                            $status = Status::UNDER_REVIEW;
+                        }
+                        else
+                        {
+                            $status = $merchantWebsite->getStatus();
+                        }
+                        break;
 
-                case Status::REJECTED:
-                    $status = Status::UNDER_REVIEW;
-                    break;
-
-                case Status::UNDER_REVIEW:
-                case Status::ACTIVATED_MCC_PENDING:
-                case Status::ACTIVATED_KYC_PENDING:
-                    if ($merchantWebsite->getStatus() === Constants::SUBMITTED)
-                    {
-                        $status = Status::UNDER_REVIEW;
-                    }
-                    else
-                    {
+                    default:
                         $status = $merchantWebsite->getStatus();
-                    }
-                    break;
-
-                default:
-                    $status = $merchantWebsite->getStatus();
-                    break;
+                        break;
+                }
             }
         }
         catch (\Exception $e)
@@ -1388,7 +1391,7 @@ class Service extends Base\Service
         $htmlContent = view('merchant.website.policy',
                             [
                                 "data" => [
-                                    'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
+                                    'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
                                     'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
                                     'sectionName'                => $sectionName,
                                     'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
@@ -2015,34 +2018,32 @@ class Service extends Base\Service
 
         $sectionName = $input[Constants::SECTION_NAME];
 
-        $websiteDetail = $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($this->merchant->getId());
+        $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($this->merchant->getId());
 
-        $updatedAt = $websiteDetail->getSectionUpdatedAt($sectionName);
+        $websiteDetailArray = (empty($websiteDetail) === false) ? $websiteDetail->toArrayPublic() : [];
 
-        if (empty($websiteDetail) === true)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_WEBSITE_SECTION_NOT_APPLICABLE);
-        }
+        $updatedAt = optional($websiteDetail)->getSectionUpdatedAt($sectionName) ?? Carbon::now()->getTimestamp();
 
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
             'merchant'         => $this->merchant->toArray(),
             'merchant_details' => $this->merchant->merchantDetail->toArray(),
-            'website_detail'   => $websiteDetail->toArrayPublic()]);
+            'website_detail'   => $websiteDetailArray]);
 
-        return ["html" => view('merchant.website.policy',
-                               [
-                                   "data" => [
-                                       'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($this->merchant),
-                                       'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
-                                       'sectionName'                => $sectionName,
-                                       'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
-                                       'merchant'                   => $this->merchant->toArray(),
-                                       'merchant_details'           => $this->merchant->merchantDetail->toArray(),
-                                       'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $this->merchant->merchantDetail),
-                                       'public'                     => false,
-                                       'address'                    => 'address'
-                                   ]
-                               ])->render()];
+        return [
+            "html" => view('merchant.website.policy',
+                           [
+                               "data" => [
+                                   'merchant_legal_entity_name' => $this->merchant->getMerchantLegalEntityName(),
+                                   'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
+                                   'sectionName'                => $sectionName,
+                                   'logo_url'                   => $this->merchant->getFullLogoUrlWithSize(),
+                                   'merchant'                   => $this->merchant->toArray(),
+                                   'merchant_details'           => $this->merchant->merchantDetail->toArray(),
+                                   'website_detail'             => $this->createResponse($websiteDetailArray, $websiteDetail, $this->merchant->merchantDetail),
+                                   'public'                     => false
+                               ]
+                           ])->render()
+        ];
     }
 
     // send html page of the published page while viewing the page after checking if the section is published or not
@@ -2072,15 +2073,14 @@ class Service extends Base\Service
             return ["html" => view('merchant.website.policy',
                                    [
                                        "data" => [
-                                           'merchant_legal_entity_name' => $websiteDetail->getMerchantLegalEntityName($merchant),
+                                           'merchant_legal_entity_name' => $merchant->getMerchantLegalEntityName(),
                                            'updated_at'                 => Carbon::createFromTimestamp($updatedAt, Timezone::IST)->isoFormat('MMM Do YYYY'),
                                            'sectionName'                => $sectionName,
                                            'logo_url'                   => $merchant->getFullLogoUrlWithSize(),
                                            'merchant'                   => $merchant->toArray(),
                                            'merchant_details'           => $merchant->merchantDetail->toArray(),
                                            'website_detail'             => $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchant->merchantDetail),
-                                           'public'                     => true,
-                                           'address'                    => 'address'
+                                           'public'                     => true
                                        ]
                                    ])->render()];
         }
