@@ -2,6 +2,7 @@ import React from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import StyledHeader from './StyledHeader';
 import NoDataMessage from './NoDataMessage';
+import { getFormattedNumber } from '../helper';
 
 const LoadingState = (
   <div className="rp-panel">
@@ -13,7 +14,7 @@ const LoadingState = (
 const renderErrorDetails = ({ count, reason }, index) => (
   <div key={index} className="col-md-4">
     <div className="rp-grid__item">
-      <p className="item-count">{count}</p>
+      <p className="item-count">{getFormattedNumber(count)}</p>
       <p className="item-description">{reason}</p>
     </div>
   </div>

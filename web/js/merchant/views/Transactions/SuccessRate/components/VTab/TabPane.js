@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getFormattedNumber } from '../../helper';
 import {
   ERROR_CATEGORIES,
   ERROR_CATEGORIES_VS_DISPLAY_TEXT,
@@ -38,7 +39,7 @@ const TabPane = (props) => {
                   {isLoading ? (
                     <PlaceholderLoader style={{ width: '30px', height: '16px' }} />
                   ) : (
-                    <p className="rate">{totalCount ?? 0}</p>
+                    <p className="rate">{getFormattedNumber(totalCount ?? 0)}</p>
                   )}
                 </div>
                 {isLoading ? (

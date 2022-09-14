@@ -49,7 +49,7 @@ const GraphWidget = (props) => {
     setActiveTab(tab.name);
     const updateDropdownOptions = tab.name != 'Overall';
     const payload = queryFilters(updateDropdownOptions);
-    fetchSuccessRate(payload, updateDropdownOptions);
+    fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     fetchMerchantErrors(errorsPaylod);
     trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
@@ -59,7 +59,7 @@ const GraphWidget = (props) => {
     const user = getUser();
     setSelectedDropdownFilterOptions(option);
     !user?.isOptimizerEnabled && setGroupTypeFilter(option?.value);
-    fetchSuccessRate(queryFilters());
+    fetchSuccessRate({ payload: queryFilters(), resetSelectedInterval: false });
     if (user?.isOptimizerEnabled) {
       fetchMerchantErrors(getMerchantErrorsPayload());
     }

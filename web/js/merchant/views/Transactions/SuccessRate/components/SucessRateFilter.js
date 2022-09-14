@@ -8,13 +8,22 @@ import {
   updateDateRange,
   fetchSuccessRate,
   fetchMerchantErrors,
+  setDefaultInterval,
 } from 'merchant/reducers/successRate';
 import { getInterval, initialFilters, queryFilters, getMerchantErrorsPayload } from '../helper';
 import { DATE_RANGE_PRESETS, DEFAULT_PRESET } from '../constants';
 import { clearFilterSuccessRate, filterSuccessRate, trackSuccessRateEvents } from '../trackEvents';
 
 const SucessRateFilter = (props) => {
-  const { endDate, fetchSuccessRate, fetchMerchantErrors, updateDateRange, activeTab } = props;
+  const {
+    endDate,
+    startDate,
+    fetchSuccessRate,
+    fetchMerchantErrors,
+    updateDateRange,
+    setDefaultInterval,
+    activeTab,
+  } = props;
   const updateDropdownOptions = activeTab !== 'Overall';
 
   const isOutsideRange = useCallback((day) => {
@@ -33,18 +42,17 @@ const SucessRateFilter = (props) => {
     }
     const start_date = from.clone().startOf('hour');
     const end_date = to.clone().endOf('hour');
-    const interval = getInterval(start_date, end_date);
     updateDateRange({
       startDate: start_date,
       endDate: end_date,
-      interval,
       preset,
     });
   };
 
   const onSearch = async () => {
+    setDefaultInterval(getInterval(startDate, endDate));
     const payload = queryFilters(updateDropdownOptions);
-    await fetchSuccessRate(payload, updateDropdownOptions);
+    await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     fetchMerchantErrors(errorsPaylod);
     trackSuccessRateEvents(filterSuccessRate(payload));
@@ -54,7 +62,7 @@ const SucessRateFilter = (props) => {
     const initialValue = initialFilters();
     updateDateRange(initialValue);
     const payload = queryFilters(updateDropdownOptions);
-    await fetchSuccessRate(payload, updateDropdownOptions);
+    await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     await fetchMerchantErrors(errorsPaylod);
     trackSuccessRateEvents(clearFilterSuccessRate(payload));
@@ -83,12 +91,16 @@ const SucessRateFilter = (props) => {
 };
 
 const mapStateToProps = ({ successRate }) => ({
+  startDate: successRate?.filters?.startDate,
   endDate: successRate?.filters?.endDate,
   activeTab: successRate?.activeTab,
 });
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ updateDateRange, fetchSuccessRate, fetchMerchantErrors }, dispatch);
+  return bindActionCreators(
+    { updateDateRange, fetchSuccessRate, fetchMerchantErrors, setDefaultInterval },
+    dispatch,
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SucessRateFilter);

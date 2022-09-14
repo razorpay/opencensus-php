@@ -18,7 +18,7 @@ const SuccessRate = (props) => {
 
   const fetchData = async () => {
     const payload = queryFilters();
-    await fetchSuccessRate(payload);
+    await fetchSuccessRate({ payload });
     const errorsPaylod = getMerchantErrorsPayload();
     await fetchMerchantErrors(errorsPaylod);
   };

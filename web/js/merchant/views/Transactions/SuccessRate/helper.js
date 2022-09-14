@@ -15,6 +15,7 @@ import {
   TABS_VS_OPTIMIZER_GROUP_BY,
   DEFAULT_GROUP_BY,
   FILTERS_VS_DISPLAY_NAMES,
+  breakdownInterval,
 } from './constants';
 
 export const getInterval = (startDate, endDate) => {
@@ -29,7 +30,7 @@ export const getInterval = (startDate, endDate) => {
   return DEFAULT_INTERVAL;
 };
 
-export const setBreakdownInterval = (from, to) => {
+export const getBreakdownInterval = (from, to) => {
   const start_date = moment.unix(from);
   const end_date = moment.unix(to);
   const diff = end_date.diff(start_date, 'days');
@@ -55,7 +56,6 @@ export const initialFilters = () => {
     .startOf('hour');
 
   const payload = {
-    interval: DEFAULT_INTERVAL, // in minutes
     startDate,
     endDate,
     preset: null,
@@ -91,8 +91,10 @@ export const queryFilters = (updateDropdownOptions) => {
   const user = session?.user;
   const { filters, activeTab, tabs } = successRate;
   const mode = activeTab === 'Overall' || !user.isOptimizerEnabled ? 'razorpay' : 'optimizer';
-  const { startDate, endDate, interval } = filters;
-  const { method, group_by, selectedDropdownFilterOptions = {} } = tabs[activeTab];
+  const { startDate, endDate } = filters;
+  const { method, group_by, selectedDropdownFilterOptions = {}, selectedInterval } = tabs[
+    activeTab
+  ];
   let _group_by = [group_by];
   if (updateDropdownOptions) {
     if (user.isOptimizerEnabled) {
@@ -105,7 +107,7 @@ export const queryFilters = (updateDropdownOptions) => {
     entity: 'payments',
     from: startDate.unix(),
     to: endDate.unix(),
-    interval,
+    interval: breakdownInterval[selectedInterval] || selectedInterval,
     mode,
     filters: {
       method,
@@ -113,7 +115,7 @@ export const queryFilters = (updateDropdownOptions) => {
     },
     group_by: {
       keys: _group_by,
-      limit: 3,
+      limit: user.isOptimizerEnabled ? 3 : 4, // 3 for dropdown filters in case of optimizer merchant and 4 for graph pills in case of rzp merchant.
     },
   };
 
@@ -141,13 +143,7 @@ export const generateDatasets = (intervals) => {
   });
 };
 
-export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown, tagIndex }) => {
-  const dataset = {
-    label: tabsOrder[tagIndex],
-    data: generateDatasets(intervals),
-    ...chartStyle[tagIndex],
-  };
-
+export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown }) => {
   const timestamps = intervals
     .map((obj) => +moment.unix(obj?.from).format('x'))
     .sort((a, b) => {
@@ -220,10 +216,29 @@ export const getTimelineData = ({ intervals = [], startTime, endTime, breakdown,
     }
   }
 
-  return { labels: timestamps, datasets: [dataset] };
+  return timestamps;
 };
 
-export const onFetchSR = ({ data, startTime, endTime, breakdown, group_by = '' }) => {
+export const getIntervals = ({ tag, data, group_by, activeTab }) => {
+  const _group_by =
+    activeTab === 'Overall' || !getUser()?.isOptimizerEnabled ? group_by : 'procurer';
+  return (
+    (tag === 'Overall'
+      ? data?.intervals
+      : data?.groups[_group_by]?.find((obj) => obj.name === tag)?.intervals) ?? []
+  );
+};
+
+export const onFetchSR = ({
+  data,
+  startTime,
+  endTime,
+  breakdown,
+  group_by = '',
+  activeTab,
+  updateSelectedTags,
+  selectedTags: initialSelectedTags,
+}) => {
   try {
     const { groups, intervals = [] } = data;
 
@@ -243,13 +258,22 @@ export const onFetchSR = ({ data, startTime, endTime, breakdown, group_by = '' }
         startTime,
         endTime,
         breakdown,
-        tagIndex: tags.indexOf('Overall'),
       };
 
-      const { labels, datasets } = getTimelineData(options);
+      const selectedTags = updateSelectedTags ? tags : initialSelectedTags;
 
+      const labels = getTimelineData(options);
+      const datasets = selectedTags?.map((tag) => {
+        const intervals = getIntervals({ tag, data, group_by, activeTab });
+        return {
+          label: tabsOrder[tags?.indexOf(tag)],
+          data: generateDatasets(intervals),
+          ...chartStyle[tags?.indexOf(tag)],
+        };
+      });
       return {
         tags,
+        selectedTags,
         histogram: { labels, datasets },
       };
     }
@@ -260,12 +284,12 @@ export const onFetchSR = ({ data, startTime, endTime, breakdown, group_by = '' }
 };
 
 export const metricValues = (obj, options) => {
-  const { labels, datasets } = getTimelineData(options);
+  const labels = getTimelineData(options);
   const value = {
     sr: obj?.sr ?? '',
     successful: obj?.successful ?? '',
     total: obj?.total ?? '',
-    overviewHistogram: { labels, datasets: datasets?.[0]?.data ?? [] },
+    overviewHistogram: { labels, datasets: generateDatasets(options?.intervals) ?? [] },
   };
   return value;
 };
@@ -282,7 +306,6 @@ export const getMetricsData = ({ metrics, data, payload, breakdown, group_by }) 
       startTime: payload.from,
       endTime: payload.to,
       breakdown,
-      tagIndex: tabIdx > 0 ? groupIdx : 0,
     };
 
     const vals = metricValues(tabIdx > 0 ? groups[groupIdx] : data, args);
@@ -402,4 +425,8 @@ export const getOptimizerFilters = (data, activeTab) => {
   return !TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS?.includes(activeTab)
     ? []
     : getFormattedFilters(filters);
+};
+
+export const getFormattedNumber = (number) => {
+  return new Intl.NumberFormat('en-IN').format(number || 0);
 };

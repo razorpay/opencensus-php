@@ -8,7 +8,7 @@ import {
   initialFilters,
   onFetchSR,
   getMetricsData,
-  setBreakdownInterval,
+  getBreakdownInterval,
   getErrorMessage,
   getOptimizerFilters,
   getInitialGroupings,
@@ -27,6 +27,7 @@ import {
 const FETCH_SUCCESS_RATE = 'FETCH_SUCCESS_RATE';
 const UPDATE_DATE_RANGE = 'UPDATE_DATE_RANGE';
 const SET_ACTIVE_TAB = 'SET_ACTIVE_TAB';
+const SET_DEFAULT_INTERVAL = 'SET_DEFAULT_INTERVAL';
 const UPDATE_TAB_DATA = 'UPDATE_TAB_DATA';
 const SET_GROUP_TYPE_FILTER = 'SET_GROUP_TYPE_FILTER';
 const SET_METRICS_DATA = 'SET_METRICS_DATA';
@@ -34,7 +35,11 @@ const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
 const FETCH_INTERVALS = 'FETCH_INTERVALS';
 const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
 
-export const fetchSuccessRate = (payload, updateDropdownOptions) => async (dispatch) => {
+export const fetchSuccessRate = ({
+  payload,
+  updateDropdownOptions,
+  resetSelectedInterval = true,
+}) => async (dispatch) => {
   const { successRate = {}, session } = store?.getState();
   const user = session?.user;
   const { activeTab, metrics, tabs } = successRate;
@@ -44,6 +49,9 @@ export const fetchSuccessRate = (payload, updateDropdownOptions) => async (dispa
     dropdownFilterOptions,
     selectedDropdownFilterOptions,
   } = tabs?.[activeTab];
+  const newSelectedInterval = resetSelectedInterval
+    ? getBreakdownInterval(payload.from, payload.to)
+    : selectedInterval;
   let newDropdownFilterOptions = dropdownFilterOptions;
   let newSelectedDropdownFilterOptions = selectedDropdownFilterOptions;
   let newGroupBy = group_by;
@@ -80,8 +88,10 @@ export const fetchSuccessRate = (payload, updateDropdownOptions) => async (dispa
       data,
       startTime: payload.from,
       endTime: payload.to,
-      breakdown: selectedInterval,
+      breakdown: newSelectedInterval,
       group_by: activeTab === 'Overall' || !user.isOptimizerEnabled ? newGroupBy : 'procurer',
+      activeTab,
+      updateSelectedTags: true,
     };
 
     const res = onFetchSR(options);
@@ -91,7 +101,7 @@ export const fetchSuccessRate = (payload, updateDropdownOptions) => async (dispa
         metrics,
         data,
         payload,
-        breakdown: selectedInterval,
+        breakdown: newSelectedInterval,
         group_by,
       });
 
@@ -108,7 +118,7 @@ export const fetchSuccessRate = (payload, updateDropdownOptions) => async (dispa
         data,
         error: null,
         fetched: true,
-        selectedInterval: setBreakdownInterval(payload.from, payload.to),
+        selectedInterval: newSelectedInterval,
         dropdownFilterOptions: newDropdownFilterOptions,
         selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
         group_by: newGroupBy,
@@ -139,7 +149,7 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
   const { successRate = {}, session } = store?.getState();
   const user = session?.user;
   const { activeTab, tabs } = successRate;
-  const { group_by } = tabs[activeTab];
+  const { group_by, selectedTags } = tabs[activeTab];
 
   dispatch({ type: `${FETCH_INTERVALS}::PENDING` });
 
@@ -160,6 +170,9 @@ export const fetchBreakdownIntervals = (breakdown, payload) => async (dispatch) 
       endTime: payload.to,
       breakdown,
       group_by: activeTab === 'Overall' || !user?.isOptimizerEnabled ? group_by : 'procurer',
+      activeTab,
+      updateSelectedTags: false,
+      selectedTags,
     };
 
     const res = onFetchSR(options);
@@ -197,6 +210,13 @@ export const setActiveTab = (tabName) => {
   };
 };
 
+export const setDefaultInterval = (interval) => {
+  return {
+    type: SET_DEFAULT_INTERVAL,
+    payload: interval,
+  };
+};
+
 export const getActiveTab = () => {
   const { activeTab, tabs } = store.getState().successRate;
   return { ...tabs[activeTab] };
@@ -210,11 +230,11 @@ export const updateGraphData = (payload) => {
   };
 };
 
-export const updateGraphInterval = (interval) => {
+export const updateSelectedTags = (tagsClone) => {
   const tabClone = getActiveTab();
   return {
     type: UPDATE_TAB_DATA,
-    payload: { ...tabClone, selectedInterval: interval },
+    payload: { ...tabClone, selectedTags: tagsClone },
   };
 };
 
@@ -337,6 +357,14 @@ export default (state = getInitialState(), action) => {
 
     case SET_ACTIVE_TAB: {
       return set(state, 'activeTab', payload);
+    }
+
+    case SET_DEFAULT_INTERVAL: {
+      const stateClone = cloneDeep(state);
+      Object.keys(state?.tabs)?.forEach((tabName) =>
+        lodashset(stateClone, `tabs.${tabName}.selectedInterval`, payload),
+      );
+      return stateClone;
     }
 
     case UPDATE_DATE_RANGE: {

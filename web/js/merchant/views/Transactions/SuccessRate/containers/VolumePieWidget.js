@@ -9,7 +9,7 @@ import Spinner from 'common/ui/Spinner';
 import StyledHeader from '../components/StyledHeader';
 import NoDataMessage from '../components/NoDataMessage';
 import { pieChartOptions as options, piePlugins as plugins } from '../chartConfig';
-import { getPieChartData, getTagLabel } from '../helper';
+import { getPieChartData, getTagLabel, getFormattedNumber } from '../helper';
 import { TAG_OVERALL_MAP } from '../constants';
 
 const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
@@ -23,7 +23,8 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
       </div>
       <div className="info-card__value">
         <p>
-          <span className="highlight">{successful}</span>/{total} ({sr}%)
+          <span className="highlight">{getFormattedNumber(successful)}</span>/
+          {getFormattedNumber(total)} ({sr}%)
         </p>
       </div>
     </div>
@@ -88,8 +89,8 @@ const VolumePieWidget = (props) => {
                 ) : (
                   <div className="info-card__value">
                     <p>
-                      <span className="highlight">{data?.successful}</span>/{data?.total} (
-                      {data?.sr}
+                      <span className="highlight">{getFormattedNumber(data?.successful)}</span>/
+                      {getFormattedNumber(data?.total)} ({data?.sr}
                       %)
                     </p>
                   </div>

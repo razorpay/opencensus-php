@@ -1,47 +1,37 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import GenericPanel, { PanelTopbar, PanelBody } from 'merchant/components/Home/GenericPanel';
-import { getUser } from 'merchant/store';
 import TagGroup from './TagGroup';
 import GraphIntervals from './GraphIntervals';
 import ChartArea from './ChartArea';
 
-import { updateGraphInterval, fetchBreakdownIntervals } from 'merchant/reducers/successRate';
+import { fetchBreakdownIntervals, updateSelectedTags } from 'merchant/reducers/successRate';
 import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
-import { queryFilters, generateDatasets } from '../helper';
+import { queryFilters, generateDatasets, getIntervals } from '../helper';
 import { methodIntervalClick, methodTagsClick, trackSuccessRateEvents } from '../trackEvents';
-
-const initTagList = ['Overall'];
 
 const GraphPanel = (props) => {
   const chartReference = React.useRef(null);
-  const [tagList, setTagList] = React.useState(initTagList);
   const { isLoading, activeTab, startDate, endDate, tab = {} } = props;
-  const { tags, selectedInterval, histogram, data, error, group_by } = tab;
+  const { selectedTags, tags, selectedInterval, histogram, data, error, group_by } = tab;
   const { datasets } = histogram;
   const hasNoData = !histogram || datasets?.length === 0;
 
-  useEffect(() => {
-    return () => {
-      setTagList(initTagList);
-    };
-  }, [isLoading]);
-
   const updateDatasets = (tag, position) => {
-    const user = getUser();
     if (chartReference?.current) {
       const chart = chartReference.current.chartInstance;
-      const _group_by = activeTab === 'Overall' || !user.isOptimizerEnabled ? group_by : 'procurer';
       const tagIndex = tags.indexOf(tag);
-      const intervals =
-        (tag === 'Overall'
-          ? data?.intervals
-          : data?.groups[_group_by]?.find((obj) => obj.name === tag)?.intervals) ?? [];
+      const intervals = getIntervals({
+        tag,
+        data,
+        group_by,
+        activeTab,
+      });
 
-      if (position > -1 && tagList.length > 1) {
+      if (position > -1 && selectedTags.length > 1) {
         chart.data.datasets.splice(position, 1);
       } else if (position < 0) {
         const newDataset = {
@@ -56,12 +46,12 @@ const GraphPanel = (props) => {
   };
 
   const handleTags = (tag) => {
-    const tagsClone = [...tagList];
+    const tagsClone = [...selectedTags];
     const tagIndex = tagsClone.indexOf(tag);
     if (tagIndex > -1 && tagsClone.length > 1) tagsClone.splice(tagIndex, 1);
     else if (tagIndex < 0) tagsClone.push(tag);
+    props.updateSelectedTags(tagsClone);
     updateDatasets(tag, tagIndex);
-    setTagList(tagsClone);
     trackSuccessRateEvents(methodTagsClick({ selectedTags: tagsClone }));
   };
 
@@ -70,7 +60,6 @@ const GraphPanel = (props) => {
     const payload = queryFilters();
     payload.interval = breakdownInterval[breakdown];
     props.fetchBreakdownIntervals(breakdown, payload);
-    setTagList(initTagList);
     trackSuccessRateEvents(methodIntervalClick({ breakdown }));
   };
 
@@ -85,7 +74,7 @@ const GraphPanel = (props) => {
         <TagGroup
           isLoading={isLoading}
           tags={tags}
-          selectedTags={tagList}
+          selectedTags={selectedTags}
           groupBy={group_by}
           onSelect={handleTags}
           activeTab={activeTab}
@@ -132,7 +121,7 @@ const mapStateToProps = ({ successRate }) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ updateGraphInterval, fetchBreakdownIntervals }, dispatch);
+  return bindActionCreators({ fetchBreakdownIntervals, updateSelectedTags }, dispatch);
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GraphPanel);

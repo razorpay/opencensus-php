@@ -75,6 +75,7 @@ export const tabMeta = {
   selectedInterval: 'hourly',
   dropdownFilterOptions: [],
   selectedDropdownFilterOptions: [],
+  selectedTags: [],
 };
 
 export const metricsCard = {
@@ -143,6 +144,8 @@ export const namedColors = {
   'green.500': '#01B358',
   'pink.400': '#ff00a826',
   'pink.500': '#FF00A8',
+  'purple.400': '#EEDCFE',
+  'purple.500': '#690392',
 };
 
 /**************************************** Graph methods ****************************************/
@@ -174,6 +177,10 @@ export const tagStyles = [
   {
     color: namedColors['pink.500'],
     backgroundColor: namedColors['pink.400'],
+  },
+  {
+    color: namedColors['purple.500'],
+    backgroundColor: namedColors['purple.400'],
   },
 ];
 
@@ -212,6 +219,11 @@ export const chartStyle = [
     borderColor: namedColors['pink.500'],
     backgroundColor: namedColors['pink.500'],
   },
+  {
+    ...defaultChartStyle,
+    borderColor: namedColors['purple.500'],
+    backgroundColor: namedColors['purple.500'],
+  },
 ];
 
 /**************************************** Volume pie chart ****************************************/
@@ -237,6 +249,10 @@ export const pieChartStyle = [
   {
     borderColor: namedColors['pink.500'],
     backgroundColor: namedColors['pink.400'],
+  },
+  {
+    borderColor: namedColors['purple.500'],
+    backgroundColor: namedColors['purple.400'],
   },
 ];
 
