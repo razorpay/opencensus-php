@@ -62,4 +62,11 @@ class CommissionInvoiceController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function sendInvoiceReminders()
+    {
+        $data = $this->service()->sendInvoiceReminders();
+
+        return ApiResponse::json($data);
+    }
 }

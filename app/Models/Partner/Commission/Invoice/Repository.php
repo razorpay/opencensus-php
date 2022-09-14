@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Commission\Invoice;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -30,6 +31,27 @@ class Repository extends Base\Repository
                     ->where(Entity::YEAR, '=', $year)
                     ->where(Entity::MONTH, '=', $month)
                     ->get();
+    }
+
+    public function fetchMerchantIdsByInvoiceStatus(string $status, int $from) : array
+    {
+        $partners = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))
+                         ->select(Entity::MERCHANT_ID)
+                         ->where(Entity::STATUS, '=', $status)
+                         ->where(Entity::CREATED_AT, '>', $from)
+                         ->distinct()
+                         ->get();
+
+        return $partners->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+    public function fetchIssuedInvoicesByMerchantId(string $merchantId, int $from) : Base\PublicCollection
+    {
+        return  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))
+                          ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                          ->where(Entity::STATUS, '=', Status::ISSUED)
+                          ->where(Entity::CREATED_AT, '>', $from)
+                          ->get();
     }
 
     public function fetchInvoiceIds($limit, $afterId = null)

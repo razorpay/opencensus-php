@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Partner;
 use RZP\Constants\Timezone;
 use RZP\Models\Partner\Config;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\FileStore\Service;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Tests\Functional\TestCase;
@@ -21,8 +22,10 @@ use RZP\Models\Partner\Commission;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Mail\Merchant\CommissionInvoice;
+use RZP\Models\Partner\Commission\Invoice;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Tests\Functional\Partner\Constants;
+use RZP\Mail\Merchant\CommissionInvoiceReminder;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Merchant\CommissionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -31,6 +34,7 @@ use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 class CommissionCreateTest extends TestCase
 {
+    use MocksSplitz;
     use CommissionTrait;
     use DbEntityFetchTrait;
 
@@ -123,6 +127,91 @@ class CommissionCreateTest extends TestCase
         // check that no adjustment entries are created
         $tdsAdjustment = $this->getDbLastEntity('adjustment');
         $this->assertNull($tdsAdjustment);
+    }
+
+    public function testSendCommissionInvoiceRemindersSuccess()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $testData = $this->testData['testInvoiceOnHoldClear'];
+        $testData['request']['content']['invoice_ids'] = [$invoice->getId()];
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice status isn't updated
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $this->assertEquals('issued', $invoice->getStatus());
+
+        $input = [
+            "experiment_id" => "JbUKeDS8uXGQBI",
+            "id"            => $partner->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        (new Invoice\Service)->sendInvoiceReminders();
+
+        Mail::assertSent(CommissionInvoiceReminder::class, function($mail) use($invoice, $partner, $now)
+        {
+            $timestamps    = (new Invoice\Core())->convertMonthAndYearToTimeStamp($now->month, $now->year);
+            $startDate     = Carbon::createFromTimestamp($timestamps['from'], Timezone::IST)->format('d-M-y');
+            $endDate       = Carbon::createFromTimestamp($timestamps['to'], Timezone::IST)->format('d-M-y');
+
+            $expectedInvoiceData [] = [
+                'id'                     => $invoice->getId(),
+                'gross_amount_spread'    => "17.70",
+                'period'                 => $startDate.' to '.$endDate,
+            ];
+
+            $merchant = $this->getDbEntity('merchant', ['id' => $partner->getId()]);;
+
+            $expectedData = [
+                'merchant'              => $merchant->toArray(),
+                'activation_status'     => $merchant->merchantDetail->getActivationStatus(),
+                'invoices'              => $expectedInvoiceData,
+                'invoice_count'         => 1,
+            ];
+
+            $this->assertSame($expectedData, $mail->viewData);
+
+            return true;
+        });
     }
 
     private function createTaxes()

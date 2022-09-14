@@ -3,14 +3,18 @@
 namespace RZP\Models\Partner\Commission\Invoice;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
 use RZP\Exception\LogicException;
 use RZP\Models\Partner\Activation;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\CommissionInvoiceReminderAction;
 
 class Service extends Base\Service
 {
@@ -74,5 +78,40 @@ class Service extends Base\Service
         $this->trace->count(Metric::COMMISSION_INVOICE_BULK_FETCH_SUCCESS_TOTAL, $input);
 
         return $invoices->toArrayPublic();
+    }
+
+    /**
+     * Fetch merchants whose invoices status is  issued for current financial year and dispatch commission invoice reminder job.
+     */
+    public function sendInvoiceReminders() : array
+    {
+        $startTime   = (new Core)->getStartTimeForCommissionInvoiceReminders();
+
+        $merchantIds = $this->repo->commission_invoice->fetchMerchantIdsByInvoiceStatus(Status::ISSUED, $startTime);
+
+        $merchantIdsChunks = array_chunk($merchantIds, 200);
+
+        foreach ($merchantIdsChunks as $merchantBatch)
+        {
+            try
+            {
+                CommissionInvoiceReminderAction::dispatch($this->mode, $merchantBatch);
+            }
+
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::COMMISSION_INVOICE_REMINDER_ERROR,
+                    [
+                        'mode'            => $this->mode,
+                        'merchant_ids'    => $merchantBatch,
+                    ]
+                );
+            }
+        }
+
+        return ['success' => true];
     }
 }

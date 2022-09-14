@@ -31,6 +31,7 @@ use RZP\Mail\Merchant\CommissionProcessed;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
+use RZP\Mail\Merchant\CommissionInvoiceReminder;
 use RZP\Models\Admin\Permission\Name as Permission;
 
 class Core extends Base\Core
@@ -278,6 +279,97 @@ class Core extends Base\Core
         $commissionInvoice = new CommissionProcessed($data);
 
         Mail::send($commissionInvoice);
+    }
+
+    public function sendCommissionReminderMail(Base\PublicCollection $invoices = null, string $partnerId = null)
+    {
+        $invoiceData = [];
+
+        foreach ($invoices as $invoice)
+        {
+            $timestamps    = $this->convertMonthAndYearToTimeStamp($invoice->getMonth(), $invoice->getYear());
+
+            $fromTimestamp = $timestamps[Commission\Constants::FROM];
+            $endTimestamp  = $timestamps[Commission\Constants::TO];
+
+            $tempData ['gross_amount_spread']   = $this->formatAmountForTemplate($invoice->getGrossAmount());
+            $tempData ['start_date']            = Carbon::createFromTimestamp($fromTimestamp, Timezone::IST)->format('d-M-y');
+            $tempData ['end_date']              = Carbon::createFromTimestamp($endTimestamp, Timezone::IST)->format('d-M-y');
+
+            $invoiceData[] = [
+                    'id'                        => $invoice->getId(),
+                    'gross_amount_spread'       => $tempData['gross_amount_spread'][1].'.'.$tempData['gross_amount_spread'][2],
+                    'period'                    => $tempData['start_date'].' to '.$tempData['end_date']
+            ];
+        }
+
+        $partner = $this->repo->merchant->findOrFail($partnerId);
+
+        $data = [
+            'merchant'          => $partner->toArray(),
+            'activation_status' => $partner->merchantDetail->getActivationStatus(),
+            'invoices'          => $invoiceData,
+            'invoice_count'     => $invoices->count(),
+        ];
+
+        $this->trace->info(
+            TraceCode::SEND_PARTNER_COMMISSION_INVOICE_REMINDER_EMAIL,
+            [
+                'data'               => $data,
+            ]
+        );
+
+        $commissionInvoice = new CommissionInvoiceReminder($data);
+
+        Mail::send($commissionInvoice);
+    }
+
+    public function sendCommissionReminderSms(int  $count, string $partnerId = null)
+    {
+        $merchant         = $this->repo->merchant->findOrFail($partnerId);
+
+        $activationStatus = $merchant->merchantDetail->getActivationStatus();
+
+        $templateName     = Commission\Constants::COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE[Merchant\Constants::DEFAULT];
+
+        if(isset(Commission\Constants::COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE[$activationStatus])=== true)
+        {
+            $templateName = Commission\Constants::COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE[$activationStatus];
+        }
+
+        $tracePayload = [
+            'partner_id'          => $merchant->getId(),
+            'activation_status'   => $activationStatus,
+            'sms_template'        => $templateName
+        ];
+
+        try
+        {
+            if(empty($merchant->merchantDetail->getContactMobile()) === false)
+            {
+                $smsPayload = [
+                    'ownerId'           => $merchant->getId(),
+                    'ownerType'         => 'merchant',
+                    'orgId'             => $merchant->getOrgId(),
+                    'sender'            => 'RZRPAY',
+                    'destination'       => $merchant->merchantDetail->getContactMobile(),
+                    'templateName'      => $templateName,
+                    'templateNamespace' => 'partnerships',
+                    'language'          => 'english',
+                    'contentParams'     => [
+                        'invoice_count' => $count,
+                    ]
+                ];
+
+                $this->trace->info(TraceCode::SEND_PARTNER_COMMISSION_INVOICE_REMINDER_SMS, $tracePayload);
+
+                $this->app->stork_service->sendSms($this->mode, $smsPayload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PARTNER_COMMISSION_INVOICE_REMINDER_SMS_FAILED, $tracePayload);
+        }
     }
 
     public function getTemplateData(Entity $invoice, $pdfPath = null): array
@@ -637,6 +729,16 @@ class Core extends Base\Core
             Commission\Constants::FROM => $fromTimestamp,
             Commission\Constants::TO   => $endTimestamp,
         ];
+    }
+
+    public function getStartTimeForCommissionInvoiceReminders() : int
+    {
+        $year        = Carbon::now()->year;
+        $month       = Carbon::now()->month;
+
+        $year  = ($month < 4) ? $year-1 : $year ; // Decrease year for Jan, Feb and Mar.
+
+        return Carbon::createFromDate($year, 5, 1, Timezone::IST)->startOfMonth()->getTimestamp();
     }
 
     public function clearOnHoldForInvoiceBulk(array $input)

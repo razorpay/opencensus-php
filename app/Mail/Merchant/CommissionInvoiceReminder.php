@@ -1,0 +1,103 @@
+<?php
+
+namespace RZP\Mail\Merchant;
+
+use RZP\Models\Merchant;
+use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\Mailable;
+use RZP\Constants\MailTags;
+use RZP\Models\Partner\Commission;
+
+class CommissionInvoiceReminder extends Mailable
+{
+    protected $data;
+
+    public function __construct(array $data)
+    {
+        parent::__construct();
+
+        $this->data = $data;
+    }
+
+    protected function addSender()
+    {
+        $this->from(Constants::MAIL_ADDRESSES[Constants::PARTNER_COMMISSIONS], Constants::HEADERS[Constants::PARTNER_COMMISSIONS]);
+
+        return $this;
+    }
+
+    protected function addRecipients()
+    {
+        $email = $this->data['merchant']['email'];
+
+        $name = $this->data['merchant']['name'];
+
+        $this->to($email, $name);
+
+        return $this;
+    }
+
+    protected function addMailData()
+    {
+        $this->with($this->data);
+
+        return $this;
+    }
+
+    protected function addSubject()
+    {
+        $subject = '<Important> Approve pending commission invoice ';
+
+        $this->subject($subject);
+
+        return $this;
+    }
+
+    protected function addHeaders()
+    {
+        $this->withSwiftMessage(function ($message)
+        {
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::COMMISSION_INVOICE);
+        });
+
+        return $this;
+    }
+
+    protected function addHtmlView()
+    {
+        $activationStatus = $this->data['activation_status'];
+
+        $templatePrefix = $activationStatus;
+
+        if(in_array($activationStatus, Commission\Constants::VALID_PARTNER_STATUS_EMAIL_TEMPLATES) === false)
+        {
+            $templatePrefix = Merchant\Constants::DEFAULT;
+        }
+
+        $this->view('emails.mjml.merchant.partner.commission_invoice.reminder'.'.'.$templatePrefix);
+
+        return $this;
+    }
+
+    protected function shouldSendEmailViaStork(): bool
+    {
+        return true;
+    }
+
+    protected function getParamsForStork(): array
+    {
+        $storkParams = [
+            'template_namespace' => 'partnerships',
+            'params'      => [
+                'merchant'           => $this->data['merchant'],
+                'activation_status'  => $this->data['activation_status'],
+                'invoices'           => $this->data['invoices'],
+                'invoice_count'      => $this->data['invoice_count'],
+            ]
+        ];
+
+        return $storkParams;
+    }
+}

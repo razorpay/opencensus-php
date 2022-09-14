@@ -53,11 +53,31 @@ class Constants
     const PARTNER_NEEDS_CLARIFICATION_TEMPLATE     = 'Partner_commission_invoice.Needs_clarification';
     const PARTNER_DEFAULT_TEMPLATE                 = 'Partner_commission_invoice.Null';
 
+    const VALID_PARTNER_STATUS_EMAIL_TEMPLATES = [
+        DetailStatus::ACTIVATED,
+        DetailStatus::NEEDS_CLARIFICATION,
+        DetailStatus::UNDER_REVIEW,
+        DetailStatus::REJECTED,
+    ];
+
     const COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE = [
         DetailStatus::ACTIVATED                => self::PARTNER_ACTIVATED_TEMPLATE,
         DetailStatus::UNDER_REVIEW             => self::PARTNER_UNDER_REVIEW_TEMPLATE,
         DetailStatus::NEEDS_CLARIFICATION      => self::PARTNER_NEEDS_CLARIFICATION_TEMPLATE,
         Merchant\Constants::DEFAULT            => self::PARTNER_DEFAULT_TEMPLATE,
+    ];
+
+    //sms templates for commission reminders
+    const PARTNER_ACTIVATED_REMINDER_SMS_TEMPLATE               = 'Partner_commission_invoice_reminder.Activated';
+    const PARTNER_UNDER_REVIEW_REMINDER_SMS_TEMPLATE            = 'Partner_commission_invoice_reminder.Under_review';
+    const PARTNER_NEEDS_CLARIFICATION_REMINDER_SMS_TEMPLATE     = 'Partner_commission_invoice_reminder.Needs_clarification';
+    const PARTNER_DEFAULT_REMINDER_SMS_TEMPLATE                 = 'Partner_commission_invoice_reminder.Null';
+
+    const COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE = [
+        DetailStatus::ACTIVATED                => self::PARTNER_ACTIVATED_REMINDER_SMS_TEMPLATE,
+        DetailStatus::UNDER_REVIEW             => self::PARTNER_UNDER_REVIEW_REMINDER_SMS_TEMPLATE,
+        DetailStatus::NEEDS_CLARIFICATION      => self::PARTNER_NEEDS_CLARIFICATION_REMINDER_SMS_TEMPLATE,
+        Merchant\Constants::DEFAULT            => self::PARTNER_DEFAULT_REMINDER_SMS_TEMPLATE,
     ];
     /**
      * Used for bulk capture

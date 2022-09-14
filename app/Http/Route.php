@@ -2777,6 +2777,7 @@ class Route
         'commissions_invoice_status_change'        => ['put',      'commissions/invoice/{id}',                       'CommissionInvoiceController@changeStatus'                          ],
         'commissions_invoice_fetch'                => ['get',      'commissions/invoice/{id}',                       'CommissionInvoiceController@fetch'                                 ],
         'invoice_on_hold_clear_bulk'               => ['put',      'commissions/invoice/on_hold_clear/bulk',         'CommissionInvoiceController@clearOnHoldForInvoiceBulk'             ],
+        'commissions_invoice_reminder'             => ['post',     'commissions/invoice/send_reminders',             'CommissionInvoiceController@sendInvoiceReminders'                  ],
 
         'submerchants_fetch'                       => ['get',      'submerchants/{id}',                              'MerchantController@getSubmerchant'                                 ],
         'submerchants_fetch_multiple'              => ['get',      'submerchants',                                   'MerchantController@listSubmerchants'                               ],
@@ -5186,6 +5187,8 @@ class Route
         'payouts_batch_create_x_demo_cron',
 
         'partner_commission_pending',
+
+        'commissions_invoice_reminder',
 
         // growth service cron
         'growth_filter_and_sync_cron',
@@ -13009,6 +13012,9 @@ class Route
 
             //Cron to push events for partners with pending commission balance and Incomplete KYC
             'partner_commission_pending',
+
+            //Cron for sending communication to partners with pending Invoice approvals
+            'commissions_invoice_reminder',
 
             'merchant_onboarding_escalations',
             'merchant_onboarding_cron_jobs',

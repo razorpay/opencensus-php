@@ -381,6 +381,8 @@ return array(
 
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),
 
+    'send_commission_invoice_reminders_exp_id' => env('SEND_COMMISSION_INVOICE_REMINDERS_EXP_ID'),
+
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
 
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
