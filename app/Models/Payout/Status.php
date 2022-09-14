@@ -29,6 +29,7 @@ class Status
     const BATCH_SUBMITTED                    = 'batch_submitted';
     const SCHEDULED                          = 'scheduled';
     const CREATE_REQUEST_SUBMITTED           = 'create_request_submitted';
+    const LEDGER_RESPONSE_AWAITED            = 'ledger_response_awaited';
     const ON_HOLD                            = 'on_hold';
     const PENDING_ON_CONFIRMATION            = 'pending_on_confirmation';
     const PENDING_ON_OTP                     = 'pending_on_otp';
@@ -69,6 +70,7 @@ class Status
         self::FAILED                       => self::FAILED,
         self::BATCH_SUBMITTED              => self::PROCESSING,
         self::CREATE_REQUEST_SUBMITTED     => self::PROCESSING,
+        self::LEDGER_RESPONSE_AWAITED      => self::PROCESSING,
         self::ON_HOLD                      => self::QUEUED,
         self::PENDING_ON_OTP               => self::PENDING,
     ];
@@ -228,6 +230,7 @@ class Status
         self::ON_HOLD,
         self::REJECTED,
         self::CREATE_REQUEST_SUBMITTED,
+        self::LEDGER_RESPONSE_AWAITED,
         self::PENDING_ON_OTP,
     ];
 
