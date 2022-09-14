@@ -261,7 +261,7 @@ class Service extends Base\Service
         }
         else
         {
-            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::REPLICA);
+            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, ConnectionType::DATA_WAREHOUSE_ADMIN);
         }
 
         $response = $entity->toArrayAdmin();
