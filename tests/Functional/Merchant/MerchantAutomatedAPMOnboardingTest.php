@@ -215,7 +215,7 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
     public function testGenerateEmerchantpayMAFRequest()
     {
         $request = [
-            'url' => '/merchant/international/apm_request/reminder/' . '10000000000000',
+            'url' => '/merchant/international/apm_request/reminder/test/' . '10000000000000',
             'method' => 'POST',
             'convertContentToString' => false,
             'content' => [

@@ -406,7 +406,7 @@ class Service extends Base\Service
             'submitted_at' => Carbon::now(Timezone::IST)->getTimestamp(),
         ];
 
-        $url = sprintf('merchant/international/apm_request/reminder/%s', $merchantId);
+        $url = sprintf('merchant/international/apm_request/reminder/%s/%s',$this->mode, $merchantId);
 
         $request = [
             'namespace'     => Constant::APM_REQUEST_NAMESPACE,

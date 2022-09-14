@@ -3553,7 +3553,7 @@ class Route
         ],
         'emerchantpay_apm_onboard_maf' => [
             'post',
-            'merchant/international/apm_request/reminder/{mid}',
+            'merchant/international/apm_request/reminder/{mode}/{mid}',
             'MerchantApmEnablementController@generateEmerchantpayMaf'
         ],
 

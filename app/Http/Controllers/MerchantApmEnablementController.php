@@ -37,13 +37,18 @@ class MerchantApmEnablementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function generateEmerchantpayMaf($mid)
+    public function generateEmerchantpayMaf($mode,$mid)
     {
         $input = Request::all();
 
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+
         $this->trace->info(
             TraceCode::EMERCHANTPAY_APM_REQUEST_MAF_GENERATE,
-            ['mid' => $mid]
+            [
+                'mid' => $mid,
+                'mode' => $mode,
+            ]
         );
 
         $input['merchant_id'] = $mid;
