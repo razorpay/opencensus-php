@@ -18,7 +18,7 @@ $spacer = 8px
 
   .filter
     display: flex
-    align-items: center
+    align-items: end
     padding-bottom: $spacer * 3
 
     .datepicker-group
@@ -28,7 +28,6 @@ $spacer = 8px
       padding-bottom: 0
 
     &__actions
-      margin-top: $spacer * 3
       margin-left: $spacer * 2
 
       .btn
@@ -428,11 +427,15 @@ $spacer = 8px
       padding: $spacer
       color: $font-color
       font-size: 16px
-      border: 1px solid #E6E7E8
+      border-bottom: 1px solid #E6E7E8
       border-left: 0
       border-right: 0
+      border-top: 0
       cursor: pointer
       outline: none
+
+      &:last-child
+        border-bottom: 0
 
       &:hover,
       &.selected
@@ -442,5 +445,5 @@ $spacer = 8px
     display: flex
     flex-direction: column
     flex-grow: 1
-    padding: $spacer
+    padding: 10px 0 0 20px
     color: $font-color

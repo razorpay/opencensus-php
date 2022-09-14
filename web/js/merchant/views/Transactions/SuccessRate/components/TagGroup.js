@@ -1,7 +1,5 @@
 import React, { useCallback } from 'react';
-
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
-
 import { getUser } from 'merchant/store';
 import { getTagLabel } from '../helper';
 import { defaultTagStyle, DEFAULT_GROUP_BY, tagStyles, TAG_OVERALL_MAP } from '../constants';

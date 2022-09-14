@@ -33,18 +33,21 @@ const SucessRateFilter = (props) => {
   }, []);
 
   const onDatesChange = (from, to, preset) => {
-    const now = moment();
-    const isSame = to.isSame(now, 'day');
-    if (isSame) {
-      const diff = to.diff(now, 'seconds');
-      to = to.clone().subtract(diff, 'seconds');
-      from = to.clone().subtract(preset.value, 'seconds');
+    let endDate = to;
+    let startDate = from;
+
+    // Check if preset index i.e. other that custom range.
+    if (preset.value !== 0) {
+      endDate = moment(); // Setting end date to current time.
+      startDate = moment().subtract(preset.value * 1000); // Getting start date from end date with the preset value selected.
     }
-    const start_date = from.clone().startOf('hour');
-    const end_date = to.clone().endOf('hour');
+
+    const interval = getInterval(startDate, endDate);
+
     updateDateRange({
-      startDate: start_date,
-      endDate: end_date,
+      startDate,
+      endDate,
+      interval,
       preset,
     });
   };
@@ -82,6 +85,7 @@ const SucessRateFilter = (props) => {
           // onSelectPreset={trackPresetChange} TODO: Setup google analytics
         />
       </div>
+
       <div className="filter__actions">
         <AsyncButton className="btn btn-primary btn-sm" onClick={onSearch} text="Search" />
         <AsyncButton className="btn btn-sm btn-text" onClick={onReset} text="Clear" />

@@ -64,7 +64,7 @@ const VolumePieWidget = (props) => {
         </div>
         <div className="col-sm-12 col-md-7">
           <div className="row info-col">
-            {!isLoading && data?.sr && (
+            {!isLoading && Boolean(data?.sr) && (
               <div className="col-md-4 info-card">
                 {isLoading ? (
                   <PlaceholderLoader style={{ marginBottom: '10px' }} />

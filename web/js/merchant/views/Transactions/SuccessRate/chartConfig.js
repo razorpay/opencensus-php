@@ -78,14 +78,14 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
       enabled: true,
       mode: 'point',
       intersect: true,
-      bodySpacing: 15,
+      bodySpacing: 4,
       borderWidth: 1,
       backgroundColor: '#ffffff',
       borderColor: '#e0e8f4',
       titleFontFamily: 'Lato',
       titleFontColor: '#262D3A',
       titleSpacing: 5,
-      titleMarginBottom: 10,
+      titleMarginBottom: 12,
       bodyFontFamily: 'Lato',
       bodyFontColor: '#262D3A',
       xPadding: 12,
@@ -117,9 +117,13 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
           return `${startTime} - ${endTime}`;
         },
         label: (tooltipItem, { datasets }) => {
-          const label = datasets[tooltipItem?.datasetIndex]?.label;
+          const { datasetIndex, yLabel, index } = tooltipItem;
+
+          const datapoint = datasets[datasetIndex]?.data?.[index];
+          const label = datasets[datasetIndex]?.label;
           const labelText = TAG_MAP[label] ?? label;
-          return `${labelText}: ${tooltipItem?.yLabel}%`;
+
+          return `${labelText}: ${yLabel}% | Total payments: ${datapoint?.total || 0}`;
         },
         labelColor: (item, chart) => {
           const color = chart.config.data.datasets[item.datasetIndex].borderColor;

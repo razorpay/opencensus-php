@@ -132,13 +132,16 @@ export const getErrorMessage = (error) => {
 
 export const generateDatasets = (intervals) => {
   return intervals?.map((obj) => {
-    const from = +moment.unix(obj?.from).format('x');
-    const to = +moment.unix(obj?.to).format('x');
+    const { from, to, sr, total } = obj;
+
+    const formattedFrom = +moment.unix(from).format('x');
+    const formattedTo = +moment.unix(to).format('x');
     return {
-      x: from,
-      y: obj.sr,
-      from,
-      to,
+      x: formattedFrom,
+      y: sr,
+      from: formattedFrom,
+      to: formattedTo,
+      total,
     };
   });
 };
