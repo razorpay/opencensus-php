@@ -1558,16 +1558,20 @@ class Service extends Base\Service
 
     public function logRouteName(string $terminalId)
     {
-        $app = App::getFacadeRoot();
+        $shouldLogRetrievalEvent = false;
 
-        $ba = $app['basicauth'];
+        if($shouldLogRetrievalEvent === true) {
+            $app = App::getFacadeRoot();
 
-        $routeName =  $app['request.ctx']->getRoute();
+            $ba = $app['basicauth'];
 
-        $this->trace->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, [
-            'terminal_id' => $terminalId,
-            'route_name'  => $routeName,
-        ]);
+            $routeName =  $app['request.ctx']->getRoute();
+
+            $this->trace->info(TraceCode::TERMINALS_RETRIEVAL_EVENT, [
+                'terminal_id' => $terminalId,
+                'route_name'  => $routeName,
+            ]);
+        }
     }
 
     public function consumeInstrumentRulesEvent(string $merchantId, bool $forceTrigger = false): array
