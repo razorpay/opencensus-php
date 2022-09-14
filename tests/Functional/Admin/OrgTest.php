@@ -3,10 +3,12 @@
 namespace RZP\Tests\Functional\Admin;
 
 use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\Settlements;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use  RZP\Models\Feature;
 
 class OrgTest extends TestCase
 {
@@ -44,7 +46,38 @@ class OrgTest extends TestCase
     {
         $this->mockSettlementsForOrgBankAccount();
 
-        $this->ba->adminAuth();
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::ENABLE_ORG_ACCOUNT,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+    }
+
+    public function testCreateOrgBankAccountFailureWithSessionAuth()
+    {
+        $this->mockSettlementsForOrgBankAccount();
+
+        $this->fixtures->create('feature', [
+            'name' => Feature\Constants::ENABLE_ORG_ACCOUNT,
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+        ]);
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+    }
+
+
+    public function testCreateOrgBankAccountFailureWithFeatureFlag()
+    {
+        $this->mockSettlementsForOrgBankAccount();
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
@@ -55,18 +88,39 @@ class OrgTest extends TestCase
 
         $this->testCreateOrgBankAccount();
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
 
-    public function testUpdateOrgBankAccount()
+    public function testGetOrgBankAccounttFailureWithSessionAuth()
     {
         $this->mockSettlementsForOrgBankAccount();
 
         $this->testCreateOrgBankAccount();
 
-        $this->ba->adminAuth();
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+    }
+
+
+    public function testUpdateOrgBankAccount()
+    {
+        $this->testCreateOrgBankAccount();
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+    }
+
+    public function testUpdateOrgBankAccountWithSessionAuth()
+    {
+        $this->mockSettlementsForOrgBankAccount();
+
+        $this->testCreateOrgBankAccount();
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }

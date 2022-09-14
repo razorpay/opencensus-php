@@ -9,6 +9,9 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Error\ErrorCode;
+use RZP\Models\Feature;
+use RZP\Models\Admin\Org;
+use RZP\Trace;
 use Config;
 
 class Service extends Base\Service
@@ -57,7 +60,7 @@ class Service extends Base\Service
         return $org->toArrayPublic();
     }
 
-    public function createOrgBankAccount($input)
+    public function createOrgBankAccount($input, $sessionOrgId)
     {
         if (isset($input[Entity::TYPE]) === false)
         {
@@ -76,6 +79,20 @@ class Service extends Base\Service
 
         $orgId = $input[BankAccount\Entity::ENTITY_ID];
 
+        if ($sessionOrgId !== $input[BankAccount\Entity::ENTITY_ID])
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
+        $org = (new Org\Repository())->findOrFailPublic($orgId);
+
+        if ($org->isFeatureEnabled(Feature\Constants::ENABLE_ORG_ACCOUNT) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
+        $orgId = $input[BankAccount\Entity::ENTITY_ID];
+
         $type = $input[Entity::TYPE];
 
         $oldBankAccount = $this->repo->bank_account->getOrgBankAccount($orgId,$type);
@@ -90,8 +107,20 @@ class Service extends Base\Service
         return $ba;
     }
 
-    public function updateOrgBankAccount($id, $input)
+    public function updateOrgBankAccount($id, $input, $sessionOrgId)
     {
+        if ($sessionOrgId !== $id)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
+        $org = (new Org\Repository())->findOrFailPublic($id);
+
+        if ($org->isFeatureEnabled(Feature\Constants::ENABLE_ORG_ACCOUNT) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
         $oldBankAccount = $this->repo->bank_account->getOrgBankAccount($id);
 
         if ($oldBankAccount === null)
@@ -102,8 +131,20 @@ class Service extends Base\Service
         return (new BankAccount\Core)->editOrgBankAccount($oldBankAccount, $input)->toArray();
     }
 
-    public function getOrgBankAccount($entity_id)
+    public function getOrgBankAccount($entity_id, $sessionOrgId)
     {
+        if ($sessionOrgId !== $entity_id)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
+        $org = (new Org\Repository())->findOrFailPublic($entity_id);
+
+        if ($org->isFeatureEnabled(Feature\Constants::ENABLE_ORG_ACCOUNT) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+        }
+
         $ba = $this->repo->bank_account->getOrgBankAccount($entity_id);
 
         if ($ba === null)

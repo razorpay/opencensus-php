@@ -1413,6 +1413,7 @@ class Constants
 
     const CANCEL_SETTLE_TO_BANK = "cancel_settle_to_bank";
 
+    const ENABLE_ORG_ACCOUNT = "enable_org_account";
     const OLD_CUSTOM_SETTL_FLOW = "old_custom_settl_flow";
 
     // This feature will be used to control the rollout of authorization via authz enforcer
@@ -2078,6 +2079,7 @@ class Constants
         self::FAIL_VA_ON_VALIDATION           => true,
         self::ORG_SETTLE_TO_BANK              => true,
         self::CANCEL_SETTLE_TO_BANK           => true,
+        self::ENABLE_ORG_ACCOUNT              => true,
         self::OLD_CUSTOM_SETTL_FLOW           => true,
         self::AUTHORIZE_VIA_AUTHZ             => true,
         self::SR_SENSITIVE_BUCKET_1           => true,

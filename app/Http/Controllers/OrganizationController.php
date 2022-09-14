@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Models\Admin;
+use RZP\Models\Admin\Org;
 use RZP\Constants\Entity as E;
 
 class OrganizationController extends Controller
@@ -88,7 +89,10 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service(E::ORG)->createOrgBankAccount($input);
+        $orgId = $this->ba->getOrgId();
+        $sessionOrgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $data = $this->service(E::ORG)->createOrgBankAccount($input, $sessionOrgId);
 
         return ApiResponse::json($data);
     }
@@ -96,7 +100,10 @@ class OrganizationController extends Controller
 
     public function getOrgBankAccount($id)
     {
-        $data = $this->service(E::ORG)->getOrgBankAccount($id);
+        $orgId = $this->ba->getOrgId();
+        $sessionOrgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $data = $this->service(E::ORG)->getOrgBankAccount($id, $sessionOrgId);
 
         return ApiResponse::json($data);
     }
@@ -105,7 +112,10 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service(E::ORG)->updateOrgBankAccount($id, $input);
+        $orgId = $this->ba->getOrgId();
+        $sessionOrgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $data = $this->service(E::ORG)->updateOrgBankAccount($id, $input, $sessionOrgId);
 
         return ApiResponse::json($data);
     }
