@@ -48,7 +48,7 @@ class PayoutError extends Error
      *
      * @return mixed|null
      */
-    protected function getErrorDetails()
+    public function getErrorDetails()
     {
         $statusCode = $this->getPublicErrorCode();
 

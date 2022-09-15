@@ -8071,6 +8071,17 @@ class Service extends Base\Service
 
         $merchantSettleToPartner = $this->core()->getPartnerBankAccountIdsForSubmerchants([$mid]);
 
+        $email = "";
+
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $email = $merchant->parent->getEmail();
+        }
+        else
+        {
+            $email = $merchant->getEmail();
+        }
+
         // RSR-2002; global_hold_status & global_hold_reason will be provided to new settlement service as Global config.
         return [
             "active"               => $merchant->isActivated(),
@@ -8083,7 +8094,8 @@ class Service extends Base\Service
             "global_hold_status"   => $merchant->getHoldFunds(),
             "global_hold_reason"   => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
             "settle_to_org"        => $this->getMerchantOrgSettleValue($merchant),
-            "org_id"               => $merchant->getOrgId()
+            "org_id"               => $merchant->getOrgId(),
+            "merchant_email"       => $email,
         ];
     }
 
