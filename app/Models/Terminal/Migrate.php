@@ -540,18 +540,20 @@ trait Migrate
 
         $terminalSorted = $terminals->sortBy('id')->values();
 
-        
+
         $apiTerminalIds = $apiTerminals->pluck('id')->all();
 
         $tsTerminalIds = $terminalSorted->pluck('id')->all();
 
-        $diff = array_diff($apiTerminalIds, $tsTerminalIds);
+        $apiDiff = array_diff($apiTerminalIds, $tsTerminalIds);
+        $tsDiff = array_diff($tsTerminalIds, $apiTerminalIds);
 
         $isEqual = true;
 
-        if(empty($diff) === false)
+        if(empty($apiDiff) === false)
         {
-            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_IDS, ['api_terminal_ids' => $apiTerminalIds, 'ts_terminal_ids' => $tsTerminalIds]);
+            $app['trace']->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_IDS, ['api_terminal_ids' => $apiTerminalIds, 'ts_terminal_ids' => $tsTerminalIds,
+            'api_diff' => $apiDiff, 'ts_diff' => $tsDiff]);
 
             $isEqual = false;
         }
