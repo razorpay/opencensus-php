@@ -113,7 +113,8 @@ class OneCCShopifyCreateOrder extends Job
                 Trace::ERROR,
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_JOB_EXCEPTION,
                 []);
-            $this->checkRetry('create_order');
+            $this->delete();
+            // $this->checkRetry('create_order');
         }
     }
 

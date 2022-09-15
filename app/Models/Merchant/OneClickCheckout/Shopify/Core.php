@@ -953,6 +953,18 @@ class Core extends Base\Core
 
     protected function updateShopifyTransaction(string $merchantOrderId, array $payment): array
     {
+        if ($payment['amount'] <= 100)
+        {
+            $this->trace->info(
+              TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
+                [
+                    'type'    => 'update_transaction_skipped',
+                    'payment' => $payment,
+                ]
+            );
+            return [];
+        }
+
         $start = millitime();
 
         $body = $this->getTransactionBody($merchantOrderId, $payment);
@@ -965,6 +977,14 @@ class Core extends Base\Core
 
           $updateRequestStart = millitime();
 
+          $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
+            [
+              'type' => 'update_transaction_initiated',
+              'body' => $body,
+            ]
+          );
+
           $order = $client->sendRestApiRequest(
               json_encode($body),
               'POST',
@@ -973,14 +993,6 @@ class Core extends Base\Core
 
           $this->monitoring->traceResponseTime(Metric::UPDATE_SHOPIFY_TRANSACTION_CALL_TIME, $updateRequestStart, []);
 
-          $this->trace->info(
-              TraceCode::SHOPIFY_1CC_UPDATE_TRANSACTION_BODY,
-              [
-                'type' => 'update_transaction_initiated',
-                'body' => $body,
-                'time' => millitime() - $start
-              ]
-          );
 
           return json_decode($order, true);
         }
