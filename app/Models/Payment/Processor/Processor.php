@@ -712,6 +712,7 @@ class Processor
          */
         $merchant = $this->app['basicauth']->getMerchant();
 
+
         if ((app()->isEnvironmentProduction() === true) and
             ($this->mode === Mode::TEST))
         {
@@ -775,6 +776,25 @@ class Processor
                         $shouldRoute = false;
                         $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_oauth';
                         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->mode);
+
+                        $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
+                            'variant'      => $variant,
+                            'feature_flag' => $featureFlag,
+                        ]);
+
+                        if ($variant === 'on')
+                        {
+                            $shouldRoute = true;
+                        }
+                    }
+
+                    if ($this->route->getCurrentRouteName() === "payment_create_private_json")
+                    {
+                        // experiment for payment_create_private_json route on the basis of merchant ID
+
+                        $shouldRoute = false;
+                        $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_create_json';
+                        $variant = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag, $this->mode);
 
                         $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
                             'variant'      => $variant,
