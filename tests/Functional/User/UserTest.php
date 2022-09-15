@@ -8079,8 +8079,8 @@ class UserTest extends TestCase
         $user = $this->fixtures->create(
             'user',
             [
-                'contact_mobile' => '73491987654454',
-                'contact_mobile_verified' => true,
+                'contact_mobile'               => '73491987654454',
+                'contact_mobile_verified'      => true,
                 UserEntity::SECOND_FACTOR_AUTH => 1,
             ]
         );

@@ -100,7 +100,7 @@ class Service extends Base\Service
         return Constants::LCS_CATEGORY_UNKNOWN;
     }
 
-    protected function getChannelPriority(string $channelName): int
+    protected function getChannelPriority(?string $channelName): int
     {
         return Channels::$channelPriorities[$channelName] ?? -1;
     }
@@ -399,4 +399,36 @@ class Service extends Base\Service
         return Channels::UNMAPPED; // Return sub-channel as Unmapped if there's no match
     }
 
+    public function storeChannelAndSubchannel(Entity $merchant, string $channel, string $subchannel)
+    {
+        $attributeCore = new Attribute\Core;
+
+        $existingChannelAttribute = $attributeCore->fetchKeyValues($merchant, Product::BANKING,
+                                                                   Attribute\Group::X_SIGNUP,
+                                                                   [Attribute\Type::CHANNEL])->first();
+
+        $channelDetails = [
+            Constants::CHANNEL    => Channels::UNMAPPED,
+            Constants::SUBCHANNEL => Channels::UNMAPPED,
+        ];
+
+        if (!empty($existingChannelAttribute))
+        {
+            $existingChannel = $existingChannelAttribute[AttributeEntity::VALUE];
+            // If existing channel is empty or Unmapped, override
+            if (empty($existingChannel) === true || $existingChannel === Channels::UNMAPPED)
+            {
+                $channelDetails[Constants::CHANNEL]    = $channel;
+                $channelDetails[Constants::SUBCHANNEL] = $subchannel;
+                $this->upsertChannelDetailsInMerchantAttributes($channelDetails, [], $merchant);
+            }
+        }
+        else
+        {
+            // If channel attribute is absent, we can set it now
+            $channelDetails[Constants::CHANNEL]    = $channel;
+            $channelDetails[Constants::SUBCHANNEL] = $subchannel;
+            $this->upsertChannelDetailsInMerchantAttributes($channelDetails, [], $merchant);
+        }
+    }
 }

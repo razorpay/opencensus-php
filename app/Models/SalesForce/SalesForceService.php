@@ -5,12 +5,14 @@ namespace RZP\Models\SalesForce;
 use App;
 use ApiResponse;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base;
 use RZP\Models\Merchant\Entity;
 use RZP\Services\SalesForceClient;
 use RZP\Models\Merchant\Attribute\Group;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\XChannelDefinition;
 use RZP\Models\Merchant\Attribute\Repository;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -18,21 +20,24 @@ use RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
 use RZP\Models\Merchant\Attribute\Entity as MerchantAttributeEntity;
 use RZP\Models\Merchant\Attribute\Repository as MerchantAttributeRepository;
 use RZP\Models\BankingAccountService\Constants as BankingAccountServiceConstants;
+use RZP\Trace\TraceCode;
 
-class SalesForceService {
+class SalesForceService extends Base\Service {
 
     /** @var $salesForceClient SalesForceClient */
     private $salesForceClient;
 
 
     public function __construct(SalesForceClient $salesForceClient) {
+        parent::__construct();
         $this->salesForceClient = $salesForceClient;
     }
 
     public function raiseEvent(Entity $merchant, SalesForceEventRequestDTO $salesForceEventRequestDTO) {
+        $eventType    = $salesForceEventRequestDTO->getEventType()->getValue();
         $eventPayload = $this->buildSalesforceEventPayloadForEventType($salesForceEventRequestDTO->getEventType(), $salesForceEventRequestDTO, $merchant);
 
-        if( $salesForceEventRequestDTO->getEventType()->getValue() === Constants::RX_WEBSITE_SF_EVENTS)
+        if ($eventType === Constants::RX_WEBSITE_SF_EVENTS)
         {
             $this->salesForceClient->sendLeadUpsertEventsToSalesforce($eventPayload);
 
@@ -53,6 +58,8 @@ class SalesForceService {
         {
             $eventPayload[MerchantAttributeType::CA_ONBOARDING_FLOW] = $caOnboardingFlow;
         }
+
+        $this->addAndStoreChannelDetailsIfApplicable($merchant, $eventType, $eventPayload);
 
         $this->salesForceClient->sendEventToSalesForce($eventPayload);
     }
@@ -147,5 +154,37 @@ class SalesForceService {
     public function getSalesforceDetailsForMerchantIDs(array $merchantIds) : array
     {
         return app('salesforce')->getSalesforceDetailsForMerchantIDs($merchantIds);
+    }
+
+    protected function addAndStoreChannelDetailsIfApplicable(Entity $merchant, ?string $eventType, array &$eventPayload)
+    {
+        $xChannelDefinitionService = new XChannelDefinition\Service;
+
+        if (empty($eventType) === false && $eventType === 'CURRENT_ACCOUNT_INTEREST')
+        {
+            $campaignId = $eventPayload['Campaign_ID'] ?? '';
+
+            $this->trace->info(TraceCode::X_CHANNEL_DEFINITION_SF_OPPORTUNITY_EVENT, compact('eventType', 'campaignId'));
+
+            try
+            {
+                if (str_contains(strtolower($campaignId), 'nitro'))
+                {
+                    $xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_NITRO);
+                    $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;
+                    $eventPayload['X_Subchannel'] = XChannelDefinition\Channels::PG_NITRO;
+                }
+                elseif ($campaignId === XChannelDefinition\Constants::SF_CAMPAIGN_ID_BANKING_WIDGET)
+                {
+                    $xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_BANKING_WIDGET);
+                    $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;
+                    $eventPayload['X_Subchannel'] = XChannelDefinition\Channels::PG_BANKING_WIDGET;
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException($e, null, TraceCode::X_CHANNEL_DEFINITION_FAILED_TO_SAVE_FROM_SF_EVENT);
+            }
+        }
     }
 }

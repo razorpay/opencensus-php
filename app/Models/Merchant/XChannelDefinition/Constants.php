@@ -21,6 +21,8 @@ final class Constants
 
     const X_MOBILE_APP = 'x_mobile_app';
 
+    const SF_CAMPAIGN_ID_BANKING_WIDGET = 'PG_X_Banking_Widget';
+
     // Last Click Source Categories
     const LCS_CATEGORY_BANNER             = 'Banner';
     const LCS_CATEGORY_BLOG               = 'Blog';
