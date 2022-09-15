@@ -82,7 +82,11 @@ const CorporateCards = ({ user }) => {
       // handle error
     }
   };
-
+  const getCTALinkWithUTMParams = (position) => {
+    return `${link}?utm_campaign=cardstab${
+      position === 'Left' ? 1 : 2
+    }&utm_source=growth&utm_medium=RZPDashboard`;
+  };
   const handleLeftCTAClick = () => {
     handleOnClick('Left');
   };
@@ -125,7 +129,11 @@ const CorporateCards = ({ user }) => {
               <img src="/dist/css/assets/capital/cc-deposits.png" />
             </li>
           </ul>
-          <a onClick={handleLeftCTAClick} className="cta secondary" href={link}>
+          <a
+            onClick={handleLeftCTAClick}
+            className="cta secondary"
+            href={getCTALinkWithUTMParams('Left')}
+          >
             {currentCtaText}
           </a>
         </div>
@@ -144,7 +152,11 @@ const CorporateCards = ({ user }) => {
               <li>Recurring charges for SaaS & cloud</li>
               <li>International & other digital expenses</li>
             </ul>
-            <a onClick={handleRightCTAClick} className="cta primary" href={link}>
+            <a
+              onClick={handleRightCTAClick}
+              className="cta primary"
+              href={getCTALinkWithUTMParams('Right')}
+            >
               {currentCtaText}
             </a>
           </div>
