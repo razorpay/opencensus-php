@@ -16,9 +16,10 @@ jobs:
           path: ~/.npm
           key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
 
-      - uses: actions/setup-node@v2-beta
+      - name: Use Node v16.13.1
+        uses: actions/setup-node@v1
         with:
-          node-version: 12.13.0
+          node-version: 16.13.1
 
       - run: npm install -g yarn
 
