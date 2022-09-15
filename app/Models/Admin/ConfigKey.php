@@ -198,7 +198,7 @@ class ConfigKey
     const RX_ON_HOLD_PAYOUTS_MERCHANT_SLA       = self::PREFIX . 'rx_on_hold_payouts_merchant_sla';
     const RX_ON_HOLD_PAYOUTS_DEFAULT_SLA        = self::PREFIX . 'rx_on_hold_payouts_default_sla';
 
-    const RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS = self::PREFIX . 'rx_blacklisted_vpa_regexes_for_merchants';
+    const RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS = self::PREFIX . 'rx_blacklisted_vpa_regexes_for_merchant_payouts';
 
     const RX_CA_MISSING_STATEMENTS_RBL              = self::PREFIX . 'rx_ca_missing_statements_rbl';
     const RX_CA_MISSING_STATEMENTS_ICICI            = self::PREFIX . 'rx_ca_missing_statements_icici';
@@ -383,7 +383,7 @@ class ConfigKey
         self::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT,
         self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA,
         self::RX_ON_HOLD_PAYOUTS_DEFAULT_SLA,
-        self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS,
+        self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS,
         self::RX_CA_MISSING_STATEMENTS_RBL,
         self::RX_CA_MISSING_STATEMENTS_ICICI,
         self::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS,
@@ -485,7 +485,7 @@ class ConfigKey
         self::USE_MASTER_DB_CONNECTION => [Name::USE_MASTER_DB_CONNECTION],
         self::PAYER_ACCOUNT_NAME_INVALID_REGEXES => [Name::SET_PAYER_NAME_INVALID_REGEX],
         self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA => [Name::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS],
-        self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS => [Name::SET_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS],
+        self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => [Name::SET_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS],
         self::TENANT_ROLES_ENTITY => [Name::SET_TENANT_ROLES_CONFIG],
         self::TENANT_ROLES_ROUTES => [Name::SET_TENANT_ROLES_CONFIG],
     ];

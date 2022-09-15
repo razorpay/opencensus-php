@@ -3976,11 +3976,13 @@ class Base extends BaseCore
 
         $vpaId = $vpa->getAddress();
 
+        $merchantId = $this->merchant->getMerchantId();
+
         try
         {
             $blacklistedVpaRegexesForMerchants = (new AdminService)->getConfigKey(
                 [
-                    'key' => ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS
+                    'key' => ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS
                 ]);
         }
         catch (\Throwable $exception)
@@ -3990,22 +3992,36 @@ class Base extends BaseCore
                 Trace::ERROR,
                 TraceCode::ERROR_FETCHING_BLACKLISTED_VPA_REGEXES_FROM_REDIS,
                 [
-                    'merchant_id' => $this->merchant->getMerchantId(),
-                    'config_key'  => ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS,
+                    'merchant_id' => $merchantId,
+                    'config_key'  => ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS,
                 ]);
 
             // Fail-safe here and continue processing
             return null;
         }
 
-        if (array_key_exists($this->merchant->getMerchantId(), $blacklistedVpaRegexesForMerchants) === false)
+        // Common regexes that should be applied to all merchants
+        $commonBlacklistedVpaRegexes = $blacklistedVpaRegexesForMerchants['FOR_ALL_MERCHANTS'] ?? array();
+
+        // Regexes configured to apply only for this merchant
+        $merchantBlacklistedVpaRegexesToApply = $blacklistedVpaRegexesForMerchants[$merchantId]['apply'] ?? array();
+
+        // Regexes configured to skip only for this merchant
+        $merchantBlacklistedVpaRegexesToSkip = $blacklistedVpaRegexesForMerchants[$merchantId]['skip'] ?? array();
+
+        $blacklistedVpaRegexesToEvaluate = array_filter(
+            array_merge($commonBlacklistedVpaRegexes, $merchantBlacklistedVpaRegexesToApply));
+
+        // Exclude those regexes that are configured to skip
+        $blacklistedVpaRegexesToEvaluate = array_diff(
+            $blacklistedVpaRegexesToEvaluate, $merchantBlacklistedVpaRegexesToSkip);
+
+        if (empty($blacklistedVpaRegexesToEvaluate) === true)
         {
             return null;
         }
 
-        $blacklistedVpaRegexes = $blacklistedVpaRegexesForMerchants[$this->merchant->getMerchantId()];
-
-        foreach ($blacklistedVpaRegexes as $blacklistedVpaRegex)
+        foreach ($blacklistedVpaRegexesToEvaluate as $blacklistedVpaRegex)
         {
             try
             {

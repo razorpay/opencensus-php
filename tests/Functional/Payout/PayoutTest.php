@@ -15028,9 +15028,16 @@ class PayoutTest extends OAuthTestCase
 
         (new Admin\Service)->setConfigKeys(
             [
-                Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS => [
-                    $this->bankingBalance->getMerchantId() => ['', '/^paytmqr[a-z0-9\.-]*@paytm$/', '/blockthis[a-z0-9\.-]*@upi$/'],
-                    'abcde' => ['/^junk$/'],
+                Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => [
+                    $this->bankingBalance->getMerchantId() => [
+                        'apply' => ['', '/^paytmqr[a-z0-9\.-]*@paytm$/', '/blockthis[a-z0-9\.-]*@upi$/'],
+                        'skip'  => ['/^nothing$/']
+                    ],
+                    'abcde' => [
+                        'apply' => ['/^junk$/'],
+                        'skip'  => []
+                    ],
+                    'FOR_ALL_MERCHANTS' => ['nothing']
                 ],
             ]);
 
@@ -15048,7 +15055,54 @@ class PayoutTest extends OAuthTestCase
         }
     }
 
-        public function testCreatePayoutToVpaCheckPayoutNotBlocked(bool $isUpi=true, bool $blacklistMid=true)
+    public function testCreatePayoutToBlacklistedVpasForMerchantsBlockedViaCommonRegex()
+    {
+        $contact = $this->getDbLastEntity('contact');
+
+        $fundAccount = $this->fixtures->create('fund_account:vpa', [
+            'id'          => '100000000003fa',
+            'source_type' => 'contact',
+            'source_id'   => $contact->getId(),
+        ]);
+
+        $blockedVpas = [
+            ['username' => 'paytmqrabde',       'handle' => 'paytm'],
+            ['username' => 'paytmqrab-de',      'handle' => 'paytm'],
+            ['username' => 'PayTMQRab-de.ghi',  'handle' => 'PAYtm'],
+            ['username' => 'paytmqr',           'handle' => 'paytm'],
+            ['username' => 'payTMqra.b.c',      'handle' => 'PAYTM'],
+        ];
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => [
+                    $this->bankingBalance->getMerchantId() => [
+                        'apply' => ['/^nothing$/'],
+                        'skip'  => ['^skipped$/']
+                    ],
+                    'abcde' => [
+                        'apply' => ['/^junk$/'],
+                        'skip'  => []
+                    ],
+                    'FOR_ALL_MERCHANTS' => ['/^paytmqr[a-z0-9\.-]*@paytm$/']
+                ],
+            ]);
+
+        foreach ($blockedVpas as $blockedVpa)
+        {
+            $vpa = $this->fixtures->create('vpa', [
+                'username'    => $blockedVpa['username'],
+                'handle'      => $blockedVpa['handle'],
+            ]);
+
+            $fundAccount->account()->associate($vpa);
+            $fundAccount->save();
+
+            $this->startTest();
+        }
+    }
+
+    public function testCreatePayoutToVpaCheckPayoutNotBlocked(bool $isUpi=true, bool $blacklistMid=true)
     {
         $contact = $this->getDbLastEntity('contact');
 
@@ -15083,9 +15137,16 @@ class PayoutTest extends OAuthTestCase
         {
             (new Admin\Service)->setConfigKeys(
                 [
-                    Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS => [
-                        $this->bankingBalance->getMerchantId() => ['', '/^paytmqr[a-z0-9\.-]*@paytm$/', '/blockthis[a-z0-9\.-]*@upi$/'],
-                        'abcde' => ['/^junk$/'],
+                    Admin\ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => [
+                        $this->bankingBalance->getMerchantId() => [
+                            'apply' => ['', '/^paytmqr[a-z0-9\.-]*@paytm$/', '/blockthis[a-z0-9\.-]*@upi$/'],
+                            'skip'  => ['/skipthisvpa[a-z0-9\.-]*@upi$/']
+                        ],
+                        'abcde' => [
+                            'apply' => ['/^junk$/'],
+                            'skip'  => []
+                        ],
+                        'FOR_ALL_MERCHANTS' => ['/skipthisvpa[a-z0-9\.-]*@upi$/']
                     ],
                 ]);
         }
@@ -15107,24 +15168,31 @@ class PayoutTest extends OAuthTestCase
         $this->testCreatePayoutToVpaCheckPayoutNotBlocked(true, false);
     }
 
-    public function testCreatePayoutToVpaNoBlockWhenVpaDoesNotMatchBlacklistedRegex()
+    public function generateAllowedVpas(): array
     {
         $allowedVpas = [
-            ['username' => 'paytm-abc',  'handle' => 'paytm'],
-            ['username' => 'abcde',      'handle' => 'PAYtm'],
-            ['username' => 'qrpaytm',    'handle' => 'payTM'],
-            ['username' => 'paytmupi',   'handle' => 'PAYTM'],
-            ['username' => 'upi',        'handle' => 'paytm'],
-            ['username' => 'donotblock', 'handle' => 'upi'],
-            ['username' => 'abcde',      'handle' => 'UPI'],
+            ['username' => 'paytm-abc',   'handle' => 'paytm'],
+            ['username' => 'abcde',       'handle' => 'PAYtm'],
+            ['username' => 'qrpaytm',     'handle' => 'payTM'],
+            ['username' => 'paytmupi',    'handle' => 'PAYTM'],
+            ['username' => 'upi',         'handle' => 'paytm'],
+            ['username' => 'donotblock',  'handle' => 'upi'],
+            ['username' => 'abcde',       'handle' => 'UPI'],
+            ['username' => 'skipthisvpa', 'handle' => 'UPI'],
         ];
 
-        foreach ($allowedVpas as $vpa)
-        {
-            $testData = &$this->testData['testCreatePayoutToPaytmQrSuccess'];
-            $testData['vpa']['username'] = $vpa['username'];
-            $testData['vpa']['handle'] = $vpa['handle'];
-        }
+        return $allowedVpas;
+    }
+
+    /**
+     * @dataProvider generateAllowedVpas
+     */
+    public function testCreatePayoutToVpaNoBlockWhenVpaDoesNotMatchBlacklistedRegex(string $username, string $handle)
+    {
+
+        $testData = &$this->testData['testCreatePayoutToVpaCheckPayoutNotBlocked'];
+        $testData['vpa']['username'] = $username;
+        $testData['vpa']['handle'] = $handle;
 
         $this->testCreatePayoutToVpaCheckPayoutNotBlocked(true, true);
     }
