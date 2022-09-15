@@ -449,6 +449,7 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'sometimes_if:type.bharat_qr,1|string|max:50',
         Entity::IFSC_CODE                  => 'sometimes_if:type.bharat_qr,1|string|size:11',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::PLAN_ID                    => 'sometimes|string',
     ];
 
     protected static $mpgsTerminalRules = [
@@ -548,7 +549,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACQUIRER           => 'required|in:ratn,axis',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
-        Entity::NETWORK_CATEGORY           => 'sometimes|string'
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
+        Entity::PLAN_ID                    => 'sometimes|string',
     ];
 
     protected static $amexTerminalRules = [
