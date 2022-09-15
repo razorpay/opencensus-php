@@ -2358,4 +2358,223 @@ return [
         ]
     ],
 
+    'createUnregisteredBusinessTypeAccountForNoDocWithPan' => [
+        'request'  => [
+            'url'     => '/v2/accounts',
+            'method'  => 'POST',
+            'content' => [
+                'email'                         => 'testcreateaccountaa@razorpay.com',
+                'phone'                         => '9999999999',
+                'legal_business_name'           => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name' => 'Acme',
+                'business_type'                 => 'individual',
+                'contact_name'                  => 'contactname',
+                'profile'                       => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'Karnataka',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'brand'                         => [
+                    'color' => '000000',
+                ],
+                'legal_info' => [
+                    'pan' => 'AAACL1234C',
+                ],
+                'contact_info'                  => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'notes'                         => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'type'                          => 'standard',
+                'status'                        => 'created',
+                'email'                         => 'testcreateaccountaa@razorpay.com',
+                'phone'                         => '9999999999',
+                'legal_business_name'           => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name' => 'Acme',
+                'business_type'                 => 'individual',
+                'contact_name'                  => 'contactname',
+                'profile'                       => [
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => 560034,
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+                'brand'                         => [
+                    'color' => '#000000',
+                ],
+                'contact_info'                  => [
+                    'chargeback' => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'refund'     => [
+                        'email'      => 'cb@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ],
+                    'support'    => [
+                        'email'      => 'support@acme.org',
+                        'phone'      => '8951496311',
+                        'policy_url' => 'https://www.google.com'
+                    ]
+                ],
+                'notes'                         => [
+                    'business_details' => 'This is a test business',
+                    'key2'             => 'value2',
+                    'account_access'   => 1,
+                ],
+            ],
+        ],
+    ],
+
+    'productConfigCreateForNoDocWithTnc' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_links',
+                'tnc_accepted' => true,
+                'ip'           => '223.233.71.18'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'requirements'         => [
+                    [
+                        'field_reference' => 'otp.contact_mobile',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.external_reference_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_submission_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'otp.otp_verification_timestamp',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'optional',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.beneficiary_name',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.account_number',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'settlements.ifsc_code',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'optional',
+                        'reason_code'     => 'document_missing'
+                    ],
+                ],
+                'tnc'     => [
+                    'accepted'   => true
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdatePaymentGatewayConfigForNoDoc' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'settlements'     => [
+                    'account_number'   => '123576432234',
+                    'ifsc_code'        => 'HDFC0000317',
+                    'beneficiary_name' => 'bank account name'
+                ],
+                'otp'        => [
+                    'contact_mobile'             => '9999999999',
+                    'external_reference_number'  => 'Shk@123',
+                    'otp_submission_timestamp'   => '1653847138',
+                    'otp_verification_timestamp' => '1653848138'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'needs_clarification'
+            ],
+        ]
+    ],
 ];

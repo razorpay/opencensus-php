@@ -9,7 +9,9 @@ use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Constants as MerchantConstant;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -17,9 +19,11 @@ use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Models\Merchant\Detail\ActivationFields as ActivationFields;
 use RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer\Factory;
+use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 /**
  * This class contains logic specific to kyc clarification
@@ -54,6 +58,42 @@ class Core extends Base\Core
            If all statuses are verified then don't trigger needs clarification request
         */
         return (new UpdateContextRequirements())->shouldTriggerNeedsClarification($entity);
+    }
+
+    public function removeNoDocFeatureIfApplicable(Merchant\Entity $merchant, DetailEntity $merchantDetail)
+    {
+
+        if ($merchant->isNoDocOnboardingEnabled() === false)
+        {
+            return;
+        }
+
+        $failedStatus = [BvsValidationConstants::NOT_MATCHED, BvsValidationConstants::INCORRECT_DETAILS, BvsValidationConstants::FAILED];
+
+        $merchantDetailCore = (new MerchantDetailCore());
+        $noDocData          = $merchantDetailCore->fetchNoDocData($merchantDetail);
+
+        $isRemoveNoDocFeature = false;
+
+        $verificationConfig = $noDocData[DEConstants::VERIFICATION];
+
+        foreach ($verificationConfig as $artefact => $value)
+        {
+
+            if (($artefact === DetailEntity::GSTIN and in_array($merchant->merchantDetail->getGstinVerificationStatus(), $failedStatus, true) === true)
+                or ($verificationConfig[$artefact][DEConstants::RETRY_COUNT] > 1))
+            {
+                $isRemoveNoDocFeature = true;
+                break;
+            }
+        }
+
+        if ($isRemoveNoDocFeature === true)
+        {
+            $featureCore = (new FeatureCore());
+
+            $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+        }
     }
 
     /**

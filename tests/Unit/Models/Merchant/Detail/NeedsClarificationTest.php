@@ -2066,6 +2066,99 @@ class NeedsClarificationTest extends TestCase
         $this->assertEquals($partnerKycClarificationReasons, $expectedPartnerKycClarificationReasons);
     }
 
+    public function testRemoveFeatureAfterNoDocVerificationFailedForGstin()
+    {
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $value = [
+            'value' => ['09AAACR5055K1Z5'],
+            'current_index' =>0,
+            'retryCount' => 1,
+            'status' => 'failed',
+        ];
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => $value
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        (new Core())->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
+
+        $isNoDocFeatureEnabled = $merchant->isFeatureEnabled("no_doc_onboarding");
+
+        $this->assertEquals($isNoDocFeatureEnabled, false);
+    }
+
+    public function testRemoveFeatureAfterNoDocVerificationFailedForPan()
+    {
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => $mid,
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'no_doc_onboarding',
+        ];
+
+        (new \RZP\Models\Feature\Core())->create($featureParams,true);
+
+        $noDocData = [
+            'verification' => [
+                'company_pan' => [
+                    'retryCount' => 1,
+                    'status' => 'pending',
+                ],
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        (new Core())->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
+
+        $isNoDocFeatureEnabled = $merchant->isFeatureEnabled("no_doc_onboarding");
+
+        $this->assertEquals($isNoDocFeatureEnabled, false);
+    }
 
     protected function getDbEntity(string $entity, array $input = array(), $mode = 'test')
     {

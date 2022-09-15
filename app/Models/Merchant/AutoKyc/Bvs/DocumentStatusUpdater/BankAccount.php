@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\BvsValidation\Entity;
@@ -12,7 +11,6 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Trace\TraceCode;
 
 class BankAccount extends DefaultStatusUpdater
@@ -51,7 +49,6 @@ class BankAccount extends DefaultStatusUpdater
     {
         $store             = new StoreCore();
         $merchantDetailCore = (new MerchantDetailCore());
-        $featureCore = (new FeatureCore());
         $data         = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
                                                           [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
         $verificationStatus = $this->merchantDetails->getBankDetailsVerificationStatus();
@@ -79,7 +76,6 @@ class BankAccount extends DefaultStatusUpdater
             if ($noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::RETRY_COUNT] > 1)
             {
                 $noDocData[DEConstants::VERIFICATION][DetailEntity::BANK_ACCOUNT_NUMBER][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
-                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
             }
             $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);
         }

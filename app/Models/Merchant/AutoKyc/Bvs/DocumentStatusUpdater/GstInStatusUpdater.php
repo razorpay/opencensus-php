@@ -4,8 +4,6 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Jobs;
 use RZP\Constants\Mode;
-use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Trace\TraceCode;
@@ -63,7 +61,6 @@ class GstInStatusUpdater extends DefaultStatusUpdater
     protected function gstValidationForNoDocOnboarding()
     {
         $store = new StoreCore();
-        $featureCore = (new FeatureCore());
         $data = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
             [ConfigKey::NO_DOC_ONBOARDING_INFO], StoreConstants::INTERNAL);
 
@@ -164,7 +161,7 @@ class GstInStatusUpdater extends DefaultStatusUpdater
 
                     $this->repo->merchant_detail->saveOrFail($merchantDetails);
                 });
-                $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+
                 $this->postUpdateValidationStatus();
             }
         }

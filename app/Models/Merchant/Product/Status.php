@@ -44,4 +44,5 @@ class Status
     const PRODUCT_CONFIG_SOURCE = 'product_config';
     const STAKEHOLDER_SOURCE    = 'stakeholder';
     const TNC_SOURCE            = 'tnc';
+    const OTP_SOURCE            = 'otp';
 }

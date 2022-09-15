@@ -19,6 +19,7 @@ use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\NeedsClarification;
 use RZP\Models\Merchant\Product\Config\PaymentMethods;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Models\Merchant\Product\Status as ProductStatus;
 use RZP\Models\Merchant\Product\Request\Service as AuditService;
 use RZP\Models\Merchant\Product\BusinessUnit\Constants as BusinessUnit;
 use RZP\Trace\Tracer;
@@ -290,6 +291,8 @@ class Core extends Base\Core
         if ($this->merchant->isNoDocOnboardingEnabled() === true)
         {
             $response[Util\Constants::OTP] = $this->createOrFetchOtpVerificationLog($merchant, $input);
+
+            AutoUpdateMerchantProducts::dispatch(ProductStatus::OTP_SOURCE, $merchant, $merchant->merchantDetail);
         }
 
         $response = Tracer::inspan(['name' => HyperTrace::UPDATE_CONFIG], function () use ($response, $merchant, $input) {

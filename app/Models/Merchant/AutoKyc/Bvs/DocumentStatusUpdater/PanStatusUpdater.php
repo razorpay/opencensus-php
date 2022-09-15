@@ -6,8 +6,6 @@ use RZP\Jobs;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Trace\TraceCode;
-use RZP\Models\Feature\Core as FeatureCore;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc\Bvs;
 use RZP\Models\Merchant\Store\ConfigKey;
@@ -68,7 +66,6 @@ class PanStatusUpdater extends DefaultStatusUpdater
        $artefactType = $this->artefactType;
        $store = new StoreCore();
        $merchantDetailCore = (new MerchantDetailCore());
-       $featureCore = (new FeatureCore());
 
        $data = $store->fetchValuesFromStore($this->merchant->getId(), ConfigKey::ONBOARDING_NAMESPACE,
            [ConfigKey::NO_DOC_ONBOARDING_INFO],StoreConstants::INTERNAL);
@@ -125,7 +122,6 @@ class PanStatusUpdater extends DefaultStatusUpdater
            if ($noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::RETRY_COUNT] > 1)
            {
                $noDocData[DEConstants::VERIFICATION][$artefact][DEConstants::STATUS] = Detail\RetryStatus::FAILED;
-               $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
            }
 
            $merchantDetailCore->updateNoDocOnboardingConfig($noDocData, $store);

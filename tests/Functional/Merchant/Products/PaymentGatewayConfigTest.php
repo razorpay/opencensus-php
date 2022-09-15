@@ -1785,5 +1785,73 @@ class PaymentGatewayConfigTest extends OAuthTestCase
     {
         $accountCreationPayload['no_doc_onboarding'] = true;
     }
+
+    public function testUpdatePaymentGatewayConfigBySubmitingOtpPayload()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setUpPartnerWithKycHandled();
+
+        $featureParams = [
+            Entity::ENTITY_ID   => '10000000000000',
+            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Entity::NAME        => 'subm_no_doc_onboarding',
+        ];
+
+        (new Core())->create($featureParams, true);
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccountForNoDocWithPan'];
+
+        $testData['request']['content']['no_doc_onboarding'] = true;
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateStakeholderForThinRequest'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
+
+        $stakeholderResponse = $this->runRequestResponseFlow($testData);
+
+        $stakeholderId = $stakeholderResponse['id'];
+
+        $testData = $this->testData['testUpdateStakeholderDetails'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['productConfigCreateForNoDocWithTnc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->storkMock->shouldReceive('optOutForWhatsapp')->once();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdatePaymentGatewayConfigForNoDoc'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testEmptyRequirements'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
+
+        Stakeholder\Entity::verifyIdAndSilentlyStripSign($stakeholderId);
+
+        $stakeholder = $this->getDbEntity('stakeholder',  ['id' => $stakeholderId]);
+
+        $this->assertTrue(($stakeholder[Stakeholder\Entity::AADHAAR_LINKED] === 0));
+    }
 }
 

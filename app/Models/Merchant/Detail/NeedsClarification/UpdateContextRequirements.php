@@ -476,9 +476,9 @@ class UpdateContextRequirements
 
         $isPanValidationDone = $this->isNoDocPanValidationCompleted($merchantDetails);
 
-        $noDocGsts = $noDocData[DEConstants::DEDUPE][Entity::GSTIN][DEConstants::VALUE] ?? [];
+        $noDocGsts = $noDocData[DEConstants::VERIFICATION][Entity::GSTIN][DEConstants::VALUE] ?? [];
 
-        $currentGstIndex = $noDocData[DEConstants::DEDUPE][Entity::GSTIN][DEConstants::CURRENT_INDEX] ?? 0;
+        $currentGstIndex = $noDocData[DEConstants::VERIFICATION][Entity::GSTIN][DEConstants::CURRENT_INDEX] ?? 0;
 
         $gstVerificationStatus = $merchantDetails->getGstinVerificationStatus();
 
