@@ -6,7 +6,7 @@ module.exports = {
     'declaration-no-important': [true],
     'color-named': ['never'],
     'max-nesting-depth': [4],
-    'stylus/declaration-colon': ['always'],
+    'stylus/declaration-colon': null,
     'stylus/semicolon': null,
     'selector-class-pattern': null,
     'alpha-value-notation': ['number'],
