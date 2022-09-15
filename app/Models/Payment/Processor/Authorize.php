@@ -4345,7 +4345,7 @@ trait Authorize
         $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $input);
 
         // if gateway is doing currency conversions, actual rate used by gateway
-        // will use lower than current rates hence we also use merchant / default 
+        // will use lower than current rates hence we also use merchant / default
         // level percentage for lower values in base_amount for settlement.
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
@@ -10531,6 +10531,8 @@ trait Authorize
                 //Address validation if required
                 $this->validateAddressIfPresent($payment,$input);
 
+                $this->validateCurrencySupport($payment, $input);
+
                 $key = $payment->getCacheRedirectInputKey();
 
                 $inputDetails = $this->getInputDetails($payment, $key);
@@ -11188,6 +11190,34 @@ trait Authorize
         }
     }
 
+    protected function validateCurrencySupport(Payment\Entity $payment, array $input)
+    {
+        // If the payment currency or dcc_currency is either BHD, KWD, or OMR and feature flag is not enabled then throw an error
+        $currency = $payment->getCurrency();
+        if (((isset($input['dcc_currency']) === true and in_array($input['dcc_currency'], Currency\Currency::THREE_DECIMAL_CURRENCIES)) or
+                in_array($currency, Currency\Currency::THREE_DECIMAL_CURRENCIES)) and
+            $this->merchant->isFeatureEnabled(Features::SHAADI_COM_NEW_CURRENCY) === false)
+        {
+            $this->trace->info(
+                TraceCode::SHAADI_COM_NEW_CURRENCY_NOT_SUPPORTED,
+                [
+                    'input'          => $input,
+                    'payment_id'     => $payment->getId(),
+                    'currency'       => $currency
+                ]
+            );
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'currency'      => $currency,
+                    'dcc_currency'  => isset($input['dcc_currency']) === true ? $input['dcc_currency'] : ''
+                ]
+            );
+        }
+    }
 
     protected function validateAddressIfPresent(Payment\Entity $payment, array $input)
     {

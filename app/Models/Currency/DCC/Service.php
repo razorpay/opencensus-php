@@ -114,7 +114,7 @@ class Service extends Base\Service
      * - Get or Update rates for the round off time
      * - convert currency to all supported currencies
      */
-    public function getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent)
+    public function getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $merchantMarkupPercent, $isThreeDecimalCurrencySupported)
     {
         $roundedTime = $this->getCurrentRoundedTime();
 
@@ -123,7 +123,7 @@ class Service extends Base\Service
 
         $rates = $this->getOrUpdateRates($baseCurrency, $roundedTime);
 
-        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails();
+        $supportedCurrencies = $this->core->getSupportedCurrenciesDetails($isThreeDecimalCurrencySupported);
 
         foreach (array_keys($supportedCurrencies) as $currency)
         {

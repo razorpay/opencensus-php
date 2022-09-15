@@ -200,9 +200,17 @@ class Core extends Base\Core
      * amount, code, symbol and exponent
      * @return array|null
      */
-    public function getSupportedCurrenciesDetails()
+    public function getSupportedCurrenciesDetails($isThreeDecimalCurrencySupported=false)
     {
         $details = Currency::getDetails();
+
+        if(!$isThreeDecimalCurrencySupported)
+        {
+            foreach (Currency::THREE_DECIMAL_CURRENCIES as $currency)
+            {
+                unset($details[$currency]);
+            }
+        }
 
         return $details;
     }

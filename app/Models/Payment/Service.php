@@ -2343,9 +2343,17 @@ class Service extends Base\Service
 
         $data = $merchant->getPaymentFlows($iinEntity);
 
-        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
+        $library = '';
+        if(isset($input['_']) === true and isset($input['_']['source']) === true)
+        {
+            $library = $input['_']['source'];
+        }
+        elseif (isset($input['source']) === true)
+        {
+            $library = $input['source'];
+        }
 
-        $library = isset($input['source']) === true ? $input['source']: "";
+        $this->updateDccDataIfApplicable($input, $iinEntity, $merchant,$data);
 
         $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
 
@@ -2394,7 +2402,13 @@ class Service extends Base\Service
             if (($this->isDccEnabledIIN($iinEntity) === true)
                 and ($currency !== $iinEntity->getIinCurrency()))
             {
-                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
+                $isThreeDecimalCurrencySupported = false;
+                if (($input instanceof Payment\Entity) === true)
+                {
+                    $isThreeDecimalCurrencySupported = $this->isthreeDecimalCurrencySupportedForMerchant($input, $merchant);
+                }
+
+                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage(), $isThreeDecimalCurrencySupported);
 
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
@@ -2487,6 +2501,42 @@ class Service extends Base\Service
         }
     }
 
+    protected function isthreeDecimalCurrencySupportedForMerchant($payment, $merchant)
+    {
+        // BHD, KWD, and OMR currencies are only supported for merchant shaadi.com with the experiment to control the traffic
+        // If request is not s2s or not from shaadi.com, don't show new currencies in list
+        $library = $this->getLibraryFromPayment($payment);
+
+        if(in_array($library, Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES) === false or $merchant->isFeatureEnabled(Features::SHAADI_COM_NEW_CURRENCY) === false)
+        {
+            return false;
+        }
+
+        // check experiment
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.shaadi_com_new_currency_support_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SHAADI_COM_NEW_CURRENCY_SUPPORT_SPLITZ_ERROR
+            );
+        }
+        return false;
+    }
 
     public function isDccEnabledIIN($iinEntity): bool
     {
@@ -2500,13 +2550,13 @@ class Service extends Base\Service
         return false;
     }
 
-    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent)
+    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent, $isThreeDecimalCurrencySupported=false)
     {
         $dccInfo = [];
 
         $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent);
+        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $isThreeDecimalCurrencySupported);
 
         $dccInfo['currency_request_id'] = $currencyRequestId;
 

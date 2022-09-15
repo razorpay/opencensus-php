@@ -213,10 +213,12 @@ class Validator extends Base\Validator
         }
 
         // if currency conversion is not enabled allow only INR
-        // if currency conversion is enabled, it should be a valid current
+        // if currency conversion is enabled, it should be a valid currency
         if ((($merchant->convertOnApi() === null) and
             ($currency !== Currency::INR)) or
-            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
+            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false) or
+            ((in_array($currency, Currency::THREE_DECIMAL_CURRENCIES, true) === true) and
+                $this->merchant->isFeatureEnabled(Feature\Constants::SHAADI_COM_NEW_CURRENCY) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED,

@@ -371,6 +371,19 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testCurrencyForShaadiComWithFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(['shaadi_com_new_currency']);
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+        $this->startTest();
+    }
+
+    public function testCurrencyForShaadiComWithFeatureNotEnabled()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
+        $this->startTest();
+    }
+
     public function testUniqueReceiptFeatureWithDuplicateReceipt()
     {
         $order = $this->fixtures->create('order', [

@@ -246,6 +246,91 @@ class PaymentCreateDCCTest extends TestCase
         }
     }
 
+    protected function paymentValidateAndRedirectDCCS2SForShaadiCom(bool $featureEnabled=true)
+    {
+        $payment = $this->payment;
+        $features = array('s2s','s2s_json');
+        if ($featureEnabled === true)
+        {
+            array_push($features, 'shaadi_com_new_currency');
+        }
+        $this->fixtures->merchant->addFeatures($features);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+        $this->assertArrayHasKey('next', $responseContent);
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/dcc_info');
+
+        $this->redirectToDCCInfo = true;
+
+        $url = $this->getPaymentRedirectToDCCInfoUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $content['dcc_currency'] = "BHD";
+
+        $firstRequest = [
+            'content'=>['currency_request_id'=>$content['currency_request_id'],'dcc_currency'=>$content['dcc_currency']],
+            'method'=>$method,
+            'url'=>$url
+        ];
+
+        $this->sendRequest($firstRequest);
+
+        return $id;
+    }
+
+    public function testPaymentValidateAndRedirectDCCS2SForShaadiComFeatureEnabled()
+    {
+        $id = $this->paymentValidateAndRedirectDCCS2SForShaadiCom();
+
+        $paymentEntity = $this->getEntityById('payment', $id,true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals('BHD', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+    }
+
+    public function testPaymentValidateAndRedirectDCCS2SForShaadiComFeatureNotEnabled()
+    {
+        $exceptionOccurred = false;
+        try
+        {
+            $this->paymentValidateAndRedirectDCCS2SForShaadiCom(false);
+        }
+        catch (\Exception $e)
+        {
+            $exceptionOccurred = true;
+            $this->assertExceptionClass($e, BadRequestException::class);
+        }
+        $this->assertTrue($exceptionOccurred);
+    }
 
     public function testPaymentCreateWithDCC()
     {
@@ -888,6 +973,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $this->assertEquals("USD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
+        $this->assertArrayNotHasKey('BHD', $responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
     }
 
@@ -1692,7 +1778,7 @@ class PaymentCreateDCCTest extends TestCase
 
         $payment = $this->getPaymentArrayInternationalForRecurringAutoOnDirect();
 
-        $this->fixtures->iin->create(['iin' => '400155', 'country' => 'KW', 'issuer' => 'UTIB', 'network' => 'Visa', 'recurring' => 1,
+        $this->fixtures->iin->create(['iin' => '400155', 'country' => 'TR', 'issuer' => 'UTIB', 'network' => 'Visa', 'recurring' => 1,
             'flows'   => ['3ds' => '1']]);
 
         $payment['card']['number'] = '4001553716254122';

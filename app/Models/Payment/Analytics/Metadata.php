@@ -187,6 +187,10 @@ class Metadata
         self::HOSTED
     ];
 
+    const SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES = [
+        self::S2S,
+    ];
+
     public static function getStringForValue($value, array $map)
     {
         if ($value === null)

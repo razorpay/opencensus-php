@@ -1555,6 +1555,11 @@ class Constants
     const ICICI_2FA = 'icici_2fa';
 
     /**
+     * Feature flag for new currency support
+     */
+    const SHAADI_COM_NEW_CURRENCY = 'shaadi_com_new_currency';
+
+    /**
      * Feature flag to download consolidated org reports from respective org admin dashboard
      */
     const CONSOLIDATED_ORG_REPORTS = 'consolidated_org_reports';
@@ -2136,6 +2141,7 @@ class Constants
         self::CAMS_MERCHANT_REPORT            => true,
         self::ICICI_2FA                       => true,
         self::BSE_MERCHANT_REPORT             => true,
+        self::SHAADI_COM_NEW_CURRENCY         => true,
         self::CONSOLIDATED_ORG_REPORTS        => true,
         self::EXPOSE_RRN                      => true,
     ];

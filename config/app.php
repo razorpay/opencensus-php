@@ -458,8 +458,10 @@ return array(
 
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
+    'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
+
     'checkout_emi_ui_revamp_splitz_experiment_id' => env('CHECKOUT_EMI_UI_REVAMP_SPLITZ_EXPERIMENT_ID'),
 
-    'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID')
+    'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID')
 
 );
