@@ -100,7 +100,7 @@ class Gateway extends Base\Gateway
             ]);
 
         if ($response['success'] !== true and $input['method'] === Payment\Gateway::PAYLATER and
-            ($input['provider'] === Payment\Processor\PayLater::ICICI or $input['provider'] === Payment\Processor\PayLater::GETSIMPL))
+            ($input['provider'] === Payment\Processor\PayLater::ICICI or $input['provider'] === Payment\Processor\PayLater::GETSIMPL or $input['provider'] === Payment\Processor\PayLater::LAZYPAY))
         {
             $meta_data = [];
 

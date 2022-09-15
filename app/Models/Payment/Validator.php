@@ -1094,7 +1094,7 @@ class Validator extends Base\Validator
 
             if (($method === Payment\Method::PAYLATER) and (isset($input[Entity::PROVIDER]) and
                     (($input[Entity::PROVIDER] === Payment\Processor\PayLater::ICICI ) or
-                        ($input[Entity::PROVIDER] === Payment\Processor\PayLater::GETSIMPL)))) {
+                        ($input[Entity::PROVIDER] === Payment\Processor\PayLater::GETSIMPL) or ($input[Entity::PROVIDER] === Payment\Processor\PayLater::LAZYPAY)))) {
 
                 if(array_key_exists('order_id', $input))
                 {
