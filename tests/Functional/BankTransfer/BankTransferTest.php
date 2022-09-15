@@ -2526,7 +2526,7 @@ class BankTransferTest extends TestCase
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
                               function($mid, $feature, $mode) {
-                                  if ($feature === RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING)
+                                  if ($feature === RazorxTreatment::SMARTCOLLECT_SERVICE_BANK_TRANSFER)
                                   {
                                       return 'on';
                                   }

@@ -126,20 +126,21 @@ class Service extends Base\Service
         return $this->saveRequestAndProcess($input, $provider, false, $requestPayload);
     }
 
-    public function saveRequestAndProcessInternal(array $input)
+    public function saveRequestAndProcessInternal(array $input, string $routeName = null)
     {
         $data           = $input['data'];
         $provider       = $input['gateway'];
         $requestPayload = $input['request_payload'];
 
-        return $this->saveRequestAndProcess($data, $provider, false, $requestPayload);
+        return $this->saveRequestAndProcess($data, $provider, false, $requestPayload, $routeName);
     }
 
     public function saveRequestAndProcess(
         array $input,
         string $provider = null,
         bool $checkForIfsc = false,
-        $requestPayload = null
+        $requestPayload = null,
+        string $routeName = null
     )
     {
         $response = $this->validateDuplicateRequest($input);
@@ -175,7 +176,7 @@ class Service extends Base\Service
             $bankTransferRequest = (new BankTransferRequest\Core())->create(
                 $input,
                 $provider ?? $this->provider,
-                $requestPayload ?? $input
+                $requestPayload ?? $input, [], $routeName
             );
         }
         catch (\Exception $ex)

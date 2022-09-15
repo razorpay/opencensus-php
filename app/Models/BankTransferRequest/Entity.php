@@ -253,11 +253,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
-    public function findAndSetRequestSource()
+    public function findAndSetRequestSource($routeName = null)
     {
         $app = App::getFacadeRoot();
 
-        $routeName = $app['api.route']->getCurrentRouteName();
+        if ($routeName === null)
+        {
+            $routeName = $app['api.route']->getCurrentRouteName();
+        }
 
         $requestSource = [];
 
@@ -310,15 +313,6 @@ class Entity extends Base\PublicEntity
 
                 break;
 
-            case 'bank_transfer_process_internal':
-                $requestSource = [
-                    'source'              => 'callback',
-                    'request_from'        => 'bank',
-                    'sc_service_callback' => true
-                ];
-
-                break;
-
             default:
                 $app['trace']->info(
                     TraceCode::UNTRACKED_ENDPOINT_BANK_TRANSFER,
@@ -329,6 +323,11 @@ class Entity extends Base\PublicEntity
                 );
 
                 break;
+        }
+
+        if ($app['api.route']->getCurrentRouteName() === 'bank_transfer_process_internal')
+        {
+            $requestSource['sc_service_callback'] = true;
         }
 
         $this->setRequestSource(json_encode($requestSource));

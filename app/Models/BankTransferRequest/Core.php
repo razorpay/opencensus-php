@@ -8,7 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
-    public function create(array $input, string $gateway, $requestPayload, array $requestSource = []) : Entity
+    public function create(array $input, string $gateway, $requestPayload, array $requestSource = [], string $routeName = null) : Entity
     {
         $bankTransferRequest = new Entity();
 
@@ -18,7 +18,7 @@ class Core extends Base\Core
         }
         else
         {
-            $bankTransferRequest->findAndSetRequestSource();
+            $bankTransferRequest->findAndSetRequestSource($routeName);
         }
 
         $requestSource = $bankTransferRequest->getRequestSource();

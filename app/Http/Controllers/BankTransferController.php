@@ -615,7 +615,11 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->saveRequestAndProcessInternal($input);
+        $headers = Request::header();
+
+        $routeName = (isset($headers['route-name'][0]) === true) ? $headers['route-name'][0] : null;
+
+        $response = $this->service()->saveRequestAndProcessInternal($input, $routeName);
 
         return ApiResponse::json($response);
 

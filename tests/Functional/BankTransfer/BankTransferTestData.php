@@ -2525,6 +2525,9 @@ return [
         'request'  => [
             'url'     => '/ecollect/validate/internal',
             'method'  => 'post',
+            'headers' => [
+                'Route-Name' => 'bank_transfer_process_rbl_test'
+            ],
             'content' => [
                 'gateway'         => 'rbl',
                 'data'            => [

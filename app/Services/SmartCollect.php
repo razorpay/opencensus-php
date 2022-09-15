@@ -37,6 +37,7 @@ class SmartCollect
     const CONTENT_TYPE      = 'Content-Type';
     const X_REQUEST_ID      = 'X-Request-ID';
     const X_REQUEST_TASK_ID = 'X-Razorpay-TaskId';
+    const ROUTE_NAME        = 'X-Razorpay-Route-Name';
 
     const DEFAULT_REQUEST_TIMEOUT = 60;
 
@@ -131,6 +132,7 @@ class SmartCollect
         $headers[self::X_MODE]            = $this->ba->getMode();
         $headers[self::X_REQUEST_ID]      = $this->request->getId();
         $headers[self::X_REQUEST_TASK_ID] = $this->request->getTaskId();
+        $headers[self::ROUTE_NAME]        = $this->app['api.route']->getCurrentRouteName();
 
         $this->headers = $headers;
     }
