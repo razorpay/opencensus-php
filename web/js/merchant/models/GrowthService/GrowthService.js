@@ -35,7 +35,7 @@ export default class GrowthService extends GenericEntity {
   };
 
   getPayloadData = () => {
-    const { org_id: corp_id = '' } = this.user?.merchant;
+    const corp_id = this.user?.merchant?.org_id || '';
     const user_id = this.user?.user?.id;
 
     return {
