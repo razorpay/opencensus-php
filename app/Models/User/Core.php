@@ -4122,10 +4122,18 @@ class Core extends Base\Core
      */
     public function verifyContactWithOtp(array $input, Merchant\Entity $merchant, Entity $user)
     {
-        $this->verifyOtp($input + ['action' => 'verify_contact'], $merchant, $user);
+        if ((isset($input[Entity::ACTION]) === true) and
+            ($input[Entity::ACTION] === Constants::VERIFY_USER))
+        {
+            $this->verifyOtp($input, $merchant, $user);
+        }
+
+        else
+        {
+            $this->verifyOtp($input + ['action' => 'verify_contact'], $merchant, $user);
+        }
 
         $user->setContactMobileVerified(true);
-
         $this->repo->saveOrFail($user);
     }
 

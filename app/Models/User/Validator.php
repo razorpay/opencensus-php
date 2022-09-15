@@ -398,7 +398,7 @@ class Validator extends Base\Validator
     protected static $verifyOtpRules = [
         Entity::OTP             => 'required|filled|min:4',
         Entity::TOKEN           => 'required|unsigned_id',
-        Entity::ACTION          => 'sometimes|filled|in:bureau_verify,verify_support_contact',
+        Entity::ACTION          => 'sometimes|filled|in:bureau_verify,verify_support_contact,verify_user',
         Entity::CONTACT_MOBILE  => 'required_if:action,bureau_verify,verify_support_contact|max:15|contact_syntax',
     ];
 
