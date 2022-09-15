@@ -472,6 +472,7 @@ class Response
             'freshdesk_raise_grievance',
             'freshdesk_account_recovery_create_ticket',
             'splitz_preflight',
+            'splitz_preflight_bulk_evaluate',
             'splitz_evaluate',
             'customer_flagging_post_grievance',
             'customer_flagging_post_grievance_options',

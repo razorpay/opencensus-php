@@ -2591,6 +2591,7 @@ class Route
         'splitz_evaluate'                          => ['post',     'splitz/evaluate',                                'SplitzController@evaluateRequest'                                  ],
         'splitz_evaluate_bulk'                     => ['post',     'splitz/bulkEvaluate',                            'SplitzController@evaluateRequestBulk'                              ],
         'splitz_preflight'                         => ['options',  'splitz/evaluate',                                'SplitzController@allowCors'                                        ],
+        'splitz_preflight_bulk_evaluate'           => ['options',  'splitz/bulkEvaluate',                            'SplitzController@allowCors'                                        ],
         'splitz_upload_segment_file'               => ['post',     'splitz/segment/upload',                          'SplitzController@uploadFileAndGetUrl'                              ],
 
         //splitz bulk evaluate route for proxy auth
@@ -9131,6 +9132,7 @@ class Route
         'splitz_evaluate',
         'splitz_evaluate_bulk',
         'splitz_preflight',
+        'splitz_preflight_bulk_evaluate',
         'settlement_ondemand_razorpayx_webhook',
         'loc_razorpayx_webhook',
         'payment_links_service_hosted_page',
@@ -10411,6 +10413,7 @@ class Route
             'sms_callback',
             'splitz_evaluate',
             'splitz_preflight',
+            'splitz_preflight_bulk_evaluate',
             'stakeholder_create_v2',
             'stakeholder_fetch_all_v2',
             'stakeholder_fetch_v2',
@@ -12378,6 +12381,7 @@ class Route
             'sms_callback',
             'splitz_evaluate',
             'splitz_preflight',
+            'splitz_preflight_bulk_evaluate',
             'splitz_route',
             'splitz_upload_segment_file',
             'stakeholder_create_v2',
