@@ -6,7 +6,8 @@ namespace Functional\TrustedBadge;
 use Carbon\Carbon;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Terminal\Category;
-use RZP\Models\TrustedBadge\Core;
+use RZP\Models\TrustedBadge\Constants;
+use RZP\Models\TrustedBadge\Repository;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
@@ -82,7 +83,7 @@ class TrustedBadgeTest extends TestCase
                 ],
             ];
 
-            if ($query === 'select * from hive.aggregate_pa.rtb_eligibility_trxn_check_v1') {
+            if ($query === Repository::STANDARD_CHECKOUT_ELIGIBLE_QUERY) {
                 return $standardCheckoutEligibleMerchants;
             }
 
@@ -127,6 +128,120 @@ class TrustedBadgeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals('eligible', $response['status']);
+    }
+
+    /** This method tests for merchants who have less transactions but would still be eligible for RTB
+     * if they pass additional special checks. here we are testing if refund rate and
+     * its Z value is calculated properly.
+     *
+     * @return void
+     */
+    public function testGetLowTransactionsButRTBEligibleMids(): void
+    {
+        $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
+
+        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getDataFromDataLake'])
+            ->getMock();
+
+        $lowTransactionsMerchantsData = [
+            [
+                'merchant_id' => Account::DEMO_ACCOUNT,
+                'refund_rate' => 0,
+            ],
+            [
+                'merchant_id' => Account::TEST_ACCOUNT,
+                'refund_rate' => 0,
+            ],
+            [
+                'merchant_id' => Account::TEST_ACCOUNT_2,
+                'refund_rate' => 0,
+            ],
+        ];
+        // we know -0.5 <= Z <= 1.5 so substituting Z with formula, we get -0.5 <= ((refund rate - mean)/SD) <= 1.5
+        // by solving that equation, we get the following case if we want Z value to be acceptable
+        //  mean - (0.5 * SD) <= refund rate <= mean + (1.5 * SD). Also refund rate = refund count / payment count
+        // so idea here is to create 3 merchants having low, acceptable, high refund counts respectively
+        // we are keeping successful payments a constant. i.e 99 for easy calculation of refund rate.
+        // Demo account - low Z value, Test account - acceptable, Test account 2 - high Z value
+
+        $categoryData = Constants::CATEGORY_WISE_STATISTICAL_DATA[Category::SOCIAL];
+
+        $lowTransactionsMerchantsData[0]['refund_rate'] =
+            ($categoryData['mean'] - (0.5* $categoryData['standard_deviation'])) - 0.001 ;
+
+        $lowTransactionsMerchantsData[1]['refund_rate'] =
+            ($categoryData['mean'] - (0.5* $categoryData['standard_deviation']));
+
+        $lowTransactionsMerchantsData[2]['refund_rate'] =
+            ($categoryData['mean'] + (1.5* $categoryData['standard_deviation'])) + 0.001 ;
+
+        $callback = static function ($query) use ($lowTransactionsMerchantsData) {
+            if ($query === Repository::LOW_TRANSACTIONS_MERCHANTS_QUERY) {
+                return $lowTransactionsMerchantsData;
+            }
+
+            return [];
+        };
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturnCallback($callback);
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $this->fixtures->edit('merchant', Account::TEST_ACCOUNT, [
+            'category2' => Category::SOCIAL,
+            'activated_at' => $ninetyOneDaysAgo,
+        ]);
+        $this->fixtures->create('merchant', [
+            'id' => Account::DEMO_ACCOUNT,
+            'category2' => Category::SOCIAL,
+            'activated_at' => $ninetyOneDaysAgo,
+        ]);
+        $this->fixtures->create('merchant', [
+            'id' => Account::TEST_ACCOUNT_2,
+            'category2' => Category::SOCIAL,
+            'activated_at' => $ninetyOneDaysAgo,
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+            'fraud_type' => null,
+        ]);
+
+        $request = array(
+            'url' => '/trusted_badge/eligibility_cron',
+            'method' => 'POST'
+        );
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+
+        $request = array(
+            'url' => '/trusted_badge',
+            'method' => 'GET',
+            'content' => [],
+        );
+
+        $this->ba->proxyAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('eligible', $response['status']);
+
+        $demoMerchantUser = $this->fixtures->user->createUserForMerchant(Account::DEMO_ACCOUNT);
+        $this->ba->proxyAuth('rzp_test_' . Account::DEMO_ACCOUNT, $demoMerchantUser['id']);
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('ineligible', $response['status']);
+
+        $testMerchantUser = $this->fixtures->user->createUserForMerchant(Account::TEST_ACCOUNT_2);
+        $this->ba->proxyAuth('rzp_test_' . Account::TEST_ACCOUNT_2, $testMerchantUser['id']);
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('ineligible', $response['status']);
     }
 
     public function testTrustedBadgeDetailsWithEntry(): void

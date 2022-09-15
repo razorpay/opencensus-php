@@ -4,12 +4,33 @@
 namespace RZP\Models\TrustedBadge;
 
 use Carbon\Carbon;
+use Exception;
 use RZP\Models\Base;
-
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'trusted_badge';
+
+    public const STANDARD_CHECKOUT_ELIGIBLE_QUERY = <<<'EOT'
+SELECT
+  merchant_id
+FROM
+  hive.aggregate_pa.rtb_eligibility_merchants_transactions_v1
+WHERE
+  count_successful >= 100
+EOT;
+
+
+    public const LOW_TRANSACTIONS_MERCHANTS_QUERY = <<<'EOT'
+SELECT
+  merchant_id,
+  CAST(count_refunds AS double) / CAST(count_successful AS double) AS refund_rate
+FROM
+  hive.aggregate_pa.rtb_eligibility_merchants_transactions_v1
+WHERE
+  count_successful < 100
+EOT;
 
     //
     // Default order defined in RepositoryFetch is created_at, id
@@ -54,5 +75,66 @@ class Repository extends Base\Repository
             ->get();
 
         return $query->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+    /**
+     * This method fetches all merchants having >= 100 txns on standard checkout in last 4 months
+     *
+     * @param int $retryCount
+     * @return array
+     * @throws Exception
+     */
+    public function getStandardCheckoutEligibleMerchantsList(int $retryCount = 0): array
+    {
+        try
+        {
+            $rawQuery = self::STANDARD_CHECKOUT_ELIGIBLE_QUERY;
+
+            $queryResult = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
+
+            return array_column($queryResult,Entity::MERCHANT_ID);
+        }
+        catch(Exception $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::RTB_DATALAKE_QUERY_FAILURE, [
+                'query'      => 'standard_checkout_eligible_merchants_query',
+                'retryCount' => $retryCount,
+            ]);
+
+            if($retryCount < 2)
+            {
+                return $this->getStandardCheckoutEligibleMerchantsList($retryCount+1);
+            }
+            throw $ex;
+        }
+    }
+
+    /** This method fetches all mids and refund rate of merchants having txns greater than 25 and less than 100
+     *
+     * @param int $retryCount
+     * @return mixed
+     * @throws Exception
+     */
+    public function getLowTransactingMerchantsData(int $retryCount = 0)
+    {
+        try
+        {
+            $rawQuery = self::LOW_TRANSACTIONS_MERCHANTS_QUERY;
+
+            return $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
+        }
+        catch(Exception $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::RTB_DATALAKE_QUERY_FAILURE, [
+                'query'      => 'low_transacting_merchants_data_query',
+                'retryCount' => $retryCount,
+            ]);
+
+            if($retryCount < 2)
+            {
+                return $this->getLowTransactingMerchantsData($retryCount+1);
+            }
+            throw $ex;
+        }
     }
 }

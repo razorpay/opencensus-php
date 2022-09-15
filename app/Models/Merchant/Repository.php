@@ -1710,6 +1710,29 @@ class Repository extends Base\Repository
         return $query->pluck($merchantId);
     }
 
+    /**
+     * this method takes in list of merchant ids and returns corresponding category2 for them
+     * sample output : ['mid1'=>'ecommerce', 'mid2'=>'healthcare']
+     * @param array $merchantIds
+     * @return mixed
+     */
+    public function getMerchantsCategories(array $merchantIds): array
+    {
+        if (empty($merchantIds) === true)
+        {
+            return [];
+        }
+
+        $merchantId = $this->dbColumn(Entity::ID);
+        $category = $this->dbColumn(Entity::CATEGORY2);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($category, $merchantId)
+            ->whereIn($merchantId, $merchantIds)
+            ->pluck($category, $merchantId)
+            ->toArray();
+    }
+
     public function getMerchantsForSettlementsEventsCron($updatedAtFrom, $updateAtTo)
     {
         $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())

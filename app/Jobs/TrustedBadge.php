@@ -68,11 +68,20 @@ class TrustedBadge extends Job
                 'merchantCountWithInitialChecks' => count($merchantIdListWithInitialChecksPassed),
             ]);
 
-            $standardCheckoutEligibleMIDs = array_flip($this->rtbCore->getStandardCheckoutEligibleMerchantsList());
+            $standardCheckoutEligibleMIDs =
+                array_flip($this->repoManager->trusted_badge->getStandardCheckoutEligibleMerchantsList());
 
             $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
                 'checkpoint'    => 'fetched_eligible_standard_checkout_merchants',
                 'standardCheckoutEligibleMerchantsCount' => count($standardCheckoutEligibleMIDs),
+            ]);
+
+            $lowTransactingButRTBEligibleMIDs =
+                array_flip($this->rtbCore->getMerchantsHavingLowTransactionsButRTBEligibleList());
+
+            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
+                'checkpoint'    => 'fetched_merchants_with_low_transactions_but_rtb_eligible',
+                'merchantsHavingLowTransactionsButRTBEligibleMidsCount' => count($lowTransactingButRTBEligibleMIDs),
             ]);
 
             $dmtMIDs = array_flip($this->rtbCore->getDMTMerchantsList());
@@ -95,6 +104,8 @@ class TrustedBadge extends Job
                     Entity::STANDARD_CHECKOUT_ELIGIBLE => array_key_exists($merchantId, $standardCheckoutEligibleMIDs),
                     Entity::IS_DMT_MERCHANT            => array_key_exists($merchantId, $dmtMIDs),
                     Entity::IS_DISPUTE_MERCHANT        => array_key_exists($merchantId, $disputedMIDs),
+                    Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT =>
+                        array_key_exists($merchantId, $lowTransactingButRTBEligibleMIDs),
                 ];
 
                 $this->processMerchantWithEligibilityChecks($merchantId, $eligibilityChecks);
@@ -116,9 +127,7 @@ class TrustedBadge extends Job
     {
         try
         {
-            $isMerchantEligibleForRTB = $eligibilityChecks[Entity::STANDARD_CHECKOUT_ELIGIBLE] === true &&
-                                        $eligibilityChecks[Entity::IS_DMT_MERCHANT] === false &&
-                                        $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === false;
+            $isMerchantEligibleForRTB = $this->isMerchantEligibleForRTB($eligibilityChecks) ;
 
             $status  = $isMerchantEligibleForRTB ? Entity::ELIGIBLE : Entity::INELIGIBLE;
 
@@ -150,5 +159,30 @@ class TrustedBadge extends Job
                 'merchantId'      => $merchantId,
             ]);
         }
+    }
+
+    /**
+     * @param array $eligibilityChecks
+     * @return bool
+     */
+    private function isMerchantEligibleForRTB(array $eligibilityChecks): bool
+    {
+        if ($eligibilityChecks[Entity::IS_DMT_MERCHANT] === true)
+        {
+            return false;
+        }
+
+        if ($eligibilityChecks[Entity::STANDARD_CHECKOUT_ELIGIBLE] === true &&
+            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === false)
+        {
+            return true;
+        }
+
+        if ($eligibilityChecks[Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT] === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }

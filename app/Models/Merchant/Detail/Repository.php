@@ -545,6 +545,25 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    /**
+     * This method returns list of mids who dont have any risk tags associated
+     * @param array $merchantIds the list of mids from which to filter out merchants
+     * @return array
+     */
+    public function getMerchantsWithoutRiskTags(array $merchantIds): array
+    {
+        if (empty($merchantIds) === true)
+        {
+            return [];
+        }
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->whereNull(Entity::FRAUD_TYPE)
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
     public function findMerchantByActivationStatusAndActivationFormMileStone(array $activationStatusList,
                                                                              array $orgIdList = [Org\Entity::RAZORPAY_ORG_ID],
                                                                              int $updatedAt = null,

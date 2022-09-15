@@ -39,8 +39,7 @@ class Entity extends Base\PublicEntity
     public const STANDARD_CHECKOUT_ELIGIBLE = 'standardCheckoutEligible';
     public const IS_DMT_MERCHANT            = 'isDmtMerchant';
     public const IS_DISPUTE_MERCHANT        = 'isDisputedMerchant';
-
-    const MIN_SUCCESSFUL_PAYMENTS_FOR_RTB = 700;
+    public const LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT = 'lowTransactingButRTBEligibleMerchant';
 
     const REDIS_EXPERIMENT_KEY = 'RTB_experiment_merchants';
 

@@ -62,7 +62,7 @@ class Core extends Base\Core
         $merchantIdsWithAtLeastOneDispute = array_keys($disputeCountForMerchants);
 
         // Idea here is to not pass all MIDs at once but instead send them in chunks
-        $chunkedMerchantIds = array_chunk($merchantIdsWithAtLeastOneDispute , 500);
+        $chunkedMerchantIds = array_chunk($merchantIdsWithAtLeastOneDispute , 2000);
 
         $paymentCountForDisputedMerchants = [];
 
@@ -447,30 +447,7 @@ class Core extends Base\Core
         ]);
     }
 
-    public function getStandardCheckoutEligibleMerchantsList($retryCount = 0): array
-    {
-        try
-        {
-            $rawQuery = "select * from hive.aggregate_pa.rtb_eligibility_trxn_check_v1";
 
-            $queryResult = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
-
-            return array_column($queryResult, Entity::MERCHANT_ID);
-        }
-        catch(\Exception $ex)
-        {
-            $this->trace->traceException($ex, null, TraceCode::RTB_DATALAKE_QUERY_FAILURE, [
-                'query'      => 'standard_checkout_eligibility_query',
-                'retryCount' => $retryCount,
-            ]);
-
-            if($retryCount < 2)
-            {
-                return $this->getStandardCheckoutEligibleMerchantsList($retryCount+1);
-            }
-            throw $ex;
-        }
-    }
 
     public function getDMTMerchantsList($retryCount = 0): array
     {
@@ -535,5 +512,76 @@ class Core extends Base\Core
         $redis = Redis::Connection();
 
         return $redis->sismember(Entity::REDIS_EXPERIMENT_KEY, $merchantId);
+    }
+
+    /**
+     * This method returns list of merchants with less than 100 txns on std checkout
+     * but still eligible for RTB if they have passed additional checks. Those are
+     * 1. Must have more than 25 txns on standard checkout in last 4 months
+     * 2. Z value of refund rate of merchant must be within set limits. -0.5 <= Z <= 1.5
+     * 3. Must not have any risk tags associated
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function getMerchantsHavingLowTransactionsButRTBEligibleList(): array
+    {
+        $lowTransactionsMerchantsData = $this->repo->trusted_badge->getLowTransactingMerchantsData();
+
+        $merchantsWithZValueWithinLimits = array_flip($this->getMerchantsWithZValueWithinLimits($lowTransactionsMerchantsData));
+
+        return $this->repo->merchant_detail->getMerchantsWithoutRiskTags(array_keys($merchantsWithZValueWithinLimits));
+    }
+
+    /**
+     * This method fetches merchants who all have Z value within limits.
+     *
+     * @param array $lowTransactionsMerchantsData
+     * @return array
+     */
+    protected function getMerchantsWithZValueWithinLimits(array $lowTransactionsMerchantsData): array
+    {
+        $merchantsWithZValueWithinLimits = [];
+
+        $merchantIds = array_column($lowTransactionsMerchantsData, Entity::MERCHANT_ID);
+
+        $merchantsCategories = $this->repo->merchant->getMerchantsCategories($merchantIds);
+
+        foreach ($lowTransactionsMerchantsData as $merchantData)
+        {
+            $merchantId = $merchantData['merchant_id'];
+
+            $category = $merchantsCategories[$merchantId] ?? '';
+
+            if(array_key_exists($category, Constants::CATEGORY_WISE_STATISTICAL_DATA) === false)
+            {
+                continue;
+            }
+
+            $zValue = $this->calculateZValue($category, $merchantData['refund_rate']);
+
+            if (-0.5 <= $zValue && $zValue <= 1.5)
+            {
+                $merchantsWithZValueWithinLimits[] = $merchantId;
+            }
+        }
+
+        return $merchantsWithZValueWithinLimits;
+    }
+
+    /**
+     * This method takes in category and refund rate and calculates Z value
+     * Z value = ((Refund rate of merchant - Mean refund rate of the category that the merchant belongs to)/
+     *           (standard deviation of refund rate of the category that the merchant belongs to))
+     *
+     * @param string $category
+     * @param float $refundRate
+     * @return float Z value of merchant
+     */
+    private function calculateZValue(string $category, float $refundRate): float
+    {
+        $categoryData = Constants::CATEGORY_WISE_STATISTICAL_DATA[$category];
+
+        return (($refundRate - $categoryData[Constants::MEAN]) / $categoryData[Constants::STANDARD_DEVIATION]);
     }
 }
