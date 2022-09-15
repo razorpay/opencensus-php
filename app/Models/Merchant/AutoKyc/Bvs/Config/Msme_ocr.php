@@ -18,33 +18,6 @@ class Msme_ocr extends BaseConfig
             '0' => [
                 'rule_type' => 'string_comparison_rule',
                 'rule_def'  => [
-                    'if' => [
-                        [
-                            "===" => [
-                                [
-                                    "var" => "enrichments.ocr.details.1.issuer.value"
-                                ],
-                                "Udyog Aadhaar Memorandum"
-                            ]
-                        ],
-                        [
-                            "fuzzy_suzzy" => [
-                                [
-                                    'var' => 'artefact.details.signatory_name.value',
-                                ],
-                                [
-                                    'var' => 'enrichments.ocr.details.1.signatory_name.value',
-                                ],
-                                81,
-                            ]
-                        ],
-                        true
-                    ],
-                ],
-            ],
-            '1' => [
-                'rule_type' => 'string_comparison_rule',
-                'rule_def'  => [
                     'fuzzy_suzzy' => [
                         [
                             'var' => 'artefact.details.trade_name.value',
