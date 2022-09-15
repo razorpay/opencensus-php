@@ -8,6 +8,9 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Payment\Analytics\Metadata;
+use RZP\Models\Payment\Processor\Processor;
+use RZP\Models\Terminal\Type;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures\Entity\Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1724,5 +1727,126 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals(false, $responseContent['dcc']);
         $this->assertEquals(50000, $responseContent['gateway_amount']);
         $this->assertEquals('INR', $responseContent['gateway_currency']);
+    }
+
+    public function testMccInternationalPaymentWithDccCompliance()
+    {
+        $payment = $this->fixtures->create('payment:card_captured');
+        $payment['currency'] = 'AUD';
+        $payment['amount'] ='1000';
+        $paymentMetaInput = [
+            'gateway_amount'            => '1000',
+            'gateway_currency'          => 'AUD',
+            'forex_rate'                => '1.23',
+            'dcc_offered'               => true,
+            'payment_id'                => $payment->getId(),
+            'dcc_mark_up_percent'       => '10'
+        ];
+        $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
+        $paymentMetaEntity->payment()->associate($payment);
+        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
+        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
+        $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
+        $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
+        $payment->merchant = $mockService;
+        $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
+        $methodRepoMock->shouldReceive('toArray')->andReturn([]);
+
+        $data = $payment->toArrayGateway();
+        //ASSERTION
+
+        self::assertEquals(false,$data['dcc']);
+        self::assertTrue(empty($data['merchant_currency']));
+    }
+
+    public function testInternationalPaymentWithDccCompliance()
+    {
+        $payment = $this->fixtures->create('payment:card_captured');
+        $payment['currency'] = 'INR';
+        $payment['amount'] = '60';
+        $paymentMetaInput = [
+            'gateway_amount'            => '1000',
+            'gateway_currency'          => 'AUD',
+            'forex_rate'                => '1.23',
+            'dcc_offered'               => true,
+            'payment_id'                => $payment->getId(),
+            'dcc_mark_up_percent'       => '10'
+        ];
+        $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
+        $paymentMetaEntity->payment()->associate($payment);
+        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
+        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
+        $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
+        $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
+        $payment->merchant = $mockService;
+        $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
+        $methodRepoMock->shouldReceive('toArray')->andReturn([]);
+
+        $data = $payment->toArrayGateway();
+        //ASSERTION
+
+        self::assertEquals(true,$data['dcc']);
+        self::assertEquals('INR',$data['merchant_currency']);
+    }
+
+    public function testInternationalDccOnMccPaymentWithDccCompliance()
+    {
+        $payment = $this->fixtures->create('payment:card_captured');
+        $payment['currency'] = 'EUR';
+        $payment['amount'] = '200';
+        $paymentMetaInput = [
+            'gateway_amount'            => '1000',
+            'gateway_currency'          => 'AUD',
+            'forex_rate'                => '1.23',
+            'dcc_offered'               => true,
+            'payment_id'                => $payment->getId(),
+            'dcc_mark_up_percent'       => '10'
+        ];
+        $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
+        $paymentMetaEntity->payment()->associate($payment);
+        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
+        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(true);
+        $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
+        $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
+        $payment->merchant = $mockService;
+        $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
+        $methodRepoMock->shouldReceive('toArray')->andReturn([]);
+
+        $data = $payment->toArrayGateway();
+        //ASSERTION
+
+        self::assertEquals(true,$data['dcc']);
+        self::assertEquals('EUR',$data['merchant_currency']);
+    }
+
+    public function testInternationalPaymentWithOutDccCompliance()
+    {
+        //setup
+        $payment = $this->fixtures->create('payment:card_captured');
+        $paymentMetaInput = [
+            'gateway_amount'            => '2000',
+            'gateway_currency'          => 'EUR',
+            'forex_rate'                => '1.23',
+            'dcc_offered'               => true,
+            'payment_id'                => $payment->getId(),
+            'dcc_mark_up_percent'       => '10'
+        ];
+        $paymentMetaEntity = (new \RZP\Models\Payment\PaymentMeta\Core)->create($paymentMetaInput);
+        $paymentMetaEntity->payment()->associate($payment);
+        $mockService = \Mockery::mock('\RZP\Models\Merchant\Entity')->shouldAllowMockingProtectedMethods();
+        $mockService->shouldReceive('isFeatureEnabled')->with('send_dcc_compliance')->andReturn(false);
+        $mockService->shouldReceive('isFeatureEnabled')->andReturn(false);
+        $mockService->shouldReceive('isAVSEnabledInternationalMerchant')->andReturn(false);
+        $payment->merchant = $mockService;
+        $methodRepoMock = \Mockery::mock('\RZP\Models\Merchant\Methods\Repository');
+        $methodRepoMock->shouldReceive('toArray')->andReturn([]);
+
+        //act
+        $data = $payment->toArrayGateway();
+
+        //assert
+        self::assertTrue(empty($data['dcc']));
+        self::assertTrue(empty($data['merchant_currency']));
+        self::assertEquals('EUR',$data['currency']);
     }
 }

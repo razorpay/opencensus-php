@@ -2044,7 +2044,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         // flipkart use case
-        if (($this->isMethodCardOrEmi() === true) and 
+        if (($this->isMethodCardOrEmi() === true) and
             ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_RRN) === true))
         {
             if (empty($this->getReference1()) === false)
@@ -2055,7 +2055,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             if (empty($this->getReference16()) === false)
             {
                 $acquirerData['rrn'] = $this->getReference16();
-            }    
+            }
         }
 
         return (new Dictionary($acquirerData));
@@ -4316,6 +4316,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $merchant = $this->merchant;
             if($merchant->isFeatureEnabled(Feature\Constants::SEND_DCC_COMPLIANCE) === true){
                 $data['dcc'] = $this->isDCC();
+
+                // the field 'merchant_currency' is added so that router service can select terminals
+                // based on merchant_currency insteady of currency
+                // this case is valid in case of hitachi where the terminal has to be in the currency of the merchant
+                // valid in case of international payments dcc payments and dcc over mcc payments.
+                $data['merchant_currency'] =  $this->isDCC() ? $this->getCurrency() : "";
                 $data['merchant_pay_amount'] = $this->getAmount(); // amount to be settled to merchant in his home currency
             }
 
