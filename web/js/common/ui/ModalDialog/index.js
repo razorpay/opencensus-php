@@ -29,6 +29,7 @@ Modal.defaultStyles.content = {
 @connect((state) => ({ ...state.modal, org: state.session.org }), ModalActions)
 class ModalDialog extends Component {
   _prevQueryParams = null;
+  defaultOverlayStyle = { ...Modal.defaultStyles.overlay };
 
   addQueryParams = (queryParams) => {
     const params = qs.parse(this.props.location.search);
@@ -61,6 +62,8 @@ class ModalDialog extends Component {
       this.removeQueryParams(this._prevQueryParams);
       this._prevQueryParams = null;
     }
+    // reset the default overlay style when modal closes as it is getting modified by reference
+    Modal.defaultStyles.overlay = { ...this.defaultOverlayStyle };
   };
 
   render() {

@@ -15,6 +15,7 @@ function InitiateWebsiteChange(props) {
     props.openModal({
       size: 'small',
       component: <UpdateWebsiteDetails flowType={props.flowType} />,
+      overlayStyles: { display: 'block' },
     });
 
     // Avoid tracking for additional website flow
