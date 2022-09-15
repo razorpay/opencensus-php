@@ -384,7 +384,7 @@ class Validator extends Base\Validator
         'rejected_payout_count'   => 'required_if:action,bulk_payout_approve|integer',
         'rejected_payout_amount'  => 'required_if:action,bulk_payout_approve|numeric',
         'total_payout_amount'     => 'sometimes|integer|min:100',
-        'contact'                 => 'required_if:action,create_payout_link',
+        'contact'                 => 'sometimes_if:action,create_payout_link',
         'total_payout_link_amount'=> 'required_if:action,create_bulk_payout_link|integer',
     ];
 
