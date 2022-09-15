@@ -10,6 +10,8 @@ import {
   groupByPlatform,
   OTHERS,
 } from 'common/utils/pokedex';
+import lazyLoader from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { getItem, setItem, removeItem } from 'common/utils/localStorage';
 import { getCookie } from '../../../common/utils/cookies';
 import debounce from 'common/utils/debounce';
@@ -43,8 +45,6 @@ import {
   iaActivations,
 } from './ga';
 import Banner from 'common/ui/Banner';
-import Desktop from './Desktop';
-import Mobile from './Mobile';
 import RTracking from 'react-tracking';
 import { fetchVirtualAccounts } from 'merchant/reducers/virtualaccounts';
 import CardPaymentsBlockedModal from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Modal';
@@ -60,6 +60,9 @@ import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+
+const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
+const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
 
 const DATE_RANGE_PRESETS = [
   ['Past 7 Days', -7, 'days'],
@@ -1271,7 +1274,15 @@ export default class HomeContainer extends Component {
             isReferee={this.state.isReferee}
           />
         )}
-        {isMobile ? <Mobile {...commonProps} /> : <Desktop {...commonProps} />}
+        {isMobile ? (
+          <SuspenseWithLoader type="full">
+            <Mobile {...commonProps} />
+          </SuspenseWithLoader>
+        ) : (
+          <SuspenseWithLoader type="full">
+            <Desktop {...commonProps} />
+          </SuspenseWithLoader>
+        )}
 
         {showRBIChangesBanners && <CardPaymentsBlockedModal />}
       </div>
