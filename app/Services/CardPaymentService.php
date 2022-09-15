@@ -707,7 +707,7 @@ class CardPaymentService
             {
                 $orderId = $data[self::INPUT][Entity::PAYMENT][Payment\Entity::ORDER_ID];
 
-                $order = (new Order\Repository())->findByPublicId($orderId);
+                $order = (new Order\Repository())->find($orderId);
 
                 if (is_null($order) === false)
                 {
