@@ -656,7 +656,7 @@ class Constants
             'description' => 'Accept payments from your customers between 24th - 30th May and win Rs.40,000* worth Razorpay Credits. *T&Cs Apply',
             'start_ts'    => 1621794599,
             'end_ts'      => 1622399399,
-            'icon'        => 'https://dashboard.razorpay.com/dist/css/assets/product_onboarding/rewards_business_growth.svg',
+            'icon'        => 'https://cdn.razorpay.com/dashboard/dist/css/assets/product_onboarding/rewards_business_growth.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -692,7 +692,7 @@ class Constants
             'description' => 'Accept payments from your customers between 24th - 30th May and win Rs.40,000* worth Razorpay Credits. *T&Cs Apply',
             'start_ts'    => 1621794599,
             'end_ts'      => 1622399399,
-            'icon'        => 'https://dashboard.razorpay.com/dist/css/assets/product_onboarding/rewards_business_growth.svg',
+            'icon'        => 'https://cdn.razorpay.com/dashboard/dist/css/assets/product_onboarding/rewards_business_growth.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',
@@ -726,7 +726,7 @@ class Constants
             'description' => 'You can accept payments from your customers at zero platform fee by utilising your available free credits. *T&Cs Apply',
             'start_ts'    => 1621403379,
             'end_ts'      => 1622485799,
-            'icon'        => 'https://dashboard.razorpay.com/dist/css/assets/product_onboarding/rewards_business_growth.svg',
+            'icon'        => 'https://cdn.razorpay.com/dashboard/dist/css/assets/product_onboarding/rewards_business_growth.svg',
             'buttons'     => [
                 [
                     'type'  => 'button',

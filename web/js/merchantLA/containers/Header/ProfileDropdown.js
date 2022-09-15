@@ -13,6 +13,8 @@ import Group, { GroupItem } from 'common/ui/Group';
 import { logout, showOrHideTour } from 'merchantLA/reducers/session';
 import { SwitchMerchantTypeahead } from 'merchant/components/HeaderNav/SwitchMerchant';
 import logoutGoogleAccount from '../../../common/utils/logoutGoogle';
+import BusinessImage from 'assets/business.svg';
+import BusinessImageThumb from 'assets/business_thumbnail.svg';
 
 @withRouter
 @connect(
@@ -88,7 +90,7 @@ export default class ProfileDropdown extends Component {
           {isMobileResolution ? (
             <span className="merchant-logo-preview">
               <Image src={user.logo_url}>
-                <img src="/dist/css/assets/business_thumbnail.svg" />
+                <img src={BusinessImageThumb} alt="Business logo" />
               </Image>
             </span>
           ) : (
@@ -103,7 +105,7 @@ export default class ProfileDropdown extends Component {
                 <div className="media-left">
                   <div className="media-object">
                     <Image src={user.logo_url}>
-                      <img src="/dist/css/assets/business.svg" />
+                      <img src={BusinessImage} alt="Business Logo" />
                     </Image>
                   </div>
                 </div>

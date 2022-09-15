@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -21,6 +22,8 @@ import OnBoarding, {
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
 
 import { FEATURES_DATA, FEATURES_LINKS, PROS } from './data';
+
+import ImgSmartCollect from 'assets/product_onboarding/smart_collect.svg';
 
 @connect(
   (state) => ({
@@ -94,7 +97,7 @@ export default class InvoicesOnBoarding extends React.Component {
               {...sliderProps}
               feature={RZPFeatures.VA}
               title="Smart Collect"
-              imageUrl="/dist/css/assets/product_onboarding/smart_collect.svg"
+              imageUrl={ImgSmartCollect}
               desc="Automate reconciliation by generating unlimited Virtual Accounts and Virtual UPI IDs on demand. Accept payments via NEFT, RTGS and IMPS."
               pros={PROS}
               next={(...args) => {

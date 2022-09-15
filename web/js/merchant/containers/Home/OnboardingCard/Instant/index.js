@@ -16,6 +16,8 @@ import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import CaInfoContainer from './RxCa/CaInfo';
 import PaymentProgressBar from '../PaymentProgressBar';
+import ImgTopBg from 'assets/onboarding/top_bg.png';
+import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
 
 import {
   trackTestModeCard,
@@ -25,6 +27,7 @@ import {
   trackClose,
 } from './ga';
 
+// eslint-disable-next-line react/no-unsafe
 @connect(
   (state) => ({
     ...state.session,
@@ -41,7 +44,7 @@ import {
     fetchAddWebsiteWorkflowStatus,
   },
 )
-@RTracking((state, props, args) => {
+@RTracking(() => {
   return window.rzpQ.component('OnboardingCardInstant');
 })
 export default class OnboardingCardInstant extends Component {
@@ -49,9 +52,11 @@ export default class OnboardingCardInstant extends Component {
     super(props);
 
     this.state = {
+      // eslint-disable-next-line react/no-unused-state
       contentWidth: null,
       activeStep: 0,
       isWebsiteInWorkflow: false,
+      // eslint-disable-next-line react/no-unused-state
       caStatus: null,
     };
 
@@ -62,6 +67,7 @@ export default class OnboardingCardInstant extends Component {
 
   updateCAstatus = (status) => {
     this.setState({
+      // eslint-disable-next-line react/no-unused-state
       caStatus: status,
     });
   };
@@ -72,6 +78,7 @@ export default class OnboardingCardInstant extends Component {
 
   setContentWidth(width) {
     this.setState({
+      // eslint-disable-next-line react/no-unused-state
       contentWidth: width,
     });
   }
@@ -115,73 +122,73 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const { mode, user, integration, internationalProductsStatus, limitBreach } = this.props,
-      {
-        has_key_access: hasKeyAccess,
-        business_website: businessWebsite,
-        instantActivation,
-        isSubmitted,
-        isActivated,
-        isRejected,
-        isAccepted,
-        needsClarification,
-        international,
-        activated,
-        business_type,
-        poi_verification_status,
-        isUnregisteredBusiness,
-        internationalActivationFlow,
-        activation_status: activationStatus,
-        campaigns,
-        locked,
-        isAutoKycDone,
-        isHardLimitReached,
-        merchant,
-        kyc_clarification_reasons,
-        canSkipPoiValidation,
-      } = user,
-      { isKLA, isWebsiteInWorkflow, activeStep } = this.state,
-      commonModeCardProps = {
-        mode,
-        integration,
-        hasKeyAccess,
-        isKLA,
-        showProductsModal: this.showProductsModal,
-        setActiveStep: this.setActiveStep,
-        merchantId: user.current,
-        internationalActivationFlow,
-        locked,
-        user,
-      },
-      activationCardProps = {
-        mode,
-        instantActivation,
-        isSubmitted,
-        needsClarification,
-        isActivated,
-        isRejected,
-        setActiveStep: this.setActiveStep,
-        international,
-        activated,
-        business_type,
-        poi_verification_status,
-        isUnregisteredBusiness,
-        businessWebsite,
-        internationalActivationFlow,
-        internationalProductsStatus,
-        activationStatus,
-        isAccepted,
-        isWebsiteInWorkflow,
-        locked,
-        isAutoKycDone,
-        isHardLimitReached,
-        merchant,
-        kyc_clarification_reasons,
-        canSkipPoiValidation,
-        user,
-      };
+    const { mode, user, integration, internationalProductsStatus, limitBreach } = this.props;
+    const {
+      has_key_access: hasKeyAccess,
+      business_website: businessWebsite,
+      instantActivation,
+      isSubmitted,
+      isActivated,
+      isRejected,
+      isAccepted,
+      needsClarification,
+      international,
+      activated,
+      business_type,
+      poi_verification_status,
+      isUnregisteredBusiness,
+      internationalActivationFlow,
+      activation_status: activationStatus,
+      campaigns,
+      locked,
+      isAutoKycDone,
+      isHardLimitReached,
+      merchant,
+      kyc_clarification_reasons,
+      canSkipPoiValidation,
+    } = user;
+    const { isKLA, isWebsiteInWorkflow, activeStep } = this.state;
+    const commonModeCardProps = {
+      mode,
+      integration,
+      hasKeyAccess,
+      isKLA,
+      showProductsModal: this.showProductsModal,
+      setActiveStep: this.setActiveStep,
+      merchantId: user.current,
+      internationalActivationFlow,
+      locked,
+      user,
+    };
+    const activationCardProps = {
+      mode,
+      instantActivation,
+      isSubmitted,
+      needsClarification,
+      isActivated,
+      isRejected,
+      setActiveStep: this.setActiveStep,
+      international,
+      activated,
+      business_type,
+      poi_verification_status,
+      isUnregisteredBusiness,
+      businessWebsite,
+      internationalActivationFlow,
+      internationalProductsStatus,
+      activationStatus,
+      isAccepted,
+      isWebsiteInWorkflow,
+      locked,
+      isAutoKycDone,
+      isHardLimitReached,
+      merchant,
+      kyc_clarification_reasons,
+      canSkipPoiValidation,
+      user,
+    };
     const showJuggernautCaFlow = isActivated && hasNeoCouponCode(campaigns);
-    const hasAppliedCa = this.props.user.user.settings['clicked_ca_apply_request_done'];
+    const hasAppliedCa = this.props.user?.user?.settings?.clicked_ca_apply_request_done;
     const showNitroRXCAFlow =
       isActivated &&
       (user.isProjectNitroEnabled || user.isProjectNitroCorporateCard) &&
@@ -233,11 +240,11 @@ export default class OnboardingCardInstant extends Component {
             ) : null}
 
             <div className="onboarding-illustration-top">
-              <img src="/dist/css/assets/onboarding/top_bg.png" />
+              <img src={ImgTopBg} alt="Top" />
             </div>
             <div className="onboarding-illustration" />
             <div className="onboarding-illustration-bottom">
-              <img src="/dist/css/assets/onboarding/bottom_bg.png" />
+              <img src={ImgBottomBg} alt="Bottom" />
             </div>
             {isAccepted && integration.paymentsMade && (
               <div className="btn-close cursor-pointer" onClick={this.onClose}>
@@ -251,6 +258,7 @@ export default class OnboardingCardInstant extends Component {
             <div
               className={`onboarding-step-switch${activeStep === stepNum ? ' active' : ''}`}
               key={stepNum}
+              // eslint-disable-next-line no-sequences
               onClick={() => (trackDotClick(stepNum), this.setActiveStep(stepNum))}
             />
           ))}

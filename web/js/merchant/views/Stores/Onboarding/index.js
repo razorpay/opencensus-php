@@ -10,6 +10,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { slugValidator, storeNameValidator } from '../helpers';
 
 import { createStoreEntity } from '../model';
+import ImgOnboardingBanner from 'assets/stores/stores-onboarding-banner.svg';
 
 import track from './track';
 
@@ -94,10 +95,7 @@ const StoreOnboarding = (props) => {
         <div className="store--onboarding-preheading">Create your Store with</div>
         <h1>Razorpay Stores</h1>
         <div className="divider" />
-        <img
-          src="/dist/css/assets/stores/stores-onboarding-banner.svg"
-          alt="stores-onboarding-banner"
-        />
+        <img src={ImgOnboardingBanner} alt="stores-onboarding-banner" />
         <div className="store--onboarding-description">
           <div>Go online in less than 5 minutes.</div>
           <div>

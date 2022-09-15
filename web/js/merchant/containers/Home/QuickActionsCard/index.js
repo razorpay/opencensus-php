@@ -1,4 +1,5 @@
 import React from 'react';
+import ImgTopBg from 'assets/onboarding/top_bg.png';
 
 const QuickActionsCard = () => {
   const ShareLink = () => (
@@ -32,7 +33,7 @@ const QuickActionsCard = () => {
   return (
     <div className="product-onboarding-card quick-options">
       <div className="illustration-top">
-        <img src="/dist/css/assets/onboarding/top_bg.png" />
+        <img src={ImgTopBg} alt="Top" />
       </div>
       <div className="illustration-right">
         <img

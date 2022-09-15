@@ -1,4 +1,5 @@
 import React from 'react';
+import ImgTopBg from 'assets/onboarding/top_bg.png';
 
 const ProductOnboardingCard = () => {
   const PaymentGateway = () => (
@@ -111,7 +112,7 @@ const ProductOnboardingCard = () => {
   return (
     <div className="product-onboarding-card">
       <div className="illustration-top">
-        <img src="/dist/css/assets/onboarding/top_bg.png" />
+        <img src={ImgTopBg} alt="Top" />
       </div>
       <div className="illustration-bottom">
         <img src="https://cdn.razorpay.com/static/assets/product-led-onboarding/bottom-bg.svg" />

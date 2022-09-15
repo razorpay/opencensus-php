@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import ImgDiamond from 'assets/settlements/diamond.svg';
 
 const BulletListContainer = styled.div`
   width: 100%;
@@ -38,7 +39,7 @@ export default function List({ label, items }) {
       <BulletListInfo>{label}</BulletListInfo>
       {items.map((item, idx) => (
         <BulletListItem key={idx}>
-          <img src="/dist/css/assets/settlements/diamond.svg" alt="diamond bullet" />
+          <img src={ImgDiamond} alt="diamond bullet" />
           <BulletListItemLabel>{item}</BulletListItemLabel>
         </BulletListItem>
       ))}

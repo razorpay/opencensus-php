@@ -1,19 +1,23 @@
+import ImgSubscriptionLinks from 'assets/product_onboarding/without_coding.svg';
+import ImgMultiCurrency from 'assets/product_onboarding/partial_payments.svg';
+import ImgAlternativePayment from 'assets/product_onboarding/alter_native_payment_option.svg';
+
 // Features
 export const FEATURES_DATA = [
   {
-    icon: '/dist/css/assets/product_onboarding/without_coding.svg',
+    icon: ImgSubscriptionLinks,
     title: 'Subscription Links',
     desc:
       'Share unique links to onboard your customers on your Subscription plans instantly! Zero coding, Zero integration.',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/partial_payments.svg',
+    icon: ImgMultiCurrency,
     title: 'Multi-currency Support',
     desc:
       'Accept recurring payments from customers in India and abroad via Razorpay Subscriptions. 100 currencies supported!',
   },
   {
-    icon: '/dist/css/assets/product_onboarding/alter_native_payment_option.svg',
+    icon: ImgAlternativePayment,
     title: 'Multiple Payment methods',
     desc: `Offer your customers a wide variety of payment methods. All payment methods which support recurring payments are compliant with RBI regulations.`,
   },

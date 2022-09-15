@@ -4,6 +4,22 @@ import PropTypes from 'prop-types';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isChildSameType, checkChildrenType } from 'common/utils/react-utils';
 
+import ImgProgress from 'assets/onboarding/progress.png';
+import ImgLocked from 'assets/onboarding/locked.png';
+import ImgDone from 'assets/onboarding/done.png';
+import ImgActive from 'assets/onboarding/active.png';
+import ImgBlocked from 'assets/onboarding/blocked.png';
+import ImgWarning from 'assets/onboarding/warning.svg';
+
+const IMAGE_MAP = {
+  progress: ImgProgress,
+  locked: ImgLocked,
+  done: ImgDone,
+  active: ImgActive,
+  blocked: ImgBlocked,
+  warning: ImgWarning,
+};
+
 const loading = 'loading';
 const progress = 'progress';
 const locked = 'locked';
@@ -62,14 +78,10 @@ class Step extends Component {
         <div
           className={`step-indicator ${this.props.isInstantActivationEnabled ? 'align-left' : ''}`}
         >
-          {isLoading || !possibleStatuses[status] ? (
+          {isLoading || !IMAGE_MAP[status] ? (
             <PlaceholderLoader />
           ) : (
-            <img
-              src={`/dist/css/assets/onboarding/${
-                status === 'warning' ? 'warning.svg' : `${status}.png`
-              }`}
-            />
+            <img src={IMAGE_MAP[status] || ImgProgress} alt={status} />
           )}
         </div>
         <div

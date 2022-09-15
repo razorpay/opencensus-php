@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatDate } from 'razorx/helpers/utils';
+import TickIcon from 'assets/tick.svg';
 
 export default function Timeline(props) {
   const { data, stateLogs } = props;
@@ -19,11 +20,7 @@ export default function Timeline(props) {
         return (
           <div key={created_at} className="timeline-item-container">
             {index !== numberOfItems - 1 ? (
-              <img
-                src="/dist/css/assets/tick.svg"
-                alt="Tick icon"
-                className="timeline-point-previous"
-              />
+              <img src={TickIcon} alt="Tick icon" className="timeline-point-previous" />
             ) : (
               <div
                 className={

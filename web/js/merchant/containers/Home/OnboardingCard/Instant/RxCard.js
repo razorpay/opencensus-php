@@ -14,6 +14,10 @@ import { triggerHotjarRecording } from 'common/utils/hotjar';
 import Button from 'common/new-ui/Button';
 import LocalStorageService from 'common/utils/localStorage';
 import RTracking from 'react-tracking';
+import ImgRxBgRight from 'assets/onboarding/rx-bg-right.svg';
+import ParliamentLogo from 'assets/onboarding/parliament.svg';
+import DoneLogo from 'assets/onboarding/done.png';
+import PointLogo from 'assets/onboarding/points.svg';
 
 @connect(
   (state) => ({
@@ -128,13 +132,13 @@ class RxCard extends Component {
     return (
       <div className="rx-ca-onboarding-card">
         <div className="side" />
-        <img className="right-bottom-img" src="/dist/css/assets/onboarding/rx-bg-right.svg" />
+        <img className="right-bottom-img" src={ImgRxBgRight} alt="Right Bottom Logo" />
         <div className="cross" onClick={this.handleClose}>
           <i class="i i-close" />
         </div>
         <div className="left-container">
           <div>
-            <img className="img-left" src="/dist/css/assets/onboarding/parliament.svg" />
+            <img className="img-left" src={ParliamentLogo} alt="Parliament logo" />
           </div>
           <div className="left-info">
             <div className="title">Receive your money in RazorpayX Current Account</div>
@@ -159,7 +163,7 @@ class RxCard extends Component {
             ) : (
               <div className="req-success">
                 <div>
-                  <img className="req-submit" src="/dist/css/assets/onboarding/done.png" />
+                  <img className="req-submit" src={DoneLogo} alt="Done logo" />
                 </div>
                 <div className="req-info">
                   Request submitted successfully. Our executive will call you for further process
@@ -177,7 +181,7 @@ class RxCard extends Component {
             return (
               <div key={i} className={classes}>
                 <div>
-                  <img src="/dist/css/assets/onboarding/points.svg" />
+                  <img src={PointLogo} alt="Point" />
                 </div>
                 <div>{el}</div>
               </div>
