@@ -36,9 +36,9 @@ export function getLatestNeedsClarificationComment(clarificationReasons) {
   if (!clarificationReasons) return [];
 
   const { clarification_reasons, nc_count: count } = clarificationReasons;
-  const websiteComments = clarification_reasons.business_website || [];
-  const appStoreComments = clarification_reasons.appstore_url || [];
-  const playStoreComments = clarification_reasons.playstore_url || [];
+  const websiteComments = clarification_reasons?.business_website || [];
+  const appStoreComments = clarification_reasons?.appstore_url || [];
+  const playStoreComments = clarification_reasons?.playstore_url || [];
 
   const sources = ['admin', 'system'];
 
