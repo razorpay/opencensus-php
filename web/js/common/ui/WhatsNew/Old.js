@@ -291,6 +291,7 @@ class WhatsNewOld extends Component {
   };
 
   handleCTA = ({ id, url, type, variant, handler, history, tracking_id }) => {
+    const { tracking } = this.props;
     const isMWeb = isMobileAndTablet();
     if (type?.length && variant?.length) {
       if (isMWeb) {
@@ -332,7 +333,7 @@ class WhatsNewOld extends Component {
       return;
     }
     if (handler) {
-      growthServiceCTAHandler(handler, history, tracking_id);
+      growthServiceCTAHandler(handler, history, tracking_id, tracking);
     }
     switch (id) {
       case 'announcement-projectNitro-cta1':

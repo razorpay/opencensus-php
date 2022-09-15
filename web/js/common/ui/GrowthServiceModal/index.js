@@ -5,6 +5,7 @@ import { withRouter } from 'react-router-dom';
 import React, { useEffect } from 'react';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
+import { AsyncBtn } from 'common/new-ui/Button';
 import './GSModalStyle.styl';
 import { fetchGSModal as fetchGSModalProp } from 'merchant/reducers/growthService';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
@@ -48,7 +49,6 @@ const GrowthServiceModal = ({
   };
 
   const buttonHandler = () => {
-    growthServiceCTAHandler(gs_modals?.offer_cta?.handler, history, tracking_id);
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
         trackingID: gs_modals?.id || tracking_id,
@@ -56,6 +56,7 @@ const GrowthServiceModal = ({
         pageUrl: window.location.href,
       }),
     );
+    return growthServiceCTAHandler(gs_modals?.offer_cta?.handler, history, tracking_id, tracking);
   };
 
   if (!loading) {
@@ -94,7 +95,7 @@ const GrowthServiceModal = ({
             </p>
           </div>
           <div className="btn-container">
-            <button
+            <AsyncBtn.Primary
               className="btn"
               type="submit"
               onClick={buttonHandler}
@@ -111,7 +112,7 @@ const GrowthServiceModal = ({
                 description={gs_modals?.offer_cta?.label}
                 type={gs_modals?.offer_cta?.style}
               />
-            </button>
+            </AsyncBtn.Primary>
           </div>
         </div>
       </div>

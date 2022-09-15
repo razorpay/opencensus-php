@@ -5,22 +5,33 @@ import { withRouter } from 'react-router-dom';
 import React, { useState } from 'react';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { AsyncBtn } from 'common/new-ui/Button';
 import { SubmissionSuccessfull } from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { sendDataToSalesForce } from '../../utils/common-api';
 
-const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal, history }) => {
+const Description = ({ description, type }) => {
+  switch (type) {
+    case 'bold':
+      return <strong>{description}</strong>;
+    case 'italics':
+      return <i>{description}</i>;
+    case 'normal':
+    default:
+      return <span>{description}</span>;
+  }
+};
+
+const ExclusiveOffer = ({
+  showNotification,
+  tracking,
+  loading,
+  exclusive_offers,
+  user,
+  closeModal,
+  history,
+}) => {
   const [activeView, setActiveView] = useState('detail-view');
-  const Description = ({ description, type }) => {
-    switch (type) {
-      case 'bold':
-        return <strong>{description}</strong>;
-      case 'italics':
-        return <i>{description}</i>;
-      case 'normal':
-      default:
-        return <span>{description}</span>;
-    }
-  };
 
   const trackCTAClickAndOpenUrl = (id, label, url) => {
     const isExternal = /^http(s)?:\/\//.test(url);
@@ -39,25 +50,44 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
   };
 
   const trackCTAClickAndSave = (id, label) => {
-    sendDataToSalesForce(
+    return sendDataToSalesForce(
       {
         Campaign_ID: id,
         product_name: exclusive_offers?.product_name,
       },
       user,
-    ).then((resp) => {
-      const { success } = resp;
-      if (success) {
-        setActiveView('submission-success-view');
-      }
-    });
-    tracking.trackEvent(
-      window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
-        cta_text: label,
-        pageUrl: window.location.href,
-        trackingID: id,
-      }),
-    );
+    )
+      .then((resp) => {
+        const { success } = resp;
+        if (success) {
+          setActiveView('submission-success-view');
+          tracking.trackEvent(
+            window.rzpQ.merchantActions().initiated('merchant_dashboard.click_form_cta1', {
+              cta_text: label,
+              pageUrl: window.location.href,
+              id,
+            }),
+          );
+        }
+      })
+      .catch((_) => {
+        showNotification({
+          type: 'error',
+          message: 'An error occurred in connecting to the server',
+          hidePrevious: true,
+        });
+        tracking.trackEvent(
+          window.rzpQ
+            .merchantActions()
+            .initiated('merchant_dashboard.exclusive_offer.salesforce.failure', {
+              trackingID: id,
+              pageUrl: window.location.href,
+            }),
+        );
+      })
+      .finally(() => {
+        closeModal();
+      });
   };
 
   if (!loading) {
@@ -96,7 +126,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
               </p>
             </div>
             <div className="btn-container">
-              <button
+              <AsyncBtn.Primary
                 className="btn"
                 type="submit"
                 onClick={() =>
@@ -117,7 +147,7 @@ const ExclusiveOffer = ({ tracking, loading, exclusive_offers, user, closeModal,
                   description={exclusive_offers?.offer_cta?.label}
                   type={exclusive_offers?.offer_cta?.style}
                 />
-              </button>
+              </AsyncBtn.Primary>
             </div>
           </div>
         </>
@@ -157,6 +187,7 @@ export default compose(
     },
     {
       closeModal: closeModalProp,
+      showNotification,
     },
   ),
 )(ExclusiveOffer);

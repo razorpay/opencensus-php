@@ -4,6 +4,7 @@ import {
   openModal as openModalProp,
   closeModal as closeModalProp,
 } from 'merchant_common/reducers/modals';
+import { showNotification as showNotificationProp } from 'merchant_common/reducers/notifications';
 import { sendDataToSalesForce } from 'common/utils/common-api';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
@@ -36,17 +37,6 @@ const gSOpenUrl = (url, history) => {
     closeModal();
     history.push(url);
   }
-};
-
-/**
- * Send Saleforce event with given properties
- * @param {[]} properties - properties to be sent to Salesforce
- */
-const gSSalesforceEvent = (properties) => {
-  const user = getUser();
-  sendDataToSalesForce(properties, user).catch((error) => {
-    console.error(error);
-  });
 };
 
 /**
@@ -93,19 +83,11 @@ const showThankYouModal = (id) => {
   });
 };
 
-/**
- * Handle CTA click from Growth Service Assets
- * @param {*} data - Array of cta click events
- * @param {*} history - history object
- * @param {*} tracking_id - Tracking_id passed from Parent Asset
- */
-const growthServiceCTAHandler = (data, history, tracking_id) => {
+const growthServiceEventHandler = (data, history, tracking_id) => {
   // iterate over data in handler
   data.forEach((item) => {
     if (item?.type === EVENT_TYPE.URL) {
       gSOpenUrl(item?.url, history);
-    } else if (item?.type === EVENT_TYPE.SALESFORCESEVENT) {
-      gSSalesforceEvent(item?.properties);
     } else if (item?.type === EVENT_TYPE.TEMPLATE) {
       // open modal
       if (item?.sub_asset?.type === 'MODAL') {
@@ -122,4 +104,61 @@ const growthServiceCTAHandler = (data, history, tracking_id) => {
   });
 };
 
+/**
+ * @param {*} properties - properties to be sent to Salesforce
+ * @param {*} data -  Array of cta click events
+ * @param {*} history - history object
+ * @param {*} tracking_id - Tracking_id passed from Parent Asset
+ * @param {*} tracking - tracking passed lumberjack tracking call
+ * @returns {*} - Promise from SF call
+ */
+const gSSalesforceEvent = (properties, data, history, tracking_id, tracking) => {
+  const user = getUser();
+  const showNotification = (payload) => store.dispatch(showNotificationProp(payload));
+  return sendDataToSalesForce(properties, user)
+    .then(() => {
+      return growthServiceEventHandler(data, history, tracking_id);
+    })
+    .catch((_) => {
+      showNotification({
+        type: 'error',
+        message: 'An error occurred in connecting to the server',
+        hidePrevious: true,
+      });
+      tracking.trackEvent(
+        window.rzpQ.merchantActions().initiated('merchant_dashboard.salesforce.failure', {
+          trackingID: tracking_id,
+          pageUrl: window.location.href,
+        }),
+      );
+    });
+};
+
+/**
+ * * Handle CTA click from Growth Service Assets
+ * @param {*} data - Array of cta click events
+ * @param {*} history - history object
+ * @param {*} tracking_id - Tracking_id passed from Parent Asset
+ * @param {*} tracking - tracking passed lumberjack tracking call
+ * @returns {*} - Promise from SF call
+ */
+const growthServiceCTAHandler = (data, history, tracking_id, tracking) => {
+  // iterate over data in handler & check for Saleforce Event Type
+  let SFEvent = false;
+  let SFProperties = {};
+  data.forEach((item) => {
+    if (item?.type === EVENT_TYPE.SALESFORCESEVENT) {
+      SFEvent = true;
+      SFProperties = item?.properties;
+    }
+  });
+
+  // if SFEvent is true, send SFProperties to Salesforce & wait for other
+  // events to be handled until SFEvent is completed.
+  if (SFEvent) {
+    return gSSalesforceEvent(SFProperties, data, history, tracking_id, tracking);
+  } else {
+    return growthServiceEventHandler(data, history, tracking_id);
+  }
+};
 export default growthServiceCTAHandler;
