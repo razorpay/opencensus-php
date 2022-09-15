@@ -5304,15 +5304,24 @@ trait Authorize
             {
                 $payment->setSave(true);
 
-                $createInput = [
-                    'method' => 'card',
-                    'card' => $input['card']
-                ];
-
+                // Setting dummy values for card attributes to support BFL payments on S2S in test mode
                 if (empty($input['card']['cvv']) === true)
                 {
                     $input['card']['cvv'] = 123;
                 }
+                if (empty($input['card']['expiry_year']) === true)
+                {
+                    $input['card']['expiry_year'] = 2099;
+                }
+                if (empty($input['card']['expiry_month']) === true)
+                {
+                    $input['card']['expiry_month'] = 12;
+                }
+
+                $createInput = [
+                    'method' => 'card',
+                    'card' => $input['card']
+                ];
 
                 $token = (new Token\Core)->createNetworkToken($createInput);
 
