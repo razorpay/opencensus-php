@@ -8,3 +8,8 @@ export const ADD_MODE = {
   bulk: 'bulk',
   social: 'social',
 };
+
+export const ONBOARDING_LABELS = {
+  GET_STARTED: 'Accept and Get Started',
+  GET_STARTED_PENDING: 'Getting Started ...',
+};

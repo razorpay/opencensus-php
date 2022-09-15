@@ -1,16 +1,17 @@
 import React from 'react';
 import { SliderDots } from 'common/new-ui/Slider';
-import { classList } from 'common/utils/rzp-utils';
+import { AsyncBtn } from 'common/new-ui/Button';
 
 const SlideController = ({
   sliderProps,
   onNext,
   disNext = false,
-  disBack = false,
   nextBtnLabel,
+  nextBtnPendingLabel,
 }) => {
   const { next, prev, active } = sliderProps;
-  let nextLabel = nextBtnLabel ? nextBtnLabel : 'Next';
+  const nextLabel = nextBtnLabel ? nextBtnLabel : 'Next';
+
   return (
     <div className="slide-controller-wrapper">
       <div className="slide-controller">
@@ -19,27 +20,23 @@ const SlideController = ({
         </div>
         <div style={{ textAlign: 'end' }} className="slide-nav-btns">
           {Boolean(active) && (
-            <a
-              onClick={() => prev && prev()}
-              className="btn btn-link slider-btn back"
-            >
+            <a onClick={() => prev && prev()} className="btn btn-link slider-btn back">
               Back
             </a>
           )}
 
-          <a
+          <AsyncBtn.Primary
+            className="btn btn-primary slider-btn next"
+            disabled={disNext}
             onClick={() => {
               !disNext && next && next();
-              onNext && onNext();
+              return onNext && onNext();
             }}
-            class={classList(
-              'btn btn-primary slider-btn next',
-              disNext && 'disabled'
-            )}
+            pendingState={nextBtnPendingLabel}
           >
             {nextLabel}
-            <i class="i i-arrow-forward" />
-          </a>
+            <i className="i i-arrow-forward" />
+          </AsyncBtn.Primary>
         </div>
       </div>
     </div>

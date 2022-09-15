@@ -1,342 +1,476 @@
-.partner-onboarding-base-screen
-    min-height:403px;
-    border-radius: 4px;
-    background: #FEFEFF;
-    background-repeat:no-repeat;
-    background-size:603px;
-    background-position: top 0 right 0%;
-    font-family: Lato;
-    font-style: normal;
-    padding: 50px;
-    &.new-screen
-      padding: 25px 50px 35px
-    .partner-onbr-info
-      height: 360px;
-      &.step-2
-        height: 410px
-      p
-        font-size: 14px;
+.partner-onboarding-base-screen {
+  min-height: 403px;
+  border-radius: 4px;
+  background: #FEFEFF;
+  background-repeat: no-repeat;
+  background-size: 603px;
+  background-position: top 0 right 0%;
+  font-family: Lato, sans-serif;
+  font-style: normal;
+  padding: 50px;
 
-      .learn-more
-        margin-top: 121px;
-        padding: 2px;
-    .title
-      font-weight: bold;
-      font-size: 24px;
-      line-height: 29px;
-      color: #57666E;
-    .line-box
-      background-color: #fff;
-      border-radius: 2px;
-      border-radius: 2px;
-      border: solid 1px;
-      border-left: 4px solid;
-      padding: 15px 0px 15px 10px;
-      margin-top: 20px;
-      list-style-type: none;
+  &.new-screen {
+    padding: 25px 50px 35px;
+  }
+
+  .partner-onbr-info {
+    height: 360px;
+
+    &.step-2 {
+      height: 410px;
+    }
+
+    p {
       font-size: 14px;
-      line-height: 20px;
-      color: #57666e;      
-    .brd-primary
-      border-color: rgba(46, 203, 140, 0.7);
-      border-left-color:rgb(63, 214, 154);
-    .info
-      font-weight: bold;
-      font-size: 14px;
-      line-height: 22px;
-    .info-green
-      color: #3FD69A;
-    .info-grey
-      color: #57666E;
-    .info-blue
-      color:#518FF0;
-    .options-group
-      margin: 21px 0 0;
-      &.select-partner-type-options
-        margin: 48px 0 40px;
-        display: flex;
-        justify-content: center;
+    }
 
-       div.value
-         height: 102px;
-         background: #FFFFFF;
-         border: 1px solid #D6D6D6;
-         box-sizing: border-box;  
-         padding:20px;
-         display:flex;
-         align-content:center;
-         cursor: pointer;
-       div.value:hover
-         background: rgba(81, 143, 240, 0.02);
-       div.value.active
-        background: rgba(81, 143, 240, 0.05);
-        border-color: #518FF0;
-        border-left: solid 4px #518FF0;
-        padding-left:17px;
+    .learn-more {
+      margin-top: 121px;
+      padding: 2px;
+    }
+  }
 
-        div.check i 
-          color:#518FF0;
-        .info-grey
-           color:#518FF0;
-      div.check
-        flex:1;
-        align-self:center;
-        i
-          font-size: 18px;
-          color: #D9D9D9;
-       .no-bottom-border
-          border-bottom-width:0px !important;
-       .no-top-border
-          border-top-color: transparent;
-          border-top-width:1px !important;
-    .tnc-box
-      background: #FFFFFF;
-      border: 1.8px solid #EBEBFD;
+  .title {
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 29px;
+    color: #57666E;
+  }
+
+  .line-box {
+    background-color: #FFF;
+    border-radius: 2px;
+    border: solid 1px;
+    border-left: 4px solid;
+    padding: 15px 0 15px 10px;
+    margin-top: 20px;
+    list-style-type: none;
+    font-size: 14px;
+    line-height: 20px;
+    color: #57666E;
+  }
+
+  .brd-primary {
+    border-color: rgb(46 203 140 / 0.7);
+    border-left-color: rgb(63 214 154);
+  }
+
+  .info {
+    font-weight: bold;
+    font-size: 14px;
+    line-height: 22px;
+  }
+
+  .info-green {
+    color: #3FD69A;
+  }
+
+  .info-grey {
+    color: #57666E;
+  }
+
+  .info-blue {
+    color: #518FF0;
+  }
+
+  .options-group {
+    div.check {
+      flex: 1;
+      align-self: center;
+
+      i {
+        font-size: 18px;
+        color: #D9D9D9;
+      }
+    }
+  }
+
+  .slide-controller {
+    .slider-btn.next {
+      color: #FFF;
+      background: #518FF0;
+      border: 1px solid #3B80EE;
       box-sizing: border-box;
-      border-radius: 4px;
-      padding:10px 17px 10px;
-      max-height: 285px;
-      overflow-y: scroll;
-      margin-top:22px;
-      ul ul, ol ul, ul ol, ol ol
-        margin-bottom: 0;
-        margin-left: -45px;
-      ol ol ul li
-        margin-left: 0px;
-      table
-        margin-left:-25px;
-    .slide-controller
-      display:flex;
-      align-items:center;
-      div
-        flex:1;
-        justify-content: space-between;
-      .SliderDots
-          text-align: left;
-      .slide-nav-btns
-        float: right;
-      .slider-btn
-        font-family: Lato;
-        font-style: normal;
-        font-weight: normal;
-        font-size: 14px;
-        line-height: 17px;
-        width: 100px;
-        display: inline;
-      .slider-btn.next
-        color: #FFFFFF;
-        background: #518FF0;
-        border: 1px solid #3B80EE;
-        box-sizing: border-box;
-        border-radius: 2px;
-        i
-          padding:2px;
-          line-height: 8px;
-          vertical-align: middle;
-      .slider-btn.back 
-        color: #518FF0;
+      border-radius: 2px;
+      padding: 6px 12px;
+      width: auto;
+      margin-right: 0;
 
-  .SelectBox.PartnerTypeSelectBox
-    padding: 30px 0 28px 0;
-    margin-bottom: 0;
-    display: block;
-    position: relative;
-    background: #FEFEFF;
-    border: 2px solid #D0E3FA;
-    box-sizing: border-box;
-    box-shadow: 2px 4px 12px rgba(11, 112, 231, 0.05);
-    border-radius: 4px;
-    cursor: pointer;
+      i {
+        padding: 2px;
+        line-height: 8px;
+        vertical-align: middle;
+      }
+    }
+  }
 
-    .SelectBox--popover.rzp-popover
-      position: absolute;
-      width: 160px !important;
-      left: 220px !important;
-      top: 20px !important;
+  .options-group {
+    margin: 21px 0 0;
 
-      .rzp-popover-title
-        h4
-          font-size: 12px;
-      .rzp-popover-body
-        font-size: 10px;
-        line-height: 13px;
-
-    .select-box-image-container 
-      position: absolute;
-      left: 50%;
-      top: -24px;
-      transform: translateX(-50%);
-
-    .SelectBox-heading
-      border-bottom: 1px solid #EDF0F5;
-      color: #162F56;
-      margin: 0 5px 10px;
-      height: 70px;
-
-      .Input-label
-        text-align: center;
-        color: #326ECE;
-        margin-bottom: 0;
-
-      .Input-desc
-        margin-top: 0;
-        color: #162F56;
-        font-size: 12px;
-        line-height: 14px;
-        padding: 0 18px;
-        text-align: center;
-
-      img 
-        margin-right: 8px;
-        height: 48px;
-
-    .SelectBox-action
-      padding: 0 18px 0 22px;
-
-      .Input-desc
-        font-size: 14px;
-        color: #162F56;
-        margin: 12px 0;
-      
-      ul
-        padding-left: 5px;
-        list-style: none;
-
-        li
-          font-size: 12px;
-          color: #536582;
-          position: relative;
-
-          &::before 
-            content: '\2022';
-            color: #326ECE;
-            position: absolute;
-            left: -1em;
-      
-    .select-button-container
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      background: #D0E3FA;
-      height: 28px;
+    &.select-partner-type-options {
+      margin: 48px 0 40px;
       display: flex;
       justify-content: center;
-      align-items: center;
+    }
 
-      .radio-btn
-        background: #FFFFFF;
-        border: 1px solid #326ECE;
-        height: 16px;
-        width: 16px;
-        border-radius: 50%;
-
-        i.fa-check
-          font-size: 10px;
-          position: relative;
-          color: #326ECE;
-          top: -4px;
-          left: 2px;
-
-    &:not(:last-child)
-      margin-bottom: 0;
-      margin-right: 22px;
-
-    .content
+    div.value {
+      height: 102px;
+      background: #FFF;
+      border: 1px solid #D6D6D6;
+      box-sizing: border-box;
+      padding: 20px;
       display: flex;
+      align-content: center;
+      cursor: pointer;
+    }
+
+    div.value:hover {
+      background: rgb(81 143 240 / 0.02);
+    }
+
+    div.value.active {
+      background: rgb(81 143 240 / 0.05);
+      border-color: #518FF0;
+      border-left: solid 4px #518FF0;
+      padding-left: 17px;
+
+      div.check i {
+        color: #518FF0;
+      }
+
+      .info-grey {
+        color: #518FF0;
+      }
+    }
+  }
+
+  .tnc-box {
+    background: #FFF;
+    border: 1.8px solid #EBEBFD;
+    box-sizing: border-box;
+    border-radius: 4px;
+    padding: 10px 17px;
+    max-height: 285px;
+    overflow-y: scroll;
+    margin-top: 22px;
+
+    ul ul,
+    ol ul,
+    ul ol,
+    ol ol {
+      margin-bottom: 0;
+      margin-left: -45px;
+    }
+
+    ol ol ul li {
+      margin-left: 0;
+    }
+
+    table {
+      margin-left: -25px;
+    }
+  }
+
+  .slide-controller {
+    display: flex;
+    align-items: center;
+
+    div {
+      flex: 1;
       justify-content: space-between;
-      align-items: center;
+    }
 
+    .SliderDots {
+      text-align: left;
+    }
 
-    &:hover
-      background: #FEFEFF;
+    .slide-nav-btns {
+      float: right;
+      display: flex;
+    }
 
-    &.checked
-      border: 2px solid #326ECE;
+    .slider-btn {
+      font-family: Lato, sans-serif;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 14px;
+      line-height: 17px;
+      width: 100px;
+      display: inline;
+    }
 
-      .select-button-container
-        background: #326ECE;
+    .slider-btn.back {
+      color: #518FF0;
+    }
+  }
+}
 
-      i.i-check
-        color:#518FF0;
+.SelectBox.PartnerTypeSelectBox {
+  padding: 30px 0 28px;
+  margin-bottom: 0;
+  display: block;
+  position: relative;
+  background: #FEFEFF;
+  border: 2px solid #D0E3FA;
+  box-sizing: border-box;
+  box-shadow: 2px 4px 12px #0B70E70D;
+  border-radius: 4px;
+  cursor: pointer;
 
-@media (min-width: 900px) 
-  .partner-onboarding-base-screen
-    min-width:850px;
-    background-image:url('assets/onboarding/prt-bkg.png')
+  .SelectBox--popover.rzp-popover {
+    // stylelint-disable declaration-no-important
+    position: absolute;
+    width: 160px !important; // important used to overide popover position
+    left: 220px !important;
+    top: 20px !important;
+
+    // stylelint-enable declaration-no-important
+    .rzp-popover-title {
+      h4 {
+        font-size: 12px;
+      }
+    }
+
+    .rzp-popover-body {
+      font-size: 10px;
+      line-height: 13px;
+    }
+  }
+
+  .select-box-image-container {
+    position: absolute;
+    left: 50%;
+    top: -24px;
+    transform: translateX(-50%);
+  }
+
+  .SelectBox-heading {
+    border-bottom: 1px solid #EDF0F5;
+    color: #162F56;
+    margin: 0 5px 10px;
+    height: 70px;
+
+    .Input-label {
+      text-align: center;
+      color: #326ECE;
+      margin-bottom: 0;
+    }
+
+    .Input-desc {
+      margin-top: 0;
+      color: #162F56;
+      font-size: 12px;
+      line-height: 14px;
+      padding: 0 18px;
+      text-align: center;
+    }
+
+    img {
+      margin-right: 8px;
+      height: 48px;
+    }
+  }
+
+  .SelectBox-action {
+    padding: 0 18px 0 22px;
+
+    .Input-desc {
+      font-size: 14px;
+      color: #162F56;
+      margin: 12px 0;
+    }
+
+    ul {
+      padding-left: 5px;
+      list-style: none;
+
+      li {
+        font-size: 12px;
+        color: #536582;
+        position: relative;
+
+        &::before {
+          content: "\2022";
+          color: #326ECE;
+          position: absolute;
+          left: -1em;
+        }
+      }
+    }
+  }
+
+  .select-button-container {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background: #D0E3FA;
+    height: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .radio-btn {
+      background: #FFF;
+      border: 1px solid #326ECE;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+
+      i.fa-check {
+        font-size: 10px;
+        position: relative;
+        color: #326ECE;
+        top: -4px;
+        left: 2px;
+      }
+    }
+  }
+
+  &:not(:last-child) {
+    margin-bottom: 0;
+    margin-right: 22px;
+  }
+
+  .content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &:hover {
+    background: #FEFEFF;
+  }
+
+  &.checked {
+    border: 2px solid #326ECE;
+
+    .select-button-container {
+      background: #326ECE;
+    }
+
+    i.i-check {
+      color: #518FF0;
+    }
+  }
+}
+
+@media (min-width 900px) {
+  .partner-onboarding-base-screen {
+    min-width: 850px;
+    background-image: url("assets/onboarding/prt-bkg.png");
     transition: background-image 5s ease-in-out;
 
-    &.step-2
+    &.step-2 {
       background-image: none;
-      
-      .partner-illustration
+
+      .partner-illustration {
         width: 50%;
         position: absolute;
         height: 190px;
-        background: url(assets/onboarding/partner-illustration.png) no-repeat 72% 52px, linear-gradient(to bottom right, transparent 0%, transparent 50%, #67deaf 50%, #67deaf 100%);
+        background: url("assets/onboarding/partner-illustration.png") no-repeat 72% 52px, linear-gradient(to bottom right, transparent 0%, transparent 50%, #67DEAF 50%, #67DEAF 100%);
         bottom: 0;
         right: 0;
         background-size: 50%, contain;
+      }
+    }
 
-    .partner-onbr-info
+    .partner-onbr-info {
       width: 50%;
-      &.step-2
+
+      &.step-2 {
         width: 100%;
-        .SelectBox.PartnerTypeSelectBox
+
+        .SelectBox.PartnerTypeSelectBox {
           width: 244px;
+        }
+      }
+    }
+  }
 
-  .slide-controller-wrapper
-    width:50%;
-@media  (min-width: 320px) and (max-width: 1024px)
- .partner-onboarding-base-screen
-    width:80vw;
-    
-  .slide-controller-wrapper
-    .slide-controller
+  .slide-controller-wrapper {
+    width: 50%;
+  }
+}
+
+@media (min-width 320px) and (max-width 1024px) {
+  .partner-onboarding-base-screen {
+    width: 80vw;
+  }
+
+  .slide-controller-wrapper {
+    .slide-controller {
       display: block;
-      div
-        display: inline-block;
 
-.ReactModal__Overlay.ReactModal__Overlay--after-open
-  .partner-onboarding-popup.mobile-app-popup
+      div {
+        display: inline-block;
+      }
+    }
+  }
+}
+
+.ReactModal__Overlay.ReactModal__Overlay--after-open {
+  .partner-onboarding-popup.mobile-app-popup {
     text-align: left;
-    .partner-onboarding-base-screen 
+
+    // stylelint-disable max-nesting-depth
+    // to override mobile styles and Popver component
+    .partner-onboarding-base-screen {
       width: 100%;
       padding: 25px;
-      .title
+
+      .title {
         padding-right: 10px;
-      &.new-screen
+      }
+
+      &.new-screen {
         padding: 25px;
-        /* width */
-        ::-webkit-scrollbar
+
+        // width
+        ::-webkit-scrollbar {
           width: 6px;
+        }
 
-        /* Track */
-        ::-webkit-scrollbar-track
-          background: rgba(255,255,255,0.4)
-          border-radius: 10px
+        // Track
+        ::-webkit-scrollbar-track {
+          background: rgb(255 255 255 / 0.4);
+          border-radius: 10px;
+        }
 
-        /* Handle */
-        ::-webkit-scrollbar-thumb
-          background: rgba(0,0,0,0.2)
-          border-radius: 10px
+        // Handle
+        ::-webkit-scrollbar-thumb {
+          background: rgb(0 0 0 / 0.2);
+          border-radius: 10px;
+        }
 
-        /* Handle on hover */
-        ::-webkit-scrollbar-thumb:hover
-          background: rgba(0,0,0,0.3)
-      .options-group
+        // Handle on hover
+        ::-webkit-scrollbar-thumb:hover {
+          background: rgb(0 0 0 / 0.3);
+        }
+      }
+
+      .options-group {
         margin: 21px 0 0;
-        &.select-partner-type-options
+
+        &.select-partner-type-options {
           flex-direction: column;
           margin-top: 50px;
-          .SelectBox.PartnerTypeSelectBox
+
+          .SelectBox.PartnerTypeSelectBox {
             margin-right: 0;
             margin-bottom: 42px;
-            &.checked
+
+            &.checked {
               margin-bottom: 0;
-            .SelectBox-heading 
-              .Input-label
+            }
+
+            .SelectBox-heading {
+              .Input-label {
                 font-size: 16px;
-          .SelectBox--information
+              }
+            }
+          }
+
+          .SelectBox--information {
             margin: 0 6px 42px;
             background: #E6F3FD;
             color: #162F56;
@@ -344,30 +478,50 @@
             font-size: 12px;
             border-radius: 0 0 4px 4px;
             line-height: 14px;
-            .who-uses
+
+            .who-uses {
               font-weight: 700;
-      .partner-onbr-info
+            }
+          }
+        }
+      }
+
+      .partner-onbr-info {
         height: calc(100vh - 85px);
         width: 100%;
         margin-bottom: 35px;
-        &.step-2
+
+        &.step-2 {
           overflow-y: scroll;
-          .bottom-container
+
+          .bottom-container {
             padding-bottom: 20px;
-        .tnc-box
+          }
+        }
+
+        .tnc-box {
           height: calc(100% - 30px);
           overflow: scroll;
           margin-top: 10px;
           max-height: unset;
-      .slide-controller-wrapper
+        }
+      }
+
+      .slide-controller-wrapper {
         width: 100%;
         margin-top: 20px;
         position: absolute;
-        background: #fff;
+        background: #FFF;
         bottom: 0;
         left: 0;
         padding: 20px 25px;
-        box-shadow: 0px 1px 12px rgba(0, 0, 0, 0.1);
-      
-      .learn-more
+        box-shadow: 0 1px 12px #0000001A;
+      }
+
+      .learn-more {
         margin-top: 20px;
+      }
+    }
+    // stylelint-enable max-nesting-depth
+  }
+}

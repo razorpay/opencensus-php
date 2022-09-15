@@ -192,7 +192,7 @@ export default class BaseScreen extends React.Component {
       toCleverTap: true,
     });
 
-    this.closeTransaction('merchant/partner_type', {
+    return this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
     });
   };

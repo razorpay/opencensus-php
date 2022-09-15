@@ -1,4 +1,5 @@
 import React from 'react';
+import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
 import SlideContoller from './SlideController';
 
 const s3 = (props) => {
@@ -883,7 +884,8 @@ const s3 = (props) => {
         </div>
       </div>
       <SlideContoller
-        nextBtnLabel="Accept and Get Started"
+        nextBtnLabel={ONBOARDING_LABELS.GET_STARTED}
+        nextBtnPendingLabel={ONBOARDING_LABELS.GET_STARTED_PENDING}
         sliderProps={props.sliderProps}
         onNext={props.onNext}
       />
