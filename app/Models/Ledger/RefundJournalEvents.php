@@ -165,7 +165,7 @@ class RefundJournalEvents
         if (($refund->payment->hasBeenCaptured() === false) and
             ($refund->isDirectSettlementWithoutRefund() === true) and
             ($refund->isRefundSpeedInstant() === false) and
-            ($transaction->isRefundCredits() === false))
+            ($transaction->isRefundCredits() === true))
         {
             return self::fetchAutoDSWithoutRefundTerminalNormalSpeedRefundCredits($refund, $transaction);
         }
