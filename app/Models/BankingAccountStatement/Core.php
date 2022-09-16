@@ -590,7 +590,7 @@ class Core extends Base\Core
         {
             $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatementsBeforeDedupe);
         }
-        catch(\Exception $exception)
+        catch (\Exception $exception)
         {
             $this->trace->traceException(
                 $exception,
@@ -605,6 +605,11 @@ class Core extends Base\Core
             $response['message'] = 'Missing statements got inserted and linked successfully.
                                     Dispatched for updating BAS entities.
                                     Removal of inserted missing statements from redis got failed.';
+        }
+
+        if (empty($params) === true)
+        {
+            $this->releaseBasDetailsFromStatementFix($accountNumber, $channel);
         }
 
         return $response;
