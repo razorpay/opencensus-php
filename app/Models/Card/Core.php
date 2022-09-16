@@ -441,7 +441,13 @@ class Core extends Base\Core
                 ]);
         }
 
-        (new Beneficiary)->enqueueForBeneficiaryRegistration($card, FundAccountType::CARD);
+        $isTokenised = ($card->isTokenPan() === true) ? true : $card->isNetworkTokenisedCard();
+
+        // Only enqueue for beneficiary registration for non saved card flow
+        if ($isTokenised === false)
+        {
+            (new Beneficiary)->enqueueForBeneficiaryRegistration($card, FundAccountType::CARD);
+        }
     }
 
     public function checkAllowedNetworksForSCBL($card)

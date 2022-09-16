@@ -77,6 +77,9 @@ class ApiTraceProcessor
     const OFF = 'off';
 
     const SENSITIVE_KEYS = [
+        'iin',
+        'expiry_month',
+        'expiry_year',
         'account_number',
         'name',
         'account_ifsc',
