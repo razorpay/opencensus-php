@@ -5185,7 +5185,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
                 $app['rzp.mode']);
 
-            return (strtolower($variant) === 'on');
+            if(strtolower($variant) === 'on')
+            {
+                $variant = $app['razorx']->getTreatment($this->localToken->card->getIin(),
+                    RazorxTreatment::RECURRING_TOKENISATION_UNHAPPY_FLOW_HANDLING,
+                    $app['rzp.mode']);
+
+                return (strtolower($variant) === 'on');
+            }
         }
 
         return false;
