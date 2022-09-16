@@ -1,9 +1,18 @@
 import React, { useState } from 'react';
 import Amount from 'common/ui/Amount';
+import Spinner from 'common/ui/Spinner';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from '../constants';
 import { getPrincipalAmount, getInterestAmount } from './utils';
+
+const Loader = () => {
+  return (
+    <div className="page-spinner-container">
+      <Spinner />
+    </div>
+  );
+};
 
 const RepayAmount = ({
   setView,
@@ -19,6 +28,7 @@ const RepayAmount = ({
   setRepayAmount,
   totalPrincipalAmount,
   totalInterestAmount,
+  loading,
 }) => {
   const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
@@ -29,10 +39,6 @@ const RepayAmount = ({
     customAmount ? Math.round(customAmount / 100) : null,
   );
   const [isCustomAmountActive, setIsCustomAmountActive] = useState(false);
-
-  const handleCancelClick = () => {
-    setView(REPAYMENT_VIEWS.SUMMARY);
-  };
 
   const handleConfirmClick = () => {
     setView(REPAYMENT_VIEWS.REPAY_METHOD);
@@ -104,6 +110,18 @@ const RepayAmount = ({
     totalInterestAmount,
   });
 
+  const isRepayCTADisable =
+    (repayType === REPAY_AMOUNT_TYPES.CUSTOM &&
+      (customAmountError || !tempCustomAmount || isCustomAmountActive)) ||
+    totalOwedAmount === 0;
+
+  if (loading) {
+    return (
+      <div className="repay-container repay-amount repay">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <div className="repay-container repay-amount repay">
       <div className="repay-text">I want to repay</div>
@@ -227,17 +245,13 @@ const RepayAmount = ({
         </div>
         <div>
           <div className="flex wrapper-alignment">
-            <Button.Primary
-              disabled={
-                repayType === REPAY_AMOUNT_TYPES.CUSTOM &&
-                (customAmountError || !tempCustomAmount || isCustomAmountActive)
-              }
+            <Button.Secondary
+              disabled={isRepayCTADisable}
               className="mr-24"
               onClick={handleConfirmClick}
             >
-              Confirm
-            </Button.Primary>
-            <Button.Transparent onClick={handleCancelClick}>Cancel</Button.Transparent>
+              <strong>Repay</strong>
+            </Button.Secondary>
           </div>
         </div>
       </div>

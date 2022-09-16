@@ -3,7 +3,6 @@ import React from 'react';
 import {
   BASE_SLIDE_CONTENT_BY_VARIANT,
   CASH_ADVANCE_CAROUSEL_SLIDES,
-  CASH_ADVANCE_CAROUSEL_VIEW_RULES,
   COLLECTIONS_BALANCE_TYPE,
   REPAYMENT_FREQUENCY_TYPES,
   SLIDE_COLORS,
@@ -14,8 +13,9 @@ import { getItem, setItem } from 'common/utils/localStorage';
 import store from 'merchant/store';
 import { getNextRepayBreakup } from './OverviewFooter/utils/index';
 
-export const getSlideByRule = (rule) => {
-  switch (rule) {
+export const getSlideByRule = () => {
+  return [CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT];
+  /* switch (rule) {
     case CASH_ADVANCE_CAROUSEL_VIEW_RULES.EXHAUSTED_WITHDRAWAL_BALANCE:
       return [CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT];
     case CASH_ADVANCE_CAROUSEL_VIEW_RULES.REPAYMENTS_TAB_SHOW_DUE:
@@ -57,14 +57,14 @@ export const getSlideByRule = (rule) => {
       return [CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT];
     default:
       return [CASH_ADVANCE_CAROUSEL_SLIDES.NON_ZERO_DUE_AMOUNT_PROMPT];
-  }
+  } */
 };
 
 export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, balances = []) => {
   const availableWithdrawalBalance = new WithdrawalConfig(withdrawalConfig).withdrawableBalance;
-
   let totalPrincipalAmount = 0;
   let totalInterestAmount = 0;
+  const internalCreditLimit = withdrawalConfig?.configuration?.internal_credit_limit;
 
   balances.forEach(({ balance_type, balance_amount }) => {
     if (balance_type === COLLECTIONS_BALANCE_TYPE.BALANCE_TYPE_PRINCIPAL)
@@ -140,7 +140,7 @@ export const getSlideContent = (slideId, withdrawalConfig, upcomingRepayments, b
         ...BASE_SLIDE_CONTENT_BY_VARIANT[SLIDE_COLORS.green],
         id: CASH_ADVANCE_CAROUSEL_SLIDES.REGULAR_WITHDRAWAL_BENEFIT_PROMPT,
         title: 'Total Credit Limit',
-        subTitle: <Amount value={availableWithdrawalBalance} />,
+        subTitle: <Amount value={internalCreditLimit} />,
         body:
           'Your continuous withdrawals and regular on-time due repayments will increase the chances of getting higher withdrawal limit.',
       };

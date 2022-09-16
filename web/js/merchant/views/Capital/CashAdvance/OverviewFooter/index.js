@@ -5,6 +5,7 @@ import { COLLECTIONS_PRODUCT_TYPES, REPAYMENT_VIEWS } from '../constants';
 import Summary from './Summary';
 import Repay from './Repay';
 import Result from './Result';
+import './overview-footer-styles.styl';
 import { fetchInstallments, fetchCurrentOutstanding } from 'merchant/reducers/capital/withdrawals';
 import { fetchBalances } from 'merchant/reducers/capital/repayments';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
@@ -28,7 +29,7 @@ function OverviewFooter({
   current_outstanding,
   user,
 }) {
-  const [view, setView] = useState(REPAYMENT_VIEWS.SUMMARY);
+  const [view, setView] = useState(REPAYMENT_VIEWS.REPAY_AMOUNT);
   const [resultAmounts, setResultAmounts] = useState({
     settlementAmount: 0,
     bankAmount: 0,
@@ -40,7 +41,7 @@ function OverviewFooter({
   });
   useEffect(() => {
     const productType = getProductType(user);
-    if (view === REPAYMENT_VIEWS.SUMMARY) {
+    if (view === REPAYMENT_VIEWS.REPAY_AMOUNT) {
       fetchInstallments({
         product_type: productType,
         owner_id: merchantId,
@@ -93,6 +94,7 @@ function OverviewFooter({
             totalInterestAmount={totalInterestAmount}
             totalPrincipalAmount={totalPrincipalAmount}
             setResultAmounts={setResultAmounts}
+            loading={balances.loading || installments.loading}
           />
         )}
         {(view === REPAYMENT_VIEWS.RESULT_FAILURE || view === REPAYMENT_VIEWS.RESULT_SUCCESS) && (
