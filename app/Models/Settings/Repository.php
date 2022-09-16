@@ -25,7 +25,7 @@ class Repository extends Base\Repository
                     ->where(Entity::ENTITY_ID, $entityId)
                     ->where(Entity::MODULE, $module)
                     ->where(Entity::KEY, $key)
-                    ->firstOrFail();
+                    ->first();
     }
 
 }

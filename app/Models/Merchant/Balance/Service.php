@@ -338,21 +338,6 @@ class Service extends Base\Service
 
         $freePayoutsConsumedLastResetAt = $counter->getFreePayoutsConsumedLastResetAt();
 
-        $freePayoutCountRecord = (new FreePayout)->getFreePayoutsCountRecord($balance);
-
-        $freePayoutCount = (int)$freePayoutCountRecord[EntityConstants::VALUE];
-
-        $freePayoutSupportedModesRecord = (new FreePayout)->getFreePayoutsSupportedModesRecord($balance);
-
-        $freePayoutsSupportedModes = explode(',', $freePayoutSupportedModesRecord[EntityConstants::VALUE]);
-
-        $this->trace->info(
-            TraceCode::COUNTER_AND_SETTINGS_RECORDS_FOR_MIGRATION,
-            [
-                'free_payout_count_settings_record'           => $freePayoutCountRecord,
-                'free_payout_supported_modes_settings_record' => $freePayoutSupportedModesRecord,
-            ]);
-
         $input = [
             EntityConstants::ACTION                             => $action,
             Entity::MERCHANT_ID                                 => $merchant->getId(),
@@ -362,13 +347,31 @@ class Service extends Base\Service
             Counter\Entity::FREE_PAYOUTS_CONSUMED               => $freePayoutsConsumed,
             Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => $freePayoutsConsumedLastResetAt,
             EntityConstants::COUNTER_CREATED_AT                 => $counter->getCreatedAt(),
-
-            FreePayout::FREE_PAYOUTS_COUNT                => $freePayoutCount,
-            EntityConstants::FREE_PAYOUT_COUNT_CREATED_AT => $freePayoutCountRecord[EntityConstants::CREATED_AT],
-
-            FreePayout::FREE_PAYOUTS_SUPPORTED_MODES                => $freePayoutsSupportedModes,
-            EntityConstants::FREE_PAYOUT_SUPPORTED_MODES_CREATED_AT => $freePayoutSupportedModesRecord[EntityConstants::CREATED_AT],
         ];
+
+        $freePayoutCountRecord = (new FreePayout)->getFreePayoutsCountRecord($balance);
+
+        if ($freePayoutCountRecord !== null)
+        {
+            $freePayoutCount = (int) $freePayoutCountRecord[EntityConstants::VALUE];
+
+            $input += [
+                FreePayout::FREE_PAYOUTS_COUNT                => $freePayoutCount,
+                EntityConstants::FREE_PAYOUT_COUNT_CREATED_AT => $freePayoutCountRecord[EntityConstants::CREATED_AT],
+            ];
+        }
+
+        $freePayoutSupportedModesRecord = (new FreePayout)->getFreePayoutsSupportedModesRecord($balance);
+
+        if ($freePayoutSupportedModesRecord !== null)
+        {
+            $freePayoutsSupportedModes = explode(',', $freePayoutSupportedModesRecord[EntityConstants::VALUE]);
+
+            $input += [
+                FreePayout::FREE_PAYOUTS_SUPPORTED_MODES                => $freePayoutsSupportedModes,
+                EntityConstants::FREE_PAYOUT_SUPPORTED_MODES_CREATED_AT => $freePayoutSupportedModesRecord[EntityConstants::CREATED_AT],
+            ];
+        }
 
         $response = $this->payoutServiceFreePayoutClient->freePayoutMigrationForMicroservice($input);
 
