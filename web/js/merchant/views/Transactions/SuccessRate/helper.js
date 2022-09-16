@@ -16,6 +16,7 @@ import {
   DEFAULT_GROUP_BY,
   FILTERS_VS_DISPLAY_NAMES,
   breakdownInterval,
+  TAG_OVERALL_MAP,
 } from './constants';
 
 export const getInterval = (startDate, endDate) => {
@@ -86,10 +87,11 @@ const getSelectedFilters = (selectedDropdownFilterOptions, user) => {
   }, {});
 };
 
-export const queryFilters = (updateDropdownOptions) => {
+export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) => {
   const { session, successRate } = store?.getState();
   const user = session?.user;
-  const { filters, activeTab, tabs } = successRate;
+  const { filters, activeTab: stateActiveTab, tabs } = successRate;
+  const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
   const mode = activeTab === 'Overall' || !user.isOptimizerEnabled ? 'razorpay' : 'optimizer';
   const { startDate, endDate } = filters;
   const { method, group_by, selectedDropdownFilterOptions = {}, selectedInterval } = tabs[
@@ -232,6 +234,19 @@ export const getIntervals = ({ tag, data, group_by, activeTab }) => {
   );
 };
 
+export const getTagLabel = (name) => {
+  const defaultLabel = getUser()?.isOptimizerEnabled ? upperFirst(name) : name;
+  return (TAG_MAP[name] ?? defaultLabel) || '--';
+};
+
+export const getTagLabelWithOverallTag = ({ tag, activeTab, groupBy }) => {
+  let name = getTagLabel(tag);
+  if ((!getUser()?.isOptimizerEnabled || activeTab === 'Overall') && tag === 'Overall') {
+    name = TAG_OVERALL_MAP[groupBy];
+  }
+  return name;
+};
+
 export const onFetchSR = ({
   data,
   startTime,
@@ -269,7 +284,7 @@ export const onFetchSR = ({
       const datasets = selectedTags?.map((tag) => {
         const intervals = getIntervals({ tag, data, group_by, activeTab });
         return {
-          label: tabsOrder[tags?.indexOf(tag)],
+          label: getTagLabelWithOverallTag({ tag, activeTab, groupBy: group_by }),
           data: generateDatasets(intervals),
           ...chartStyle[tags?.indexOf(tag)],
         };
@@ -280,7 +295,7 @@ export const onFetchSR = ({
         histogram: { labels, datasets },
       };
     }
-    return {};
+    return { tags: [], selectedTags: [], histogram: { labels: [], datasets: [] } };
   } catch (error) {
     return error;
   }
@@ -333,11 +348,6 @@ export const getSuitableY = (y, yArray = [], direction) => {
   });
 
   return result;
-};
-
-export const getTagLabel = (name) => {
-  const defaultLabel = getUser()?.isOptimizerEnabled ? upperFirst(name) : name;
-  return (TAG_MAP[name] ?? defaultLabel) || '--';
 };
 
 export const getPieChartData = (groupData = []) => {

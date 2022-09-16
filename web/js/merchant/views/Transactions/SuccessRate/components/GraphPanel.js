@@ -10,7 +10,7 @@ import ChartArea from './ChartArea';
 
 import { fetchBreakdownIntervals, updateSelectedTags } from 'merchant/reducers/successRate';
 import { breakdownInterval, chartStyle, defaultChartStyle } from '../constants';
-import { queryFilters, generateDatasets, getIntervals } from '../helper';
+import { queryFilters, generateDatasets, getIntervals, getTagLabelWithOverallTag } from '../helper';
 import { methodIntervalClick, methodTagsClick, trackSuccessRateEvents } from '../trackEvents';
 
 const GraphPanel = (props) => {
@@ -35,7 +35,7 @@ const GraphPanel = (props) => {
         chart.data.datasets.splice(position, 1);
       } else if (position < 0) {
         const newDataset = {
-          label: tag,
+          label: getTagLabelWithOverallTag({ tag, activeTab, groupBy: group_by }),
           data: generateDatasets(intervals),
           ...(chartStyle[tagIndex] ?? defaultChartStyle),
         };

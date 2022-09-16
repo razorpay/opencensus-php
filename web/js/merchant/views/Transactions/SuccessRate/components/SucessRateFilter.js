@@ -54,6 +54,14 @@ const SucessRateFilter = (props) => {
 
   const onSearch = async () => {
     setDefaultInterval(getInterval(startDate, endDate));
+    const refreshMetricTabs = activeTab !== 'Overall';
+    if (refreshMetricTabs) {
+      await fetchSuccessRate({
+        payload: queryFilters(false, refreshMetricTabs),
+        refreshMetricTabs,
+        updateDropdownOptions: false,
+      });
+    }
     const payload = queryFilters(updateDropdownOptions);
     await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);

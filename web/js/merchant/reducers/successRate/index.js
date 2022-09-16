@@ -39,10 +39,12 @@ export const fetchSuccessRate = ({
   payload,
   updateDropdownOptions,
   resetSelectedInterval = true,
+  refreshMetricTabs = false,
 }) => async (dispatch) => {
   const { successRate = {}, session } = store?.getState();
   const user = session?.user;
-  const { activeTab, metrics, tabs } = successRate;
+  const { activeTab: stateActiveTab, metrics, tabs } = successRate;
+  const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
   const {
     selectedInterval,
     group_by,
@@ -111,20 +113,21 @@ export const fetchSuccessRate = ({
       });
     }
 
-    dispatch({
-      type: `${FETCH_SUCCESS_RATE}::SUCCESS`,
-      payload: {
-        ...tabs[activeTab],
-        data,
-        error: null,
-        fetched: true,
-        selectedInterval: newSelectedInterval,
-        dropdownFilterOptions: newDropdownFilterOptions,
-        selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
-        group_by: newGroupBy,
-        ...res,
-      },
-    });
+    !refreshMetricTabs &&
+      dispatch({
+        type: `${FETCH_SUCCESS_RATE}::SUCCESS`,
+        payload: {
+          ...tabs[activeTab],
+          data,
+          error: null,
+          fetched: true,
+          selectedInterval: newSelectedInterval,
+          dropdownFilterOptions: newDropdownFilterOptions,
+          selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
+          group_by: newGroupBy,
+          ...res,
+        },
+      });
   } catch (error) {
     dispatch({
       type: `${FETCH_SUCCESS_RATE}::ERROR`,
