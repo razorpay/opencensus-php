@@ -23,6 +23,7 @@ const PRIVATE_LIMITED = 4,
   NGO = 7, // 'NGO'
   TRUST = 9, // 'Trust'
   SOCIETY = 10, // 'Society'
+  HUF = 13, // 'Hindu Undivided Family'
   ORG_BusinessTypes = [NGO, TRUST, SOCIETY],
   UNREGISTERED_TYPES = {
     11: true,
@@ -37,7 +38,7 @@ const BANK_LIMIT_MESSAGE =
 const eKycAdharRequired = (activation, currentBusinessType) => {
   let E_SIGN_AADHAR = [PROPRIETORSHIP, PARTNERSHIP, NOT_REGISTERED];
   if (activation.props.user.isAdharEkycRequired) {
-    E_SIGN_AADHAR.push(PUBLIC_LIMITED, PRIVATE_LIMITED, LLP);
+    E_SIGN_AADHAR.push(PUBLIC_LIMITED, PRIVATE_LIMITED, LLP, HUF);
   }
 
   if (activation.props.user.isAdharEkycRequiredForTrustSocietyNgo) {

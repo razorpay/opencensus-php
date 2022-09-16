@@ -31,6 +31,7 @@ import {
   LLP,
   NOT_REGISTERED,
   ORG_BusinessTypes,
+  HUF,
 } from '../Constants/OnboardingConstants';
 import useActivation from '../hooks/useActivation';
 import {
@@ -347,7 +348,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
   const ekycRequiredforBusinessType = [PROPRIETORSHIP, NOT_REGISTERED, PARTNERSHIP];
 
   if (isAdharEkycRequired) {
-    ekycRequiredforBusinessType.push(LLP, PRIVATE, PUBLIC);
+    ekycRequiredforBusinessType.push(LLP, PRIVATE, PUBLIC, HUF);
   }
 
   if (isAdharEkycRequiredForTrustSocietyNgo) {
