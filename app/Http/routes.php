@@ -308,23 +308,33 @@ Route::group(['middleware' => 'web_oauth', 'prefix' => 'oauth'], function()
         ->where(['path' => '.*'])
         ->name('oauth_merchant'); // Bearer auth token sent by Mobile App's webview
 
-    // Dashboard routes hit by GQL
-    Route::get('/org', 'AdminController@getOrg')->name('oauth_get_org'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    /***************************** */
+    // Dashboard routes hit by GQL //
+    /***************************** */
+    // Request flow for these routes looks like:
+    //
+    // For user unauthenticated routes
+    // Mobile(/graph-oauth) -> Edge(passthrough) -> Dashboard -> GQL -> Edge(passthrough) -> Dashboard(HERE!)
+    //
+    // For user authenticated routes
+    // Mobile(/graph-oauth) -> Edge(passthrough) -> Dashboard -> GQL(AT header) -> Edge(attach passport) -> Dashboard(HERE!)
+    Route::get('/org', 'AdminController@getOrg')->name('oauth_get_org'); // No passport auth token sent by GQL, since user is not authenticated yet
 
     // refresh_access_token, email_reset_password
     Route::any('/user/api/{mode}/{path}', 'GenericController@handleAny')
         ->where(['path' => '.*'])
-        ->name('oauth_user'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+        ->name('oauth_user'); // user unauthenticated route
 
-    Route::post('/user/signin/otp', 'UserController@postSendLoginOtp')->name('oauth_user_signin_otp'); // No Bearer auth token sent by GQL, since user is not authenticated yet
-    Route::post('/user/oauth-signin', 'UserController@postOauthSignIn')->name('oauth_user_oauth_signin'); // No Bearer auth token sent by GQL, since user is not authenticated yet
-    Route::post('/user/signin', 'UserController@postSignin')->name('oauth_user_signin'); // No Bearer auth token sent by GQL, since user is not authenticated yet
-    Route::post('/user/signin/otp/verify', 'UserController@postVerifyLoginOtp')->name('oauth_user_signin_otp_verify'); // No Bearer auth token sent by GQL, since user is not authenticated yet
-    Route::post('/user/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp')->name('oauth_user_verify_user_otp'); // No Bearer auth token sent by GQL, since user is not authenticated yet
-    Route::post('/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('oauth_user_verify_user_otp_verify'); // No Bearer auth token sent by GQL, since user is not authenticated yet
+    Route::post('/user/signin/otp', 'UserController@postSendLoginOtp')->name('oauth_user_signin_otp'); // user unauthenticated route
+    Route::post('/user/oauth-signin', 'UserController@postOauthSignIn')->name('oauth_user_oauth_signin'); // user unauthenticated route
+    Route::post('/user/signin', 'UserController@postSignin')->name('oauth_user_signin'); // user unauthenticated route
+    Route::post('/user/signin/otp/verify', 'UserController@postVerifyLoginOtp')->name('oauth_user_signin_otp_verify'); // user unauthenticated route
+    // allow users with unverified email/mobile to login with password and then verify email/mobile
+    Route::post('/user/signin/verify-user/otp', 'UserController@postSendVerifyUserOtp')->name('oauth_user_verify_user_otp'); // user unauthenticated route
+    Route::post('/user/signin/verify-user/otp/verify', 'UserController@postVerifyUserOtp')->name('oauth_user_verify_user_otp_verify'); // user unauthenticated route
 
-    // 2FA Oauth Routes
-    Route::post('/user/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('oauth_post_setup_2fa_verify_otp'); // Bearer auth 2fa token sent by GQL
-    Route::post('/user/signin/otp/2fa', 'UserController@postOtpLogin2faPassword')->name('oauth_post_otp_login_2fa_password'); // Bearer auth 2fa token sent by GQL
-    Route::post('/user/2fa/otp-resend', 'UserController@postResendOtp')->name('oauth_user_2fa_otp_resned'); // Bearer auth 2fa token sent by GQL
+    // 2FA Oauth Token Routes
+    Route::post('/user/2fa/otp-verify', 'UserController@postSetup2faVerifyOtp')->name('oauth_post_setup_2fa_verify_otp'); // user authenticated route with 2fa token
+    Route::post('/user/signin/otp/2fa', 'UserController@postOtpLogin2faPassword')->name('oauth_post_otp_login_2fa_password'); // user authenticated route with 2fa token
+    Route::post('/user/2fa/otp-resend', 'UserController@postResendOtp')->name('oauth_user_2fa_otp_resned'); // user authenticated route with 2fa token
 });

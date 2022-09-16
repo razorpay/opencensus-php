@@ -75,7 +75,7 @@ class AuthenticateOauth
                 ]);
 
                 app('trace')->error(TraceCode::EDGE_PRE_AUTHENTICATE_ERROR_PASSPORT_MISSING,
-                                    ['routeName' => $routeName]);
+                                    ['routeName' => $routeName, 'passport_header' => $passportHeader]);
 
 
                 return response('Unauthorized.', 401);
