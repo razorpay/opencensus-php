@@ -4211,6 +4211,24 @@ trait Authorize
 
             $this->trace->info(TraceCode::PAYMENT_DCC_PROCESSED, $paymentMetaInput);
         }
+
+        if (isset($input['dcc_currency']) === false) {
+
+            $currency = $input['currency'];
+            
+            if (in_array($currency, Gateway\Constants::PAYPAL_SUPPORTED_CURRENCIES) === false) {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                    null,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'dccCurrency' => 'Not Applicable',
+                        'wallet' => Wallet::PAYPAL,
+                        'currency' => $input['currency'],
+                    ]
+                );
+            }
+        }
     }
 
     protected function preProcessAppCurrencyWrapper(array $input, Payment\Entity $payment)

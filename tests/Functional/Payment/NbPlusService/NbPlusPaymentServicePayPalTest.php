@@ -85,7 +85,7 @@ class NbPlusPaymentServicePayPalTest extends TestCase
                       })
                   );
 
-        $this->terminal = $this->fixtures->create('terminal:shared_paypal_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_paypal_terminal', ['currency' => ['USD'], 'merchant_id' => $this->merchantId]);
 
         $this->fixtures->merchant->enableWallet($this->merchantId, self::WALLET);
 
@@ -94,6 +94,8 @@ class NbPlusPaymentServicePayPalTest extends TestCase
         $this->app->instance('nbplus.payments', $this->nbPlusService);
 
         $this->payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->ba->privateAuth();
     }
 
     public function testAuthorize()
@@ -116,6 +118,16 @@ class NbPlusPaymentServicePayPalTest extends TestCase
             }
         });
 
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+
+        $responseContent = json_decode($response->getContent(), true);
+        
+        $currencyRequestId = $responseContent['currency_request_id'];
+        
+        $this->payment['dcc_currency'] = 'USD';
+        
+        $this->payment['currency_request_id'] = $currencyRequestId;
+
         $this->payment['contact'] = "8448720400";
 
         $this->enablePayPalMigrationExperiment();
@@ -132,6 +144,16 @@ class NbPlusPaymentServicePayPalTest extends TestCase
 
     public function testVerifyPayment()
     {
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+
+        $responseContent = json_decode($response->getContent(), true);
+        
+        $currencyRequestId = $responseContent['currency_request_id'];
+        
+        $this->payment['dcc_currency'] = 'USD';
+        
+        $this->payment['currency_request_id'] = $currencyRequestId;
+
         $this->payment['contact'] = "8448720400";
 
         $this->enablePayPalMigrationExperiment();
@@ -165,6 +187,15 @@ class NbPlusPaymentServicePayPalTest extends TestCase
                 ];
             }
         });
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+
+        $responseContent = json_decode($response->getContent(), true);
+        
+        $currencyRequestId = $responseContent['currency_request_id'];
+        
+        $this->payment['dcc_currency'] = 'USD';
+        
+        $this->payment['currency_request_id'] = $currencyRequestId;
 
         $this->payment['contact'] = "8448720400";
 
@@ -245,4 +276,16 @@ class NbPlusPaymentServicePayPalTest extends TestCase
             return $this->getFormRequestFromResponse($response->getContent(), $url);
         }
     }
+
+    private function getDefaultPaymentFlowsRequestData()
+    {
+        $flowsData = [
+            'content' => ['amount' => 50000, 'currency' => 'INR', 'wallet' => 'paypal'],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        return $flowsData;
+    }
+
 }

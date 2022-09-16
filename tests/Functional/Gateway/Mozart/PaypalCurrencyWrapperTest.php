@@ -162,4 +162,15 @@ class PaypalCurrencyWrapperTest extends TestCase
             ->once()
             ->andReturn($output);
     }
+
+    public function testPaypalSupportedCurrenciesForNonDcc()
+    {
+        $payment = $this->payment;
+        
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function () use ($payment) {
+            $this->doAuthPayment($payment);
+        });
+    }
 }
