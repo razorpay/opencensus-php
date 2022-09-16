@@ -3018,6 +3018,9 @@ class Core extends Base\Core
 
                     $this->sendSubMerchantNCStatusChangedEmail($merchant);
 
+                    // event to be consumed by cmma for activation case instance
+                    $this->publishMetroEventForMerchantActivationNeedsClarification($merchant);
+
                     $this->trace->info(TraceCode::NC_EMAIL_SENT, [
                         'merchant_id'                   => $merchantId,
                         'activation_status'             => $merchantDetails->getActivationStatus(),
@@ -3255,6 +3258,16 @@ class Core extends Base\Core
         $email = new ClarificationEmail($data, $org->toArray());
 
         Mail::queue($email);
+    }
+
+    protected function publishMetroEventForMerchantActivationNeedsClarification(Merchant\Entity $merchant)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $clarificationCore = new Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetail->getKycClarificationReasons());
 
         try
         {
@@ -3274,7 +3287,6 @@ class Core extends Base\Core
                 'error' => $err,
             ]);
         }
-
     }
 
     public function sendSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant)
