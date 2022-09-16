@@ -162,14 +162,6 @@ class Service extends Base\Service
             } else {
                 $this->core->create($item, $merchant);
             }
-
-            if ($item['type'] === 'ca_onboarding_flow')
-            {
-                $this->salesforce->sendCaOnboardingToSalesforce([
-                    'merchant_id' => $merchant->getId(),
-                    'ca_onboarding_flow' => $item['value']
-                ]);
-            }
         }
 
         $updatedMerchantAttributes = $this->core->fetchKeyValues(
