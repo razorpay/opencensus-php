@@ -130,7 +130,7 @@ class VirtualAccountTest extends TestCase
 
         $closeBy = Carbon::now(Timezone::IST)->addHours(Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS)->toDateString();
 
-        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
         $this->assertEquals($closeBy, $vaCloseByDate);
 
@@ -153,7 +153,7 @@ class VirtualAccountTest extends TestCase
 
         $closeBy =  Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
 
-        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
 
         $this->assertEquals($closeBy, $vaCloseByDate);
@@ -3581,7 +3581,7 @@ class VirtualAccountTest extends TestCase
 
         $closeBy = Carbon::now(Timezone::IST)->addHours(Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS)->toDateString();
 
-        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
         $this->assertEquals($closeBy, $vaCloseByDate);
 
@@ -3605,7 +3605,7 @@ class VirtualAccountTest extends TestCase
 
         $closeBy = Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
 
-        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'])->toDateString();
+        $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
         $this->assertEquals($closeBy, $vaCloseByDate);
     }
