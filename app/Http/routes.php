@@ -44,6 +44,7 @@ Route::group(['middleware' => ['web']], function () {
             ->where(['path' => '.*']);
 
         Route::get('/tnc/{id}', 'UserController@getTnc')->name('tnc');
+        Route::get('/dummyiframe', 'UserController@getDummyIFrameForEasyDashboard')->name('easydashboard');
     });
 
     // User (guest auth route)

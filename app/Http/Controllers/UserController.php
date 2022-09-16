@@ -193,6 +193,10 @@ class UserController extends Controller
         }
     }
 
+    public function getDummyIFrameForEasyDashboard(){
+        return view('merchant.easy-dashboard-iframe');
+    }
+
     private function redirectionApplicableForGuest(): bool
     {
         if ($this->matchExclusionsToRedirect() === true)
