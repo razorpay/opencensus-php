@@ -2817,6 +2817,7 @@ class Route
         'subscription_registration_fetch_token'         => ['get',      'subscription_registration/tokens/{id}',               'SubscriptionRegistrationController@fetchToken'                     ],
         'subscription_registration_delete_token'        => ['delete',   'subscription_registration/tokens/{id}',               'SubscriptionRegistrationController@deleteToken'                    ],
         'subscription_registration_charge_token'        => ['post',     'subscription_registration/tokens/{id}/charge',        'SubscriptionRegistrationController@chargeToken'                    ],
+        'subscription_registration_charge_token_bulk'   => ['post',     'subscription_registration/tokens/charge_bulk',        'SubscriptionRegistrationController@chargeTokenBulk'                ],
         'subscription_registration_auto_charge'         => ['post',     'subscription_registration/auto_charge',               'SubscriptionRegistrationController@postProcessAutoCharges'         ],
         'token_registration_token_associate'            => ['post',     'token.registration/{id}/token_associate',             'SubscriptionRegistrationController@associateToken'                 ],
         'token_registration_tokens_authenticate'        => ['post',     'token.registration/tokens_authenticate',              'SubscriptionRegistrationController@authenticateTokens'             ],
@@ -5001,6 +5002,7 @@ class Route
 
         'nach_batch_process',
         'emandate_batch_process',
+        'subscription_registration_charge_token_bulk',
 
         'loc_cron',
         'los_cron',
@@ -13634,6 +13636,7 @@ class Route
             'payout_links_batch_process',
             'nach_batch_process',
             'emandate_batch_process',
+            'subscription_registration_charge_token_bulk',
             'health_checker',
             'dispute_automation',
             'create_exec_risk_action',

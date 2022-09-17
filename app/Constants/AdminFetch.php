@@ -658,6 +658,7 @@ class AdminFetch
                         'emandate_debit_enach_rbl',
                         'auth_link',
                         'recurring_charge',
+                        'recurring_charge_bulk',
                     ],
                 ],
             ],

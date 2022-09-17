@@ -648,8 +648,8 @@ class Core extends Base\Core
         );
 
         $orderCore = new Order\Core();
-        $order = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput){
-            return $orderCore->create($orderInput, $this->merchant);
+        $order = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_CREATE_ORDER], function () use ($orderCore, $orderInput, $merchant){
+            return $orderCore->create($orderInput, $merchant);
         });
 
         if (empty($idemPotentKey) === false)
@@ -680,7 +680,7 @@ class Core extends Base\Core
             ]
         );
 
-        $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+        $paymentProcessor = new Payment\Processor\Processor($merchant);
 
         $paymentData = Tracer::inSpan(['name' => HyperTrace::SUBSCRIPTION_REGISTRATION_CHARGE_TOKEN_CORE_PROCESS_PAYMENT], function () use ($paymentProcessor, $paymentInput){
             return $paymentProcessor->process($paymentInput);

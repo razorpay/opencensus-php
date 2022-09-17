@@ -39,6 +39,8 @@ class Type
 
     const RECURRING_CHARGE          = 'recurring_charge';
 
+    const RECURRING_CHARGE_BULK     = 'recurring_charge_bulk';
+
     // Custom Batch recurring payments for AXIS
     const RECURRING_CHARGE_AXIS     = 'recurring_charge_axis';
 
@@ -572,6 +574,7 @@ class Type
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RECURRING_CHARGE,
+        self::RECURRING_CHARGE_BULK,
         self::AUTH_LINK,
         self::REFUND,
         self::RAW_ADDRESS,

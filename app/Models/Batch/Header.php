@@ -2483,6 +2483,31 @@ class Header
             ],
         ],
 
+        Type::RECURRING_CHARGE_BULK => [
+            self::INPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::RECURRING_CHARGE_TOKEN,
+                self::RECURRING_CHARGE_CUSTOMER_ID,
+                self::RECURRING_CHARGE_AMOUNT,
+                self::RECURRING_CHARGE_CURRENCY,
+                self::RECURRING_CHARGE_RECEIPT,
+                self::RECURRING_CHARGE_DESCRIPTION,
+                self::NOTES,
+                self::RECURRING_CHARGE_ORDER_ID,
+                self::RECURRING_CHARGE_PAYMENT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::RECURRING_CHARGE_AXIS => [
             self::INPUT => [
                 self::RECURRING_CHARGE_AXIS_SLNO,

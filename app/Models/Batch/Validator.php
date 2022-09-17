@@ -1631,6 +1631,20 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateRecurringChargeBulkEntries(array & $entries, array $params, ME $merchant)
+    {
+        if ($merchant->isFeatureEnabled(Feature::CHARGE_AT_WILL) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Batch type is not enabled for merchant',
+                null,
+                [
+                    Entity::ID          => $this->entity->getId(),
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
+    }
+
     protected function validatePayoutEntries(array & $entries, array $params, ME $merchant)
     {
         $countOfPayouts = count($entries);

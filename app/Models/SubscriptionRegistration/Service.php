@@ -6,6 +6,7 @@ use View;
 use Queue;
 use RZP\Constants;
 use RZP\Exception;
+use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Trace\Tracer;
@@ -315,13 +316,19 @@ class Service extends Base\Service
         return $this->core->deleteToken($id, $this->merchant);
     }
 
-    public function chargeToken(String $id, array $input): array
+    public function chargeToken(String $id, array $input, String $idempotent_key=null): array
     {
         $this->trace->count(Metric::AUTH_LINK_CHARGE_TOKEN_INITIATED, ['mode' => $this->mode]);
 
+        $route = $this->app['api.route']->getCurrentRouteName();
+
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
 
-        $rowIdempotentId = $this->app['request']->header(RequestHeader::X_Batch_Row_Id) ?? null;
+        if ($route === 'subscription_registration_charge_token_bulk'){
+            $rowIdempotentId = $idempotent_key ?? null;
+        } else {
+            $rowIdempotentId = $this->app['request']->header(RequestHeader::X_Batch_Row_Id) ?? null;
+        }
 
         if ($batchId !== null)
         {
@@ -348,6 +355,67 @@ class Service extends Base\Service
         $this->trace->count(Metric::AUTH_LINK_CHARGE_TOKEN_SUBMITTED, ['mode' => $this->mode]);
 
         return $response;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function chargeTokenBulk(array $input)
+    {
+        $chargeTokenBatch = new Base\PublicCollection();
+
+        foreach ($input as $item)
+        {
+            try
+            {
+                $idempotency_key = isset($item['idempotency_key']) ? $item['idempotency_key'] : null;
+
+                $token_id = isset($item['token']) ? $item['token'] : null;
+
+                $response = $this->chargeToken($token_id, $item, $idempotency_key);
+
+                $chargeTokenBatch->push($response);
+
+            }
+            catch (Exception\BaseException $exception)
+            {
+                $this->trace->traceException($exception,
+                    Trace::INFO,
+                    TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST);
+                $exceptionData = [
+                    Entity::IDEMPOTENCY_KEY => $idempotency_key,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $exception->getError()->getDescription(),
+                        Error::PUBLIC_ERROR_CODE => $exception->getError()->getPublicErrorCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => $exception->getError()->getHttpStatusCode(),
+                ];
+
+                $chargeTokenBatch->push($exceptionData);
+            }
+            catch (\Throwable $throwable)
+            {
+                $this->trace->traceException($throwable,
+                    Trace::CRITICAL,
+                    TraceCode::BATCH_SERVICE_BULK_EXCEPTION);
+
+                $exceptionData = [
+                    'idempotency_key' => $idempotency_key,
+                    'error'                 => [
+                        Error::DESCRIPTION       => $throwable->getMessage(),
+                        Error::PUBLIC_ERROR_CODE => $throwable->getCode(),
+                    ],
+                    Error::HTTP_STATUS_CODE => 500,
+                ];
+
+                $chargeTokenBatch->push($exceptionData);
+            }
+        }
+
+        return $chargeTokenBatch->toArrayWithItems();
     }
 
     public function processAutoCharges(array $input)
@@ -808,7 +876,7 @@ class Service extends Base\Service
         $subscriptionRegistration->getValidator()->validateTokenToRetry($token);
 
         $payments = $this->repo->payment->getPaymentCountByToken($token->getId())->get();
-        
+
         if (count($payments) !== 1)
         {
             throw new Exception\LogicException(
