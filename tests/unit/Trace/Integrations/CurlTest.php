@@ -35,6 +35,7 @@ class CurlTest extends TestCase
         $expected_kind = Span::KIND_CLIENT;
 
         $this->assertEquals($expected_uri, $spanOptions['attributes']['uri']);
+        $this->assertEquals('CLIENT', $spanOptions['attributes']['kind']);
         $this->assertEquals($expected_kind, $spanOptions['kind']);
     }
 }

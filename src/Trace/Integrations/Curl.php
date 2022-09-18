@@ -96,6 +96,7 @@ class Curl implements IntegrationInterface
                 $attrs[$tagName] = $curlInfo[$curlInfoName];
             }
         }
+        $attrs += ['kind' => 'CLIENT'];
         return $attrs;
     }
 }
