@@ -569,7 +569,7 @@
       "description": "Payout failed at partner bank."
     }
   },
-  "OTP_RETRIES_EXPIRED": {
+  "OTP_RETRIES_EXHAUSTED": {
     "failed": {
       "source": "business",
       "reason": "max_otp_attempts_exceeded",

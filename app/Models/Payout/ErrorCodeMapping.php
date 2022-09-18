@@ -189,7 +189,7 @@ class ErrorCodeMapping
         'CARD_NUMBER_UNAVAILABLE'               => 'Payout failed as the card number is not available. Please retry.',
         'FTS_OTP_NOT_FOUND'                     => 'Payout failed due to technical failure. Please retry after 30 min',
         'FTS_GATEWAY_REF_NUM_NOT_FOUND'         => 'Payout failed due to technical failure. Please retry after 30 min',
-        'OTP_RETRIES_EXPIRED'                   => 'Payout failed due to multiple incorrect OTP(s). Please retry',
+        'OTP_RETRIES_EXHAUSTED'                 => 'Payout failed due to multiple incorrect OTP(s). Please retry',
     ];
 
     public static $alternateFailureReasonMapping = [

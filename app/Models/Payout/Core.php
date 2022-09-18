@@ -698,7 +698,12 @@ class Core extends Base\Core
             Transaction\Processor\Ledger\Base::FTS_ACCOUNT_TYPE    => $ftaData[Attempt\Entity::BANK_ACCOUNT_TYPE] ?? null
         ];
 
-        $this->handleIciciCurrentAccount2FAPayoutStatusUpdate($payout, $status, $ftaBankStatusCode, $ftaData);
+        $isIcici2FaFeatureEnabled = $payout->merchant->isFeatureEnabled(FeatureConstants::ICICI_2FA);
+
+        if ($isIcici2FaFeatureEnabled === true)
+        {
+            $this->handleIciciCurrentAccount2FAPayoutStatusUpdate($payout, $status, $ftaBankStatusCode, $ftaData);
+        }
 
         switch ($status)
         {
@@ -776,8 +781,46 @@ class Core extends Base\Core
         }
     }
 
-    public function handleIciciCurrentAccount2FAPayoutStatusUpdate(Entity $payout, string $status, string $ftaBankStatusCode = null, array $ftaData)
+    public function handleIciciCurrentAccount2FAPayoutStatusUpdate(Entity & $payout, string $status, string $ftaBankStatusCode = null, array $ftaData)
     {
+        $this->trace->info(
+            TraceCode::HANDLE_ICICI_2FA_PAYOUT_WEBHOOK,
+            [
+                'payout_id'            => $payout->getId(),
+                'payout_status'        => $payout->getStatus(),
+                'status'               => $status,
+                'fta_bank_status_code' => $ftaBankStatusCode
+            ]);
+
+        $processType =  (int) (new AdminService)->getConfigKey(
+            ['key' => ConfigKey::RX_ICICI_2FA_WEBHOOK_PROCESS_TYPE]);
+
+        if ($processType === 1)
+        {
+            $this->repo->saveOrFail($payout);
+
+            // Fetch payout from master as we want the payout state transition to be valid for above status webhooks
+            $payout = $this->repo->payout->findOrFailOnMaster($payout->getId());
+
+            $this->trace->info(
+                TraceCode::PAYOUT_STATUS_AFTER_MASTER_FETCH,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'payout_status'        => $payout->getStatus(),
+                ]);
+        }
+        else if ($processType === 2)
+        {
+            $payout = $this->repo->payout->findOrFailOnMaster($payout->getId());
+
+            $this->trace->info(
+                TraceCode::PAYOUT_STATUS_AFTER_MASTER_FETCH,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'payout_status'        => $payout->getStatus(),
+                ]);
+        }
+
         if (($payout->getStatus()===Status::PENDING_ON_OTP) and
             ($payout->balance->isAccountTypeDirect() === true) and
             ($payout->getChannel() === Settlement\Channel::ICICI))
@@ -822,7 +865,7 @@ class Core extends Base\Core
         }
     }
 
-    public function handleStatusChangeForIcici2FACurrentAccountPayout(Entity $payout, string $ftaBankStatusCode = null)
+    public function handleStatusChangeForIcici2FACurrentAccountPayout(Entity & $payout, string $ftaBankStatusCode = null)
     {
         $balance = $payout->balance;
 

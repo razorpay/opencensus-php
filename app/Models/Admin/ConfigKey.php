@@ -200,6 +200,8 @@ class ConfigKey
 
     const RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS = self::PREFIX . 'rx_blacklisted_vpa_regexes_for_merchant_payouts';
 
+    const RX_ICICI_2FA_WEBHOOK_PROCESS_TYPE         = self::PREFIX . 'rx_icici_2fa_webhook_process_type';
+
     const RX_CA_MISSING_STATEMENTS_RBL              = self::PREFIX . 'rx_ca_missing_statements_rbl';
     const RX_CA_MISSING_STATEMENTS_ICICI            = self::PREFIX . 'rx_ca_missing_statements_icici';
     const RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS   = self::PREFIX . 'rbl_missing_statements_fetch_max_records';
@@ -384,6 +386,7 @@ class ConfigKey
         self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA,
         self::RX_ON_HOLD_PAYOUTS_DEFAULT_SLA,
         self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS,
+        self::RX_ICICI_2FA_WEBHOOK_PROCESS_TYPE,
         self::RX_CA_MISSING_STATEMENTS_RBL,
         self::RX_CA_MISSING_STATEMENTS_ICICI,
         self::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS,

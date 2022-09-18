@@ -124,6 +124,8 @@ class Validator extends Base\Validator
         ConfigKey::RBL_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE   => 'filled|boolean',
         ConfigKey::ICICI_BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_DELETE_MODE => 'filled|boolean',
 
+        ConfigKey::RX_ICICI_2FA_WEBHOOK_PROCESS_TYPE              => 'filled|integer',
+
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT              => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT      => 'filled|integer',
         ConfigKey::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT            => 'filled|integer',
