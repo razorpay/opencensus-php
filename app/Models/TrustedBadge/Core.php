@@ -24,15 +24,19 @@ class Core extends Base\Core
     /** @var float the maximum allowed dispute loss rate for a merchant to be eligible for RTB */
     public const DISPUTE_LOSS_RATE_THRESHOLD = 0.1;
 
-    public function eligibilityCron()
+    public function eligibilityCron(array $input): array
     {
         try
         {
-            $this->trace->info(TraceCode::RTB_ELIGIBILITY_CRON_REQUEST);
+            $dryRun = $input['dry_run'] ?? false;
+
+            $this->trace->info(TraceCode::RTB_ELIGIBILITY_CRON_REQUEST, [
+                'dryRun' => $dryRun,
+            ]);
 
             $this->app['diag']->trackTrustedBadgeEvent(EventCode::TRUSTED_BADGE_CRON_INITIATED, []);
 
-            TrustedBadge::dispatch($this->mode);
+            TrustedBadge::dispatch($this->mode, $dryRun);
 
             return ['success' => true];
         }

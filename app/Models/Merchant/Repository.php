@@ -25,6 +25,7 @@ use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal\Category;
+use RZP\Models\TrustedBadge\Constants as TrustedBadgeConstants;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\State\Entity as ActionState;
@@ -1687,13 +1688,13 @@ class Repository extends Base\Repository
         $merchantId = $this->dbColumn(Entity::ID);
         $orgId = $this->dbColumn(Entity::ORG_ID);
         $activatedAt = $this->dbColumn(Entity::ACTIVATED_AT);
+        $mccCode = $this->dbColumn(Entity::CATEGORY);
         $category2 = $this->dbColumn(Entity::CATEGORY2);
 
         $merchantDetailRepo = $this->repo->merchant_detail;
         $activationStatus = $merchantDetailRepo->dbColumn(Detail\Entity::ACTIVATION_STATUS);
         $businessType = $merchantDetailRepo->dbColumn(Detail\Entity::BUSINESS_TYPE);
 
-        $excludedCategoryList = [Category::LENDING, Category::GOVERNMENT, Category::GOVT_EDUCATION];
         $excludedBusinessTypeList =  Detail\BusinessType::getIndexForUnregisteredBusiness();
         $threeMonthsAgoTimestamp = Carbon::today()->subDays(90)->getTimestamp();
 
@@ -1703,7 +1704,15 @@ class Repository extends Base\Repository
             ->where($orgId, '=', Org\Entity::RAZORPAY_ORG_ID)
             ->where($activatedAt, '<', $threeMonthsAgoTimestamp)
             ->where($activationStatus, '=', Detail\Status::ACTIVATED)
-            ->whereNotIn($category2, $excludedCategoryList)
+            ->where(static function($query) use ($category2, $mccCode)
+            {
+                $query->whereNotIn($category2, TrustedBadgeConstants::EXCLUDED_CATEGORY_LIST)
+                    ->orWhere(static function ($query) use ($category2, $mccCode)
+                    {
+                        $query->whereNull($category2)
+                              ->whereNotIn($mccCode, TrustedBadgeConstants::EXCLUDED_MCC_CODE_LIST);
+                    });
+            })
             ->whereNotIn($businessType, $excludedBusinessTypeList)
             ->whereNotIn($merchantId, $blacklistedMIDs);
 

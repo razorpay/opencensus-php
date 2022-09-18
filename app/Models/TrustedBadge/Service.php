@@ -17,9 +17,9 @@ class Service extends Base\Service
 
     }
 
-    public function eligibilityCron()
+    public function eligibilityCron(array $input): array
     {
-        return $this->core->eligibilityCron();
+        return $this->core->eligibilityCron($input);
     }
 
     public function fetch()

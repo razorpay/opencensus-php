@@ -32,6 +32,17 @@ WHERE
   count_successful < 100
 EOT;
 
+
+    public const HIGH_TRANSACTING_VOLUME_MERCHANTS_QUERY = <<<'EOT'
+SELECT
+  merchant_id
+FROM
+  hive.aggregate_pa.rtb_eligibility_merchants_transactions_v1
+WHERE
+  gmv_in_lakhs >= 20
+  AND count_successful < 100
+EOT;
+
     //
     // Default order defined in RepositoryFetch is created_at, id
     // Overriding here because pivot table does not have an id col.
@@ -133,6 +144,38 @@ EOT;
             if($retryCount < 2)
             {
                 return $this->getLowTransactingMerchantsData($retryCount+1);
+            }
+            throw $ex;
+        }
+    }
+
+    /**
+     * This method fetches merchants having less than 100 txns but have transaction volume greater than 20 lakhs
+     *
+     * @param int $retryCount
+     * @return array
+     * @throws Exception
+     */
+    public function getHighTransactingVolumeMerchantsList(int $retryCount=0): array
+    {
+        try
+        {
+            $rawQuery = self::HIGH_TRANSACTING_VOLUME_MERCHANTS_QUERY;
+
+            $queryResult = $this->app['datalake.presto']->getDataFromDataLake($rawQuery);
+
+            return array_column($queryResult, Entity::MERCHANT_ID);
+        }
+        catch(Exception $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::RTB_DATALAKE_QUERY_FAILURE, [
+                'query'      => 'high_transacting_volume_merchants_query',
+                'retryCount' => $retryCount,
+            ]);
+
+            if($retryCount < 2)
+            {
+                return $this->getHighTransactingVolumeMerchantsList($retryCount+1);
             }
             throw $ex;
         }

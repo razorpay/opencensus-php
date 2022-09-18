@@ -13,7 +13,9 @@ class TrustedBadgeController extends Controller
 {
     public function eligibilityCron()
     {
-        $response = $this->service()->eligibilityCron();
+        $input = Request::all();
+
+        $response = $this->service()->eligibilityCron($input);
 
         return ApiResponse::json($response);
     }

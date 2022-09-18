@@ -17,9 +17,14 @@ class TrustedBadge extends Job
     /** @var Core */
     protected $rtbCore;
 
-    public function __construct(string $mode)
+    /** @var bool if dry run = true, that means we don't update DB, just log the results */
+    protected $dryRun = false;
+
+    public function __construct(string $mode, bool $dryRun = false)
     {
         parent::__construct($mode);
+
+        $this->dryRun = $dryRun;
     }
 
     /**
@@ -43,7 +48,9 @@ class TrustedBadge extends Job
 
         try
         {
-            $this->trace->info(TraceCode::RTB_ELIGIBILITY_CRON_STARTED);
+            $this->trace->info(TraceCode::RTB_ELIGIBILITY_CRON_STARTED, [
+                'dryRun' => $this->dryRun,
+            ]);
 
             $blacklistedMIDs = $this->repoManager->trusted_badge->fetchRTBBlacklistedMerchantIds();
 
@@ -76,6 +83,14 @@ class TrustedBadge extends Job
                 'standardCheckoutEligibleMerchantsCount' => count($standardCheckoutEligibleMIDs),
             ]);
 
+            $highTransactingVolumeMIDs =
+                array_flip($this->repoManager->trusted_badge->getHighTransactingVolumeMerchantsList());
+
+            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
+                'checkpoint'    => 'fetched_merchants_with_high_transacting_volume',
+                'merchantsHavingHighTransactingVolumeMidsCount' => count($highTransactingVolumeMIDs),
+            ]);
+
             $lowTransactingButRTBEligibleMIDs =
                 array_flip($this->rtbCore->getMerchantsHavingLowTransactionsButRTBEligibleList());
 
@@ -104,6 +119,7 @@ class TrustedBadge extends Job
                     Entity::STANDARD_CHECKOUT_ELIGIBLE => array_key_exists($merchantId, $standardCheckoutEligibleMIDs),
                     Entity::IS_DMT_MERCHANT            => array_key_exists($merchantId, $dmtMIDs),
                     Entity::IS_DISPUTE_MERCHANT        => array_key_exists($merchantId, $disputedMIDs),
+                    Entity::HIGH_TRANSACTING_VOLUME_MERCHANT => array_key_exists($merchantId, $highTransactingVolumeMIDs),
                     Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT =>
                         array_key_exists($merchantId, $lowTransactingButRTBEligibleMIDs),
                 ];
@@ -131,7 +147,10 @@ class TrustedBadge extends Job
 
             $status  = $isMerchantEligibleForRTB ? Entity::ELIGIBLE : Entity::INELIGIBLE;
 
-            $this->rtbCore->upsertStatus($merchantId, $status);
+            if ($this->dryRun === false)
+            {
+                $this->rtbCore->upsertStatus($merchantId, $status);
+            }
 
             $this->trace->info(
                 TraceCode::RTB_CRON_MERCHANT_PROCESSED,
@@ -173,6 +192,12 @@ class TrustedBadge extends Job
         }
 
         if ($eligibilityChecks[Entity::STANDARD_CHECKOUT_ELIGIBLE] === true &&
+            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === false)
+        {
+            return true;
+        }
+
+        if ($eligibilityChecks[Entity::HIGH_TRANSACTING_VOLUME_MERCHANT] === true &&
             $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === false)
         {
             return true;

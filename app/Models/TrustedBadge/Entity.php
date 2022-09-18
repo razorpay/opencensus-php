@@ -40,6 +40,7 @@ class Entity extends Base\PublicEntity
     public const IS_DMT_MERCHANT            = 'isDmtMerchant';
     public const IS_DISPUTE_MERCHANT        = 'isDisputedMerchant';
     public const LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT = 'lowTransactingButRTBEligibleMerchant';
+    public const HIGH_TRANSACTING_VOLUME_MERCHANT = 'highTransactingVolumeMerchant';
 
     const REDIS_EXPERIMENT_KEY = 'RTB_experiment_merchants';
 

@@ -67,14 +67,22 @@ class TrustedBadgeTest extends TestCase
         $this->assertEquals('ineligible', $response['status']);
     }
 
-    public function testMerchantsActivatedMoreThanThreeMonthsAgoAreEligibleForRTB(): void
+    public function testEligibilityCronWithDryRunSetAsTrue(): void
     {
-        $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
+        $fiveMonthAgo = Carbon::now()->subMonths(5);
 
-        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['getDataFromDataLake'])
-            ->getMock();
+        $this->ba->cronAuth();
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'category2'     => 'ecommerce',
+            'activated_at'  => $fiveMonthAgo->getTimestamp(),
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'business_type' => 4,
+            'activation_status' => 'activated'
+        ]);
 
         $callback = static function ($query) {
             $standardCheckoutEligibleMerchants = [
@@ -90,14 +98,57 @@ class TrustedBadgeTest extends TestCase
             return [];
         };
 
-        $prestoService->method( 'getDataFromDataLake')
-            ->willReturnCallback($callback);
+        $this->mockPrestoService($callback);
 
-        $this->app->instance('datalake.presto', $prestoService);
+        $request = array(
+            'url'     => '/trusted_badge/eligibility_cron',
+            'method'  => 'POST',
+            'content' => [
+                'dry_run' => true,
+            ]
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+
+        $this->ba->proxyAuth();
+
+        $request = array(
+            'url'     => '/trusted_badge',
+            'method'  => 'GET',
+            'content' => []
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('ineligible', $response['status']);
+    }
+
+    public function testMerchantsActivatedMoreThanThreeMonthsAgoAreEligibleForRTB(): void
+    {
+        $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
+
+        $callback = static function ($query) {
+            $standardCheckoutEligibleMerchants = [
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                ],
+            ];
+
+            if ($query === Repository::STANDARD_CHECKOUT_ELIGIBLE_QUERY) {
+                return $standardCheckoutEligibleMerchants;
+            }
+
+            return [];
+        };
+
+        $this->mockPrestoService($callback);
 
         $this->fixtures->edit('merchant', Account::TEST_ACCOUNT, [
             'category2' => Category::SECURITIES,
             'activated_at' => $ninetyOneDaysAgo,
+            'category' => '6211',
         ]);
 
         $this->fixtures->create('merchant_detail', [
@@ -140,11 +191,6 @@ class TrustedBadgeTest extends TestCase
     {
         $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
 
-        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['getDataFromDataLake'])
-            ->getMock();
-
         $lowTransactionsMerchantsData = [
             [
                 'merchant_id' => Account::DEMO_ACCOUNT,
@@ -185,10 +231,7 @@ class TrustedBadgeTest extends TestCase
             return [];
         };
 
-        $prestoService->method( 'getDataFromDataLake')
-            ->willReturnCallback($callback);
-
-        $this->app->instance('datalake.presto', $prestoService);
+        $this->mockPrestoService($callback);
 
         $this->fixtures->edit('merchant', Account::TEST_ACCOUNT, [
             'category2' => Category::SOCIAL,
@@ -207,6 +250,18 @@ class TrustedBadgeTest extends TestCase
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id' => Account::TEST_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+            'fraud_type' => null,
+        ]);
+        $demoMerchantDetail = $this->fixtures->merchant_detail->createEntity('merchant_detail',[
+            'merchant_id' => Account::DEMO_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+            'fraud_type' => null,
+        ]);
+        $testMerchantDetail = $this->fixtures->merchant_detail->createEntity('merchant_detail',[
+            'merchant_id' => Account::TEST_ACCOUNT_2,
             'business_type' => 4,
             'activation_status' => 'activated',
             'fraud_type' => null,
@@ -242,6 +297,79 @@ class TrustedBadgeTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . Account::TEST_ACCOUNT_2, $testMerchantUser['id']);
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals('ineligible', $response['status']);
+    }
+
+    /** This method tests if merchants having gmv > 20 lakhs are eligible for RTB or not.
+     *
+     * @return void
+     */
+    public function testGetHighTransactingVolumeMids(): void
+    {
+        $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
+
+        $callback = static function ($query) {
+            $highTransactingVolumeMerchantsData = [
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT
+                ],
+            ];
+
+            if ($query === Repository::HIGH_TRANSACTING_VOLUME_MERCHANTS_QUERY) {
+                return $highTransactingVolumeMerchantsData;
+            }
+
+            return [];
+        };
+
+        $this->mockPrestoService($callback);
+
+        $this->fixtures->edit('merchant', Account::TEST_ACCOUNT, [
+            'category2' => Category::SOCIAL,
+            'activated_at' => $ninetyOneDaysAgo,
+            'category' => '8699',
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+        ]);
+
+        $request = array(
+            'url' => '/trusted_badge/eligibility_cron',
+            'method' => 'POST'
+        );
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+
+        $this->ba->proxyAuth();
+
+        $request = array(
+            'url' => '/trusted_badge',
+            'method' => 'GET',
+            'content' => [],
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('eligible', $response['status']);
+    }
+
+    protected function mockPrestoService($callback): void
+    {
+        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getDataFromDataLake'])
+            ->getMock();
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturnCallback($callback);
+
+        $this->app->instance('datalake.presto', $prestoService);
     }
 
     public function testTrustedBadgeDetailsWithEntry(): void

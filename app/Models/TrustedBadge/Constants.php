@@ -6,6 +6,9 @@ use RZP\Models\Terminal\Category as Category;
 
 class Constants
 {
+    public const EXCLUDED_CATEGORY_LIST = [Category::LENDING, Category::GOVERNMENT, Category::GOVT_EDUCATION];
+    public const EXCLUDED_MCC_CODE_LIST = ['0', '6012', '9399', '5541', '8220', '4900', '8299', '5817', '8211', '5094', '7998'];
+
     public const STANDARD_DEVIATION = 'standard_deviation';
     public const MEAN = 'mean';
 
