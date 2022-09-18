@@ -3807,7 +3807,7 @@ class Route
         'fetch_token_iin'                           =>  ['post',       'tokens/iin/fetch/{iin}',                           'TokenisedIinController@fetchIin'                                     ],
         'update_token_iin'                          =>  ['post',       'tokens/iin/update',                                'TokenisedIinController@updateIin'                                    ],
         'fetch_token_iin_by_range'                  =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
-        'fetch_iin_by_token_iin'                    =>  ['post',       'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
+        'fetch_iin_by_token_iin'                    =>  ['get',        'tokens/iin/{iin}',                                 'TokenisedIinController@fetchbyTokenIin'                              ],
         'add_token_iin_bulk'                        =>  ['post',       'tokens/bulk/iin',                                  'TokenisedIinController@addIinBulk'                                   ],
         'delete_iin'                                =>  ['post',       'tokens/delete/{id}',                               'TokenisedIinController@deleteIin'                                    ],
         'delete_iin_bulk'                           =>  ['post',       'tokens/bulk/delete/{id}',                          'TokenisedIinController@deleteBulk'                                   ],

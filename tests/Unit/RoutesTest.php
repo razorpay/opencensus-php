@@ -9,6 +9,44 @@ use Illuminate\Routing\Router;
 
 class RoutesTest extends TestCase
 {
+    public function testDuplicateRoutes()
+    {
+        $knownExceptions = [
+            'banking_account_statement_process_cron',
+            'merchants_access_map_upsert_bulk',
+            'admin_reports_fetch_report_data',
+            'mock_esigner_legaldesk_payment',
+        ];
+
+        $v2Routes = Route::$routesWithV2Prefix;
+
+        $checkMap = [];
+
+        foreach (Route::getApiRoutes() as $routeName => $routeDetails)
+        {
+            // ignoring the known exception
+            if(in_array($routeName, $knownExceptions) === true)
+            {
+                continue;
+            }
+
+            $endpoint = $routeDetails[1];
+            $method   = $routeDetails[0];
+
+            // checking if the endpoint is same or not and then checking if methods are same
+            if((array_key_exists($endpoint, $checkMap) === true) and
+                ($method === $checkMap[$endpoint]))
+            {
+                if((in_array($routeName, $v2Routes) === false))
+                {
+                    $this->assertNotEquals($method, $checkMap[$endpoint], $routeName);
+                }
+            }
+
+            $checkMap[$endpoint] = $method;
+        }
+    }
+
     public function testAddRouteGroupsWithV2Prefix()
     {
         $origCount = count(Route::$public);
@@ -110,29 +148,5 @@ class RoutesTest extends TestCase
         $diff = array_diff($bankingRoutes, $merchantDashboardRoutes);
 
         $this->assertEquals([], $diff);
-    }
-
-    public function testDuplicateRoute()
-    {
-        $routes = Route::getApiRoutes();
-
-        $pathArray = [];
-
-        $count = 0;
-
-        foreach ($routes as $route)
-        {
-            if(array_key_exists($route[1], $pathArray) === true)
-            {
-                if($route[0] === $pathArray[$route[1]])
-                {
-                    s($route[1], $route[0]);
-                    $count++;
-                }
-            }
-
-            $pathArray[$route[1]] = $route[0];
-        }
-        s("count", $count);
     }
 }
