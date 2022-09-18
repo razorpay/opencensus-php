@@ -1,5 +1,9 @@
 --TEST--
 OpenCensus Trace: Default span stackTrace
+--SKIPIF--
+<?php
+	if (version_compare(PHP_VERSION, '8.0') > 0) echo 'skip';
+?>
 --FILE--
 <?php
 

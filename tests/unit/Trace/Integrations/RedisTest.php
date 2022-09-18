@@ -20,13 +20,14 @@ namespace OpenCensus\Tests\Unit\Trace\Integrations;
 use OpenCensus\Trace\Integrations\Redis;
 use OpenCensus\Trace\Span;
 use PHPUnit\Framework\TestCase;
+use Predis\Client;
 
 
 class RedisTest extends TestCase
 {
     public function testHandleConstruct()
     {
-        $predis = null;
+        $predis = new Client();
         $params = [
             0 => [
                 'host' => '127.0.0.1',

@@ -28,7 +28,7 @@ class SpanContextTest extends TestCase
     public function testGeneratesDefaultTraceId()
     {
         $context = new SpanContext();
-        $this->assertRegexp('/[0-9a-z]{32}/', $context->traceId());
+        $this->assertMatchesRegularExpression('/[0-9a-z]{32}/', $context->traceId());
     }
 
     public function testSpanWithBaggageItems()

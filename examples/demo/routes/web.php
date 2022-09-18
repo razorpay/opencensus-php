@@ -2,8 +2,12 @@
 
 use Aws\Exception\AwsException;
 use Aws\Sqs\SqsClient;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\CurlHandler;
+use GuzzleHttp\HandlerStack;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use OpenCensus\Trace\Integrations\Guzzle\Middleware;
 use OpenCensus\Trace\Tracer;
 
 /*
@@ -198,7 +202,10 @@ function incrementRedisCount($scope)
 function makeAsyncClientCall()
 {
     $span = Tracer::inSpan(['name' => 'Async:Guzzle:GETRepository'], function () {
-        $client = new \GuzzleHttp\Client();
+        $stack = new HandlerStack();
+        $stack->setHandler(new CurlHandler());
+        $stack->push(new Middleware());
+        $client = new Client(['handler' => $stack, 'headers' => ['X-Foso' => 'Bar']]);
         $client->requestAsync('GET', 'https://api.github.com/repos/guzzle/guzzle');
     });
 }

@@ -19,19 +19,18 @@ namespace OpenCensus\Tests\Unit\Core;
 
 use OpenCensus\Core\Context;
 use PHPUnit\Framework\TestCase;
-use PHPUnit_Framework_Error_Warning as Warning;
-
+use PHPUnit\Framework\Error\Warning;
 /**
  * @group core
  */
 class ContextTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         Context::reset();
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Context::reset();
     }
@@ -74,7 +73,7 @@ class ContextTest extends TestCase
         $context = new Context(['foo' => 'bar']);
         $prevContext = $context->attach();
 
-        $this->expectException(Warning::class);
+        $this->expectWarning(Warning::class);
 
         $other = new Context(['foo' => 'bar']);
         $this->assertFalse($prevContext === $other);

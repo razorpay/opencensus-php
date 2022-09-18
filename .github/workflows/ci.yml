@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ 7.0, 7.1, 7.2, 7.3, 7.4 ]
+        php: [ 8.0, 8.1 ]
 
     runs-on: ubuntu-latest
 
@@ -23,6 +23,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "${{ matrix.php }}"
+          coverage: xdebug
 
       - name: Install build tools
         run: |
@@ -79,6 +80,12 @@ jobs:
             echo "Skipping units tests with extension"
           fi
 
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          files: build/clover.xml
+          verbose: true
+
   integration:
     runs-on: ubuntu-latest
     env:
@@ -96,7 +103,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 7.2
+          php-version: 8.0
           extensions: memcached, pdo_mysql, mysqli, pdo_pgsql, pcntl
           ini-values: extension=opencensus.so
 
@@ -116,29 +123,34 @@ jobs:
 
       - name: Curl test
         run: tests/integration/curl/test.sh
-
-      - name: Wordpress test
-        run: tests/integration/wordpress/test.sh
+# Skipped as wp-cli is not compatible with PHP8 (check https://github.com/wp-cli/wp-cli/issues/5452).
+#      - name: Wordpress test
+#        run: tests/integration/wordpress/test.sh
 
       - name: Laravel test
         run: tests/integration/laravel/test.sh
 
-      - name: Guzzle 5 test
-        run: tests/integration/guzzle5/test.sh
-
-      - name: Guzzle 6 test
-        run: tests/integration/guzzle6/test.sh
+# Skipped as Guzzle 5 and 6 not supported in php8 or above (https://github.com/guzzle/guzzle/issues/3020)
+#      - name: Guzzle 5 test
+#        run: tests/integration/guzzle5/test.sh
+      - name: Guzzle 7 test
+        run: tests/integration/guzzle7/test.sh
 
       - name: Memcached test
         run: tests/integration/memcached/test.sh
 
       - name: Pgsql test
         run: tests/integration/pgsql/test.sh
+# Skipped this as well dependency incompatibility between "cache/adapter-common" and "psr/cache".
+#      - name: Symfony 4 test
+#        run: tests/integration/symfony4/test.sh
 
-      - name: Symfony 4 test
-        run: tests/integration/symfony4/test.sh
-        env:
-          DATABASE_URL: mysql://mysql:mysql@127.0.0.1:3306/mysqldb
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+            files: build/clover.xml
+            verbose: true
+
 
     services:
       mysql:

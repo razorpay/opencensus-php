@@ -18,17 +18,10 @@ set -e
 pushd $(dirname ${BASH_SOURCE[0]})
 source ../setup_test_repo.sh
 
-composer create-project --prefer-dist laravel/laravel laravel
-cp -R app config routes tests phpunit.xml.dist laravel
+sed -i "s|dev-master|dev-${BRANCH}|" composer.json
+sed -i "s|https://github.com/razorpay/opencensus-php|${REPO}|" composer.json
+composer install -n --prefer-dist
 
-pushd laravel
-
-composer config repositories.opencensus git ${REPO}
-composer require opencensus/opencensus:dev-${BRANCH} --with-all-dependencies
-composer require --dev guzzlehttp/guzzle:~7.0
-
-php artisan migrate
 vendor/bin/phpunit
 
-popd
 popd

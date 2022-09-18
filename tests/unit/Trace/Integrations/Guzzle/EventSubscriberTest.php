@@ -35,7 +35,7 @@ class EventSubscriberTest extends TestCase
 {
     private $exporter;
 
-    public function setUp()
+    public function setUp(): void
     {
         if (!interface_exists('GuzzleHttp\Event\SubscriberInterface')) {
             $this->markTestSkipped('Guzzle 5 not loaded');

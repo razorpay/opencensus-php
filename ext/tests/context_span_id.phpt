@@ -3,7 +3,7 @@ OpenCensus Trace: Trace Context from provided spanId
 --FILE--
 <?php
 
-opencensus_trace_set_context("traceid", '12345678');
+opencensus_trace_set_context("traceid", '12345678', ['rzpctx-key1' => 'value1']);
 opencensus_trace_begin('foo', ['spanId' => 'abcd1234']);
 $context = opencensus_trace_context();
 opencensus_trace_finish();

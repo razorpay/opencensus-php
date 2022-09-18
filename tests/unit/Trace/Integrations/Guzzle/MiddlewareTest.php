@@ -38,7 +38,7 @@ class MiddlewareTest extends TestCase
      */
     private $exporter;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->exporter = $this->prophesize(ExporterInterface::class);
         if (extension_loaded('opencensus')) {
@@ -66,6 +66,7 @@ class MiddlewareTest extends TestCase
         $middleware = new Middleware();
         $stack = $middleware($handler);
         $req = $this->prophesize(RequestInterface::class);
+        $req->getHeaders()->willReturn(null)->shouldBeCalled();
         $req->getMethod()->willReturn('GET')->shouldBeCalled();
         $req->getUri()->willReturn('/')->shouldBeCalled();
         $req->withHeader('X-Cloud-Trace-Context', Argument::that(function ($val) {
