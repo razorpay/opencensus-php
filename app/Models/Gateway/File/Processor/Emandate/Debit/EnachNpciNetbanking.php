@@ -277,7 +277,6 @@ class EnachNpciNetbanking extends Base
             TraceCode::EMANDATE_DEBIT_REQUEST,
             [
                 'gateway_file_id' => $this->gatewayFile->getId(),
-                'entity_ids'      => $paymentIds,
                 'begin'           => $begin,
                 'end'             => $end,
                 'count'           => count($paymentIds),

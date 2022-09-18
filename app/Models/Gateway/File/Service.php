@@ -132,7 +132,8 @@ class Service extends Base\Service
     {
 
         if (($input[Entity::TYPE] === Type::NACH_DEBIT) and
-            (in_array(Constants::PAPER_NACH_CITI_V2, $targets) === true))
+            ((in_array(Constants::PAPER_NACH_CITI_V2, $targets) === true) or
+                (in_array(Constants::COMBINED_NACH_CITI_EARLY_DEBIT_V2, $targets) === true)))
         {
             if (isset($input[Entity::BEGIN]) === false)
             {

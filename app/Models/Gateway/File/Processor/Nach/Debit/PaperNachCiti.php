@@ -7,7 +7,6 @@ use Cache;
 use Carbon\Carbon;
 
 use RZP\Gateway\Enach;
-use RZP\Models\Gateway\File\Constants;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -18,6 +17,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\ServerErrorException;
 use RZP\Gateway\Enach\Citi\FieldsLength;
@@ -27,6 +27,7 @@ use RZP\Mail\Gateway\Nach\Base as NachMail;
 use RZP\Gateway\Enach\Citi\Fields as Fields;
 use RZP\Mail\Base\Constants as MailConstants;
 use RZP\Services\Beam\Service as BeamService;
+use RZP\Mail\Gateway\Nach\BaseV2 as NachMail2;
 use RZP\Models\Gateway\File\Processor\Nach\Debit;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
@@ -50,6 +51,14 @@ class PaperNachCiti extends Debit\Base
     const FILE_CACHE_KEY    = 'nach_citi_gateway_file_index';
 
     const CITI_NACH_DATE_SELECT = 'citi_nach_date_select';
+
+    const MUT_TARGET = "combined_nach_citi_early_debit_v2";
+
+    const NORMAL_OFFSET = "0";
+
+    const MUT_TYPE    = "mut";
+    const NORMAL_TYPE = "normal";
+    const EARLY_TYPE  = "early";
 
     protected $pageCount   = 90000;
     protected $userName    = 'CTRAZORPAY';
@@ -340,6 +349,51 @@ class PaperNachCiti extends Debit\Base
         $mailable = new NachMail($mailData, $type, $this->gatewayFile->getRecipients());
 
         Mail::queue($mailable);
+
+        $this->sendMail($files);
+    }
+
+    protected function sendMail($files)
+    {
+        try {
+            foreach ($files as $file)
+            {
+                if($file['extension'] === 'txt')
+                {
+                    $fileName = $file->getName() . '.' . $file->getExtension();
+
+                    $fileParam = explode('/', $fileName);
+
+                    $mailData['debit_files'][] = $fileParam[count($fileParam) - 1];
+                }
+                else
+                {
+                    $fileName = $file->getName() . '.' . $file->getExtension();
+
+                    $fileParam = explode('/', $fileName);
+
+                    $mailData['summary_files'][] = $fileParam[count($fileParam) - 1];
+                }
+            }
+
+            $this->trace->info(TraceCode::COI_EXPERIMENT,
+                [
+                    'mailData' => $mailData
+                ]);
+
+            $type = static::GATEWAY . '_' . static::STEP;
+
+            $mailable = new NachMail2($mailData, $type, $this->gatewayFile->getRecipients());
+
+            Mail::queue($mailable);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::COI_EXPERIMENT,
+                [
+                    'error while sending Mail' => $ex
+                ]);
+        }
     }
 
     protected function getFileToWriteNameWithoutExt(array $data): string
@@ -643,5 +697,51 @@ class PaperNachCiti extends Debit\Base
         $date = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
 
         return self::FILE_CACHE_KEY . "_" . $utilityCode . "_" . $this->mode . "_" . $date;
+    }
+
+    protected function formatSerialNumber($serialNumber): string
+    {
+        return str_pad($serialNumber, 3, "0", STR_PAD_LEFT);
+    }
+
+    protected function getCacheKeySerialNumber(& $serialNumber, & $cacheKey)
+    {
+        if($this->gatewayFile->getTarget() === self::MUT_TARGET) {
+            $type = self::MUT_TYPE;
+        }
+        elseif($this->gatewayFile->getSubType() === self::NORMAL_OFFSET) {
+            $type = self::NORMAL_OFFSET;
+        }
+        else {
+            $type = self::EARLY_TYPE;
+            $serialNumber = 100;
+        }
+
+        $cacheKey = $this->getCacheKeyForFileNumber($type);
+
+        $serialNumberFromCache = $this->cache->get($cacheKey);
+
+        $ttl = 60 * 60 * 24; // seconds
+
+        if(isset($serialNumberFromCache) === true)
+        {
+            $serialNumber = $serialNumberFromCache;
+        }
+        else {
+            $this->cache->put($cacheKey, $serialNumber, $ttl);
+        }
+
+        $this->trace->info(TraceCode::CACHE_KEY_GET, [
+            'key'    => $cacheKey,
+            'serialNumberFromCache' => $serialNumberFromCache,
+            'resultSerialNumber' => $serialNumber,
+        ]);
+    }
+
+    protected function getCacheKeyForFileNumber($type): string
+    {
+        $date = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
+
+        return self::FILE_CACHE_KEY . "_" . $this->mode . "_" . $date . "_" . $type;
     }
 }

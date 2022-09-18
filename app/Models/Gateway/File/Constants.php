@@ -86,7 +86,8 @@ class Constants
 
     const COMBINED_NACH_CITI_EARLY_DEBIT = 'combined_nach_citi_early_debit';
 
-    const PAPER_NACH_CITI_V2    = 'paper_nach_citi_v2';
+    const PAPER_NACH_CITI_V2                   = 'paper_nach_citi_v2';
+    const COMBINED_NACH_CITI_EARLY_DEBIT_V2    = 'combined_nach_citi_early_debit_v2';
 
     /**
      * Scrooge file based refunds related constants
@@ -198,6 +199,7 @@ class Constants
             self::COMBINED_NACH_ICICI,
             self::COMBINED_NACH_CITI_EARLY_DEBIT,
             self::PAPER_NACH_CITI_V2,
+            self::COMBINED_NACH_CITI_EARLY_DEBIT_V2
         ],
         Type::NACH_REGISTER => [
             self::PAPER_NACH_CITI,

@@ -44,7 +44,8 @@ class Type
         string $type,
         string $subType = null): bool
     {
-        if(Constants::PAPER_NACH_CITI_V2 === $target)
+        if(Constants::PAPER_NACH_CITI_V2 === $target or
+            Constants::COMBINED_NACH_CITI_EARLY_DEBIT_V2 === $target)
         {
             return true;
         }

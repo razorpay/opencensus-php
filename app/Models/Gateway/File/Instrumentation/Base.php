@@ -186,12 +186,6 @@ abstract class Base extends Core
         ];
 
         (new KafkaProducer($topic, stringify($event)))->Produce();
-
-        $this->trace->info(TraceCode::FILE_GENERATE_KAFKA_PROCESS,
-            [
-                'event' => $event,
-                'topic' => $topic
-            ]);
     }
 
     protected function parseCsvFile(string $file)
