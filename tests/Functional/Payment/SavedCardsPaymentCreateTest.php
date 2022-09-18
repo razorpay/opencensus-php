@@ -848,7 +848,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     public function testCardVaultMigrationJobAuthorize()
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
@@ -946,7 +946,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     public function testCardVaultMigrationJobAuthorizeSaveCardGlobal()
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
@@ -1033,9 +1033,9 @@ class SavedCardsPaymentCreateTest extends TestCase
         $this->assertLessThan(Carbon::now()->getTimestamp(), $lastToken['expired_at'] - 10);
     }
 
-    public function testCardVaultMigrationJobCapture()
+    public function  testCardVaultMigrationJobCapture()
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault',[$this->app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
@@ -1119,7 +1119,7 @@ class SavedCardsPaymentCreateTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['s2s']);
 
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 
@@ -1238,7 +1238,7 @@ class SavedCardsPaymentCreateTest extends TestCase
 
     public function testMissingFingerprintCardVaultMigration()
     {
-        $cardVault = Mockery::mock('RZP\Services\CardVault')->makePartial();
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
 
         $this->app->instance('card.cardVault', $cardVault);
 

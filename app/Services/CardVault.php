@@ -32,6 +32,7 @@ class CardVault
     const TOKENEX_TOKENS    = 'tokenex_tokens';
     const X_RAZORPAY_TASKID = 'X-Razorpay-TaskId';
     const BU_NAMESPACE      = 'bu_namespace';
+    const TEMP_SAVE         = 'temp_save';
 
     const TOKENEX_VAULT_MAPPING   = 'tokenex_vault_mapping';
     const SERVICE_PROVIDER_TOKENS = 'service_provider_tokens';
@@ -181,6 +182,8 @@ class CardVault
             return $this->cardNumberToToken[$key];
         }
 
+        $vaultTempSaveNamespace = "cards";
+
         if (isset($buNamespace) === true ) {
 
             $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
@@ -195,6 +198,29 @@ class CardVault
                     self::BU_NAMESPACE => $buNamespace,
                 ];
             }
+
+            $vaultTempSaveNamespace = $buNamespace;
+        }
+
+        /** Razorx experiment to save the cards data temporarily in vault db
+         * for a  period of 5 days
+         * @var  $tempSaveVariant
+         */
+
+        $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE ."_". $vaultTempSaveNamespace;
+        $tempSaveVariant =  $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
+
+        $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
+            'vault_temp_save_namespace' => $vaultTempSaveNamespace,
+            'temp_save_variant'  => $tempSaveVariant,
+            '$razor_feature'  => $razorxFeature,
+        ]);
+
+        if ((strtolower($tempSaveVariant) === 'on'))
+        {
+            $payload += [
+                self::TEMP_SAVE => true,
+            ];
         }
 
         $response = $this->sendRequest('tokenize', 'post', $payload);
@@ -216,7 +242,9 @@ class CardVault
             self::SECRET => $input['card'],
         ];
 
-         if (isset($input['bu_namespace'])=== true ) {
+        $vaultTempSaveNamespace = "cards";
+
+        if (isset($input['bu_namespace'])=== true ) {
 
              $variant =  $this->app['razorx']->getTreatment($input['bu_namespace'], Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
 
@@ -230,7 +258,30 @@ class CardVault
                      self::BU_NAMESPACE => $input['bu_namespace'],
                  ];
              }
-         }
+
+            $vaultTempSaveNamespace = $input['bu_namespace'];
+        }
+
+        /** Razorx experiment to save the cards data temporarily in vault db
+         * for a  period of 5 days
+         * @var  $tempSaveVariant
+         */
+
+        $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE . "_" .$vaultTempSaveNamespace;
+        $tempSaveVariant =  $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
+
+        $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
+            'vault_temp_save_namespace' => $vaultTempSaveNamespace,
+            'temp_save_variant'  => $tempSaveVariant,
+            '$razorx_feature'  => $razorxFeature,
+        ]);
+
+        if ((strtolower($tempSaveVariant) === 'on'))
+        {
+            $payload += [
+                self::TEMP_SAVE => true,
+            ];
+        }
 
         $key = $input['card'];
 
@@ -294,6 +345,8 @@ class CardVault
             self::TOKEN  => $tempVaultToken,
         ];
 
+        $vaultTempSaveNamespace = "cards";
+
         if (isset($buNamespace) === true ) {
 
             $variant =  $this->app['razorx']->getTreatment($buNamespace, Merchant\RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION, $this->mode);
@@ -308,7 +361,31 @@ class CardVault
                     self::BU_NAMESPACE => $buNamespace,
                 ];
             }
+
+            $vaultTempSaveNamespace = $buNamespace;
         }
+
+        /** Razorx experiment to save the cards data temporarily in vault db
+         * for a  period of 5 days
+         * @var  $tempSaveVariant
+         */
+
+        $razorxFeature = Merchant\RazorxTreatment::VAULT_TEMP_SAVE ."_". $vaultTempSaveNamespace;
+        $tempSaveVariant =  $this->app['razorx']->getTreatment($this->request->getTaskId(),$razorxFeature , $this->mode);
+
+        $this->trace->info(TraceCode::VAULT_TEMP_SAVE_RAZORX_VARIANT, [
+            'vault_temp_save_namespace' => $vaultTempSaveNamespace,
+            'temp_save_variant'  => $tempSaveVariant,
+            '$razor_feature'  => $razorxFeature,
+        ]);
+
+        if ((strtolower($tempSaveVariant) === 'on'))
+        {
+            $input += [
+                self::TEMP_SAVE => true,
+            ];
+        }
+
 
         $response = $this->sendRequest('token/migrate', 'post', $input);
 
@@ -375,9 +452,12 @@ class CardVault
         ];
 
 
+
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [
             'url' => $request['url'],
-            'namespace' => $this->namespace
+            'namespace' => $this->namespace,
+            'bu_namespace' => isset($data[self::BU_NAMESPACE]) ? $data[self::BU_NAMESPACE] : null,
+            'temp_save' => isset($data[self::TEMP_SAVE]) ? $data[self::TEMP_SAVE] : false,
         ]);
 
         $isTokenisationRoute = in_array($tokenizationUrl, self::TOKENIZATION_ROUTES);
