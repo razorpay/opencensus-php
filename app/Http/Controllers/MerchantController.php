@@ -3376,7 +3376,7 @@ class MerchantController extends Controller
 
         $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
             ->getInternationalVirtualAccounts($input);
-            
+
         return ApiResponse::json($response);
     }
 
@@ -3386,7 +3386,7 @@ class MerchantController extends Controller
 
         $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
             ->getInternationalVirtualAccountByVACurrency($input,$va_currency);
-            
+
         return ApiResponse::json($response);
     }
 

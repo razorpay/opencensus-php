@@ -2710,7 +2710,6 @@ class Route
         'merchants_access_map_create'              => ['post',     'merchants/{id}/access_maps',                     'MerchantController@createPartnerAccessMap'                         ],
         'merchants_access_map_delete'              => ['delete',   'merchants/{id}/access_maps',                     'MerchantController@deletePartnerAccessMap'                         ],
         'merchants_access_map_update'              => ['put',      'merchants/{id}/access_maps',                     'MerchantController@updatePartnerAccessMap'                         ],
-        'merchants_access_map_create_bulk'         => ['post',     'access_map/bulk',                                'MerchantController@postPartnerAccessMapBulk'                       ],
         'merchants_access_map_upsert_bulk'         => ['post',     'access_map/bulk',                                'MerchantController@postPartnerAccessMapBulk'                       ],
         'partner_submerchant_map'                  => ['post',     'partner_submerchant_map',                        'MerchantController@createPartnerSubmerchantMap'                    ],
         'fetch_partner_intent'                     => ['get',      'merchant/partner-intent',                        'MerchantController@fetchPartnerIntent'                             ],
@@ -3134,9 +3133,9 @@ class Route
         'merchant_document_admin_delete'          => ['delete',   'merchant/{mid}/document/{id}',                             'DocumentController@merchantDocumentDelete'                       ],
 
         //account and stakeholder document related routes
-        'document_upload_v1'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
-        'document_get_v1'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocument'                     ],
-        'document_download_v1'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContent'              ],
+        'document_upload_v1'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocumentV1'                ],
+        'document_get_v1'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocumentV1'                   ],
+        'document_download_v1'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContentV1'            ],
         'document_upload_v2'                         => ['post',      'documents',                                                          'GenericDocumentController@uploadDocument'                  ],
         'document_get_v2'                            => ['get',       'documents/{fileStoreId}',                                            'GenericDocumentController@getDocument'                     ],
         'document_download_v2'                       => ['get',       'documents/{fileStoreId}/content',                                    'GenericDocumentController@getDocumentContent'              ],
