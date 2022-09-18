@@ -341,7 +341,8 @@ class Core extends Base\Core
             ];
 
             //fetch signed url for given file store id and merchant id
-            try {
+            //removing this as p95 has increased
+            /*try {
                 $documentMetaData[Entity::SIGNED_URL] = (new DetailService)->getSignedUrl($document->getFileStoreId(), $document->getMerchantId());
             }
             catch (\Exception $e)
@@ -350,7 +351,7 @@ class Core extends Base\Core
                     "error"       => $e->getMessage(),
                     "merchant_id" => $document->getMerchantId()
                 ]);
-            }
+            }*/
 
             if (isset($documentsResponse[$document->getDocumentType()]) === false)
             {
