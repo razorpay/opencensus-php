@@ -1029,7 +1029,9 @@ class Service extends Base\Service
             'routing_type'        => $response['data']['routing_code_type'],
             'routing_code'        => $response['data']['routing_code'],
             'va_currency'         => $response['data']['currency'],
-            'beneficiary_name'    => $response['data']['account_holder_name']
+            'beneficiary_name'     => $response['data']['account_holder_name'],
+            'bank_name'           => $response['data']['bank_name'],
+            'bank_address'        => $response['data']['bank_address']
         ];
     }
 

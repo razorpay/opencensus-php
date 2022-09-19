@@ -48,7 +48,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
         // Assert Keys
         foreach($content as $account){
-            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name"]);
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
         }
     }
 
@@ -88,7 +88,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
         $virtual_account = $content['account'];
 
-        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name"]);
+        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
 
         $this->assertEquals($va_currency, $virtual_account['va_currency']);
 
@@ -138,7 +138,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
         $virtual_account = $content['account'];
 
-        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name"]);
+        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
 
         $this->assertEquals($va_currency, $virtual_account['va_currency']);
 
@@ -187,6 +187,6 @@ class MerchantInternationalIntegrationTest Extends TestCase
     }
 
     private function getBankAccountMockData(){
-        return '[{"routing_code":"routing_code","routing_type":"ACH","account_number":"1234567889","beneficiary_name":"GemsGems","va_currency":"USD"}]';
+        return '[{"routing_code":"routing_code","routing_type":"ACH","account_number":"1234567889","beneficiary_name":"GemsGems","va_currency":"USD","bank_name":"JP Morgan Chase","bank_address":"810 Seventh Avenue, New York, NY 10019, US"}]';
     }
 }

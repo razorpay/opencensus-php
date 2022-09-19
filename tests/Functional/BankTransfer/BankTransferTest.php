@@ -9271,7 +9271,7 @@ class BankTransferTest extends TestCase
         $this->assertNotNull($mii['bank_account']);
 
         foreach($content as $account){
-            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name"]);
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
         }
 
     }
