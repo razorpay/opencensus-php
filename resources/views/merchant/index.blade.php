@@ -41,10 +41,8 @@
 
   <!-- Preconnect to required domains  -->
   <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
-  <link rel="dns-prefetch" href="https://www.gstatic.com">
   <link rel="dns-prefetch" href="https://maxcdn.bootstrapcdn.com">
   <link rel="dns-prefetch" href="https://o515678.ingest.sentry.io">
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://www.google-analytics.com">
   <link rel="dns-prefetch" href="https://www.googleadservices.com">
   <link rel="dns-prefetch" href="https://connect.facebook.net">
@@ -54,8 +52,12 @@
   <link rel="dns-prefetch" href="https://www.google.com">
   <link rel="dns-prefetch" href="https://www.google.co.in">
 
+  <!-- preconnect fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://www.gstatic.com">
+
   <!-- Preload FA icons CSS -->
-  <link rel="preload" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
   @if(env('APP_ENV') === 'production')
     <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff2" as="style">
     <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/css/merchant-icons.woff" as="style">

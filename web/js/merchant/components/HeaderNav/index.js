@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import rTracking from 'react-tracking';
-import WhatsNew from 'common/ui/WhatsNew/Old';
 import NotificationIcon from 'common/ui/WhatsNew/Icon';
 import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
 import HighlightTestMode from 'merchant/components/HighlightTestMode';
@@ -27,6 +26,12 @@ import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import OffersForYou from 'common/ui/OffersForYou';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import ShopifyMigrationPopUp from 'common/ui/ShopifyMigrationPopUp';
+import lazyLoader from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+const WhatsNew = lazyLoader(() =>
+  import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
+);
 
 // number of times to show MTU offer
 const COUNT_TO_SHOW_MTU_OFFER = 5;
@@ -248,11 +253,13 @@ class HeaderNav extends Component {
                             () => !org.features.includes('disable_announcements') // If the org features array include "disable_announcements" then we hide "Announcement Tab".
                           }
                         >
-                          <WhatsNew
-                            analytics={analytics}
-                            showMobileNav={showMobileNav}
-                            {...commonProps}
-                          />
+                          <SuspenseWithLoader type="default">
+                            <WhatsNew
+                              analytics={analytics}
+                              showMobileNav={showMobileNav}
+                              {...commonProps}
+                            />
+                          </SuspenseWithLoader>
                         </ShowWhen>
                       )}
                     </GrowthAssetEB>
