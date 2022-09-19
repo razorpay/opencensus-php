@@ -1,3 +1,4 @@
+import React from 'react';
 import PropTypes from 'prop-types';
 
 import { PowerSelect } from 'react-power-select';
@@ -7,9 +8,9 @@ import State from 'merchant/models/State';
 
 /**
  * Finds a state from the states-list by it's name.
- * @param {Array} states
- * @param {String} name
- * @return {Object}
+ * @param {Array} states List of states
+ * @param {String} name State to find
+ * @return {Object} Returns the state that matches the name
  */
 const findStateByName = (states, name) => states.find((s) => s.name === name);
 
@@ -68,10 +69,10 @@ export default class AddressEntry extends React.Component {
 
   /**
    * Props might be updated from the parent. Update state as well.
-   * @param {Object} nextProps
+   * @param {Object} nextProps The new props
    */
   UNSAFE_componentWillReceiveProps(nextProps) {
-    let { address } = nextProps;
+    const { address } = nextProps;
 
     if (address) {
       this.setState({
@@ -104,7 +105,7 @@ export default class AddressEntry extends React.Component {
     // Set state and invoke onChange.
     this.setState(
       {
-        state: option.name || null,
+        state: option?.name || null,
       },
       () => {
         this.onChange();
@@ -116,7 +117,7 @@ export default class AddressEntry extends React.Component {
    * Invokes this.props.onChange with address details.
    */
   onChange = () => {
-    let { line1, line2, zipcode, city, state, country } = this.state;
+    const { line1, line2, zipcode, city, state, country } = this.state;
 
     this.props.onChange({
       line1,
@@ -128,6 +129,7 @@ export default class AddressEntry extends React.Component {
     });
   };
 
+  // eslint-disable-next-line valid-jsdoc
   /**
    * Returns a method to update a field's value stored in state.
    * @param {String} fieldName Key of the field in this.state
@@ -135,7 +137,7 @@ export default class AddressEntry extends React.Component {
    */
   onFieldChangeClosure = (fieldName) => (event) => {
     // Create update object.
-    let s = {};
+    const s = {};
     s[fieldName] = event.target.value;
 
     // Update state and invoke onChange.
@@ -146,9 +148,7 @@ export default class AddressEntry extends React.Component {
 
   quickCreateState = () => {
     this.setState(
-      {
-        showStateInput: !this.state.showStateInput,
-      },
+      (prevState) => ({ showStateInput: !prevState.showStateInput }),
       () => {
         if (this.state.showStateInput) {
           this.stateInputRef.current.focus();
@@ -160,7 +160,8 @@ export default class AddressEntry extends React.Component {
   render() {
     const { line1, line2, zipcode, city, state, country, showStateInput } = this.state;
 
-    let { onBlur, states, countries, hideLine2, hideCountry, showDisabledCountry } = this.props;
+    let { states } = this.props;
+    const { onBlur, countries, hideLine2, hideCountry, showDisabledCountry } = this.props;
 
     // Get the State.
     let selectedState = null;
