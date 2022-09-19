@@ -7,6 +7,7 @@ const UPDATE_SESSION = 'UPDATE_SESSION';
 const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
 const UPDATE_USER = 'UPDATE_USER';
 const UPDATE_USER_FEATURES = 'UPDATE_USER_FEATURES';
+const UPDATE_USER_TAGS = 'UPDATE_USER_TAGS';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
@@ -46,6 +47,16 @@ export const updateUserFeatures = (FEATURE, isEnabled) => {
       FEATURE,
       isEnabled,
     },
+  };
+};
+
+export const fetchUserTags = () => {
+  return {
+    type: UPDATE_USER_TAGS,
+    payload: ajax({
+      url: `/merchant/tags`,
+      appendModeInURL: false,
+    }),
   };
 };
 
@@ -141,6 +152,18 @@ export default function sessionReducer(state = initialState, action) {
 
     case UPDATE_USER:
       return onUpdateUser(state, action.data);
+
+    case `${UPDATE_USER_TAGS}::SUCCESS`:
+      // in lot of other places rzp_user is getting directly used to update the session
+      // we have to update the user object with the tags
+      window.rzp_user = {
+        ...window.rzp_user,
+        tags: action.payload.data,
+      };
+
+      return onUpdateUser(state, {
+        tags: action.payload.data,
+      });
 
     case UPDATE_USER_FEATURES:
       return onUpdateUserFeatures(state, action.data);

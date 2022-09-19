@@ -202,15 +202,16 @@ class Constants
     // Adding Server Names of orgs which do not want to call FIELDS_DECOUPLED_FOR_PG_RENDERING fields while rendering
     const PG_DASHBOARD_SERVER_NAMES = [
         'dashboard.razorpay.com',
+        'dashboard.dev.razorpay.in',
     ];
 
     // Fields to be added if API calls are to be skipped for them.
     // Since we want to adopt the changes in a phase-wise manner, commenting out the fields.
     // Will uncomment when they are to be excluded from the user data
     const FIELDS_DECOUPLED_FOR_PG_RENDERING = [
+        self::TAGS,
 //        self::EXPERIMENTS,
 //        self::SPLITZ_EXPERIMENTS,
-//        self::TAGS,
 //        self::FEATURES,
 //        self::CAMPAIGNS,
     ];

@@ -8,6 +8,7 @@ const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
+const UPDATE_USER_TAGS = 'UPDATE_USER_TAGS';
 
 export const updateSession = (payload) => {
   return {
@@ -17,7 +18,7 @@ export const updateSession = (payload) => {
 };
 
 export const fetchUser = () => {
-  let user = new User();
+  const user = new User();
 
   return {
     type: USER_FETCH,
@@ -30,6 +31,16 @@ export const fetchOrg = () => {
     type: ORG_FETCH,
     payload: ajax({
       url: '/org',
+      appendModeInURL: false,
+    }),
+  };
+};
+
+export const fetchUserTags = () => {
+  return {
+    type: UPDATE_USER_TAGS,
+    payload: ajax({
+      url: `/merchant/tags`,
       appendModeInURL: false,
     }),
   };
@@ -62,7 +73,7 @@ export const showOrHideTour = (toShowTour) => {
   };
 };
 
-let initialState = {
+const initialState = {
   user: new User(),
   org: {},
   mode: 'test',
@@ -70,7 +81,19 @@ let initialState = {
   isTourVisible: false,
 };
 
-export default function (state = initialState, action) {
+function onUpdateUser(state, data) {
+  return merge(state, {
+    user: new User({
+      ...state.user,
+      user: {
+        ...state.user.user,
+        ...data,
+      },
+    }),
+  });
+}
+
+export default function sessionReducer(state = initialState, action) {
   switch (action.type) {
     case UPDATE_SESSION:
       return merge(state, {
@@ -87,6 +110,18 @@ export default function (state = initialState, action) {
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
+
+    case `${UPDATE_USER_TAGS}::SUCCESS`:
+      // in lot of other places rzp_user is getting directly used to update the session
+      // we have to update the user object with the tags
+      window.rzp_user = {
+        ...window.rzp_user,
+        tags: action.payload.data,
+      };
+
+      return onUpdateUser(state, {
+        tags: action.payload.data,
+      });
 
     case 'SHOW_HIDE_TOUR':
       return set(state, 'isTourVisible', action.toShowTour);

@@ -99,6 +99,9 @@ export default class App extends Component {
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
+    // Decoupled this api from SSR
+    this.props.fetchUserTags();
+
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;

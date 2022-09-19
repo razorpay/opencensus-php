@@ -196,13 +196,6 @@ class App extends Component {
       isActivated = 'true';
     }
 
-    this.props.fetchGST();
-
-    this.props.fetchConfig();
-    this.props.fetchRefundPricing();
-    this.props.fetchTrustedBadgeStatus();
-    this.props.fetchMerchantReferralDetail();
-
     Promise.all([
       this.fetchUser().then(({ data }) => {
         const user = data;
@@ -245,17 +238,6 @@ class App extends Component {
           applyTheme(data);
         }
       }),
-      this.fetchSupportedCurrencies()
-        .then(({ data }) => {
-          if (data === null) {
-            window.currencyList = currencies;
-            return;
-          }
-          window.currencyList = data;
-        })
-        .catch(() => {
-          window.currencyList = currencies;
-        }),
     ])
       .then((response) => {
         if (response[0].showInstantActivation) {
@@ -322,6 +304,21 @@ class App extends Component {
         removeSplashLoader();
         this.setState({ isLoading: false });
       });
+
+    // Above parellel apis are render blocking & below apis are non render blocking
+
+    // Giving less priority to below non render blocking APIs, because server doesn't support more than 8 parellel requests
+    this.props.fetchGST();
+
+    this.props.fetchConfig();
+    this.props.fetchRefundPricing();
+    this.props.fetchTrustedBadgeStatus();
+    this.props.fetchMerchantReferralDetail();
+    this.fetchSupportedCurrencies();
+
+    // Decoupled this api from SSR
+    this.props.fetchUserTags();
+
     const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
     if (user?.merchants && Object.keys(user.merchants).length === 1) {
       if (this.props.user?.isActivationFormFullView) {
@@ -607,7 +604,17 @@ class App extends Component {
     if (!window.rzp_user) {
       return Promise.resolve();
     }
-    return merchantFetch('currency/all/proxy');
+    return merchantFetch('currency/all/proxy')
+      .then(({ data }) => {
+        if (data === null) {
+          window.currencyList = currencies;
+          return;
+        }
+        window.currencyList = data;
+      })
+      .catch(() => {
+        window.currencyList = currencies;
+      });
   }
 
   fireMTUFunnelEvents = (user) => {
@@ -711,6 +718,7 @@ class App extends Component {
   };
 
   fetchUser() {
+    // This need to be refactored, we should not be using window.rzp_user
     const user = window.rzp_user ? new User(window.rzp_user) : null;
 
     if (user) {
