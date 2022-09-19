@@ -94,15 +94,18 @@ class CurrencySelect extends Component {
   }
 
   onSelectCurrency = ({ option }) => {
-    this.setState({
-      currency: option,
-    });
+    // if valid option selected, then set the currency. If search string returns null, then do nothing
+    if (option) {
+      this.setState({
+        currency: option,
+      });
 
-    const inpEle = this.ele;
-    setNativeValue(inpEle, option.name);
-    inpEle.dispatchEvent(new Event('change', { bubbles: true }));
+      const inpEle = this.ele;
+      setNativeValue(inpEle, option.name);
+      inpEle.dispatchEvent(new Event('change', { bubbles: true }));
 
-    if (this.props.onChange) this.props.onChange(option);
+      if (this.props.onChange) this.props.onChange(option);
+    }
   };
 
   onOpen = () => {
