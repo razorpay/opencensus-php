@@ -413,7 +413,7 @@ class WhatsNew extends Component {
         CTAValue: value,
         url,
         ...getNotificationTrackingProperties(notification, eventName),
-        trackign_ID: id,
+        trackingID: id,
         lazy: true,
         growth_service: user.isGSAnnouncementsEnabled,
         mediaType,
