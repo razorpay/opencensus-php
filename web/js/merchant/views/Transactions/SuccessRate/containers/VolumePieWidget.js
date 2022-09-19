@@ -16,7 +16,7 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
   if (name === 'others' && !sr) return null;
   const label = getTagLabel(name);
   return (
-    <div key={`${name}___${index}`} className="col-md-4 info-card">
+    <div key={`${name}___${index}`} className="col-sm-6 info-card">
       <StyledHeader text={label} />
       <div className="info-card__label">
         <p className="label-text">Successful / Total attempts</p>
@@ -63,42 +63,40 @@ const VolumePieWidget = (props) => {
           </div>
         </div>
         <div className="col-sm-12 col-md-7">
-          <div className="row info-col">
-            {!isLoading && Boolean(data?.sr) && (
-              <div className="col-md-4 info-card">
-                {isLoading ? (
-                  <PlaceholderLoader style={{ marginBottom: '10px' }} />
-                ) : (
-                  <StyledHeader
-                    text={
-                      !getUser()?.isOptimizerEnabled || activeTab === 'Overall'
-                        ? TAG_OVERALL_MAP[group_by]
-                        : 'Overall'
-                    }
-                  />
-                )}
-                {isLoading ? (
-                  <PlaceholderLoader />
-                ) : (
-                  <div className="info-card__label">
-                    <p className="label-text">Successful / Total attempts</p>
-                  </div>
-                )}
-                {isLoading ? (
-                  <PlaceholderLoader />
-                ) : (
-                  <div className="info-card__value">
-                    <p>
-                      <span className="highlight">{getFormattedNumber(data?.successful)}</span>/
-                      {getFormattedNumber(data?.total)} ({data?.sr}
-                      %)
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-            {!isEmpty(groupData) && groupData?.map(renderInfoCard)}
-          </div>
+          {!isLoading && Boolean(data?.sr) && (
+            <div className="col-sm-6 info-card">
+              {isLoading ? (
+                <PlaceholderLoader style={{ marginBottom: '10px' }} />
+              ) : (
+                <StyledHeader
+                  text={
+                    !getUser()?.isOptimizerEnabled || activeTab === 'Overall'
+                      ? TAG_OVERALL_MAP[group_by]
+                      : 'Overall'
+                  }
+                />
+              )}
+              {isLoading ? (
+                <PlaceholderLoader />
+              ) : (
+                <div className="info-card__label">
+                  <p className="label-text">Successful / Total attempts</p>
+                </div>
+              )}
+              {isLoading ? (
+                <PlaceholderLoader />
+              ) : (
+                <div className="info-card__value">
+                  <p>
+                    <span className="highlight">{getFormattedNumber(data?.successful)}</span>/
+                    {getFormattedNumber(data?.total)} ({data?.sr}
+                    %)
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          {!isEmpty(groupData) && groupData?.map(renderInfoCard)}
         </div>
       </div>
       {isEmpty(compactData) && <NoDataMessage title="No data available." />}

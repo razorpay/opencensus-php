@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { getTagLabelWithOverallTag } from '../helper';
 import { defaultTagStyle, DEFAULT_GROUP_BY, tagStyles } from '../constants';
-import HelpIcon from './HelpIcon';
+import InfoIcon from './InfoIcon';
 
 export const Tag = ({ tag, isActive, onSelect, tagStyle }) => {
   const { backgroundColor, color, borderStyle, borderWidth } = tagStyle;
@@ -62,7 +62,7 @@ const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect, 
       })}
 
       {groupBy === DEFAULT_GROUP_BY.UPI && (
-        <HelpIcon text="Intent is when the customer has chosen from a list of UPI apps installed on their phone to make the payment . Collect is when the customer has directly added their UPI ID/VPA details to make the payment." />
+        <InfoIcon text="Intent is when the customer has chosen from a list of UPI apps installed on their phone to make the payment . Collect is when the customer has directly added their UPI ID/VPA details to make the payment." />
       )}
     </div>
   );

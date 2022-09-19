@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import Alert from 'common/ui/Forms/Alert';
-import SucessRateFilter from '../components/SucessRateFilter';
+import SuccessRateFilter from '../components/SuccessRateFilter';
 import GraphWidget from './GraphWidget';
 import VolumePieWidget from './VolumePieWidget';
 import FailureReasonsWidget from './FailureReasonsWidget';
@@ -28,7 +28,7 @@ const SuccessRate = (props) => {
   return (
     <div className="sr-dashboard">
       <ErrorBoundary resetOnProps>
-        <SucessRateFilter />
+        <SuccessRateFilter />
         {error && <Alert iconBefore="i-comment-info" type="error" message={error} showDismiss />}
         <GraphWidget />
         <VolumePieWidget />

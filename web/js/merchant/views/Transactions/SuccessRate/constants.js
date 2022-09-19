@@ -2,14 +2,15 @@ export const DEFAULT_PRESET = 0; // Last 6 Hours
 export const DEFAULT_INTERVAL = 60; // default 60 minutes
 export const DEFAULT_ACTIVE_TAB = 'Overall';
 
-export const DATE_RANGE_PRESETS = [
-  ['Last 6 Hours', -6, 'hours'],
-  ['Last 24 Hours', -24, 'hours'],
-  ['Last 7 Days', -7, 'days'],
-  ['Last 14 Days', -14, 'days'],
-  ['Last 30 Days', -30, 'days'],
-  ['Last 60 Days', -60, 'days'],
-  ['Last 90 Days', -90, 'days'],
+export const PRESETS = [
+  { label: 'Last 6 Hours', name: '6h', value: 6, unit: 'hours' },
+  { label: 'Last 24 Hours', name: '24h', value: 24, unit: 'hours' },
+  { label: 'Last 7 Days', name: '7d', value: 7, unit: 'days' },
+  { label: 'Last 14 Days', name: '14d', value: 14, unit: 'days' },
+  { label: 'Last 30 Days', name: '30d', value: 30, unit: 'days' },
+  { label: 'Last 60 Days', name: '60d', value: 60, unit: 'days' },
+  { label: 'Last 90 Days', name: '90d', value: 90, unit: 'days' },
+  { label: 'Custom Range', name: 'custom', value: 0, unit: '' },
 ];
 
 export const DEFAULT_METHOD = {

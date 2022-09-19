@@ -16,31 +16,68 @@ $spacer = 8px
   background-color: $bg-white
   padding: $spacer * 3
 
-  .filter
+.sr-filter
+  padding-bottom: $spacer * 3
+
+  .datepicker-group
     display: flex
-    align-items: end
-    padding-bottom: $spacer * 3
+    flex-wrap: wrap
+    gap: $spacer
+    margin-left: 0
+    margin-bottom: 4px
 
-    .datepicker-group
-      margin-left: 0
+    .daterange-container
+      height: auto
 
-    .daterangepicker-container .DateRangePickerInput > .DateInput input
-      padding-bottom: 0
+  .datetime-picker
+    display: inline-flex
+    align-items: center
+    border: none
+    flex-wrap: wrap
 
-    &__actions
-      margin-left: $spacer * 2
-
-      .btn
+    &__input
+      > input.form-control
+        width: 145px
+        height: 28px
         font-weight: bold
+        padding: $spacer * 0.75
+        text-align: center
+        border: none
 
-      .btn-text
-        color: $text-blue
-        background-color: transparent
-        margin-left: $spacer
+      > input.form-control[readonly]
+        background-color: $bg-white
 
-    .grouping-dropdown
-      width: 192px
-      margin-right: 20px
+      > p.separator
+        font-size: 12px
+        color: $text-grey
+        padding: $spacer * 0.75 0
+
+      .rdtPicker
+        th.rdtNext span,
+        th.rdtPrev span
+          border: none
+
+        th.rdtSwitch
+          pointer-events: none
+          cursor: default
+
+        .rdtTime th.rdtSwitch
+          pointer-events: auto
+          cursor: pointer
+
+  .btn
+    font-weight: bold
+    border: none
+
+  .btn-text
+    color: $text-blue
+    background-color: transparent
+    margin-left: $spacer
+
+  .error-text .i-info-outline
+    margin-right: 2px
+
+// *************** Tab Filter ***************
 
 .sr-tab__filter
   /* stylelint-disable */
@@ -55,15 +92,13 @@ $spacer = 8px
     .PowerSelect__Options
       .PowerSelect__Option
         padding: 0 10px
+        line-height: 40px
+
+        &--highlighted
+          background-color: $bg-white
 
         &:hover
           background-color: #FAFBFC
-
-        & > span
-          line-height: 40px
-
-      .PowerSelect__Option--highlighted
-        background-color: $bg-white
 
 .sr-metrics .metrics-card
   padding: $spacer * 2
@@ -349,20 +384,11 @@ $spacer = 8px
       div.info-value
         font-size: 13px
         padding-bottom: $spacer
+        font-weight: 600
 
         .rate
           color: #0A1D38
           font-size: 18px
-
-        font-weight: 600
-
-        > span
-          color: #D13821
-          padding-left: $spacer * 1.5
-
-        > span i.arrow
-          display: inline-block
-          transform: rotate(90deg)
 
       div.info-label
         p.label-text

@@ -44,14 +44,18 @@ const GraphWidget = (props) => {
     [],
   );
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tabIndex) => {
+    const tab = tabPane[tabIndex];
+
     if (tab.name === activeTab) return;
+
     setActiveTab(tab.name);
     const updateDropdownOptions = tab.name != 'Overall';
     const payload = queryFilters(updateDropdownOptions);
     fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
     fetchMerchantErrors(errorsPaylod);
+
     trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
   };
 
@@ -78,14 +82,15 @@ const GraphWidget = (props) => {
 
   return (
     <div ref={tabContainerRef} className="metrics-container">
-      <Tabs className="sr-metrics" justified={true}>
+      <Tabs
+        className="sr-metrics"
+        justified={true}
+        onSelect={handleTabChange}
+        selectedTabIndex={tabPane.findIndex(({ name }) => name === activeTab)}
+      >
         {tabPane.map((tab, idx) => {
           return (
-            <Tab
-              key={`${tab.name}-${idx}`}
-              onClick={() => handleTabChange(tab)}
-              style={{ width: tabWidth }}
-            >
+            <Tab key={`${tab.name}-${idx}`} style={{ width: tabWidth }}>
               <MetricsCard isLoading={isLoading} isActive={activeTab === tab.name} metric={tab} />
             </Tab>
           );

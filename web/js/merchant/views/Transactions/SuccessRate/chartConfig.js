@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { chartFontColor, gridLineColor, TAG_MAP } from './constants';
-import { getSuitableY } from './helper';
+import { getFormattedNumber, getSuitableY } from './helper';
 
 /**************************************** Overview Chart Config ****************************************/
 
@@ -19,7 +19,7 @@ export const overviewGraphOptions = {
       borderColor: '#000000',
       borderWidth: 1,
     },
-    point: { radius: 0 },
+    point: { radius: 0, hoverRadius: 0 },
   },
   legend: { display: false },
   tooltips: { enabled: false },
@@ -76,7 +76,7 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
     },
     tooltips: {
       enabled: true,
-      mode: 'point',
+      mode: 'x',
       intersect: true,
       bodySpacing: 4,
       borderWidth: 1,
@@ -123,7 +123,9 @@ export const getChartAreaConfig = ({ breakdown, xLabel, yLabel }) => {
           const label = datasets[datasetIndex]?.label;
           const labelText = TAG_MAP[label] ?? label;
 
-          return `${labelText}: ${yLabel}% | Total payments: ${datapoint?.total || 0}`;
+          return `${labelText}: ${yLabel}% | Total payments: ${getFormattedNumber(
+            datapoint?.total || 0,
+          )}`;
         },
         labelColor: (item, chart) => {
           const color = chart.config.data.datasets[item.datasetIndex].borderColor;

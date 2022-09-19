@@ -22,7 +22,7 @@ const MethodFilter = (props) => {
 
   if (filtersList?.length > 0) {
     return (
-      <div className="filter">
+      <div className="sr-filter">
         <div>
           <label>Filter Via:</label>
           <div className="flex">{filtersList?.map(renderGroupingDropdown)}</div>

@@ -2,7 +2,6 @@ import moment from 'moment';
 import { reduce, head, map, unionBy, filter, cloneDeep, upperFirst } from 'lodash';
 import store, { getUser } from 'merchant/store';
 import {
-  DATE_RANGE_PRESETS,
   DEFAULT_INTERVAL,
   DEFAULT_PRESET,
   tabsOrder,
@@ -17,6 +16,7 @@ import {
   FILTERS_VS_DISPLAY_NAMES,
   breakdownInterval,
   TAG_OVERALL_MAP,
+  PRESETS,
 } from './constants';
 
 export const getInterval = (startDate, endDate) => {
@@ -50,16 +50,14 @@ export const initialFilters = () => {
    * since, we'll not have latest downtime data,
    * we query data with endDate 5mins lesser than the current time.
    */
+  const { value, unit } = PRESETS[DEFAULT_PRESET];
   const endDate = moment().endOf('hour');
-  const startDate = endDate
-    .clone()
-    .add(...DATE_RANGE_PRESETS[DEFAULT_PRESET].slice(1))
-    .startOf('hour');
+  const startDate = endDate.clone().subtract(value, unit).startOf('hour');
 
   const payload = {
     startDate,
     endDate,
-    preset: null,
+    preset: PRESETS[DEFAULT_PRESET],
   };
 
   return payload;
