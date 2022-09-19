@@ -30,6 +30,7 @@ const ModalActions = (props) => {
         closeModal();
       })
       .catch(() => {
+        setIsCtaDisabled(false);
         showNotification({
           type: 'error',
           message: 'RTO history file upload unsuccessful. Please Try again.',

@@ -11,10 +11,10 @@ import {
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const FeedbackRate = ({ feedbackRateData, isloading }) => {
-  const { feedbackPercentage } =
-    feedbackRateData && !Array.isArray(feedbackRateData[0])
+  const { feedback_percentage: feedbackPercentage } =
+    feedbackRateData.length && !Array.isArray(feedbackRateData[0])
       ? feedbackRateData[0]
-      : { feedbackPercentage: 0 };
+      : { feedback_percentage: 0 };
   const footerStatus =
     feedbackPercentage === 100 ? 'complete' : feedbackPercentage === 0 ? 'empty' : 'partial';
 
