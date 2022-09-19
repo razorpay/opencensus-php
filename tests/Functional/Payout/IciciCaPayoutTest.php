@@ -2597,4 +2597,81 @@ class IciciCaPayoutTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testIcici2faPayoutByCapitalCollectionsApp()
+    {
+        $this->ba->capitalCollectionsAuth();
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $contact = $this->fixtures->create('contact',
+            [
+                'name' => 'test name',
+                'type' => \RZP\Models\Contact\Type::CAPITAL_COLLECTIONS_INTERNAL_CONTACT
+            ]);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testIcici2faPayoutByVendorPaymentsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+    }
+
+    public function testIcici2faPayoutByPayrollAppWhenFeatureEnabled()
+    {
+        $this->ba->appAuthTest($this->config['applications.xpayroll.secret']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $this->startTest();
+    }
+
+    public function testIcici2faPayoutByPayrollAppWhenFeatureDisabled()
+    {
+        $this->ba->appAuthTest($this->config['applications.xpayroll.secret']);
+
+        $this->startTest();
+    }
+
+    public function testIcici2faPayoutForTaxPayment()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->fixtures->on('test')->merchant->addFeatures([Feature\Constants::ICICI_2FA]);
+
+        $contact = $this->fixtures->create('contact', ['type' => 'rzp_tax_pay']);
+
+        $fundAccount = $this->fixtures->fund_account->createBankAccount(
+            [
+                'source_type' => 'contact',
+                'source_id'   => $contact->getId(),
+            ],
+            [
+                'name'           => 'test',
+                'ifsc'           => 'SBIN0007105',
+                'account_number' => '111000',
+            ]);
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $fundAccount->getPublicId();
+
+        $this->startTest();
+    }
 }

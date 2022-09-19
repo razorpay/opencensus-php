@@ -334,7 +334,7 @@ class Service extends Base\Service
             $isCompositePayout = true;
         }
 
-        $this->checkIfPayoutIsAllowed($isCompositePayout, $input, $balance);
+        $this->checkIfPayoutIsAllowed($isCompositePayout, $input, $internal, $balance);
 
         if ($isCompositePayout === true)
         {
@@ -3168,7 +3168,7 @@ class Service extends Base\Service
         return $this->core->updatePayoutEntry($payoutId, $input);
     }
 
-    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, Merchant\Balance\Entity $balance = null)
+    protected function checkIfPayoutIsAllowed(bool $isCompositePayout, array $input, bool $internal = false, Merchant\Balance\Entity $balance = null)
     {
         $payoutMode = $input[Payout\Entity::MODE] ?? null;
 
@@ -3177,7 +3177,13 @@ class Service extends Base\Service
             $balance = $this->repo->balance->findByPublicIdAndMerchant($input[Payout\Entity::BALANCE_ID], $this->merchant);
         }
 
-        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true)
+        $isVendorPaymentApp = $this->auth->isVendorPaymentApp();
+
+        $isCapitalCollectionsApp = $internal === true and $this->auth->isCapitalCollectionsApp();
+
+        if (Payout\Core::checkIfMerchantIsAllowedForIciciDirectAccountPayoutWith2Fa($balance, $this->merchant) === true and
+            $isVendorPaymentApp === false and
+            $isCapitalCollectionsApp === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,

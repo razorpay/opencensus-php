@@ -1174,4 +1174,222 @@ return [
             ],
         ],
     ],
+
+    'testIcici2faPayoutByCapitalCollectionsApp' => [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'payout',
+                'mode'            => 'IMPS',
+                'fund_account_id' => ''
+            ],
+            'source_details' => [
+                [
+                    'source_type' => 'capital_collections',
+                    'source_id'   => 'Sk77UkNsB8ywa5',
+                    'priority'    => 1
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'payout',
+                'amount'    => 2000000,
+                'currency'  => 'INR',
+                'narration' => 'Test Merchant Fund Transfer',
+                'purpose'   => 'payout',
+                'status'    => 'processing',
+                'mode'      => 'IMPS',
+                'tax'       => 0,
+                'fees'      => 0,
+                'notes'     => []
+            ]
+        ],
+    ],
+
+    'testIcici2faPayoutByVendorPaymentsApp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+            ],
+        ],
+    ],
+
+    'testIcici2faPayoutByPayrollAppWhenFeatureEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'API payouts are not available for this account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
+        ],
+    ],
+
+    'testIcici2faPayoutByPayrollAppWhenFeatureDisabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                //zero pricing for xpayroll
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => '100000000000sa',
+                        'source_type' => 'xpayroll',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testIcici2faPayoutForTaxPayment'  => [
+        'request'  => [
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ],
+            'method'  => 'POST',
+            'url'     => '/internalContactPayout',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => '',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'    => 'payout',
+                'amount'    => 2000000,
+                'currency'  => 'INR',
+                'narration' => 'Batman',
+                'purpose'   => 'refund',
+                'status'    => 'processing',
+                'mode'      => 'IMPS',
+                'tax'       => 0,
+                'fees'      => 0,
+                'notes'     => [
+                    'abc' => 'xyz',
+                ],
+            ]
+        ],
+    ],
 ];
