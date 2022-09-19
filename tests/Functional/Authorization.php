@@ -186,7 +186,7 @@ class Authorization
         $this->proxy = false;
     }
 
-    public function payoutInternalAppAuth($hostname = null, $mode = 'test')
+    public function payoutInternalAppAuth($mode = 'test', $hostname = null)
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.payouts_service')['secret'], $hostname);
 

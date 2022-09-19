@@ -4333,4 +4333,32 @@ class PayoutServiceTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWorkflowStateCallbackFromPayoutService()
+    {
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id'     => 'FSYpen1s24sSbs',
+                'entity_id'       => 'Exag5ZpN5MWuBW',
+                'entity_type'     => 'payout',
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowStateUpdateCallbackFromPayoutService()
+    {
+        $this->testWorkflowStateCallbackFromPayoutService();
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+    }
 }

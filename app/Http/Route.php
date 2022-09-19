@@ -13891,6 +13891,8 @@ class Route
             'dcc_payouts_details_fetch',
             'decrement_free_payouts_payouts_service',
             'rollback_free_payouts',
+            'workflow_state_callback',
+            'workflow_state_callback_update',
         ],
 
         'ledger' => [
