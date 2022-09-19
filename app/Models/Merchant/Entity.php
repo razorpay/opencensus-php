@@ -2576,7 +2576,7 @@ class Entity extends Base\PublicEntity
                 return self::DEFAULT_MCC_MARKDOWN_PERCENTAGE;
             }
 
-            return (int) $mccMarkdownFromConfig;
+            return $mccMarkdownFromConfig;
         }
 
         $data = $mccMarkdownPaymentConfigEntity->getFormattedConfig();
