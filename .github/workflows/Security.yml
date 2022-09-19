@@ -12,10 +12,12 @@ jobs:
     secrets:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
 
+  scan-dependencies:
+    uses: razorpay/security-action/.github/workflows/dependency-scanner.yml@master
+
   security-statuscheck:
-    needs: [security-sast]
+    needs: [security-sast, scan-dependencies ]
     if: always()
     uses: razorpay/security-action/.github/workflows/status_check.yml@master
     with:
-      WORKFLOW_RESULT: ${{ needs.security-sast.result == 'success' && needs.security-sast.result != 'cancelled' || 'false' }}
-    # WORKFLOW_RESULT : ${{ needs.security-sast.result == 'success' && 'success' || needs.security-sast.result == 'cancelled' && 'cancelled' || 'failure' }}
+      WORKFLOW_RESULT: ${{ needs.security-sast.result == 'success' && needs.scan-dependencies.result == 'success' && needs.security-sast.result != 'cancelled' && needs.security-sast.result != 'failure' && needs.scan-dependencies.result != 'cancelled' && needs.scan-dependencies.result != 'failure'}}
