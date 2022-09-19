@@ -13,6 +13,7 @@ const fileTypesMap = {
   jpg: 'image/jpeg',
   png: 'image/png',
   xml: 'text/xml',
+  jpeg: 'image/jpeg',
 };
 
 // File type = docs are not safe to upload in general
