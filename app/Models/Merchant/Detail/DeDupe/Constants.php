@@ -257,7 +257,6 @@ class Constants
                     'matchType'=> self::EXACT_MATCH,
                 ]
             ],
-            self::ACTION  => self::UNREG_DEACTIVATE
         ],
         [
             'keysToCheck' => [
