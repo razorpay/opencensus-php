@@ -29,7 +29,7 @@
     "lint:css": "stylelint --config .stylelintrc-stylus.js",
     "fix:css": "stylelint --config .stylelintrc-stylus.js --fix",
     "size:limit": "size-limit",
-    "test:size:merchant": "cd web && STAGE=production npm run build:merchant && cd ../ && npm run size:limit"
+    "test:size:merchant": "rm -rf public/dist && cd web && STAGE=production npm run build:merchant && cd ../ && npm run size:limit"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.4",
