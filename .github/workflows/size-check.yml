@@ -1,0 +1,53 @@
+name: Bundle Asset Checker
+
+on:
+  pull_request:
+    types: [ edited, opened, synchronize, reopened, assigned, labeled, review_requested ]
+    branches:
+      - master
+
+env:
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+jobs:
+  asset-checker:
+    name: Bundle Asset Checker
+    runs-on: [self-hosted]
+    continue-on-error: true
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Use Node v16
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.13.1
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+
+      - run: npm install -g yarn
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          HUSKY=0 npm ci
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Size Limit Action
+        uses: andresz1/size-limit-action@v1.7.0
+        with:
+          github_token: ${{ secrets.CI_BOT_TOKEN }}
+          build_script: test:size:merchant
+          skip_step: install
+
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          CI_JOB_NUMBER: 1
