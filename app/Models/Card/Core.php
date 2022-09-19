@@ -603,7 +603,7 @@ class Core extends Base\Core
 
             if(isset($input['token']) && $input['token']!=="" && isset($card['iin']) && $card['iin']!=="" && substr($tokenizedRange,0,6) === $card['iin'])
             {
-                $token_entity = $this->repo->token->findOrFailByPublicIdAndMerchant($input['token'], $this->merchant);
+                $token_entity = (new Token\Core)->getByTokenIdAndMerchant($input['token'], $this->merchant);
 
                 if(isset($token_entity["card_id"]))
                 {
