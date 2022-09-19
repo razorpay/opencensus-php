@@ -27,6 +27,7 @@ class Constants
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";
     const REFUND_PROCESSED                                  = "refund_processed";
+    const DISPUTE_REFUND_PROCESSED                          = "dispute_refund_processed";
     const REFUND_INSTANT_PROCESSED                          = "instant_refund_processed";
     const REFUND_PROCESSED_WITH_CREDITS                     = "refund_credits_normal";
     const REFUND_PROCESSED_WITH_CREDITS_INSTANT             = "instant_refund_processed_with_credits";
@@ -36,12 +37,17 @@ class Constants
     const REFUND_ACCOUNTING                                 = "refund_accounting";
     const REFUND_CREDITS                                    = "refund_credits";
 
+    //Chargeback Events
+    const RAZORPAY_DISPUTE_DEDUCT                           = "razorpay_dispute_deduct";
+    const RAZORPAY_DISPUTE_REVERSAL                         = "razorpay_dispute_reversal";
+
     //Money Params Fields
     const FEE_CREDITS_DEDUCTIBLE                            = "fee_credits_deductible";
     const REFUND_AMOUNT                                     = "refund_amount";
     const MERCHANT_DEDUCTIBLE_AMOUNT                        = "merchant_deductible_amount";
     const MERCHANT_DEDUCTIBLE_REFUND_CREDITS                = "merchant_deductible_refund_credits";
     const GATEWAY_AMOUNT                                    = "gateway_amount";
+    const GATEWAY_DISPUTE_PAYABLE_AMOUNT                    = "gateway_dispute_payable_amount";
     const GMV_AMOUNT                                        = "gmv_amount";
     const DS_GMV_AMOUNT                                     = "ds_gmv_amount";
     const DS_CONTROL_AMOUNT                                 = "ds_control_amount";

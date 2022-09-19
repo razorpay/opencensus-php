@@ -5,6 +5,7 @@ namespace RZP\Models\Ledger;
 
 use App;
 use Carbon\Carbon;
+use RZP\Models\Dispute\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
@@ -493,9 +494,21 @@ class RefundJournalEvents
     {
         $transactionMessage = BaseJournalEvents::generateBaseForJournalEntry($transaction);
 
+        $transactorEvent = Constants::REFUND_PROCESSED;
+
+        if (empty($refund->getNotes() === false))
+        {
+            $notes = $refund->getNotes();
+
+            if ((isset($notes['reason']) === true) and
+                (str_starts_with($notes['reason'], Entity::getSign()) === true))
+            {
+                $transactorEvent = Constants::DISPUTE_REFUND_PROCESSED;
+            }
+        }
         $refundData = array(
             Constants::TRANSACTOR_ID                 => $refund->getPublicId(),
-            Constants::TRANSACTOR_EVENT              => Constants::REFUND_PROCESSED,
+            Constants::TRANSACTOR_EVENT              => $transactorEvent,
             Constants::MONEY_PARAMS                  => $moneyParams,
             Constants::IDENTIFIERS                   => [
                 Constants::GATEWAY           => $refund->getGateway(),

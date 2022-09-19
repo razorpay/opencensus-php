@@ -33,9 +33,16 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\{Entity as E, Mode, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
-use RZP\Models\
-{Base, Payment, Merchant, Adjustment, Currency, Payment\Method};
+use RZP\Models\{Base,
+    Ledger\ChargebackJournalEvents,
+    Payment,
+    Merchant,
+    Adjustment,
+    Currency,
+    Payment\Method};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\Merchant\{Email as MerchantEmail, Entity as MerchantEntity};
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 
@@ -585,6 +592,8 @@ class Core extends Base\Core
             }
 
             $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
+
+            $this->createLedgerEntriesForRazorpayDisputeDeduct($adjustment);
         }
 
         $dispute->setAmountDeducted($amount);
@@ -605,7 +614,9 @@ class Core extends Base\Core
 
         if ($dispute->isBackfill() === false)
         {
-            (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+            $adjustment = (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
+
+            $this->createLedgerEntriesForRazorpayDisputeReversal($adjustment);
         }
 
         $dispute->setAmountReversed($amount);
@@ -613,6 +624,77 @@ class Core extends Base\Core
         $this->reversePaymentRefundAttributesDueToPositiveAdjustment($dispute);
 
         $dispute->resetDeductionSourceAttributes();
+    }
+
+    private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment)
+    {
+        if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct();
+
+            LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+
+            $this->trace->info(
+                TraceCode::CHARGEBACK_RAZORPAY_DISPUTE_DEDUCT_EVENT,
+                [
+                    'adjustment_id'             => $adjustment->getId(),
+                    'merchant_id'               => $adjustment->getMerchantId(),
+                    'entity_id'                 => $adjustment->getEntityId(),
+                    'message'                   => $transactionMessage
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_CHARGEBACK_ENTRY_FAILED,
+                [
+                    'adjustment_id'             => $adjustment->getId()
+                ]);
+        }
+    }
+
+    private function createLedgerEntriesForRazorpayDisputeReversal(Adjustment\Entity $adjustment)
+    {
+        if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeReversal($adjustment);
+
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+            }));
+
+            $this->trace->info(
+                TraceCode::CHARGEBACK_RAZORPAY_DISPUTE_REVERSAL_EVENT,
+                [
+                    'adjustment_id'             => $adjustment->getId(),
+                    'merchant_id'               => $adjustment->getMerchantId(),
+                    'entity_id'                 => $adjustment->getEntityId(),
+                    'message'                   => $transactionMessage
+                ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_CHARGEBACK_ENTRY_FAILED,
+                [
+                    'adjustment_id'             => $adjustment->getId()
+                ]);
+        }
     }
 
     protected function getAcceptedDisputeAmount(Entity $dispute, array $input)
