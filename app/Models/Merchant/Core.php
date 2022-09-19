@@ -1521,35 +1521,24 @@ class Core extends Base\Core
         $subMerchant->setPricingPlan($pricingPlan);
     }
 
-    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $feeBearer = FeeBearer::PLATFORM, $businessCategory = BusinessCategory::ECOMMERCE)
+    public function updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($subMerchant, $feeBearer = FeeBearer::PLATFORM, $businessCategory = BusinessCategory::ECOMMERCE, $useCategory2 = false)
     {
-        $this->trace->info(
-            TraceCode::MERCHANT_SCHEDULE_UPDATED,
-            [
-                'fee bearer' => $feeBearer,
-                'category' => $businessCategory,
-            ]);
-
         if ($feeBearer === FeeBearer::DYNAMIC)
         {
             return;
         }
 
-        $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[$feeBearer][$businessCategory] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP[FeeBearer::PLATFORM][BusinessCategory::ECOMMERCE];
-
-        $this->trace->info(
-            TraceCode::MERCHANT_SCHEDULE_UPDATED,
-            [
-                'pricing plan name' => $pricingPlanName,
-            ]);
+        //In edit, use category2, in bulk upload - use business category
+        if ($useCategory2 === true)
+        {
+            $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_CAT2[$feeBearer][$businessCategory] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_CAT2[FeeBearer::PLATFORM][Category::ECOMMERCE];
+        }
+        else
+        {
+            $pricingPlanName = Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_BUS_CAT[$feeBearer][$businessCategory] ?? Pricing\DefaultPlan::SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_BUS_CAT[FeeBearer::PLATFORM][BusinessCategory::ECOMMERCE];
+        }
 
         $pricingPlans = (new Pricing\Repository)->getPlanByName($pricingPlanName);
-
-        $this->trace->info(
-            TraceCode::MERCHANT_SCHEDULE_UPDATED,
-            [
-                'pricing plans' => $pricingPlans,
-            ]);
 
         if ($pricingPlans->count() === 0)
         {
@@ -1560,12 +1549,6 @@ class Core extends Base\Core
         (new Merchant\Service())->validatePricingPlanForFeeBearer($subMerchant, $pricingPlans);
 
         $pricingPlanId = $pricingPlans->getId();
-
-        $this->trace->info(
-            TraceCode::MERCHANT_SCHEDULE_UPDATED,
-            [
-                'pricing plan id' => $pricingPlanId,
-            ]);
 
         $subMerchant->setPricingPlan($pricingPlanId);
 
@@ -2145,7 +2128,7 @@ class Core extends Base\Core
                 {
                     if ((isset($input[Entity::FEE_BEARER]) === true) or (isset($input[Entity::CATEGORY2]) === true))
                     {
-                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant,$input[Entity::FEE_BEARER] ?? FeeBearer::PLATFORM, $input[Entity::CATEGORY2] ?? BusinessCategory::ECOMMERCE);
+                        $this->updateSubMerhantPricingPlanBasedOnFeeBearerAndSubcategory($merchant,$input[Entity::FEE_BEARER] ?? FeeBearer::PLATFORM, $input[Entity::CATEGORY2] ?? BusinessCategory::ECOMMERCE, true);
                     }
                 }
             }
