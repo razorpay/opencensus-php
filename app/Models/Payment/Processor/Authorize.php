@@ -4215,7 +4215,7 @@ trait Authorize
         if (isset($input['dcc_currency']) === false) {
 
             $currency = $input['currency'];
-            
+
             if (in_array($currency, Gateway\Constants::PAYPAL_SUPPORTED_CURRENCIES) === false) {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -7221,72 +7221,30 @@ trait Authorize
 
     protected function postTokenisationRecurringPaymentProcessingIfApplicable(Payment\Entity $payment)
     {
-        if ($payment->isTokenisationUnhappyFlowHandlingApplicable() === true)
+        try
         {
-            if ($payment->localToken->card->isRzpSavedCard() === false)
+            if($payment->isTokenisationUnhappyFlowHandlingApplicable() === true)
             {
                 $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($payment->localToken->getCardMandateId(), $payment->merchant);
 
-                // In the case of saved card flow, card will be tokenised from the start.
-                // Hence, no need to go through this method.
-                if ($cardMandate->getStatus() === CardMandate\Status::ACTIVE)
+                if($cardMandate->getStatus() !== CardMandate\Status::ACTIVE)
                 {
-                    return;
+                    (new CardMandate\Core)->reportInitialPayment($payment);
                 }
-
-                $this->eventPaymentAuthorized();
-
-                if ($payment->hasSubscription() === true)
-                {
-                    return;
-                }
-                else if ($payment->getStatus() === Payment\Status::AUTHORIZED)
-                {
-                    $this->autoCapturePaymentIfApplicable($payment);
-                }
-                else if ($payment->getStatus() === Payment\Status::CAPTURED)
-                {
-                    // Unexpected scenario, payment should not be captured before tokenisation
-                    $this->trace->info(
-                        TraceCode::RECURRING_PAYMENT_CAPTURED_BEFORE_TOKENISATION,
-                        [
-                            'payment_id'    => $payment->getId(),
-                            'status'        => $payment->getStatus(),
-                            'method'        => $payment->getMethod(),
-                        ]);
-                }
-            }
-            else
-            {
-                // Refunding the payment as tokenisation failed
-                $this->refundAuthorizedPayment($payment);
-
-                $this->eventPaymentFailed(null);
-
-                // marking the order as unauthorised post refund to pass the
-                // validation check in the retry attempt of the mandate
-                if ($payment->hasOrder() === true)
-                {
-                    $order = $payment->order;
-                    $order->setAuthorized(false);
-                    $this->repo->saveOrFail($order);
-                }
-
-                // marking the token as rejected as tokenisation failed
-                $token = $payment->localToken;
-                $token->setRecurringStatus(Token\RecurringStatus::REJECTED);
-                $this->repo->saveOrFail($token);
-
-                throw new Exception\LogicException(
-                    'Failed to tokenised the card',
-                    null,
-                    [
-                        'payment_id'   => $payment->getPublicId(),
-                        'status'       => $payment->getStatus(),
-                        'method'       => $payment->getMethod()
-                    ]);
             }
         }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FAILED_REPORTING_TO_MANDATEHUB_AFTER_RECURRING_TOKENISATION,
+                [
+                    "message" => "failed in postTokenisationRecurringPaymentProcessingIfApplicable reportInitialPayment",
+                    "paymentId" => $payment->getId(),
+                ]);
+        }
+
     }
 
     protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
@@ -7932,12 +7890,6 @@ trait Authorize
 
     public function eventPaymentAuthorized()
     {
-        if (($this->payment->isTokenisationUnhappyFlowHandlingApplicable() === true) and
-            ($this->payment->localToken->card->isRzpSavedCard() === true))
-        {
-            return;
-        }
-
         $eventPayload = [
             ApiEventSubscriber::MAIN => $this->payment,
         ];

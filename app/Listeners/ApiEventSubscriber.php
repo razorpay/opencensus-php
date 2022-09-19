@@ -413,10 +413,10 @@ class ApiEventSubscriber extends Base\Core
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
             $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
-
         }
 
-        if ($payment->isCardMandateRecurringInitialPayment() === true)
+        if (($payment->isTokenisationUnhappyFlowHandlingApplicable() === false) and
+            ($payment->isCardMandateRecurringInitialPayment() === true))
         {
             (new CardMandate\Core)->reportInitialPayment($payment);
         }

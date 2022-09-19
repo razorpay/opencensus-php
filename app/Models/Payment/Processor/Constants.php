@@ -105,7 +105,6 @@ class Constants
     const MERCHANT_AUTO_CAPTURE_LATE_AUTH_FALSE     = 'Merchant has auto capture late auth disabled.';
     const PAYMENT_METHOD_COD                        = 'Cannot auto capture cash on delivery payment.';
     const ORDER_PAYMENT_CAPTURE_TRUE                = 'Order payment capture flag is true.';
-    const CAPTURE_RECURRING_PAYMENT_AFTER_TOKENISATION = 'Capture recurring payment after tokenisation';
 
     // default time out for upi subsequent payment
     const AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO = 2160;
