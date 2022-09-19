@@ -281,6 +281,7 @@ class Service extends Base\Service
             '1cc_shopify_magic_enable',
             'enable_workbox',
             'pp_onboarding_redirection_exp',
+            'rx_cohesive_flow_kbd'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);
