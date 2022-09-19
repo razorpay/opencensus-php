@@ -24,12 +24,8 @@
       }
     </style>
     <script>
-      var org = {
-        !!json_encode($org) !!
-      };
-      var user = {
-        !!json_encode($user) !!
-      };
+    var org = {!! json_encode($org) !!},
+      user = {!! json_encode($user) !!};
     </script> @include('partials/environment')
   </head>
   <body>
