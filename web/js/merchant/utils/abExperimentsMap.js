@@ -415,4 +415,11 @@ export default {
     // prod
     'K6GhEu6Y4tmM0X',
   ],
+
+  quick_links_care: [
+    // beta
+    'KFMLhcaHUULbo7',
+    // prod
+    'KFsZKTQ1cy3zDE',
+  ],
 };

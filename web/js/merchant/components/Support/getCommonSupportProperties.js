@@ -62,14 +62,14 @@ export const getDeviceSource = () => {
 };
 
 // this function returns common support analytics properties.
-export const getCommonSupportProperties = () => {
+export const getCommonSupportProperties = ({ location = 'Help and Support' } = {}) => {
   return {
     source: getDeviceSource(),
     deviceType: isMobileDevice(1020) ? 'mweb' : 'dweb',
     session_id: getSessionId(),
     linked_id: getLinkedId(),
     user_session_id: getUserSessionId(),
-    location: 'Help and Support',
+    location,
     pageUrl: window.location.href,
     pathname: window.location.pathname,
     activationStatus: window.rzp_user?.activation_status || '',

@@ -608,7 +608,6 @@ export default class User {
   get isCSSOtherBusinessesEnabled() {
     return getSplitzExperimentVariant('cross_sell_other_exp')?.variables?.result === 'on';
   }
-
   get isLoanCustomAmountRepaymentEnabled() {
     return this.getExpStatus('loans_allow_custom_amount_repayment');
   }

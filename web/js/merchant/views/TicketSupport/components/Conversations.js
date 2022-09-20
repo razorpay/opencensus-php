@@ -118,6 +118,7 @@ export default class Conversations extends React.Component {
       properties: {
         ticketId: ticket ? ticket.ticket_id : 'NA',
         ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties({ location: 'My Account' }),
       },
     });
   };
@@ -343,20 +344,21 @@ export default class Conversations extends React.Component {
       screen: 'support tickets',
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
-        ...getCommonSupportProperties(),
-        ticket_id: ticket.id,
+        ...getCommonSupportProperties({ location: 'My Account' }),
+        ticket_id: ticket?.ticket_id || ticket?.id,
       },
     });
   }
   handleToggleReplySection() {
     const { ticket = {} } = this.state;
     analyticsTrack({
-      objectName: 'Reply Now',
-      actionName: 'button clicked',
+      objectName: 'Reply Now button',
+      actionName: 'clicked',
       screen: 'support tickets',
       properties: {
-        ticketId: ticket?.id || 'NA',
+        ticketId: ticket?.ticket_id || ticket?.id || 'NA',
         ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties({ location: 'My Account' }),
       },
     });
 
@@ -402,6 +404,8 @@ export default class Conversations extends React.Component {
       error,
       isReplyAdded,
     } = this.state;
+
+    const isWorkflow = match?.params?.instance === 'workflow';
 
     let TICKET_ID = ticket?.id;
     if (TICKET_ID === SAMPLE_TICKET.id) {
@@ -672,6 +676,7 @@ export default class Conversations extends React.Component {
                       ticketID={TICKET_ID}
                       shouldCreateNewTicketForWorkflow={shouldCreateNewTicketForWorkflow}
                       handleCreateNewWorkflowTicket={this.handleCreateNewWorkflowTicket}
+                      isWorkflow={isWorkflow}
                       onClose={() => {
                         this.setState({ toggleReply: false });
                       }}

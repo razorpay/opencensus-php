@@ -22,9 +22,18 @@ import SupportActions from 'merchant/components/Support/components/SupportAction
 import { isMobileDevice } from 'merchant/components/Home/data';
 
 const OpenRequestStatus = lazy(() =>
-  import('@razorpay/frontend-care').then((module) => ({
-    default: module.OpenRequestStatus,
-  })),
+  import(/* webpackChunkName: 'frontend-care-open-request' */ '@razorpay/frontend-care').then(
+    (module) => ({
+      default: module.OpenRequestStatus,
+    }),
+  ),
+);
+const CareStore = lazy(() =>
+  import(/* webpackChunkName: 'frontend-care-store' */ '@razorpay/frontend-care').then(
+    (module) => ({
+      default: module.CareStore,
+    }),
+  ),
 );
 
 const SupportSection = lazy(
@@ -197,7 +206,7 @@ class SupportBody extends Component {
       this.setState({ isClickToCallSubmitted: true });
     }
   };
-  handleClick = async (id, screen = 'home page') => {
+  handleClick = async (id) => {
     const {
       onToggle,
       onChat,
@@ -228,7 +237,6 @@ class SupportBody extends Component {
       }
 
       if (id === 'open-queries') {
-        this.openQueriesTracking(screen);
         if (isOpened) onToggle();
         // eslint-disable-next-line consistent-return
         return rzpTicketSystem.openModal(`#open-queries`);
@@ -261,12 +269,7 @@ class SupportBody extends Component {
       onToggle();
       this.createTicket(id);
     } else {
-      errorService.captureError('RZP TICKET SYSTEM INIT FAILED', {
-        tags: {
-          team: Teams.CARE,
-        },
-        rank: Ranks.P2,
-      });
+      this.handleError({ error: 'RZP TICKET SYSTEM INIT FAILED' });
     }
   };
 
@@ -293,12 +296,13 @@ class SupportBody extends Component {
       },
     });
   };
-  openQueriesTracking = (screen = 'home page') => {
+  openQueriesTracking = (screen = 'home page', totalTickets) => {
     analyticsTrack({
       objectName: 'View All Queries',
       actionName: 'clicked',
       screen,
       properties: {
+        number_of_open_queries: totalTickets,
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...getCommonSupportProperties(),
       },
@@ -334,18 +338,6 @@ class SupportBody extends Component {
     });
   };
 
-  openQueriesTracking = () => {
-    analyticsTrack({
-      objectName: 'view all Queries',
-      actionName: 'clicked',
-      screen: 'help section',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-        ...getCommonSupportProperties(),
-      },
-    });
-  };
-
   handleTicketCreatingSuccess = (data) => {
     TicketSystemEmitter.emit('ticket-created', data);
   };
@@ -362,12 +354,7 @@ class SupportBody extends Component {
           try {
             window.ReactNativeWebView.postMessage(JSON.stringify({ eventType: 'EXIT' }));
           } catch (error) {
-            errorService.captureError(error, {
-              tags: {
-                team: Teams.CARE,
-              },
-              rank: Ranks.P2,
-            });
+            this.handleError({ error });
           }
         }
       },
@@ -382,7 +369,7 @@ class SupportBody extends Component {
     try {
       analyticsTrack({
         ...rest,
-        screen: screen || 'help section',
+        screen: screen || 'homepage',
         properties: {
           ...properties,
           ...getCommonAnalyticsProperties(window.rzp_user),
@@ -413,11 +400,11 @@ class SupportBody extends Component {
     analyticsTrack({
       objectName: 'Request follow-up',
       actionName: 'clicked',
-      screen: 'help section',
+      screen: 'homepage',
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...getCommonSupportProperties(),
-        ticket_id: ticket.id,
+        ticket_id: ticket?.ticket_id || ticket?.id,
       },
     });
     this.setState({
@@ -425,10 +412,20 @@ class SupportBody extends Component {
     });
   };
 
-  handleOpenQueries = ({ screen, openedFrom = 'help' } = {}) => {
-    this.handleClick('open-queries', screen);
+  handleOpenQueries = ({ screen, openedFrom = 'help', totalTickets } = {}) => {
+    this.handleClick('open-queries');
+    this.openQueriesTracking(screen, totalTickets);
     this.setState({
       modalToBeOpenedOnBackClick: openedFrom,
+    });
+  };
+
+  handleError = ({ error = 'CARE ERROR', rank = Ranks.P2 } = {}) => {
+    errorService.captureError(error, {
+      tags: {
+        team: Teams.CARE,
+      },
+      rank,
     });
   };
 
@@ -471,6 +468,7 @@ class SupportBody extends Component {
       isWebView,
       supportFlags,
       botIsLoaded,
+      shouldOpenRaiseAQueryOnMount,
     } = this.props;
     const {
       careSupportSection,
@@ -542,6 +540,19 @@ class SupportBody extends Component {
             );
           }}
         >
+          <CareStore
+            user={{
+              experiments: user.experiments,
+              splitzExperiments: user?.splitz_experiments,
+              email: user.email,
+              name: user.name,
+              id: user.id,
+              contact_mobile: user?.user?.contact_mobile,
+            }}
+            isOpened={isOpened || shouldOpenRaiseAQueryOnMount}
+            isWebView={isWebView}
+            onError={this.handleError}
+          />
           {careSupportSection ? (
             <SupportSection
               user={{
@@ -550,6 +561,7 @@ class SupportBody extends Component {
                 name: user.name,
                 id: user.id,
                 contact_mobile: user?.user?.contact_mobile,
+                splitzExperiments: user?.splitz_experiments,
               }}
               analyticsInstance={this.handleCareAnalytics}
               // removing hash to support frontend care package
@@ -566,18 +578,22 @@ class SupportBody extends Component {
               handleOpenQueries={this.handleOpenQueries}
               showBackButton={isMobile}
               onBackClick={this.handleBackClick}
+              onError={this.handleError}
+              isWebView={isWebView}
             />
           ) : null}
-
-          <header>
-            <i className="i i-headset m-r" /> Help and Support{' '}
-            <i className="i i-close pull-right mob-close" onClick={onToggle} />
-          </header>
+          {isOpened && (
+            <header>
+              <i className="i i-headset m-r" /> Help and Support{' '}
+              <i className="i i-close pull-right mob-close" onClick={onToggle} />
+            </header>
+          )}
           {showOpenTicketStatus && (
             <OpenRequestStatus
               user={{
                 experiments: user.experiments,
                 email: user.email,
+                splitzExperiments: user?.splitz_experiments,
                 name: user.name,
                 id: user.id,
                 contact_mobile: user?.user?.contact_mobile,
@@ -588,26 +604,30 @@ class SupportBody extends Component {
               onRequestFollowUp={this.onRequestFollowUp}
               analyticsInstance={this.handleCareAnalytics}
               isOpened={isOpened}
+              onError={this.handleError}
             />
           )}
-          <SupportActions
-            key="SupportActions"
-            notifyCount={notifyCount}
-            isCallEnabled={isCallEnabled}
-            handleClick={this.handleClick}
-            shouldDisable={shouldDisable}
-            scheduleCallbackReason={scheduleCallbackReason}
-            openClickToCall={openClickToCall}
-            user={user}
-            supportFlags={supportFlags}
-            botIsLoaded={botIsLoaded}
-            timings={timings}
-            date={date}
-            isEligible={scheduleCallConfig.is_eligible}
-            isClickToCallSubmitted={isClickToCallSubmitted}
-            isChatWithUsDisabled={isChatWithUsDisabled}
-            openDashboardGuide={this.openDashboardGuide}
-          />
+          {isOpened && (
+            <SupportActions
+              key="SupportActions"
+              notifyCount={notifyCount}
+              isCallEnabled={isCallEnabled}
+              handleClick={this.handleClick}
+              shouldDisable={shouldDisable}
+              scheduleCallbackReason={scheduleCallbackReason}
+              openClickToCall={openClickToCall}
+              user={user}
+              supportFlags={supportFlags}
+              botIsLoaded={botIsLoaded}
+              timings={timings}
+              date={date}
+              isEligible={scheduleCallConfig.is_eligible}
+              isClickToCallSubmitted={isClickToCallSubmitted}
+              isChatWithUsDisabled={isChatWithUsDisabled}
+              openDashboardGuide={this.openDashboardGuide}
+              splitzExperiments={user?.splitz_experiments}
+            />
+          )}
         </ErrorBoundary>
       </div>
     );

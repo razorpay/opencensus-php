@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import FileUpload from 'merchant/components/File/Upload';
 import { MAX_SIZE_LIMIT, statuses } from './data';
@@ -39,7 +39,7 @@ export default class Reply extends React.Component {
   };
 
   track = (action, label) => {
-    const { ticket } = this.props;
+    const { ticket, isWorkflow } = this.props;
 
     window.rzpAnalytics?.({
       eventCategory: 'Ticket Dashboard',
@@ -47,14 +47,19 @@ export default class Reply extends React.Component {
       eventLabel: label,
     });
 
+    const { body } = this.state;
+
     analyticsTrack({
       objectName: 'Send a Reply',
       actionName: 'submit button clicked',
       screen: 'support tickets',
       properties: {
-        ticketId: ticket?.ticket_id,
+        ticketId: ticket?.ticket_id || ticket?.id,
         status: statuses[ticket?.status] ? statuses[ticket?.status].name : ticket?.status,
         ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties({ location: 'My Account' }),
+        type_of_query: isWorkflow ? 'workflow' : 'ticket',
+        message: body,
       },
     });
   };
@@ -140,6 +145,7 @@ export default class Reply extends React.Component {
         ticketId: ticket?.ticket_id,
         status: statuses[ticket?.status] ? statuses[ticket?.status].name : ticket?.status,
         ...getCommonAnalyticsProperties(window.rzp_user),
+        ...getCommonSupportProperties({ location: 'My Account' }),
       },
     });
   };
