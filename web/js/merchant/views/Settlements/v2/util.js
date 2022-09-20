@@ -1,3 +1,4 @@
+import { merchantFetch } from 'merchant/utils/ajax';
 export const calculateCreditDebitAmount = (items, isBreakupNew) => {
   return items.reduce(
     (acc, item) => {
@@ -23,3 +24,10 @@ export const sanitizeTabName = (tabName) => tabName.split('_')[0].trim();
  */
 export const removeUnreconciledEntity = (items) =>
   items.filter((item) => item.component !== 'unreconciled');
+
+export const fetchBankSettleStatus = (settlementId) => {
+  return merchantFetch({
+    url: `org_settlements/${settlementId}`,
+    method: 'GET',
+  });
+};
