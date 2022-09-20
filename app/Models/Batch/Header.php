@@ -207,6 +207,24 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_PARENT_MERCHANT_ID = 'Parent Merchant Id';
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
+    //
+    // Bulk journal create headers
+    //
+    const CURRENCY_LEDGER = 'currency';
+    const AMOUNT_LEDGER = 'amount';
+    const COMMISSION = 'commission';
+    const TAX = 'tax';
+    const TRANSACTOR_ID = 'transactor_id';
+    const TRANSACTOR_EVENT = 'transactor_event';
+    const TRANSACTION_DATE_LEDGER = 'transaction_date';
+    const JOURNAL_CREATE_NOTES = 'journal_create_notes';
+    const API_TRANSACTION_ID = 'api_transaction_id';
+    const ADDITIONAL_PARAMS = 'additional_params';
+    const IDENTIFIERS = 'identifiers';
+    const MONEY_PARAMS = 'money_params';
+    const TENANT = 'tenant';
+    const UPDATED_AT = 'updated_at';
+    const JOURNAL_ID = 'journal_id';
 
     //
     // Virtual Account Bulk Creation Headers
@@ -4037,6 +4055,39 @@ class Header
                 self::MERCHANT_ID,
                 self::ACTION,
                 self::STATUS,
+            ],
+        ],
+
+        TYPE::LEDGER_BULK_JOURNAL_CREATE => [
+            self::INPUT => [
+                self:: MERCHANT_ID,
+                self:: CURRENCY_LEDGER,
+                self:: AMOUNT_LEDGER,
+                self:: BASE_AMOUNT,
+                self:: COMMISSION,
+                self:: TAX,
+                self:: TRANSACTOR_ID,
+                self:: TRANSACTOR_EVENT,
+                self:: TRANSACTION_DATE_LEDGER,
+                self:: JOURNAL_CREATE_NOTES,
+                self:: API_TRANSACTION_ID,
+                self:: ADDITIONAL_PARAMS,
+                self:: IDENTIFIERS,
+                self:: MONEY_PARAMS,
+            ],
+            self::OUTPUT =>[
+                self:: JOURNAL_ID,
+                self:: MERCHANT_ID,
+                self:: CURRENCY_LEDGER,
+                self:: TENANT,
+                self:: AMOUNT_LEDGER,
+                self:: BASE_AMOUNT,
+                self:: TRANSACTOR_ID,
+                self:: TRANSACTOR_EVENT,
+                self:: CREATED_AT,
+                self:: UPDATED_AT,
+                self:: ERROR_CODE,
+                self:: ERROR_DESCRIPTION,
             ],
         ],
 

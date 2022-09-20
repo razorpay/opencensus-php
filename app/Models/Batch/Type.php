@@ -222,6 +222,8 @@ class Type
 
     const LEDGER_ONBOARD_OLD_ACCOUNT = 'ledger_onboard_old_account';
 
+    const LEDGER_BULK_JOURNAL_CREATE = 'ledger_bulk_journal_create';
+
     const CHARGEBACK_POC      =  'chargeback_poc';
 
     const WHITELISTED_DOMAIN  =  'whitelisted_domain';
@@ -306,6 +308,7 @@ class Type
         self::HITACHI_CBK_RUPAY,
         self::CREATE_EXEC_RISK_ACTION,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
+        self::LEDGER_BULK_JOURNAL_CREATE,
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
         self::ED_MERCHANT_SEARCH,
@@ -522,6 +525,7 @@ class Type
         self::RECURRING_CHARGE_AXIS,
         self::EMANDATE_DEBIT_HDFC,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
+        self::LEDGER_BULK_JOURNAL_CREATE,
         self::PARTNER_REFERRAL_FETCH,
         self::VAULT_MIGRATE_TOKEN_NS
     ];
@@ -596,6 +600,7 @@ class Type
         self::HITACHI_CBK_VISA,
         self::CREATE_EXEC_RISK_ACTION,
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
+        self::LEDGER_BULK_JOURNAL_CREATE,
         self::CHARGEBACK_POC,
         self::WHITELISTED_DOMAIN,
         self::ED_MERCHANT_SEARCH,
@@ -658,6 +663,7 @@ class Type
         self::SETTLEMENT_ONDEMAND_FEATURE_CONFIG => Name::SETTLEMENT_ONDEMAND_FEATURE_ENABLE,
         self::MERCHANT_CAPITAL_TAGS              => Name::MERCHANT_CAPITAL_TAGS_UPLOAD,
         self::LEDGER_ONBOARD_OLD_ACCOUNT         => Name::LEDGER_SERVICE_ACTIONS,
+        self::LEDGER_BULK_JOURNAL_CREATE         => Name::LEDGER_SERVICE_ACTIONS,
         self::CHARGEBACK_POC                     => Name::BULK_UPDATE_CHARGEBACK_POC,
         self::ED_MERCHANT_SEARCH                 => Name::ED_MERCHANT_SEARCH,
         self::ENTITY_UPDATE_ACTION               => Name::ADMIN_BATCH_CREATE,
