@@ -239,7 +239,7 @@ class Provider
                 'merchantId'        => $merchantId,
                 'cacheKey'          => $cacheKey,
                 'cacheValuePresent' => !empty($terminals),
-                'terminalId'        => array_column($terminals, 'id')
+                'terminalIds'        => $terminals != null ? array_column($terminals, 'id') : ''
             ]);
 
             if ((count($filteredTerminals) > 0) and $filters !== null)
