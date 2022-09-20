@@ -25,7 +25,17 @@
   </script>
   @if(env('APP_ENV') === 'production')
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-NCWFQ39"></script>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl+ '&gtm_auth=oiCUIwjN93-7Mv20oI9E7A&gtm_preview=env-1&gtm_cookies_win=x';f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WRCVTG6');</script>
   @else
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl+ '&gtm_auth=KRqrp3xY0hzlp82HIdkssA&gtm_preview=env-17&gtm_cookies_win=x';f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WRCVTG6');</script>
     <script src="https://www.googleoptimize.com/optimize.js?id=GTM-WB43S6Q" defer></script>
   @endif
   <script src="https://wchat.freshchat.com/js/widget.js" defer></script>

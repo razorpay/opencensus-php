@@ -231,6 +231,20 @@ export const analyticsTrack = ({
   }
 };
 
+export const sendEventsToGTM = (event, screen, properties) => {
+  const { merchantId, pageUrl, userId, device_type, page } = properties ?? {};
+
+  window?.dataLayer?.push({
+    event,
+    merchantId,
+    userId,
+    pageUrl,
+    page,
+    screen,
+    device_type,
+  });
+};
+
 export const captureErrorOnAnalytics = (event, hint) => {
   if (
     event?.level === 'error' &&
