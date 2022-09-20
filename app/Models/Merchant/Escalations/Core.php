@@ -913,22 +913,6 @@ class Core extends Base\Core
         );
     }
 
-    public function sendSignupStartedNotification($input)
-    {
-        $lastCronTime = $this->getLastCronTime(Constants::SIGNUP_STARTED_NOTIFY_TIMESTAMP_CACHE_KEY);
-
-        $this->updateLastCronTime(Constants::SIGNUP_STARTED_NOTIFY_TIMESTAMP_CACHE_KEY);
-
-        $to = Carbon::now()->getTimestamp();
-
-        $merchantIdList = $this->repo->merchant->fetchMerchantsCreatedBetween($lastCronTime, $to);
-
-        $this->sendNotificationUtility(
-            $merchantIdList,
-            Events::SIGNUP_STARTED_NOTIFY
-        );
-    }
-
     private function triggerNoDocLimitEscalation(Base\PublicCollection $merchants, array $merchantsGmvList, string $milestone, $threshold)
     {
         $merchantsGmvMap = collect($merchantsGmvList)->mapToDictionary(function($item, $key) {

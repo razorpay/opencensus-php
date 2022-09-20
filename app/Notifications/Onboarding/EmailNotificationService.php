@@ -5,6 +5,7 @@ namespace RZP\Notifications\Onboarding;
 
 use Mail;
 use RZP\Mail\Merchant\PartnerSubmerchantOnboardingEmail;
+use RZP\Models\Merchant\AutoKyc\Escalations\Types\Email;
 use RZP\Models\Merchant\Constants;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
@@ -60,6 +61,10 @@ class EmailNotificationService extends BaseNotificationService
 
         foreach ($partners as $partner)
         {
+//            if (empty($partner->getEmail()) === true)
+//            {
+//                continue;
+//            }
             $payload = [
                 DEConstants::PARTNER  => [
                     MerchantEntity::ID    => $partner->getId(),

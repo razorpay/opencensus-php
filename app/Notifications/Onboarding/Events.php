@@ -34,7 +34,7 @@ class Events
     const ACTIVATED_MCC_PENDING_SUCCESS               = 'ACTIVATED_MCC_PENDING_SUCCESS';
     const ACTIVATED_MCC_PENDING_ACTION_REQUIRED       = 'ACTIVATED_MCC_PENDING_ACTION_REQUIRED';
     const ONBOARDING_VERIFY_EMAIL                     = 'ONBOARDING_VERIFY_EMAIL';
-    const FIRST_PAYMENT_OFFER                         = 'MTU_OFFER_NEW';
+    const FIRST_PAYMENT_OFFER                         = 'MTU_OFFER_NEW_TEXT';
     const L1_NOT_SUBMITTED_IN_1_DAY                   = 'L1_NOT_SUBMITTED_IN_1_DAY';
     const L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR     = 'L2_BANK_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
     const L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   = 'L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR';
@@ -72,7 +72,6 @@ class Events
         self::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => 'sms.onboarding.Onboarding_L2_not_submit_Aadhaar_SMS3',
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
         self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.Welcome_SMS_1',
-        self::FIRST_PAYMENT_OFFER                         => 'sms.onboarding.mtu_offer_new',
         self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'sms.onboarding.website_adherence_hard_nudge_1',
     ];
 
@@ -96,6 +95,7 @@ class Events
     const WHATSAPP_TEMPLATES_CTA_TEMPLATE = [
         self::WEBSITE_ADHERENCE_HARD_NUDGE => 'app/website-app-detail',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE => 'app/website-app-detail',
+        self::FIRST_PAYMENT_OFFER => 'signin?utm_source=Reactivation&utm_medium=whatsapp&utm_campaign=10k_referral_content'
     ];
 
     // blade templates
@@ -117,7 +117,7 @@ class Events
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'whatsapp.merchant.onboarding.Onboarding_IA_WA2',
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'whatsapp.merchant.onboarding.Onboarding_L1_not_submit_WA2_A',
         self::SIGNUP_STARTED_NOTIFY                       => 'whatsapp.merchant.onboarding.welcome_wa_noemoji',
-        self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.mtu_offer_new',
+        self::FIRST_PAYMENT_OFFER                         => 'whatsapp.merchant.onboarding.mtu_offer_new_text',
 
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION => 'whatsapp.merchant.onboarding.website_section_downloaded',
         self::WEBSITE_SECTION_PUBLISHED         => 'whatsapp.merchant.onboarding.website_section_published',

@@ -17,14 +17,17 @@ class SmsNotificationService extends BaseNotificationService
     {
         $payload  = $this->getPayload();
         $merchant = $this->args[Constants::MERCHANT];
-
+//        $destination = $payload[OnboardingConstants::DESTINATION];
+//        if (empty($destination) === true)
+//        {
+//            return;
+//        }
         try
         {
-            $this->app['stork_service']->sendSms(
-                $this->mode,
-                $payload
-            );
-
+                $this->app['stork_service']->sendSms(
+                    $this->mode,
+                    $payload
+                );
             $this->trace->info(
                 TraceCode::MERCHANT_ONBOARDING_SMS_SENT,
                 [
@@ -39,7 +42,7 @@ class SmsNotificationService extends BaseNotificationService
                 TraceCode::MERCHANT_ONBOARDING_SMS_FAILED,
                 [
                     'mid'      => $merchant->getMerchantId(),
-                    'template' => $this->getTemplateMessage()
+                    'template' => $this->getTemplateMessage(),
                 ]
             );
         }
