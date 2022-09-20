@@ -9,5 +9,5 @@ export const SHIPPING_PROVIDERS = [
   { label: 'Select Provider', name: '' },
   { label: 'Shiprocket', name: 'Shiprocket' },
   { label: 'Delhivery', name: 'Delhivery' },
-  { label: 'Native', name: 'Native' },
+  { label: 'Pickrr', name: 'Pickrr' },
 ];
