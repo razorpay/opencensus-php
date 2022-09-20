@@ -635,7 +635,7 @@ class Core extends Base\Core
 
         try
         {
-            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct();
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct($adjustment);
 
             LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
 
