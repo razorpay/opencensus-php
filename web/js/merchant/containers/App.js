@@ -268,6 +268,34 @@ class App extends Component {
 
             removeSplashLoader();
             this.setState({ isLoading: false });
+
+            const merchantsSettlementStatus = JSON.parse(
+              LocalStorageService.getItem('merchantsSettlementStatus'),
+            );
+
+            const esOndemandSettlementDisabled =
+              (user.features || []).indexOf('es_on_demand') === -1;
+            if (esOndemandSettlementDisabled) return;
+
+            if (!merchantsSettlementStatus) this.getSettlementDetails(user.current);
+            else {
+              const settlementStatus = merchantsSettlementStatus[user.current];
+              const isMerchantPresent = user.current in merchantsSettlementStatus;
+              const isAnimationDisabled =
+                isMerchantPresent && !settlementStatus && settlementStatus !== 'disableAnimation';
+
+              if (!isMerchantPresent) this.getSettlementDetails(user.current);
+              else if (isAnimationDisabled) {
+                const updatedMerchantSettlementStatus = {
+                  ...merchantsSettlementStatus,
+                  [user.current]: 'disableAnimationOnReload',
+                };
+                LocalStorageService.setItem(
+                  'merchantsSettlementStatus',
+                  JSON.stringify(updatedMerchantSettlementStatus),
+                );
+              }
+            }
           });
 
         // use partner mode if merchant kyc is not activated and it's enabled
@@ -319,6 +347,7 @@ class App extends Component {
     this.props.fetchTrustedBadgeStatus();
     this.props.fetchMerchantReferralDetail();
     this.fetchSupportedCurrencies();
+    this.props.fetchCampaigns();
 
     // Decoupled this api from SSR
     this.props.fetchUserTags();
@@ -444,35 +473,8 @@ class App extends Component {
         }).open();
       }
 
-      const merchantsSettlementStatus = JSON.parse(
-        LocalStorageService.getItem('merchantsSettlementStatus'),
-      );
-
       if (getMobileDetect().isWebView()) {
         this.setState({ isWebView: true });
-      }
-
-      const esOndemandSettlementDisabled = (user.features || []).indexOf('es_on_demand') === -1;
-      if (esOndemandSettlementDisabled) return;
-
-      if (!merchantsSettlementStatus) this.getSettlementDetails(user.current);
-      else {
-        const settlementStatus = merchantsSettlementStatus[user.current];
-        const isMerchantPresent = user.current in merchantsSettlementStatus;
-        const isAnimationDisabled =
-          isMerchantPresent && !settlementStatus && settlementStatus !== 'disableAnimation';
-
-        if (!isMerchantPresent) this.getSettlementDetails(user.current);
-        else if (isAnimationDisabled) {
-          const updatedMerchantSettlementStatus = {
-            ...merchantsSettlementStatus,
-            [user.current]: 'disableAnimationOnReload',
-          };
-          LocalStorageService.setItem(
-            'merchantsSettlementStatus',
-            JSON.stringify(updatedMerchantSettlementStatus),
-          );
-        }
       }
     }
   }

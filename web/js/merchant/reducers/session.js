@@ -7,6 +7,7 @@ const UPDATE_SESSION = 'UPDATE_SESSION';
 const UPDATE_USER_ASYNC = 'UPDATE_USER_ASYNC';
 const UPDATE_USER = 'UPDATE_USER';
 const UPDATE_USER_FEATURES = 'UPDATE_USER_FEATURES';
+const UPDATE_USER_CAMPAIGNS = 'UPDATE_USER_CAMPAIGNS';
 const UPDATE_USER_TAGS = 'UPDATE_USER_TAGS';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
@@ -103,6 +104,22 @@ export const fetchUserDetailsById = (userId) => {
   });
 };
 
+export const fetchCampaignsAjax = () => {
+  const params = {
+    url: 'credits?fetch_expired=0&is_promotion=1',
+    method: 'GET',
+  };
+
+  return merchantFetch(params);
+};
+
+export const fetchCampaigns = () => {
+  return {
+    type: UPDATE_USER_CAMPAIGNS,
+    payload: fetchCampaignsAjax(),
+  };
+};
+
 export const showOrHideTour = (toShowTour) => {
   return {
     type: SHOW_HIDE_TOUR,
@@ -193,6 +210,22 @@ export default function sessionReducer(state = initialState, action) {
 
     case UPDATE_MERCHANT:
       return onUpdateMerchant(state, action.payload);
+
+    case `${UPDATE_USER_CAMPAIGNS}::SUCCESS`: {
+      const campaigns = action.payload?.data?.items?.map((item) => item?.campaign) || [];
+      // in other places rzp_user is getting used to update the session so updating with campaigns
+      window.rzp_user = {
+        ...window.rzp_user,
+        campaigns,
+      };
+
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          campaigns,
+        }),
+      });
+    }
 
     default:
       return state;

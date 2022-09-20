@@ -209,11 +209,11 @@ class Constants
     // Since we want to adopt the changes in a phase-wise manner, commenting out the fields.
     // Will uncomment when they are to be excluded from the user data
     const FIELDS_DECOUPLED_FOR_PG_RENDERING = [
+        self::FEATURES,
+        self::CAMPAIGNS,
         self::TAGS,
 //        self::EXPERIMENTS,
 //        self::SPLITZ_EXPERIMENTS,
-//        self::FEATURES,
-//        self::CAMPAIGNS,
     ];
 
     const TRACE_DETAILS_MAP = [

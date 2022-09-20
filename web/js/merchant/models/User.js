@@ -61,6 +61,12 @@ const FEATURE_FLAG_MAPS = {
 export function setFeatures(features) {
   const enabledFeatures = filterBy(features, 'value', true);
 
+  // in other places rzp_user is getting used to update the session so updating with features
+  window.rzp_user = {
+    ...window.rzp_user,
+    features: enabledFeatures,
+  };
+
   return enabledFeatures;
 }
 

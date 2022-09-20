@@ -1167,6 +1167,7 @@ class Service extends Base\Service
         $data['experiments'] = [];
         $data['tags'] = [];
         $data['features'] = [];
+        $data['campaigns'] = [];
 
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
