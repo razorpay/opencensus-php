@@ -110,6 +110,7 @@ class Cors
                 Headers::CSRF_TOKEN,
                 'Content-Type',
                 'X-Report-Type',
+                'X-Product-Type',
                 'x-recaptcha-mode',
                 // Added this to allow email verification via OTP in X
                 'x-send-email-otp',
