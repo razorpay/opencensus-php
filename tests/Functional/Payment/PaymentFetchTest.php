@@ -2027,8 +2027,6 @@ class PaymentFetchTest extends TestCase
 
     public function testFetchPaymentWithExposeArn()
     {   
-        $this->fixtures->merchant->addFeatures([Feature::EXPOSE_RRN]);
-
         $paymentArray = $this->getDefaultPaymentArray();
         $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
             

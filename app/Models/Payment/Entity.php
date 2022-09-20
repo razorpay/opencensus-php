@@ -2044,8 +2044,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         // flipkart use case
-        if (($this->isMethodCardOrEmi() === true) and
-            ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_RRN) === true))
+        if ($this->isMethodCardOrEmi() === true)
         {
             if (empty($this->getReference1()) === false)
             {
