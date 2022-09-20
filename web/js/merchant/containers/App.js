@@ -7,7 +7,7 @@ import Loader from 'common/ui/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
 import { removeItem } from 'common/utils/localStorage';
-import { analyticsTrack, initAnalytics, sendEventsToGTM } from 'common/utils/analytics';
+import { analyticsTrack, initAnalytics } from 'common/utils/analytics';
 import { initLumberjack, initRefiner, initSegment } from 'common/utils/trackers';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { initSentry } from 'common/utils/observability';
@@ -660,8 +660,6 @@ class App extends Component {
     fireAnalyticsEvents({
       liData: 1668428,
     });
-
-    sendEventsToGTM('New MTU', 'home page', ...getCommonAnalyticsProperties(window.rzp_user));
   };
 
   fireMTUAudienceEvents = (user) => {
@@ -683,8 +681,6 @@ class App extends Component {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
-
-    sendEventsToGTM('Active Login', 'home page', ...getCommonAnalyticsProperties(window.rzp_user));
 
     let fbEvents = ['live_mtu_audience'];
     const bizTypeTerm = isUnregisteredBusiness ? 'unreg' : 'reg';

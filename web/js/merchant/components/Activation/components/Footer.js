@@ -7,7 +7,6 @@ import { classList } from 'common/utils/rzp-utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import Input from 'common/new-ui/Input';
-import { sendEventsToGTM } from 'common/utils/analytics';
 
 const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
 
@@ -30,7 +29,6 @@ let SubmitL1Form = ({ canSubmitL1Form, submitL1, tracking, trackEvents }) => (
         actionName: 'Submit L1 CTA Clicked',
         screen: 'home page',
       });
-      sendEventsToGTM('SignUp Submit L1 CTA Clicked', 'home page', null);
       return submitL1();
     }}
     pendingState="Verifying"
@@ -64,7 +62,6 @@ let SubmitKYCForm = ({
         actionName: 'Submit L2 CTA Clicked',
         screen: 'home page',
       });
-      sendEventsToGTM('SignUp Submit L2 CTA Clicked', 'home page', null);
     }}
   >
     Submit Form
