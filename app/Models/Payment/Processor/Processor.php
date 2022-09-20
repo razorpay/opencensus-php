@@ -733,7 +733,6 @@ class Processor
             (empty($input[Payment\Entity::META]) === true) and
             (empty($input['signature']) === true) and
             (empty($input[Payment\Entity::BILLING_ADDRESS]) === true) and
-            ($merchant->isMarketplace() === false) and
             (empty($input[Payment\Entity::BANK]) === false))
         {
             if (empty($input[Payment\Entity::ORDER_ID]) === true)
@@ -826,6 +825,22 @@ class Processor
         if ($variant === 'disable')
         {
             return false;
+        }
+
+        if ($merchant->isMarketplace() === true)
+        {
+            $featureFlag = self::NETBANKING_PAYMENTS_VIA_PGROUTER . '_marketplace';
+            $variant = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag, $this->mode);
+
+            $this->trace->info(TraceCode::PAYMENTS_REARCH_RAZORX_EVALUATION, [
+                'variant'      => $variant,
+                'feature_flag' => $featureFlag,
+            ]);
+
+            if ($variant !== 'on')
+            {
+                return false;
+            }
         }
 
         if ((app()->runningUnitTests() === true) and
