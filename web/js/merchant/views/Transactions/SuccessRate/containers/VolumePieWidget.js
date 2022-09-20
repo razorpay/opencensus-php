@@ -16,7 +16,7 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
   if (name === 'others' && !sr) return null;
   const label = getTagLabel(name);
   return (
-    <div key={`${name}___${index}`} className="col-sm-6 info-card">
+    <div key={`${name}___${index}`} className="col-xs-12 col-sm-6 info-card">
       <StyledHeader text={label} />
       <div className="info-card__label">
         <p className="label-text">Successful / Total attempts</p>
@@ -52,19 +52,20 @@ const VolumePieWidget = (props) => {
   return (
     <div className="box-widget volume-container">
       <div className="row">
-        <div className="col-sm-12 col-md-5">
-          <div className="chart-col">
-            <StyledHeader text="Overall payment attempts" />
-            {!isEmpty(compactData) && (
+        <div className="col-xs-12 col-md-5">
+          <StyledHeader text="Overall payment attempts" />
+
+          {!isEmpty(compactData) && (
+            <div className="pie-chart-wrapper">
               <div className="pie-chart">
                 <Pie data={pieChartData} options={options} plugins={plugins} />
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-        <div className="col-sm-12 col-md-7">
+        <div className="col-xs-12 col-md-7">
           {!isLoading && Boolean(data?.sr) && (
-            <div className="col-sm-6 info-card">
+            <div className="col-xs-12 col-sm-6 info-card">
               {isLoading ? (
                 <PlaceholderLoader style={{ marginBottom: '10px' }} />
               ) : (

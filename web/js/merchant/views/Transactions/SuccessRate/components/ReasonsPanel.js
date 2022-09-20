@@ -26,7 +26,7 @@ const ReasonsPanel = ({ isLoading, title = '', heading = '', data = [] }) => {
     <div className="rp-panel">
       <StyledHeader text={heading} />
       {data?.length > 0 ? (
-        <div className="row rp-grid">{data.slice(0, 5).map(renderErrorDetails)}</div>
+        <div className="row rp-grid">{data.map(renderErrorDetails)}</div>
       ) : (
         <NoDataMessage
           title={`No ${title.toLowerCase()} payment failures were reported in the selected duration`}
