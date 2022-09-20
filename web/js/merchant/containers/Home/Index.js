@@ -60,6 +60,13 @@ import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import LocRepaymentTooltip from 'merchant/views/Capital/CashAdvanceNudges/components/LocRepaymentTooltip';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { fetchAmount } from 'merchant/reducers/fetchTransaction';
+import {
+  fetchActivationDetails,
+  getBannerAndModalVisibility,
+  fetchMerchantWebsiteDetails,
+} from 'merchant/reducers/websitecompliance';
+import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -123,6 +130,10 @@ const recentActivityTitle = 'Recent Activity';
     showOrHideHighlightMode,
     updateSession,
     ...EventActions,
+    fetchAmount,
+    fetchMerchantWebsiteDetails,
+    getBannerAndModalVisibility,
+    fetchActivationDetails,
   },
 )
 @RTracking(() => window.rzpQ.component('HomeContainer'))
@@ -239,6 +250,7 @@ export default class HomeContainer extends Component {
       referredMerchants: [],
       referredAmount: 0,
       isReferee: false,
+      canShowL1ActivationModals: false,
     };
 
     /*
@@ -756,6 +768,29 @@ export default class HomeContainer extends Component {
       this.hideWelcomeModalCTAs = true;
     }
     setItem('sign_up_exp_status', 'kyc_form_fill_started');
+
+    const {
+      user,
+      fetchAmount,
+      fetchMerchantWebsiteDetails,
+      getBannerAndModalVisibility,
+      fetchActivationDetails,
+    } = this.props;
+
+    const l1Promises = [fetchAmount, fetchActivationDetails(user.id)];
+    if (user.isWebsiteComplianceFlowEnabled) {
+      l1Promises.push(fetchMerchantWebsiteDetails());
+      l1Promises.push(getBannerAndModalVisibility());
+    }
+
+    Promise.all(l1Promises).then((responses) => {
+      const activationData = responses?.[1]?.data ?? {};
+      const { business_website, appstore_url, playstore_url } = activationData;
+      if (business_website || appstore_url || playstore_url) {
+        setRecommendedProduct({ overrideProduct: 'payment_gateway' });
+      }
+      this.setState({ canShowL1ActivationModals: true });
+    });
   }
 
   closeOnboardingStep() {
@@ -940,6 +975,7 @@ export default class HomeContainer extends Component {
       showOnboardingBannerFirstStep,
       isMobile,
       hasMinTransactionSD,
+      canShowL1ActivationModals,
     } = this.state;
 
     const {
@@ -1009,6 +1045,7 @@ export default class HomeContainer extends Component {
       hasMinTransactionSD,
       isValueFilled,
       roleToShowSupportDetailForm,
+      canShowL1ActivationModals,
     };
 
     commonProps.showOnboardingBanner = user.isOrgAxis ? null : commonProps.showOnboardingBanner;

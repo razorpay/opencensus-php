@@ -1,10 +1,8 @@
 /* eslint-disable */
 
-import { fireAnalyticsEvents } from 'common/utils/googleAnalytics';
-import { addPrefixToObjectKeys, isPresent } from 'common/utils/rzp-utils';
+import { isPresent } from 'common/utils/rzp-utils';
 import QueryString from 'query-string';
-
-import { BUSINESS_TYPE_OPTIONS } from './AccountActivationFormMap';
+import * as LocalStorageService from 'common/utils/localStorage';
 import {
   ADDITIONAL_DOCS_REQUIRED_REG_BIZ,
   DEFAULT_ADDITIONAL_DOC_REG_BIZ,
@@ -666,6 +664,53 @@ const formatBusinessTypeOptions = ({ data }, previousSelectedBusinessType) => {
   };
 };
 
+const RECOMMENDED_PRODUCT_LIST = [
+  'payment_gateway',
+  'payment_page',
+  'payment_link',
+  'payment_button',
+  'smart_collect',
+  'route',
+  'subscriptions',
+];
+
+const RECOMMENDED_PRODUCT_MAP = {
+  payment_gateway: { link: '/keys', name: 'API Key' },
+  payment_page: { link: '/paymentpages', name: 'Payment Pages' },
+  payment_button: { link: '/paymentbuttons', name: 'Payment Buttons' },
+  smart_collect: { link: '/smartcollect/payments', name: 'Smart Collect' },
+  route: { link: '/route/payments', name: 'Route' },
+  subscriptions: { link: '/subscriptions', name: 'Subscriptions' },
+};
+
+const getRecommendedProductDetails = () => {
+  const recommendedProduct = LocalStorageService.getItem('merchant_landing_page');
+  const hasRecommendedProduct = RECOMMENDED_PRODUCT_LIST.includes(recommendedProduct);
+
+  return { recommendedProduct, hasRecommendedProduct };
+};
+
+const setRecommendedProduct = (options) => {
+  const { overrideProduct, shouldSetDefault = false } = options ?? {};
+  const { hasRecommendedProduct } = getRecommendedProductDetails();
+  const query = QueryString.parse(window.location.search);
+
+  if (query?.recommended_product) {
+    LocalStorageService.setItem(
+      'merchant_landing_page',
+      overrideProduct ?? query.recommended_product,
+    );
+  } else if (!hasRecommendedProduct && shouldSetDefault) {
+    //set default payment link as a recommend product.
+    LocalStorageService.setItem('default_product_page', 'payment_link');
+  }
+};
+
+const removeRecommendedProduct = () => {
+  LocalStorageService.removeItem('merchant_landing_page');
+  LocalStorageService.removeItem('default_product_page');
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -712,4 +757,9 @@ export {
   getBankVerificationAttemptError,
   getAadhaarErrorMessage,
   formatBusinessTypeOptions,
+  RECOMMENDED_PRODUCT_LIST,
+  RECOMMENDED_PRODUCT_MAP,
+  getRecommendedProductDetails,
+  setRecommendedProduct,
+  removeRecommendedProduct,
 };

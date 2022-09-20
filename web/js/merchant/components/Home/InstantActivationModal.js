@@ -6,7 +6,6 @@ import { compose } from 'redux';
 import rTracking from 'react-tracking';
 import Button from 'common/new-ui/Button';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
-import * as LocalStorageService from 'common/utils/localStorage';
 import { RZPFeatures } from 'merchant/helpers/data';
 import {
   handleProductQuickGuide,
@@ -23,19 +22,13 @@ import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import VideoModal from 'merchant/components/VideoModal';
-
+import {
+  RECOMMENDED_PRODUCT_MAP,
+  getRecommendedProductDetails,
+} from 'merchant/components/Activation/ActivationUtils';
 const CustomLottie = lazy(() =>
   import(/* webpackChunkName: 'CustomLottie' */ 'common/new-ui/Lottie'),
 );
-
-const RECOMMANDED_PRODUCT_LIST = {
-  payment_gateway: { link: '/keys', name: 'API Key' },
-  payment_page: { link: '/paymentpages', name: 'Payment Pages' },
-  payment_button: { link: '/paymentbuttons', name: 'Payment Buttons' },
-  smart_collect: { link: '/smartcollect/payments', name: 'Smart Collect' },
-  route: { link: '/route/payments', name: 'Route' },
-  subscriptions: { link: '/subscriptions', name: 'Subscriptions' },
-};
 
 const InstantActivationModal = ({
   history,
@@ -48,16 +41,14 @@ const InstantActivationModal = ({
   trackEvents,
   isInstantActivationVideoEnabled = false,
 }) => {
-  const getLandingProduct = LocalStorageService.getItem('merchant_landing_page');
-  const isPaymentLinkRecommendedProduct = getLandingProduct === 'payment_link';
-  const isRecommendProduct = Object.keys(RECOMMANDED_PRODUCT_LIST).includes(getLandingProduct);
+  const { recommendedProduct, hasRecommendedProduct } = getRecommendedProductDetails();
+  const isPaymentLinkRecommendedProduct = recommendedProduct === 'payment_link';
   const [counter, setCounter] = useState(5);
   const [isProgressStarted, setProgress] = useState(false);
   const [animationStart, setAnimationStart] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
-  const recommendProductName = RECOMMANDED_PRODUCT_LIST[getLandingProduct]?.name || '';
   const trackEvent = tracking.trackEvent;
-  const commonProperty = { auto_pl_product: getLandingProduct };
+  const commonProperty = { auto_pl_product: recommendedProduct };
 
   const currentButton = () => {
     const completKYCBtn = (
@@ -139,7 +130,8 @@ const InstantActivationModal = ({
           children="Create Payment Link"
         />
       );
-    } else if (isRecommendProduct) {
+    } else if (hasRecommendedProduct) {
+      const recommendProductName = RECOMMENDED_PRODUCT_MAP[recommendedProduct]?.name || '';
       return (
         <>
           {completKYCBtn}
@@ -172,7 +164,7 @@ const InstantActivationModal = ({
                 { ...commonProperty },
               );
               onClose();
-              history.push(RECOMMANDED_PRODUCT_LIST[getLandingProduct]?.link);
+              history.push(RECOMMENDED_PRODUCT_MAP[recommendedProduct]?.link);
             }}
             children={`Create ${recommendProductName}`}
           />
@@ -390,22 +382,20 @@ const InstantActivationModal = ({
               </div>
 
               {isInstantActivationVideoEnabled && (
-                <>
-                  <p>
-                    <a
-                      rel="noreferrer noopener"
-                      onClick={() => {
-                        setShowVideoModal(true);
-                        handleVideoClick();
-                      }}
-                      className="btn-link"
-                    >
-                      {' '}
-                      <strong>Click here</strong>{' '}
-                    </a>{' '}
-                    to watch a short video that will take you through your next steps.
-                  </p>
-                </>
+                <p>
+                  <a
+                    rel="noreferrer noopener"
+                    onClick={() => {
+                      setShowVideoModal(true);
+                      handleVideoClick();
+                    }}
+                    className="btn-link"
+                  >
+                    {' '}
+                    <strong>Click here</strong>{' '}
+                  </a>{' '}
+                  to watch a short video that will take you through your next steps.
+                </p>
               )}
 
               <p>

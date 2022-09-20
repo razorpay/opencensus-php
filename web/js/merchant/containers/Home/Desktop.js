@@ -83,15 +83,11 @@ import * as EventActions from 'merchant/reducers/trackEvents';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.desktop';
-import {
-  fetchActivationDetails,
-  getBannerAndModalVisibility,
-  fetchMerchantWebsiteDetails,
-} from 'merchant/reducers/websitecompliance';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
+import * as LocalStorageService from 'common/utils/localStorage';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -119,6 +115,7 @@ class AnalyticsDesktop extends Component {
 
   componentDidUpdate() {
     this.popupCredit();
+    this.renderL1ActivationModals();
   }
 
   componentDidMount() {
@@ -130,9 +127,6 @@ class AnalyticsDesktop extends Component {
       fetchBankAccountChangeStatus,
       fetchCarouselBanner,
       fetchInternationalSettingStatus,
-      fetchActivationDetails,
-      fetchMerchantWebsiteDetails,
-      getBannerAndModalVisibility,
     } = this.props;
     fetchEscalations();
     analyticsTrack({
@@ -159,13 +153,6 @@ class AnalyticsDesktop extends Component {
     fetchSettlementConfig();
     fetchBankAccountChangeStatus(user.id);
 
-    // website compliance flow
-    fetchActivationDetails(user.id);
-    if (user.isWebsiteComplianceFlowEnabled) {
-      fetchMerchantWebsiteDetails();
-      getBannerAndModalVisibility();
-    }
-
     this.checkIfFirstEverSettlement();
 
     const activationState = getActivationState(user, user.isUnregisteredBusiness);
@@ -181,16 +168,59 @@ class AnalyticsDesktop extends Component {
         modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
       });
     }
+
     this.canShowBannerForAxis(activationState, user.isOrgAxis, user.merchant_tnc);
 
     if (user.isOrgRZP && Boolean(user.activated)) fetchInternationalSettingStatus();
   }
 
+  renderL1ActivationModals = () => {
+    const {
+      user,
+      transactionAmount,
+      // from parent component
+      canShowL1ActivationModals,
+    } = this.props;
+
+    if (!canShowL1ActivationModals) return;
+    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    if (
+      !user.isInstantActivationEnabled ||
+      !['poi_verified', 'L1_instantly_activated'].includes(activationState)
+    )
+      return;
+
+    const recommendationModalShown = LocalStorageService.getItem(
+      `product_recommendation_modal_shown-${user.current}`,
+    );
+    if (
+      // experiments
+      user.isProductRecommendationEnabled &&
+      // zero payments
+      transactionAmount === 0 &&
+      !recommendationModalShown
+    ) {
+      this.renderProductRecommendationPrompt();
+    } else if (user.isWebsiteComplianceFlowEnabled) {
+      this.renderWebsiteCompliancePrompt();
+    }
+  };
+
+  renderProductRecommendationPrompt = () => {
+    const { user } = this.props;
+    this.props.showKYCStatusModal({
+      modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
+    });
+    LocalStorageService.setItem(`product_recommendation_modal_shown-${user.current}`, true);
+  };
+
   renderWebsiteCompliancePrompt = () => {
-    // Have split de-structing into multiple lines as lint was throwing prettier errors
-    const { activationData } = this.props;
-    const { websiteSectionDetailsData } = this.props;
-    const { websiteComplianceModalVisibility } = this.props;
+    if (this.state.isWebsiteComplianceModalShown) return;
+    const {
+      activationData,
+      websiteSectionDetailsData,
+      websiteComplianceModalVisibility,
+    } = this.props;
 
     if (
       activationData.data &&
@@ -497,7 +527,6 @@ class AnalyticsDesktop extends Component {
             />
           )}
           <WebsiteComplianceBanner screen="Home page" />
-          {user.isWebsiteComplianceFlowEnabled && this.renderWebsiteCompliancePrompt()}
           {checkHTML5APIvalidity() && (
             <AnnouncementBanner title="Outdated Browser" theme="warning">
               Please update your web browser. We recommend you to download the latest version of
@@ -1097,9 +1126,6 @@ export default withRouter(
     fetchBankAccountChangeStatus: fnFetchBankAccountChangeStatus,
     fetchCarouselBanner: fetchCarouselBannerProp,
     showProductsModal,
-    fetchMerchantWebsiteDetails,
-    getBannerAndModalVisibility,
-    fetchActivationDetails,
     ...EventActions,
   })(AnalyticsDesktop),
 );

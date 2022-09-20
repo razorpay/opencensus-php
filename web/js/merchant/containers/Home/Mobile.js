@@ -40,11 +40,6 @@ import Carousel from 'common/components/Carousel';
 import { STATUSES } from 'merchant/views/TicketSupport/utils';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import WebsiteCompliancePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
-import {
-  fetchActivationDetails,
-  fetchMerchantWebsiteDetails,
-  getBannerAndModalVisibility,
-} from 'merchant/reducers/websitecompliance';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
@@ -67,9 +62,6 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
   {
     openModal,
     fetchCarouselBanner: fetchCarouselBannerProp,
-    fetchActivationDetails,
-    fetchMerchantWebsiteDetails,
-    getBannerAndModalVisibility,
   },
 )
 class AnalyticsMobile extends Component {
@@ -87,13 +79,6 @@ class AnalyticsMobile extends Component {
     this.checkIfFirstEverSettlement();
     const holdFeature = false; // TODO: remove it once feature is live for prod
     if (holdFeature) this?.props?.fetchCarouselBanner({ fromWhere: window.location.pathname });
-
-    // website compliance flow
-    this.props.fetchActivationDetails();
-    if (this.props.user.isWebsiteComplianceFlowEnabled) {
-      this.props.fetchMerchantWebsiteDetails();
-      this.props.getBannerAndModalVisibility();
-    }
   }
 
   checkIfFirstEverSettlement = (callbackSettlementStatus) => {
@@ -140,10 +125,11 @@ class AnalyticsMobile extends Component {
   };
 
   renderWebsiteCompliancePrompt = () => {
-    // Have split de-structing into multiple lines as lint was throwing prettier errors
-    const { activationData } = this.props;
-    const { websiteSectionDetailsData } = this.props;
-    const { websiteComplianceModalVisibility } = this.props;
+    const {
+      activationData,
+      websiteSectionDetailsData,
+      websiteComplianceModalVisibility,
+    } = this.props;
 
     if (
       activationData.data &&
@@ -265,7 +251,9 @@ class AnalyticsMobile extends Component {
             </AnnouncementBanner>
           ) : null}
           <WebsiteComplianceNudge screen="Home page" />
-          {user.isWebsiteComplianceFlowEnabled && this.renderWebsiteCompliancePrompt()}
+          {user.isWebsiteComplianceFlowEnabled &&
+            this.props.canShowL1ActivationModals &&
+            this.renderWebsiteCompliancePrompt()}
           {carouselItem.length ? (
             <Carousel enableLazy minHeight={200} carouselItem={carouselItem} />
           ) : null}

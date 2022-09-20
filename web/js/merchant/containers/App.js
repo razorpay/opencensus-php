@@ -58,6 +58,7 @@ import RequestEmailModal from 'merchant_common/containers/ReportsAsync/GenerateR
 import { isPartnerPage } from 'merchant/utils/isPartnerPage';
 import getMobileDetect from 'common/utils/mobileDetect';
 import currencies from '../constants/currency';
+import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
@@ -180,7 +181,6 @@ class App extends Component {
     let isPartnerKYCActivated = LocalStorageService.getItem(
       `is_partner_activated--${user?.current}`,
     );
-
     if (
       user &&
       currentMode === 'live' &&
@@ -220,6 +220,10 @@ class App extends Component {
           setTimeout(() => {
             initChat(user);
           });
+        }
+
+        if (user.isProductRecommendationEnabled) {
+          setRecommendedProduct();
         }
 
         if (user?.user) {

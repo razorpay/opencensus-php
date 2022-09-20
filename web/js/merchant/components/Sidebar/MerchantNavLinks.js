@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
-import QueryString from 'query-string';
 import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
-import * as LocalStorageService from 'common/utils/localStorage';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -12,28 +10,25 @@ import {
   trackCashAdvanceSidebarLinkRendered,
 } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
-
-const RECOMMANDED_PRODUCT_LIST = [
-  'payment_gateway',
-  'payment_page',
-  'payment_link',
-  'payment_button',
-  'smart_collect',
-  'route',
-  'subscriptions',
-];
+import * as LocalStorageService from 'common/utils/localStorage';
+import {
+  setRecommendedProduct,
+  getRecommendedProductDetails,
+} from 'merchant/components/Activation/ActivationUtils';
 
 function MerchantNavLinks(props) {
-  const { routes, isReportsPending, isChargeAtWillEnabled, isSettlementEnabled, user } = props;
+  const {
+    routes,
+    isReportsPending,
+    isChargeAtWillEnabled,
+    isSettlementEnabled,
+    user,
+    payment,
+  } = props;
   const showMyAccountCutomBadge = !LocalStorageService.getItem('rtb_page_visited');
-  const getLandingProduct =
-    LocalStorageService.getItem('merchant_landing_page') ||
-    LocalStorageService.getItem('default_product_page');
-
+  const { recommendedProduct, hasRecommendedProduct } = getRecommendedProductDetails();
   const isRecommendProduct =
-    RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) &&
-    props.payment === 0 &&
-    user.isProductRecommendationEnabled;
+    hasRecommendedProduct && payment === 0 && user.isProductRecommendationEnabled;
 
   // checks if the splitz experiment 'cash_advance_sidebar_position' variant is 'top'
   const isCashAdvanceSidebarPosTopExp = !!user.isCashAdvanceSidebarPosTopExp;
@@ -62,16 +57,8 @@ function MerchantNavLinks(props) {
 
   useEffect(() => {
     //set recommend product to localstorage.
-    const query = QueryString.parse(window.location.search);
-    if (query?.recommended_product && user.isProductRecommendationEnabled) {
-      LocalStorageService.setItem('merchant_landing_page', query.recommended_product);
-    } else if (
-      !getLandingProduct &&
-      user.isProductRecommendationEnabled &&
-      typeof props.payment === 'object'
-    ) {
-      //set default payment link as a recommend product.
-      LocalStorageService.setItem('default_product_page', 'payment_link');
+    if (user.isProductRecommendationEnabled) {
+      setRecommendedProduct({ shouldSetDefault: typeof payment === 'object' });
     }
 
     if (getIsBankingEnabled(user)) {
@@ -84,19 +71,26 @@ function MerchantNavLinks(props) {
     });
   }, []);
 
+  const getProductBadge = (products) => {
+    if (isRecommendProduct && products.includes(recommendedProduct)) {
+      return 'try';
+    }
+    return null;
+  };
+
   useEffect(() => {
-    if (getLandingProduct && isRecommendProduct) {
+    if (recommendedProduct && isRecommendProduct) {
       analyticsTrack({
         objectName: 'Try Tag',
         actionName: 'displayed',
         screen: 'home page',
         properties: {
-          product_name: getLandingProduct,
+          product_name: recommendedProduct,
           ...getCommonAnalyticsProperties(window.rzp_user),
         },
       });
     }
-  }, [getLandingProduct, isRecommendProduct]);
+  }, [recommendedProduct, isRecommendProduct]);
 
   return (
     <>
@@ -145,12 +139,7 @@ function MerchantNavLinks(props) {
         icon="i i-link text-primary"
         to={routes.paymentlinks}
         additionalCondition={(currentUser) => currentUser.isAllowedView('payment_links')}
-        customBadge={
-          getLandingProduct === 'payment_link' &&
-          props.payment === 0 &&
-          user.isProductRecommendationEnabled &&
-          'try'
-        }
+        customBadge={getProductBadge(['payment_link'])}
       />
       <MainNavLink
         label="Payment Pages"
@@ -158,12 +147,7 @@ function MerchantNavLinks(props) {
         icon="i i-payment-pages text-warm temp-icon-style"
         to={routes.paymentpages}
         additionalCondition={(currentUser) => currentUser.isAllowedView('payment_pages')}
-        customBadge={
-          getLandingProduct === 'payment_page' &&
-          props.payment === 0 &&
-          user.isProductRecommendationEnabled &&
-          'try'
-        }
+        customBadge={getProductBadge(['payment_page'])}
       />
       <MainNavLink
         label="Stores"
@@ -186,12 +170,7 @@ function MerchantNavLinks(props) {
           currentUser.isAllowedMultiple('payment_buttons subscription_buttons') &&
           (currentUser.isPaymentButtonEnabledByRazorX || currentUser.isSubscriptionButtonEnabled)
         }
-        customBadge={
-          ['payment_button', 'payment_gateway'].includes(getLandingProduct) &&
-          props.payment === 0 &&
-          user.isProductRecommendationEnabled &&
-          'try'
-        }
+        customBadge={getProductBadge(['payment_button', 'payment_gateway'])}
       />
       <MainNavLink
         label="Route"
@@ -199,12 +178,7 @@ function MerchantNavLinks(props) {
         to={routes.marketplace}
         icon="i i-route text-success"
         additionalCondition={(currentUser) => currentUser.isAllowedView('marketplace')}
-        customBadge={
-          getLandingProduct === 'route' &&
-          props.payment === 0 &&
-          user.isProductRecommendationEnabled &&
-          'try'
-        }
+        customBadge={getProductBadge(['route'])}
       />
       <MainNavLink
         label="Banking"
@@ -221,12 +195,7 @@ function MerchantNavLinks(props) {
         icon="i i-refresh text-info"
         additionalCondition={(currentUser) => currentUser.isAllowedView('subscriptions')}
         to={routes[isChargeAtWillEnabled ? 'chargeAtWill' : 'subscriptions']}
-        customBadge={
-          getLandingProduct === 'subscriptions' &&
-          props.payment === 0 &&
-          user.isProductRecommendationEnabled &&
-          'try'
-        }
+        customBadge={getProductBadge(['subscriptions'])}
       />
 
       <MainNavLink
@@ -244,12 +213,7 @@ function MerchantNavLinks(props) {
         icon="i i-account-balance text-danger"
         to={routes.smartCollect}
         additionalCondition={(currentUser) => currentUser.isAllowedView('virtual_accounts')}
-        customBadge={
-          getLandingProduct === 'smart_collect' &&
-          props.payment === 0 &&
-          user.isProductRecommendationEnabled &&
-          'try'
-        }
+        customBadge={getProductBadge(['smart_collect'])}
       />
 
       <MagicCheckoutNavLink>

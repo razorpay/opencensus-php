@@ -10,6 +10,7 @@ import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils'
 import { analyticsTrack } from 'common/utils/analytics';
 import { getRecommendedProduct } from './productMap';
 import ProductShimmer from './shimmer';
+import { removeRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 
 const RecommendationWidget = ({
   user,
@@ -70,8 +71,7 @@ const RecommendationWidget = ({
   }
 
   if (payment > 0) {
-    localStorage.removeItem('merchant_landing_page');
-    localStorage.removeItem('default_product_page');
+    removeRecommendedProduct();
   }
 
   const exploreProducts = () => {

@@ -6,18 +6,8 @@ import rTracking from 'react-tracking';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { getItem } from 'common/utils/localStorage';
 import * as EventsActions from 'merchant/reducers/trackEvents';
-
-const RECOMMANDED_PRODUCT_LIST = [
-  'payment_gateway',
-  'payment_page',
-  'payment_link',
-  'payment_button',
-  'smart_collect',
-  'route',
-  'subscriptions',
-];
+import { getRecommendedProductDetails } from 'merchant/components/Activation/ActivationUtils';
 
 const WelcomeModal = ({
   onActivate,
@@ -32,10 +22,11 @@ const WelcomeModal = ({
   trackEvents,
   isActivationFormFullView,
 }) => {
-  const getLandingProduct = getItem('merchant_landing_page') || getItem('default_product_page');
   const activationFormUrl = isActivationFormFullView ? '/kyc' : '/activation';
-  const isRecommendProduct =
-    RECOMMANDED_PRODUCT_LIST.includes(getLandingProduct) && isProductRecommendationEnabled;
+
+  const { hasRecommendedProduct } = getRecommendedProductDetails();
+
+  const isRecommendProduct = isProductRecommendationEnabled && hasRecommendedProduct;
 
   const handleActivationClick = () => {
     onActivate();
