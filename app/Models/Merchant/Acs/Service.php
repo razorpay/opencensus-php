@@ -69,12 +69,18 @@ class Service extends Base\Service
     public function handleAccountUpdateEvent(array $input)
     {
         $this->trace->info(TraceCode::ACS_ENTITY_UPDATE_EVENT, $input);
+        if ((array_key_exists('message', $input) === false) || (array_key_exists('data', $input['message']) === false)) {
+            $this->trace->info(TraceCode::ACS_ENTITY_UPDATE_EVENT_DATA_NOT_FOUND, $input);
+            return;
+        }
+
+        $data = json_decode(base64_decode($input['message']['data'], true), true);
 
         $eventProcessors = $this->eventProcessorFactory->GetEventProcessors();
 
         foreach ($eventProcessors as $eventProcessor) {
-            if ($eventProcessor->ShouldProcess($input) === true) {
-                $eventProcessor->Process($input);
+            if ($eventProcessor->ShouldProcess($data) === true) {
+                $eventProcessor->Process($data);
             }
         }
 

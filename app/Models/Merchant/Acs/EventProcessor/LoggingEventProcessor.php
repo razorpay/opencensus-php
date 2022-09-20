@@ -24,6 +24,6 @@ class LoggingEventProcessor implements IEventProcessor
 
     function Process(array $input)
     {
-        $this->trace->info(TraceCode::EVENT_PROCESSED_BY_LOGGING_EVENT_PROCESSOR);
+        $this->trace->info(TraceCode::EVENT_PROCESSED_BY_LOGGING_EVENT_PROCESSOR, $input);
     }
 }
