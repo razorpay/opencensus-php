@@ -9037,7 +9037,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->app->salesforce->sendCaOnboardingToSalesforce($input);
+            $input = $this->app->salesforce->sendCaOnboardingToSalesforce($input);
         }
         catch(\Throwable $e)
         {
@@ -9048,6 +9048,9 @@ class Service extends Base\Service
 
             return ['success' => false];
         }
+
+        // added lumberjack integration to match data pulled from SF with product data
+        $this->app['diag']->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_LEAD_UPSERT, $merchant, null, $input);
 
         $this->trace->info(
             TraceCode::CREATED_LEAD_ON_SALESFORCE,

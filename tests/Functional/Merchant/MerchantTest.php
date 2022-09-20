@@ -12,6 +12,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
+use RZP\Diag\EventCode;
 use RZP\Models\User\Role;
 use RZP\Services\Aws\Sns;
 use RZP\Models\Base\EsDao;
@@ -40,6 +41,7 @@ use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\User\Constants as UserConstants;
 use Rzp\Credcase\Migrate\V1\RotateApiKeyRequest;
 use RZP\Services\Segment\SegmentAnalyticsClient;
+use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use Rzp\Credcase\Migrate\V1\MigrateApiKeyRequest;
 use RZP\Models\Workflow\Observer\EmailChangeObserver;
 use RZP\Models\Admin\Org\Repository as OrgRepository;
@@ -138,6 +140,7 @@ class MerchantTest extends TestCase
     use MocksRedisTrait;
     use FreshdeskTrait;
     use BvsTrait;
+    use MocksDiagTrait;
 
     const CAPITAL_SUPPORT_EMAIL = 'capital.support@razorpay.com';
 
@@ -13470,7 +13473,27 @@ IFSC Code  ICIC0001206
 
         $this->app->instance('salesforce', $salesforceClientMock);
 
-        $salesforceClientMock->expects($this->exactly(1))->method($methodName);
+        $salesforceClientMock->expects($this->exactly(1))->method($methodName)->willReturn([
+            'merchant_id'           => '10000000000000',
+            'x_onboarding_category' => 'self_serve',
+            'Business_Type'         => 'PRIVATE_LIMITED',
+            'contact_mobile'        => '9999999999',
+        ]);
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+                 ->withArgs(function($eventData, $merchant, $ex, $actualData) {
+                     $this->assertEquals([
+                         'merchant_id'           => '10000000000000',
+                         'x_onboarding_category' => 'self_serve',
+                         'Business_Type'         => 'PRIVATE_LIMITED',
+                         'contact_mobile'        => '9999999999',
+                     ], $actualData);
+                     $this->assertEquals(EventCode::X_CA_ONBOARDING_LEAD_UPSERT, $eventData);
+                     return true;
+                 })
+                 ->andReturnNull();
 
         $this->startTest();
     }

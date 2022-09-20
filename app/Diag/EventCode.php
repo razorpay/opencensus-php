@@ -804,6 +804,16 @@ class EventCode
         'name'  => 'merchant_onboarding_category.update'
     ];
 
+    const X_CA_ONBOARDING_LEAD_UPSERT = [
+        'group' => 'onboarding',
+        'name'  => 'x.ca.lead.upsert'
+    ];
+
+    const X_CA_ONBOARDING_OPPORTUNITY_UPSERT = [
+        'group' => 'onboarding',
+        'name'  => 'x.ca.opportunity.upsert'
+    ];
+
     const VIRTUAL_ACCOUNT_CREATED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.created',

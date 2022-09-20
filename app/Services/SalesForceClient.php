@@ -214,9 +214,17 @@ class SalesForceClient
     {
         $url = $this->generateUrlForMerchantUpsert();
 
+        // Convert business_type string to int, since SF stores it as an int
+        if (empty($data['Business_Type']) === false)
+        {
+            $data['Business_Type'] = $this->getCaBusinessTypeIndex($data['Business_Type']);
+        }
+
         $this->dispatchRequestJob($url, $data, TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_REQUEST,
             TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_RESPONSE,
             TraceCode::SALESFORCE_CA_ONBOARDING_FLOW_UPDATE_ERROR);
+
+        return $data;
     }
 
     public function sendUserDetailsToSalesforce($data)
@@ -333,8 +341,10 @@ class SalesForceClient
             'final_utm_campaign'    => 'Last_Click_Campaign',
             'final_page'            => 'Last_Click_Page',
             'x_onboarding_category' => 'x_onboarding_category',
+            'ca_onboarding_flow'    => 'ca_onboarding_flow',
             'x_channel'             => 'X_Channel',
             'x_subchannel'          => 'X_Subchannel',
+            'lead_progress'         => 'lead_progress'
         ];
 
         foreach ($keyMap as $key => $value)
@@ -835,5 +845,24 @@ class SalesForceClient
                                   TraceCode::SALESFORCE_CA_EVENT_RESPONSE,
                                   TraceCode::SALESFORCE_CA_EVENT_ERROR
         );
+    }
+
+    protected function getCaBusinessTypeIndex($businessType)
+    {
+        $businessTypeMapping = [
+            'PUBLIC_LIMITED'        => 5,
+            'PRIVATE_LIMITED'       => 4,
+            'LLP'                   => 6,
+            'ONE_PERSON_COMPANY'    => 12,
+            'PROPRIETORSHIP'        => 1,
+            'PARTNERSHIP'           => 3,
+            'INDIVIDUAL'            => 2,
+            'TRUST'                 => 9,
+            'NGO'                   => 7,
+            'SOCIETY'               => 10,
+            'UNREGISTERED'          => 11,
+        ];
+
+        return $businessTypeMapping[$businessType];
     }
 }

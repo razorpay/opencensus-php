@@ -10399,7 +10399,8 @@ return [
             'method'  => \Requests::POST,
             'content' => [
                 'merchant_id'           => '10000000000000',
-                'x_onboarding_category' => 'self_serve'
+                'x_onboarding_category' => 'self_serve',
+                'Business_Type'         => 'PRIVATE_LIMITED',
             ],
         ],
 

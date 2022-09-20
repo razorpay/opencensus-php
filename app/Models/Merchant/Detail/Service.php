@@ -233,21 +233,41 @@ class Service extends Base\Service
 
         try
         {
-            $campaignTypeAttr = $attributeCore->fetch($this->merchant, Product::BANKING, Merchant\Attribute\Group::X_SIGNUP, Merchant\Attribute\Type::CAMPAIGN_TYPE);
+            $campaignTypeAttr = $attributeCore->fetch($this->merchant, Product::BANKING,
+                Merchant\Attribute\Group::X_SIGNUP, Merchant\Attribute\Type::CAMPAIGN_TYPE);
+
+            $caOnboardingFlowAttr = $attributeCore->fetch($this->merchant, Product::BANKING,
+                Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS, Merchant\Attribute\Type::CA_ONBOARDING_FLOW);
         }
         catch (\Throwable $e)
         {
             $campaignTypeAttr = null;
+
+            $caOnboardingFlowAttr = null;
         }
 
-        if ($campaignTypeAttr !== null) {
+        if ($campaignTypeAttr !== null)
+        {
             $input['x_onboarding_category'] = 'self_serve';
         }
 
-        if ($this->auth->isProductBanking()) {
+        if ($caOnboardingFlowAttr !== null)
+        {
+            $input['ca_onboarding_flow'] = $caOnboardingFlowAttr;
+        }
+
+        if ($this->auth->isProductBanking())
+        {
             $xChannelDefinitionService = new XChannelDefinition\Service;
             $xChannelDefinitionService->storeChannelDetails($this->merchant, $input);
             $xChannelDefinitionService->addChannelDetailsInSFPayload($this->merchant, $input);
+
+            // Set SF Lead's Progress as pre-signup to avoid confusion with
+            // Signup completed lead (pre_signup done + email verification done)
+            $input['lead_progress'] = 'Pre signup lead';
+
+            // added lumberjack integration to match data pulled from SF with product data
+            app('diag')->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_LEAD_UPSERT, $this->merchant, null, $input);
         }
 
         // Putting in a try catch block so that any error here does not disrupt

@@ -10,6 +10,7 @@ use Mockery;
 use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Http\Request\Requests;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
@@ -39,6 +40,7 @@ use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
+use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteAdd;
 use RZP\Mail\Merchant\RejectionReasonNotification;
@@ -71,6 +73,7 @@ class MerchantDetailTest extends OAuthTestCase
     use TestsBusinessBanking;
     use WorkflowTrait;
     use MocksSplitz;
+    use MocksDiagTrait;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';
@@ -1575,6 +1578,10 @@ We look forward to transacting with you!
 
         $merchantUser = $this->fixtures->user->createUserForMerchant('10000000000155');
 
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldNotReceive('trackOnboardingEvent');
+
         $this->ba->proxyAuth('rzp_test_10000000000155', $merchantUser['id']);
 
         $this->startTest();
@@ -1611,6 +1618,19 @@ We look forward to transacting with you!
 
         $this->mockHubSpotClient('trackPreSignupEvent');
 
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+                 ->times(2)
+                 ->withArgs(function($eventData, $merchant, $ex, $actualData) {
+                     if ($eventData['name'] == EventCode::X_CA_ONBOARDING_LEAD_UPSERT['name'])
+                     {
+                         $this->assertArraySelectiveEquals(['lead_progress' => 'Pre signup lead'], $actualData);
+                     }
+                     return true;
+                 })
+                 ->andReturnNull();
+
         $this->startTest();
     }
 
@@ -1638,6 +1658,19 @@ We look forward to transacting with you!
         $this->mockHubSpotClient('trackPreSignupEvent');
 
         $this->mockSalesforceEventTracked('sendPreSignupDetails');
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+                 ->times(2)
+                 ->withArgs(function($eventData, $merchant, $ex, $actualData) {
+                     if ($eventData['name'] == EventCode::X_CA_ONBOARDING_LEAD_UPSERT['name'])
+                     {
+                         $this->assertArraySelectiveEquals(['lead_progress' => 'Pre signup lead'], $actualData);
+                     }
+                     return true;
+                 })
+                 ->andReturnNull();
 
         $this->startTest();
     }

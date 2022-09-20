@@ -4,6 +4,8 @@ namespace RZP\Models\SalesForce;
 
 use App;
 use ApiResponse;
+
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Entity;
@@ -62,6 +64,12 @@ class SalesForceService extends Base\Service {
         $this->addAndStoreChannelDetailsIfApplicable($merchant, $eventType, $eventPayload);
 
         $this->salesForceClient->sendEventToSalesForce($eventPayload);
+
+        if ($eventType == Constants::CURRENT_ACCOUNT_INTEREST)
+        {
+            // added lumberjack integration to match data pulled from SF with product data
+            app('diag')->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_OPPORTUNITY_UPSERT, $merchant, null, $eventPayload);
+        }
     }
 
     public function getMerchantDetailsOnOpportunity(string $merchantId, array $opportunities): array {
@@ -80,16 +88,16 @@ class SalesForceService extends Base\Service {
                                                              SalesForceEventRequestDTO $salesForceEventRequestDTO,
                                                              Entity $merchant) {
         switch ($salesForceEventRequestType->getValue()) {
-            case 'CURRENT_ACCOUNT_CLARITY_CONTEXT':
+            case Constants::CURRENT_ACCOUNT_CLARITY_CONTEXT:
                 $eventPayload = [
                     'merchant_id'           => $merchant->getId(),
                     'product_name'          => 'Current_Account'
                 ];
                 return array_merge($eventPayload, $salesForceEventRequestDTO->getEventProperties());
 
-            case 'LOS_NEW_APPLICATION':
-            case 'CURRENT_ACCOUNT_INTEREST':
-            case 'SHOPIFY_MIGRATION_REQUEST':
+            case Constants::LOS_NEW_APPLICATION:
+            case Constants::CURRENT_ACCOUNT_INTEREST:
+            case Constants::SHOPIFY_MIGRATION_REQUEST:
                 $DATE_FORMAT = 'Y-m-d';
                 $eventPayload = [
                     'merchant_id'           => $merchant->getId(),
@@ -103,7 +111,7 @@ class SalesForceService extends Base\Service {
                 $this->addPartnerAndSourceDetailsToPayloadIfApplicable($eventPayload, $salesForceEventRequestType->getValue(), $merchant);
                 return $eventPayload;
 
-            case 'RX_WEBSITE_SF_EVENTS':
+            case Constants::RX_WEBSITE_SF_EVENTS:
                 return $salesForceEventRequestDTO->getEventProperties();
 
             default:

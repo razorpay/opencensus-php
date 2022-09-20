@@ -2,14 +2,18 @@
 
 namespace RZP\Tests\Unit\Models\SalesForceServiceTest;
 
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Entity;
 use RZP\Services\SalesForceClient;
 use RZP\Models\SalesForce\SalesForceService;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Models\SalesForce\SalesForceEventRequestDTO;
 use RZP\Models\SalesForce\SalesForceEventRequestType;
 
 class SalesForceServiceTest extends OAuthTestCase {
+
+    use MocksDiagTrait;
 
     private $salesForceService;
     private $salesForceClient;
@@ -64,11 +68,6 @@ class SalesForceServiceTest extends OAuthTestCase {
                 'created_at'    => time()
             ]);
 
-        //When
-        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
-
-
-        //Then
         $expectedPayload = [
             'merchant_id'                   => '1DefeDEQE',
             'name'                          => 'Aditya',
@@ -82,6 +81,20 @@ class SalesForceServiceTest extends OAuthTestCase {
             'use_case'                      => 'Salary',
             'source_detail'                 => 'x_mobile'
         ];
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+                 ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                        unset($actualData['event_submission_date']); //Because it changes day by day
+                        $this->assertEquals($expectedPayload, $actualData);
+                        $this->assertEquals(EventCode::X_CA_ONBOARDING_OPPORTUNITY_UPSERT, $eventData);
+                        return true;
+                 })
+                 ->andReturnNull();
+
+        //When
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
 
         unset($actualData['event_submission_date']); //Because it changes day by day
 
@@ -132,6 +145,10 @@ class SalesForceServiceTest extends OAuthTestCase {
                                    $actualData = $payload;
                                    return;
                                }));
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldNotReceive('trackOnboardingEvent');
 
         //When
         $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
