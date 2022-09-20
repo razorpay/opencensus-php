@@ -14,8 +14,13 @@ const StaticTenureSelector = ({ isRepaymentFrequencyDays90, handleDueDateChange,
 
   const handleOptionClick = (val) => {
     setSelectedOption(val);
-    // reducing one day as specific by product
-    handleDueDateChange(moment().add(val - 1, 'days'));
+
+    // BE expects due_date to be 1 day less
+    // in case of end_day_limit
+    // This logic to decrease 1 day only when
+    // 30 or 90 days option selected
+    const datesToBeAdded = val === 30 || val === 90 ? val - 1 : val;
+    handleDueDateChange(moment().utc().utcOffset(330).add(datesToBeAdded, 'days').endOf('date'));
   };
 
   return (
