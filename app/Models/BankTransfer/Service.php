@@ -53,7 +53,7 @@ class Service extends Base\Service
     const FIFTEEN_MINUTES = 900;
 
     //notification type
-    const FUNDS_ARRIVED_NOTIFICATION = 'funds_arrived_notification';
+    const CASH_MANAGER_TRANSACTION_NOTIFICATION = 'cash_manager_transaction_notification';
     const PAYMENT_RELEASED_NOTIFICATION = 'payment_released_notification';
     const TRANSFER_COMPLETED_NOTIFICATION = 'transfer_completed_notification';
 
@@ -1079,7 +1079,7 @@ class Service extends Base\Service
 
         switch($header)
         {
-            case self::FUNDS_ARRIVED_NOTIFICATION:
+            case self::CASH_MANAGER_TRANSACTION_NOTIFICATION:
                 $this->fundsArrivedFlowFromCurrencyCloud($input);
                 break;
 

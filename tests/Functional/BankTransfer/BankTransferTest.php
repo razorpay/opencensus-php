@@ -9324,7 +9324,7 @@ class BankTransferTest extends TestCase
                                       return [
                                           'data' => [
                                               'id'                      => "e68301d3-5b04-4c1d-8f8b-13a9b8437040",
-                                              'amount'                  => "47",
+                                              'amount'                  => "300",
                                               'currency'                => "USD",
                                               'additional_information'  => "USTRD-0001",
                                               'value_date'              => "2018-07-04T00:00:00+00:00",
@@ -9389,7 +9389,7 @@ class BankTransferTest extends TestCase
         $response = $this->startTest();
     }
 
-    public function testFundsArrivedNotificationForCurrencyCloud()
+    public function testCashManagerTransactionNotificationForCurrencyCloud()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -9413,6 +9413,39 @@ class BankTransferTest extends TestCase
         $this->assertEquals($paymentEntity['status'], 'authorized');
         $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
         $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
+        $this->assertEquals($paymentEntity['base_amount'],294000);
+        $this->assertEquals($paymentEntity['amount'],30000);
+    }
+
+    public function testCashManagerTransactionNotificationForCurrencyCloudWithDifferentMcc()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $mccMarkdownPercent = 4;
+        $this->fixtures->merchant->addMccMarkdownPaymentConfig($mccMarkdownPercent,$merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+
+        $response = $this->sendRequest($request);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
+        $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
+        $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
+        $this->assertEquals($paymentEntity['base_amount'],288000);
+        $this->assertEquals($paymentEntity['amount'],30000);
     }
 
     public function testTransferCompletedNotificationFromCurrencyCloud()
@@ -9441,7 +9474,7 @@ class BankTransferTest extends TestCase
 
         $this->mockMozartResponseForCurrencyCloud();
 
-        $firstRequest = $this->testData['testFundsArrivedNotificationForCurrencyCloud']['request'];
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
         $firstResponse = $this->sendRequest($firstRequest);
 
         $paymentEntity = $this->getLastPayment(true);
@@ -9474,7 +9507,7 @@ class BankTransferTest extends TestCase
 
         $this->mockMozartResponseForCurrencyCloud();
 
-        $firstRequest = $this->testData['testFundsArrivedNotificationForCurrencyCloud']['request'];
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
         $firstResponse = $this->sendRequest($firstRequest);
 
         $paymentEntity = $this->getLastPayment(true);

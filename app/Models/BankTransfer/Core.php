@@ -962,12 +962,13 @@ class Core extends Base\Core
         $baseAmount = (new \RZP\Models\Currency\Core)->getBaseAmount($amount, $currency);
 
         // if gateway is doing currency conversions, actual rate used by gateway
-        // will use lower than current rates hence we also use 1.5 percentage lower
-        // values
+        // will use lower than current rates hence we also use merchant / default
+        // level percentage for lower values in base_amount for settlement.
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency::INR && $payment->getConvertCurrency() === null))
         {
-            $baseAmount = (int) ceil($baseAmount * 0.985);
+            $mccMarkdownPercentage = 1 - $this->merchant->getMccMarkdownMarkdownPercentage() / 100;
+            $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
         }
 
         $payment->setBaseAmount($baseAmount);

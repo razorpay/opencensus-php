@@ -2612,12 +2612,12 @@ return [
         ],
     ],
 
-    'testFundsArrivedNotificationForCurrencyCloud' => [
+    'testCashManagerTransactionNotificationForCurrencyCloud' => [
         'request' => [
             'url' => '/international/virtual_accounts/payment/create',
             'method' => 'post',
             'headers' => [
-                'notification_type' => 'funds_arrived_notification'
+                'notification_type' => 'cash_manager_transaction_notification'
             ],
             'content' => [
                 'id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
