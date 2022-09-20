@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Constants;
 
 class Service extends Base\Service
 {
@@ -297,6 +298,8 @@ class Service extends Base\Service
 
         $orderArray = $order->toArrayPublic();
 
+        $countryCode = $orderArray['customer_details']['shipping_address']['country'];
+
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
         // keep the null check here
         $response = [
@@ -305,7 +308,12 @@ class Service extends Base\Service
             'shipping_fee'     => $orderArray['shipping_fee'],
             'order_id'         => $shopifyOrder['order']['name'],
             'total_tax'        => $shopifyOrder['order']['total_tax'],
-            'order_status_url' => $shopifyOrder['order']['order_status_url']
+            'order_status_url' => $shopifyOrder['order']['order_status_url'],
+            'payment_method'   => $payment['method'],
+            'payment_currency' => $payment['currency'],
+            'payment_id'       => $paymentId,
+            'customer_details' => $orderArray['customer_details'],
+            'shipping_country' => Constants\Country::getCountryNameByCode($countryCode) ?? $countryCode
         ];
 
         // NOTE: Logging the response to debug an issue where the FE is not receiving data
