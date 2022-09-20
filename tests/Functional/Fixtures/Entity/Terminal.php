@@ -1001,6 +1001,32 @@ class Terminal extends Base
         return $this->createSharedUpiIciciTerminal($attributes);
     }
 
+    public function createDedicatedUpiIciciRecurringTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_ICICI_RECURRING_TERMINAL_DEDICATED;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_icici',
+            'gateway_merchant_id'       => 'razorpay upi',
+            'gateway_terminal_id'       => 'nodal account upi icici',
+            'gateway_merchant_id2'      => 'razorpay@eazypay',
+            'gateway_terminal_password' => 'razorpay_password',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::COLLECT               => '1',
+                Type::RECURRING_3DS         => '1',
+                Type::RECURRING_NON_3DS     => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedIciciRecurringIntentTerminal(array $attributes = [])
     {
         $termId = Shared::UPI_ICICI_RECURRING_INTENT_TERMINAL;

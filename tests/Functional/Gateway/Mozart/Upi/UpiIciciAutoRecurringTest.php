@@ -1801,7 +1801,7 @@ class UpiIciciAutoRecurringTest extends TestCase
             'sequence_number'   => 3
         ]);
     }
-    
+
     // common function to create multiple pre-debit call
     protected function createAndAssertPreDebitCall($seqNo,& $createReminder,& $updateReminder)
     {
@@ -1980,4 +1980,112 @@ class UpiIciciAutoRecurringTest extends TestCase
         ], ['payment_id'    => $payment->getId(),]);
     }
 
+    public function testUPIAutoRecurringPaymentSameTerminal()
+    {
+        Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
+
+
+        $firstTerminal = $this->fixtures->create('terminal:dedicated_upi_icici_recurring_terminal', [
+            'gateway_merchant_id' => '400661',
+        ]);
+
+        $secondTerminal = $this->fixtures->create('terminal:dedicated_upi_icici_recurring_terminal', [
+            'gateway_merchant_id' => '400662',
+            'id'                  => '102IciciRcrTml',
+        ]);
+
+        $this->terminalId = $secondTerminal->getId();
+
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $requestAsserted = false;
+
+        $input = $this->getDbUpiAutoRecurringPayment();
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $response = $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway' => 'upi_icici',
+        ]);
+
+        $this->assertArraySubset([
+            'razorpay_payment_id'   => $payment->getPublicId(),
+            'razorpay_order_id'     => $this->order->getPublicId(),
+        ], $response);
+
+        $this->assertArrayHasKey('razorpay_signature', $response);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $requestAsserted = [
+            'notify'    => false,
+            'pay_init'  => false,
+        ];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use (& $requestAsserted)
+        {
+            if ($action === 'notify')
+            {
+                $requestAsserted['notify'] = true;
+
+                $paymentId = $content['payment']['id'];
+                $paymentCreatedAt = $content['payment']['created_at'];
+
+                $this->assertArraySubset([
+                    'act'   => 'notify',
+                    'ano'   => 1,
+                    'ext'   => $paymentCreatedAt + 90000,
+                    'sno'   => 2,
+                    'id'    => $paymentId . '0notify' . 1,
+                ], $content['upi']['gateway_data']);
+
+                $this->assertArraySubset([
+                    'terminal_id' => $this->terminalId,
+                ], $content['payment']);
+
+                // All the entities sent to mozart
+                $this->assertSame([
+                    'action',
+                    'gateway',
+                    'terminal',
+                    'payment',
+                    'merchant',
+                    'upi_mandate',
+                    'upi',
+                ], array_keys($content));
+
+                return;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action no ICICI Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $this->assertTrue($requestAsserted['notify']);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'reminder_in_progress_for_authorize',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => '0',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 90000,
+                'sno'   => 2,
+            ],
+        ]);
+    }
 }

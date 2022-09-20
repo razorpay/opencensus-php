@@ -4707,7 +4707,7 @@ trait Authorize
 
         if (($this->subscription === null) or ($this->subscription->isExternal() === false))
         {
-            $this->setRecurringType($payment, $input);
+            $this->setRecurringType($payment, $input, $gatewayInput);
         }
 
         $this->setPreferredAuthIfApplicable($payment);
@@ -4983,9 +4983,10 @@ trait Authorize
         return $type;
     }
 
-    protected function setRecurringType(Payment\Entity $payment, array $input)
+    protected function setRecurringType(Payment\Entity $payment, array $input, & $gatewayInput)
     {
         $type = null;
+        $token = null;
 
         if ($payment->isRecurring() === true)
         {
@@ -5040,6 +5041,8 @@ trait Authorize
         }
 
         $payment->setRecurringType($type);
+
+        $this->setSelectedTerminalsIdsForAutoDebit($payment, $token, $gatewayInput);
     }
 
     protected function setAutoRefundTimestamp(Payment\Entity $payment)
@@ -5587,6 +5590,25 @@ trait Authorize
         //else @todo for wallets
     }
 
+    protected function setSelectedTerminalsIdsForAutoDebit(Payment\Entity $payment,
+                                                           ?Token\Entity $token,
+                                                           & $gatewayInput)
+    {
+        if(($payment->isUpiAutoRecurring() === true) and
+            ($token !== null))
+        {
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_SET_TERMINAL_FROM_TOKEN,
+                [
+                    'token_id'      => $token->getId(),
+                    'terminal_id'   => $token->getTerminalId(),
+                    'payment_id'    => $payment->getId(),
+                ]);
+
+            $gatewayInput['selected_terminals_ids'] = [$token->getTerminalId()];
+        }
+    }
+    
     protected function preProcessPaymentFromSavedMethodGlobal(Customer\Entity $customer,
                                                             Payment\Entity $payment,
                                                             array & $input,
