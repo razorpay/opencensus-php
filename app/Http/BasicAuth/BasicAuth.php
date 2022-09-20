@@ -111,6 +111,7 @@ class BasicAuth
     const AUTH_HEADER           = 'auth_header';
 
     const ROUTE                 = 'route';
+    const EDGE_CONSUMER         = 'edge_consumer';
 
     // Public key used in public auth, and callback route param can be one of these forms.
     const PARTNER_KEY_REGEX = '/^(rzp_(test|live)_partner_([a-zA-Z0-9]{14}))[-~](acc_[a-zA-Z0-9]{14})$/';
@@ -892,9 +893,11 @@ class BasicAuth
         $this->setKeylessPublicAuthAttributes($entityId);
         $this->trace->info(
             TraceCode::AUTH_TYPE_USED, [
-                self::AUTH_TYPE => self::KEYLESS_AUTH,
-                self::ENTITY_ID => $entityId,
-                self::ROUTE     => app('request.ctx')->getRoute()
+                self::AUTH_TYPE     => self::KEYLESS_AUTH,
+                self::ENTITY_ID     => $entityId,
+                self::ROUTE         => app('request.ctx')->getRoute(),
+                self::EDGE_CONSUMER => $this->reqCtx->passport && $this->reqCtx->passport->consumer
+                                            ? $this->reqCtx->passport->consumer->id : null
             ]);
 
         $this->authCreds = new KeyAuthCreds($this->app);
