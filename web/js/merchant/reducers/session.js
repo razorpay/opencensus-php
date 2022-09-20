@@ -158,11 +158,14 @@ export default function sessionReducer(state = initialState, action) {
       // we have to update the user object with the tags
       window.rzp_user = {
         ...window.rzp_user,
-        tags: action.payload.data,
+        tags: action?.payload?.data || [],
       };
 
-      return onUpdateUser(state, {
-        tags: action.payload.data,
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          tags: action?.payload?.data || [],
+        }),
       });
 
     case UPDATE_USER_FEATURES:
