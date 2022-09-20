@@ -81,6 +81,8 @@ class Scrooge
         'payouts_status_update'                => 'payouts/status_update',
         // route use for fetching refund based on payment and refund entity
         'refund_internal_fetch'                => 'internal/fetch',
+        // Currently only table `gateway_keys` is supported for bulk entities
+        'bulk_gateway_keys'                    => 'entities/gateway_keys',
     ];
 
     // Headers
@@ -805,6 +807,30 @@ class Scrooge
             self::RefundsBaseURL . '/' . $refundId,
             Requests::PATCH,
             $input);
+
+        if (in_array($scroogeResponse['code'], [200, "200"]) == false)
+        {
+            $this->toPublicErrorResponse($scroogeResponse);
+        }
+
+        // body has the actual scrooge response
+        return $scroogeResponse['body'];
+    }
+
+    /**
+     * @param $entity entity name in scrooge
+     * @param $input
+     * @return void
+     *
+     * This is functional only for `gateway_keys` entity for now
+     */
+    public function fetchBulkGatewayKeys($input)
+    {
+        $scroogeResponse = $this->sendRequest(
+            self::URLS['bulk_gateway_keys'],
+            Requests::POST,
+            $input,
+           true);
 
         if (in_array($scroogeResponse['code'], [200, "200"]) == false)
         {

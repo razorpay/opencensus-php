@@ -614,4 +614,23 @@ class Scrooge extends BaseScrooge
 
         return $scroogeResponse['body'];
     }
+
+    public function fetchBulkGatewayKeys($input)
+    {
+        $responseBody = [];
+
+        foreach ($input['refund_ids'] as $refund_id)
+        {
+            $row = [];
+
+            foreach ($input['gateway_key_names'] as $gateway_key_name)
+            {
+                $row[$gateway_key_name] = $gateway_key_name.$refund_id;
+            }
+
+            $responseBody[$refund_id] = $row;
+        }
+
+        return ['data' => $responseBody];
+    }
 }

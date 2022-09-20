@@ -44,6 +44,7 @@ class Axis extends Base
     const PIPE_SEPARATOR    = '|';
     const S3_PATH           = 'axis_cardsettlement/';
     const SHOULD_ENCRYPT    = true;
+    const BULK_LIMIT        = 500;
 
     /**
      * @var $file FileStore\Entity
@@ -340,6 +341,8 @@ class Axis extends Base
 
         $cpsAuthData = $this->fetchAuthorizationDetails($data);
 
+        $scroogeGatewayKeys = $this->fetchGatewayKeysFromScrooge($data);
+
         $paymentIds = [];
         $refundIds = [];
 
@@ -407,7 +410,9 @@ class Axis extends Base
                 {
                     $totalTransactions++;
 
-                    $gatewayRequestID = $cpsAuthData[$settlementRefunds->payment->getId()]['gateway_reference_id2'] ?? '';
+//                    $gatewayRequestID = $cpsAuthData[$settlementRefunds->payment->getId()]['gateway_reference_id2'] ?? '';
+
+                    $refundRequestId = $scroogeGatewayKeys[$settlementRefunds->getId()]['requestID'] ?? '';
 
                     list($notesGST, $notesCorpName, $notesMTR) = $this->parseNotes($settlementRefunds->payment->getNotes());
 
@@ -420,7 +425,7 @@ class Axis extends Base
                     $row = $cardTypeIdentifier . self::PIPE_SEPARATOR .
                         'P' . self::PIPE_SEPARATOR .
                         $this->getFormattedAmount($settlementRefunds->getBaseAmount()) . self::PIPE_SEPARATOR .
-                        $gatewayRequestID . self::PIPE_SEPARATOR .
+                        $refundRequestId . self::PIPE_SEPARATOR .
                         $gatewayTID . self::PIPE_SEPARATOR .
                         $settlementRefunds->getBaseAmount() . self::PIPE_SEPARATOR .
                         Carbon::createFromTimestamp($settlementRefunds['processed_at'])
@@ -580,6 +585,54 @@ class Axis extends Base
                     'file_name' => $fullFileName,
                 ]);
         }
+    }
+
+    protected function fetchGatewayKeysFromScrooge($data)
+    {
+        $result = [];
+
+        $refundIds = array_key_exists('refunds',$data) === true ? array_pluck($data['refunds'], 'id'): [];
+
+        $refundIds = array_values($refundIds);
+        
+        $gatewayKeyNames = [
+            'requestID',
+        ];
+
+        foreach (array_chunk($refundIds, self::BULK_LIMIT) as $refunds)
+        {
+            $input = [
+                'refund_ids' => $refunds,
+                'gateway_key_names' => $gatewayKeyNames,
+            ];
+
+            $response = $this->app['scrooge']->fetchBulkGatewayKeys($input);
+
+            $result = array_merge($result, $response['data']);
+        }
+
+        $this->trace->info(TraceCode::CARD_SETTLEMENT_FILE_DETAILS, [
+            'location'  => 'Scrooge response merged',
+            'refundIds' => $refundIds,
+            'response'  => $result,
+        ]);
+
+        if(count($refundIds) !== count($result))
+        {
+            throw new GatewayFileException
+            (
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
+                [
+                    'id'            => $this->gatewayFile->getId(),
+                    'message'       => 'Discrepancy in refund data fetch from scrooge',
+                    'Refund IDs'   => $refundIds,
+                    'Refund count'  => count($refundIds),
+                    'Scrooge resp'  => $result,
+                ]
+            );
+        }
+
+        return $result;
     }
 
     /**
