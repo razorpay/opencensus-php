@@ -77,9 +77,7 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($request);
 
-            $merchantDetail = $merchant->merchantDetail;
-
-            AutoUpdateMerchantProducts::dispatch(ProductStatus::TNC_SOURCE, $merchant, $merchantDetail);
+            AutoUpdateMerchantProducts::dispatch(ProductStatus::TNC_SOURCE, $merchant->getId());
 
             return $request;
         });

@@ -106,7 +106,7 @@ class Core extends Base\Core
                     'kyc_clarification_reasons'     => $merchantDetails->getKycClarificationReasons() ?? []
                 ]);
 
-                AutoUpdateMerchantProducts::dispatch(Product\Status::STAKEHOLDER_SOURCE, $merchant, $merchantDetails);
+                AutoUpdateMerchantProducts::dispatch(Product\Status::STAKEHOLDER_SOURCE, $merchantId);
             }
 
             $stakeholderUpdateStartTime = microtime(true);

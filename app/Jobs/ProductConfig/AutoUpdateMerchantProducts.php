@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Services\Workflow;
 use RZP\Models\Merchant\Product;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 
 class AutoUpdateMerchantProducts extends Job
 {
@@ -22,17 +23,14 @@ class AutoUpdateMerchantProducts extends Job
 
     protected $source;
 
-    protected $merchant;
+    protected $merchantId;
 
-    protected $merchantDetails;
-
-    public function __construct(string $source, $merchant, $merchantDetails)
+    public function __construct(string $source, $merchantId)
     {
         parent::__construct();
 
         $this->source          = $source;
-        $this->merchant        = $merchant;
-        $this->merchantDetails = $merchantDetails;
+        $this->merchantId      = $merchantId;
     }
 
     public function handle()
@@ -45,13 +43,15 @@ class AutoUpdateMerchantProducts extends Job
             TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE_ATTEMPT,
             [
                 'source'      => $this->source,
-                'merchant_id' => $this->merchant->getId(),
+                'merchant_id' => $this->merchantId,
             ]
         );
 
+        [$merchant, $merchantDetail] = (new DetailCore())->getMerchantAndDetailEntities($this->merchantId);
+
         try
         {
-            (new Product\Core())->updateMerchantProductsIfApplicable($this->merchant, $this->merchantDetails);
+            (new Product\Core())->updateMerchantProductsIfApplicable($merchant, $merchantDetail);
 
             $this->delete();
         }
@@ -63,7 +63,7 @@ class AutoUpdateMerchantProducts extends Job
                 TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE_ATTEMPT_FAILED,
                 [
                     'source'      => $this->source,
-                    'merchant_id' => $this->merchant->getId(),
+                    'merchant_id' => $this->merchantId,
                 ]
             );
 
@@ -77,7 +77,7 @@ class AutoUpdateMerchantProducts extends Job
         {
             $this->trace->error(TraceCode::MERCHANT_PRODUCT_STATUS_AUTO_UPDATE_ATTEMPT_MESSAGE_DELETE, [
                 'source'       => $this->source,
-                'merchant_id'  => $this->merchant->getId(),
+                'merchant_id'  => $this->merchantId,
                 'job_attempts' => $this->attempts(),
                 'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
             ]);

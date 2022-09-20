@@ -321,11 +321,9 @@ class PaymentsGeneralConfig extends Base\Service
 
         $this->merchantDetailCore->saveMerchantDetails($input, $merchant);
 
-        $merchantDetails = $merchant->merchantDetail;
-
         $accountCore->updateNCFieldsAcknowledgedIfApplicable($input, $merchant);
 
-        AutoUpdateMerchantProducts::dispatch(Product\Status::PRODUCT_CONFIG_SOURCE, $merchant, $merchantDetails);
+        AutoUpdateMerchantProducts::dispatch(Product\Status::PRODUCT_CONFIG_SOURCE, $merchant->getId());
     }
 
     private function getNoFlashCheckoutValue(Merchant\Entity $merchant): bool

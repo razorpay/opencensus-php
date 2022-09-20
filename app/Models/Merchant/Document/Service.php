@@ -237,7 +237,7 @@ class Service extends Base\Service
             });
         }
 
-        AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$merchant, $merchantDetails);
+        AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$accountId);
 
         $documentResponse = Tracer::inspan(['name' => HyperTrace::DOCUMENT_V2_GET_RESPONSE], function () use ($merchant, $entity) {
 
@@ -512,11 +512,11 @@ class Service extends Base\Service
 
                 if(isset($latestZippedFIRSDocument) === true)
                 {
-                    $latestIndividualFIRSDocument = $this->repo->merchant_document->findLatestDocumentForMerchantIdAndDocumentTypeInRange($merchantId,"firs_icici_file",$from,$to);       
-                                
+                    $latestIndividualFIRSDocument = $this->repo->merchant_document->findLatestDocumentForMerchantIdAndDocumentTypeInRange($merchantId,"firs_icici_file",$from,$to);
+
                     if($latestZippedFIRSDocument->getCreatedAt() >= $latestIndividualFIRSDocument->getCreatedAt())
                     {
-                        
+
                         $this->trace->info(TraceCode::FIRS_DOCUMENTS_BULK_ZIPPING_SKIPPED,
                         [
                             "message" => "Latest Zipped File Already Contains All Individual Files",

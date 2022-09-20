@@ -74,8 +74,7 @@ class Core extends Base\Core
 
                 if((new AccountV2\Core())->isInstantActivationTagEnabled($merchant->getId()) === true)
                 {
-                    $MerchantDetails = $merchant->merchantDetail;
-                    AutoUpdateMerchantProducts::dispatch(Status::ACCOUNT_SOURCE, $merchant, $MerchantDetails);
+                    AutoUpdateMerchantProducts::dispatch(Status::ACCOUNT_SOURCE, $merchant->getId());
                 }
 
                 break;
@@ -292,7 +291,7 @@ class Core extends Base\Core
         {
             $response[Util\Constants::OTP] = $this->createOrFetchOtpVerificationLog($merchant, $input);
 
-            AutoUpdateMerchantProducts::dispatch(ProductStatus::OTP_SOURCE, $merchant, $merchant->merchantDetail);
+            AutoUpdateMerchantProducts::dispatch(ProductStatus::OTP_SOURCE, $merchant->getId());
         }
 
         $response = Tracer::inspan(['name' => HyperTrace::UPDATE_CONFIG], function () use ($response, $merchant, $input) {

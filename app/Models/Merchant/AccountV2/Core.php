@@ -134,7 +134,7 @@ class Core extends Merchant\Core
 
             $this->upsertMerchantEmails($subMerchant, $input);
 
-            AutoUpdateMerchantProducts::dispatch(Product\Status::ACCOUNT_SOURCE, $subMerchant, $subMerchantDetails);
+            AutoUpdateMerchantProducts::dispatch(Product\Status::ACCOUNT_SOURCE, $accountId);
 
             return $subMerchant;
         });
