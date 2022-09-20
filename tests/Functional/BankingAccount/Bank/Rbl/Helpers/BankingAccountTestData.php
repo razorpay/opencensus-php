@@ -4402,5 +4402,29 @@ return [
             'content' => [
             ],
         ],
-    ]
+    ],
+
+    'testMetroPublishForBankingAccountUpdate' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard',
+            'method'  => 'PATCH',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'activation_detail' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'     => 'rbl',
+                'status'      => 'created'
+            ],
+        ],
+    ],
 ];

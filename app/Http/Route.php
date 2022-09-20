@@ -9410,6 +9410,7 @@ class Route
             'merchant_get_preferences',
             'merchant_activation_details',
             'banking_account_service_pincode_serviceability_check',
+            'banking_account_update_dashboard',
         ],
 
         'accounts_receivable' => [

@@ -8738,6 +8738,116 @@ class BankingAccountTest extends TestCase
     //    $this->startTest();
     //}
 
+    public function testMetroPublishForBankingAccountUpdate()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $ba = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba->getId(),
+            'business_category'         => 'partnership',
+            'sales_team'                => 'self_serve',
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
+        ]);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/bacc_' . $ba->getId(),
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultMerchantId);
+
+        $this->ba->addXOriginHeader();
+
+        $expectedMetroMessage = [
+            "data" => json_encode([
+                "application" => [
+                    "id" => $ba->getId(),
+                ]
+            ])
+        ];
+
+        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+
+        $metroMock->shouldReceive("publish")->withArgs(['rbl_ca_updates', $expectedMetroMessage]);
+
+        $this->app->instance('metro', $metroMock);
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testPreventMetroPublishForBankingAccountUpdate()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $this->testData[__FUNCTION__] = $this->testData['testMetroPublishForBankingAccountUpdate'];
+
+        $ba = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba->getId(),
+            'business_category'         => 'partnership',
+            'sales_team'                => 'self_serve',
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
+        ]);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/bacc_' . $ba->getId(),
+                'method'  => 'PATCH',
+            ],
+        ];
+
+        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
+
+        $metroMock->shouldNotReceive("publish");
+
+        $this->app->instance('metro', $metroMock);
+
+        $this->ba->mobAppAuthForProxyRoutes();
+
+        $this->startTest($dataToReplace);
+
+        $this->fixtures->edit('banking_account',$ba->getId(), [
+            'account_type' => 'nodal'
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $metroMock->shouldNotReceive("publish");
+
+        $this->startTest($dataToReplace);
+    }
+
     /**
      * @param string $merchantId
      *

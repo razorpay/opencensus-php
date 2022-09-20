@@ -1020,4 +1020,17 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        $this->repo->transaction(function()
+            use ($entity, $options)
+        {
+            parent::saveOrFail($entity, $options);
+
+            $metro = new Metro();
+
+            $metro->publishToMetro($entity);
+        });
+    }
 }
