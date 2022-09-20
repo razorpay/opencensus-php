@@ -749,7 +749,7 @@ export default class User {
   }
 
   get isClickToCallActive() {
-    return this.getExpStatus('click_to_call_active');
+    return true;
   }
 
   get isRazorxAnnouncementEnabled() {
@@ -803,7 +803,7 @@ export default class User {
   }
 
   get showInstantActivation() {
-    return !!this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isMinimumFirstPaymentEnabled() {
@@ -886,7 +886,7 @@ export default class User {
   }
 
   get isSupportDetails2FAEnabled() {
-    return this.getExpStatus('support_details_2FA');
+    return true;
   }
 
   get isComdelApiEnabled() {
@@ -894,11 +894,11 @@ export default class User {
   }
 
   get isFdTicketsEnabled() {
-    return this.getExpStatus('view_fd_tickets');
+    return true;
   }
 
   get isTicketCreationFlowRevamp() {
-    return this.getExpStatus('ticket_creation_flow_revamp');
+    return true;
   }
 
   get isAnnouncementIconEnabled() {
@@ -960,7 +960,7 @@ export default class User {
   }
 
   get isEmailSelfServeEnabled() {
-    return this.getExpStatus('email_self_serve');
+    return true;
   }
 
   get isCovidReliefFlowEnabled() {
@@ -968,7 +968,7 @@ export default class User {
   }
 
   get isFeeBearerSelfServeOn() {
-    return this.getExpStatus('fee_bearer_self_serve');
+    return true;
   }
 
   get isAutomaticSettlementEnabled() {
@@ -984,11 +984,11 @@ export default class User {
   }
 
   get isWebsiteSelfServeOn() {
-    return this.getExpStatus('website_self_serve');
+    return true;
   }
 
   get isTransactionLimitUpdateSelfServeOn() {
-    return this.getExpStatus('transaction_limit_update_self_serve');
+    return true;
   }
 
   get isAdditionalDomainWhitelistSelfServeOn() {
@@ -1245,11 +1245,11 @@ export default class User {
   }
 
   get isActivationMccPendingProgressbarDisabled() {
-    return this.isOrgRZP && this.getExpStatus('remove_activation_progressbar');
+    return this.isOrgRZP;
   }
 
   get isBDAndAovEnabled() {
-    return this.getExpStatus('aov_functionality');
+    return true;
   }
 
   get isWebhooksStatsEnabled() {
@@ -1392,18 +1392,16 @@ export default class User {
   }
 
   get isEmailMandatoryOnL1() {
-    if (this.isSourceRX) return false; // not required for Razorpay X;
-    return this.getExpStatus('mandatory_email_on_l1') && this.isOrgRZP;
+    return false;
   }
 
   get isEmailNonMandatoryOnL1() {
-    if (this.isSourceRX) return false; // not required for Razorpay X;
-    return this.getExpStatus('non_mandatory_email_on_l1') && this.isOrgRZP;
+    return false;
   }
 
   get isEmailNonMandatoryOnL2Form() {
     if (this.isSourceRX) return false; // not required for Razorpay X;
-    return this.getExpStatus('non_mandatory_email_verification_on_l2') && this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isNPSAnnouncementPP() {
@@ -1448,7 +1446,7 @@ export default class User {
 
   // Bank account auto update or old workflow with the approval from admin
   bankAccountAutoUpdateOrWorkflow() {
-    return this.getExpStatus('bank_account_update_merchant_dashboard');
+    return true;
   }
 
   // Blocks bank account update feature
@@ -1519,7 +1517,7 @@ export default class User {
   }
 
   get canSkipPoiValidation() {
-    return this.getExpStatus('bvs_personal_pan_validation');
+    return true;
   }
 
   get canGenerateTnCPage() {
@@ -1531,7 +1529,7 @@ export default class User {
   }
 
   get isL2AllowedForPoiInitiated() {
-    return this.getExpStatus('l2_allowed') && this.isOrgRZP && this.isUnregisteredBusiness;
+    return this.isOrgRZP && this.isUnregisteredBusiness;
   }
 
   get isAadharEkycMandatory() {
@@ -1547,19 +1545,19 @@ export default class User {
   }
 
   get isGstinMandatory() {
-    return this.getExpStatus('mandatory_gstin_input');
+    return true;
   }
 
   get isGstinAddFlowEnabled() {
-    return this.getExpStatus('gstin_self_serve_add');
+    return true;
   }
 
   get isGstinEditFlowEnabled() {
-    return this.getExpStatus('gstin_self_serve_edit');
+    return true;
   }
 
   get isSyncExperimentEnabled() {
-    return this.getExpStatus('sync_experiment') && !!this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isRecurringMoreAccountType() {
@@ -1567,11 +1565,11 @@ export default class User {
   }
 
   get isOnboardingCouponEnabled() {
-    return this.getExpStatus('mtu_coupon_code') && !!this.isOrgRZP;
+    return this.getExpStatus('mtu_coupon_code') && this.isOrgRZP;
   }
 
   get autoOpenOnboardingCoupon() {
-    return this.getExpStatus('auto_open_mtu_coupon') && !!this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isIndependentPartnerKYCEnabled() {
@@ -1585,7 +1583,7 @@ export default class User {
 
   get isSyncBankVerificationEnabled() {
     if (this.isSourceRX) return false; // not required for Razorpay X;
-    return this.getExpStatus('KARZA_BANK_ACCOUNT_VERIFICATION') && !!this.isOrgRZP;
+    return this.getExpStatus('KARZA_BANK_ACCOUNT_VERIFICATION') && this.isOrgRZP;
   }
 
   get isProductRecommendationEnabled() {
@@ -1601,7 +1599,7 @@ export default class User {
   }
 
   get isAutoPLEnabled() {
-    return this.getExpStatus('auto_pl') && !!this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isGstinAutoPopulate() {
@@ -1611,12 +1609,12 @@ export default class User {
   get showL1FormOnLogin() {
     return (
       getSplitzExperimentVariant('show_L1_Form_on_login')?.variables?.result === 'on' &&
-      !!this.isOrgRZP
+      this.isOrgRZP
     );
   }
 
   get autoOpenL1Form() {
-    return this.getExpStatus('auto-open-L1-form') && !!this.isOrgRZP;
+    return this.getExpStatus('auto-open-L1-form') && this.isOrgRZP;
   }
 
   get isGstinLLpinCinSyncFlowEnabled() {
@@ -1624,7 +1622,7 @@ export default class User {
     if (this.isSourceRX || this.isPartner() || this.isSubMerchant) {
       return false;
     }
-    return this.getExpStatus('bvs_in_sync') && !!this.isOrgRZP;
+    return this.getExpStatus('bvs_in_sync') && this.isOrgRZP;
   }
 
   get isGstinSyncFlowEnabled() {
@@ -1638,19 +1636,19 @@ export default class User {
   }
 
   get autoOpenL2Form() {
-    return this.getExpStatus('auto-open-L2-form') && !!this.isOrgRZP;
+    return this.getExpStatus('auto-open-L2-form') && this.isOrgRZP;
   }
 
   get isLiteOnboarding() {
-    return this.getExpStatus('lite_onboarding') && !!this.isOrgRZP;
+    return this.getExpStatus('lite_onboarding') && this.isOrgRZP;
   }
 
   get isUpdatedLiteOnboarding() {
-    return this.getExpStatus('updated_lite_onboarding') && !!this.isOrgRZP;
+    return this.getExpStatus('updated_lite_onboarding') && this.isOrgRZP;
   }
 
   get isApmOnboardingEnabled() {
-    return this.getExpStatus('international_apm_onboarding') && !!this.isOrgRZP;
+    return this.getExpStatus('international_apm_onboarding') && this.isOrgRZP;
   }
 
   get isActivationFormFullView() {
@@ -1660,18 +1658,18 @@ export default class User {
     }
     return (
       getSplitzExperimentVariant('show_activation_form_full_view')?.variables?.result === 'on' &&
-      !!this.isOrgRZP
+      this.isOrgRZP
     );
   }
 
   get isMsmeDisabled() {
-    return this.getExpStatus('disable_msme_upload') && !!this.isOrgRZP;
+    return this.isOrgRZP;
   }
 
   get isDigilockerEkyc() {
     return (
       getSplitzExperimentVariant('digilocker_aadhaar_ekyc')?.variables?.result === 'on' &&
-      !!this.isOrgRZP
+      this.isOrgRZP
     );
   }
 
