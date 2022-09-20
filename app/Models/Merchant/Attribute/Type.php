@@ -65,4 +65,7 @@ class Type
     const VIEW_ONLY                     = 'view_only';
     const CHARTERED_ACCOUNTANT          = 'chartered_accountant';
 
+    // CA Onboarding flow values
+    const ONE_CA                        = 'ONE_CA';
+
 }

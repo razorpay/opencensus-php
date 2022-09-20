@@ -5,11 +5,11 @@ namespace RZP\Models\BankingAccount;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Contact;
 use RZP\Models\Counter;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -21,7 +21,6 @@ use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Type;
 use RZP\Models\Schedule\Task;
 use RZP\Models\VirtualAccount;
-use RZP\Http\Request\Requests;
 use RZP\Models\Schedule\Period;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Detail;
@@ -40,25 +39,21 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\SalesForce\SalesForceService;
 use RZP\Models\Admin\Service as AdminService;
-use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\BankingAccount\Channel as BAChannel;
-use RZP\Models\SalesForce\SalesForceEventRequestType;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\SalesForce\SalesForceEventRequestDTO;
+use RZP\Models\SalesForce\SalesForceEventRequestType;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountService\Service as BasService;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
-use RZP\Models\BankingAccountStatement\Channel as BasChannel;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
-use RZP\PushNotifications\CurrentAccount\StatusUpdate as StatusUpdatePN;
+use \RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\PushNotifications\CurrentAccount\StatusUpdate as StatusUpdatePN;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant\Attribute\Core as MerchantAttributeCore;
-use \RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
 use RZP\Models\BankingAccountStatement\Details\Core as BankingAccountStatementDetailsCore;
 
 class Core extends Base\Core
@@ -809,6 +804,9 @@ class Core extends Base\Core
             }
         });
 
+        // re-fetch banking-account to handle case where it is updated during freshdeskticket creation
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
+
         // We need to populate banking account details using
         // toArrayPublic, which populates only the pre fetched
         // relations. So explicitly fetching this relation here
@@ -821,14 +819,69 @@ class Core extends Base\Core
 
     public function checkAndSendFreshDeskEmailIfFormIsSubmitted(Entity $bankingAccount, array $activationDetailInput)
     {
-        if (isset($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP]) === true)
-        {
-            $declaration_step = ($bankingAccount->bankingAccountActivationDetails)->declaration_step;
+        /** @var ActivationDetail\Entity $activationDetail */
+        $activationDetail = $bankingAccount->bankingAccountActivationDetails;
 
-            if ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] == 1 and $declaration_step !== 1)
-            {
-                $this->notifyOpsAboutProActivation($bankingAccount);
-            }
+        try
+        {
+            // This has been added so that sales_pitch_completed check can be
+            // applied for older flows as well by changing the default value to true
+            // since older flows don't use this flag yet
+            // This will be  removed once LMS changes are made live for all CA flows
+            $attributeCore = new Merchant\Attribute\Core;
+
+            $caOnboardingFlow = $attributeCore->fetch($this->merchant,
+                                                      Product::BANKING,
+                                                      Merchant\Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
+                                                      Merchant\Attribute\Type::CA_ONBOARDING_FLOW);
+
+            $isOneCaFlow = ($caOnboardingFlow->getValue() === MerchantAttributeType::ONE_CA);
+        }
+        catch (\Throwable $e)
+        {
+            $isOneCaFlow = false;
+        }
+
+        $oldAdditionalDetails = optional($activationDetail)->getAdditionalDetails() ?? '{}';
+
+        $oldAdditionalDetails = json_decode($oldAdditionalDetails, true);
+
+        // since this attribute is being read from a json, it is returned as a string
+        $oldSalesPitchCompleted = ($oldAdditionalDetails[ActivationDetail\Entity::SALES_PITCH_COMPLETED] ?? null) === '1';
+
+        // If non one_ca flow, mark sales_pitch as completed
+        $oldSalesPitchCompleted = $isOneCaFlow ? $oldSalesPitchCompleted : true;
+
+        $oldDeclarationStepCompleted = ((optional($activationDetail)->getDeclarationStep()) ?? null) === 1;
+
+        // values sent in the activation input
+        $newDeclarationStepCompleted = ($activationDetailInput[ActivationDetail\Entity::DECLARATION_STEP] ?? null) == 1;
+
+        $newSalesPitchCompleted = ($activationDetailInput[ActivationDetail\Entity::ADDITIONAL_DETAILS][ActivationDetail\Entity::SALES_PITCH_COMPLETED] ?? null) === '1';
+
+        $newSalesPitchCompleted = $isOneCaFlow ? $newSalesPitchCompleted : true;
+
+        $declarationStepCompleted = ($oldDeclarationStepCompleted or $newDeclarationStepCompleted);
+        $salesPitchCompleted = ($oldSalesPitchCompleted or $newSalesPitchCompleted);
+
+            // check is form is submitted
+        // submitted => $declarationStepCompleted and $salesPitchCompleted
+        $readyToBePickedForRazorpayProcessing = ($declarationStepCompleted and $salesPitchCompleted);
+        $formWasAlreadySubmittedEarlier = ($oldDeclarationStepCompleted and $oldSalesPitchCompleted);
+
+        // check if form is readyToBePickedForRazorpayProcessing(i.e.. declarationStep & salesPitch steps are completed)
+        // and also check if this the first submission post form completion
+        if (($readyToBePickedForRazorpayProcessing === true) and
+            ($formWasAlreadySubmittedEarlier === false))
+        {
+            $this->updateBankingAccount($bankingAccount,
+                                        [
+                                            Entity::STATUS      => Status::PICKED,
+                                            Entity::SUB_STATUS  => Status::NONE
+                                        ],
+                                        $bankingAccount->merchant);
+
+            $this->notifyOpsAboutProActivation($bankingAccount);
         }
     }
 

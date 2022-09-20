@@ -98,6 +98,8 @@ class Entity extends Base\PublicEntity
 
     const ADDITIONAL_DETAILS = 'additional_details';
 
+    const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
+
     const COMMENT = 'comment'; //Latest comment. This is to support backward compatibility
 
     const COMMENTS = 'comments'; //All comments

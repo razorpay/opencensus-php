@@ -509,6 +509,163 @@ class BankingAccountTest extends TestCase
         });
     }
 
+    public function verifyFreshDeskTicketCreationOnBankingAccountUpdate($baId, $baActivationDetailId, $oldDeclarationStep = 0, $oldSalesPitchCompleted = '0', $newDeclarationStep = 1, $newSalesPitchCompleted = '1', $shouldQueue = true)
+    {
+        $this->fixtures->edit('banking_account', $baId, ['status' => 'created']);
+
+        $baDetails = ['declaration_step' => $oldDeclarationStep];
+
+        if ($oldSalesPitchCompleted !== null)
+        {
+            $baDetails += ['additional_details' => json_encode(['sales_pitch_completed' => $oldSalesPitchCompleted])];
+        }
+
+        $this->fixtures->edit('banking_account_activation_detail', $baActivationDetailId, $baDetails);
+
+        Mail::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testFreshDeskTicketCreationOnBankingAccountUpdate'];
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/bacc_' . $baId,
+                'content' => [
+                    'activation_detail' => [
+                        'declaration_step' => $newDeclarationStep,
+                        'additional_details' => [
+                            'sales_pitch_completed' => $newSalesPitchCompleted
+                        ],
+                    ]
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'channel' => 'rbl',
+                    'status'  => $shouldQueue ? 'picked' : 'created',
+                ],
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultMerchantId);
+
+//        $this->ba->addXOriginHeader();
+
+        $this->startTest($dataToReplace);
+
+        if ($shouldQueue)
+        {
+            Mail::assertQueued(XProActivation::class, function ($mail)
+            {
+                $mail->build();
+                return $mail->hasTo('x.support@razorpay.com');
+            });
+        }
+        else
+        {
+            Mail::assertNotQueued(XProActivation::class, function ($mail)
+            {
+                $mail->build();
+                return $mail->hasTo('x.support@razorpay.com');
+            });
+        }
+    }
+
+    public function testFreshDeskTicketCreationBehaviourForDifferentOneCaScenarios()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_flow', 'ONE_CA');
+
+        $ba = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $baActivationDetail = $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba->getId(),
+            'business_category'         => 'partnership',
+            'sales_team'                => 'self_serve',
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
+        ]);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 1, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '0', 1, '1', true);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 1, '0', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, '1', 1, '1', true);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 0, '1', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 1, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '0', 1, '1', true);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 1, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, '1', 1, '1', false);
+    }
+
+    public function testFreshDeskTicketCreationBehaviourForDifferentNonOneCaScenarios()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
+
+        $ba = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => self::DefaultMerchantId,
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $baActivationDetail = $this->fixtures->create('banking_account_activation_detail', [
+            'banking_account_id'        => $ba->getId(),
+            'business_category'         => 'partnership',
+            'sales_team'                => 'self_serve',
+            'merchant_poc_email'        => 'rzp@gmail.com',
+            'merchant_poc_phone_number' => '9177278079',
+            'booking_date_and_time'     => strtotime('17-Nov-2021 11:30:00'),
+        ]);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '0', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '1', true);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '0', true);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 0, null, 1, '1', true);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '1', false);
+
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 0, '1', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '0', false);
+        $this->verifyFreshDeskTicketCreationOnBankingAccountUpdate($ba->getId(), $baActivationDetail->getId(), 1, null, 1, '1', false);
+    }
+
     public function testFreshDeskTicketforSalesAssistedFlow()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -6169,7 +6326,7 @@ class BankingAccountTest extends TestCase
             ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
             ActivationDetail\Entity::BUSINESS_CATEGORY => 'sole_proprietorship',
             ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
-            ActivationDetail\Entity::BUSINESS_PAN      => 'RZPA34243L']
+            ActivationDetail\Entity::BUSINESS_PAN      => 'RZPA34243L',]
         ];
 
         $bankingAccount = $this->createBankingAccountFromDashboard($activationDetail);
@@ -8117,7 +8274,7 @@ class BankingAccountTest extends TestCase
             null, null,
             null, null,
             $response);
-            
+
         sleep(3);
 
         // Attach Sub-merchant to RBl Merchant
