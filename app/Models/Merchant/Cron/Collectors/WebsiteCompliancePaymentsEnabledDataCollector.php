@@ -32,7 +32,7 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
         }
 
         $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-            'merchants_count' => ($merchantIdList),
+            'merchants_count' => count($merchantIdList),
             'filter'          => 'liveInIntervalMerchants',
             'args'            => $this->args
         ]);
@@ -52,7 +52,7 @@ class WebsiteCompliancePaymentsEnabledDataCollector extends TimeBoundDbDataColle
         }
 
         $this->app['trace']->info(TraceCode::CRON_DATA_COLLECTOR_TRACE, [
-            'merchants_count' => ($merchantIdList),
+            'merchants_count' => count($merchantIdList),
             'filter'          => 'liveInIntervalMerchants',
             'args'            => $this->args
         ]);

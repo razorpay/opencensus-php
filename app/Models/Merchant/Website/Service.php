@@ -848,7 +848,7 @@ class Service extends Base\Service
     //activated - verified
     private function getWebsiteStatus($merchantDetails, $merchantWebsite)
     {
-        $status = optional($merchantWebsite->getStatus());
+        $status = optional($merchantWebsite)->getStatus();
 
         try
         {

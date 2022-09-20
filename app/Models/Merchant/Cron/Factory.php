@@ -108,6 +108,7 @@ class Factory
             case "appsflyer-uninstall-segment-event-push":
                 return (new AppsflyerUninstallCronJob($input));
             case Constants::MERCHANT_WEBSITE_INCOMPLETE_PAYMENTS_ENABLED_CRON_JOB_NAME:
+                RuntimeManager::setMaxExecTime(1200);
                 return (new WebsiteCompliancePaymentsEnabledCronJob($input));
             case Constants::WEBSITE_COMPLIANCE_GRACE_PERIOD_REMINDER_JOB:
                 return (new WebsiteComplianceGracePeriodReminderCronJob($input));
