@@ -3501,6 +3501,32 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testFreePayoutRollbackWithCounterAttributes()
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number'   => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content'][Entity::BALANCE_ID] = $balance->getId();
+
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS]);
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $features = $this->getDbEntities('feature',
+                                         [
+                                             'entity_id'   => '10000000000000',
+                                             'entity_type' => EntityConstants::MERCHANT,
+                                             'name'        => Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS,
+                                         ],
+                                         'live')->toArray();
+
+        self::assertEmpty($features);
+    }
+
     public function testUpdateFreePayoutsCountAndMode()
     {
         $this->mockPayoutServiceFreePayoutSet();

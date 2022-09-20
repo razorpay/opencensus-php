@@ -2209,6 +2209,26 @@ return [
         ],
     ],
 
+    'testFreePayoutRollbackWithCounterAttributes' => [
+        'request'  => [
+            'url'     => '/payouts_service/free_payout_rollback',
+            'method'  => 'post',
+            'content' => [
+                Entity::MERCHANT_ID                                => '10000000000000',
+                EntityConstants::BALANCE_TYPE                      => 'shared',
+                CounterEntity::FREE_PAYOUTS_CONSUMED               => 200,
+                CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 1656613800,
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                EntityConstants::COUNTERS_ROLLBACK  => true,
+                EntityConstants::SETTINGS_ROLLBACK  => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testUpdateFreePayoutsCountAndMode' => [
         'request'  => [
             'url'     => '/balance/{id}/free_payout',

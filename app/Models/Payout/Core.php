@@ -4965,14 +4965,6 @@ class Core extends Base\Core
 
         $balanceId = $request[Entity::BALANCE_ID];
 
-        $freePayoutsConsumed = $request[Counter\Entity::FREE_PAYOUTS_CONSUMED];
-
-        $freePayoutsConsumedLastResetAt = $request[Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT];
-
-        $freePayoutsCount = $request[Balance\FreePayout::FREE_PAYOUTS_COUNT];
-
-        $freePayoutsSupportedModes = $request[Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES];
-
         try
         {
             $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -4991,15 +4983,16 @@ class Core extends Base\Core
         $response = $this->repo->counter->transaction(
             function() use ($balance,
                 $merchant,
-                $freePayoutsConsumed,
-                $freePayoutsConsumedLastResetAt,
-                $freePayoutsCount,
-                $freePayoutsSupportedModes) {
+                $request) {
+
+                $freePayoutsConsumed = $request[Counter\Entity::FREE_PAYOUTS_CONSUMED];
+
+                $freePayoutsConsumedLastResetAt = $request[Counter\Entity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT];
 
                 // rollback counter
                 (new CounterHelper)->rollbackCounter($balance, $freePayoutsConsumed, $freePayoutsConsumedLastResetAt);
 
-                $this->rollbackFreePayoutsCountAndSupportedModes($balance, $freePayoutsCount, $freePayoutsSupportedModes);
+                $this->rollbackFreePayoutsCountAndSupportedModes($balance, $request);
 
                 $this->deleteFreePayoutLedgerViaPSFeature($merchant->getId());
 
@@ -5019,19 +5012,27 @@ class Core extends Base\Core
         return $response;
     }
 
-    protected function rollbackFreePayoutsCountAndSupportedModes($balance,
-                                                                 $freePayoutsCount,
-                                                                 $freePayoutsSupportedModes)
+    protected function rollbackFreePayoutsCountAndSupportedModes($balance, $request)
     {
         $freePayoutObj = new FreePayout();
 
-        $freePayoutObj->addNewAttribute($freePayoutsCount,
-                                        $balance,
-                                        FreePayout::FREE_PAYOUTS_COUNT);
+        if (isset($request[Balance\FreePayout::FREE_PAYOUTS_COUNT]))
+        {
+            $freePayoutsCount = $request[Balance\FreePayout::FREE_PAYOUTS_COUNT];
 
-        $freePayoutObj->addNewAttribute($freePayoutsSupportedModes,
-                                        $balance,
-                                        FreePayout::FREE_PAYOUTS_SUPPORTED_MODES);
+            $freePayoutObj->addNewAttribute($freePayoutsCount,
+                                            $balance,
+                                            FreePayout::FREE_PAYOUTS_COUNT);
+        }
+
+        if (isset($request[Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES]))
+        {
+            $freePayoutsSupportedModes = $request[Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES];
+
+            $freePayoutObj->addNewAttribute($freePayoutsSupportedModes,
+                                            $balance,
+                                            FreePayout::FREE_PAYOUTS_SUPPORTED_MODES);
+        }
     }
 
     protected function deleteFreePayoutLedgerViaPSFeature($merchantId)

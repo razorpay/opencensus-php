@@ -490,8 +490,8 @@ class Validator extends Base\Validator
         EntityConstants::BALANCE_TYPE                      => 'required|string',
         CounterEntity::FREE_PAYOUTS_CONSUMED               => 'required|integer',
         CounterEntity::FREE_PAYOUTS_CONSUMED_LAST_RESET_AT => 'required|epoch',
-        Balance\FreePayout::FREE_PAYOUTS_COUNT             => 'required|integer',
-        Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => 'required|array',
+        Balance\FreePayout::FREE_PAYOUTS_COUNT             => 'sometimes|integer',
+        Balance\FreePayout::FREE_PAYOUTS_SUPPORTED_MODES   => 'sometimes|array',
     ];
 
     protected static $payoutBulkStatusUpdateManualRules = [
