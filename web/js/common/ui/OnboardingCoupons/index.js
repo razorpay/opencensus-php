@@ -58,8 +58,8 @@ const OnboardingCoupons = ({
           />
         )}
         <div className="credit-text">
-          Get free credits worth <span className="amount">2 Lakhs</span> if you accept a payment in
-          the next 5 days !
+          Get free credits worth <span className="amount">Rs 10,000</span> if you accept a payment
+          in the next 5 days !
         </div>
         <div className="bottom-text">
           Credits will be added to your account post your first transaction.
