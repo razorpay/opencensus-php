@@ -14,6 +14,7 @@ use RZP\Models\Card\Network;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\WorkflowFeature;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -26,6 +27,7 @@ class CompositePayoutTest extends TestCase
     use PayoutTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
 
@@ -412,11 +414,86 @@ class CompositePayoutTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->startTest();
+        $response = $this->startTest();
 
         $card = $this->getDbLastEntity('card');
 
         $this->assertEquals('pay2_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+
+        return $response;
+    }
+
+    public function testCreateCompositePayoutForNonSavedCardFlowAndDeleteTokenAfterPayoutIsProcessed()
+    {
+        $response = $this->testCreateCompositePayoutForNonSavedCardFlow();
+
+        $this->fixtures->stripSign($response['id']);
+
+        $payoutId = $response['id'];
+
+        $this->ba->ftsAuth();
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'ICICI',
+            'extra_info'          => [
+                'beneficiary_name' => 'Chirag',
+                'cms_ref_no'       => '7a452792bee81',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'IMPS',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $mockedResponse = [
+            'error'   => '',
+            'success' => true,
+        ];
+
+        $cardVault->shouldReceive('deleteToken')
+                  ->andReturnUsing(function(string $vaultToken) use ($mockedResponse) {
+
+                      self::assertEquals('pay2_44f3d176b38b4cd2a588f243e3ff7b20', $vaultToken);
+
+                      return $mockedResponse;
+                  });
+
+        $this->expectWebhookEvent('payout.processed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::PROCESSED_AT]);
     }
 
     public function testCreateCompositePayoutForNonSavedCardFlowWithoutInputType()

@@ -120,6 +120,8 @@ class Core extends Base\Core
 
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
+    const STATUSES_FOR_CARD_VAULT_TOKEN_DELETION = [Attempt\Status::PROCESSED, Attempt\Status::REVERSED, Attempt\Status::FAILED];
+
     const DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS = 15;
 
     const DEFAULT_BENE_BANK_STATUS = 'resolved';
@@ -128,7 +130,18 @@ class Core extends Base\Core
 
     const BENEFICIARY = 'BENEFICIARY';
 
+    const TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND';
+
+    const INVALID_TOKEN = 'INVALID_TOKEN';
+
     const EMAIL_COUNT_FOR_PENDING_PAYOUT_APPROVAL = 5;
+
+    const MAX_RETRIES_FOR_VAULT_TOKEN_DELETION = 2;
+
+    const NON_RETRYABLE_VAULT_TOKEN_DELETION_ERRORS = [
+        self::TOKEN_NOT_FOUND,
+        self::INVALID_TOKEN
+    ];
 
     //constants for fund loading downtime detection test payouts
     const BANK                                       = 'bank';
@@ -778,6 +791,102 @@ class Core extends Base\Core
                                                           Attempt\Constants::DEFAULT_ISSUER : $issuer,
                 ]
             );
+        }
+
+        $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
+    }
+
+    public function deleteCardMetaDataAndVaultTokenForTerminalStatePayout(string $status, $payout)
+    {
+        if ((in_array($status, self::STATUSES_FOR_CARD_VAULT_TOKEN_DELETION, true) === true) and
+            ($payout->fundAccount->getAccountType() === FundAccount\Type::CARD) and
+            ($payout->merchant->isFeatureEnabled(Feature\Constants::VAULT_COMPLIANCE_CHECK) === true))
+        {
+            $card = $payout->fundAccount->account;
+
+            $isTokenised = ($card->isTokenPan() === true) ? true : $card->isNetworkTokenisedCard();
+
+            // Check this only for non_saved_card_flow
+            if ($isTokenised === false)
+            {
+                // Since vault token and card meta data are stored in vault service,
+                // we make a call here to delete both of them as per RBI guidelines.
+                $this->deleteCardMetaDataAndVaultToken($card->getVaultToken(), $payout, $card, $isTokenised);
+            }
+        }
+    }
+
+    public function deleteCardMetaDataAndVaultToken($vaultToken, $payout, $card, bool $isTokenised)
+    {
+        $traceData = [
+            Entity::PAYOUT . '_' . Entity::ID => $payout->getId(),
+            Entity::CARD . '_' . Entity::ID   => $card->getId(),
+            Entity::STATUS                    => $payout->getStatus(),
+            Card\Entity::ISSUER               => $card->getIssuer(),
+            Card\Entity::VAULT_TOKEN          => $card->getVaultToken(),
+            'is_tokenised'                    => $isTokenised,
+        ];
+
+        $attempts = 0;
+
+        $maxRetries = self::MAX_RETRIES_FOR_VAULT_TOKEN_DELETION;
+
+        while($attempts < $maxRetries)
+        {
+            try
+            {
+                $this->app['card.cardVault']->deleteToken($vaultToken);
+
+                $this->trace->info(TraceCode::PAYOUT_TO_CARDS_VAULT_TOKEN_SUCCESSFULLY_DELETED, $traceData);
+
+                break;
+            }
+            catch (\Exception $exception)
+            {
+                $response = $exception->getData();
+
+                if ((isset($response['error']) === true) and
+                    (in_array($response['error'], self::NON_RETRYABLE_VAULT_TOKEN_DELETION_ERRORS, true) === true))
+                {
+                    $this->trace->info(
+                        TraceCode::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_FAILED,
+                        [
+                            'retryable'        => false,
+                            'card_vault_error' => $response['error'],
+                        ] + $traceData
+                    );
+
+                    break;
+                }
+                else
+                {
+                    $this->trace->info(
+                        TraceCode::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_FAILED,
+                        [
+                            'retryable'           => true,
+                            'attempts'            => $attempts,
+                            'card_vault_response' => $response,
+                        ] + $traceData
+                    );
+
+                    $attempts++;
+
+                    if ($attempts >= $maxRetries)
+                    {
+                        $this->trace->info(
+                            TraceCode::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_FAILED_WITH_RETRIES_EXHAUSTED,
+                            [
+                                'attempts'            => $attempts,
+                                'card_vault_response' => $response,
+                            ] + $traceData
+                        );
+
+                        break;
+                    }
+
+                    continue;
+                }
+            }
         }
     }
 
