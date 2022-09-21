@@ -210,10 +210,10 @@ class Constants
     // Will uncomment when they are to be excluded from the user data
     const FIELDS_DECOUPLED_FOR_PG_RENDERING = [
         self::FEATURES,
-        self::CAMPAIGNS,
-        self::TAGS,
-//        self::EXPERIMENTS,
-//        self::SPLITZ_EXPERIMENTS,
+        // self::CAMPAIGNS,
+        // self::TAGS,
+        // self::EXPERIMENTS,
+        // self::SPLITZ_EXPERIMENTS,
     ];
 
     const TRACE_DETAILS_MAP = [
