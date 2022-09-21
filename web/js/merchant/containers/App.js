@@ -273,8 +273,7 @@ class App extends Component {
               LocalStorageService.getItem('merchantsSettlementStatus'),
             );
 
-            const esOndemandSettlementDisabled =
-              (user.features || []).indexOf('es_on_demand') === -1;
+            const esOndemandSettlementDisabled = !user.isOndemandSettlementEnabled;
             if (esOndemandSettlementDisabled) return;
 
             if (!merchantsSettlementStatus) this.getSettlementDetails(user.current);
