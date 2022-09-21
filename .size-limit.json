@@ -1,42 +1,52 @@
 [
   {
     "path": "public/dist/js/merchant/merchant.*.js",
-    "limit": "397 KB",
+    "limit": "420 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/runtime.*.js",
-    "limit": "5.7 KB",
+    "limit": "7 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/vendors~merchant.*.js",
-    "limit": "480 KB",
+    "limit": "520 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/vendors~frontend-care.*.js",
-    "limit": "53 KB",
+    "limit": "60 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/vendors~DatePickerField~Drp~Invoices~TransferDetails.*.js",
-    "limit": "41 KB",
+    "limit": "50 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/Drp.*.js",
-    "limit": "1.2 KB",
+    "limit": "2 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/vendors~Treemap.*.js",
-    "limit": "53 KB",
+    "limit": "60 KB",
     "gzip": true
   },
   {
     "path": "public/dist/js/merchant/Treemap.*.js",
-    "limit": "4.1 KB",
+    "limit": "5 KB",
+    "gzip": true
+  },
+  {
+    "path": "public/dist/js/merchant/merchantMobile.*.js",
+    "limit": "125 KB",
+    "gzip": true
+  },
+  {
+    "path": "public/dist/js/merchant/merchantDesktop.*.js",
+    "limit": "115 KB",
     "gzip": true
   }
 ]
