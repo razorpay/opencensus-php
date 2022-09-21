@@ -1528,6 +1528,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PAYMENT_FAILED_BY_AVS                                         = 'Payment failed as it did not pass all risk checks. Please try again or use another card.';
 
+    const BAD_REQUEST_SETTLEMENT_NOT_FOUND                                          = 'Settlement not found';
+
     // Accounts/ stakeholder V2 document upload error descriptions
     const BAD_REQUEST_DOCUMENT_UPLOAD_OPERATION_IN_PROGRESS                         = 'Document upload already in progress';
     const BAD_REQUEST_INVALID_FILE_ACCESS                                           = 'Invalid file id provided or merchant is unauthorized to access the fileId(s) provided';

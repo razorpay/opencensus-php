@@ -398,6 +398,7 @@ class RouteTeamMap
         'setl_retry'                                      => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_holidays'                                   => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_fetch_by_id'                                => [self::TEAM_PAYMENTS_SETTLEMENTS],
+        'org_setl_fetch_by_id'                            => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_fetch_transactions'                         => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_fetch_source_details'                       => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_initiate'                                   => [self::TEAM_PAYMENTS_SETTLEMENTS],

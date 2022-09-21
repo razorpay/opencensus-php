@@ -825,6 +825,7 @@ class Route
         'generate_nium_settlement_file'            => ['post',     'settlements/generate/nium',                      'SettlementController@getNiumFile'                                  ],
         'generate_nium_settlement_file_admin'      => ['post',     'settlements/admin/nium',                         'SettlementController@getNiumFile'                                  ],
         'setl_fetch_by_id'                         => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
+        'org_setl_fetch_by_id'                     => ['get',      'org_settlements/{id}',                           'SettlementController@getOrgSettlement'                             ],
         'setl_fetch_multiple'                      => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                  => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
         'fb_setl_fetch_transactions'               => ['get',      'fb/settlements/{id}/transactions',               'SettlementController@getSettlementTransactionsWithSettlementId'    ],
@@ -5720,6 +5721,8 @@ class Route
         'additional_website_status',
         //update VA
         'merchant_virtual_account_edit',
+        'org_setl_fetch_by_id',
+
 
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
@@ -10395,6 +10398,7 @@ class Route
             'setl_combined_recon',
             'setl_combined_report',
             'setl_fetch_by_id',
+            'org_setl_fetch_by_id',
             'setl_fetch_multiple',
             'setl_fetch_source_details',
             'setl_fetch_transactions',
@@ -15010,6 +15014,7 @@ class Route
         'card_fetch_by_id'                                  => HeartbeatLagChecker::MASTER,
         'credits_fetch_by_id'                               => HeartbeatLagChecker::MASTER,
         'setl_fetch_by_id'                                  => HeartbeatLagChecker::MASTER,
+        'org_setl_fetch_by_id'                              => HeartbeatLagChecker::MASTER,
         'adj_fetch_by_id'                                   => HeartbeatLagChecker::MASTER,
         'admin_fetch_terminal_by_id'                        => HeartbeatLagChecker::MASTER,
         'non_org_admin_fetch_terminal_by_id'                => HeartbeatLagChecker::MASTER,

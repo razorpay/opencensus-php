@@ -28,6 +28,7 @@ class Base
     const ORG_BANK_ACCOUNT_CREATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Create';
     const ORG_BANK_ACCOUNT_UPDATE           = '/twirp/rzp.settlements.org_bank_account.v1.OrgBankAccountService/Update';
     const PROCESS_CUSTOM_SETTLEMENTS_FILE   = '/twirp/rzp.settlements.org_settlements.v1.OrgSettlementsService/UpdateSettlementStatus';
+    const GET_ORG_SETTLEMENT                = '/twirp/rzp.settlements.org_settlements.v1.OrgSettlementsService/Get';
 
     const LEDGER_RECON_ACTIVE_MTU_CHECK     = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/CheckActiveMtu';
     const LEDGER_RECON_ACTIVE_MTU_ADD       = '/twirp/rzp.settlements.ledger_recon_mtu.v1.LedgerReconMtuService/Create';

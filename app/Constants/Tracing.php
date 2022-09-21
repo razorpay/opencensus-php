@@ -384,6 +384,7 @@ class Tracing
             'invoice_fetch',
             'invoice_fetch_multiple',
             'setl_fetch_by_id',
+            'org_setl_fetch_by_id',
             'setl_get_details',
             'setl_amount',
             'merchant_activation_business_details',

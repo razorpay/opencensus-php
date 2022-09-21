@@ -11,7 +11,6 @@ use RZP\Exception\BadRequestException;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Admin\Org;
-use RZP\Trace;
 use Config;
 
 class Service extends Base\Service

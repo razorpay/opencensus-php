@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use Response;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Batch;
@@ -107,6 +108,16 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getOrgSettlement($id)
+    {
+        $merchantId = $this->ba->getMerchantId();
+
+        $data = $this->service()->fetchOrgSettlement($id, $merchantId);
+
+        return ApiResponse::json($data);
+    }
+
 
     public function getSettlements()
     {

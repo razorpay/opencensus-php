@@ -9,9 +9,11 @@ use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
+use RZP\Models\SalesforceConverge\Error;
 use RZP\Models\Schedule;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -281,6 +283,34 @@ class Service extends Base\Service
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $setl->toArrayPublic();
+    }
+
+    public function fetchOrgSettlement($settlementId, $sessionMerchamtId)
+    {
+        try {
+            $setl = app('settlements_api')->getOrgSettlement($settlementId, $this->mode);
+
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::GET_SETTLEMENT_DETAILS_FOR_PAYMENT_FAILED,
+                [
+                    'id'        => $settlementId,
+                    'request'   => 'fetch',
+                    'code'      => $e->getCode(),
+                ]);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SETTLEMENT_NOT_FOUND);
+
+        }
+
+        if ((isset($setl["org_settlement"]["merchant_id"]) === true) and $setl["org_settlement"]["merchant_id"] === $sessionMerchamtId)
+        {
+            return $setl;
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
     }
 
     public function editSettlement($id, $input)
@@ -2310,9 +2340,7 @@ class Service extends Base\Service
             'file_name'   => $input['key'],
         ];
 
-        app('settlements_api')->forwardCustomSettlementFileReadRequest($req, $this->mode);
-
-        return [];
+       return app('settlements_api')->forwardCustomSettlementFileReadRequest($req, $this->mode);
     }
 
     public function processPosFile(array $input, $batchType): array

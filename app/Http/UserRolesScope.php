@@ -131,6 +131,8 @@ class UserRolesScope
                 [Role::RBL_SUPERVISOR, Role::AGENT, Role::SUPPORT]),
             'setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
+            'org_setl_fetch_by_id'    => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
+        [Role::RBL_SUPERVISOR, Role::AGENT]),
             // RSR-1970 changes
             'setl_merchant_dashboard_config_get' => array_merge(Role::READER_ROLES,Role::LINKED_ACCOUNT_ROLES,
                 [Role::RBL_SUPERVISOR, Role::AGENT]),
