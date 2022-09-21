@@ -476,6 +476,90 @@ class IciciCaPayoutTest extends TestCase
         $this->assertNull($settings['value']);
     }
 
+    public function testFailedWebhookWithInitiatedForIcici2FAPayout()
+    {
+        $this->testCreatingPendingPayoutsAndApprovalWithOtp();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+            [
+                'source_id'   => $payout->getId(),
+                'source_type' => 'payout',
+                'is_fts'      => true,
+            ])->first();
+
+        $this->ba->ftsAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $testData['request']['content']['status'] = 'INITIATED';
+
+        $testData['request']['content']['bank_status_code'] = 'INVALID_OTP';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $this->fixtures->edit(
+            'payout',
+            $payout->getId(),
+            [
+                'status' => 'pending_on_otp',
+                'status_code' => 'INVALID_OTP',
+            ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $testData['request']['content']['status'] = 'INITIATED';
+
+        $testData['request']['content']['bank_status_code'] = '';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $testData['request']['content']['status'] = 'FAILED';
+
+        $testData['request']['content']['bank_status_code'] = 'OTP_RETRIES_EXHAUSTED';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout->reload();
+
+        $ftaForPayout->reload();
+
+        $feeRecovery = $this->getDbLastEntity('fee_recovery');
+
+        $settings = $this->getDbLastEntity('settings');
+
+        $this->assertEquals($payout['id'], $feeRecovery->getEntityId());
+
+        $this->assertEquals(FeeRecovery\Status::UNRECOVERED, $feeRecovery->getStatus());
+
+        $this->assertEquals(0, $feeRecovery->getAttemptNumber());
+
+        $this->assertNull($feeRecovery['recovery_payout_id']);
+
+        $this->assertEquals('failed', $payout->getStatus());
+
+        $this->assertNotNull($payout->getInitiatedAt());
+
+        $this->assertNotNull($payout->getPricingRuleId());
+
+        $this->assertNull($settings['value']);
+    }
+
     public function testFailedWebhookWithoutInitiatedForIcici2FAPayoutProcessType1()
     {
         $this->testCreatingPendingPayoutsAndApprovalWithOtp();

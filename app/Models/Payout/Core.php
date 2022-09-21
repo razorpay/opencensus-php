@@ -943,7 +943,13 @@ class Core extends Base\Core
 
                 case Status::CREATED:
                 case Status::INITIATED:
-                    $this->handleInitiatedWebhookForIcici2FACurrentAccount($payout, $ftaBankStatusCode);
+                    $input = $this->app['request']->input();
+
+                    if (empty($input[Attempt\Entity::BANK_STATUS_CODE]) === false)
+                    {
+                        // Handle initiated webhook only if bank status code is present
+                        $this->handleInitiatedWebhookForIcici2FACurrentAccount($payout, $ftaBankStatusCode);
+                    }
                     break;
 
                 default:
