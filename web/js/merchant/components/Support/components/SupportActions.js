@@ -21,13 +21,11 @@ function SupportActions({
   openDashboardGuide,
 }) {
   const { show_chat, loaded } = supportFlags;
-  const { isClickToCallActive, isFrontendCareActive, isChatbotLive, isFreshChatbotLive } = user;
+  const { isClickToCallActive, isFrontendCareActive } = user;
   const activationStatus = window?.rzp_user?.activation_status || '';
 
   const isChatDisabled =
-    (!show_chat && notifyCount < 1) ||
-    (isChatbotLive && !isFreshChatbotLive && !botIsLoaded) ||
-    supportFlags?.isFetching;
+    (!show_chat && notifyCount < 1) || !botIsLoaded || supportFlags?.isFetching;
   return (
     <ul className="support-list">
       <li

@@ -1,4 +1,4 @@
-import { Component, Suspense, lazy } from 'react';
+import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
@@ -38,7 +38,6 @@ import { classList, isPresent } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-import initChat from 'merchant/components/Support/chat';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
@@ -50,7 +49,6 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { fetchMerchantReferralDetail } from 'merchant/reducers/merchantReferral';
 import { fetchInstantSettlements, fetchPayments } from 'merchant/reducers/collection';
 import { bindActionCreators, compose } from 'redux';
-import { initChatbot } from '../chatbot-init';
 import PartnerActivationRequiredModal from 'merchant/views/PartnerDashboard/Activation/Components/ActivationRequiredModal';
 import _refiner from 'refiner-js';
 import { getCookie, setCookie } from 'common/utils/cookies';
@@ -214,13 +212,6 @@ class App extends Component {
         });
         this.redirectToRoute(role);
         this.setLiveTransactionDone(user);
-        if (user.isChatbotLive && !user.isFreshChatbotLive) {
-          initChatbot(user);
-        } else {
-          setTimeout(() => {
-            initChat(user);
-          });
-        }
 
         if (user.isProductRecommendationEnabled) {
           setRecommendedProduct();

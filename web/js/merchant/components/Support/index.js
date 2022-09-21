@@ -12,13 +12,16 @@ import {
 } from 'merchant/reducers/config';
 import SupportHeader from 'merchant/components/Support/components/SupportHeader';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { COMDEL_URL } from './constants';
+import { CHATBOT_CLOSING_TEXTS, COMDEL_URL } from 'merchant/components/Support/constants';
 import getMobileDetect from 'common/utils/mobileDetect';
 import SupportLoader from 'merchant/components/Support/components/Loader';
 import { getCommonSupportProperties } from 'merchant/components/Support/getCommonSupportProperties';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import initChat from 'merchant/components/Support/chat';
+import { initChatbot } from 'merchant/chatbot-init';
 
 const SupportBody = lazy(() => import('merchant/components/Support/components/SupportBody'));
+
 @withRouter
 @connect(
   (state) => {
@@ -37,6 +40,7 @@ const SupportBody = lazy(() => import('merchant/components/Support/components/Su
 )
 export default class Support extends Component {
   state = {
+    isOpenedOnce: false,
     isOpened: false,
     isHidden: false,
     notifyCount: 0,
@@ -57,7 +61,6 @@ export default class Support extends Component {
     const {
       checkCallEligibility: _checkCallEligibility,
       checkScheduleCallConfig: _checkScheduleCallConfig,
-      user = {},
     } = this.props;
     _checkCallEligibility();
 
@@ -75,31 +78,9 @@ export default class Support extends Component {
       }
     });
 
-    this.bindEvents();
-
     this.fetchSupportFlags();
 
     this.handleIsWebView();
-
-    if (user.isChatbotLive) {
-      analyticsTrack({
-        objectName: 'chatbot',
-        actionName: 'initialised',
-        screen: 'home page',
-        properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
-          ...getCommonSupportProperties(),
-        },
-      });
-    }
-
-    //@NOTE: below lines will be uncommented with 100% live of new ui on webview
-    // const shouldOpenSupportOnMount = this.props?.history?.location?.pathname?.includes(
-    //   '/app-support',
-    // );
-    // if (shouldOpenSupportOnMount) {
-    //   this.handleToggle();
-    // }
   }
 
   handleIsWebView = () => {
@@ -148,6 +129,7 @@ export default class Support extends Component {
   };
 
   bindEvents = () => {
+    const { user = {} } = this.props;
     //bind events for freshchat if available
     if (window.fcWidget) {
       window.fcWidget.on('widget:opened', () => {
@@ -164,9 +146,13 @@ export default class Support extends Component {
       window.fcWidget.on('unreadCount:notify', (response) => {
         this.setState({ notifyCount: response.count });
       });
-    }
 
-    const { user = {} } = this.props;
+      if (user.isFreshChatbotLive) {
+        window.fcWidget.on('message:received', (payload) => {
+          this.handleChatbotMessage(payload);
+        });
+      }
+    }
 
     if (user.isChatbotLive && !user.isFreshChatbotLive) {
       const chatBotInt = setInterval(() => {
@@ -179,6 +165,58 @@ export default class Support extends Component {
           clearInterval(chatBotInt);
         }
       }, 500);
+    }
+  };
+
+  handleInitChat = () => {
+    const { user = {} } = this.props;
+
+    setTimeout(() => {
+      if (user.isChatbotLive && !user.isFreshChatbotLive) {
+        initChatbot(user);
+        this.bindEvents();
+      } else {
+        initChat(user, this.onFreshchatScriptLoad);
+      }
+    }, 0);
+
+    if (user.isChatbotLive || user.isFreshChatbotLive) {
+      analyticsTrack({
+        objectName: 'chatbot',
+        actionName: 'initialised',
+        screen: 'home page',
+        properties: {
+          isContextual: user.isFreshChatbotLive,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonSupportProperties(),
+        },
+      });
+    }
+  };
+
+  onFreshchatScriptLoad = () => {
+    this.setState({ botIsLoaded: true });
+    this.bindEvents();
+  };
+
+  handleChatbotMessage = (payload = {}) => {
+    const message = payload?.message?.messageFragments?.[0]?.content || '';
+    if (CHATBOT_CLOSING_TEXTS.includes(message)) {
+      window.fcWidget.destroy();
+      window.fcWidget.on('widget:destroyed', () => {
+        this.handleInitChat();
+      });
+    } else if (message.includes('Please wait while we connect you to a live agent.')) {
+      analyticsTrack({
+        objectName: 'chat with live agent',
+        actionName: 'initiated',
+        screen: 'home page',
+        properties: {
+          message,
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          ...getCommonSupportProperties(),
+        },
+      });
     }
   };
 
@@ -196,7 +234,7 @@ export default class Support extends Component {
 
     if (user.isComdelApiEnabled) return window.open(COMDEL_URL, '_blank');
 
-    const { isOpened } = this.state;
+    const { isOpened, isOpenedOnce } = this.state;
 
     if (!isOpened) {
       trackSupportButton();
@@ -212,8 +250,13 @@ export default class Support extends Component {
       }
     }
 
+    if (!isOpenedOnce) {
+      this.handleInitChat();
+    }
+
     this.setState({
       isOpened: !isOpened,
+      isOpenedOnce: true,
     });
 
     return null;

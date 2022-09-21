@@ -4,13 +4,7 @@ import { getDeviceSource } from 'merchant/components/Support/getCommonSupportPro
 const FRESHCHAT_TOKEN = '5f1b4ead-651e-472b-afa8-a94d7fa3873f'; //live
 const FRESHCHAT_HOST = 'https://wchat.in.freshchat.com';
 
-const CLOSING_TEXTS = [
-  'Thank you for sharing your experience.',
-  'We will be closing the conversation as you seem to be away. Please feel free to connect back in case you need any further assistance. We will be happy to help! Thank you for chatting with Razorpay.',
-  'We are closing the conversation as you have been inactive for more than 5 minutes.',
-  'Thank you so much for using “Razorpay” chat service. We hope we will hear from you soon! Have a good day.',
-  'Sure! We are restarting the conversation',
-];
+let isScriptLoaded = false;
 
 const initFreshchat = (data) => {
   const role = data.userRole;
@@ -44,19 +38,25 @@ const initFreshchat = (data) => {
       source: getDeviceSource(),
       isContextual: isFreshChatbotLive,
     });
-    if (isFreshChatbotLive) {
-      window.fcWidget.on('message:received', (payload) => {
-        if (CLOSING_TEXTS.includes(payload?.message?.messageFragments?.[0]?.content)) {
-          window.fcWidget.destroy();
-          window.fcWidget.on('widget:destroyed', () => {
-            initFreshchat(data);
-          });
-        }
-      });
-    }
   }
 };
 
-export default function initChat(data) {
-  initFreshchat(data);
+function initScript(data, onLoad) {
+  const tag = document.createElement('script');
+  tag.type = 'text/javascript';
+  tag.src = 'https://wchat.freshchat.com/js/widget.js';
+  tag.onload = () => {
+    isScriptLoaded = true;
+    initFreshchat(data);
+    onLoad();
+  };
+  document.body.appendChild(tag);
+}
+
+export default function initChat(data, onLoad) {
+  if (isScriptLoaded) {
+    initFreshchat(data);
+  } else {
+    initScript(data, onLoad);
+  }
 }
