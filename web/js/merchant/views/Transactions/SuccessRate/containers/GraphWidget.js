@@ -15,8 +15,9 @@ import {
   fetchMerchantErrors,
   setGroupTypeFilter,
   setSelectedDropdownFilterOptions,
+  setDefaultInterval,
 } from 'merchant/reducers/successRate';
-import { queryFilters, getMerchantErrorsPayload } from '../helper';
+import { queryFilters, getMerchantErrorsPayload, getBreakdownInterval } from '../helper';
 import { methodTabClick, methodDropdownChange, trackSuccessRateEvents } from '../trackEvents';
 
 const GraphWidget = (props) => {
@@ -27,8 +28,17 @@ const GraphWidget = (props) => {
     fetchMerchantErrors,
     setGroupTypeFilter,
     setSelectedDropdownFilterOptions,
+    setDefaultInterval,
   } = props;
-  const { isLoading, tabLoading, activeTab, metrics, tabs, isDropdownFilterLoading } = successRate;
+  const {
+    isLoading,
+    tabLoading,
+    activeTab,
+    metrics,
+    tabs,
+    isDropdownFilterLoading,
+    filters,
+  } = successRate;
   const tabContainerRef = useRef(null);
   const [tabWidth, setTabWidth] = useState();
   const tabPane = Object.values(metrics);
@@ -45,11 +55,13 @@ const GraphWidget = (props) => {
   );
 
   const handleTabChange = (tabIndex) => {
+    const { startDate, endDate } = filters || {};
     const tab = tabPane[tabIndex];
 
     if (tab.name === activeTab) return;
 
     setActiveTab(tab.name);
+    setDefaultInterval(getBreakdownInterval(startDate, endDate));
     const updateDropdownOptions = tab.name != 'Overall';
     const payload = queryFilters(updateDropdownOptions);
     fetchSuccessRate({ payload, updateDropdownOptions });
@@ -128,6 +140,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchSuccessRate,
       fetchMerchantErrors,
       setSelectedDropdownFilterOptions,
+      setDefaultInterval,
     },
     dispatch,
   );

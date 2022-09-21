@@ -9,8 +9,13 @@ import {
   setDefaultInterval,
   setActiveTab,
 } from 'merchant/reducers/successRate';
-import { getInterval, initialFilters, queryFilters, getMerchantErrorsPayload } from '../helper';
-import { PRESETS } from '../constants';
+import {
+  getBreakdownInterval,
+  initialFilters,
+  queryFilters,
+  getMerchantErrorsPayload,
+} from '../helper';
+import { PRESETS, DEFAULT_INTERVAL } from '../constants';
 import { clearFilterSuccessRate, filterSuccessRate, trackSuccessRateEvents } from '../trackEvents';
 import { DateRangePreset } from './DateRangePreset';
 import moment from 'moment';
@@ -72,7 +77,7 @@ const SuccessRateFilter = (props) => {
     }
 
     updateDateRange(dateRange);
-    setDefaultInterval(getInterval(startDate, endDate));
+    setDefaultInterval(getBreakdownInterval(startDate, endDate));
     const refreshMetricTabs = activeTab !== 'Overall';
     if (refreshMetricTabs) {
       await fetchSuccessRate({
@@ -92,6 +97,7 @@ const SuccessRateFilter = (props) => {
     const initialValue = initialFilters();
     updateDateRange(initialValue);
     setActiveTab('Overall');
+    setDefaultInterval(DEFAULT_INTERVAL);
     const payload = queryFilters(updateDropdownOptions);
     await fetchSuccessRate({ payload, updateDropdownOptions });
     const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
@@ -115,7 +121,7 @@ const SuccessRateFilter = (props) => {
           <AsyncButton
             className="btn btn-primary btn-sm"
             onClick={onSearch}
-            disabled={Object.keys(errors).length}
+            disabled={Object.keys(errors).length > 0}
             text="Search"
           />
           <AsyncButton className="btn btn-sm btn-text" onClick={onReset} text="Clear" />

@@ -364,3 +364,9 @@ export const FILTERS_VS_DISPLAY_NAMES = {
 };
 
 /******************************************************************************************/
+export const DEFAULT_GROUP_BY_LIMIT = 4;
+
+export const GROUP_BY_KEY_VS_LIMIT = {
+  type: 3,
+  upi_type: 2,
+};

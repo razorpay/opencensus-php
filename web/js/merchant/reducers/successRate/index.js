@@ -1,3 +1,4 @@
+import moment from 'moment';
 import store from 'merchant/store';
 import { merchantFetch, merchantFetchWithContentType } from 'merchant/utils/ajax';
 import { set, merge } from 'common/utils/immutable';
@@ -52,7 +53,7 @@ export const fetchSuccessRate = ({
     selectedDropdownFilterOptions,
   } = tabs?.[activeTab];
   const newSelectedInterval = resetSelectedInterval
-    ? getBreakdownInterval(payload.from, payload.to)
+    ? getBreakdownInterval(moment.unix(payload.from), moment.unix(payload.to))
     : selectedInterval;
   let newDropdownFilterOptions = dropdownFilterOptions;
   let newSelectedDropdownFilterOptions = selectedDropdownFilterOptions;
@@ -98,7 +99,7 @@ export const fetchSuccessRate = ({
 
     const res = onFetchSR(options);
 
-    if (activeTab === 'Overall' && data?.groups?.[group_by]) {
+    if (activeTab === 'Overall') {
       const metricsResult = getMetricsData({
         metrics,
         data,

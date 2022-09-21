@@ -2,7 +2,6 @@ import moment from 'moment';
 import { reduce, head, map, unionBy, filter, cloneDeep, upperFirst } from 'lodash';
 import store, { getUser } from 'merchant/store';
 import {
-  DEFAULT_INTERVAL,
   DEFAULT_PRESET,
   tabsOrder,
   chartStyle,
@@ -17,29 +16,17 @@ import {
   breakdownInterval,
   TAG_OVERALL_MAP,
   PRESETS,
+  DEFAULT_GROUP_BY_LIMIT,
+  GROUP_BY_KEY_VS_LIMIT,
 } from './constants';
 
-export const getInterval = (startDate, endDate) => {
-  const diff = endDate.diff(startDate, 'days');
-  if (diff <= 1) {
-    return DEFAULT_INTERVAL;
-  } else if (diff > 1 && diff <= 24) {
-    return 24 * 60; // 1 day ie., 24 hours * 60 minutes
-  } else if (diff > 24) {
-    return 7 * 24 * 60; // 1 week ie., 7 days * 24 hours * 60 minutes
-  }
-  return DEFAULT_INTERVAL;
-};
-
 export const getBreakdownInterval = (from, to) => {
-  const start_date = moment.unix(from);
-  const end_date = moment.unix(to);
-  const diff = end_date.diff(start_date, 'days');
+  const diff = to.diff(from, 'days');
   if (diff <= 1) {
     return 'hourly';
-  } else if (diff >= 2 && diff <= 24) {
+  } else if (diff >= 2 && diff <= 14) {
     return 'daily';
-  } else if (diff > 24) {
+  } else if (diff >= 14) {
     return 'weekly';
   }
   return 'hourly';
@@ -115,7 +102,9 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     },
     group_by: {
       keys: _group_by,
-      limit: user.isOptimizerEnabled ? 3 : 4, // 3 for dropdown filters in case of optimizer merchant and 4 for graph pills in case of rzp merchant.
+      limit: user.isOptimizerEnabled
+        ? 3
+        : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
     },
   };
 
@@ -312,7 +301,7 @@ export const metricValues = (obj, options) => {
 
 export const getMetricsData = ({ metrics, data, payload, breakdown, group_by }) => {
   const metricsClone = cloneDeep(metrics);
-  const groups = data.groups?.[group_by];
+  const groups = data.groups?.[group_by] || [];
 
   tabsOrder.forEach((tabName, tabIdx) => {
     const groupIdx = groups.findIndex((group) => group.name === tabName.toLocaleLowerCase());
