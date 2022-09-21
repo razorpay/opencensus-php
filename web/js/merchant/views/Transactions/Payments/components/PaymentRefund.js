@@ -4,6 +4,7 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
 import DataTable from 'common/ui/Table/DataTable';
 import LoaderDots from 'common/ui/LoaderDots';
+import { isOrgFeatureExist } from 'merchant/models/User';
 import {
   refundId,
   amount,
@@ -49,7 +50,7 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
       }}
     >
       <span>Refund Details</span>
-      <div class="full-width-item sub-entity-list">
+      <div className="full-width-item sub-entity-list">
         <DataTable
           customClass="refunds-table"
           progressLoader={true}
@@ -136,7 +137,7 @@ const PaymentRefund = ({
             !(['card', 'emi'].indexOf(payment.method) !== -1)
           }
         >
-          <div class="m-b">
+          <div className="m-b">
             {refundStatus === 'partial' ? (
               <Definition>
                 <span>
@@ -159,25 +160,25 @@ const PaymentRefund = ({
         </ShowWhen>
         <ShowWhen
           additionalCondition={(user) =>
+            !isOrgFeatureExist('block_payment_refund') &&
             user.isRefundAllowed &&
             (user.isOrgAllowedFunctionality('card_refunds') ||
               ['card', 'emi'].indexOf(payment.method) === -1)
           }
         >
-          <p>
-            <button
-              class="btn btn-default"
-              onClick={onRefundStatusClick}
-              disabled={hasOpenNonFraudDisputes}
-            >
-              {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
-            </button>
-          </p>
+          <button
+            className="btn btn-default"
+            onClick={onRefundStatusClick}
+            disabled={hasOpenNonFraudDisputes}
+          >
+            {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
+          </button>
           {hasOpenNonFraudDisputes ? (
-            <span class="text-danger">
+            <p className="text-danger">
               Refunds are disabled as there {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open
-              dispute{hasOpenNonFraudDisputes > 1 && 's'} on this payment
-            </span>
+              dispute
+              {hasOpenNonFraudDisputes > 1 && 's'} on this payment
+            </p>
           ) : null}
         </ShowWhen>
         <ShowWhen
@@ -240,7 +241,7 @@ const PaymentRefund = ({
           <ShowWhen additionalCondition={(user) => user.isPaymentsExtraRefundDetailsEnabled}>
             <RefundDetails items={refunds.items} />
           </ShowWhen>
-          <div class="m-t" />
+          <div className="m-t" />
           {
             <RefundsList
               refunds={refunds}

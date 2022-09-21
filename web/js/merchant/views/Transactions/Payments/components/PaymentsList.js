@@ -11,6 +11,16 @@ import PaymentsTable from 'merchant/views/Transactions/Payments/components/Payme
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsListFilter from 'merchant/views/Transactions/Payments/components/PaymentsListFilter';
 import { analyticsTrack } from 'common/utils/analytics';
+import {
+  paymentId,
+  amount,
+  email,
+  contact,
+  createdAt,
+  status,
+  paymentReceiverType,
+} from 'common/ui/item/pair';
+import { isOrgFeatureExist } from 'merchant/models/User';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 
@@ -140,6 +150,13 @@ export default class PaymentsListContainer extends ListContainer {
     return (user && user_segment_data?.average_monthly_transactions <= user.getMaxFAMtv) || null;
   };
 
+  getColumns = () => {
+    const cols = [paymentId, amount, email, contact, createdAt, status];
+    const showReceiverType = isOrgFeatureExist('show_pmt_receiver_type');
+    if (showReceiverType) cols.splice(4, 0, paymentReceiverType);
+    return cols;
+  };
+
   render() {
     const {
       docUrl,
@@ -151,9 +168,9 @@ export default class PaymentsListContainer extends ListContainer {
     } = this.props;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction>
-          <div class="btn-toolbar pull-right">
+          <div className="btn-toolbar pull-right">
             {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
 
             {docUrl && <DocsLink url={docUrl} />}
@@ -220,6 +237,7 @@ export default class PaymentsListContainer extends ListContainer {
           skip={this.state.skip}
           paginate={this.paginate}
           EmptyComponent={isRoute ? EmptyRoutesComponent : EmptyComponent}
+          paymentColumns={this.getColumns()}
           {...this.props}
         />
       </div>

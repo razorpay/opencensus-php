@@ -185,13 +185,17 @@ function PaymentDetails(props) {
                     >
                       Capture Payment
                     </button>
-                    <button
-                      onClick={openRefundModal}
-                      className="btn btn-primary"
-                      style={{ marginLeft: '5px' }}
+                    <ShowWhen
+                      additionalCondition={() => !isOrgFeatureExist('block_payment_refund')}
                     >
-                      Refund Payment
-                    </button>
+                      <button
+                        onClick={openRefundModal}
+                        className="btn btn-primary"
+                        style={{ marginLeft: '8px' }}
+                      >
+                        Refund Payment
+                      </button>
+                    </ShowWhen>
                   </div>
                 )}
               <Alert type={statusMsg.type} message={statusMsg.message} />

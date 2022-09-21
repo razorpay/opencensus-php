@@ -291,3 +291,8 @@ export const storeProductId = {
   title: 'Product Id',
   value: id.storeProduct,
 };
+
+export const paymentReceiverType = {
+  title: 'Receiver Type',
+  value: (item) => titleCase(item?.receiver_type) || '-',
+};
