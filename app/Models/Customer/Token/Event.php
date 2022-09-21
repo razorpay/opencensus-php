@@ -128,7 +128,7 @@ class Event extends Base\Core
         }
     }
 
-    protected function getDefaultExceptionEventResponse(\Throwable $e): array
+    protected function getDefaultExceptionEventResponse(\Throwable $e , array $eventData): array
     {
         $errorAttributes = [];
 
@@ -146,7 +146,7 @@ class Event extends Base\Core
             ];
         }
 
-        $eventData = [
+        $eventData += [
             'status'                    => 'FAILED',
             'error_code'                => array_get($errorAttributes, Error::INTERNAL_ERROR_CODE),
             'network_error_reason_code' => array_get($errorAttributes, Error::REASON_CODE),
@@ -164,11 +164,6 @@ class Event extends Base\Core
      */
     protected function fetchResponseEventData($exe, array $eventData, $response = []): array
     {
-        if (isset($exe))
-        {
-            return $this->getDefaultExceptionEventResponse($exe);
-        }
-
         if (empty($response))
         {
             return $eventData;
@@ -180,6 +175,11 @@ class Event extends Base\Core
         }
 
         $eventData = $this->getCardDetails($response, $eventData);
+
+        if (isset($exe))
+        {
+            return $this->getDefaultExceptionEventResponse($exe , $eventData);
+        }
 
         if ((isset($response['service_provider_tokens']) === true) && (empty($response['service_provider_tokens']) === false))
         {
