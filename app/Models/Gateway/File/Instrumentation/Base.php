@@ -33,6 +33,8 @@ abstract class Base extends Core
 
     protected $gatewayFile;
 
+    protected $fileId;
+
     public function __construct()
     {
         parent::__construct();
@@ -53,14 +55,17 @@ abstract class Base extends Core
      * parallel requests from operating on the same gateway_file entity
      *
      * @param File\Entity $gatewayFile
+     * @param string $fileId
      * @throws LogicException
      */
-    public function instrumentationProcess(File\Entity $gatewayFile)
+    public function instrumentationProcess(File\Entity $gatewayFile, string $fileId)
     {
         $this->gatewayFile = $gatewayFile;
 
+        $this->fileId = $fileId;
+
         $this->mutex->acquireAndRelease(
-            'file_generation_' . $this->gatewayFile->getId(),
+            'file_generation_' . $fileId,
             function ()
             {
                 $this->processFileGeneration();
@@ -88,55 +93,49 @@ abstract class Base extends Core
      */
     public function processFileGeneration()
     {
-        $files = $this->repo->file_store->getFilesBasedOnEntity($this->gatewayFile->getId());
+        $file = $this->gatewayFile
+            ->files()
+            ->whereIn(FileStore\Entity::ID, [$this->fileId])
+            ->get()
+            ->first();
 
-        $this->trace->info(TraceCode::FILE_GENERATE_FILE_LIST,
+        $this->trace->info(TraceCode::FILE_GENERATE_FILE_ENTITY,
             [
-                'filestore files list' => $files
+                'file entity' => $file
             ]);
 
-        $this->filterFiles($files);
+        $filePath = (new FileStore\Accessor)
+            ->id($file->getId())
+            ->merchantId($file[FileStore\Entity::MERCHANT_ID])
+            ->getFile();
 
-        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSED_FILE_LIST,
+        $this->trace->info(TraceCode::FILE_GENERATE_FILE_PATH,
             [
-                'processed filestore files list' => $files
+                'filePath' => $filePath
             ]);
 
-        foreach ($files as $file)
-        {
-            $filePath = (new FileStore\Accessor)
-                ->id($file[FileStore\Entity::ID])
-                ->merchantId($file[FileStore\Entity::MERCHANT_ID])
-                ->getFile();
+        $parseData = $this->parseFile($filePath);
 
-            $this->trace->info(TraceCode::FILE_GENERATE_FILE_PATH,
-                [
-                    'filePath' => $filePath
-                ]);
+        $subType = $this->gatewayFile->getSubType();
+        $type    = $this->gatewayFile->getType();
 
-            $parseData = $this->parseFile($filePath);
+        $fileData = [
+            Constants::FILE_NAME        => $file->getName(),
+            Constants::FILE_SIZE        => $file->getId(),
+            Constants::FILE_ID          => $file->getSize(),
+            Constants::CREATED_AT       => $this->gatewayFile->getCreatedAt(),
+            Constants::UPDATED_AT       => $this->gatewayFile->getUpdatedAt(),
+            Constants::BEGIN            => $this->gatewayFile->getBegin(),
+            Constants::END              => $this->gatewayFile->getEND(),
+            Constants::TYPE             => $this->gatewayFile->getType(),
+            Constants::TARGET           => $this->gatewayFile->getTarget(),
+            Constants::BATCH_ID         => $this->gatewayFile->getId(),
+            Constants::GATEWAY          => $this->gatewayFile->getTarget(),
+            Constants::OFFSET           => $this->isOffsetExists($type) ? $subType : 0,
+            Constants::PAYMENT_STATUS   => "CREATED"
+        ];
 
-            $subType = $this->gatewayFile->getSubType();
-            $type    = $this->gatewayFile->getType();
-
-            $fileData = [
-                Constants::FILE_NAME        => $file[FileStore\Entity::NAME],
-                Constants::FILE_SIZE        => $file[FileStore\Entity::SIZE],
-                Constants::FILE_ID          => $file[FileStore\Entity::ID],
-                Constants::CREATED_AT       => $this->gatewayFile->getCreatedAt(),
-                Constants::UPDATED_AT       => $this->gatewayFile->getUpdatedAt(),
-                Constants::BEGIN            => $this->gatewayFile->getBegin(),
-                Constants::END              => $this->gatewayFile->getEND(),
-                Constants::TYPE             => $this->gatewayFile->getType(),
-                Constants::TARGET           => $this->gatewayFile->getTarget(),
-                Constants::BATCH_ID         => $this->gatewayFile->getId(),
-                Constants::GATEWAY          => $this->gatewayFile->getTarget(),
-                Constants::OFFSET           => $this->isOffsetExists($type) ? $subType : 0,
-                Constants::PAYMENT_STATUS   => "CREATED"
-            ];
-
-            $this->processInput($fileData, $parseData);
-        }
+        $this->processInput($fileData, $parseData);
     }
 
     protected function parseFile(string $filePath): array

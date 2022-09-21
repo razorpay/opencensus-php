@@ -17,13 +17,17 @@ class FileGenerationInstrumentation extends Job
 
     protected $gatewayFile;
 
+    protected $fileId;
+
     protected $queueConfigKey = self::QUEUE_NAME_KEY;
 
     public $timeout = 6 * 3600; // 6 hours timeout for  processing large citi data
 
-    public function __construct(string $gatewayFileId, string $mode)
+    public function __construct(string $gatewayFileId, string $fileId, string $mode)
     {
         $this->gatewayFileId = $gatewayFileId;
+
+        $this->fileId = $fileId;
 
         parent::__construct($mode);
     }
@@ -34,7 +38,8 @@ class FileGenerationInstrumentation extends Job
 
         $this->trace->info(TraceCode::FILE_GENERATE_INSTRUMENTATION_JOB_INIT,
             [
-                'gateway_file_id' => $this->gatewayFileId
+                'gateway_file_id' => $this->gatewayFileId,
+                'file_id'         => $this->fileId
             ]);
 
         try
@@ -47,11 +52,12 @@ class FileGenerationInstrumentation extends Job
 
             $processor = $this->getProcessor($type, $target);
 
-            $processor->instrumentationProcess($gatewayFile);
+            $processor->instrumentationProcess($gatewayFile, $this->fileId);
 
             $this->trace->info(TraceCode::FILE_GENERATE_INSTRUMENTATION_JOB_COMPLETE,
                 [
-                    'gateway_file_id' => $this->gatewayFileId
+                    'gateway_file_id' => $this->gatewayFileId,
+                    'file_id'         => $this->fileId
                 ]);
 
         }
@@ -61,7 +67,7 @@ class FileGenerationInstrumentation extends Job
                 $ex,
                 Trace::ERROR,
                 TraceCode::FILE_GENERATE_INSTRUMENTATION_JOB_ERROR,
-                [File\Entity::ID => $this->gatewayFileId]
+                [File\Entity::ID => $this->fileId]
             );
         }
     }

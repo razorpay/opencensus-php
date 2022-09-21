@@ -3472,8 +3472,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FILE_GENERATE_INSTRUMENTATION_JOB_ERROR               = 'FILE_GENERATE_INSTRUMENTATION_JOB_ERROR';
     const FILE_INSTRUMENTATION_DISPATCH_ERROR                   = 'FILE_INSTRUMENTATION_DISPATCH_ERROR';
     const FILE_GENERATE_PROCESSING                              = 'FILE_GENERATE_PROCESSING';
+    const FILE_GENERATE_PROCESSED_COUNT                         = 'FILE_GENERATE_PROCESSED_COUNT';
     const FILE_GENERATE_PROCESSING_ERROR                        = 'FILE_GENERATE_PROCESSING_ERROR';
-    const FILE_GENERATE_FILE_LIST                               = 'FILE_GENERATE_FILE_LIST';
+    const FILE_GENERATE_FILE_ENTITY                             = 'FILE_GENERATE_FILE_ENTITY';
     const FILE_GENERATE_PROCESSED_FILE_LIST                     = 'FILE_GENERATE_PROCESSED_FILE_LIST';
     const FILE_GENERATE_FILE_PATH                               = 'FILE_GENERATE_FILE_PATH';
     const FILE_GENERATE_KAFKA_PROCESS                           = 'FILE_GENERATE_KAFKA_PROCESS';

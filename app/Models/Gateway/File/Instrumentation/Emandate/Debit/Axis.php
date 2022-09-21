@@ -16,7 +16,11 @@ class Axis extends Base
     {
         $totalEntries = count($entries);
 
-        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, ['total records for axis' => $totalEntries]);
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, [
+            'total records for axis kafka processing' => $totalEntries
+        ]);
+
+        $processedEntries = 0;
 
         foreach ($entries as $entry)
         {
@@ -34,6 +38,8 @@ class Axis extends Base
                 );
 
                 $this->pushEntryToKafka($event);
+
+                $processedEntries = $processedEntries + 1;
             }
             catch (\Exception $ex)
             {
@@ -44,5 +50,10 @@ class Axis extends Base
                     ]);
             }
         }
+
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSED_COUNT,
+            [
+                'kafka processed records for emandate axis' => $processedEntries
+            ]);
     }
 }

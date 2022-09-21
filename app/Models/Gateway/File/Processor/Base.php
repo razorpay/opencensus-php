@@ -364,21 +364,34 @@ abstract class Base extends Core
     {
         try
         {
-            $this->trace->info(TraceCode::FILE_GENERATE_RAZORX,
-                [
-                    "gateway_id" => $gatewayFileId,
-                    "gateway"    => $gateway
-                ]);
-
             $variant = $this->app['razorx']->getTreatment(
                 $gateway,
                 'emandate_file_generation_instrumentation',
                 $this->mode
             );
 
-            if (strtolower($variant) === 'on')
+            if (strtolower($variant) !== 'on')
             {
-                FileGenerationInstrumentation::dispatch($gatewayFileId, $this->mode);
+                return;
+            }
+
+            $files = $this->repo->file_store->getFilesBasedOnEntity($gatewayFileId);
+
+            foreach ($files as $file)
+            {
+                if($file["type"] === "citi_nach_debit_summary")
+                {
+                    continue;
+                }
+
+                $this->trace->info(TraceCode::FILE_GENERATE_RAZORX,
+                    [
+                        "file_id"    => $file["id"],
+                        "gateway_id" => $gatewayFileId,
+                        "gateway"    => $gateway
+                    ]);
+
+                FileGenerationInstrumentation::dispatch($gatewayFileId, $file["id"], $this->mode);
             }
         }
         catch (\Exception $ex)

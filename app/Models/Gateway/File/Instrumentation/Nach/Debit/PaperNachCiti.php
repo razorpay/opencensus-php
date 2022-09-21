@@ -62,7 +62,11 @@ class PaperNachCiti extends Debit\Base
     {
         $totalEntries = count($entries);
 
-        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, ['total records nach citi' => $totalEntries]);
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, [
+            'total records for nach citi kafka processing' => $totalEntries
+        ]);
+
+        $processedEntries = 0;
 
         foreach ($entries as $entry)
         {
@@ -84,6 +88,8 @@ class PaperNachCiti extends Debit\Base
                 );
 
                 $this->pushEntryToKafka($event);
+
+                $processedEntries = $processedEntries + 1;
             }
             catch (\Exception $ex)
             {
@@ -94,6 +100,12 @@ class PaperNachCiti extends Debit\Base
                                    ]);
             }
         }
+
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSED_COUNT,
+            [
+                'kafka processed records for nach citi' => $processedEntries
+            ]);
+
     }
 
     protected function increaseAllowedSystemLimits()

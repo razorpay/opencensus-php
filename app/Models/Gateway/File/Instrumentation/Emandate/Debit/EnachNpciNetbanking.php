@@ -18,7 +18,11 @@ class EnachNpciNetbanking extends Base
     {
         $totalEntries = count($entries);
 
-        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, ['total records for yes bank' => $totalEntries]);
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, [
+            'total records for yes bank kafka processing' => $totalEntries
+        ]);
+
+        $processedEntries = 0;
 
         foreach ($entries as $entry)
         {
@@ -40,6 +44,8 @@ class EnachNpciNetbanking extends Base
                 );
 
                 $this->pushEntryToKafka($event);
+
+                $processedEntries = $processedEntries + 1;
             }
             catch (\Exception $ex)
             {
@@ -50,6 +56,11 @@ class EnachNpciNetbanking extends Base
                     ]);
             }
         }
+
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSED_COUNT,
+            [
+                'kafka processed records for npci yes bank' => $processedEntries
+            ]);
     }
 
     protected function increaseAllowedSystemLimits()

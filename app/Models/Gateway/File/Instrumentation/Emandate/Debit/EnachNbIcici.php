@@ -50,7 +50,11 @@ class EnachNbIcici extends Debit\Base
     {
         $totalEntries = count($entries);
 
-        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, ['total records for emandate icici' => $totalEntries]);
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, [
+            'total records for emandate icici kafka processing' => $totalEntries
+        ]);
+
+        $processedEntries = 0;
 
         foreach ($entries as $entry)
         {
@@ -72,6 +76,8 @@ class EnachNbIcici extends Debit\Base
                 );
 
                 $this->pushEntryToKafka($event);
+
+                $processedEntries = $processedEntries + 1;
             }
             catch (\Exception $ex)
             {
@@ -82,5 +88,10 @@ class EnachNbIcici extends Debit\Base
                     ]);
             }
         }
+
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSED_COUNT,
+            [
+                'kafka processed records for nb icici' => $processedEntries
+            ]);
     }
 }

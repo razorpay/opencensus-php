@@ -51,7 +51,11 @@ class CombinedNachIcici extends Debit\Base
     {
         $totalEntries = count($entries);
 
-        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, ['total records for nach icici' => $totalEntries]);
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSING, [
+            'total records for nach icici kafka processing' => $totalEntries
+        ]);
+
+        $processedEntries = 0;
 
         foreach ($entries as $entry) {
             try {
@@ -73,6 +77,8 @@ class CombinedNachIcici extends Debit\Base
                 $this->trace->info(TraceCode::COI_EXPERIMENT, ['event' => $event]);
 
                 $this->pushEntryToKafka($event);
+
+                $processedEntries = $processedEntries + 1;
             }
             catch (\Exception $ex)
             {
@@ -83,6 +89,11 @@ class CombinedNachIcici extends Debit\Base
                     ]);
             }
         }
+
+        $this->trace->info(TraceCode::FILE_GENERATE_PROCESSED_COUNT,
+            [
+                'kafka processed records for nach icici' => $processedEntries
+            ]);
     }
 
     protected function increaseAllowedSystemLimits()
