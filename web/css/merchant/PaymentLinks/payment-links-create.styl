@@ -1,24 +1,26 @@
 .PaymentLinks--Calender-Info
-  padding: 0 20px 20px 20px
+  padding: 0 20px 20px
+
   .PaymentLinks--Archive--Banner
     width: 100%
     color: #31708F
-    background: rgba(217, 237, 247, 0.44)
+    background: rgba(217 237 247 0.44)
     border: 1px solid #BCE8F1
     padding: 8px
     font-size: 12px
+
     .icon-wrapper
       padding-right: 2px
 
 .Modal-mask.Modal-mask--PaymentLinks--CreateV2--LinkTypeSelection
-  background-color: rgba(0,0,0,0.8)
-  z-index: 999999 // Has to be highest
+  background-color: rgba(0 0 0 0.8)
+  z-index: 999999
 
   .back-btn
     position: absolute
     left: 20px
     top: 16px
-    color: #fff
+    color: #FFF
     z-index: 2
     padding: 0
     margin: 0
@@ -41,7 +43,7 @@
     margin-top: 80px
 
   .heading
-    color: #fff
+    color: #FFF
 
   .slide-in
     animation: 0.35s 0.1s slide-in cubic-bezier(0.16, 1.13, 1, 1) forwards
@@ -59,73 +61,46 @@
 .PaymentLinks--CreateV2--LinkTypeSelection
   text-align: center
 
-  .heading
+  div.heading
     font-size: 24px
     font-weight: bold
 
-  .upi-template
-    position relative
-    overflow visible
-    &::after
-      content: 'Save upto 1% on Transaction Charges!'
-      position: absolute
-      z-index: 1
-      right: -12px
-      padding: 4px 12px
-      background: #FFC848
-      font-size: 10px
-      line-height: 16px
-      text-transform: capitalize
-      color: #111B62
-      font-weight: bold
-      top: 8px
-    &::before
-      content: ''
-      position absolute
-      z-index: 1
-      right: -22px
-      top: 31px
-      width: 0
-      height: 0
-      border-bottom: 10px solid transparent
-      border-right: 10px solid transparent
-      border-left: 12px solid #e6a714
-
-.PaymentLinks--CreateV2 .StandAloneContainer
-  @media screen and (max-width: $screen-xs-max)
-    width: 100%;
-    height: 100%;
-  .TemplateCard-list
-    width: auto
-
-$formHeight = 568px
-
-.Modal-container.Modal-container--PaymentLink--CreateV2
-  width: 90%;
-  max-width: 400px;
-  height: $formHeight;
-  overflow: initial;
-  @media screen and (max-width: $screen-xs-max)
-    width: 100%;
-    height: 100%;
-    max-width: none;
-  
-
-    
-
-.StandAloneContainer 
+.StandAloneContainer
   .PaymentLinks--CreateV2-wizard
     max-height: $formHeight
-    background: white
+    background: #FFF
     position: relative
     height: 80vh
     max-width: 400px
-    @media screen and (max-width: $screen-xs-max)
+
+    @media screen and (max-width $screen-xs-max)
       height: 100%
       max-height: 100%
       max-width: none
 
-.PaymentLinks--CreateV2-wizard
+.PaymentLinks--CreateV2
+  .StandAloneContainer
+    @media screen and (max-width $screen-xs-max)
+      width: 100%
+      height: 100%
+
+    .TemplateCard-list
+      width: auto
+
+$formHeight = 568px
+
+.Modal-container.Modal-container--PaymentLink--CreateV2
+  width: 90%
+  max-width: 400px
+  height: $formHeight
+  overflow: initial
+
+  @media screen and (max-width $screen-xs-max)
+    width: 100%
+    height: 100%
+    max-width: none
+
+div.PaymentLinks--CreateV2-wizard
   .title
     padding: 24px
     font-weight: 600
@@ -133,19 +108,20 @@ $formHeight = 568px
     position: absolute
     top: 0
     left: 0
-    background: white
+    background: #FFF
     z-index: 1
     width: 100%
-    @media screen and (max-width: $screen-xs-max)
+
+    @media screen and (max-width $screen-xs-max)
       position: fixed
       height: 62px
-      background: #FFFFFF
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15)
+      background: #FFF
+      box-shadow: 0 4px 12px rgba(0 0 0 0.15)
       border-radius: 2px
       display: flex
       align-content: center
       justify-content: space-between
-  
+
   .Paymentlink-layout-title
     padding: 24px
     font-weight: 600
@@ -153,22 +129,23 @@ $formHeight = 568px
     position: absolute
     top: 0
     left: 0
-    background: white
+    background: #FFF
     z-index: 1
     width: 100%
-    @media screen and (max-width: $screen-xs-max)
+
+    @media screen and (max-width $screen-xs-max)
       position: fixed
       height: 62px
       margin-top: 16%
-      background: #FFFFFF
-      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15)
+      background: #FFF
+      box-shadow: 0 4px 12px rgba(0 0 0 0.15)
       border-radius: 2px
       display: flex
       align-content: center
       justify-content: space-between
 
   main
-    padding: 70px 24px 132px 24px
+    padding: 70px 24px 132px
     overflow: auto
 
   footer
@@ -178,9 +155,10 @@ $formHeight = 568px
     bottom: 0
     padding: 24px
     background: #F6F6F6
-    border-top: 1px solid #e0e0e0
+    border-top: 1px solid #E0E0E0
     text-align: right
-    @media screen and (max-width: $screen-xs-max)
+
+    @media screen and (max-width $screen-xs-max)
       padding: 18px
       position: fixed;
       z-index: 9999999;
@@ -192,7 +170,8 @@ $formHeight = 568px
     .Button
       width: 168px
       padding: 9px 12px
-      @media screen and (max-width: $screen-xs-max)
+
+      @media screen and (max-width $screen-xs-max)
         width: 150px
         white-space: nowrap
 
@@ -203,63 +182,66 @@ $formHeight = 568px
         margin: 0
 
   .Form
-    height: $formHeight;
+    height: $formHeight
     overflow-y: scroll
+
     .amount
       margin-top: 0
-    @media screen and (max-width: $screen-xs-max)
+
+    @media screen and (max-width $screen-xs-max)
       height: 100vh
 
   .mob-customer-details
     display: flex;
     flex-direction: column;
-  
+
   .mobile-field
-    @media screen and (max-width: $screen-xs-max)
+    @media screen and (max-width $screen-xs-max)
       margin-bottom: 16px
 
   .pt-8
-    @media screen and (max-width: $screen-xs-max)
-        padding-top: 8px
+    @media screen and (max-width $screen-xs-max)
+      padding-top: 8px
 
   .pb-8
-    @media screen and (max-width: $screen-xs-max)
-        padding-bottom: 8px
+    @media screen and (max-width $screen-xs-max)
+      padding-bottom: 8px
 
   .customer-details
     .Input .Input-content
       margin-right: 10px
 
     .Input:last-child .Input-content
-        margin-right: 0
-       
+      margin-right: 0
 
-  .customer-notify 
+  .customer-notify
     width: 100%
-    > .Input-content
+
+    div.Input-content
       display: table-row
 
     .Input--checkbox:last-child
       padding-left: 8px
 
 .pl-creation-confirm-modal
-  margin-top: 15% !important
+  margin-top: 15%
 
 .PaymentLinks--Create-Form
   .Input--custom.Input--custom
-    &:before
+    &::before
       left: 22px
 
     .Input-label
       margin-left: 0
       left: 0
       padding: 0
-    
-    .Input:not(.Input--vTop), .InputGroup:not(.InputGroup--vTop)
+
+    .Input:not(.Input--vTop) .InputGroup:not(.InputGroup--vTop)
       .Input-label
         top: 7px
-        @media screen and (max-width: $screen-xs-max)
-          top: 0px !important
+
+        @media screen and (max-width $screen-xs-max)
+          top: 0
 
     .Input
       margin-top 0
