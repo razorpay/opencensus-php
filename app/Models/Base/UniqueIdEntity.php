@@ -219,6 +219,26 @@ class UniqueIdEntity extends Entity
         return $res;
     }
 
+    public static function verifyCapsId($id, $throw = true)
+    {
+        $uniqueIdCheckRegex = '/^[0-9A-Z]{'. static::ID_LENGTH .'}$/';
+
+        $res = preg_match($uniqueIdCheckRegex, $id);
+
+        // preg_match() returns int 0 when the pattern does not match
+        // and int 1 if a match is found. false (boolean) is returned
+        // whenever any error happens.
+        $res = (bool) $res;
+
+        if (($res === false) and ($throw === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $id . ' is not a valid id');
+        }
+
+        return $res;
+    }
+
     public static function generateUniqueId()
     {
         // Get current nanotime from 1st Jan 1970

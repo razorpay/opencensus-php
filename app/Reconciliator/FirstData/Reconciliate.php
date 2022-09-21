@@ -79,16 +79,23 @@ class Reconciliate extends Base\Reconciliate
         foreach ($fileContents as $row)
         {
             if ((empty($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID]) === false) and
-              (Entity::verifyUniqueId($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID], false) === true))
+              (Entity::verifyCapsId($row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID], false) === true))
             {
                 $capsPaymentIds[] = $row[PaymentReconciliate::COLUMN_RZP_ENTITY_ID];
+
             }
+
         }
 
         if (count($capsPaymentIds) === 0)
         {
             return;
         }
+        $this->trace->info(TraceCode::RECON_FIRST_DATA_CAPS_PID,
+            [
+                'message'   => 'Possible caps pids case for firstdata',
+                'capsPaymentIds'  =>  $capsPaymentIds,
+            ]);
 
         // Get distinct entities, there will be multiple entries in case of a payment and
         // refund row are encountered, since Firstdata sends caps pids for refunds as well.
