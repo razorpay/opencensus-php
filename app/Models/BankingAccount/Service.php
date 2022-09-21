@@ -270,6 +270,8 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
 
+        $admin = $admin !== null ? $admin : $this->core->getAdminFromHeadersForMobApp();
+
         $account = $this->core->updateBankingAccount($bankingAccount, $input, $admin);
 
         $currentStatus = $bankingAccount->getStatus();

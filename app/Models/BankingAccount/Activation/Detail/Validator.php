@@ -230,7 +230,8 @@ class Validator extends Base\Validator
         Entity::BUSINESS_NAME                       => 'sometimes|string|max:255',
         Entity::BUSINESS_TYPE                       => 'sometimes|string|max:255|custom',
         Entity::BUSINESS_PAN                        => 'sometimes|string|size:10',
-        Entity::DECLARATION_STEP                    => 'sometimes|boolean'
+        Entity::DECLARATION_STEP                    => 'sometimes|boolean',
+        Entity::COMMENT                             => 'sometimes|string'
     ];
 
     protected static $addSlotBookingDetailRules = [

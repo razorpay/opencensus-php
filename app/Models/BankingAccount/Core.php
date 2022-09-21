@@ -386,9 +386,11 @@ class Core extends Base\Core
 
             // if comment is passed and updater entity is merchant, can't add comment as
             // commenter is figured out from admin.
+            // If the caller is master-onboarding, we allow addition of comment
             if ((empty($entity) === false)
                 and (isset($input['activation_detail'][ActivationDetail\Entity::COMMENT]) === true)
-                and ($entity->getEntity() !== 'admin'))
+                and ($entity->getEntity() !== 'admin')
+                and $this->app['basicauth']->isMobApp() === false)
             {
                 throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_ONLY_ON_ADMIN_AUTH);
@@ -746,6 +748,8 @@ class Core extends Base\Core
         }
 
         $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
+
+        $admin = $admin !== null ? $admin : $this->getAdminFromHeadersForMobApp();
 
         (new Validator())->validateUpdatePermissions($bankingAccount, $admin);
 
@@ -2283,5 +2287,20 @@ class Core extends Base\Core
         $salesForceEventRequestDTO->setEventProperties([Entity::CLARITY_CONTEXT => 'enabled']);
 
         $salesForceService->raiseEvent($merchant, $salesForceEventRequestDTO);
+    }
+
+    public function getAdminFromHeadersForMobApp()
+    {
+        $adminEmailHeader = $this->app['request']->header('X-Admin-Email');
+
+        if ($this->app['basicauth']->isMobApp()
+            && empty($adminEmailHeader) === false)
+        {
+            $adminRepo = new \RZP\Models\Admin\Admin\Repository();
+
+            return $adminRepo->findByEmail($adminEmailHeader);
+        }
+
+        return null;
     }
 }

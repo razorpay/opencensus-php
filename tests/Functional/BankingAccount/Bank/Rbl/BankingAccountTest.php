@@ -2616,6 +2616,36 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testupdateBankingAccountWithCommentViaMobWithAdminContext()
+    {
+        $bankingAccount = $this->createBankingAccount();
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_lms_mob/' . $bankingAccount['id'],
+                'content' => [
+                    Entity::ACTIVATION_DETAIL                         => [
+                        'comment' => 'test'
+                    ],
+                ],
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ]
+            ],
+            'response' => [
+                'content' => [
+                    'id' => $bankingAccount['id'],
+                ],
+            ],
+        ];
+
+        $this->ba->appAuthTest($this->config['applications.master_onboarding.secret']);;
+
+        $this->startTest($dataToReplace);
+    }
+
     public function getStatusChangeLog(Entity $bankingAccount)
     {
         $request  = [
@@ -9104,6 +9134,53 @@ class BankingAccountTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($user->getId(), $response["banking_account_activation_details"]["bank_poc_user_id"]);
+    }
+
+    public function testCreateBankingAccountWithActivationDetailFromMOB()
+    {
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $dataToReplace = [
+            'request'  => [
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail(),
+                ]
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testUpdateBankingAccountWithActivationDetailFromMOB()
+    {
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_lms_mob/' . $bankingAccount->getPublicId(),
+                'method'  => 'PATCH',
+                'server'  => [
+                    'HTTP_X-Admin-Email' => $admin->getEmail()
+                ]
+            ],
+        ];
+
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        $this->startTest($dataToReplace);
     }
 
 }

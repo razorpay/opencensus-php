@@ -192,6 +192,9 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
 
+        $bankingAccountCore = new BankingAccount\Core();
+
+        $admin = $admin !== null ? $admin : $bankingAccountCore->getAdminFromHeadersForMobApp();
         // while updating, the comment field of activationDetailInput is not to be updated,
         // because of the way we handle comments (only for create, it is accepted, and is present
         // in the MIS. not accepted while updating)
@@ -203,7 +206,13 @@ class Service extends Base\Service
 
         (new BankingAccount\Core())->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $input);
 
-        $commentInput = $this->extractCommentInput($input);
+        if ($this->app['basicauth']->isMobApp() === false)
+        {
+            $commentInput = $this->extractCommentInput($input);
+        } else
+        {
+            $commentInput = $input['comment'] ?? null;
+        }
 
         $callDateAndTime = $this->extractCallDateAndTime($input);
 
@@ -265,8 +274,21 @@ class Service extends Base\Service
 
             $comment = null;
 
-            if (empty($commentInput) === false)
+            if (empty($commentInput) === false
+                and empty($admin) === false)
             {
+                // Hack because MOB uses this route to create the comment once, even though it is an update
+                if ($this->app['basicauth']->isMobApp() === true)
+                {
+                    $commentPayload = [
+                        Comment\Entity::COMMENT => $commentInput,
+                        Comment\Entity::SOURCE_TEAM_TYPE => 'internal',
+                        Comment\Entity::SOURCE_TEAM => 'sales',
+                        Comment\Entity::TYPE => 'internal', // TODO: check if this needs to be external
+                        Comment\Entity::ADDED_AT => time()
+                    ];
+                    $commentInput = $commentPayload;
+                }
                 $comment = (new Comment\Core())->create($bankingAccount, $admin, $commentInput);
             }
 
@@ -322,8 +344,11 @@ class Service extends Base\Service
             && (empty($input[Entity::COMMENT]) === false))
         {
             $bankingAccountCommentCore = new Comment\Core;
+            $bankingAccountCore = new BankingAccount\Core();
 
             $admin = $this->app['basicauth']->getAdmin();
+
+            $admin = $admin !== null ? $admin : $bankingAccountCore->getAdminFromHeadersForMobApp();
 
             $bankingAccountCommentCore->create($bankingAccount, $admin, [
                 Comment\Entity::COMMENT => $input[Comment\Entity::COMMENT],
