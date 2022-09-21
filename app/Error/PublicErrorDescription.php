@@ -1291,7 +1291,7 @@ class PublicErrorDescription
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_NOT_APPROVED                        = 'Cardless Emi credit limit of customer not approved';
     const BAD_REQUEST_CARDLESS_EMI_CREDIT_LIMIT_EXPIRED                             = 'Cardless Emi credit limit of customer has expired';
 
-    const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'Your payment was declined as you are not registered with the provider. To pay successfully try using another method.';
+    const BAD_REQUEST_PAYLATER_USER_DOES_NOT_EXIST                                  = 'Your payment could not be completed as you are not registered with this payment provider. Try another payment method or contact your provider for details.';
     const GATEWAY_ERROR_PAYLATER_INVALID_TOKEN                                      = 'Payment failed due to technical error. Please try again with different provider/method';
     const BAD_REQUEST_PAYLATER_INVALID_MERCHANT_NAME                                = 'Merchant integration with the selected provider is incomplete. Please try again with different provider/method';
     const BAD_REQUEST_PAYLATER_MINIMUM_AMOUNT_REQUIRED                              = 'Amount less than minimum amount required';
