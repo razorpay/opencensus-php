@@ -8066,6 +8066,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_USER_MAPPING_QUERY_SUCCESSFUL                      = 'MERCHANT_USER_MAPPING_QUERY_SUCCESSFUL';
     const MERCHANT_USER_ATTACH_SUCCESSFUL                             = 'MERCHANT_USER_ATTACH_SUCCESSFUL';
     const MERCHANT_USER_ENTITY_RESPONSE                               = 'MERCHANT_USER_ENTITY_RESPONSE';
+    const EXCEPTION_CAUSED_BY_LOST_DB_CONNECTION                      = 'EXCEPTION_CAUSED_BY_LOST_DB_CONNECTION';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

@@ -2,13 +2,16 @@
 
 namespace RZP\Jobs;
 
+use App;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
+use RZP\Base\Database\Connectors\MySqlConnector;
 use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class BankingAccountStatementProcessor extends Job
@@ -53,6 +56,8 @@ class BankingAccountStatementProcessor extends Job
         try
         {
             parent::handle();
+
+            $this->traceActiveDbConnections();
 
             $BASCore = new BAS\Core;
 
@@ -99,6 +104,16 @@ class BankingAccountStatementProcessor extends Job
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_FAILED, $this->params);
 
+            $app = App::getFacadeRoot();
+
+            $causedByLostConnection = (new MySqlConnector($app))->checkAndReloadDBIfCausedByLostConnection($e, $this->mode);
+
+            $this->trace->info(TraceCode::EXCEPTION_CAUSED_BY_LOST_DB_CONNECTION,
+                               [
+                                   'caused_by_lost_connection'  => $causedByLostConnection,
+                                   'reloaded_connections'       => array_keys(DB::getConnections())
+                               ]);
+
             $this->checkRetry();
         }
     }
@@ -132,5 +147,12 @@ class BankingAccountStatementProcessor extends Job
 
             (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_ca_rbl_alerts');
         }
+    }
+
+    protected function traceActiveDbConnections()
+    {
+        $activeDbConnection = array_keys(DB::getConnections());
+
+        $this->trace->info(TraceCode::ACTIVE_DB_CONNECTIONS, $activeDbConnection);
     }
 }
