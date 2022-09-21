@@ -959,7 +959,7 @@ class Processor extends Base\Processor
             Patch\Entity::ACTION                   => (new Patch\Action())->getAction($input[Entity::ACTION]),
             Patch\Entity::ACTIVE                   => $input[PatchEntity::ACTIVE],
             Patch\Entity::DETAILS                  => $details,
-            Patch\Entity::EXPIRY                   => $mandate->getExpiry(),
+            Patch\Entity::EXPIRE_AT                => $mandate->getExpiry(),
             Patch\Entity::REMARKS                  => $mandate->getDescription()
         ];
 

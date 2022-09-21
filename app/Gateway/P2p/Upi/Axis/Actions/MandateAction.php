@@ -83,6 +83,7 @@ class MandateAction extends Action
                     Fields::PAYEE_MCC,
                     Fields::PAYEE_NAME,
                     Fields::PAYEE_VPA,
+                    Fields::PAYER_NAME,
                     Fields::PAYER_REVOCABLE,
                     Fields::PAYER_VPA,
                     Fields::RECURRENCE_PATTERN,
@@ -137,11 +138,10 @@ class MandateAction extends Action
 
             self::RESPONSE => [
                 self::SIGNATURE => [
-                    Fields::ACCOUNT_REFERENCE_ID,
                     Fields::AMOUNT,
                     Fields::AMOUNT_RULE,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
                     Fields::BLOCK_FUND,
-                    Fields::EXPIRY,
                     Fields::GATEWAY_MANDATE_ID,
                     Fields::GATEWAY_REFERENCE_ID,
                     Fields::GATEWAY_RESPONSE_CODE,
@@ -170,10 +170,10 @@ class MandateAction extends Action
                     Fields::ROLE,
                     Fields::SHARE_TO_PAYEE,
                     Fields::TRANSACTION_TYPE,
-                    Fields::UDF_PARAMETERS,
                     Fields::UMN,
+                    Fields::VALIDITY_END,
                     Fields::VALIDITY_START,
-                    Fields::VALIDITY_END
+                    Fields::UDF_PARAMETERS,
                 ],
             ],
         ],
@@ -216,9 +216,9 @@ class MandateAction extends Action
 
             self::RESPONSE => [
                 self::SIGNATURE => [
-                    Fields::ACCOUNT_REFERENCE_ID,
                     Fields::AMOUNT,
                     Fields::AMOUNT_RULE,
+                    Fields::BANK_ACCOUNT_UNIQUE_ID,
                     Fields::BLOCK_FUND,
                     Fields::EXPIRY,
                     Fields::GATEWAY_MANDATE_ID,
@@ -247,10 +247,10 @@ class MandateAction extends Action
                     Fields::ROLE,
                     Fields::SHARE_TO_PAYEE,
                     Fields::TRANSACTION_TYPE,
-                    Fields::UDF_PARAMETERS,
                     Fields::UMN,
                     Fields::VALIDITY_END,
                     Fields::VALIDITY_START,
+                    Fields::UDF_PARAMETERS,
                 ],
             ],
         ],

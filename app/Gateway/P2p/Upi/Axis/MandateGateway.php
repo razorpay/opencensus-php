@@ -65,7 +65,7 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
     {
         $sdk = $this->handleInputSdk();
 
-        $callback = $this->handleSdkCallback(false);
+        $callback = $this->handleSdkCallback(true);
 
         $mandate = $this->input->get(Entity::MANDATE);
 
@@ -153,7 +153,7 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
     {
         $sdk = $this->handleInputSdk();
 
-        $callback = $this->handleSdkCallback(false);
+        $callback = $this->handleSdkCallback(true);
 
         $mandate = $this->input->get(Entity::MANDATE);
 
@@ -212,7 +212,7 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
     {
         $sdk = $this->handleInputSdk();
 
-        $callback = $this->handleSdkCallback(false);
+        $callback = $this->handleSdkCallback(true);
 
         $mandate = $this->input->get(Entity::MANDATE);
 
@@ -274,7 +274,7 @@ class MandateGateway extends Gateway implements Contracts\MandateGateway
     {
         $sdk = $this->handleInputSdk();
 
-        $callback = $this->handleSdkCallback(false);
+        $callback = $this->handleSdkCallback(true);
 
         $mandate = $this->input->get(Entity::MANDATE);
 

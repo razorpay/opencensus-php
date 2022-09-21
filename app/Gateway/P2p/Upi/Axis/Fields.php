@@ -124,7 +124,7 @@ class Fields
     const MANDATE_TIMESTAMP             = 'mandateTimestamp';
     const MANDATE_TYPE                  = 'mandateType';
     const REQUEST_TYPE                  = 'requestType';
-    const MANDATE_APPROVAL_TIMESTAMP    = 'mandateApprovalTimestamp';
+    const MANDATE_APPROVAL_TIMESTAMP    = 'mandateApprovalTimeStamp';
     const MANDATE_REQUEST_ID            = 'mandateRequestId';
     const ORG_MANDATE_ID                = 'orgMandateId';
     const PAYER_REVOCABLE               = 'payerRevocable';

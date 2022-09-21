@@ -29,7 +29,7 @@ class Validator extends Base\Validator
             Entity::ACTION                          => 'string',
             Entity::STATUS                          => 'string',
             Entity::ACTIVE                          => 'boolean',
-            Entity::EXPIRY                          => 'epoch|' . $expireAt,
+            Entity::EXPIRE_AT                       => 'epoch|' . $expireAt,
             Entity::REMARKS                         => 'string'
         ];
 
@@ -55,7 +55,7 @@ class Validator extends Base\Validator
                   Entity::ACTION     => 'required',
                   Entity::STATUS     => 'required',
                   Entity::ACTIVE     => 'sometimes',
-                  Entity::EXPIRY     => 'sometimes',
+                  Entity::EXPIRE_AT  => 'sometimes',
                   Entity::REMARKS    => 'sometimes',
                 ]);
 
@@ -73,7 +73,7 @@ class Validator extends Base\Validator
                   Entity::ACTION     => 'sometimes',
                   Entity::STATUS     => 'sometimes',
                   Entity::ACTIVE     => 'sometimes',
-                  Entity::EXPIRY     => 'sometimes',
+                  Entity::EXPIRE_AT  => 'sometimes',
                   Entity::REMARKS    => 'sometimes',
                 ]);
 

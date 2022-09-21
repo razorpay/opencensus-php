@@ -16,7 +16,7 @@ class Entity extends Base\Entity
     const DETAILS                   = 'details';
     const ACTION                    = 'action';
     const STATUS                    = 'status';
-    const EXPIRY                    = 'expiry';
+    const EXPIRE_AT                 = 'expire_at';
     const ACTIVE                    = 'active';
     const REMARKS			        = 'remarks';
 
@@ -27,7 +27,7 @@ class Entity extends Base\Entity
     protected static $generators    = [];
 
     protected $dates = [
-        Entity::EXPIRY
+        Entity::EXPIRE_AT
     ];
 
     protected $fillable = [
@@ -35,7 +35,7 @@ class Entity extends Base\Entity
         Entity::DETAILS,
         Entity::ACTION,
         Entity::STATUS,
-        Entity::EXPIRY,
+        Entity::EXPIRE_AT,
         Entity::ACTIVE,
         Entity::REMARKS
     ];
@@ -45,7 +45,7 @@ class Entity extends Base\Entity
         Entity::DETAILS,
         Entity::ACTION,
         Entity::STATUS,
-        Entity::EXPIRY,
+        Entity::EXPIRE_AT,
         Entity::ACTIVE,
         Entity::REMARKS,
     ];
@@ -55,7 +55,7 @@ class Entity extends Base\Entity
         Entity::DETAILS,
         Entity::ACTION,
         Entity::STATUS,
-        Entity::EXPIRY,
+        Entity::EXPIRE_AT,
         Entity::ACTIVE,
         Entity::REMARKS
     ];
@@ -64,7 +64,7 @@ class Entity extends Base\Entity
         Entity::DETAILS                     => null,
         Entity::ACTION                      => null,
         Entity::STATUS                      => null,
-        Entity::EXPIRY                      => null,
+        Entity::EXPIRE_AT                   => null,
         Entity::ACTIVE                      => true,
         Entity::REMARKS                     => null
     ];
@@ -74,7 +74,7 @@ class Entity extends Base\Entity
         Entity::DETAILS                      => 'array',
         Entity::ACTION                       => 'string',
         Entity::STATUS                       => 'string',
-        Entity::EXPIRY                       => 'int',
+        Entity::EXPIRE_AT                    => 'int',
         Entity::ACTIVE                       => 'boolean',
         Entity::REMARKS                      => 'string'
     ];
@@ -133,6 +133,6 @@ class Entity extends Base\Entity
      */
     public function setExpiry(string $expiry)
     {
-        return $this->setAttribute(self::EXPIRY, $expiry);
+        return $this->setAttribute(self::EXPIRE_AT, $expiry);
     }
 }

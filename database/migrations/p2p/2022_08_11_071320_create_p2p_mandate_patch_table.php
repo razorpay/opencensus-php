@@ -31,7 +31,7 @@ class CreateP2pMandatePatchTable extends Migration
 
             $table->string(Entity::STATUS, 50);
 
-            $table->integer(Entity::EXPIRY)
+            $table->integer(Entity::EXPIRE_AT)
                   ->nullable();
 
             $table->string(Entity::ACTIVE, 50);

@@ -379,11 +379,10 @@ class Sdk
     public function sdkPauseMandate()
     {
         $response = [
-            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
             Fields::AMOUNT                      => 100,
             Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => '162b957e5dc7957ae9fe99eed69daa5ff1d65b89a312bdede56d843f20b15645',
             Fields::BLOCK_FUND                  => false,
-            Fields::EXPIRY                      => $this->formattedTime(30),
             Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
             Fields::GATEWAY_REFERENCE_ID        => '911416196085',
             Fields::GATEWAY_RESPONSE_CODE       => '00',
@@ -412,10 +411,10 @@ class Sdk
             Fields::ROLE                        => 'PAYER',
             Fields::SHARE_TO_PAYEE              => true,
             Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
-            Fields::UDF_PARAMETERS              => '{}',
             Fields::UMN                         => str_random(10).'@bajaj',
-            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
             Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::UDF_PARAMETERS              => '{}',
         ];
 
         $this->content($response, $this->action);
@@ -432,11 +431,10 @@ class Sdk
     public function sdkUnpauseMandate()
     {
         $response = [
-            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
             Fields::AMOUNT                      => 100,
             Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => '162b957e5dc7957ae9fe99eed69daa5ff1d65b89a312bdede56d843f20b15645',
             Fields::BLOCK_FUND                  => false,
-            Fields::EXPIRY                      => $this->formattedTime(30),
             Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
             Fields::GATEWAY_REFERENCE_ID        => '911416196085',
             Fields::GATEWAY_RESPONSE_CODE       => '00',
@@ -463,10 +461,10 @@ class Sdk
             Fields::ROLE                        => 'PAYER',
             Fields::SHARE_TO_PAYEE              => true,
             Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
-            Fields::UDF_PARAMETERS              => '{}',
             Fields::UMN                         => str_random(10).'@bajaj',
-            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
             Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::UDF_PARAMETERS              => '{}',
         ];
 
         $this->content($response, $this->action);
@@ -483,9 +481,9 @@ class Sdk
     public function sdkRevokeMandate()
     {
         $response = [
-            Fields::ACCOUNT_REFERENCE_ID        => $this->input[Fields::ACCOUNT_REFERENCE_ID],
             Fields::AMOUNT                      => 100,
             Fields::AMOUNT_RULE                 => 'EXACT',
+            Fields::BANK_ACCOUNT_UNIQUE_ID      => '162b957e5dc7957ae9fe99eed69daa5ff1d65b89a312bdede56d843f20b15645',
             Fields::BLOCK_FUND                  => false,
             Fields::EXPIRY                      => $this->formattedTime(30),
             Fields::GATEWAY_MANDATE_ID          => $this->input[Fields::UPI_REQUEST_ID],
@@ -514,10 +512,10 @@ class Sdk
             Fields::ROLE                        => 'PAYER',
             Fields::SHARE_TO_PAYEE              => true,
             Fields::TRANSACTION_TYPE            => 'UPI_MANDATE',
-            Fields::UDF_PARAMETERS              => '{}',
             Fields::UMN                         => str_random(10).'@bajaj',
-            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
             Fields::VALIDITY_END                => Carbon::now()->addYears(10)->toDateString(),
+            Fields::VALIDITY_START              => Carbon::now()->toDateString(),
+            Fields::UDF_PARAMETERS              => '{}',
         ];
 
         $this->content($response, $this->action);
