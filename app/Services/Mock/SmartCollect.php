@@ -17,4 +17,9 @@ class SmartCollect extends BaseSmartCollect
             ]
         ];
     }
+
+    public function processQrCodePayment($path, $data)
+    {
+        return [];
+    }
 }

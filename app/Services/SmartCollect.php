@@ -66,6 +66,11 @@ class SmartCollect
         return $this->sendRequest(self::PROCESS_BANK_TRANSFER, 'POST' , $data);
     }
 
+    public function processQrCodePayment($path, $data)
+    {
+        return $this->sendRequest($path, 'POST' , $data);
+    }
+
     public function sendRequest($endPoint, $method, $input = [], $merchant = null)
     {
         $parsedResponse = [];

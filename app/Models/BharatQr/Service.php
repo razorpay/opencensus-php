@@ -435,7 +435,7 @@ class Service extends Base\Service
                 $this->mode ?? Mode::LIVE);
 
             if ($variant === 'on') {
-                $response = $this->smartCollectService->sendRequest($path, "POST", $qrPaymentRequest->toArray());
+                $response = $this->smartCollectService->processQrCodePayment($path, $qrPaymentRequest->toArray());
             }
         }
 
