@@ -4683,6 +4683,7 @@ class Service extends Base\Service
                 ($payment->getStatus() === Payment\Status::CAPTURED)))
         {
             $data['retry_verify'] = false;
+            $data['payment'] = $payment;
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_DISABLED_FOR_SUCCESS_NON_CARD_PAYMENTS,
