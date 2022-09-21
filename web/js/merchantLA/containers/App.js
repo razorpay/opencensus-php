@@ -15,8 +15,9 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as SessionActions from 'merchantLA/reducers/session';
 import { applyTheme } from 'merchant_common/helpers/themes';
-import User from 'merchantLA/models/User';
+import User, { setFeatures } from 'merchantLA/models/User';
 import { resizeWindow } from 'merchantLA/reducers/app';
+import { fetchFeaturesAjax } from 'merchantLA/reducers/session';
 import rolesList from 'merchantLA/helpers/permissions/roles-list';
 import LogoutDialog from '../../merchant/components/LogoutDialog';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
@@ -132,15 +133,22 @@ export default class App extends Component {
           applyTheme(data);
         }
       }),
-    ]).then(() => {
-      this.props.updateSession({ mode: currentMode });
-      let $splash = document.getElementById('splash');
+    ]).then((response) => {
+      fetchFeaturesAjax()
+        .catch((_) => _)
+        .then((data) => {
+          const user = new User(response[0]);
+          user.features = setFeatures(data.success ? data.data.features : []);
+          this.props.updateSession({ user, mode: currentMode });
 
-      if ($splash) {
-        $splash.parentElement.removeChild($splash);
-      }
+          let $splash = document.getElementById('splash');
 
-      this.setState({ isLoading: false });
+          if ($splash) {
+            $splash.parentElement.removeChild($splash);
+          }
+
+          this.setState({ isLoading: false });
+        });
     });
   }
 

@@ -1,4 +1,4 @@
-import ajax from 'merchantLA/utils/ajax';
+import ajax, { merchantFetch } from 'merchantLA/utils/ajax';
 import User from 'merchantLA/models/User';
 import { merge, set } from 'common/utils/immutable';
 import { titleCase } from 'common/utils/rzp-utils';
@@ -44,6 +44,14 @@ export const fetchUserTags = () => {
       appendModeInURL: false,
     }),
   };
+};
+
+export const fetchFeaturesAjax = () => {
+  const params = {
+    url: `merchants/me/features`,
+  };
+
+  return merchantFetch(params);
 };
 
 export const switchMerchant = (merchantId) => {
