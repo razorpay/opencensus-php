@@ -1185,7 +1185,11 @@ class Core extends Base\Core
     {
         $reversal = $this->repo->reversal->find($entityId);
 
-        if ($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false)
+        $featureChecks = (($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
+                         (($reversal->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true) and
+                          ($reversal->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)));
+
+        if ($featureChecks === false)
         {
             throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
                 , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,

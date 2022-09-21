@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\SubscriptionRegistration;
+namespace RZP\Tests\Functional\LedgerJournalJob;
 
 use Mail;
 use Mockery;

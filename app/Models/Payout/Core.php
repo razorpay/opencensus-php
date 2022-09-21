@@ -6312,11 +6312,34 @@ class Core extends Base\Core
         return $response;
     }
 
+    // payout transaction dual write is required for ledger_reverse_shadow and free_payout_ledger_via_ps merchant
+    public static function isPayoutTransactionDualWriteEnabled($payout)
+    {
+        /* API transaction Dual write should happen only if one of the below is true
+        1. merchant is on API<>Ledger reverse shadow integration - LEDGER_REVERSE_SHADOW
+        2. merchant is on Payout MS<>Ledger integration which is always reverse shadow - FREE_PAYOUT_LEDGER_VIA_PS
+
+        Note: In case of point 2, we should ensure merchant is not on ledger shadow mode via API<>Ledger integration
+        */
+        $featureChecks = (($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true) or
+                         (($payout->merchant->isFeatureEnabled(Feature\Constants::FREE_PAYOUT_LEDGER_VIA_PS) === true) and
+                          ($payout->merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)));
+
+        if ($featureChecks and
+            ($payout->getBalanceType() === Merchant\Balance\Type::BANKING) and
+            ($payout->getBalanceAccountType() === Merchant\Balance\AccountType::SHARED))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)
     {
         $payout = $this->repo->payout->find($entityId);
 
-        if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === false)
+        if (self::isPayoutTransactionDualWriteEnabled($payout) === false)
         {
             throw new Exception\LogicException('Merchant does not have the ledger reverse shadow feature flag enabled'
                 , ErrorCode::BAD_REQUEST_MERCHANT_NOT_ON_LEDGER_REVERSE_SHADOW,
