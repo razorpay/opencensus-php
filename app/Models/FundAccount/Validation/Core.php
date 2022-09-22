@@ -236,7 +236,7 @@ class Core extends Base\Core
                     ]);
             }
         }
-        catch (BadRequestException $ex)
+        catch (BadRequestException | Exception\IntegrationException $ex)
         {
             $validation->setStatus(Status::FAILED);
             $this->repo->saveOrFail($validation);

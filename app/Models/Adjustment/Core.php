@@ -722,6 +722,25 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($adj);
             }
         }
+        catch (Exception\IntegrationException $ex)
+        {
+            $traceCode = TraceCode::LEDGER_JOURNAL_CREATE_FAILED_REVERSE_SHADOW;
+
+            $alertPayload = [
+                'adjustment_id'         => $adj->getId(),
+                'ledger_payload'        => $ledgerPayload,
+            ];
+
+            $this->trace->traceException(
+                $ex,
+                Trace::CRITICAL,
+                $traceCode,
+                $alertPayload
+            );
+
+            $adj->setStatus(Status::FAILED);
+            $this->repo->saveOrFail($adj);
+        }
         catch (\Throwable $ex)
         {
             // trace and ignore exception as it will be retries in async

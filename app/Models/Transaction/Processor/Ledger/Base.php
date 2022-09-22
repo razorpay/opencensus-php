@@ -11,6 +11,7 @@ use RZP\Jobs\LedgerStatus;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -301,6 +302,15 @@ class Base extends Core
                     Errorcode::BAD_REQUEST_INSUFFICIENT_BALANCE,
                     null,
                     $exceptionData
+                );
+            }
+            else if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            {
+                throw new IntegrationException(
+                    'Error occurred in API monolith create journal route integration with ledger service',
+                    ErrorCode::SERVER_ERROR_INTEGRATION_ERROR,
+                    $exceptionData,
+                    $e
                 );
             }
             else

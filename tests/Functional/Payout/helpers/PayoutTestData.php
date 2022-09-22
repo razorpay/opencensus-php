@@ -18236,6 +18236,21 @@ return [
         ],
     ],
 
+    'testPayoutReversalWithJournalLedgerCronInLedgerReverseShadowWithPseudoReversals' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/ledger_service/create_journal_cron',
+            'content'   => [
+                'entity'        => 'reversal',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success',
+            ],
+        ],
+    ],
+
     'testUpdateMerchantSlaForOnHoldPayoutsInsufficientPermission' => [
         'request' => [
             'method'    => 'PUT',

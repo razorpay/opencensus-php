@@ -66,6 +66,7 @@ use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\PartnerBankHealth\Events;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Workflow\PayoutAmountRules;
 use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Merchant\Balance\FreePayout;
@@ -6439,7 +6440,61 @@ class Core extends Base\Core
         }
     }
 
-    public function failPayoutAfterLedgerStatusCheck($payout)
+    /**
+     * This function is used to call ledger within the ledger status async job for payouts.
+     * When we find in this async job that a debit journal entry wasn't created for a particular payout in ledger,
+     * we use this function to retry creation of journal entries.
+     *
+     * @throws Exception\BaseException | \Throwable
+     */
+    public function tryProcessingOfPayoutPostLedgerFailureElseFail($payout)
+    {
+        $ledgerRequest = null;
+        $ledgerResponse = null;
+
+        try
+        {
+            $payoutsLedgerProcessor = new PayoutsLedgerProcessor($payout);
+
+            $ledgerRequest  = $payoutsLedgerProcessor->createLedgerPayloadFromEntity($payout);
+            $ledgerResponse = $payoutsLedgerProcessor->createJournalEntryFromJob($ledgerRequest);
+        }
+        catch (Exception\BaseException $be)
+        {
+            $exceptionData = $be->getData();
+
+            $this->trace->traceException($be, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR,
+                [
+                    'ledger_request'    => $ledgerRequest,
+                ]);
+
+            if (strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE) !== false or
+                strpos($exceptionData['response_body']['msg'], ErrorCode::BAD_REQUEST_VALIDATION_FAILURE) !== false)
+            {
+                $this->failPayoutPostLedgerFailure($payout);
+
+                return;
+            }
+
+            throw $be;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_TIMEOUT,
+                [
+                    'ledger_request'    => $ledgerRequest,
+                ]);
+
+            // We are throwing this error again so that it gets caught at the LedgerStatus.php job class level
+            // If it is caught there, we check if the SQS job will be retried
+            // This ensures retry logic for creation of this payout in the async job.
+            throw $e;
+        }
+
+        $this->processPayoutAfterLedgerStatusCheck($payout, $ledgerResponse);
+    }
+
+    public function failPayoutPostLedgerFailure($payout)
     {
         $this->trace->info(
             TraceCode::FAIL_PAYOUT_AFTER_LEDGER_STATUS_SUCCESS,
@@ -7335,6 +7390,45 @@ class Core extends Base\Core
             return true;
         }
 
+        return false;
+    }
+
+    // since this is only used by ledger reverse shadow flow
+    // this function assumes that we are only dealing with X banking balance based fund account payouts
+    // this needs to be checked to decide how to call stork when merchant/customer wallet payouts are involved later.
+    // check the call `new Stork(...)->list($merchantId)`, where the product is passed as 'banking' by default in the constructor
+    public function checkIfPayoutFailedWebhookIsSubscribed(string $merchantId): bool
+    {
+        try
+        {
+            $response = (new Stork($this->mode ?? ModeConstants::LIVE, Product::BANKING))->list($merchantId);
+
+            $this->trace->info(
+                TraceCode::WEBHOOK_V2_PATH_STORK_OPERATION_SUCCESS,
+                ['response' => $response]
+            );
+
+            foreach ($response['items'][0]['subscriptions'] as $subscription)
+            {
+                if ($subscription['eventmeta']['name'] === 'payout.failed')
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::STORK_CALL_FOR_PAYOUT_FAILED_EVENT_STATUS_FAILED,
+                ['merchant_id' => $merchantId]
+            );
+        }
+
+        // For any exception or other issue, we shall assume that failed webhook is not subscribed as default.
         return false;
     }
 

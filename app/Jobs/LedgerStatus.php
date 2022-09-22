@@ -195,9 +195,29 @@ class LedgerStatus extends Job
             $adj = $this->repoManager->adjustment->findByPublicId($this->transactorId);
             (new AdjustmentCore)->failAdjustmentAfterLedgerStatusCheck($adj);
         }
-        else if (strpos($this->transactorId, self::PAYOUT_PREFIX) !== false) {
+        else if (strpos($this->transactorId, self::PAYOUT_PREFIX) !== false)
+        {
             $payout = $this->repoManager->payout->findByPublicId($this->transactorId);
-            (new PayoutCore)->failPayoutAfterLedgerStatusCheck($payout);
+
+            $payoutCoreHandler = new PayoutCore();
+
+            // This is a special case for payouts.
+            // We decided that, if due to some indeterminate error, a journal entry was not created on ledger
+            // then we shall retry creation of the journal entry for payout debit.
+            // These retries shall happen till the penultimate attempt.
+            // In the last attempt, we shall fail the payout.
+            // This is only supposed to happen in the async job, and not via cron.
+            // That is, the cron will always directly fail the payout, whereas async job will retry
+            // creation of debit journal entry
+            if (($this->attempts() < (self::MAX_RETRY_ATTEMPTS - 1)) and
+                ($this->retryEnabled === true))
+            {
+                $payoutCoreHandler->tryProcessingOfPayoutPostLedgerFailureElseFail($payout);
+            }
+            else
+            {
+                $payoutCoreHandler->failPayoutPostLedgerFailure($payout);
+            }
         }
     }
 
@@ -268,7 +288,7 @@ class LedgerStatus extends Job
             // successful status checked
             $this->markDebitEntityAsSuccess($response);
         }
-        catch (\RZP\Exception\RuntimeException $ex)
+        catch (\RZP\Exception\BaseException $ex)
         {
             $exceptionData = $ex->getData();
 

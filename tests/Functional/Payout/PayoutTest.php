@@ -20438,12 +20438,62 @@ class PayoutTest extends OAuthTestCase
                                       ],
                                   ]
                               ));
+
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.failed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
         $this->fixtures->merchant->addFeatures([
                                                    Feature\Constants::HIGH_TPS_PAYOUT_INGRESS,
                                                    Feature\Constants::LEDGER_REVERSE_SHADOW
                                                ]);
-
-        $this->expectWebhookEvent('payout.failed');
 
         $txnsBefore = $this->getDbEntities(Constants\Entity::TRANSACTION);
 
@@ -20486,7 +20536,140 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('Insufficient balance to process payout', $payout->getFailureReason());
         $this->assertNotNull($payout->getFailedAt());
         $this->assertNull($payout->getTransactionId());
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadFailed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadFailed['event']['service']);
+        $this->assertEquals('payout.failed', $payloadFailed['event']['name']);
+        $this->assertEquals('merchant', $payloadFailed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
     }
+
+    public function testFailureInProcessingOfCreateRequestSubmittedPayoutForHighTpsViaLedgerReverseShadowWithoutFailedWebhookSubscription()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                       'Unexpected response code received from Ledger service.',
+                       [
+                           'status_code'   => 400,
+                           'response_body' => [
+                               'code' => 'invalid_argument',
+                               'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE',
+                           ],
+                       ]
+                   ));
+
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.reversed',],
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::HIGH_TPS_PAYOUT_INGRESS,
+            Feature\Constants::LEDGER_REVERSE_SHADOW
+        ]);
+
+        $txnsBefore = $this->getDbEntities(Constants\Entity::TRANSACTION);
+
+        $this->fixtures->on('test')->edit('balance', $this->bankingBalance->getId(), ['balance' => 1000]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $payout  = $this->getDbLastEntity('payout');
+        $balance = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        // Manually pushing into the queue because this is the only way to do this.
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), false);
+
+        /** @var PayoutsIntermediateTransactions\Entity $intermediateTxn */
+        $intermediateTxn = $this->getDbLastEntity(Constants\Entity::PAYOUTS_INTERMEDIATE_TRANSACTIONS);
+
+        $txnsAfter = $this->getDbEntities(Constants\Entity::TRANSACTION);
+
+        /** @var Balance\Entity $balanceAfter */
+        $balanceAfter = $this->getDbEntityById('balance', $this->bankingBalance->getId());
+
+        /** @var Payout\Entity $payout */
+        $payout->reload();
+
+        // assertions on balance_id
+        $this->assertEquals($balanceAfter->getId(), $payout->getBalanceId());
+
+        // assertions on closing balance
+        $this->assertEquals($balanceAfter->getBalance(), $balance->getBalance());
+
+        $this->assertNull($intermediateTxn);
+
+        $this->assertEquals($txnsAfter->toArrayPublic()['count'], $txnsBefore->toArrayPublic()['count']);
+
+        // assertions on payout status
+        $this->assertEquals('reversed', $payout->getStatus());
+        $this->assertEquals('SERVER_ERROR_INTEGRATION_ERROR', $payout->getStatusCode());
+        $this->assertEquals('Payout failed. Contact support for help.', $payout->getFailureReason());
+        $this->assertNull($payout->getFailedAt());
+        $this->assertNotNull($payout->getReversedAt());
+        $this->assertNull($payout->getTransactionId());
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadReversed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadReversed['event']['service']);
+        $this->assertEquals('payout.reversed', $payloadReversed['event']['name']);
+        $this->assertEquals('merchant', $payloadReversed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadReversed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
+    }
+
     public function testProcessingOfCreateRequestSubmittedPayoutForHighTpsWithLowBalanceAndQueueIfLowBalanceFlagSet()
     {
         $txnsBefore = $this->getDbEntities(Constants\Entity::TRANSACTION);
@@ -23046,9 +23229,167 @@ class PayoutTest extends OAuthTestCase
                                   ]
                               ));
 
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.failed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
         $this->testProcessingOfCreateRequestSubmittedPayoutInsufficientBalance();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadFailed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadFailed['event']['service']);
+        $this->assertEquals('payout.failed', $payloadFailed['event']['name']);
+        $this->assertEquals('merchant', $payloadFailed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
+    }
+
+    public function testFailureInProcessingOfCreateRequestSubmittedPayoutInLedgerReverseShadowModeWithoutFailedWebhookSubscription()
+    {
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                       'Unexpected response code received from Ledger service.',
+                       [
+                           'status_code'   => 400,
+                           'response_body' => [
+                               'code' => 'invalid_argument',
+                               'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE',
+                           ],
+                       ]
+                   ));
+
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.reversed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->testCreatePayoutForRequestSubmitted();
+
+        $this->fixtures->edit('balance', $this->bankingBalance['id'], ['balance' => 0]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // Manually pushing into the queue because this is the only way to do this.
+        PayoutPostCreateProcess::dispatch('test', $payout->getId(), false);
+
+        $payout->reload();
+
+        $publicResponse = $payout->toArrayPublic();
+
+        $this->assertEquals('reversed', $payout['internal_status']);
+        $this->assertEquals('reversed', $publicResponse['status']);
+        $this->assertNotNull($payout['reversed_at']);
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadReversed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadReversed['event']['service']);
+        $this->assertEquals('payout.reversed', $payloadReversed['event']['name']);
+        $this->assertEquals('merchant', $payloadReversed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadReversed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
     }
 
     public function testProcessingOfCreateRequestSubmittedPayoutInsufficientBalanceQueueFlagTrueInLedgerReverseShadowMode()
@@ -23219,6 +23560,57 @@ class PayoutTest extends OAuthTestCase
                                   ]
                               ));
 
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.failed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
         $this->ba->cronAuth();
 
         $this->makeRequestAndGetContent($this->testData['testProcessBulkPayoutDelayedInitiation']['request']);
@@ -23233,6 +23625,165 @@ class PayoutTest extends OAuthTestCase
 
         // Assert that no payouts remain in batch_processing state
         $this->assertEquals(0, $batchProcessingPayouts->count());
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadFailed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadFailed['event']['service']);
+        $this->assertEquals('payout.failed', $payloadFailed['event']['name']);
+        $this->assertEquals('merchant', $payloadFailed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
+    }
+
+    public function testProcessBatchSubmittedPayoutsFailureInLedgerReverseShadowModeWithoutFailedWebhookSubscription()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->ba->batchAuth();
+
+        $request =
+            [
+                'url'     => '/payouts/bulk',
+                'method'  => 'POST',
+                'content' => [
+                    [
+                        'razorpayx_account_number' => '2224440041626905',
+                        'payout'                   => [
+                            'amount'       => '100',
+                            'currency'     => 'INR',
+                            'mode'         => 'NEFT',
+                            'purpose'      => 'refund',
+                            'narration'    => '123',
+                            'reference_id' => ''
+                        ],
+                        'fund'                     => [
+                            'account_type'   => 'bank_account',
+                            'account_name'   => 'Vivek Karna',
+                            'account_IFSC'   => 'HDFC0003780',
+                            'account_number' => '50100244702362',
+                            'account_vpa'    => ''
+                        ],
+                        'contact'                  => [
+                            'type'         => 'customer',
+                            'name'         => 'Vivek Karna',
+                            'email'        => 'sampleone@example.com',
+                            'mobile'       => '9988998899',
+                            'reference_id' => ''
+                        ],
+                        'notes'                    => [
+                            'abc' => 'xyz',
+                        ],
+                        'idempotency_key'          => 'batch_abc123',
+
+                    ]
+                ]
+            ];
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $request['server'] = $headers;
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                       'Unexpected response code received from Ledger service.',
+                       [
+                           'status_code'   => 400,
+                           'response_body' => [
+                               'code' => 'invalid_argument',
+                               'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE',
+                           ],
+                       ]
+                   ));
+
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.reversed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($this->testData['testProcessBulkPayoutDelayedInitiation']['request']);
+
+        $payouts = $this->getDbEntities('payout');
+
+        // Assertions for first payout (NEFT)
+        $this->assertEquals(Payout\Mode::NEFT, $payouts[0]['mode']);
+        $this->assertEquals(Payout\Status::REVERSED, $payouts[0]['status']);
+
+        $batchProcessingPayouts = $this->getDbEntities('payout', ['status' => Payout\Status::BATCH_SUBMITTED]);
+
+        // Assert that no payouts remain in batch_processing state
+        $this->assertEquals(0, $batchProcessingPayouts->count());
+
+        $payout = $this->getDbLastEntity('payout');
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadReversed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadReversed['event']['service']);
+        $this->assertEquals('payout.reversed', $payloadReversed['event']['name']);
+        $this->assertEquals('merchant', $payloadReversed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadReversed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
     }
 
     public function testOnHoldPayoutCreateAndProcessInLedgerReverseShadowMode()
@@ -23345,6 +23896,57 @@ class PayoutTest extends OAuthTestCase
 
         $this->testData[__FUNCTION__] = $this->testData['testOnHoldPayoutCreateAndProcess'];
 
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadFailed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.failed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
         $this->startTest();
 
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
@@ -23355,6 +23957,142 @@ class PayoutTest extends OAuthTestCase
 
         $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
         $this->assertEquals($payout2['status'], Payout\Status::FAILED);
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadFailed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadFailed['event']['service']);
+        $this->assertEquals('payout.failed', $payloadFailed['event']['name']);
+        $this->assertEquals('merchant', $payloadFailed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout3["id"], $payload->payload->payout->entity->id);
+    }
+
+    public function testOnHoldPayoutCreateAndProcessFailureInLedgerReverseShadowModeWithoutFailedWebhookSubscription()
+    {
+        $this->app['config']->set('applications.ledger.enabled', false);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown();
+
+        $payout3 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals($payout1['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout2['status'], Payout\Status::ON_HOLD);
+        $this->assertEquals($payout3['status'], Payout\Status::ON_HOLD);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                       'Unexpected response code received from Ledger service.',
+                       [
+                           'status_code'   => 400,
+                           'response_body' => [
+                               'code' => 'invalid_argument',
+                               'msg'  => 'validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE',
+                           ],
+                       ]
+                   ));
+
+        $this->ba->cronAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testOnHoldPayoutCreateAndProcess'];
+
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.reversed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals( Payout\Status::REVERSED, $payout1['status']);
+
+        $payout3 = $this->getDbEntityById('payout', $payout3['id'])->toArray();
+        $this->assertEquals(Payout\Status::REVERSED, $payout3['status']);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals(Payout\Status::REVERSED, $payout2['status']);
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadReversed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadReversed['event']['service']);
+        $this->assertEquals('payout.reversed', $payloadReversed['event']['name']);
+        $this->assertEquals('merchant', $payloadReversed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadReversed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout3["id"], $payload->payload->payout->entity->id);
     }
 
     public function testOnHoldPayoutCreateAndProcessWithInsufficientBalanceWithQueueIfLowBalanceFlagTrueInLedgerReverseShadowMode()
@@ -23936,6 +24674,157 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(Status::REVERSED, $payout['status']);
 
         $this->assertEquals($payoutReversal->getTransactionId(), $txn->getId());
+    }
+
+    // This test is written to test that the ledger cron for reversals does not pick up pseudo reversals.
+    // That is, reversals created in lieu of payout failures as the merchant has not integrated failed status
+    public function testPayoutReversalWithJournalLedgerCronInLedgerReverseShadowWithPseudoReversals()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $this->app['config']->set('applications.ledger.enabled', false);
+
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $newPayout = $this->fixtures->payout->createPayoutWithoutTransaction([
+            'id'              => 'IwHCToefEWVgpR',
+            'merchant_id'     => '10000000000000',
+            'status'          => 'reversed',
+            'purpose'         => 'payout',
+            'purpose_type'    => 'refund',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'balance_id'      => $this->bankingBalance->getId(),
+            'fees'            => 175,
+            'tax'             => 75,
+        ]);
+
+        $newReversal = $this->fixtures->reversal->createReversalWithoutTransaction([
+            'id'              => 'IwHCToefEWVgpr',
+            'merchant_id'     => '10000000000000',
+            'entity_type'     => 'payout',
+            'entity_id'       => 'IwHCToefEWVgpR',
+            'amount'          => $newPayout->getFees(),
+            'created_at'      => Carbon::now()->subMinutes(19)->getTimestamp(),
+            'balance_id'      => $this->bankingBalance->getId(),
+        ]);
+
+        $this->createPayout([
+            'id'              => 'IwHCToefEWVgph',
+            'merchant_id'     => '10000000000000',
+            'status'          => 'created',
+            'purpose'         => 'payout',
+            'purpose_type'    => 'refund',
+            'transaction_id'  => '00000000000001',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'reversed',
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $payoutReversal = $this->getDbLastEntity('reversal');
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock(Ledger::class, [$this->app])->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchByTransactor')
+                   ->andReturn([
+                       "body" => [
+                           "id"                => "sampleJournlID",
+                           "created_at"        => $currentTime->timestamp,
+                           "updated_at"        => $currentTime->timestamp,
+                           "amount"            => "130.000000",
+                           "base_amount"       => "130.000000",
+                           "currency"          => "INR",
+                           "tenant"            => "X",
+                           "transactor_id"     => $payoutReversal->getPublicId(),
+                           "transactor_event"  => "payout_reversed",
+                           "transaction_date"  => $currentTime->timestamp,
+                           "ledger_entry" => [
+                               [
+                                   "id"          => "HNjsypHNXdSiei",
+                                   "created_at"  => $currentTime->timestamp,
+                                   "updated_at"  => $currentTime->timestamp,
+                                   "merchant_id" => "HN59oOIDACOXt3",
+                                   "journal_id"  => "sampleJournlID",
+                                   "account_id"  => "GoRNyEuu9Hl0OZ",
+                                   "amount"      => "130.000000",
+                                   "base_amount" => "130.000000",
+                                   "type"        => "credit",
+                                   "currency"    => "INR",
+                                   "balance"     => "2134532.000000"
+                               ],
+                               [
+                                   "id"          => "HNjsypHPOUlxDR",
+                                   "created_at"  => $currentTime->timestamp,
+                                   "updated_at"  => $currentTime->timestamp,
+                                   "merchant_id" => "HN59oOIDACOXt3",
+                                   "journal_id"  => "sampleJournlID",
+                                   "account_id"  => "HN5AGgmKu0ki13",
+                                   "amount"      => "130.000000",
+                                   "base_amount" => "130.000000",
+                                   "type"        => "debit",
+                                   "currency"    => "INR",
+                                   "balance"     => (string) ($this->bankingBalance->getBalance() + 130.000000),
+                                   'account_entities' => [
+                                       'account_type'       => ['payable'],
+                                       'fund_account_type'  => ['merchant_va'],
+                                   ],
+                               ]
+                           ]
+                       ]
+                   ]);
+
+        // unlink reversal from transaction to simulate issue in txn creation during dual write
+        $this->fixtures->edit('reversal', $payoutReversal->getId(),
+            [
+                'transaction_id' => null,
+                'created_at' => Carbon::now()->subMinutes(20)->getTimestamp()
+            ]);
+
+        // unlink txn from rvrsl to simulate issue in txn creation during dual write
+        $this->fixtures->edit('transaction', $txn->getId(), ['entity_id' => 'boohooboohooaa']);
+
+        $payoutReversal->reload();
+        $txn->reload();
+
+        $this->assertNull($payoutReversal->getTransactionId());
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payoutReversal->reload();
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(Status::REVERSED, $payout['status']);
+
+        $this->assertEquals($payoutReversal->getTransactionId(), $txn->getId());
+
+        $newTxn = $this->getDbEntity('transaction', ['entity_id' => $newReversal->getId()]);
+
+        $this->assertNull($newTxn);
     }
 
     public function testSkipEmailNotificationForFeatureEnabledMerchantOnPayoutProcessed()
@@ -26613,6 +27502,59 @@ class PayoutTest extends OAuthTestCase
                 ]
             ));
 
+        $eventData = $this->testData[__FUNCTION__];
+
+        $this->mockServiceStorkRequest(function($path, $payload) use ($eventData, &$payloadFailed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.failed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_FAILED:
+                        $payloadFailed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.failed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
         // Setting the redis config as empty initially
@@ -26629,18 +27571,6 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('applications.ledger.enabled', true);
         $balance = $this->getDbLastEntity('balance');
         $this->fixtures->balance->edit($balance['id'], ['balance' => 11000000]);
-
-        $eventData = $this->testData[__FUNCTION__];
-        $this->mockServiceStorkRequest(
-            function ($path, $payload) use ($eventData, & $payloadFailed) {
-                $this->assertContains($payload['event']['name'], ['payout.failed']);
-                switch ($payload['event']['name']) {
-                    case Event::PAYOUT_FAILED:
-                        $payloadFailed = $payload;
-                        break;
-            }
-            return new \Requests_Response();
-        });
 
         $this->dispatchQueuedPayouts();
 
@@ -26659,6 +27589,129 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('payout.failed', $payloadFailed['event']['name']);
         $this->assertEquals('merchant', $payloadFailed['event']['owner_type']);
         $this->assertEquals('10000000000000', $payloadFailed['event']['owner_id']);
+        $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
+    }
+
+    public function testPayoutReversedEventDispatchForPayoutFailedInLedgerReverseShadowModeWithoutFailedWebhookSubscription()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateAndProcessQueuedPayout'];
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                       'Unexpected response code received from Ledger service.',
+                       [
+                           'status_code'   => 400,
+                           'response_body' => [
+                               'code' => 'invalid_argument',
+                               'msg' => 'validation_failure: validation_failure: BAD_REQUEST_INSUFFICIENT_BALANCE',
+                           ],
+                       ]
+                   ));
+
+        $this->mockServiceStorkRequest(function($path, $payload) use (&$payloadReversed)
+        {
+            $response = new \Requests_Response();
+            $response->status_code = 200;
+            $response->success = true;
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/ProcessEvent')
+            {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name']) {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+            }
+
+            if ($path === '/twirp/rzp.stork.webhook.v1.WebhookAPI/List')
+            {
+                $content = [
+                    'webhooks' => [
+                        [
+                            'id'            => 'EZ4ezgl4124qKu',
+                            'created_at'    => '2020-04-01T03:32:10Z',
+                            'service'       => 'rx-test',
+                            'owner_id'      => '10000000000000',
+                            'owner_type'    => 'merchant',
+                            'context'       => '{"mode":"test"}',
+                            'disabled_at'   => '1970-01-01T00:00:00Z',
+                            'url'           => 'http://webhook.com/v1/dummy/route',
+                            'subscriptions' => [
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxI',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.processed',],
+                                ],
+                                [
+                                    'id'         => 'EZ4ezhzqgKNjxJ',
+                                    'created_at' => '2020-04-01T03:32:10Z',
+                                    'eventmeta'  => ['name' => 'payout.reversed',],
+                                ],
+                            ],
+                        ],
+                    ]
+                ];
+
+                $response->body = json_encode($content);
+            }
+
+            return $response;
+        });
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        // Setting the redis config as empty initially
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_QUEUED_PAYOUTS_PAGINATION => []]);
+
+        // create a queued payout
+        $this->startTest();
+
+        // fetch payout and check status to be queued
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals($payout->getStatus(), Payout\Status::QUEUED);
+
+        // Add enough balance to process queued payout
+        $this->app['config']->set('applications.ledger.enabled', true);
+        $balance = $this->getDbLastEntity('balance');
+        $this->fixtures->balance->edit($balance['id'], ['balance' => 11000000]);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('createJournal')
+                   ->andThrow(new RuntimeException(
+                       'Unexpected response code received from Ledger service.',
+                       [
+                           'status_code'   => 400,
+                           'response_body' => [
+                               'code' => 'invalid_argument',
+                               'msg' => 'validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE',
+                           ],
+                       ]
+                   ));
+
+        $this->dispatchQueuedPayouts();
+
+        // fetch payout and assert that it was failed
+        $payout = $this->getDbLastEntity('payout');
+        $this->assertEquals($payout->getStatus(), Payout\Status::REVERSED);
+
+        // assert if payouts_status_details entry for created for the payout
+        $payoutStatusDetails = $this->getDbLastEntity('payouts_status_details');
+        $this->assertEquals($payoutStatusDetails->getPayoutId(), $payout->getId());
+        $this->assertEquals($payoutStatusDetails->getStatus(), Payout\Status::REVERSED);
+
+        // assertions on the dispatched event
+        $payload = json_decode($payloadReversed["event"]["payload"]);
+        $this->assertEquals('rx-test', $payloadReversed['event']['service']);
+        $this->assertEquals('payout.reversed', $payloadReversed['event']['name']);
+        $this->assertEquals('merchant', $payloadReversed['event']['owner_type']);
+        $this->assertEquals('10000000000000', $payloadReversed['event']['owner_id']);
         $this->assertEquals('pout_' . $payout["id"], $payload->payload->payout->entity->id);
     }
 

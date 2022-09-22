@@ -6775,11 +6775,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const LEDGER_STATUS_QUEUE_JOB_DELETED                       = 'LEDGER_STATUS_QUEUE_JOB_DELETED';
     const LEDGER_STATUS_JOB_RETRY_EXHAUSTED                     = 'LEDGER_STATUS_JOB_RETRY_EXHAUSTED';
 
-    const LEDGER_STATUS_CRON_PAYOUT_INIT                        = 'LEDGER_STATUS_CRON_PAYOUT_INIT';
-    const LEDGER_STATUS_CRON_FAV_INIT                           = 'LEDGER_STATUS_CRON_FAV_INIT';
-    const LEDGER_STATUS_CRON_REVERSAL_INIT                      = 'LEDGER_STATUS_CRON_REVERSAL_INIT';
-    const LEDGER_STATUS_CRON_BANK_TRANSFER_INIT                 = 'LEDGER_STATUS_CRON_BANK_TRANSFER_INIT';
-    const LEDGER_STATUS_CRON_ADJUSTMENT_INIT                    = 'LEDGER_STATUS_CRON_ADJUSTMENT_INIT';
+    const LEDGER_STATUS_CRON_PAYOUT_INIT                               = 'LEDGER_STATUS_CRON_PAYOUT_INIT';
+    const LEDGER_STATUS_CRON_FAV_INIT                                  = 'LEDGER_STATUS_CRON_FAV_INIT';
+    const LEDGER_STATUS_CRON_REVERSAL_INIT                             = 'LEDGER_STATUS_CRON_REVERSAL_INIT';
+    const LEDGER_STATUS_CRON_BANK_TRANSFER_INIT                        = 'LEDGER_STATUS_CRON_BANK_TRANSFER_INIT';
+    const LEDGER_STATUS_CRON_ADJUSTMENT_INIT                           = 'LEDGER_STATUS_CRON_ADJUSTMENT_INIT';
+    const LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT = 'LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT';
+    const LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV    = 'LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV';
 
     const LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW   = 'LEDGER_STATUS_CRON_SKIP_MERCHANT_NOT_REVERSE_SHADOW';
 
@@ -8077,6 +8079,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_USER_ENTITY_RESPONSE                               = 'MERCHANT_USER_ENTITY_RESPONSE';
     const EXCEPTION_CAUSED_BY_LOST_DB_CONNECTION                      = 'EXCEPTION_CAUSED_BY_LOST_DB_CONNECTION';
 
+    const STORK_CALL_FOR_PAYOUT_FAILED_EVENT_STATUS_FAILED            = 'STORK_CALL_FOR_PAYOUT_FAILED_EVENT_STATUS_FAILED';
+    const PAYOUT_FAILED_WEBHOOK_SUBSCRIPTION_STATUS                   = 'PAYOUT_FAILED_WEBHOOK_SUBSCRIPTION_STATUS';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
@@ -8269,9 +8274,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE                => 'Invalid source type on payout',
         self::UPDATE_PAYOUT_ATTACHMENTS_INPUT                       => 'Update Payout Attachments request',
         self::SKIPPING_SENDING_OTP_VIA_SMS_FOR_EMPTY_RECEIVER       => 'Not sending via OTP via SMS as receiver is empty',
+        self::STORK_CALL_FOR_PAYOUT_FAILED_EVENT_STATUS_FAILED      => 'Calling stork to find status of payout failed event subscription failed',
         self::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATE_REQUEST => 'request for creating test payouts for detecting fund loading downtime created',
         self::TEST_PAYOUT_FOR_DETECTING_FUND_LOADING_DOWNTIME_CREATED        => 'test payouts for detecting fund loading downtime created',
         self::STATUS_OF_TEST_PAYOUTS                                         => 'status of test payouts in last five minutes',
+        self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT   => 'Skipped creation of ledger journal for reversal via cron as payout does not have a transaction ID',
+        self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV      => 'Skipped creation of ledger journal for reversal via cron as FAV does not have a transaction ID',
     ];
 
     public static $fileBasedReconTraceCodes = [

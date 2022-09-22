@@ -21,6 +21,7 @@ use RZP\Models\Transaction\CreditType;
 use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Models\FundAccount\Validation\Entity as FavEntity;
 
 class Repository extends Base\Repository
 {
@@ -266,21 +267,35 @@ class Repository extends Base\Repository
 
         $revTransactionIdColumn = $this->repo->reversal->dbColumn(Entity::TRANSACTION_ID);
         $revEntityType          = $this->repo->reversal->dbColumn(Entity::ENTITY_TYPE);
+        $revEntityIdColumn      = $this->repo->reversal->dbColumn(Entity::ENTITY_ID);
         $revBalanceIdColumn     = $this->repo->reversal->dbColumn(Entity::BALANCE_ID);
         $revCreatedAtColumn     = $this->dbColumn(Entity::CREATED_AT);
 
         $revAttrs = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $payoutTxnIdColumn = $this->repo->payout->dbColumn(PayoutEntity::TRANSACTION_ID);
+        $payoutIdColumn    = $this->repo->payout->dbColumn(PayoutEntity::ID);
+        $favTxnIdColumn    = $this->repo->fund_account_validation->dbColumn(FavEntity::TRANSACTION_ID);
+        $favIdColumn       = $this->repo->payout->dbColumn(FavEntity::ID);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $revBalanceIdColumn)
+                    ->leftjoin(Table::PAYOUT, $revEntityIdColumn, '=', $payoutIdColumn)
+                    ->leftjoin(Table::FUND_ACCOUNT_VALIDATION, $revEntityIdColumn, '=',$favIdColumn)
                     ->select($revAttrs)
                     ->whereIn($revEntityType, [Type::PAYOUT, Type::FUND_ACCOUNT_VALIDATION])
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
                     ->whereNull($revTransactionIdColumn)
                     ->whereBetween($revCreatedAtColumn, [$lastTimestamp, $currentTimeStamp])
-                    ->limit($limit)
-                    ->get();
+                    ->where(function($query) use ($favTxnIdColumn, $payoutTxnIdColumn)
+                    {
+                        $query->whereNotNull($payoutTxnIdColumn)
+                              ->OrWhereNotNull($favTxnIdColumn);
+                    })
+                    ->limit($limit);
+
+        return $query->get();
     }
 
     /**
@@ -298,18 +313,32 @@ class Repository extends Base\Repository
         $revIdColumn            = $this->repo->reversal->dbColumn(Entity::ID);
         $revTransactionIdColumn = $this->repo->reversal->dbColumn(Entity::TRANSACTION_ID);
         $revEntityType          = $this->repo->reversal->dbColumn(Entity::ENTITY_TYPE);
+        $revEntityIdColumn      = $this->repo->reversal->dbColumn(Entity::ENTITY_ID);
         $revBalanceIdColumn     = $this->repo->reversal->dbColumn(Entity::BALANCE_ID);
 
         $revAttrs = $this->dbColumn('*');
 
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $payoutTxnIdColumn = $this->repo->payout->dbColumn(PayoutEntity::TRANSACTION_ID);
+        $payoutIdColumn    = $this->repo->payout->dbColumn(PayoutEntity::ID);
+        $favTxnIdColumn    = $this->repo->fund_account_validation->dbColumn(FavEntity::TRANSACTION_ID);
+        $favIdColumn       = $this->repo->payout->dbColumn(FavEntity::ID);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
                     ->join(Table::BALANCE, $balanceIdColumn, '=', $revBalanceIdColumn)
+                    ->leftjoin(Table::PAYOUT, $revEntityIdColumn, '=', $payoutIdColumn)
+                    ->leftjoin(Table::FUND_ACCOUNT_VALIDATION, $revEntityIdColumn, '=', $favIdColumn)
                     ->select($revAttrs)
                     ->whereIn($revEntityType, [Type::PAYOUT, Type::FUND_ACCOUNT_VALIDATION])
                     ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
                     ->whereNull($revTransactionIdColumn)
                     ->whereIn($revIdColumn, $ids)
-                    ->get();
+                    ->where(function($query) use ($favTxnIdColumn, $payoutTxnIdColumn)
+                    {
+                        $query->whereNotNull($payoutTxnIdColumn)
+                              ->OrWhereNotNull($favTxnIdColumn);
+                    });
+
+        return $query->get();
     }
 }

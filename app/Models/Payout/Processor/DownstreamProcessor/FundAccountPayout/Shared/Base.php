@@ -25,6 +25,7 @@ use RZP\Models\Payout\CounterHelper;
 use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\Transaction\CreditType;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\Core as TxnCore;
 use RZP\Constants\Entity as EntityConstant;
@@ -217,12 +218,21 @@ class Base extends FundAccountPayout\Base
         }
         catch (BadRequestException $ex)
         {
+            // We only expect Insufficient balance exception to come here
+            // Because of the way the internal functions handle exceptions from ledger
             $this->failPayoutPostLedgerFailure($payout, $ex->getError()->getInternalErrorCode());
 
             if ($payout->toBeQueued() === false)
             {
                 throw $ex;
             }
+        }
+        catch (IntegrationException $ex)
+        {
+            // All other kinds of BaseExceptions with deterministic 4xx errors propagate as IntegrationExceptions
+            $this->failPayoutPostLedgerFailure($payout, $ex->getError()->getInternalErrorCode());
+
+            throw $ex;
         }
         catch (\Throwable $ex)
         {
@@ -281,17 +291,10 @@ class Base extends FundAccountPayout\Base
 
             if ($payout->toBeQueued() === false)
             {
-                $payout->setStatus(Status::FAILED);
-                $payout->setFailureReason('Insufficient balance to process payout');
-                $payout->setStatusCode($errorCode);
-                $this->trace->info(
-                    TraceCode::PAYOUT_FAILED_IN_LEDGER_FLOW,
-                    [
-                        'payout_id'      => $payout->getId(),
-                        'transaction_id' => $payout->getTransactionId(),
-                        'payout_status'  => $payout->getStatus(),
-                        'failure_reason' => $payout->getFailureReason(),
-                    ]);
+                $payout->setPayoutStatusAfterLedgerFailureAndDispatchEvent(
+                    $errorCode,
+                    'Insufficient balance to process payout'
+                );
             }
             else
             {
@@ -314,19 +317,11 @@ class Base extends FundAccountPayout\Base
             if ($payout->getFeeType() === Entity::FREE_PAYOUT) {
                 (new CounterHelper)->decreaseFreePayoutsConsumedInCaseOfTransactionFailure($payout->getBalanceId());
             }
-            $payout->setStatus(Status::FAILED);
-            $payout->setFailureReason('Payout failed. Contact support for help.');
-            $payout->setStatusCode(ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR);
+
+            $payout->setPayoutStatusAfterLedgerFailureAndDispatchEvent($errorCode);
         }
 
         $this->repo->saveOrFail($payout);
-
-        if ($payout->getStatus() === Status::FAILED)
-        {
-            // fire failed webhook
-            (new PayoutsStatusDetailsCore())->create($payout);
-            $this->app->events->dispatch('api.payout.failed', [$payout]);
-        }
     }
 
     public function createTransactionForLedgerReverseShadow($payout, $ledgerResponse)

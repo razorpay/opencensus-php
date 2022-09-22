@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Payout;
 
-use Carbon\Carbon;
-
 use App;
+use Carbon\Carbon;
+use Razorpay\Trace\Logger;
+
 use RZP\Constants;
 use RZP\Http\Route;
 use RZP\Error\Error;
@@ -19,6 +20,8 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Workflow;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
 use RZP\Models\PayoutLink;
 use RZP\Models\Transaction;
@@ -38,6 +41,7 @@ use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Models\Feature\Constants as Features;
@@ -3186,5 +3190,64 @@ class Entity extends Base\PublicEntity
             ->get();
 
         return $sourceDetails->isEmpty() === false;
+    }
+
+    public function setPayoutStatusAfterLedgerFailureAndDispatchEvent(string $errorCode = null, string $errorReason = null)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($errorCode === ErrorCode::BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE_BANKING)
+        {
+            // We are not going to send payout.reversed event for insufficient balance for now
+            // TODO: waiting for product to come up with a clear way for this
+            $isFailedWebhookEnabled = true;
+        }
+        else
+        {
+            $isFailedWebhookEnabled = (new Core())->checkIfPayoutFailedWebhookIsSubscribed($this->getMerchantId());
+        }
+
+        $status = $isFailedWebhookEnabled ? Status::FAILED : Status::REVERSED;
+
+        $app['trace']->info(
+            TraceCode::PAYOUT_FAILED_WEBHOOK_SUBSCRIPTION_STATUS,
+            [
+                'merchant_id'         => $this->getMerchantId(),
+                'subscription_status' => $isFailedWebhookEnabled,
+                'payout_id'           => $this->getId(),
+            ]
+        );
+
+        if ($isFailedWebhookEnabled === false)
+        {
+            $reversal = (new Reversal\Core())->createReversalWithoutTransactionForLedgerServiceHandling($this);
+        }
+
+        if (empty($errorReason) === true)
+        {
+            $errorReason = 'Payout failed. Contact support for help.';
+        }
+
+        if (empty($errorCode) === true)
+        {
+            $errorCode = ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR;
+        }
+
+        $this->setStatus($status);
+        $this->setFailureReason($errorReason);
+        $this->setStatusCode($errorCode);
+        (new PayoutsStatusDetails\Core())->create($this);
+
+        $event = $isFailedWebhookEnabled ? 'api.payout.failed' : 'api.payout.reversed';
+        $app->events->dispatch($event, [$this]);
+
+        $app['trace']->info(
+            TraceCode::PAYOUT_FAILED_IN_LEDGER_FLOW,
+            [
+                'payout_id'      => $this->getId(),
+                'transaction_id' => $this->getTransactionId(),
+                'payout_status'  => $this->getStatus(),
+                'failure_reason' => $this->getFailureReason(),
+            ]);
     }
 }

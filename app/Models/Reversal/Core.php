@@ -734,6 +734,45 @@ class Core extends Base\Core
         return $reversal;
     }
 
+    // No DA Handling, as ledger reverse shadow only runs for VA.
+    public function createReversalWithoutTransactionForLedgerServiceHandling(Payout\Entity $payout): Entity
+    {
+        if ($payout->getFeeType() === Transaction\CreditType::REWARD_FEE)
+        {
+            $amount = $payout->getAmount();
+        }
+        else
+        {
+            $amount = $payout->getAmount() + $payout->getFees();
+        }
+
+        $reversalInput = [
+            Entity::AMOUNT   => $amount,
+            Entity::CURRENCY => $payout->getCurrency(),
+            Entity::UTR      => ($payout->getReturnUtr() ?? $payout->getUtr()),
+        ];
+
+        $reversal = $this->create($reversalInput);
+
+        $reversal->setChannel($payout->getChannel());
+
+        $reversal->merchant()->associate($payout->merchant);
+
+        $reversal->entity()->associate($payout);
+
+        $reversal->balance()->associate($payout->balance);
+
+        // No txns for this reversal!!!!!
+        // This reversal is only made as a substitute for payout failed scenarios.
+        // This facilitates merchants who have not subscribed to payout failed webhook.
+        // Since a payout failing doesn't actually create a transaction, we won't make a transaction here too
+        // NOR there will be a ledger entry
+
+        $this->repo->saveOrFail($reversal);
+
+        return $reversal;
+    }
+
     /**
      * This function is only used by payouts.
      * Hence the ledger reverse shadow feature check only uses payout entity based checker
@@ -1318,6 +1357,19 @@ class Core extends Base\Core
                 {
                     $payout = $this->repo->payout->find($sourceId);
 
+                    if (empty($payout->getTransactionId()) === true)
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT,
+                            [
+                                'reversal_id' => $rev->getPublicId(),
+                                'payout_id' => $payout->getPublicId(),
+                            ]
+                        );
+
+                        continue;
+                    }
+
                     $response = null;
                     $ftsData = [];
                     $status = Payout\Status::FAILED;
@@ -1347,6 +1399,20 @@ class Core extends Base\Core
                 else
                 {
                     $fav = $this->repo->fund_account_validation->find($sourceId);
+
+                    if (empty($fav->getTransactionId()) === true)
+                    {
+                        $this->trace->info(
+                            TraceCode::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV,
+                            [
+                                'reversal_id' => $rev->getPublicId(),
+                                'fav_id' => $fav->getPublicId(),
+                            ]
+                        );
+
+                        continue;
+                    }
+
                     $ledgerRequest = (new FavLedger())->createLedgerPayloadFromEntity($fav, [], FundAccountValidation\Status::CREATED);
                 }
 
