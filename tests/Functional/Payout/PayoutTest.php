@@ -231,6 +231,15 @@ class PayoutTest extends OAuthTestCase
         return $payout;
     }
 
+    public function testCreatePayoutInMerchantDashboard(): array
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        return $this->getLastEntity('payout', true);
+    }
+
     // Test data migration to PS side payouts, payout_logs, payout_details and payout_status_details tables.
     // State transition: null -> on_hold -> created -> initiated -> processed
     public function testDataMigrationOnHoldToProcessed()
@@ -21375,8 +21384,11 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
-                                                Feature\Constants::BENE_SMS_NOTIFICATION]);
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
 
         $attributes = [
             'bas_business_id' => '10000000000000',
@@ -21436,7 +21448,8 @@ class PayoutTest extends OAuthTestCase
         Mail::assertQueued(PayoutMail::class);
     }
 
-    public function testBeneNotificationOnPayoutProcessedNotSentIfSourceIsVendorPayments()
+    // Dashboard Payout - Both Sms and Email
+    public function testBeneEmailAndSmsNotificationOnDashboardPayoutProcessed()
     {
         Mail::fake();
 
@@ -21444,8 +21457,308 @@ class PayoutTest extends OAuthTestCase
 
         $contact = $this->getDbEntityById('contact', '1000001contact');
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
-            Feature\Constants::BENE_SMS_NOTIFICATION]);
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayoutInMerchantDashboard();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+            PayoutProcessedNotification::SMS_TEMPLATE,
+            $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // Dashboard Payout - Only Sms. No Email
+    public function testBeneNoEmailNotificationOnDashboardPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayoutInMerchantDashboard();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+            PayoutProcessedNotification::SMS_TEMPLATE,
+            $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // Dashboard Payout - No Sms. No Email
+    public function testBeneNoEmailNoSmsNotificationOnDashboardPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayoutInMerchantDashboard();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // Dashboard Payout - No Sms. Only Email
+    public function testBeneNoSmsNotificationOnDashboardPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayoutInMerchantDashboard();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // API Payout - No Sms. Only Email
+    public function testBeneEmailNotificationOnAPIPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // API Payout - Both Sms and Email
+    public function testBeneEmailAndSmsNotificationOnAPIPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+            PayoutProcessedNotification::SMS_TEMPLATE,
+            $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // API Payout - Only Sms. No Email
+    public function testBeneNoEmailNotificationOnAPIPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+            PayoutProcessedNotification::SMS_TEMPLATE,
+            $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    // API Payout - No Sms. No Email
+    public function testBeneNoEmailAndNoSmsNotificationOnAPIPayoutProcessed()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
+        $attributes = [
+            'bas_business_id' => '10000000000000',
+            'merchant_id'     => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $storkMock = Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $storkMock = $this->expectStorkSendSmsRequest($storkMock,
+            PayoutProcessedNotification::SMS_TEMPLATE,
+            $contact->getContact());
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        Mail::assertNotQueued(PayoutProcessedContactCommunication::class);
+    }
+
+    public function testBeneNoEmailNotificationOnDashboardPayoutProcessedWithSourceVP()
+    {
+        Mail::fake();
+
+        $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $contact = $this->getDbEntityById('contact', '1000001contact');
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_DB_PAYOUT_BENE_SMS]);
 
         $attributes = [
             'bas_business_id' => '10000000000000',
@@ -21482,6 +21795,12 @@ class PayoutTest extends OAuthTestCase
     {
         Mail::fake();
 
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
+
         $this->fixtures->edit('contact', '1000001contact', ['email' => 'naruto@gmail.com', 'contact' => '919999188882']);
 
         $this->testCreatePayout();
@@ -21505,8 +21824,11 @@ class PayoutTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::BENE_EMAIL_NOTIFICATION,
-                                                Feature\Constants::BENE_SMS_NOTIFICATION]);
+        $this->setMockRazorxTreatment([RazorxTreatment::RX_PAYOUT_RECEIPT_BENE_NOTIFICATION => 'on', RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $this->fixtures->merchant->removeFeatures([Feature\Constants::DISABLE_API_PAYOUT_BENE_EMAIL]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ENABLE_API_PAYOUT_BENE_SMS]);
 
         $this->fixtures->edit('contact', '1000001contact', ['email' => null, 'contact' => '919999188882']);
 

@@ -586,6 +586,8 @@ final class RazorxTreatment
     /** Experiment to enable custom access control */
     public const RX_CUSTOM_ACCESS_CONTROL_ENABLED = "rx_custom_access_control_enabled";
 
+    public const RX_PAYOUT_RECEIPT_BENE_NOTIFICATION = "rx_payout_receipt_bene_notification";
+
     public const PANSOURCE_CHANGE_RUPAY = 'pansource_change_rupay';
 
     public const  SMARTCOLLECT_SERVICE_BANK_TRANSFER = 'smartcollect_service_bank_transfer';

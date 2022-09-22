@@ -1665,6 +1665,40 @@ return [
         ],
     ],
 
+    'testCreatePayoutInMerchantDashboard' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_with_otp',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'fund_account_id' => 'fa_100000000000fa',
+                'otp' =>'0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'mode'            => 'IMPS',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 100,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'refund',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 90,
+                'fees'            => 590,
+            ],
+        ],
+    ],
+
     'testApprovePayoutWithBearerAuth' => [
         'request'  => [
             'server' => [

@@ -1346,11 +1346,17 @@ class Constants
 
     const ONE_CC_COUPONS = 'one_cc_coupons';
 
+    // Deprecated
+    const BENE_EMAIL_NOTIFICATION = 'bene_email_notification';
+    const BENE_SMS_NOTIFICATION   = 'bene_sms_notification';
+
     /**
      * Flags to send notifications to beneficiary  when payout is processed
      */
-    const BENE_EMAIL_NOTIFICATION = 'bene_email_notification';
-    const BENE_SMS_NOTIFICATION   = 'bene_sms_notification';
+    const DISABLE_API_PAYOUT_BENE_EMAIL = 'disable_api_payout_email';
+    const DISABLE_DB_PAYOUT_BENE_EMAIL = 'disable_db_payout_email';
+    const ENABLE_API_PAYOUT_BENE_SMS = 'enable_api_payout_sms';
+    const DISABLE_DB_PAYOUT_BENE_SMS = 'disable_db_payout_sms';
 
     /**
      * Flag to enable the new granular downtimes apis & webhooks.
@@ -2042,6 +2048,10 @@ class Constants
         self::MERCHANT_ROUTE_WA_INFRA         => true,
         self::BENE_EMAIL_NOTIFICATION         => true,
         self::BENE_SMS_NOTIFICATION           => true,
+        self::DISABLE_API_PAYOUT_BENE_EMAIL   => true,
+        self::DISABLE_DB_PAYOUT_BENE_EMAIL    => true,
+        self::ENABLE_API_PAYOUT_BENE_SMS      => true,
+        self::DISABLE_DB_PAYOUT_BENE_SMS      => true,
         self::ALLOW_NETWORK_TOKENS            => true,
         self::DISABLE_PAYPAL_AS_BACKUP        => true,
         self::PAYOUT_ASYNC_INGRESS            => true,
@@ -2960,6 +2970,26 @@ class Constants
         self::ICICI_2FA => [
             'feature'       => self::ICICI_2FA,
             'display_name'  => 'Feature for enabling ICICI 2FA flow for payouts',
+            'documentation' => '',
+        ],
+        self::DISABLE_API_PAYOUT_BENE_EMAIL => [
+            'feature'       => self::DISABLE_API_PAYOUT_BENE_EMAIL,
+            'display_name'  => 'Feature to disable email notification to beneficiary for Payouts made via API',
+            'documentation' => '',
+        ],
+        self::DISABLE_DB_PAYOUT_BENE_EMAIL => [
+            'feature'       => self::DISABLE_DB_PAYOUT_BENE_EMAIL,
+            'display_name'  => 'Feature to disable email notification to beneficiary for Payouts made via Dashboard',
+            'documentation' => '',
+        ],
+        self::ENABLE_API_PAYOUT_BENE_SMS => [
+            'feature'       => self::ENABLE_API_PAYOUT_BENE_SMS,
+            'display_name'  => 'Feature to enable sms notification to beneficiary for Payouts made via API',
+            'documentation' => '',
+        ],
+        self::DISABLE_DB_PAYOUT_BENE_SMS => [
+            'feature'       => self::DISABLE_DB_PAYOUT_BENE_SMS,
+            'display_name'  => 'Feature to disable sms notification to beneficiary for Payouts made via Dashboard',
             'documentation' => '',
         ],
     ];

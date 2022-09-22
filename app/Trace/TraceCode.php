@@ -7279,6 +7279,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_SEND_EMAIL_FINISHED                                    = 'PAYOUT_SEND_EMAIL_FINISHED';
     const PAYOUT_SEND_SMS_INIT                                          = 'PAYOUT_SEND_SMS_INIT';
     const PAYOUT_SEND_SMS_FINISHED                                      = 'PAYOUT_SEND_SMS_FINISHED';
+    const PAYOUT_BENE_NOTIFICATION_EXPERIMENT                           = 'PAYOUT_BENE_NOTIFICATION_EXPERIMENT';
+    const BENE_EMAIL_SMS_NOTIFICATION_FEATURE_FLAG_STATUS               = 'BENE_EMAIL_SMS_NOTIFICATION_FEATURE_FLAG_STATUS';
 
     const MERCHANT_BUSINESS_TYPE_DISPLAY_NAME_NOT_FOUND                 = 'MERCHANT_BUSINESS_TYPE_DISPLAY_NAME_NOT_FOUND';
 
