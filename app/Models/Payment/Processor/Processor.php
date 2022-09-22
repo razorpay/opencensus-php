@@ -301,6 +301,7 @@ class Processor
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
+    const BARRICADE_SQS_PUSH       = 'barricade_sqs_push';
     const BARRICADE_PAYMENT_GATEWAY = 'barricade_supported_gateway';
     const DEMO_MERCHANT            = 'demo_merchants';
 
@@ -3785,19 +3786,26 @@ class Processor
 
     protected function publishMessageToMetro($payment)
     {
-        $method_result = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
+        $methodResult = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
 
-        if ($method_result !== 'on'){
+        $sqsPush = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_SQS_PUSH, $this->mode);
+
+        if  (($methodResult !== 'on') and
+             ($sqsPush != 'on'))
+        {
             return;
         }
+
         if ( $payment->isCard() === true && $payment->isGatewayCaptured() === false)
         {
             return;
         }
-        $gateway_result = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
-        $demo_merchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
+        $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
+        $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
 
-        if ( $gateway_result !== 'on' || $demo_merchant !== 'control'){
+        if (( $gatewayResult !== 'on' || $demoMerchant !== 'control') and
+            ( $sqsPush != 'on'))
+        {
             return;
         }
 
@@ -3808,12 +3816,24 @@ class Processor
 
         try
         {
-            if($payment->isUpi() === true){
+            if ($payment->isUpi() === true)
+            {
                 $data = $this->getAutorizeVerifyData($payment);
             }
-            else{
-            $data = $this->getCaptureVerifyData($payment);
+            else
+            {
+                $data = $this->getCaptureVerifyData($payment);
             }
+
+            if ($sqsPush === 'on')
+            {
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
+
+                $this->app['queue']->connection('sqs')->pushRaw(json_encode($data), $queueName);
+
+                return;
+            }
+
             $publishData['data'] = json_encode($data);
 
             $response = $this->app['metro']->publish(self::CAPTURE_VERIFY_METRO_TOPIC, $publishData);

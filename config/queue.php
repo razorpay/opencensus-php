@@ -414,6 +414,11 @@ return [
         'live'       => env('PAYMENT_LINKS_PAYMENT_FAILED_QUEUE'),
     ],
 
+    'barricade_verify' => [
+        'test'       => env('BARRICADE_VERIFY_QUEUE'),
+        'live'       => env('BARRICADE_VERIFY_QUEUE'),
+    ],
+
     'sync_order_pg_router' => [
         'test'      => env('AWS_SYNC_ORDER_PG_ROUTER_TEST_QUEUE'),
         'live'      => env('AWS_SYNC_ORDER_PG_ROUTER_LIVE_QUEUE'),
