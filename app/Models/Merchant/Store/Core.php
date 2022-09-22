@@ -35,8 +35,8 @@ class Core extends Base\Core
         $fetchData = $this->fetchValuesFromStore($merchantId, ConfigKey::ONBOARDING_NAMESPACE, [$key], Constants::INTERNAL);
 
         $data = [
-            Constants::NAMESPACE    => ConfigKey::ONBOARDING_NAMESPACE,
-            $key                    => $fetchData[$key] + $increment
+            Constants::NAMESPACE => ConfigKey::ONBOARDING_NAMESPACE,
+            $key                 => $fetchData[$key] + $increment
         ];
 
         $this->updateMerchantStore($merchantId, $data, Constants::INTERNAL);
@@ -52,6 +52,27 @@ class Core extends Base\Core
         return $this->getAll($merchantId, $namespace, $role);
     }
 
+    //delete all keys in the keys list for the role
+    // if role does not have permission to delete error is thrown
+    //if namespace is empty error is thrown
+    public function deleteMerchantStore(string $merchantId, $namespace, array $keys, string $role = Constants::PUBLIC)
+    {
+        $data = [];
+
+        $validator = (new Validator());
+
+        $validator->validateNamespace(null, $namespace);
+
+        (new Validator())->validateDeleteRequest($namespace,$keys, $role);
+
+        foreach ($keys as $key)
+        {
+            $store = Factory::getStoreForNamespaceAndKey($namespace, $key);
+
+            $store->delete($merchantId, $namespace, $key);
+        }
+
+    }
     //return all readable keys in the keys list for the role
     //if namespace is empty error is thrown
     public function fetchValuesFromStore(string $merchantId, $namespace, array $keys, string $role = Constants::PUBLIC)
@@ -119,6 +140,4 @@ class Core extends Base\Core
 
         return $data;
     }
-
-
 }

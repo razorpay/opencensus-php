@@ -14,6 +14,7 @@ class Constants
     const ELASTIC_SEARCH = 'elastic_search';
     const READ           = 'read';
     const WRITE          = 'write';
+    const DELETE         = 'delete';
 
     const TTL                                                    = 'ttl';
     const VISIBILITY_TTL_IN_SECONDS                              = 5184000;

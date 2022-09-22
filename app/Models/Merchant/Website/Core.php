@@ -8,8 +8,10 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
-
+use RZP\Models\Merchant\Store\Core as StoreCore;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
 
 class Core extends Base\Core
 {
@@ -43,6 +45,14 @@ class Core extends Base\Core
 
             else
             {
+                if (isset($input[Entity::MERCHANT_WEBSITE_DETAILS]) === true)
+                {
+                    (new StoreCore())->deleteMerchantStore($websiteDetail->getMerchantId(),
+                                                           ConfigKey::ONBOARDING_NAMESPACE,
+                                                           [ConfigKey::POLICY_DATA],
+                                                           StoreConstants::INTERNAL);
+                }
+
                 $input = $this->array_deep_merge_recursive($websiteDetail->toArray(), $input);
 
                 unset($input[Entity::UPDATED_AT]);

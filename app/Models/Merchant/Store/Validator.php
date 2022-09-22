@@ -10,31 +10,31 @@ use RZP\Exception\BadRequestValidationFailureException;
 class Validator extends Base\Validator
 {
     protected static $updateRules = [
-        Constants::NAMESPACE                                        => 'required|string|custom',
-        ConfigKey::MTU_COUPON_POPUP_COUNT                           => 'filled|integer|min:1|max:5',
-        ConfigKey::REFERRED_COUNT                                   => 'filled|integer',
-        ConfigKey::REFERRAL_LINK                                    => 'filled|string',
-        ConfigKey::REFERRAL_CODE                                    => 'filled|string',
-        ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT                     => 'filled|integer|min:0|max:5',
-        ConfigKey::REFEREE_SUCCESS_POPUP_COUNT                      => 'filled|integer|min:0|max:5',
-        ConfigKey::IS_SIGNED_UP_REFEREE                             => 'filled|bool',
-        ConfigKey::REFERRAL_AMOUNT                                  => 'filled|integer',
-        ConfigKey::REFERRAL_AMOUNT_CURRENCY                         => 'filled|string',
-        ConfigKey::REFEREE_NAME                                     => 'sometimes|array',
-        ConfigKey::REFEREE_ID                                       => 'sometimes|array',
-        ConfigKey::GST_DETAILS_FROM_PAN                             => 'filled|json',
-        ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT           => 'filled|integer',
-        ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT          => 'filled|integer',
-        ConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP                  => 'filled|bool',
-        ConfigKey::NO_DOC_ONBOARDING_INFO                           => 'filled|array',
-        ConfigKey::POLICY_DATA                                      => 'filled|array',
-        ConfigKey::GET_COMPANY_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT   => 'filled|integer',
-        ConfigKey::GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT  => 'filled|integer',
-        ConfigKey::PROMOTER_PAN_NAME_SUGGESTED                      => 'sometimes|string',
-        ConfigKey::BUSINESS_NAME_SUGGESTED                          => 'sometimes|string',
-        ConfigKey::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED           => 'filled|bool',
-        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP          => 'filled|integer',
-        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT              => 'filled|integer|min:0|max:5'
+        Constants::NAMESPACE                                       => 'required|string|custom',
+        ConfigKey::MTU_COUPON_POPUP_COUNT                          => 'filled|integer|min:1|max:5',
+        ConfigKey::REFERRED_COUNT                                  => 'filled|integer',
+        ConfigKey::REFERRAL_LINK                                   => 'filled|string',
+        ConfigKey::REFERRAL_CODE                                   => 'filled|string',
+        ConfigKey::REFERRAL_SUCCESS_POPUP_COUNT                    => 'filled|integer|min:0|max:5',
+        ConfigKey::REFEREE_SUCCESS_POPUP_COUNT                     => 'filled|integer|min:0|max:5',
+        ConfigKey::IS_SIGNED_UP_REFEREE                            => 'filled|bool',
+        ConfigKey::REFERRAL_AMOUNT                                 => 'filled|integer',
+        ConfigKey::REFERRAL_AMOUNT_CURRENCY                        => 'filled|string',
+        ConfigKey::REFEREE_NAME                                    => 'sometimes|array',
+        ConfigKey::REFEREE_ID                                      => 'sometimes|array',
+        ConfigKey::GST_DETAILS_FROM_PAN                            => 'filled|json',
+        ConfigKey::GET_GST_DETAILS_FROM_BVS_ATTEMPT_COUNT          => 'filled|integer',
+        ConfigKey::BANK_ACCOUNT_VERIFICATION_ATTEMPT_COUNT         => 'filled|integer',
+        ConfigKey::ENABLE_MTU_CONGRATULATORY_POPUP                 => 'filled|bool',
+        ConfigKey::NO_DOC_ONBOARDING_INFO                          => 'filled|array',
+        ConfigKey::POLICY_DATA                                     => 'filled|array',
+        ConfigKey::GET_COMPANY_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT  => 'filled|integer',
+        ConfigKey::GET_PROMOTER_PAN_DETAILS_FROM_BVS_ATTEMPT_COUNT => 'filled|integer',
+        ConfigKey::PROMOTER_PAN_NAME_SUGGESTED                     => 'sometimes|string',
+        ConfigKey::BUSINESS_NAME_SUGGESTED                         => 'sometimes|string',
+        ConfigKey::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED          => 'filled|bool',
+        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP         => 'filled|integer',
+        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT             => 'filled|integer|min:0|max:5'
     ];
 
     protected static $fetchRules  = [
@@ -85,6 +85,23 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateDeleteRequest(string $namespace, array $keys, string $role)
+    {
+        foreach ($keys as $key)
+        {
+            if (Constants::NAMESPACE === $key)
+            {
+                continue;
+            }
+            $config = ConfigKey::NAMESPACE_KEY_CONFIG[$namespace][$key];
+
+            if ($this->isPermittedAction($config, Constants::DELETE, $role) === false)
+            {
+                throw new InvalidPermissionException('Not permitted action ' . $role . ' for key ' . $key);
+            }
+        }
+    }
+
     public function validateRole($role)
     {
         if (in_array($role, self::$validRoles) === false)
@@ -112,5 +129,4 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException('Not a valid namespace ' . $namespace . ' and key: ' . $key);
         }
     }
-
 }

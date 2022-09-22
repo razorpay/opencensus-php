@@ -43,6 +43,13 @@ class RedisStore extends Store
 
     }
 
+    public function delete(string $merchantId, string $namespace, string $key)
+    {
+        $cacheKey = $this->getCacheKey($merchantId, $namespace, $key);
+
+        Cache::forget($cacheKey);
+    }
+
     protected function getCacheKey(string $merchantId, string $namespace, string $key)
     {
         return self::PREFIX . ':' . $merchantId . ':' . $namespace . ':' . $key;
