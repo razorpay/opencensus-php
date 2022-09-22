@@ -5,11 +5,14 @@ namespace RZP\Models\QrPayment;
 use RZP\Base\Common;
 use RZP\Constants\Es;
 use RZP\Constants\HyperTrace;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\BharatQr;
 use RZP\Models\BankTransfer;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrV2;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Status as QrV2Status;
 use RZP\Models\QrPaymentRequest;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Trace\Tracer;
@@ -118,10 +121,14 @@ class Service extends Base\Service
 
     public function fetchPaymentStatusByQrCodeId(string $qrCodeId)
     {
-        $paymentId = $this->getPaymentIdFromQRCodeId($qrCodeId);
+        [$qrCodeStatus, $paymentId] = $this->getQrCodeStatusAndPaymentIdFromQRCodeId($qrCodeId);
 
         if ($paymentId === '')
         {
+            if ($qrCodeStatus === QrV2Status::CLOSED) {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED);
+            }
+
             return [Payment\Entity::STATUS => self::UNPROCESSED_RESPONSE];
         }
 
@@ -138,29 +145,40 @@ class Service extends Base\Service
             );
     }
 
-    public function setQrCodePaymentStatusInCache(string $qrCodeId, ?Payment\Entity $payment = null): void
+    public function setQrCodeStatusAndPaymentIdInCache(QrV2 $qrCode, ?Payment\Entity $payment = null): void
     {
         $paymentId = $payment ? $payment->getId() : '';
 
-        $status = Constants::CREATED;
+        $paymentStatus = '';
 
         $ttl = Constants::CREATED_STATUS_TTL;
 
         if ($this->isPaymentSuccessful($payment)) {
-            $status = $payment->getStatus();
+            $paymentStatus = $payment->getStatus();
 
             $ttl = Constants::SUCCESS_STATUS_TTL;
         }
 
-        $this->putPaymentStatusInCache($qrCodeId, $status, $paymentId, $ttl);
+        $this->putQrCodeAndPaymentStatusInCache($qrCode->getId(), $qrCode->getStatus(), $paymentId, $paymentStatus, $ttl);
     }
 
-    private function getPaymentIdFromCacheValue($cacheValue): string
+    /**
+     * @param string $cacheValue
+     *
+     * @return string[]
+     */
+    private function getQrCodeStatusAndPaymentIdFromCacheValue(string $cacheValue): array
     {
-        return explode(Constants::CACHE_VALUE_SEPARATOR, $cacheValue)[1] ?? '';
+        [$qrCodeStatus, $paymentId, $paymentStatus] = explode(Constants::CACHE_VALUE_SEPARATOR, $cacheValue, 1000);
+
+        return [$qrCodeStatus, $paymentId];
     }
 
-    private function getPaymentIdFromQRCodeId(string $qrCodeId): string
+    /**
+     * @param string $qrCodeId
+     * @return string[]
+     */
+    private function getQrCodeStatusAndPaymentIdFromQRCodeId(string $qrCodeId): array
     {
         $key = self::getCacheKeyForQRCodeId($qrCodeId);
 
@@ -170,29 +188,36 @@ class Service extends Base\Service
             return $this->handleIfCacheExpired($qrCodeId, $this->merchant->getId());
         }
 
-        return $this->getPaymentIdFromCacheValue($cacheValue);
+        return $this->getQrCodeStatusAndPaymentIdFromCacheValue($cacheValue);
     }
 
-    protected function handleIfCacheExpired(string $qrCodeId, string $merchantId): string
+    protected function handleIfCacheExpired(string $qrCodeId, string $merchantId): array
     {
-        return  $this->getPaymentIdFromDataBase($qrCodeId, $merchantId);
+        $paymentId = $this->getPaymentIdFromDataBase($qrCodeId);
+
+        /** @var QrV2 $qrCode */
+        $qrCode = $this->repo->qr_code->findByIdAndMerchantId(QrV2::silentlyStripSign($qrCodeId), $merchantId);
+
+        if (!empty($paymentId)) {
+            $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $merchantId);
+
+            if ($this->isPaymentSuccessful($payment)) {
+                $this->setQrCodeStatusAndPaymentIdInCache($qrCode, $payment);
+
+                return [$qrCode->getStatus(), $payment->getId()];
+            }
+        }
+
+        $this->setQrCodeStatusAndPaymentIdInCache($qrCode);
+
+        return [$qrCode->getStatus(), $paymentId];
     }
 
-    protected function getPaymentIdFromDataBase(string $qrCodeId, string $merchantId): string
+    protected function getPaymentIdFromDataBase(string $qrCodeId): string
     {
         try
         {
-            $paymentId = $this->repo->qr_payment->getLatestExpectedPaymentIdForQrCodeId($qrCodeId) ?? '';
-
-            if (!empty($paymentId)) {
-                $payment = $this->repo->payment->findByIdAndMerchantId($paymentId, $merchantId);
-
-                if ($this->isPaymentSuccessful($payment)) {
-                    $this->setQrCodePaymentStatusInCache($qrCodeId, $payment);
-
-                    return $payment->getId();
-                }
-            }
+            return $this->repo->qr_payment->getLatestExpectedPaymentIdForQrCodeId($qrCodeId) ?? '';
         }
         catch (\Throwable $e)
         {
@@ -203,26 +228,30 @@ class Service extends Base\Service
             );
         }
 
-        $this->setQrCodePaymentStatusInCache($qrCodeId);
-
         return '';
     }
 
     /**
      * @param string $qrCodeId
-     * @param string $status
+     * @param string $qrCodeStatus
      * @param string|null $paymentId
+     * @param string|null $paymentStatus
      * @param int $ttl
      * @return void
      */
-    protected function putPaymentStatusInCache(
+    protected function putQrCodeAndPaymentStatusInCache(
         string  $qrCodeId,
-        string  $status,
+        string  $qrCodeStatus,
         ?string $paymentId = null,
+        ?string $paymentStatus = null,
         int     $ttl = Constants::DEFAULT_CACHE_TTL
     ): void
     {
-        $cacheValue = $status . Constants::CACHE_VALUE_SEPARATOR . $paymentId;
+        $cacheValue = implode(Constants::CACHE_VALUE_SEPARATOR, [
+           $qrCodeStatus,
+           $paymentId,
+           $paymentStatus,
+        ]);
 
         try
         {

@@ -9,6 +9,7 @@ use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
+use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\Tracer;
@@ -133,6 +134,12 @@ class Core extends QrCode\Core
                 $this->repo->vpa->deleteById($vpaId, $qrCode->merchant->getId());
             }
         });
+
+        if ($closeReason !== CloseReason::PAID && $qrCode->isCheckoutQrCode()) {
+            // Updating cache only for unpaid & closed QrCodes as we don't have
+            // access to PaymentId here
+            (new QrPaymentService())->setQrCodeStatusAndPaymentIdInCache($qrCode);
+        }
 
         return $qrCode;
     }
