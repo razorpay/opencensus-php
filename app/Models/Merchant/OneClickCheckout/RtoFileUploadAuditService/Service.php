@@ -17,10 +17,10 @@ class Service
 
     const PARAMS = [
         self::CREATE_FILE_UPLOAD_AUDIT  =>   [
-            self::PATH   => '/twirp/rzp.rto_prediction.merchant_file_upload_audits.v1.MerchantFileUploadAuditApi/Create',
+            self::PATH   => 'twirp/rzp.rto_prediction.merchant_file_upload_audits.v1.MerchantFileUploadAuditApi/Create',
         ],
         self::LIST_FILE_UPLOAD_AUDIT  =>   [
-            self::PATH   => '/twirp/rzp.rto_prediction.merchant_file_upload_audits.v1.MerchantFileUploadAuditApi/List',
+            self::PATH   => 'twirp/rzp.rto_prediction.merchant_file_upload_audits.v1.MerchantFileUploadAuditApi/List',
         ],
     ];
 

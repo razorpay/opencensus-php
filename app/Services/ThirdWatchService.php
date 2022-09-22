@@ -170,6 +170,8 @@ class ThirdWatchService
             $rtoPredictionServiceResponse = false;
             $rtoPredictionServiceExperimentation = false;
             $rtoPredictionServiceRiskTier = "low";
+            $rtoReasons = array();
+            $rtoCategory = "";
 
             try
             {
@@ -188,10 +190,31 @@ class ThirdWatchService
                 if (isset($response['meta_data']['risk_tier']) === true)
                 {
                     $rtoPredictionServiceRiskTier = $response['meta_data']['risk_tier'];
+
+                    if ($rtoPredictionServiceRiskTier === "medium" || $rtoPredictionServiceRiskTier === "high")
+                    {
+                        if (isset($response['meta_data']['rto_reasons']) === true)
+                        {
+                            $rtoReasons = $response['meta_data']['rto_reasons'];
+                        }
+                        else
+                        {
+                            $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_EMPTY_RTO_REASONS);
+                        }
+
+                        if (isset($response['meta_data']['rto_category']) === true)
+                        {
+                            $rtoCategory = $response['meta_data']['rto_category'];
+                        }
+                        else
+                        {
+                            $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_EMPTY_RTO_CATEGORY);
+                        }
+                    }
                 }
                 else
                 {
-                    $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_EMPTY_RISK_TIER, $dimensions);
+                    $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_EMPTY_RISK_TIER);
                 }
             }
             catch (Exception\BadRequestException $e)
@@ -225,6 +248,8 @@ class ThirdWatchService
                 Order1cc\Fields::COD_ELIGIBLE => $codEligible,
                 Order1cc\Fields::COD_ELIGIBILITY_EXPERIMENTATION => $rtoPredictionServiceExperimentation,
                 Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER => $rtoPredictionServiceRiskTier,
+                Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS => $rtoReasons,
+                Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY => $rtoCategory,
                 ];
 
             $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);

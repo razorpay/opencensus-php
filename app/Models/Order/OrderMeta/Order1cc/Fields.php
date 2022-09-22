@@ -57,6 +57,8 @@ class Fields
     const COD_ELIGIBLE = 'cod_eligible';
     const COD_ELIGIBILITY_EXPERIMENTATION = 'experimentation';
     const COD_ELIGIBILITY_RISK_TIER = 'risk_tier';
+    const COD_ELIGIBILITY_RTO_REASONS = 'rto_reasons';
+    const COD_ELIGIBILITY_RTO_CATEGORY = 'rto_category';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
 
