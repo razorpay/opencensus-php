@@ -47,7 +47,7 @@ class CardVault
     const RAZORPAYX =   'razorpayx';
     const BU_NAMESPACE_MPAN = 'payments_mpan';
 
-    const TOKENIZATION_ROUTES = array(Card\Constants::FETCH_PAR_VAL, Card\Constants::TOKENS_CRYPTOGRAM, Card\Constants::TOKENS, Card\Constants::TOKENS_MIGRATE, Card\Constants::TOKENS_FETCH, Card\Constants::TOKENS_DELETE, Card\Constants::TOKENS_UPDATE);
+    const TOKENIZATION_ROUTES = array(Card\Constants::FETCH_PAR_VAL, Card\Constants::TOKENS_CRYPTOGRAM, Card\Constants::TOKENS, Card\Constants::TOKENS_MIGRATE, Card\Constants::TOKENS_FETCH, Card\Constants::TOKENS_DELETE, Card\Constants::TOKENS_UPDATE, Card\Constants::FETCH_FINGERPRINTS);
 
     protected $baseUrl;
 
@@ -787,6 +787,14 @@ class CardVault
         return $response;
     }
 
+    public function fetchFingerprint($input)
+    {
+        $this->trace->info(TraceCode::FETCH_FINGERPRINT);
+
+        $response = $this->sendRequest(Card\Constants::FETCH_FINGERPRINTS, 'post', $input);
+
+        return $response;
+    }
 
     public function migrateVaultTokenNamespace($input)
     {
@@ -1014,6 +1022,10 @@ class CardVault
         if($url === 'cards/fingerprints')
         {
             $action = 'par_api';
+        }
+        else if( $url === 'card_fingerprints')
+        {
+            $action = 'fetch_fingerprint';
         }
 
         else if (strlen($url) >6 && substr($url, 0, 6) == 'tokens')

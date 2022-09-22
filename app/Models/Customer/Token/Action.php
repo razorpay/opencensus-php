@@ -13,4 +13,5 @@ class Action
     const DELETE            = 'delete';
     const UPDATE            = 'update';
     const PAR_API           = 'par_api';
+    const FETCH_FINGERPRINT = 'fetch_fingerprint';
 }

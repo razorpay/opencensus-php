@@ -1281,6 +1281,16 @@ class EventCode
         'name'    => 'FETCH_TOKEN.REQUEST.PROCESSED',
     ];
 
+    public const FETCH_FINGERPRINT_REQUEST_RECEIVED = [
+        'group'   => 'token_hq',
+        'name'    => 'FETCH_FINGERPRINT.REQUEST.PROCESSED',
+    ];
+
+    public const FETCH_FINGERPRINT_REQUEST_PROCESSED = [
+        'group'   => 'token_hq',
+        'name'    => 'FETCH_FINGERPRINT.REQUEST.PROCESSED',
+    ];
+
     public const NETWORK_CRYPTOGRAM_REQUEST_RECEIVED = [
         'group'   => 'token_hq',
         'name'    => 'NETWORK_CRYPTOGRAM.REQUEST.RECEIVED',
@@ -1374,5 +1384,20 @@ class EventCode
     const PARTNERSHIPS_COMMISSION_INVOICE_PROCESSED  = [
         'group' => 'onboarding',
         'name'  => 'partnerships.commission.invoice.processed',
+    ];
+
+    public const ASYNC_TOKENISATION_FETCH_PAR_INITIATED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.fetch_par.initiated'
+    ];
+
+    public const ASYNC_TOKENISATION_FETCH_PAR_FAILED = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.fetch_par.failed'
+    ];
+
+    public const ASYNC_TOKENISATION_FETCH_PAR_SUCCESS = [
+        'group'   => 'async_tokenisation',
+        'name'    => 'async_tokenisation.fetch_par.success'
     ];
 }

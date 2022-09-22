@@ -1190,7 +1190,7 @@ class TokenisationTest extends TestCase
 
                     $token = base64_encode($input['card']['vault_token']);
                     $response['token']  = $token;
-
+                    $response['providerReferenceId'] = "12345678910123";
                     $response['fingerprint'] = strrev($token);
                     $response['last4'] = 1234;
 

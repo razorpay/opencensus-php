@@ -30,6 +30,8 @@ class Event extends Base\Core
 
     const MIGRATE_TOKEN                = 'MIGRATE_TOKEN';
 
+    const FETCH_FINGERPRINT            = 'FETCH_FINGERPRINT';
+
     const EVENT_TYPE                   = 'token-events';
 
     const EVENT_VERSION                = 'v1';
@@ -43,6 +45,7 @@ class Event extends Base\Core
         Action::PAR_API                  => self::PAR_API,
         Action::MIGRATE                  => self::MIGRATE_TOKEN,
         Action::UPDATE                   => self::UPDATE_TOKEN,
+        Action::FETCH_FINGERPRINT        => self::FETCH_FINGERPRINT
     ];
 
     const EVENT_STRING_CODE_MAPPING = [
@@ -50,6 +53,8 @@ class Event extends Base\Core
         "NETWORK_TOKENISATION_RESPONSE_RECEIVED"             => EventCode::NETWORK_TOKENISATION_RESPONSE_RECEIVED,
         "FETCH_TOKEN_REQUEST_RECEIVED"                       => EventCode::FETCH_TOKEN_REQUEST_RECEIVED,
         "FETCH_TOKEN_REQUEST_PROCESSED"                      => EventCode::FETCH_TOKEN_REQUEST_PROCESSED,
+        "FETCH_FINGERPRINT_REQUEST_RECEIVED"                 => EventCode::FETCH_FINGERPRINT_REQUEST_RECEIVED,
+        "FETCH_FINGERPRINT_REQUEST_PROCESSED"                => EventCode::FETCH_FINGERPRINT_REQUEST_PROCESSED,
         "NETWORK_CRYPTOGRAM_REQUEST_RECEIVED"                => EventCode::NETWORK_CRYPTOGRAM_REQUEST_RECEIVED,
         "NETWORK_CRYPTOGRAM_REQUEST_SENT"                    => EventCode::NETWORK_CRYPTOGRAM_REQUEST_SENT,
         "NETWORK_CRYPTOGRAM_RESPONSE_RECEIVED"               => EventCode::NETWORK_CRYPTOGRAM_RESPONSE_RECEIVED,

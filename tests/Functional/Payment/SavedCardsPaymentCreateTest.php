@@ -898,7 +898,9 @@ class SavedCardsPaymentCreateTest extends TestCase
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
                         $response['fingerprint'] = strrev($input['token']);
-                    break;
+                        $response['providerReferenceId'] = "12345678910123";
+
+                        break;
                 }
                 return $response;
             });
@@ -992,6 +994,8 @@ class SavedCardsPaymentCreateTest extends TestCase
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
                         $response['fingerprint'] = strrev($input['token']);
+                        $response['providerReferenceId'] = "12345678911234";
+                        
                     break;
                 }
                 return $response;
@@ -1081,6 +1085,8 @@ class SavedCardsPaymentCreateTest extends TestCase
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
                         $response['fingerprint'] = strrev($input['token']);
+                        $response['providerReferenceId'] = "12345678911234";
+
                     break;
                 }
                 return $response;
@@ -1165,6 +1171,7 @@ class SavedCardsPaymentCreateTest extends TestCase
                         $this->assertEquals('NDAwMDQwMDAwMDAwMDAwNA==', $input['token']);
                         $response['token'] = strrev($input['token']);
                         $response['fingerprint'] = strrev($input['token']);
+                        $response['providerReferenceId'] = "12345678911234";
                     break;
                 }
                 return $response;

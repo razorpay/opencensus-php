@@ -7118,12 +7118,12 @@ trait Authorize
 
                 $asyncTokenisationJobId = "paymentmigrate";
 
-                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId);
+                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
 
                 return;
             }
 
-            $core->migrateToTokenizedCard($token, $cardInput);
+            $core->migrateToTokenizedCard($token, $cardInput, $payment);
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::MIGRATE);
         }
@@ -11637,7 +11637,7 @@ trait Authorize
             ) {
                 $globalToken = (new Token\Core())->createGlobalTokenFromLocalToken($token,$payment->getGateway());
 
-                SavedCardTokenisationJob::dispatch($this->mode, $globalToken->getId(), $payment->getId());
+                SavedCardTokenisationJob::dispatch($this->mode, $globalToken->getId(), $payment->getId(), $payment->getId());
             }
         }
         catch(\Exception $ex)

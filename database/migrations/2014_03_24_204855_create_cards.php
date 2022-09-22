@@ -103,6 +103,10 @@ class CreateCards extends Migration
                  ->nullable()
                  ->default(null);
 
+            $table->char(Card::PROVIDER_REFERENCE_ID, 14)
+                 ->nullable()
+                 ->default(null);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Card::CREATED_AT);
             $table->integer(Card::UPDATED_AT);
@@ -113,6 +117,7 @@ class CreateCards extends Migration
             $table->index(Card::VAULT);
             $table->index(Card::VAULT_TOKEN);
             $table->index(Card::GLOBAL_FINGERPRINT);
+            $table->index(Card::PROVIDER_REFERENCE_ID);
 
             $table->index(Card::INTERNATIONAL);
 

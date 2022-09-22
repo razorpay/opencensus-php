@@ -400,6 +400,43 @@ class CardVault extends Base\Core
         return $input;
     }
 
+    //This function is for fetching par value for each card entity using provider reference id from vault/network
+    public function getParValueForCard($card)
+    {
+        $input = [
+            "card" => [
+                "id"       => $card->getProviderReferenceId(),
+            ],
+            "token"    => $card->getCardVaultToken(),
+            "provider" => $card->getNetwork()
+        ];
+
+        $response = $this->app['card.cardVault']->fetchFingerprint($input);
+
+        $cardFingerprint = null ;
+
+        try
+        {
+            if(isset($response['service_provider_tokens'][0]['provider_data']))
+            {
+                $cardFingerprint = $response["service_provider_tokens"][0]["provider_data"]["payment_account_reference"]
+                    ?? $response["service_provider_tokens"][0]["provider_data"]["network_reference_id"];
+
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::CARD_FETCH_FINGERPRINT_EXCEPTION,
+                [
+                    'message' => $e
+                ]
+            );
+        }
+
+        return $cardFingerprint;
+    }
+
     public function updateToken($vaultToken, $updateData)
     {
         $input = $updateData;

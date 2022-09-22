@@ -7,6 +7,8 @@ use RZP\Models\Customer\Token;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Throwable;
+use RZP\Models\Card\Entity as CardEntity;
+use RZP\Diag\EventCode;
 use RZP\Models\Card;
 
 class ParAsyncTokenisationJob extends Job
@@ -62,6 +64,9 @@ class ParAsyncTokenisationJob extends Job
 
         try
         {
+
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_FETCH_PAR_INITIATED, $card);
+
             $this->trace->info(TraceCode::PAR_ASYNC_TOKENISATION_JOB_REQUEST, [
                 "card_id"                   => $this->cardId,
                 'network'                   => strtolower($card->getNetwork()),
@@ -72,9 +77,9 @@ class ParAsyncTokenisationJob extends Job
 
             list($network, $data) = $this->tokenCore->fetchParValue($cardInput, true);
 
-            $card_fingerprint_id = $data["fingerprint"] ?? $card->getGlobalFingerPrint();
+            $card_fingerprint_id = $data["fingerprint"];
 
-            $card->setGlobalFingerprint($card_fingerprint_id);
+            $card->setProviderReferenceId($card_fingerprint_id);
 
             $card->saveOrFail();
 
@@ -82,8 +87,12 @@ class ParAsyncTokenisationJob extends Job
                 'card_id'             => $this->cardId,
                 'timeTaken'           => millitime() - $startTime,
                 'network'             => $card->getNetwork(),
-                'card_fingerprint_id' => $card_fingerprint_id
+                'card_fingerprint_id' => $card_fingerprint_id,
+                'card'                => $card,
+                'response'            => $data
             ]);
+
+            $this->triggerEvent(EventCode::ASYNC_TOKENISATION_FETCH_PAR_SUCCESS, $card);
 
             $this->delete();
 
@@ -91,6 +100,8 @@ class ParAsyncTokenisationJob extends Job
         }
         catch (Throwable $e)
         {
+            $this->trackFailedFetchParEvent($e, $card ?? new CardEntity());
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
@@ -103,6 +114,35 @@ class ParAsyncTokenisationJob extends Job
 
             $this->checkRetry($e);
         }
+    }
+
+    protected function triggerEvent(array $eventData, CardEntity $card, array $customProperties = []): void
+    {
+        $properties = [
+            'card_id'                   => $this->cardId,
+            'card_network'              => $card->getNetwork(),
+            'card_issuer'               => $card->getIssuer(),
+            'attempt'                   => $this->attempts(),
+            'card_fingerprint'          => $card->getProviderReferenceId()
+        ];
+
+        $properties = array_merge($properties, $customProperties);
+
+        app('diag')->trackTokenisationEvent($eventData, $properties);
+    }
+
+    protected function trackFailedFetchParEvent(Throwable $e, CardEntity $card): void
+    {
+        $error_details = [
+            'message' => $e->getMessage(),
+            'code'    => $e->getCode(),
+        ];
+
+        $properties = [
+            'error_detail' => json_encode($error_details),
+        ];
+
+        $this->triggerEvent(EventCode::ASYNC_TOKENISATION_FETCH_PAR_FAILED, $card, $properties);
     }
 
     protected function checkRetry(Throwable $e): void

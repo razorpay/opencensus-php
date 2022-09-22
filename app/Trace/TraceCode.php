@@ -63,6 +63,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_BALANCE_REQUEST                                 = 'FETCH_BALANCE_REQUEST';
     const FETCH_MULTIPLE_BALANCE_REQUEST                        = 'FETCH_MULTIPLE_BALANCE_REQUEST';
     const FETCH_MULTIPLE_MERCHANT_BALANCE_REQUEST               = 'FETCH_MULTIPLE_MERCHANT_BALANCE_REQUEST';
+    const PAR_ASYNC_JOB                                         = 'PAR_ASYNC_JOB';
 
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const PAYMENT_CREATION_STARTED                              = 'PAYMENT_CREATION_STARTED';
@@ -559,6 +560,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_TOKEN_RESPONSE                                  = 'FETCH_TOKEN_RESPONSE';
     const FETCH_NETWORK_TOKEN                                   = 'FETCH_NETWORK_TOKEN';
     const FETCH_PAR_VALUE                                       = 'FETCH_PAR_VALUE';
+    const FETCH_FINGERPRINT                                     = 'FETCH_FINGERPRINT';
     const HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT                = 'HITACHI_BHARAT_QR_FAILED_PAYMENT_ALERT';
     const HITACHI_ONBOARD_REQUEST_CREATION_ERROR                = 'HITACHI_ONBOARD_REQUEST_CREATION_ERROR';
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING                 = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING';
@@ -2346,6 +2348,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_TOKEN_MISSING                              = 'CARD_VAULT_TOKEN_MISSING';
     const CARD_VAULT_REQUEST_DURATION                           = 'CARD_VAULT_REQUEST_DURATION';
     const CARD_VAULT_BU_NAMESPACE_EXCEPTION                     = 'CARD_VAULT_BU_NAMESPACE_EXCEPTION';
+    const CARD_FETCH_FINGERPRINT_EXCEPTION                      = 'CARD_FETCH_FINGERPRINT_EXCEPTION';
     const SHIELD_REQUEST_DURATION                               = 'SHIELD_REQUEST_DURATION';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
@@ -2530,6 +2533,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_UPDATE_RECONCILIATION_DATA_STARTED              = 'RECON_UPDATE_RECONCILIATION_DATA_STARTED';
     const NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED                 = 'NOT_SUPPORTED_CARD_TOKEN_PAUSE_FAILED';
     const CARD_TOKEN_PAUSE_PROCESSED                            = 'CARD_TOKEN_PAUSE_PROCESSED';
+    const TRACE_EMPTY_PROVIDER_REFERENCE                        = 'TRACE_EMPTY_PROVIDER_REFERENCE';
 
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH                   = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
@@ -4529,6 +4533,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CPS_RAZORX_VARIANT                                    = 'CPS_RAZORX_VARIANT';
     const GATEWAY_CAPTURE_RAZORX_VARIANT                        = 'GATEWAY_CAPTURE_RAZORX_VARIANT';
     const ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT                  = 'ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT';
+    const ASYNC_FETCH_PAR_RAZORX_VARIANT                        = 'ASYNC_FETCH_PAR_RAZORX_VARIANT';
     const TOKEN_HQ_RESPONSE_EVENT_DATA                          = 'TOKEN_HQ_RESPONSE_EVENT_DATA';
     const CPS_SWITCH_ROUTE                                      = 'CPS_SWITCH_ROUTE';
     const VAULT_SERVICE_DISABLING                               = 'VAULT_SERVICE_DISABLING';

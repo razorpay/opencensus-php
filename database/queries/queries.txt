@@ -7037,3 +7037,6 @@ ALTER TABLE card_mandates
 
 ALTER TABLE `contacts`
       ADD COLUMN `gstin` char(15) DEFAULT NULL
+
+ALTER TABLE cards
+ADD COLUMN provider_reference_id char(14) COLLATE utf8mb4_bin DEFAULT NULL;

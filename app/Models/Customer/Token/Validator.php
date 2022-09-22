@@ -38,8 +38,10 @@ class Validator extends Base\Validator
     **/
 
     protected static $fetchParValueRules = [
-        Card\Entity::NUMBER          => 'required|numeric|luhn|digits_between:12,19',
-        Card\Entity::TOKENISED       => 'sometimes|boolean'
+        Card\Entity::NUMBER          => 'required_without:vault|numeric|luhn|digits_between:12,19',
+        Card\Entity::TOKENISED       => 'sometimes|boolean',
+        Card\Entity::VAULT           => 'required_without:number|string',
+        Card\Entity::NETWORK         => 'sometimes|string'
     ];
 
     protected static $createRules = [

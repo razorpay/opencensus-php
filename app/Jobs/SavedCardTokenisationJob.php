@@ -25,6 +25,8 @@ class SavedCardTokenisationJob extends Job
 
     protected $tokenId;
 
+    protected $paymentId;
+
     protected $merchantId;
 
     protected $asyncTokenisationJobId;
@@ -47,11 +49,13 @@ class SavedCardTokenisationJob extends Job
      */
     protected $tokenCore;
 
-    public function __construct(string $mode, string $tokenId, string $asyncTokenisationJobId)
+    public function __construct(string $mode, string $tokenId, string $asyncTokenisationJobId, $paymentId = null )
     {
         parent::__construct($mode);
 
         $this->tokenId = $tokenId;
+
+        $this->paymentId = $paymentId;
 
         $this->asyncTokenisationJobId = $asyncTokenisationJobId;
     }
@@ -108,7 +112,15 @@ class SavedCardTokenisationJob extends Job
              * on receiving the response, new card entity is created
              * existing token entity is associated to new card entity
              */
-            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, true);
+
+            $payment = null ;
+
+            if(isset($this->paymentId))
+            {
+                $payment = $this->repoManager->payment->findOrFail($this->paymentId);
+            }
+
+            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true);
 
             // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)

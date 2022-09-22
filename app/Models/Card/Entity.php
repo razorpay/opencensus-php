@@ -26,36 +26,37 @@ class Entity extends Base\PublicEntity
 {
     use ExternalOwner, ExternalEntity;
 
-    const ID                  = 'id';
-    const MERCHANT_ID         = 'merchant_id';
-    const GLOBAL_CARD_ID      = 'global_card_id';
-    const NAME                = 'name';
-    const EXPIRY_MONTH        = 'expiry_month';
-    const EXPIRY_YEAR         = 'expiry_year';
-    const IIN                 = 'iin';
-    const LAST4               = 'last4';
-    const LENGTH              = 'length';
-    const NETWORK             = 'network';
-    const TYPE                = 'type';
-    const SUBTYPE             = 'sub_type';
-    const CATEGORY            = 'category';
-    const EMI                 = 'emi';
-    const ISSUER              = 'issuer';
-    const COUNTRY             = 'country';
-    const INTERNATIONAL       = 'international';
-    const VAULT_TOKEN         = 'vault_token';
-    const VAULT               = 'vault';
-    const TRIVIA              = 'trivia';
-    const FLOWS               = 'flows';
-    const GLOBAL_FINGERPRINT  = 'global_fingerprint';
-    const REFERENCE1          = 'reference1';
-    const REFERENCE2          = 'reference2';
-    const REFERENCE3          = 'reference3';
-    const REFERENCE4          = 'reference4';
-    const TOKEN_IIN           = 'token_iin';
-    const TOKEN_EXPIRY_MONTH  = 'token_expiry_month';
-    const TOKEN_EXPIRY_YEAR   = 'token_expiry_year';
-    const TOKEN_LAST_4        = 'token_last4';
+    const ID                                    = 'id';
+    const MERCHANT_ID                           = 'merchant_id';
+    const GLOBAL_CARD_ID                        = 'global_card_id';
+    const NAME                                  = 'name';
+    const EXPIRY_MONTH                          = 'expiry_month';
+    const EXPIRY_YEAR                           = 'expiry_year';
+    const IIN                                   = 'iin';
+    const LAST4                                 = 'last4';
+    const LENGTH                                = 'length';
+    const NETWORK                               = 'network';
+    const TYPE                                  = 'type';
+    const SUBTYPE                               = 'sub_type';
+    const CATEGORY                              = 'category';
+    const EMI                                   = 'emi';
+    const ISSUER                                = 'issuer';
+    const COUNTRY                               = 'country';
+    const INTERNATIONAL                         = 'international';
+    const VAULT_TOKEN                           = 'vault_token';
+    const VAULT                                 = 'vault';
+    const TRIVIA                                = 'trivia';
+    const FLOWS                                 = 'flows';
+    const GLOBAL_FINGERPRINT                    = 'global_fingerprint';
+    const REFERENCE1                            = 'reference1';
+    const REFERENCE2                            = 'reference2';
+    const REFERENCE3                            = 'reference3';
+    const REFERENCE4                            = 'reference4';
+    const TOKEN_IIN                             = 'token_iin';
+    const TOKEN_EXPIRY_MONTH                    = 'token_expiry_month';
+    const TOKEN_EXPIRY_YEAR                     = 'token_expiry_year';
+    const TOKEN_LAST_4                          = 'token_last4';
+    const PROVIDER_REFERENCE_ID                 = 'provider_reference_id';
 
     /**
      * Number and cvv are never saved in the database
@@ -116,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_EXPIRY_MONTH,
         self::TOKEN_EXPIRY_YEAR,
         self::TOKEN_LAST_4,
+        self::PROVIDER_REFERENCE_ID
     ];
 
     protected $guarded = [self::ID];
@@ -170,6 +172,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_EXPIRY_MONTH,
         self::TOKEN_EXPIRY_YEAR,
         self::TOKEN_LAST_4,
+        self::PROVIDER_REFERENCE_ID
     ];
 
     protected $public = [
@@ -598,6 +601,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::VAULT_TOKEN);
     }
+    public function getProviderReferenceId()
+    {
+        return $this->getAttribute(self::PROVIDER_REFERENCE_ID);
+    }
 
     public function getVault()
     {
@@ -642,6 +649,11 @@ class Entity extends Base\PublicEntity
     public function getGlobalFingerPrint()
     {
         return $this->getAttribute(self::GLOBAL_FINGERPRINT);
+    }
+
+    public function getUniqueProviderId()
+    {
+        return (new Card\CardVault)->getParValueForCard($this);
     }
 
     public function getTypeElseDefault()
@@ -804,6 +816,11 @@ class Entity extends Base\PublicEntity
     public function setPublicLast4Attribute(array & $array)
     {
             $array[self::LAST4] = $this->getLast4() ;
+    }
+
+    public function setProviderReferenceId($par)
+    {
+        $this->setAttribute(self::PROVIDER_REFERENCE_ID ,$par);
     }
 
     public function setPublicIinAttribute(array & $array)

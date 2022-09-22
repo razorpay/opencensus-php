@@ -3668,6 +3668,7 @@ trait PaymentTrait
 
                     $response['fingerprint'] = strrev($token);
                     $response['last4'] = 1234;
+                    $response['providerReferenceId'] = "12345678911234";
 
                     $token_iin = 411111;
 

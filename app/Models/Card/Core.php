@@ -6,7 +6,10 @@ use Illuminate\Support\Str;
 use Route;
 
 use RZP\Exception;
+use RZP\Jobs\ParAsyncTokenisationJob;
+use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
@@ -98,6 +101,10 @@ class Core extends Base\Core
             }
         }
 
+        $this->repo->saveOrFail($card);
+
+        $this->saveParValue($card, $input);
+
         if ($dummyProcessing === false)
         {
             $this->repo->saveOrFail($card);
@@ -106,11 +113,47 @@ class Core extends Base\Core
         return $card;
     }
 
-    public function migrateToTokenizedCard($card, $merchant, $input)
+    public function saveParValue($card, $input = null)
+    {
+        try {
+
+            $id = UniqueIdEntity::generateUniqueId(); // Need to generate random string because we don't have access to task id, Also need to add random string generator for this
+
+            $variant = $this->app->razorx->getTreatment($id, Merchant\RazorxTreatment::PAR_ASYNC_FOR_CARD_FINGERPRINT, $this->mode);
+
+            $this->trace->info(TraceCode::PAR_ASYNC_JOB, [
+                "variant" => $variant
+            ]);
+
+            if (strtolower($variant) === "on") {
+
+                $this->trace->info(TraceCode::ASYNC_FETCH_PAR_RAZORX_VARIANT, [
+                    'card'           => $card,
+                    'input'          => $input,
+                    'razorx_variant' => $variant,
+                ]);
+
+                ParAsyncTokenisationJob::dispatch($this->mode, $card->getId(), $input["number"]);
+
+                $card = $this->repo->card->getCardById($card->getId());
+
+                $this->card = $card;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::ERROR_EXCEPTION, [
+                "card_id" => $card->getId(),
+                "network" => $card->getNetwork()
+            ]);
+        }
+    }
+
+    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null)
     {
         $response = $this->getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input);
 
-        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response);
+        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment);
     }
 
     public function fetchParValue($input)
@@ -126,7 +169,7 @@ class Core extends Base\Core
     }
 
 
-    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response)
+    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null)
     {
         $tokenisedCard = $card->replicate();
 
@@ -135,6 +178,23 @@ class Core extends Base\Core
         $tokenisedCard->setVaultToken($response['token']);
 
         $tokenisedCard->setGlobalFingerprint($response['fingerprint']);
+
+        if(isset($payment) && empty($response['providerReferenceId']) === false)
+        {
+            $payment->card->setProviderReferenceId($response['providerReferenceId']);
+
+            $payment->card->saveOrFail();
+        }
+
+        if(empty($response['providerReferenceId']) === true)
+        {
+            $this->trace->info(TraceCode::TRACE_EMPTY_PROVIDER_REFERENCE,
+                [
+                    'card'     => $card,
+                    'response' => $response
+                ]
+            );
+        }
 
         if(empty($response['service_provider_tokens']) === false)
         {
@@ -283,6 +343,10 @@ class Core extends Base\Core
         $iin = $this->fillNetworkDetails($card, $input);
 
         $card->saveOrFail();
+
+        $this->saveParValue($card, $input);
+
+        $card = $this->repo->card->getCardById($card->getId());
 
         return $card;
     }

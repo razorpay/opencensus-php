@@ -6,7 +6,9 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -1923,7 +1925,7 @@ class Core extends Base\Core
         return [$token, $serviceProviderTokens];
     }
 
-    public function migrateToTokenizedCard($token, $cardInput, $isAsync = false)
+    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false)
     {
         $cardInput += [
             'merchant_token' => $token->getId(),
@@ -1931,9 +1933,9 @@ class Core extends Base\Core
             'customer_id'    => $token->getCustomerId()
         ];
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput);
+        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment);
 
-         $this->trace->info(
+        $this->trace->info(
             TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
 
         $token->setStatus($serviceProviderTokens[0]['status']);
@@ -1947,6 +1949,10 @@ class Core extends Base\Core
 
     public function getIIN($input)
     {
+        if(isset($input["number"]) == false){
+            return [null, null];
+        }
+
         $iin = substr($input["number"], 0, 6);
 
         $tokenizedRange = substr($input['number'], 0, 9);
@@ -2000,21 +2006,26 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput(Validator::FETCH_PAR_VALUE, $input);
 
+        $network = isset($input["network"]) === true ? $input["network"] : null;
+
         list($iin, $isTokenized) = $this->getIIN($input);
 
         $this->setInstrumentationInput($input, $iin, $isTokenized, $internalServiceRequest);
 
         (new Token\Event())->pushEvents($input, Event::PAR_API, "_REQUEST_RECEIVED");
 
-        $network = Card\Network::detectNetwork($iin);
+        if($iin !== null)
+        {
+            $network = Card\Network::detectNetwork($iin);
 
         if($network === "UNKNOWN"){
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IIN_NOT_EXISTS, ["iin" => $input["card_iin"]]);
         }
 
-        $network = Card\Network::$fullName[$network];
+            $network = Card\Network::$fullName[$network];
 
-        $input["network"] = strtolower($network);
+            $input["network"] = strtolower($network);
+        }
 
         return [$network, (new Card\Core)->fetchParValue($input)];
         // hit the vault with number and the network
@@ -2519,7 +2530,7 @@ class Core extends Base\Core
     {
         foreach ($tokenIds as $tokenId)
         {
-            SavedCardTokenisationJob::dispatch($this->mode, $tokenId, $asyncTokenisationJobId);
+            SavedCardTokenisationJob::dispatch($this->mode, $tokenId, $asyncTokenisationJobId, null);
         }
     }
 
@@ -2654,7 +2665,7 @@ class Core extends Base\Core
         }
         else {
             $result = [
-                "vault"   => $card->getGlobalOrLocalVaultToken(),
+                "vault"   => $card->getCardVaultToken(),
                 "network" => $card->getNetwork()
             ];
         }

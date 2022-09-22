@@ -3,8 +3,12 @@
 namespace RZP\Models\Card;
 
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\ParAsyncTokenisationJob;
+use RZP\Models\Merchant;
+
 
 class Service extends Base\Service
 {
@@ -126,6 +130,8 @@ class Service extends Base\Service
         $card->setVault(Vault::RZP_VAULT);
 
         $card->setGlobalFingerPrint($fingerprint);
+
+        (new Card\Core())->saveParValue($card, null);
 
         $this->repo->saveOrFail($card);
 
