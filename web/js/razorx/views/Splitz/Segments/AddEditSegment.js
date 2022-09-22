@@ -57,7 +57,7 @@ export default function AddEditSegment(props) {
         return 'Cron Expression frequency must have a minimum interval of one day';
       }
 
-      const sqlRegex = new RegExp(/(^SELECT [a-z0-9_]{1,20} FROM [A-Z0-9_,\s.=><"'()]*)$/i);
+      const sqlRegex = new RegExp(/(^SELECT [a-z0-9_]{1,20} FROM [^;]+)$/i);
       if (!sqlRegex.test(form.sqlQuery)) {
         return "SQL Query must be in the format, 'SELECT column_name FROM ...'";
       }
