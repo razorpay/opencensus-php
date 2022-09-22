@@ -227,7 +227,7 @@ class CardVault extends Base\Core
             }
 
             $this->trace->info(
-                TraceCode::CARD_ENTIY_DETAILS_BEFORE_VAULT_REQUEST,
+                TraceCode::CARD_ENTITY_DETAILS_BEFORE_VAULT_REQUEST,
                 [
                     'card_id'       => $input['id'] ?? "" ,
                     'trivia'        => $input['trivia'] ?? "",
@@ -237,13 +237,42 @@ class CardVault extends Base\Core
                     "bu_namespace"  => $buNamespace
                 ]
             );
+
+            if (empty($input['iin']) === false)
+            {
+                $iin = $this->repo->card->retrieveIinDetails($input['iin']);
+
+                if (empty($iin) == false)
+                {
+                    $this->trace->info(
+                        TraceCode::INPUT_DETAILS_BEFORE_VAULT_REQUEST,
+                        [
+                            'card_id'       => $input['id'] ?? "" ,
+                            'iinInfo'       => [
+                                'issuer'        => $iin->getIssuer(),
+                                'network'       => $iin->getNetwork(),
+                                'category'      => $iin->getCategory(),
+                                'type'          => $iin->getType(),
+                                'country'       => $iin->getCountry(),
+                                'international' => $iin->isInternational(),
+                            ],
+                            'trivia'        => $input['trivia'] ?? "",
+                            'international' => $input['international'] ?? "",
+                            'network'       => $input['network'] ?? "",
+                            'vault_token'   => $input['vault_token'] ?? "",
+                            "bu_namespace"  => $buNamespace
+                        ]
+                    );
+                }
+            }
         }
         catch (\Exception $e)
         {
             $this->trace->error(
                 TraceCode::CARD_VAULT_BU_NAMESPACE_EXCEPTION,
                 [
-                    'message' => $e
+                    'message' => $e,
+                    'bu_namespace' => $buNamespace
                 ]
             );
         }

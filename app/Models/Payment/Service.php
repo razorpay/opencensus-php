@@ -1341,6 +1341,20 @@ class Service extends Base\Service
         return $card->toArrayPublic();
     }
 
+    public function getCardMetadataForPayment($id)
+    {
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        if ($payment->hasCard() === false)
+        {
+            throw new Exception\BadRequestException(Error\ErrorCode::BAD_REQUEST_NOT_CARD_PAYMENT);
+        }
+
+        $card = $this->repo->card->fetchForPayment($payment);
+
+        return $card->getMetadata();
+    }
+
     public function retrieveRefundsForPayment($id, array $input = [])
     {
         $this->trace->info(TraceCode::API_REFUNDS_FETCH_REQUEST, [

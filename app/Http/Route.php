@@ -222,6 +222,7 @@ class Route
         'payment_fetch_multiple'                   => ['get',      'payments',                                       'PaymentController@getPayments'                                     ],
         'payment_status_count'                     => ['get',      'payments/transaction/count',                     'PaymentController@getPaymentsStatusCount'                                     ],
         'payment_fetch_card_details'               => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
+        'payment_fetch_card_metadata'              => ['get',      'payments/{id}/card/metadata',                    'PaymemtController@getCardMetadataForPayment'                       ],
         'payment_fetch_refunds'                    => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'               => ['get',      'payments/{paymentId}/refunds/{rfndId}',          'PaymentController@getRefundByRefundAndPaymentId'                   ],
         'payment_fetch_transaction'                => ['get',      'payments/{id}/transaction',                      'PaymentController@getTransactionForPayment'                        ],
@@ -4515,6 +4516,7 @@ class Route
         //cron route for sending daily transacted submerchant events
         'partner_send_daily_transacted_submerchant_events',
 
+        'payment_fetch_card_metadata',
 
         // metro routes
         'payout_email_attachments',
@@ -13490,6 +13492,7 @@ class Route
             'payout_create_2FA_internal',
             'refund_edit_internal',
             'scrooge_refund_back_write',
+            'payment_fetch_card_metadata',
         ],
 
         'thirdwatch_reports' => [
@@ -13766,6 +13769,7 @@ class Route
             'internal_payment_pricing',
             'internal_merchant_risk_notification',
             'fetch_iin_by_token_iin',
+            'payment_fetch_card_metadata',
         ],
 
         'nbplus_payment_service' => [
@@ -13922,6 +13926,7 @@ class Route
             'dcc_payouts_details_fetch',
             'decrement_free_payouts_payouts_service',
             'rollback_free_payouts',
+            'payment_fetch_card_metadata',
             'workflow_state_callback',
             'workflow_state_callback_update',
         ],

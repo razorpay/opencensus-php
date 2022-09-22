@@ -674,6 +674,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_LAST_4);
     }
 
+    public function getMetadata()
+    {
+        return [
+            'iin'          => $this->getIin(),
+            'name'         => $this->getName(),
+            'expiry_year'  => $this->getExpiryYear(),
+            'expiry_month' => $this->getExpiryMonth()
+        ];
+    }
+
     public function setCountry($country)
     {
         $this->setAttribute(self::COUNTRY, $country);
@@ -833,6 +843,7 @@ class Entity extends Base\PublicEntity
             ($this->merchant->isFeatureEnabled(Feature\Constants::EXPOSE_CARD_IIN) === false))
         {
             unset($array[self::IIN]);
+            return;
         }
     }
 
@@ -1170,6 +1181,33 @@ class Entity extends Base\PublicEntity
 
         return $data;
     }
+
+    public function toArrayRefund()
+    {
+        $data = $this->toArray();
+
+        if (empty($data[self::IIN]) === true && empty($this->getTokenIin()) === false)
+        {
+            $iin = Card\IIN\IIN::getTransactingIinforRange($this->getTokenIin());
+
+            if (empty($iin) === false)
+            {
+                $data[self::IIN] = $iin;
+            }
+        }
+
+        $tokenized = false;
+
+        if (empty($data[self::TRIVIA]) === false && $data[self::TRIVIA] === "1")
+        {
+            $tokenized = true;
+        }
+
+        $data['tokenized'] = $tokenized;
+
+        return $data;
+    }
+
 
     public function toArrayFundAccount()
     {

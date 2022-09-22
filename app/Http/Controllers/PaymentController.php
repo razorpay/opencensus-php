@@ -297,6 +297,14 @@ class PaymentController extends Controller
         return ApiResponse::json($card);
     }
 
+
+    public function getCardMetadataForPayment($id)
+    {
+        $card = $this->service()->getCardMetadataForPayment($id);
+
+        return ApiResponse::json($card);
+    }
+
     public function getRefundsForPayment($paymentId)
     {
         $input = Request::all();

@@ -1269,6 +1269,14 @@ class Service extends Base\Service
                                     $data = $token->card;
                                 }
                             }
+                            else if ($key === Constants\Entity::CARD)
+                            {
+                                $card = $payment->card;
+                                if (empty($card) === false)
+                                {
+                                    $data = $card->toArrayRefund();
+                                }
+                            }
                             else if ($key !== Constants\Entity::PAYMENT)
                             {
                                 if ($key === Constants\Entity::IIN)
