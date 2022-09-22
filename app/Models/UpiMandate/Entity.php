@@ -241,7 +241,7 @@ class Entity extends Base\PublicEntity
         $current = (int) $this->getUsedCount();
 
         if (($current === 1) and
-            ($this->getStatus() === Status::CREATED))
+            (in_array($this->getStatus(), [Status::CREATED, Status::REJECTED]) === true))
         {
             return $this;
         }
