@@ -60,6 +60,8 @@ class CreateCheckoutOrders extends Migration
             $table->primary([CheckoutOrder::ID, CheckoutOrder::CREATED_AT]);
 
             $table->index(CheckoutOrder::CREATED_AT);
+
+            $table->index(CheckoutOrder::MERCHANT_ID);
         });
     }
 

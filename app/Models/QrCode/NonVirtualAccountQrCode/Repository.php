@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use RZP\Models\Checkout\Order\Entity as CheckoutOrderEntity;
 use RZP\Models\Order;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
@@ -61,6 +62,15 @@ class Repository extends QrCode\Repository
                     ->where(QrPayment\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where($paymentMerchantId, '=', $merchantId)
                     ->get();
+    }
+
+    public function findActiveQrCodeByCheckoutOrder(CheckoutOrderEntity $checkoutOrder)
+    {
+        return $this->newQuery()
+            ->where(Entity::STATUS, '=', Status::ACTIVE)
+            ->where(Entity::ENTITY_ID, '=', $checkoutOrder->getId())
+            ->latest()
+            ->first();
     }
 
     public function findActiveQrCodeByOrder(Order\Entity $order)

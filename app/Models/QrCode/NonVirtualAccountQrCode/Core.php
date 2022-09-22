@@ -4,7 +4,9 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Order\Entity as Order;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -23,6 +25,14 @@ class Core extends QrCode\Core
         $this->generator = new Generator;
     }
 
+    /**
+     * @param array                    $input
+     * @param Order|CheckoutOrder|null $order
+     *
+     * @return mixed|QrCode\Entity
+     *
+     * @throws BadRequestException
+     */
     public function buildQrCode(array $input, $order = null)
     {
         $qrCode = (new Entity())->build($input);

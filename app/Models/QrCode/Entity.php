@@ -4,6 +4,7 @@ namespace RZP\Models\QrCode;
 
 use App;
 use RZP\Models\Base;
+use RZP\Models\Checkout\Order\Repository as CheckoutOrderRepository;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -159,6 +160,15 @@ class Entity extends Base\PublicEntity
             $this->source()->associate($order);
 
             return $order;
+        }
+
+        if ($this->getEntityType() === Constants::CHECKOUT_ORDER)
+        {
+            $checkoutOrder = (new CheckoutOrderRepository())->findOrFailPublic($this->getEntityId());
+
+            $this->source()->associate($checkoutOrder);
+
+            return $checkoutOrder;
         }
 
         return null;

@@ -4,6 +4,8 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Constants\HyperTrace;
+use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
+use RZP\Models\Order\Entity as Order;
 use RZP\Models\QrCode;
 use RZP\Models\QrPayment;
 use RZP\Trace\TraceCode;
@@ -90,6 +92,16 @@ class Service extends QrCode\Service
                         });
 
                         break;
+                    case ConstantEntity::CHECKOUT_ORDER:
+                        $checkoutOrder = $this->repo->checkout_order->findByPublicIdAndMerchant(
+                            $input[Entity::ENTITY_ID], $this->merchant
+                        );
+
+                        $qrCode = Tracer::inspan(
+                            ['name' => HyperTrace::QR_CODE_CREATE_FOR_CHECKOUT_SERVICE],
+                            function () use ($input, $checkoutOrder) {
+                                return $this->createForCheckoutOrder($input, $checkoutOrder);
+                        });
                 }
             }
             else
@@ -117,6 +129,35 @@ class Service extends QrCode\Service
         return $qrCode->toArrayPublic();
     }
 
+    /**
+     * Create a QrCode entity for a checkout order.
+     *
+     * @param array $input
+     * @param CheckoutOrder $checkoutOrder
+     *
+     * @return Entity
+     *
+     * @throws BadRequestException
+     */
+    private function createForCheckoutOrder(array $input, CheckoutOrder $checkoutOrder): Entity
+    {
+        if ($checkoutOrder->isClosed())
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_DISALLOWED_FOR_ORDER);
+        }
+
+        $qrCode = $this->repo->qr_code->findActiveQrCodeByCheckoutOrder($checkoutOrder);
+
+        if ($qrCode !== null)
+        {
+            return $qrCode;
+        }
+
+        $createArray = $this->computeInputForQrOnCheckout($input, $checkoutOrder);
+
+        return (new Core())->buildQrCode($createArray, $checkoutOrder);
+    }
+
     private function createForOrder($input, $order)
     {
         return $this->mutex->acquireAndRelease(
@@ -138,18 +179,31 @@ class Service extends QrCode\Service
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
     }
 
-    private function computeInputForQrOnCheckout(array $input, $order = null)
+    /**
+     * @param array $input
+     * @param CheckoutOrder|Order|null $order
+     *
+     * @return array
+     */
+    private function computeInputForQrOnCheckout(array $input, $order = null): array
     {
         $createArray = [
             Entity::REQ_PROVIDER    => QrCode\Type::UPI_QR,
             Entity::REQ_USAGE_TYPE  => UsageType::SINGLE_USE,
             Entity::FIXED_AMOUNT    => true,
-            Entity::REQUEST_SOURCE  => $this->getRequestSourceViaAuth(),
+            Entity::REQUEST_SOURCE  => RequestSource::CHECKOUT,
         ];
 
         if ($order !== null)
         {
-            $createArray[Entity::REQ_AMOUNT] = $order->getAmountDue();
+            if ($order instanceof Order) {
+                $createArray[Entity::REQ_AMOUNT] = $order->getAmountDue();
+            }
+
+            if ($order instanceof CheckoutOrder) {
+                $createArray[Entity::REQ_AMOUNT] = $order->getAmount();
+                $createArray[Entity::CLOSE_BY] = $order->getExpireAt();
+            }
         }
         else
         {
@@ -157,6 +211,14 @@ class Service extends QrCode\Service
             $createArray[Entity::CLOSE_BY]   = Carbon::now(Timezone::IST)
                                                      ->addSeconds(Constants::NO_ORDER_CHECKOUT_QR_DEFAULT_EXPIRY_WINDOW)
                                                      ->getTimestamp();
+        }
+
+        $additionalAttributes = [Entity::CUSTOMER_ID, Entity::DESCRIPTION, Entity::NAME, Entity::NOTES];
+
+        foreach ($additionalAttributes as $attribute) {
+            if (!empty($input[$attribute])) {
+                $createArray[$attribute] = $input[$attribute];
+            }
         }
 
         return $createArray;

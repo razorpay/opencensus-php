@@ -29,8 +29,13 @@ class Validator extends QrCode\Validator
     ];
 
     protected static $createForCheckoutRules = [
+        Entity::CLOSE_BY       => 'filled|epoch|custom',
+        Entity::CUSTOMER_ID    => 'filled|string',
+        Entity::DESCRIPTION    => 'sometimes|custom',
         Entity::ENTITY_ID      => 'required_with:entity_type|string',
-        Entity::ENTITY_TYPE    => 'required_with:entity_id|in:order',
+        Entity::ENTITY_TYPE    => 'required_with:entity_id|in:order,checkout_order',
+        Entity::NAME           => 'sometimes|custom',
+        Entity::NOTES          => 'filled|notes',
         Entity::REQ_AMOUNT     => 'sometimes|integer|min:1',
     ];
 

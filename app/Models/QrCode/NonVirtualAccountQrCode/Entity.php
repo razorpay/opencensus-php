@@ -331,6 +331,11 @@ class Entity extends QrCode\Entity
         return $this->getAttribute(self::ENTITY_TYPE) === ConstantsEntity::ORDER;
     }
 
+    public function hasCheckoutOrder(): bool
+    {
+        return $this->getAttribute(self::ENTITY_TYPE) === ConstantsEntity::CHECKOUT_ORDER;
+    }
+
     public function isClosed()
     {
         // TODO: remove check on close by once QR expiry goes live
