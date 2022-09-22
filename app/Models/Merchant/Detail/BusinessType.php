@@ -25,6 +25,7 @@ class BusinessType
     const TYPE11 = 'Not yet registered';
     const TYPE12 = 'Other';
     const TYPE13  = 'HUF';
+    const TYPE14 = 'Section 8 Company';
 
     /**
      * These keys define the input keys for business_type.
@@ -43,6 +44,7 @@ class BusinessType
     const NOT_YET_REGISTERED     = 'not_yet_registered';
     const EDUCATIONAL_INSTITUTES = 'educational_institutes';
     const HUF                    = 'huf';
+    const SECTION_8_COMPANY      = 'section_8_company';
 
     /**
      * The database field for business_type is a string but integer values are currently being stored in it.
@@ -66,6 +68,7 @@ class BusinessType
         self::NOT_YET_REGISTERED     => 11,
         self::OTHER                  => 12,
         self::HUF                    => 13,
+        self::SECTION_8_COMPANY      => 14,
     ];
 
     protected static $displayNameMap = [
@@ -82,6 +85,7 @@ class BusinessType
         self::NOT_YET_REGISTERED     => "Not Yet Registered",
         self::OTHER                  => "Other",
         self::HUF                    => "HUF",
+        self::SECTION_8_COMPANY      => "Section 8 Company",
     ];
     const REGISTERED   = 'registered';
     const UNREGISTERED = 'unregistered';
@@ -99,7 +103,8 @@ class BusinessType
             self::SOCIETY,
             self::OTHER,
             self::NGO,
-            self::HUF
+            self::HUF,
+            self::SECTION_8_COMPANY
         ],
         self::UNREGISTERED => [
             self::INDIVIDUAL,
@@ -117,7 +122,8 @@ class BusinessType
         self::PROPRIETORSHIP,
         self::NGO,
         self::SOCIETY,
-        self::TRUST
+        self::TRUST,
+        self::SECTION_8_COMPANY
     ];
 
     public static    $ValidateCompanyPanBusinessType                    = [
@@ -130,7 +136,8 @@ class BusinessType
         self::OTHER,
         self::NGO,
         self::PARTNERSHIP,
-        self::HUF
+        self::HUF,
+        self::SECTION_8_COMPANY
     ];
 
     protected static $ValidateGSTINBusinessType                         = [
@@ -164,7 +171,8 @@ class BusinessType
         self::LLP,
         self::TRUST,
         self::SOCIETY,
-        self::NGO
+        self::NGO,
+        self::SECTION_8_COMPANY
     ];
 
 
