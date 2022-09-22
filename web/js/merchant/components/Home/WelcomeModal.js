@@ -50,6 +50,7 @@ const WelcomeModal = ({
         ctaLocation: 'welcome modal',
       },
       toCleverTap: true,
+      toFacebook: true,
     });
     tracking.trackEvent(
       window.rzpQ.onbr().initiated('act.form_fill', {

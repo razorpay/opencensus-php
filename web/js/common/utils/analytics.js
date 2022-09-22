@@ -168,6 +168,7 @@ export const analyticsTrack = ({
   properties = {},
   toLumberjack = true, // Send all events to LJ by default
   toCleverTap = false,
+  toFacebook = false,
 }) => {
   if (!objectName) {
     throwAnalyticsException('[analytics]: objectName cannot be empty');
@@ -196,6 +197,8 @@ export const analyticsTrack = ({
 
   const eventTimestamp = new Date().toISOString();
   const eventName = titleCase(`${objectName} ${actionName}`);
+  const Facebook = 'Facebook Pixel';
+
   if (window.analytics && window.analytics.track) {
     window.analytics.track(
       eventName,
@@ -213,6 +216,7 @@ export const analyticsTrack = ({
       {
         integrations: {
           CleverTap: toCleverTap,
+          [Facebook]: toFacebook,
         },
       },
     );

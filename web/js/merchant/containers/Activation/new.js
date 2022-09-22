@@ -280,6 +280,7 @@ export default class ActivationContainer extends React.Component {
         actionName: 'Submitted',
         screen: 'home page',
         toCleverTap: true,
+        toFacebook: true,
         properties: {
           submerchant_id: submerchantId,
         },

@@ -246,6 +246,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       actionName: 'Submitted',
       screen: 'home page',
       toCleverTap: true,
+      toFacebook: true,
       properties: {
         submerchant_id: submerchantId,
       },
@@ -263,6 +264,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
               submerchant_id: submerchantId,
             },
             toCleverTap: true,
+            toFacebook: true,
           });
 
           const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
@@ -295,6 +297,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             errorMessage: e,
           },
           toCleverTap: true,
+          toFacebook: true,
         });
       });
   };
@@ -306,6 +309,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
       actionName: 'Submitted',
       screen: 'home page',
       toCleverTap: true,
+      toFacebook: true,
     });
     const payload = isInstantActivationEnabled
       ? { activation_form_milestone: 'L2' }
@@ -323,6 +327,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
               submerchant_id: submerchantId,
             },
             toCleverTap: true,
+            toFacebook: true,
           });
 
           const dedupeStatus = checkIfDedupe({ ...res, isInstantActivationEnabled });
@@ -350,6 +355,7 @@ const ActivationForm: React.FC<RouteComponentProps> = ({ history }) => {
             errorMessage: e?.errors,
           },
           toCleverTap: true,
+          toFacebook: true,
         });
       });
   };

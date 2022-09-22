@@ -115,6 +115,7 @@ class ActivationCard extends Component {
                       ctaLocation: 'onboarding card',
                     },
                     toCleverTap: true,
+                    toFacebook: true,
                   });
                 }}
               >
@@ -183,6 +184,7 @@ class ActivationCard extends Component {
                       ctaLocation: 'onboarding card',
                     },
                     toCleverTap: true,
+                    toFacebook: true,
                   });
                 }}
               >

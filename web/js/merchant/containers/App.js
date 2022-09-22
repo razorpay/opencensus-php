@@ -630,6 +630,7 @@ class App extends Component {
         eventLabel,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toFacebook: true,
     });
 
     let fbEvents = ['live_mtu_funnel', 'live_mtu_audience'];
@@ -670,6 +671,7 @@ class App extends Component {
         eventLabel,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
+      toFacebook: true,
     });
 
     let fbEvents = ['live_mtu_audience'];

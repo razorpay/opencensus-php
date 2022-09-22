@@ -108,6 +108,7 @@ export const analyticsTrack = ({
   user,
   isLJReqiuired = true,
   toCleverTap = false,
+  toFacebook = false,
 }) => {
   if (!objectName) {
     throw new Error('[analytics]: objectName cannot be empty');
@@ -138,6 +139,8 @@ export const analyticsTrack = ({
   const eventName = titleCase(`${objectName} ${actionName}${eventAction ? ` ${eventAction}` : ''}`);
   const dataLakeEventName = `${activationType}.${actionName.split(' ').join('_')}`;
   const commonProperties = getCommonProperties({ screen, properties, user });
+  const Facebook = 'Facebook Pixel';
+
   if (window.analytics && window.analytics.track) {
     window.analytics.track(
       eventName,
@@ -147,6 +150,7 @@ export const analyticsTrack = ({
       {
         integrations: {
           CleverTap: toCleverTap,
+          [Facebook]: toFacebook,
         },
       },
     );

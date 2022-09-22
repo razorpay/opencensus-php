@@ -212,6 +212,7 @@ const SubmerchantActivationContainer = ({
       properties: {
         submerchant_id: submerchantId,
       },
+      toFacebook: true,
     });
   };
 

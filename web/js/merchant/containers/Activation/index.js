@@ -263,6 +263,7 @@ export default class ActivationContainer extends Component {
       actionName,
       screen: 'home page',
       toCleverTap: true,
+      toFacebook: true,
     });
 
     if (isFormCloseAction) {
