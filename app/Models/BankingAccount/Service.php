@@ -487,7 +487,7 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    public function fetchMultiple(): array
+    public function fetchMultiple(array $input = []): array
     {
         $bankingAccounts = $this->merchant->bankingAccounts;
 
@@ -495,8 +495,16 @@ class Service extends Base\Service
 
         $bankingAccounts = $bankingAccounts->load(Entity::BALANCE);
 
+        /** @var Entity $ba */
         foreach ($bankingAccounts as &$ba)
         {
+            if(($this->merchant->isFeatureEnabled(Feature\Constants::SKIP_EXPOSE_FEE_RECOVERY) === true) or
+                                                   ((isset($input['fee_recovery']) === true) and
+                                                   ((boolval($input['fee_recovery']) === false))))
+            {
+                $ba->feeRecoverySetFlag = false;
+            }
+
             $balance = $ba->getBalance();
 
             if (empty($balance) === true)

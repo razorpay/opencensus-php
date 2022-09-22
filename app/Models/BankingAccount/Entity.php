@@ -196,6 +196,8 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'banking_account';
 
+    public $feeRecoverySetFlag = true;
+
     protected static $sign = 'bacc';
 
     protected $generateIdOnCreate = true;
@@ -716,7 +718,8 @@ class Entity extends Base\PublicEntity
 
             if (($balance->isAccountTypeDirect() === true) and
                 ($balance->isTypeBanking() === true) and
-                ($balance->getChannel() === Channel::RBL))
+                ($balance->getChannel() === Channel::RBL) and
+                ($this->feeRecoverySetFlag === true))
             {
                 $latestFeeRecoveryPayout = (new Payout\Repository)->fetchFeeLastDeductedAt($this->getMerchantId(),
                                                                                   $balance->getId());
@@ -726,6 +729,7 @@ class Entity extends Base\PublicEntity
                     [
                         'balance_id'       => $balance->getId(),
                         'merchant_id'      => $this->getMerchantId(),
+                        'fee_recovery'     => $this->feeRecoverySetFlag,
                     ]);
 
                 $outstandingAmount = $this->fetchOutstandingAmountToBeRecovered();

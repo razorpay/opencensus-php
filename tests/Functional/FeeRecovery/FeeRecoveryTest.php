@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\FeeRecovery;
 use Carbon\Carbon;
 
 use RZP\Models\Payout;
+use RZP\Models\Feature;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\FeeRecovery;
@@ -1628,6 +1629,90 @@ class FeeRecoveryTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+    }
+
+    //tests if fee recovery outstanding amount is present and feature is on
+    // then don't expose fee_recovery_details in banking_accounts get api
+    public function testOutstandingFeesPresentButNotExposedInBankingAccountsGet()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SKIP_EXPOSE_FEE_RECOVERY]);
+
+        $this->testCreateFeeRecoveryPayout();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $observedResponse = $this->makeRequestAndGetContent($request);
+
+        $observedResponse = array_filter($observedResponse['items'],function($item){
+            return $item['channel'] === 'rbl';
+        });
+
+        $observedResponse = reset($observedResponse);
+
+        $expectedResponse = [
+            'id'             => 'bacc_'. $this->bankingAccount->getId(),
+            'channel'        => "rbl",
+            'merchant_id'    => "10000000000000",
+            'account_number' => "2224440041626905",
+            'balance'        => [
+                'id'             => $this->bankingBalance->getId(),
+                'balance'        => 10000,
+                'currency'       => "INR",
+                'locked_balance' => 0,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+        $this->assertArrayNotHasKey('fee_recovery_details', $observedResponse);
+    }
+
+    //tests if fee recovery outstanding amount is present and ui sends fee_recovery flag in input as 0
+    // then don't expose fee_recovery_details in banking_accounts get api
+    public function testOutstandingFeesPresentButNotExposedInBankingAccountsGet2()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->testCreateFeeRecoveryPayout();
+
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/banking_accounts?fee_recovery=0',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $observedResponse = $this->makeRequestAndGetContent($request);
+
+        $observedResponse = array_filter($observedResponse['items'],function($item){
+            return $item['channel'] === 'rbl';
+        });
+
+        $observedResponse = reset($observedResponse);
+
+        $expectedResponse = [
+            'id'             => 'bacc_'. $this->bankingAccount->getId(),
+            'channel'        => "rbl",
+            'merchant_id'    => "10000000000000",
+            'account_number' => "2224440041626905",
+            'balance'        => [
+                'id'             => $this->bankingBalance->getId(),
+                'balance'        => 10000,
+                'currency'       => "INR",
+                'locked_balance' => 0,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $observedResponse);
+        $this->assertArrayNotHasKey('fee_recovery_details', $observedResponse);
     }
 
     // tests outstanding fees to be recovered when fee recovery payout is initiated for 3 payouts

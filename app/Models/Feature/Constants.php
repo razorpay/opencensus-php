@@ -1000,6 +1000,13 @@ class Constants
     const SKIP_CONTACT_DEDUP_FA_BA = 'skip_contact_dedup_fa_ba';
 
     /**
+     * Used to manage exposing fee recovery details in banking_accounts api
+     * Since fee recovery calculation is taking a lot of time, we will not send it when frontend does not need it.
+     * This feature flag is temporary to test out the fee recovery skipping.To be removed once UI starts sending the flag
+     */
+    const SKIP_EXPOSE_FEE_RECOVERY = 'skip_expose_fee_recovery';
+
+    /**
     * Merchant feature used to control visibility of dcc markup on frontend
      */
     const PAYMENT_SHOW_DCC_MARKUP   =   'payment_show_dcc_markup';
@@ -1984,6 +1991,7 @@ class Constants
         self::COVID_19_RELIEF                 => true,
         self::BENE_NAME_IN_PAYOUT             => true,
         self::PAYOUTS_ON_HOLD                 => true,
+        self::SKIP_EXPOSE_FEE_RECOVERY        => true,
         self::FREE_PAYOUT_LEDGER_VIA_PS       => true,
         self::SKIP_HOLD_PAYOUTS               => true,
         self::SKIP_TEST_TXN_FOR_DMT           => true,
