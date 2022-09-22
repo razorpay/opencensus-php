@@ -91,6 +91,10 @@ return [
         'test'       =>  env('AWS_ON_HOLD_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_ON_HOLD_PAYOUTS_PROCESS_LIVE_QUEUE')
     ],
+    'payouts_auto_expire' => [
+        'test'       =>  env('AWS_PAYOUTS_AUTO_EXPIRE_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYOUTS_AUTO_EXPIRE_LIVE_QUEUE')
+    ],
     'es_sync' => [
         'test'       => env('AWS_ES_SYNC_QUEUE'),
         'live'       => env('AWS_ES_SYNC_QUEUE'),

@@ -1483,14 +1483,7 @@ class Service extends Base\Service
 
     public function getDashboardSummary(): array
     {
-        //experiment to compare aggregates or select * and calculate the sum in code
-        $isSummaryApiExperimentEnabled = $this->app->razorx->getTreatment(
-            $this->merchant->getId(),
-            Merchant\RazorxTreatment::SUMMARY_API_EXPERIMENT,
-            $this->mode
-        );
-
-        $queued = $this->getQueuedPayoutsSummary($isSummaryApiExperimentEnabled);
+        $queued = $this->getQueuedPayoutsSummary();
 
         $pending   = [];
 
@@ -1498,7 +1491,7 @@ class Service extends Base\Service
         {
             try
             {
-                $pending = $this->getPendingPayoutsSummary($isSummaryApiExperimentEnabled);
+                $pending = $this->getPendingPayoutsSummary();
             }
             catch(Exception\UserWorkflowNotApplicableException $exception)
             {
@@ -1976,7 +1969,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function getQueuedPayoutsSummary(string $isSummaryApiExperimentEnabled)
+    protected function getQueuedPayoutsSummary()
     {
         $queuedPayoutsSummary = [];
 
@@ -1988,59 +1981,21 @@ class Service extends Base\Service
                 'description' => 'going to fetch queued payouts',
             ]);
 
-        if ($isSummaryApiExperimentEnabled === 'on')
+        $queuedPayouts = $this->repo->payout->fetchOptimisedQueuedAndOnHoldPayouts($merchantId);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
+            [
+                'description' => 'completed fetching queued payouts',
+            ]);
+
+        foreach ($queuedPayouts as $payout)
         {
-            $this->trace->info(
-                TraceCode::PAYOUT_SUMMARY_API_EXPERIMENT,
-                [
-                    'merchant_id' => $merchantId,
-                ]);
+            $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($payout['balance_id']);
 
-            $queuedPayouts = $this->repo->payout->fetchQueuedAndOnHoldPayouts($merchantId);
+            $summaryForQueuedReason = $this->processQueuedSummaryAggregate($payout);
 
-            $this->trace->info(
-                TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
-                [
-                    'description' => 'completed fetching queued payouts',
-                ]);
-
-            $allQueuedReasons = QueuedReasons::QUEUED_REASONS_WITH_DESCRIPTION;
-
-            $groupedQueuedPayouts = $queuedPayouts->groupBy(Entity::BALANCE_ID);
-
-            foreach ($groupedQueuedPayouts as $balanceId => $queuedPayouts)
-            {
-                $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($balanceId);
-
-                foreach ($allQueuedReasons as $queuedReason => $queuedDesc)
-                {
-                    $summaryForQueuedReason = $this->processQueuedSummaryForReason($queuedReason, $queuedPayouts);
-
-                    if ($summaryForQueuedReason['count'] > 0)
-                    {
-                        $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$queuedReason] = $summaryForQueuedReason;
-                    }
-                }
-            }
-        }
-        else
-        {
-            $queuedPayouts = $this->repo->payout->fetchOptimisedQueuedAndOnHoldPayouts($merchantId);
-
-            $this->trace->info(
-                TraceCode::PAYOUT_SUMMARY_API_ANALYSIS,
-                [
-                    'description' => 'completed fetching queued payouts',
-                ]);
-
-            foreach ($queuedPayouts as $payout)
-            {
-                $bankingAccountId = (new BankingAccountService\Core())->fetchBankingAccountId($payout['balance_id']);
-
-                $summaryForQueuedReason = $this->processQueuedSummaryAggregate($payout);
-
-                $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$payout['queued_reason']] = $summaryForQueuedReason;
-            }
+            $queuedPayoutsSummary[$bankingAccountId][Status::QUEUED][$payout['queued_reason']] = $summaryForQueuedReason;
         }
 
         $this->trace->info(
@@ -2190,20 +2145,17 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\UserWorkflowNotApplicableException
      */
-    protected function getPendingPayoutsSummary(string $isSummaryApiExperimentEnabled)
+    protected function getPendingPayoutsSummary()
     {
         $pendingPayoutsSummary = [];
 
         // we are first checking if there is atleast one pending payout for merchant
         // and then only we will trigger the workflow query
-        if ($isSummaryApiExperimentEnabled === 'on')
-        {
-            $allPendingPayouts = $this->repo->payout->checkIfPendingPayoutsExist($this->merchant->getId());
+        $allPendingPayouts = $this->repo->payout->checkIfPendingPayoutsExist($this->merchant->getId());
 
-            if (count($allPendingPayouts) <= 0)
-            {
-                return $pendingPayoutsSummary;
-            }
+        if (count($allPendingPayouts) <= 0)
+        {
+            return $pendingPayoutsSummary;
         }
 
         $user = $this->auth->getUser();

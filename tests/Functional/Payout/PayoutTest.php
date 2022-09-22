@@ -2605,14 +2605,6 @@ class PayoutTest extends OAuthTestCase
 
     }
 
-    public function testDashboardSummaryWithExperimentEnabled()
-    {
-        $this->setMockRazorxTreatment([RazorxTreatment::SUMMARY_API_EXPERIMENT => 'on',
-            RazorxTreatment::NEFT_MODE_PAYOUT_FILTER => 'control']);
-
-        $this->testDashboardSummary();
-    }
-
     public function testDashboardSummary()
     {
         $this->mockLedgerSns(0);
