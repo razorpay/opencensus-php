@@ -1574,6 +1574,11 @@ class Constants
      * Feature flag to to expose arn and rrn in payment acquirer data.
      */
     const EXPOSE_RRN = 'expose_rrn';
+    
+     /**
+     * Feature flag to configure report for NIUM 
+     */
+    const IMPORT_FLOW_OPEX_REPORT = 'import_flow_opex_report';
 
 
     public static $recurringFeatures = [
@@ -2154,6 +2159,7 @@ class Constants
         self::SHAADI_COM_NEW_CURRENCY         => true,
         self::CONSOLIDATED_ORG_REPORTS        => true,
         self::EXPOSE_RRN                      => true,
+        self::IMPORT_FLOW_OPEX_REPORT         => true,
     ];
 
     // Entity type constants
