@@ -3664,7 +3664,7 @@ class Route
         'update_ledger_account'                           => ['post',      'ledger_service/update_account',                         'LedgerController@updateAccount'],
         'update_ledger_account_detail'                    => ['post',      'ledger_service/update_account_detail',                  'LedgerController@updateAccountDetail'],
         'create_ledger_journal'                           => ['post',      'ledger_service/create_journal',                         'LedgerController@createJournal'],
-        'create_ledger_journal_batch'                     => ['post',      'ledger_service/batch/create_journal_batch',             'LedgerController@createJournal'],
+        'create_ledger_journal_batch'                     => ['post',      'ledger_service/batch/create_journal_batch',             'LedgerController@createJournalFromBatch'],
         'fetch_journal_by_transactor'                     => ['post',      'ledger_service/fetch_by_transactor',                    'LedgerController@fetchByTransactor'],
         'update_account_by_entities_and_mid'              => ['post',      'ledger_service/update_account_by_entities_and_mid',     'LedgerController@updateAccountByEntitiesAndMerchantID'],
         'create_ledger_ledger_config'                     => ['post',      'ledger_service/create_ledger_config',                   'LedgerController@createLedgerConfig'],

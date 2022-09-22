@@ -7,6 +7,7 @@ use ApiResponse;
 
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
+use RZP\Http\RequestHeader;
 
 class LedgerController extends Controller
 {
@@ -82,6 +83,25 @@ class LedgerController extends Controller
     public function updateAccountDetail()
     {
         $response = $this->app['ledger']->updateAccountDetail($this->input, $this->headers, true);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
+
+    public function createJournalFromBatch()
+    {
+        // Add batch id to journal request notes
+        if (isset($this->input['notes']) === true)
+        {
+            $this->input['notes']['batch_id'] = $this->app['request']->header(RequestHeader::X_Batch_Id, null);
+        }
+        else
+        {
+            $this->input['notes'] = [
+                'batch_id' => $this->app['request']->header(RequestHeader::X_Batch_Id, null)
+            ];
+        }
+
+        $response = $this->app['ledger']->createJournal($this->input, $this->headers, true);
 
         return ApiResponse::json($response['body'], $response['code']);
     }
