@@ -472,6 +472,7 @@ class Service extends Base\Service
     {
         return $this->auth->isPayoutLinkApp() or
                $this->auth->isAccountsReceivableApp() or
+               $this->auth->isBusinessReportingApp() or
                $this->auth->isVendorPaymentApp() or
                $this->auth->isSettlementsApp() or
                $this->auth->isXPayrollApp() or

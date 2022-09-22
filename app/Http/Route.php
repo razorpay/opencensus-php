@@ -1789,6 +1789,9 @@ class Route
         // Accounts-Receivable
         'accounts_receivable_all_routes'           => ['any',     'accounts-receivable/service/{path?}',       'EdgeProxyController@proxy'                                               ],
 
+        // Business-Reporting
+        'business_reporting_all_proxy_routes'      => ['any',      'business-reporting/{path?}',               'EdgeProxyController@proxy'                                               ],
+
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
         'accounting_payouts_integration_app_get_url'            => ['get',     'accounting-payouts/integration/{app}',           'AccountingPayoutsController@integrationAppGetURL'      ],
@@ -5965,6 +5968,7 @@ class Route
 
         // Accounts-Receivable
         'accounts_receivable_all_routes',
+        'business_reporting_all_proxy_routes',
         'contact_create_address',
         'contact_fetch_addresses',
 
@@ -8896,6 +8900,7 @@ class Route
         'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'accounts_receivable_all_routes'               => '*',
+        'business_reporting_all_proxy_routes'          => '*',
         'tax_get_meta_states'                          => Permission::VIEW_TAX_STATES,
         'invite_to_vendor_portal'                      => Permission::INVITE_VENDOR,
         'resend_invite_to_vendor_portal'               => Permission::INVITE_VENDOR,
@@ -9440,6 +9445,10 @@ class Route
             'payout_create_internal',
             'payout_create_2FA_internal',
             'contact_fetch_address',
+        ],
+
+        'business_reporting' => [
+            'merchant_fetch_internal_users',
         ],
 
         'metro' => [
@@ -10662,6 +10671,7 @@ class Route
             'x_apps_get_all_settings',
             'x_apps_add_or_update_settings',
             'accounts_receivable_all_routes',
+            'business_reporting_all_proxy_routes',
             'invite_to_vendor_portal',
             'resend_invite_to_vendor_portal',
             'virtual_account_add_receivers',
@@ -14662,6 +14672,7 @@ class Route
         'x_apps_add_or_update_settings',
 
         'accounts_receivable_all_routes',
+        'business_reporting_all_proxy_routes',
 
         'invite_to_vendor_portal',
         'resend_invite_to_vendor_portal',
