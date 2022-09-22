@@ -37,20 +37,21 @@ class Service extends Base\Service
         if (isset($input[Entity::COUNTRY]) === true) {
             $input[Entity::COUNTRY] = strtolower($input[Entity::COUNTRY]);
         }
-        $raw_address = $this->core()->create($input);
 
         try
         {
             $this->validateForAddressEntity($input);
             $this->validateForUnicode($input);
             $input[Entity::CONTACT] = $this->checkAndGetValidContact($input[Entity::CONTACT]);
-            $raw_address->setContact($input[Entity::CONTACT]);
-            $this->repo->raw_address->saveOrFail($raw_address);
+            $raw_address = $this->core()->create($input);
 
             return $raw_address->toArrayPublic();
         }catch (\Exception $e)
         {
-            (new BulkUploadClient())->updateStatus($raw_address['id'],BulkUploadClient::STATUS_INVALID);
+            $this->trace->info(
+                TraceCode::RAW_ADDRESS_CREATE_REQUEST, [
+                    'error' => $e->getMessage(),
+            ]);
             throw $e;
         }
     }
@@ -62,13 +63,6 @@ class Service extends Base\Service
      */
     public function createBatch(array $input)
     {
-        $this->trace->info(
-            TraceCode::RAW_ADDRESS_BULK_CREATE_REQUEST,
-            [
-                'input'      => $input,
-            ]);
-
-        //TODO convert default merchantId to null
         $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
         $batchId = $this->app['request']->header(RequestHeader::X_Batch_Id) ?? null;
 
