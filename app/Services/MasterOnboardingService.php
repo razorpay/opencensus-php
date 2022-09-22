@@ -76,14 +76,18 @@ class MasterOnboardingService
             'X-Auth-Type'                     => 'admin'
         ];
 
-        $headers = empty($data['merchant_id'] === false) ? array_merge($headers, $this->getProxyHeadersForAdminRequest($data)) : $headers;
-
-        return $headers;
+        return array_merge($headers, $this->getProxyHeadersForAdminRequest($data));
     }
 
     private function getProxyHeadersForAdminRequest(array $data = []) : array
     {
-        $merchantId = $data['merchant_id'];
+        // Merchant context is set via X-Razorpay-Account header
+        $merchantId = $data['merchant_id'] ?? $this->ba->getMerchant()->getId();
+
+        if (empty($merchantId))
+        {
+            return [];
+        }
 
         $repo = new MerchantRepo();
 
