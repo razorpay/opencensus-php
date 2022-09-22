@@ -543,7 +543,7 @@ class FundTransfer extends Base
                 Constants::CARD => [
                         Constants::ISSUER_BANK  => $this->fta->card->getIssuer(),
                         Constants::VAULT_TOKEN  => $this->getCardVaultToken($this->fta->card),
-                        Constants::NAME         => $this->fta->card->getName(),
+                        Constants::NAME         => $this->fta->card->getName() ?? "",
                         Constants::NETWORK_CODE => $this->fta->card->getNetworkCode(),
                 ],
         ];

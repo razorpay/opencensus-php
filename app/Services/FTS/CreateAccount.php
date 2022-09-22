@@ -276,7 +276,7 @@ class CreateAccount extends Base
     public function getCardDetails(Card\Entity $card)
     {
         $cardDetails = [
-            Constants::NAME         => $card->getName(),
+            Constants::NAME         => $card->getName() ?? "",
             Constants::ISSUER_BANK  => $this->getIssuer($card),
             Constants::VAULT_TOKEN  => $this->getCardVaultToken($card),
             Constants::NETWORK_CODE => $card->getNetworkCode(),
