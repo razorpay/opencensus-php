@@ -686,4 +686,253 @@ class NbplusPaymentServiceEmandateTest extends TestCase
                 ];
             });
     }
+
+    // This test mocks sync token confirmation flow, after successful auth txn
+    // 
+    // Make auth payment -> Payment is authorized ->
+    // Callback has token in confirmed status -> Payment moves to captured
+    public function testEMandateRegistrationConfirmedSyncFlow()
+    {
+        $oldTerminal = $this->terminal;
+        $this->terminal = $this->fixtures->create('terminal:payu_emandate_terminal');
+
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $this->assertEMandateEntities();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('captured', $payment[Payment::STATUS]);
+        $this->assertTrue($payment[Payment::CAPTURED]);
+
+        $this->terminal = $oldTerminal;
+        $this->assertEquals('netbanking_icici', $this->terminal->getGateway());
+    }
+
+    // This test mocks sync token confirmation flow, after successful auth txn
+    // and checks to see if webhook flow is not triggered. 
+    // 
+    // Make auth payment -> Payment is authorized ->
+    // Callback has token in confirmed status -> Payment moves to captured ->
+    // Webhook initiated by gateway -> Webhook flow stopped
+    public function testEMandateRegistrationConfirmedSyncFlowNoWebhook()
+    {
+        $oldTerminal = $this->terminal;
+        $this->terminal = $this->fixtures->create('terminal:payu_emandate_terminal');
+
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $this->assertEMandateEntities();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('captured', $payment[Payment::STATUS]);
+        $this->assertTrue($payment[Payment::CAPTURED]);
+
+        $txnid = substr($payment['id'], 4);
+
+        $response = $this->mockWebhookFromGateway($txnid);
+
+        $this->assertEquals(false, $response['success']);
+
+        $this->terminal = $oldTerminal;
+        $this->assertEquals('netbanking_icici', $this->terminal->getGateway());
+    }
+
+    // This test mocks async token confirmation flow, after successful auth txn
+    // 
+    // Make auth payment -> Payment is authorized ->
+    // Callback has token in initiated status -> Webhook from gateway ->
+    // Token is confirmed -> Payment moves to captured
+    public function testEMandateRegistrationPendingFlow()
+    {
+        $oldTerminal = $this->terminal;
+        $this->terminal = $this->fixtures->create('terminal:payu_emandate_terminal');
+
+        $payment = $this->payment;
+
+        // mock pending token status
+        $payment['description'] = 'token_pending';
+
+        $this->doAuthPayment($payment);
+
+        $this->assertEMandateInitiatedToken();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $input = [
+            'description' => '',
+        ];
+
+        $this->fixtures->base->editEntity(Entity::PAYMENT, $payment['id'], $input);
+
+        $txnid = substr($payment['id'], 4);
+
+        $this->mockWebhookFromGateway($txnid);
+
+        $this->assertEMandateEntities();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('captured', $payment[Payment::STATUS]);
+        $this->assertTrue($payment[Payment::CAPTURED]);
+
+        $this->terminal = $oldTerminal;
+        $this->assertEquals('netbanking_icici', $this->terminal->getGateway());
+    }
+
+    // This test mocks async token refunded flow, after successful auth txn
+    // 
+    // Make auth payment -> Payment is authorized ->
+    // Callback has token in initiated status -> Webhook from gateway ->
+    // Token is rejected -> Payment moves to refunded
+    public function testEMandateRegistrationRefundedFlow()
+    {
+        $oldTerminal = $this->terminal;
+        $this->terminal = $this->fixtures->create('terminal:payu_emandate_terminal');
+
+        $payment = $this->payment;
+
+        // mock pending token status
+        $payment['description'] = 'token_pending';
+
+        $this->doAuthPayment($payment);
+
+        $this->assertEMandateInitiatedToken();
+
+        $this->mockRejectedToken();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+
+        $input = [
+            'description' => '',
+        ];
+
+        $this->fixtures->base->editEntity(Entity::PAYMENT, $payment['id'], $input);
+
+        $txnid = substr($payment['id'], 4);
+
+        $this->mockWebhookFromGateway($txnid);
+
+        $this->assertEMandateRejectedToken();
+
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $this->assertEquals('refunded', $payment[Payment::STATUS]);
+
+        $this->terminal = $oldTerminal;
+        $this->assertEquals('netbanking_icici', $this->terminal->getGateway());
+    }
+
+    protected function mockPendingToken($apply = true)
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null) use ($apply)
+            {
+                if (($apply === true) and ($action == 'callback'))
+                {
+                    $content['response']['data']['recurring_status'] = 'initiated';
+                }
+            });
+    }
+
+    protected function assertEMandateInitiatedToken($initial = true)
+    {
+        $token = $this->getLastEntity(Entity::TOKEN, true);
+        $payment = $this->getLastEntity(Entity::PAYMENT, true);
+        $gatewayToken = $this->getLastEntity(Entity::GATEWAY_TOKEN, true);
+
+        if ($initial === true)
+        {
+            $usedCount = 1;
+
+            if ($payment[Payment::AMOUNT] > 0)
+            {
+                $this->assertNotNull($payment[Payment::REFERENCE1]);
+            }
+        }
+        else
+        {
+            // For every SI execution payment we increment the used count
+            $usedCount = 2;
+            $this->assertNotNull($payment[Payment::REFERENCE1]);
+        }
+
+        /*
+         * Assert Payment Entity
+         */
+        $this->assertEquals(PaymentMethod::EMANDATE, $payment[Payment::METHOD]);
+        $this->assertEquals('authorized', $payment[Payment::STATUS]);
+        $this->assertTrue($payment[Payment::GATEWAY_CAPTURED]);
+        $this->assertTrue($payment[Payment::RECURRING]);
+        $this->assertEquals('initial', $payment[Payment::RECURRING_TYPE]);
+        $this->assertEquals($payment[Payment::CPS_ROUTE], 3);
+        $this->assertEquals($this->bank, $payment[Payment::BANK]);
+
+        $this->assertEquals($this->terminal->getId(), $payment[Payment::TERMINAL_ID]);
+        $this->assertEquals('payu', $this->terminal->getGateway());
+        $this->assertEquals($this->terminal->getGateway(), $payment[Payment::GATEWAY]);
+
+        /*
+         * Assert Token Entity
+         */
+        $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);        
+        $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
+        // Recurring status will be initiated
+        $this->assertEquals(RecurringStatus::INITIATED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
+        $this->assertEquals($usedCount, $token[Token::USED_COUNT]);
+        $this->assertEquals($payment[Payment::CREATED_AT], $token[Token::USED_AT]);
+        $this->assertEquals($payment[Payment::MERCHANT_ID], $token[Token::MERCHANT_ID]);
+        $this->assertEquals($payment[Payment::TERMINAL_ID], $token[Token::TERMINAL_ID]);
+        $this->assertEquals($payment[Payment::CUSTOMER_ID], 'cust_' . $token[Token::CUSTOMER_ID]);
+        $this->assertEquals(PaymentMethod::EMANDATE, $token[Token::METHOD]);
+        $this->assertEquals($this->bank, $token[Token::BANK]);
+
+        /*
+         * Assert GatewayToken Entity
+         */
+        $this->assertEquals($token[Token::ID], 'token_' . $gatewayToken[GatewayToken::TOKEN_ID]);
+        $this->assertEquals(null, $gatewayToken[GatewayToken::REFERENCE]);
+        $this->assertEquals($payment[Payment::TERMINAL_ID], $gatewayToken[GatewayToken::TERMINAL_ID]);
+        // We update gateway token only if token recurring status is confirmed
+        $this->assertEquals(null, $token[Token::GATEWAY_TOKEN]);
+        // Gateway token recurring will be false, as token recurring is false
+        $this->assertEquals(false, $token[Token::RECURRING]);
+        $this->assertEquals(false, $gatewayToken[GatewayToken::RECURRING]);
+        $this->assertEquals($token[Token::RECURRING], $gatewayToken[GatewayToken::RECURRING]);
+    }
+
+    protected function mockWebhookFromGateway($paymentId)
+    {
+        $content = [
+            'mihpayid' => '403993715527148090',
+            'postman' => 'true',
+            'mode' => 'ENACH',
+            'status' => 'success',
+            'txnid' => $paymentId,
+            'amount' => '0.00',
+            'field0' => '',
+            'field1' => 'ENACH514668605404891575',
+            'field2' => '231195624904287418',
+            'field9' => 'SUCCESS',
+            'payment_source' => 'sist',
+            'PG_TYPE' => 'ENACH-PG',
+            'error' => 'E000',
+            'error_Message' => 'No Error',
+            'net_amount_debit' => '0',
+            'unmappedstatus' => 'captured',
+            'bank_ref_no' => 'ENACH514668605404891575',
+            'bank_ref_num' => 'ENACH514668605404891575',
+        ];
+
+        $request = [
+            'content' => $content,
+            'url' => '/gateway/emandate/payu/s2scallback/test',
+            'method' => 'post'
+        ];
+
+        // Fire s2s webhook
+        return $this->makeRequestAndGetContent($request);
+    }
 }

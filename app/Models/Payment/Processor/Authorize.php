@@ -6891,6 +6891,15 @@ trait Authorize
             return;
         }
 
+        // For emandate registration payments, token confirmation may come
+        // through webhooks. In such cases, if payment is already authorized
+        // then we just need to update token recurring attributes.
+        if ($this->shouldSkipAuthorizeOnRecurringForEmandate($this->payment, $data) === true)
+        {
+            $this->updateRecurringEntitiesForEmandateIfApplicable($this->payment, $data, $wasFailed);
+            return;
+        }
+
         try {
             $this->validateAvsResponseAndRemoveBillingAddressIfRequired($this->payment, $data);
         }
@@ -7744,6 +7753,7 @@ trait Authorize
                 //
                 if (($payment->order->getPaymentCapture() === true) and
                     ($payment->isFileBasedEmandateRegistrationPayment() === false) and
+                    ($payment->isApiBasedEmandateAsyncPayment() === false) and
                     ($payment->isCod() === false))
                 {
                     assertTrue($payment->hasBeenCaptured() === true);

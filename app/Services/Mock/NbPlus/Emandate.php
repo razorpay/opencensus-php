@@ -79,6 +79,11 @@ class Emandate extends EmandataBase
             $returnData['response']['data']['bank_reference_id'] = '1234';
         }
 
+        if ($input['input']['payment']['description'] === 'token_pending')
+        {
+            $returnData['response']['data']['recurring_status'] = 'initiated';
+        }
+
         return $returnData;
     }
 
@@ -148,5 +153,15 @@ class Emandate extends EmandataBase
         $response->body = json_encode($content);
 
         return $response;
+    }
+
+    protected function preprocessCallback($input)
+    {
+        return [
+            'response' => [
+                'payment_id' => $input['input']['gateway_data']['txnid'],
+            ],
+            'error' => null
+        ];
     }
 }

@@ -111,6 +111,7 @@ class Processor
     use NbPlusService;
     use UpiTrait;
     use Card\InputDecryptionTrait;
+    use EmandateRecurring;
 
 
     /**
@@ -5781,6 +5782,22 @@ class Processor
             $response['should_auto_capture'] = false;
 
             $response['reason'] = Constants::FILE_BASED_EMANDATE_PAYMENT;
+
+            return $response;
+        }
+
+        // For PayU, in case of registration payment, 
+        // token confirmation will be sent via webhooks.
+        // Cannot auto capture until we know final status of token.
+        // For some banks, they will let us know the status in sync, 
+        // for others they will give the final status in T+2 days via webhooks.
+        // 
+        // In case of debit payment, final confirmation is received from webhooks.
+        if ($payment->isApiBasedEmandateAsyncPayment() === true)
+        {
+            $response['should_auto_capture'] = false;
+
+            $response['reason'] = Constants::API_BASED_EMANDATE_ASYNC_PAYMENT;
 
             return $response;
         }

@@ -408,7 +408,8 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getPaymentPayload($payment);
 
-        if ($payment->hasSubscription() === true)
+        if (($payment->hasSubscription() === true) and 
+            ($payment->isApiBasedEmandateAsyncPayment() === false))
         {
             $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
 
@@ -901,12 +902,16 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = $this->getTokenPayload($token);
 
+        $this->triggerCallToSubscriptionForEmandateAsyncGateway($token, 'onTokenConfirmed');
+
         $this->dispatchEventToStork($payload);
     }
 
     protected function onTokenRejected($token)
     {
         $payload = $this->getTokenPayload($token);
+
+        $this->triggerCallToSubscriptionForEmandateAsyncGateway($token, 'onTokenRejected');
 
         $this->dispatchEventToStork($payload);
     }
@@ -2075,6 +2080,44 @@ class ApiEventSubscriber extends Base\Core
         ];
 
         return $partialPayload;
+    }
+
+    // Dispatches notification to Subscriptions service.
+    // This is for emandate API based gateways where token is confirmed in async.
+    // In such cases, payment capture is trigerred only by Subscr service.
+    private function triggerCallToSubscriptionForEmandateAsyncGateway($token, $notifyEvent = '')
+    {
+        try
+        {
+            if ((empty($token) === false) and ($token->getMethod() === Payment\Method::EMANDATE))
+            {
+                $payment = $this->repo->payment->getRecurringInitialPayment($token->getId(), 
+                $token->getMerchantId(), $token->getMethod());
+                $currentRecurringStatus = $token->getRecurringStatus();
+
+                if ((empty($payment) === false) and
+                    (Token\RecurringStatus::isFinalStatus($currentRecurringStatus) === true) and
+                    (Payment\Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true))
+                {
+                    $paymentPayload = $this->constructPaymentPayloadForSubscriptionNotification($payment);
+                    $this->app['module']->subscription->paymentProcess($paymentPayload, $this->getMode());
+                }
+            }
+        } 
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::SUBSCRIPTION_NOTIFY_FAILED,
+                [
+                    'payment_id'   => $payment->getId(),
+                    'token_id'     => $token->getId(),
+                    'notify_event' => $notifyEvent,
+                ]);  
+        }
+
+        return;
     }
 
 }
