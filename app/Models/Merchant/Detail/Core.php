@@ -21,6 +21,7 @@ use RZP\Models\Base\EsRepository;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Metro\Constants as MetroConstants;
+use RZP\Models\Feature\Core as FeatureCore;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\SalesforceConverge\SalesforceConvergeService;
 use RZP\Models\SalesforceConverge\SalesforceMerchantUpdatesRequest;
@@ -7603,6 +7604,13 @@ class Core extends Base\Core
         return $matchedValueForField;
     }
 
+    /**
+     * This function process dedupe response, update retrycount incase of dedupe failure, mark dedupe blocked
+     * deactivate merchant if retry count exceeds 1
+     * @param array $requiredFieldsforNoDocOnboarding
+     * @param array $dedupeResponse
+     * @param array $noDocConfig
+     */
     public function processDedupeResponse(array $requiredFieldsforNoDocOnboarding, array $dedupeResponse, array & $noDocConfig)
     {
         $merchantCore = new Merchant\Core();
@@ -7628,6 +7636,16 @@ class Core extends Base\Core
                     $this->merchant->deactivate();
 
                     $merchantCore->appendTag($this->merchant, DeDupeConstants::DEDUPE_BLOCKED_TAG);
+
+                    $featureCore = (new FeatureCore());
+
+                    $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
+
+                    $this->trace->info(TraceCode::DEDUPE_FAILED_FOR_XPRESS_ONBOARDING, [
+                        'merchantId'                            => $this->merchant->getId(),
+                        'field'                                 => $field,
+                        'dedupe_configuration'                  => $dedupeConfig
+                    ]);
 
                     return;
                 }

@@ -16,10 +16,11 @@ use RZP\Models\Merchant\Constants as MerchantConstant;
 use RZP\Models\Merchant\Detail\SelectiveRequiredFields;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Type as DocumentType;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Models\Merchant\Detail\NeedsClarificationMetaData;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
-use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Detail\RetryStatus as RetryStatus;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Models\Merchant\Detail\ActivationFields as ActivationFields;
 use RZP\Models\Merchant\Detail\NeedsClarification\ReasonComposer\Factory;
@@ -68,25 +69,10 @@ class Core extends Base\Core
             return;
         }
 
-        $failedStatus = [BvsValidationConstants::NOT_MATCHED, BvsValidationConstants::INCORRECT_DETAILS, BvsValidationConstants::FAILED];
-
         $merchantDetailCore = (new MerchantDetailCore());
         $noDocData          = $merchantDetailCore->fetchNoDocData($merchantDetail);
 
-        $isRemoveNoDocFeature = false;
-
-        $verificationConfig = $noDocData[DEConstants::VERIFICATION];
-
-        foreach ($verificationConfig as $artefact => $value)
-        {
-
-            if (($artefact === DetailEntity::GSTIN and in_array($merchant->merchantDetail->getGstinVerificationStatus(), $failedStatus, true) === true)
-                or ($verificationConfig[$artefact][DEConstants::RETRY_COUNT] > 1))
-            {
-                $isRemoveNoDocFeature = true;
-                break;
-            }
-        }
+        $isRemoveNoDocFeature = $this->shouldRemoveNoDocFeature ($noDocData, $merchant, $merchantDetail);
 
         if ($isRemoveNoDocFeature === true)
         {
@@ -95,6 +81,51 @@ class Core extends Base\Core
             $featureCore->removeFeature(FeatureConstants::NO_DOC_ONBOARDING, true);
         }
     }
+
+    private function shouldRemoveNoDocFeature (array $noDocData, Merchant\Entity $merchant, DetailEntity $merchantDetail )
+    {
+        $isRemoveNoDocFeature = false;
+
+        $failedStatus = [BvsValidationConstants::NOT_MATCHED, BvsValidationConstants::INCORRECT_DETAILS, BvsValidationConstants::FAILED];
+
+        $verificationConfig = $noDocData[DEConstants::VERIFICATION];
+
+        $dedupeConfig = $noDocData[DetailConstant::DEDUPE];
+
+        if ($this->isDedupeInProgressForXpressOnboarding($dedupeConfig) === true)
+        {
+            return $isRemoveNoDocFeature;
+        }
+
+        foreach ($verificationConfig as $artefact => $value)
+        {
+
+            if (($artefact === DetailEntity::GSTIN and in_array($merchantDetail->getGstinVerificationStatus(), $failedStatus, true) === true)
+                or ($verificationConfig[$artefact][DEConstants::RETRY_COUNT] > 1))
+            {
+                $isRemoveNoDocFeature = true;
+                break;
+            }
+        }
+
+        return $isRemoveNoDocFeature;
+    }
+
+    private function isDedupeInProgressForXpressOnboarding(array $dedupeConfig) :bool
+    {
+        $isDedupeConfigInProgress = false;
+        foreach ($dedupeConfig as $artefact => $value)
+        {
+            if ($dedupeConfig[$artefact][DEConstants::RETRY_COUNT] > 0 and $dedupeConfig[$artefact][DEConstants::STATUS] === RetryStatus::PENDING)
+            {
+                $isDedupeConfigInProgress = true;
+                break;
+            }
+        }
+
+        return $isDedupeConfigInProgress;
+    }
+
 
     /**
      * Compose needs clarification for a given entity (merchant/partner)

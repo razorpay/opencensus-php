@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Unit\Models\Merchant\Detail;
 
+use ReflectionClass;
 use RZP\Constants\Mode;
 use Mockery\MockInterface;
 use RZP\Models\Feature\Entity;
@@ -2066,76 +2067,30 @@ class NeedsClarificationTest extends TestCase
         $this->assertEquals($partnerKycClarificationReasons, $expectedPartnerKycClarificationReasons);
     }
 
-    public function testRemoveFeatureAfterNoDocVerificationFailedForGstin()
+    public function testShouldRemoveFeatureAfterNoDocVerificationFailedForGstinDedupeFailed()
     {
         $input = [
             'gstin_verification_status'                => 'incorrect_details',
         ];
 
+        $ncCore = (new Core());
+
+        $reflection = new ReflectionClass($ncCore);
+
+        $method = $reflection->getMethod('shouldRemoveNoDocFeature');
+        $method->setAccessible(true);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
 
         $mid = $merchantDetail->getId();
 
-        $featureParams = [
-            Entity::ENTITY_ID   => $mid,
-            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-            Entity::NAME        => 'no_doc_onboarding',
-        ];
-
-        (new \RZP\Models\Feature\Core())->create($featureParams,true);
-
-        $value = [
-            'value' => ['09AAACR5055K1Z5'],
-            'current_index' =>0,
-            'retryCount' => 1,
-            'status' => 'failed',
-        ];
-
         $noDocData = [
             'verification' => [
-                'gstin' => $value
+                'gstin' => [
+                ],
             ]
-        ];
-
-        $data = [
-            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
-            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
-        ];
-
-        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
-
-        $this->mockRazorxTreatment('on');
-
-        $merchant = $this->getDbEntityById('merchant', '10000000000000');
-
-        (new Core())->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
-
-        $isNoDocFeatureEnabled = $merchant->isFeatureEnabled("no_doc_onboarding");
-
-        $this->assertEquals($isNoDocFeatureEnabled, false);
-    }
-
-    public function testRemoveFeatureAfterNoDocVerificationFailedForPan()
-    {
-        $input = [
-            'gstin_verification_status'                => 'incorrect_details',
-        ];
-
-        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
-
-        $mid = $merchantDetail->getId();
-
-        $featureParams = [
-            Entity::ENTITY_ID   => $mid,
-            Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-            Entity::NAME        => 'no_doc_onboarding',
-        ];
-
-        (new \RZP\Models\Feature\Core())->create($featureParams,true);
-
-        $noDocData = [
-            'verification' => [
-                'company_pan' => [
+            ,'dedupe'       => [
+                'contact_mobile' => [
                     'retryCount' => 1,
                     'status' => 'pending',
                 ],
@@ -2153,11 +2108,157 @@ class NeedsClarificationTest extends TestCase
 
         $merchant = $this->getDbEntityById('merchant', '10000000000000');
 
-        (new Core())->removeNoDocFeatureIfApplicable($merchant, $merchantDetail);
+        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
 
-        $isNoDocFeatureEnabled = $merchant->isFeatureEnabled("no_doc_onboarding");
+        $this->assertEquals($shouldRemoveNoDocFeature, false);
+    }
 
-        $this->assertEquals($isNoDocFeatureEnabled, false);
+    public function testshouldRemoveFeatureAfterNoDocVerificationFailedForGstinButDedupePassed()
+    {
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $ncCore = (new Core());
+
+        $reflection = new ReflectionClass($ncCore);
+
+        $method = $reflection->getMethod('shouldRemoveNoDocFeature');
+        $method->setAccessible(true);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $noDocData = [
+            'verification' => [
+                'gstin' => [
+                    'retryCount' => 0,
+                    'status' => 'failed',
+                ],
+            ]
+            ,'dedupe'       => [
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                     'status' => 'passed',
+                ],
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+
+        $this->assertEquals($shouldRemoveNoDocFeature, true);
+    }
+
+    public function testShouldRemoveFeatureAfterNoDocVerificationFailedForPanIfDedupePass()
+    {
+
+        $ncCore = (new Core());
+
+        $reflection = new ReflectionClass($ncCore);
+
+        $method = $reflection->getMethod('shouldRemoveNoDocFeature');
+        $method->setAccessible(true);
+
+
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $noDocData = [
+            'verification' => [
+                'company_pan' => [
+                    'retryCount' => 2,
+                    'status' => 'failed',
+                ],
+            ],
+            'dedupe'       => [
+                'contact_mobile' => [
+                    'retryCount' => 0,
+                    'status' => 'passed',
+                ],
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant, $merchantDetail]);
+
+        $this->assertEquals($shouldRemoveNoDocFeature, true);
+    }
+
+    public function testShouldRemoveFeatureAfterNoDocVerificationFailedForPanIfDedupeFailed()
+    {
+
+        $ncCore = (new Core());
+
+        $reflection = new ReflectionClass($ncCore);
+
+        $method = $reflection->getMethod('shouldRemoveNoDocFeature');
+        $method->setAccessible(true);
+
+
+        $input = [
+            'gstin_verification_status'                => 'incorrect_details',
+        ];
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $noDocData = [
+            'verification' => [
+                'company_pan' => [
+                    'retryCount' => 2,
+                    'status' => 'failed',
+                ],
+            ],
+            'dedupe'       => [
+                'contact_mobile' => [
+                    'retryCount' => 1,
+                    'status' => 'pending',
+                ],
+            ]
+        ];
+
+        $data = [
+            Store\Constants::NAMESPACE  => ConfigKey::ONBOARDING_NAMESPACE,
+            ConfigKey::NO_DOC_ONBOARDING_INFO => $noDocData
+        ];
+
+        $data = (new Store\Core())->updateMerchantStore($mid, $data, Store\Constants::INTERNAL);
+
+        $this->mockRazorxTreatment('on');
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+
+        $shouldRemoveNoDocFeature = $method->invokeArgs($ncCore, [$noDocData, $merchant,$merchantDetail]);
+
+        $this->assertEquals($shouldRemoveNoDocFeature, false);
     }
 
     protected function getDbEntity(string $entity, array $input = array(), $mode = 'test')

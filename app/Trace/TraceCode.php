@@ -8091,6 +8091,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STORK_CALL_FOR_PAYOUT_FAILED_EVENT_STATUS_FAILED            = 'STORK_CALL_FOR_PAYOUT_FAILED_EVENT_STATUS_FAILED';
     const PAYOUT_FAILED_WEBHOOK_SUBSCRIPTION_STATUS                   = 'PAYOUT_FAILED_WEBHOOK_SUBSCRIPTION_STATUS';
 
+    const DEDUPE_FAILED_FOR_XPRESS_ONBOARDING                         = 'DEDUPE_FAILED_FOR_XPRESS_ONBOARDING';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
