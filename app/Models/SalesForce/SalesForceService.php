@@ -46,6 +46,14 @@ class SalesForceService extends Base\Service {
             return;
         }
 
+        if ($eventType === Constants::CURRENT_ACCOUNT_INTEREST)
+        {
+            if (empty($eventPayload['Business_Type']) === false)
+            {
+                $eventPayload['Business_Type'] = $this->salesForceClient->getCaBusinessTypeIndex($eventPayload['Business_Type']);
+            }
+        }
+
         $repo = new MerchantAttributeRepository();
 
         $merchantAttribute = $repo->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, ['x_signup_platform'])->first();

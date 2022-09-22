@@ -847,7 +847,7 @@ class SalesForceClient
         );
     }
 
-    protected function getCaBusinessTypeIndex($businessType)
+    public function getCaBusinessTypeIndex($businessType)
     {
         $businessTypeMapping = [
             'PUBLIC_LIMITED'        => 5,
