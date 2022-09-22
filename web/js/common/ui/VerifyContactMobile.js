@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-
+import React from 'react';
 import Button from 'common/new-ui/Button';
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 import UpdateContactMobile from 'common/ui/UpdateContactMobile';
@@ -37,6 +37,7 @@ export default class VerifyContactMobile extends React.Component {
       .verifyContactMobile({
         token: this.state.token,
         otp,
+        action: 'verify_user',
       })
       .then(() => {
         this.props.updateUser({ contact_mobile_verified: true });
