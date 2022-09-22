@@ -22,6 +22,10 @@ class UnexpectedPaymentReason
 
     const BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED = 'There is a temporary block placed on the account currently because of which new payment operations are put on hold. If you are seeing this message unexpectedly, please contact the site admin regarding the issue.';
 
+    const CHECKOUT_ORDER_NOT_PRESENT = 'The checkout QR code does not have checkout order associated to it';
+
+    const CHECKOUT_ORDER_CLOSED = 'The checkout order associated to the QR is closed';
+
     protected static $toCreateUnexpected = [
         self::QR_CODE_PAYMENT_FAILED_FEE_OR_TAX_TAMPERED,
         self::QR_CODE_PAYMENT_FAILED_UPI_NOT_ENABLED,

@@ -21,6 +21,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
 use RZP\Models\QrCodeConfig\Repository as QrConfigRepo;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
+use RZP\Models\Checkout\Order as CheckoutOrder;
 
 class Processor extends Base\Core
 {
@@ -32,7 +33,11 @@ class Processor extends Base\Core
 
     protected $terminal;
 
+    /** @var NonVirtualAccountQrCode\Entity */
     protected $qrCode;
+
+    /** @var CheckoutOrder\Entity */
+    protected $checkoutOrder;
 
     /**
      * @var PaymentProcessor
@@ -156,7 +161,8 @@ class Processor extends Base\Core
 
         if ($entity->isExpected() === true)
         {
-            if ($entity->payment->hasBeenCaptured() === false)
+            if ((! $this->qrCode->isCheckoutQrCode()) &&
+                ($entity->payment->hasBeenCaptured() === false))
             {
                 $paymentProcessor->autoCapturePayment($paymentProcessor->getPayment());
             }
@@ -258,6 +264,13 @@ class Processor extends Base\Core
             {
                 $paymentArray['vpa'] = $this->gatewayInput[GatewayResponseParams::VPA];
             }
+        }
+
+        if ($this->checkoutOrder !== null)
+        {
+            $paymentArrayFromCheckoutOrder = (new CheckoutOrder\Core())->getPaymentArrayFromCheckoutOrder($this->checkoutOrder);
+
+            $paymentArray = array_merge($paymentArray, $paymentArrayFromCheckoutOrder);
         }
 
         return $paymentArray;
@@ -405,6 +418,25 @@ class Processor extends Base\Core
             $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_QR_NOT_FOUND);
 
             return;
+        }
+
+        if ($this->qrCode->isCheckoutQrCode())
+        {
+            $this->setCheckoutOrder();
+
+            if ($this->checkoutOrder === null)
+            {
+                $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::CHECKOUT_ORDER_NOT_PRESENT);
+
+                return;
+            }
+
+            if ($this->checkoutOrder->isClosed())
+            {
+                $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::CHECKOUT_ORDER_CLOSED);
+
+                return;
+            }
         }
 
         if ($this->qrCode->isClosed())
@@ -578,5 +610,12 @@ class Processor extends Base\Core
             }
         }
         return $ifsc;
+    }
+
+    protected function setCheckoutOrder(): void
+    {
+        $checkoutOrderId = $this->qrCode->getEntityId();
+
+        $this->checkoutOrder = (new CheckoutOrder\Repository())->find($checkoutOrderId);
     }
 }

@@ -73,6 +73,7 @@ class Entity extends PublicEntity
     public const PAYMENT_LINK_ID = 'payment_link_id';
     public const RECEIVER_TYPE = 'receiver_type';
     public const SIGNATURE = 'signature';
+    public const UPI = 'upi';
 
     public const META_DATA_ATTRIBUTES = [
         '_',
@@ -91,6 +92,27 @@ class Entity extends PublicEntity
         self::PAYMENT_LINK_ID,
         self::RECEIVER_TYPE,
         self::SIGNATURE,
+    ];
+
+    /**
+     * Not including amount since it will be taken from gateway callback input
+     * MerchantId taken from qr entity
+     */
+    public const CREATE_PAYMENT_ATTRIBUTES = [
+        '_',
+        self::ACCOUNT_ID,
+        self::CONTACT,
+        self::CURRENCY,
+        self::CUSTOMER_ID,
+        self::DESCRIPTION,
+        self::EMAIL,
+        self::INVOICE_ID,
+        self::METHOD,
+        self::NOTES,
+        self::OFFER_ID,
+        self::ORDER_ID,
+        self::PAYMENT_LINK_ID,
+        self::UPI,
     ];
 
     /** @var array The attributes that should be mutated to dates. */
@@ -167,6 +189,15 @@ class Entity extends PublicEntity
         self::EXPIRE_AT,
         self::META_DATA,
     ];
+
+    public function toArrayPrivate(): array
+    {
+        return array_merge($this->toArray(), [
+            self::EMAIL     => $this->email,
+            self::CONTACT   => $this->contact,
+            self::META_DATA => $this->meta_data,
+        ]);
+    }
 
     public function isClosed(): bool
     {

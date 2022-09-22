@@ -9219,10 +9219,17 @@ trait Authorize
                 'UPI intent is not enabled for the merchant');
         }
 
-        if (isset($payment['vpa']) === true)
-        {
+        /**
+         * For QrV2 payments, We create payment entity only after we receive success gateway callback
+         * Hence, VPA should be allowed in the input for such payments.
+         * Here VPA is the id through which payment was received on the QR
+         */
+        if ((isset($payment['vpa']) === true) &&
+            ($payment[Payment\Entity::RECEIVER_TYPE] !== Entity::QR_CODE)
+        ) {
             throw new Exception\BadRequestValidationFailureException(
-                'The vpa field is not required and not shouldn\'t be sent.');
+                'The vpa field is not required and not shouldn\'t be sent.'
+            );
         }
     }
 
