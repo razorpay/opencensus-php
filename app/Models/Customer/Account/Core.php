@@ -300,6 +300,8 @@ class Core extends Base\Core
 
             $tokens = $tokenCore->removeCardTokensWithoutName($tokens);
 
+            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $merchant->getId());
+
             $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
 
             $tokens = $tokenCore->addConsentFieldInTokens($tokens, $merchant);

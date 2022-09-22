@@ -3175,4 +3175,39 @@ class Core extends Base\Core
 
         return $tokens;
     }
+
+    /**
+     * Removes all the card tokens which are not compliant with the 
+     * Reserve Bank of India's (RBI) tokenisation guidelines.
+     * 
+     * @param Base\PublicCollection $tokens
+     * @param string $merchantId
+     * 
+     * @return Base\PublicCollection
+     */
+    public function removeNonCompliantCardTokens(Base\PublicCollection $tokens, string $merchantId): Base\PublicCollection
+    {
+        if ((new TokenisationExperiment())->shouldRemoveNonCompliantCardTokens($merchantId) === false)
+        {
+            return $tokens;
+        }
+
+        $tokensWithoutNonCompliantCards = $tokens->filter(static function (Entity $token) {
+            // removed all non-tokenised saved cards
+            if ($token->hasCard() && ($token->card->isTokenisationCompliant() === false))
+            {
+                return false;
+            }
+
+            return true;
+        })->values();
+
+        $this->trace->info(TraceCode::REMOVE_NON_COMPLIANT_TOKENS, [
+            'totalNoOfTokens' => count($tokens),
+            'noOfCompliantTokens' => count($tokensWithoutNonCompliantCards),
+            'noOfNonCompliantTokens'  => count($tokens) - count($tokensWithoutNonCompliantCards),
+        ]);
+
+        return $tokensWithoutNonCompliantCards;
+    }
 }

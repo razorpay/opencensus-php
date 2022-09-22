@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use App;
 use Illuminate\Support\Str;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
@@ -223,6 +224,41 @@ class TokenisationExperiment
                 $e,
                 null,
                 TraceCode::LOCAL_TOKEN_ON_GLOBAL_CUSTOMER_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    /**
+     * Runs a Splitz experiment to help decide whether to remove cards which are 
+     * non-compliant to RBI's tokenisation guidelines from the output.
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    public function shouldRemoveNonCompliantCardTokens(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.checkout_remove_saved_card_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REMOVE_NON_COMPLIANT_TOKENS_SPLITZ_ERROR
             );
         }
 

@@ -971,6 +971,13 @@ class Entity extends Base\PublicEntity
         return ($network === Card\Network::$fullName[Card\Network::RUPAY]);
     }
 
+    public function isBajaj(): bool
+    {
+        $network = $this->getNetwork();
+
+        return ($network === Card\Network::$fullName[Card\Network::BAJAJ]);
+    }
+
     public function isTokenPan()
     {
         return (empty($this->getAttribute(self::TRIVIA)) === false);
@@ -996,6 +1003,15 @@ class Entity extends Base\PublicEntity
 
         return (($vault === Card\Vault::RZP_VAULT) or
                 ($vault === Card\Vault::RZP_ENCRYPTION));
+    }
+
+    public function isTokenisationCompliant(): bool
+    {
+        return (
+            $this->isInternational() ||
+            $this->isBajaj() ||
+            $this->isNetworkTokenisedCard()
+        );
     }
 
     public function isNetworkTokenisedCard()

@@ -843,6 +843,8 @@ class Checkout
 
             $savedTokens = $tokenCore->removeDuplicateCardRecurringTokensIfAny($savedTokens,$merchant);
 
+            $savedTokens = $tokenCore->removeNonCompliantCardTokens($savedTokens, $merchant->getId());
+
             $savedTokens = $tokenCore->removeNonActiveTokenisedCardTokens($savedTokens);
 
             $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens, $merchant);
@@ -980,7 +982,9 @@ class Checkout
 
                         $tokensWithoutCardName = $tokenCore->removeCardTokensWithoutName($tokensWithoutDisabledCardNetwork);
 
-                        $tokensWithoutNonActiveTokenisedCards = $tokenCore->removeNonActiveTokenisedCardTokens($tokensWithoutCardName);
+                        $tokensWithoutNonComplianceCards = $tokenCore->removeNonCompliantCardTokens($tokensWithoutCardName, $merchant->getId());
+
+                        $tokensWithoutNonActiveTokenisedCards = $tokenCore->removeNonActiveTokenisedCardTokens($tokensWithoutNonComplianceCards);
 
                         $data['customer']['tokens'] = $tokensWithoutNonActiveTokenisedCards;
                     }

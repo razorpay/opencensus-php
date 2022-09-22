@@ -456,6 +456,8 @@ return array(
 
     'checkout_upi_qr_v2_splitz_experiment_id'     => env('CHECKOUT_UPI_QR_V2_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_remove_saved_card_splitz_experiment_id' => env('CHECKOUT_REMOVE_SAVED_CARD_SPLITZ_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
