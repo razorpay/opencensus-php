@@ -68,6 +68,7 @@ class HyperTrace
     const ACCOUNT_V2_INVALIDATE_CACHE                          = 'account_v2.create.core.invalidate_cache';
     const CREATE_SUBMERCHANT_ENTITIES                          = 'create_submerchant_entities';
     const CREATE_SUBMERCHANT_AND_SET_RELATIONS                 = 'create_submerchant_and_set_relations';
+    const CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL        = 'create_submerchant_and_set_relations_internal';
     const SEND_MAIL_TO_SUBMERCHANT                             = 'send_mail_to_submerchant';
     const VALIDATE_PARTNER_ACCESS                              = 'validate_partner_access';
     const FILL_SUBMERCHANT_DETAILS                             = 'fill_submerchant_details';

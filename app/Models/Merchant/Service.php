@@ -6230,7 +6230,7 @@ class Service extends Base\Service
         unset($input['account']);
         unset($input[Entity::PRODUCT]);
 
-        list($subMerchant, $newUser, $createdNew) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS], function () use ($optimizeCreationFlow, $input, $merchant, $isLinkedAccount, $ownerId, $product) {
+        list($subMerchant, $newUser, $createdNew) = Tracer::inspan(['name' => HyperTrace::CREATE_SUBMERCHANT_AND_SET_RELATIONS_INTERNAL], function () use ($optimizeCreationFlow, $input, $merchant, $isLinkedAccount, $ownerId, $product) {
             if ($optimizeCreationFlow === false) {
                 [$subMerchant, $newUser, $createdNew] = $this->repo->transactionOnLiveAndTest(function () use (
                     $input,
