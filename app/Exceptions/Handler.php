@@ -180,6 +180,7 @@ class Handler extends ExceptionHandler
             $data['http_status_code'] = $this->getStatusCodeForUnhandledException($e);
 
             $response = Response::json($data);
+            AppResponse::pushDownstreamMetrics($data);
         }
 
         return $response;
