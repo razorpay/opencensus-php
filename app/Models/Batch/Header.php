@@ -1318,6 +1318,81 @@ class Header
     const CAPTURE_SETTING_NAME              = 'Name';
     const CAPTURE_SETTING_CONFIG            = 'Config';
 
+    /**
+     * Header to be used in Upload MIQ flow to create merchant.
+     */
+    const MIQ_MERCHANT_NAME                 = 'Merchant Name';
+    const MIQ_DBA_NAME                      = 'DBA Name (billing label)';
+    const MIQ_WEBSITE                       = 'Website';
+    const MIQ_WEBSITE_ABOUT_US              = 'Website About us';
+    const MIQ_WEBSITE_TERMS_CONDITIONS      = 'Website Terms and conditions';
+    const MIQ_WEBSITE_CONTACT_US            = 'Website Contact us';
+    const MIQ_WEBSITE_PRIVACY_POLICY        = 'Website Privacy Policy';
+    const MIQ_WEBSITE_PRODUCT_PRICING       = 'Website Product Pricing';
+    const MIQ_WEBSITE_REFUNDS               = 'Website Refunds';
+    const MIQ_WEBSITE_CANCELLATION          = 'Website Cancellation';
+    const MIQ_WEBSITE_SHIPPING_DELIVERY     = 'Website Shipping and Delivery';
+    const MIQ_CONTACT_NAME                  = 'Contact Name';
+    const MIQ_CONTACT_EMAIL                 = 'Contact Email';
+    const MIQ_TXN_REPORT_EMAIL              = 'Transactions Report Email-id';
+    const MIQ_ADDRESS                       = 'Address';
+    const MIQ_CITY                          = 'City';
+    const MIQ_PIN_CODE                      = 'PIN Code';
+    const MIQ_STATE                         = 'State';
+    const MIQ_CONTACT_NUMBER                = 'Contact Number';
+    const MIQ_BUSINESS_TYPE                 = 'Business Type';
+    const MIQ_CIN                           = 'CIN';
+    const MIQ_BUSINESS_PAN                  = 'Business PAN';
+    const MIQ_BUSINESS_NAME                 = 'Business Name';
+    const MIQ_AUTHORISED_SIGNATORY_PAN      = 'Authorised Signatory PAN';
+    const MIQ_PAN_OWNER_NAME                = 'PAN Owner name';
+    const MIQ_BUSINESS_CATEGORY             = 'Business Category';
+    const MIQ_SUB_CATEGORY                  = 'Sub Category';
+    const MIQ_GSTIN                         = 'GSTIN';
+    const MIQ_BUSINESS_DESCRIPTION          = 'Business Description';
+    const MIQ_ESTD_DATE                     = 'ESTD Date';
+    const MIQ_FEE_MODEL                     = 'Fee Model';
+    const MIQ_NB_FEE_TYPE                   = 'NetBanking Fee Type';
+    const MIQ_NB_FEE_BEARER                 = 'NetBanking Fee Bearer';
+    const MIQ_AXIS                          = 'Axis NetBanking';
+    const MIQ_HDFC                          = 'HDFC NetBanking';
+    const MIQ_ICICI                         = 'ICICI NetBanking';
+    const MIQ_SBI                           = 'SBI NetBanking';
+    const MIQ_YES                           = 'Yes NetBanking';
+    const MIQ_NB_ANY                        = 'NetBanking (Any)';
+    const MIQ_DEBIT_CARD_FEE_TYPE           = 'Debit Card Fee Type';
+    const MIQ_DEBIT_CARD_FEE_BEARER         = 'Debit Card Fee Bearer';
+    const MIQ_DEBIT_CARD_0_2K               = 'Debit Card 0<2K';
+    const MIQ_DEBIT_CARD_2K_1CR             = 'Debit Card 2K<1Cr';
+    const MIQ_RUPAY_FEE_TYPE                = 'Rupay Fee Type';
+    const MIQ_RUPAY_FEE_BEARER              = 'Rupay Fee Bearer';
+    const MIQ_RUPAY_0_2K                    = 'Rupay 0<2K';
+    const MIQ_RUPAY_2K_1CR                  = 'Rupay 2K<1Cr';
+    const MIQ_UPI_FEE_TYPE                  = 'UPI Fee Type';
+    const MIQ_UPI_FEE_BEARER                = 'UPI Fee Bearer';
+    const MIQ_UPI                           = 'UPI';
+    const MIQ_WALLETS_FEE_TYPE              = 'Wallets Fee Type';
+    const MIQ_WALLETS_FEE_BEARER            = 'Wallets Fee Bearer';
+    const MIQ_WALLETS_FREECHARGE            = 'Wallets (Freecharge)';
+    const MIQ_WALLETS_ANY                   = 'Wallets (Any)';
+    const MIQ_CREDIT_CARD_FEE_TYPE          = 'Credit Card Fee Type';
+    const MIQ_CREDIT_CARD_FEE_BEARER        = 'Credit Card Fee Bearer';
+    const MIQ_CREDIT_CARD_0_2K              = 'Credit Card 0<2K';
+    const MIQ_CREDIT_CARD_2K_1CR            = 'Credit Card 2K<1Cr';
+    const MIQ_INTERNATIONAL                 = 'International';
+    const MIQ_INTL_CARD_FEE_TYPE            = 'International Cards Fee Type';
+    const MIQ_INTL_CARD_FEE_BEARER          = 'International Cards Fee Bearer';
+    const MIQ_INTERNATIONAL_CARD            = 'International Cards';
+    const MIQ_BUSINESS_FEE_TYPE             = 'Business Fee Type';
+    const MIQ_BUSINESS_FEE_BEARER           = 'Business Fee Bearer';
+    const MIQ_BUSINESS                      = 'Business';
+    const MIQ_BANK_ACC_NUMBER               = 'Bank Account Number';
+    const MIQ_BENEFICIARY_NAME              = 'Beneficiary Name';
+    const MIQ_BRANCH_IFSC_CODE              = 'Branch IFSC Code';
+    const MIQ_OUT_FEE_BEARER                = 'Fee_bearer';
+    const MIQ_OUT_MERCHANT_ID               = 'Merchant_id';
+    const MIQ_OUT_MERCHANT_NAME             = 'Merchant_Name';
+    const MIQ_OUT_MERCHANT_EMAIL            = 'Merchant_Email';
 
     // Payment Transfer Headers
     const PAYMENT_ID_2          = 'payment_id';
@@ -3065,6 +3140,89 @@ class Header
                 self::MERCHANT_ID,
                 self::MERCHANT_NAME,
                 self::MERCHANT_EMAIL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::MERCHANT_UPLOAD_MIQ => [
+            self::INPUT => [
+                self::MIQ_MERCHANT_NAME,
+                self::MIQ_DBA_NAME,
+                self::MIQ_WEBSITE,
+                self::MIQ_WEBSITE_ABOUT_US,
+                self::MIQ_WEBSITE_TERMS_CONDITIONS,
+                self::MIQ_WEBSITE_CONTACT_US,
+                self::MIQ_WEBSITE_PRIVACY_POLICY,
+                self::MIQ_WEBSITE_PRODUCT_PRICING,
+                self::MIQ_WEBSITE_REFUNDS,
+                self::MIQ_WEBSITE_CANCELLATION,
+                self::MIQ_WEBSITE_SHIPPING_DELIVERY,
+                self::MIQ_CONTACT_NAME,
+                self::MIQ_CONTACT_EMAIL,
+                self::MIQ_TXN_REPORT_EMAIL,
+                self::MIQ_ADDRESS,
+                self::MIQ_CITY,
+                self::MIQ_PIN_CODE,
+                self::MIQ_STATE,
+                self::MIQ_CONTACT_NUMBER,
+                self::MIQ_BUSINESS_TYPE,
+                self::MIQ_CIN,
+                self::MIQ_BUSINESS_PAN,
+                self::MIQ_BUSINESS_NAME,
+                self::MIQ_AUTHORISED_SIGNATORY_PAN,
+                self::MIQ_PAN_OWNER_NAME,
+                self::MIQ_BUSINESS_CATEGORY,
+                self::MIQ_SUB_CATEGORY,
+                self::MIQ_GSTIN,
+                self::MIQ_BUSINESS_DESCRIPTION,
+                self::MIQ_ESTD_DATE,
+                self::MIQ_FEE_MODEL,
+                self::MIQ_NB_FEE_TYPE,
+                self::MIQ_NB_FEE_BEARER,
+                self::MIQ_AXIS,
+                self::MIQ_HDFC,
+                self::MIQ_ICICI,
+                self::MIQ_SBI,
+                self::MIQ_YES,
+                self::MIQ_NB_ANY,
+                self::MIQ_DEBIT_CARD_FEE_TYPE,
+                self::MIQ_DEBIT_CARD_FEE_BEARER,
+                self::MIQ_DEBIT_CARD_0_2K,
+                self::MIQ_DEBIT_CARD_2K_1CR,
+                self::MIQ_RUPAY_FEE_TYPE,
+                self::MIQ_RUPAY_FEE_BEARER,
+                self::MIQ_RUPAY_0_2K,
+                self::MIQ_RUPAY_2K_1CR,
+                self::MIQ_UPI_FEE_TYPE,
+                self::MIQ_UPI_FEE_BEARER,
+                self::MIQ_UPI,
+                self::MIQ_WALLETS_FEE_TYPE,
+                self::MIQ_WALLETS_FEE_BEARER,
+                self::MIQ_WALLETS_FREECHARGE,
+                self::MIQ_WALLETS_ANY,
+                self::MIQ_CREDIT_CARD_FEE_TYPE,
+                self::MIQ_CREDIT_CARD_FEE_BEARER,
+                self::MIQ_CREDIT_CARD_0_2K,
+                self::MIQ_CREDIT_CARD_2K_1CR,
+                self::MIQ_INTERNATIONAL,
+                self::MIQ_INTL_CARD_FEE_TYPE,
+                self::MIQ_INTL_CARD_FEE_BEARER,
+                self::MIQ_INTERNATIONAL_CARD,
+                self::MIQ_BUSINESS_FEE_TYPE,
+                self::MIQ_BUSINESS_FEE_BEARER,
+                self::MIQ_BUSINESS,
+                self::MIQ_BANK_ACC_NUMBER,
+                self::MIQ_BENEFICIARY_NAME,
+                self::MIQ_BRANCH_IFSC_CODE,
+            ],
+
+            self::OUTPUT => [
+                self::MIQ_OUT_FEE_BEARER,
+                self::MIQ_OUT_MERCHANT_ID,
+                self::MIQ_OUT_MERCHANT_NAME,
+                self::MIQ_OUT_MERCHANT_EMAIL,
                 self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,

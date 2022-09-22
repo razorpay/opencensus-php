@@ -61,6 +61,11 @@ class Type
 
     const SUB_MERCHANT              = 'sub_merchant';
 
+    /**
+     * This type is used to automate merchant and pricing plan in bulk for vas merchants.
+     */
+    const MERCHANT_UPLOAD_MIQ       = 'merchant_upload_miq';
+
     const DIRECT_DEBIT              = 'direct_debit';
 
     const ENTITY_MAPPING            = 'entity_mapping';
@@ -318,6 +323,7 @@ class Type
         self::PARTNER_REFERRAL_FETCH,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::EZETAP_SETTLEMENT,
+        self::MERCHANT_UPLOAD_MIQ,
     ];
 
     /**
@@ -410,6 +416,7 @@ class Type
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
         self::VAULT_MIGRATE_TOKEN_NS,
+        self::MERCHANT_UPLOAD_MIQ,
     ];
 
     /**
@@ -527,7 +534,8 @@ class Type
         self::LEDGER_ONBOARD_OLD_ACCOUNT,
         self::LEDGER_BULK_JOURNAL_CREATE,
         self::PARTNER_REFERRAL_FETCH,
-        self::VAULT_MIGRATE_TOKEN_NS
+        self::VAULT_MIGRATE_TOKEN_NS,
+        self::MERCHANT_UPLOAD_MIQ,
     ];
 
     /**
@@ -609,6 +617,7 @@ class Type
         self::PARTNER_REFERRAL_FETCH,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
+        self::MERCHANT_UPLOAD_MIQ,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -684,6 +693,8 @@ class Type
         self::MERCHANT_STATUS_ACTIVATION         => Name::MERCHANT_STATUS_ACTIVATION,
         self::PRICING_RULE                       => Name::PRICING_RULE,
         self::PARTNER_REFERRAL_FETCH             => Name::ADMIN_BATCH_CREATE,
+
+        self::MERCHANT_UPLOAD_MIQ                => Name::MERCHANT_BULK_UPLOAD_MIQ,
 
         self::DEBIT_NOTE                         => Name::CREATE_DEBIT_NOTE,
         self::NACH_MIGRATION                     => Name::ADMIN_BATCH_CREATE,

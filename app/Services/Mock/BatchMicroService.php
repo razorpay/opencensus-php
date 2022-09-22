@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Models\Batch\Type;
 use RZP\Exception\ServerNotFoundException;
 use RZP\Services\BatchMicroService as BaseBatchMicroService;
 
@@ -47,6 +48,33 @@ class BatchMicroService extends BaseBatchMicroService
                 'status'           => 'created',
                 'name'             => 'My Payout Approval',
                 'total_count'      => 1
+            ];
+        }
+
+        if (isset($input['type']) and
+            ($input["type"] === Type::MERCHANT_UPLOAD_MIQ))
+        {
+            return [
+                'id'               => substr($ufhFile->getName(), -14),
+                'created_at'       => 1551782255,
+                'updated_at'       => 1551782255,
+                'entity_id'        => 'C28Q0mJgoSfWC1',
+                'creator_type'     => 'admin',
+                'creator_id'       => 'D68mFOmRSoDtok',
+                'name'             => null,
+                'batch_type_id'    => Type::MERCHANT_UPLOAD_MIQ,
+                'type'             => Type::MERCHANT_UPLOAD_MIQ,
+                'mode'             => 'test',
+                'is_scheduled'     => false,
+                'upload_count'     => 0,
+                'total_count'      => 1,
+                'failure_count'    => 0,
+                'success_count'    => 0,
+                'amount'           => 0,
+                'attempts'         => 0,
+                'status'           => 'created',
+                'processed_amount' => 0,
+                'settings'         => [],
             ];
         }
 
@@ -317,6 +345,11 @@ class BatchMicroService extends BaseBatchMicroService
 
     public function isCompletelyMigratedBatchType(string $type): bool
     {
-        return false;
+        switch ($type) {
+            case Type::MERCHANT_UPLOAD_MIQ:
+                return true;
+            default:
+                return false;
+        }
     }
 }

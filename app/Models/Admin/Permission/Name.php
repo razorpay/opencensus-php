@@ -1062,6 +1062,8 @@ class Name
     const VIEW_PRIVILEGES                       = 'view_privileges';
     const FETCH_MISSING_BAS                     = 'fetch_missing_bas';
 
+    const MERCHANT_BULK_UPLOAD_MIQ              = 'merchant_batch_upload_miq';
+
     // This permission is intentionally not mapped to any route, this is purely for FE to consume,
     // actual route authorization is done at the microservice layer.
     const ACCOUNTS_RECEIVABLE_ADMIN             = 'accounts_receivable_admin';
