@@ -742,10 +742,6 @@ class PayoutServiceTest extends TestCase
         $freePayoutMigrateMock = Mockery::mock('RZP\Services\PayoutService\FreePayout',
                                                [$this->app])->makePartial();
 
-        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
-
-        $request = array_merge($defaultRequest, $request);
-
         $freePayoutMigrateMock->shouldReceive('sendRequest')
                               ->withArgs(
                                   function($arg) use ($request) {

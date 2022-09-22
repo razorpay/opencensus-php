@@ -9,7 +9,7 @@ use Razorpay\Edge\Passport\Passport;
 class FreePayout extends Base
 {
     const UPDATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI = '/admin/free_payout/';
-    const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI = '/admin/free_payout_migration';
+    const MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI = '/payouts/free_payout_migration';
 
     // update free payout attributes for singleton class
     const PAYOUT_SERVICE_FREE_PAYOUT = 'payout_service_free_payout';
@@ -53,13 +53,10 @@ class FreePayout extends Base
                 'input' => $input,
             ]);
 
-        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
-
         $response = $this->makeRequestAndGetContent(
             $input,
             self::MIGRATE_FREE_PAYOUT_PAYOUTS_SERVICE_URI,
-            Requests::POST,
-            $headers
+            Requests::POST
         );
 
         $this->trace->info(
