@@ -33,6 +33,8 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
     const COLUMN_SGST                           = ['sgst_amt', 'sgst_amt_usd'];
     const COLUMN_UTGST                          = ['utgst_amt','utgst_amt_usd'];
     const COLUMN_ARN                            = 'arn_no';
+
+    const COLUMN_RRN                            = 'tran_id';
     const COLUMN_AUTH_CODE                      = 'approv_code';
     const COLUMN_SEQUENCE_NUMBER                = 'sequence_number';
     const COLUMN_MERCHANT_CODE                  = 'merchant_code';
@@ -584,6 +586,11 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         }
 
         return trim(str_replace("'", '', $columnArn));
+    }
+
+    protected function getReferenceNumber($row)
+    {
+        return $row[self::COLUMN_RRN] ?? null;
     }
 
     protected function getAuthCode($row)
