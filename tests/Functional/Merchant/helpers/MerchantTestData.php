@@ -4,6 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -10432,6 +10433,49 @@ return [
                 ],
             ],
             'status_code' => 400,
+        ],
+    ],
+
+    'testUpsertOpportunityOnSalesforceViaAdmin' => [
+        'request' => [
+            'url'     => '/admin/merchant/10000000000000/salesforce_event',
+            'method'  => \Requests::POST,
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Admin-Token'      => Org::DEFAULT_ADMIN_TOKEN,
+            ],
+            'content' => [
+                "event_type"=> "CURRENT_ACCOUNT_INTEREST",
+                "event_properties"=> [
+                    "opportunity_progress"=> "Application submitted"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 202,
+        ],
+    ],
+
+    'testCreateLeadOnSalesforceViaAdmin' => [
+        'request' => [
+            'url'     => '/admin/merchants/lead_to_salesforce',
+            'method'  => \Requests::POST,
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Admin-Token'      => Org::DEFAULT_ADMIN_TOKEN,
+            ],
+            'content' => [
+                'merchant_id'           => '10000000000000',
+                'x_onboarding_category' => 'self_serve'
+            ],
+        ],
+
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
         ],
     ],
 

@@ -13512,6 +13512,29 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testCreateLeadOnSalesforceViaAdmin()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->ba->appAuth('rzp_test');
+
+        $this->startTest();
+    }
+
+    public function testUpsertOpportunityOnSalesforceViaAdmin()
+    {
+        $this->ba->appAuth('rzp_test');
+
+        $this->startTest();
+    }
+
     public function testEditBulkMerchantActionCronFOH()
     {
         $this->createMerchant([

@@ -365,6 +365,7 @@ class Route
         'merchant_fetch_multiple'                  => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
         'merchant_fire_hubspot_event'              => ['post',     'merchants/fire_hubspot_event',                   'MerchantController@fireHubspotEventFromDashboard'                  ],
         'merchant_create_lead_to_salesforce'       => ['post',     'merchants/lead_to_salesforce',                   'MerchantController@createSalesforceLeadFromDashboard'              ],
+        'merchant_create_lead_to_salesforce_admin' => ['post',     'admin/merchants/lead_to_salesforce',             'MerchantController@createSalesforceLeadFromDashboard'              ],
         'salesforce_converge_get_merchant_details' => ['get',      'merchants/{id}/sf_converge_get_merchant_details','MerchantController@getMerchantDetailsForSFConverge'               ],
         'merchant_assign_pricing'                  => ['post',     'merchants/{id}/pricing',                         'MerchantController@postAssignPricingPlan'                          ],
         'merchant_get_pricing'                     => ['get',      'merchants/{id}/pricing',                         'MerchantController@getPricingPlan'                                 ],
@@ -3033,6 +3034,7 @@ class Route
         'activated_banking_accounts_list'         => ['get',      'banking_accounts/activated',                                'BankingAccountController@fetchActivatedAccounts'           ],
         'banking_accounts_list_internal'          => ['get',      'banking_accounts_internal',                                 'BankingAccountController@list'                             ],
         'banking_accounts_get'                    => ['get',      'banking_accounts/{id}',                                     'BankingAccountController@get'                               ],
+        'banking_accounts_get_internal'           => ['get',      'banking_accounts_internal/{id}',                            'BankingAccountController@get'                              ],
         'banking_account_update'                  => ['patch',    'banking_accounts/{id}',                                     'BankingAccountController@update'                           ],
         'banking_account_update_lms_mob'          => ['patch',    'banking_accounts_lms_mob/{id}',                             'BankingAccountController@update'                           ],
         'banking_account_update_dashboard'        => ['patch',    'banking_accounts_dashboard/{id}',                           'BankingAccountController@updateDashboard'                  ],
@@ -3418,6 +3420,7 @@ class Route
         'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                  ],
         'update_payout_status_batch'              => ['patch',   'payouts/manual/status_update/batch',                       'PayoutController@updatePayoutStatusManuallyInBatch'          ],
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
+        'salesforce_event_admin'                  => ['post',    'admin/merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
         'salesforce_event_website'                => ['post',    'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsite'              ],
         'salesforce_event_website_cors'           => ['options', 'merchant/{mid}/salesforce_event_website',                 'SalesForceController@sendSalesForceEventWebsiteCors'          ],
         'salesforce_opportunity_details'          => ['get',     'merchant/{mid}/salesforce_opportunity_detail',            'SalesForceController@getMerchantDetailsOnOpportunity'         ],
@@ -4036,6 +4039,9 @@ class Route
         'external_merchant_composite_details_fetch',
         'banking_account_service_lms_routes_all',
         'mob_ca_lms_routes',
+        'mob_admin_routes',
+        'merchant_create_lead_to_salesforce_admin',
+        'salesforce_event_admin'
     ];
 
     /**
@@ -4459,6 +4465,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'banking_accounts_get_internal',
         'merchant_onboarding_crons',
         'capture_cron_for_b2b_payments',
         'settlement_cron_for_b2b_payments',
@@ -5734,7 +5741,6 @@ class Route
         'merchant_virtual_account_edit',
         'org_setl_fetch_by_id',
 
-
         // Only to be used via Subscriptions Service
         'payment_create_subscriptions',
         'entity_origin_create',
@@ -6208,6 +6214,8 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'salesforce_event_admin',
+        'merchant_create_lead_to_salesforce_admin',
         'org_bank_account_create',
         'org_fetch_bank_account',
         'org_update_bank_account',
@@ -7374,6 +7382,7 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_create_lead_to_salesforce_admin'        => Permission::VIEW_ACTIVATION_FORM,
         'merchant_website_section_action'                 => Permission::EDIT_MERCHANT,
         'merchant_website_section_save'                   => Permission::EDIT_MERCHANT,
         'merchant_website_section_fetch'                  => Permission::EDIT_MERCHANT,
@@ -8694,6 +8703,8 @@ class Route
         'workflow_config_create_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_update_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'workflow_config_delete_admin'              => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+
+        'salesforce_event_admin'                    => Permission::VIEW_ACTIVATION_FORM,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -9434,6 +9445,8 @@ class Route
             'banking_account_update_dashboard',
             'banking_accounts_get',
             'internal_merchant_fetch',
+            'banking_accounts_list',
+            'banking_accounts_get_internal',
         ],
 
         'accounts_receivable' => [

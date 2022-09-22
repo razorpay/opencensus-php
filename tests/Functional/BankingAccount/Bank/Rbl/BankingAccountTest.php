@@ -3841,6 +3841,54 @@ class BankingAccountTest extends TestCase
         $this->assertEquals('560030', $bankingAccount->getPincode());
     }
 
+    public function testGetBankingAccountInternalViaMob()
+    {
+        $activationDetails = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Sample Name',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'merchant_documents_address' => 'x, y, z',
+                'business_type' => 'ecommerce',
+                'account_type' => 'insignia',
+                'merchant_city' => 'Bangalore',
+                'is_documents_walkthrough_complete' => true,
+                'merchant_region' => 'South',
+                'expected_monthly_gmv' => 10000,
+                'average_monthly_balance' => 0,
+                'business_category' => 'partnership',
+                'sales_team' => 'self_serve',
+            ]
+        ];
+
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $this->ba->appAuthTest(config('applications.master_onboarding.secret'));
+
+        $this->ba->addXOriginHeader();
+
+        //$bankingAccount = $this->createBankingAccountFromDashboard($activationDetails);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_internal/' . $bankingAccount['id'],
+                'method'  => 'GET',
+
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals('560030', $bankingAccount->getPincode());
+    }
+
     public function addSalesforceAuth()
     {
         $salesforceSecret = \Config::get('applications.salesforce')['secret'];

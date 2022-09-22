@@ -1655,6 +1655,32 @@ return [
         ],
     ],
 
+    'testGetBankingAccountInternalViaMob' => [
+        'request'  => [
+            'url'     => '/banking_accounts',
+            'method'  => 'GET',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                BankingAccount\Entity::PINCODE => '560030',
+                'banking_account_activation_details' => [
+                    'merchant_poc_name' => 'Sample Name',
+                    'merchant_poc_designation' => 'Financial Consultant',
+                    'merchant_poc_email' => 'sample@sample.com',
+                    'merchant_poc_phone_number' => '9876556789',
+                    'merchant_documents_address' => 'x, y, z',
+                    'business_category' => 'partnership',
+                    'sales_team' => 'self_serve',
+                ],
+            ],
+        ],
+    ],
+
     'testGetBankingAccountOfOtherMerchant' => [
         'request'  => [
             'url'     => '/banking_accounts',
