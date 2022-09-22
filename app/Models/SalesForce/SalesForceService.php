@@ -25,7 +25,7 @@ use RZP\Models\BankingAccountService\Constants as BankingAccountServiceConstants
 use RZP\Trace\TraceCode;
 
 class SalesForceService extends Base\Service {
-
+    const VendorPayout = 'Vendor_Payout';
     /** @var $salesForceClient SalesForceClient */
     private $salesForceClient;
 
@@ -121,6 +121,13 @@ class SalesForceService extends Base\Service {
 
             case Constants::RX_WEBSITE_SF_EVENTS:
                 return $salesForceEventRequestDTO->getEventProperties();
+
+            case Constants::VENDOR_PAYMENT_EVENT:
+                $eventPayload = [
+                    'merchant_id'           => $merchant->getId(),
+                    'product_name'          => self::VendorPayout
+                ];
+                return array_merge($eventPayload, $salesForceEventRequestDTO->getEventProperties());
 
             default:
                 throw new InvalidArgumentException("Invalid Event Type");
