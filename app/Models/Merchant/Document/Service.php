@@ -237,7 +237,7 @@ class Service extends Base\Service
             });
         }
 
-        AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$accountId);
+        AutoUpdateMerchantProducts::dispatch(Product\Status::DOCUMENT_SOURCE ,$merchant->getId());
 
         $documentResponse = Tracer::inspan(['name' => HyperTrace::DOCUMENT_V2_GET_RESPONSE], function () use ($merchant, $entity) {
 
