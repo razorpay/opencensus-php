@@ -10,6 +10,7 @@ use Redis;
 use Crypt;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Services\Mock;
 use RZP\Models\Comment;
 use RZP\Diag\EventCode;
@@ -15264,6 +15265,72 @@ The same has been enabled for the account.
 
             return true;
         });
+    }
+
+    public function testSubmerchantFirstTransaction()
+    {
+        $this->fixtures->merchant->addFeatures(['aggregator']);
+        $this->fixtures->merchant->editPricingPlanId(TestPricing::DEFAULT_PRICING_PLAN_ID);
+
+        $partnerId = '10000000000000';
+        $app       = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+        $partner   = (new MerchantRepository)->findOrFail($partnerId);
+        $user      = $this->createUserMerchantMappingWithRole($partnerId, 'owner');
+        $this->ba->proxyAuth('rzp_test_' . $partnerId, $user['id']);
+
+        $submerchantId = '101Submerchant';
+
+        $this->createSubMerchant($partner, $app, ['id' => $submerchantId]);
+
+       // $this->fixtures->payment->createAuthorized(['merchant_id'=> '101Submerchant']);
+        $prestoService = $this->getMockBuilder(Mock\DataLakePresto::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods([ 'getDataFromDataLake'])
+            ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoServiceData = [
+            [
+                 'merchant_id' =>'101Submerchant',
+            ]
+        ];
+
+        $prestoService->method( 'getDataFromDataLake')
+            ->willReturn($prestoServiceData);
+
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+            ->setMethods(['pushIdentifyAndTrackEvent','buildRequestAndSend'])
+            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyAndTrackEvent')
+            ->will($this->returnCallback(function($merchant, $properties, $eventName) {
+                $this->assertNotNull($properties);
+                $this->assertTrue(in_array($eventName, ["Submerchant First Transaction"], true));
+            }));
+
+        (new Merchant\Cron\Core())->handleCron('transacted-submerchants', []);
+
+    }
+
+    private function createUserMerchantMappingWithRole($merchantId, $role)
+    {
+        $user = $this->fixtures->create('user');
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => $merchantId,
+            'role'        => $role,
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        return $user;
+
     }
 
     protected function testMerchantWorkflowDetailForMerchantWorkflowType(string $merchantId, string $workflowType)

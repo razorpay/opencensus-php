@@ -27,6 +27,7 @@ class Constants
     const L1_FORM_EMAIL_TRIGGER_CRON_JOB_NAME                        = 'l1_form_email_trigger_cron_job';
     const MERCHANT_FIRST_TRANSACTION_POST_EVENT_CRON                 = 'merchant-first-transaction-post-event-cron';
     const MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME                    = 'merchant_auto_kyc_failure_cron';
+    const SUBMERCHANT_FIRST_TRANSACTION                              = 'transacted-submerchants';
 
     # map keys
     const AUTO_KYC_FAILURE_DATA = "auto_kyc_failure_data";

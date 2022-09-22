@@ -29,6 +29,7 @@ use RZP\Models\Merchant\Cron\Jobs\AadharDetailsNotSubmittedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycEscalationsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
+use RZP\Models\Merchant\Cron\Jobs\SubmerchantFirstTransactionCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebsiteCompliancePaymentsEnabledCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
 use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
@@ -114,6 +115,8 @@ class Factory
                 return (new WebsiteComplianceGracePeriodReminderCronJob($input));
             case Constants::MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME:
                 return (new MerchantAutoKycFailureCronJob($input) );
+            case Constants::SUBMERCHANT_FIRST_TRANSACTION:
+                return (new SubmerchantFirstTransactionCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");
