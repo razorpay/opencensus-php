@@ -24,7 +24,14 @@ import { ACTIVATED, GREYED } from '../../constants';
 //Styles
 import './LocalWireTransfer.styl';
 
-const DETAIL_FIELDS = ['Routing Code', 'Routing Type', 'Account Number', 'Beneficiary Name'];
+const DETAIL_FIELDS = [
+  { label: 'Routing Code', key: 'Routing Code' },
+  { label: 'Routing Type', key: 'Routing Type' },
+  { label: 'Account Number', key: 'Account Number' },
+  { label: 'Beneficiary Name', key: 'Beneficiary Name' },
+  { label: 'Beneficiary Bank Name', key: 'Bank Name' },
+  { label: 'Beneficiary Address', key: 'Bank Address' },
+];
 const ACCOUNT_SUCCESS = 'Accept payments from International clients from US via ACH';
 
 const Toggle = ({ isOpen, isLoading, currency, onToggleClick }) => {
@@ -65,8 +72,10 @@ const InstrumentRow = (props) => {
 
   //formats data for clipboard component
   const textFormatter = () => {
-    return DETAIL_FIELDS.reduce((str, key) => {
-      return `${str}\n${key} = ${accountDetails?.[key?.replace(' ', '_')?.toLowerCase()] ?? '--'}`;
+    return DETAIL_FIELDS.reduce((str, field) => {
+      return `${str}\n${field?.label} = ${
+        accountDetails?.[field?.key?.replace(' ', '_')?.toLowerCase()] ?? '--'
+      }`;
     }, '');
   };
 
@@ -95,8 +104,10 @@ const InstrumentRow = (props) => {
         </div>
         {DETAIL_FIELDS.map((field, index) => (
           <div className="list-item" key={index}>
-            <p>{field}</p>
-            <p>{accountDetails?.[field?.replace(' ', '_')?.toLowerCase()] ?? '--'}</p>
+            <p className="left-field">{field?.label}</p>
+            <p className="right-field">
+              {accountDetails?.[field?.key?.replace(' ', '_')?.toLowerCase()] ?? '--'}
+            </p>
           </div>
         ))}
       </div>
