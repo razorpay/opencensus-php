@@ -186,25 +186,18 @@ class TrustedBadge extends Job
      */
     private function isMerchantEligibleForRTB(array $eligibilityChecks): bool
     {
-        if ($eligibilityChecks[Entity::IS_DMT_MERCHANT] === true)
-        {
+        if (
+            $eligibilityChecks[Entity::IS_DMT_MERCHANT] === true ||
+            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === true
+        ) {
             return false;
         }
 
-        if ($eligibilityChecks[Entity::STANDARD_CHECKOUT_ELIGIBLE] === true &&
-            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === false)
-        {
-            return true;
-        }
-
-        if ($eligibilityChecks[Entity::HIGH_TRANSACTING_VOLUME_MERCHANT] === true &&
-            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === false)
-        {
-            return true;
-        }
-
-        if ($eligibilityChecks[Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT] === true)
-        {
+        if (
+            $eligibilityChecks[Entity::STANDARD_CHECKOUT_ELIGIBLE] === true ||
+            $eligibilityChecks[Entity::HIGH_TRANSACTING_VOLUME_MERCHANT] === true ||
+            $eligibilityChecks[Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT] === true 
+        ) {
             return true;
         }
 

@@ -29,7 +29,8 @@ SELECT
 FROM
   hive.aggregate_pa.rtb_eligibility_merchants_transactions_v1
 WHERE
-  count_successful < 100
+  count_successful > 50
+  AND count_successful < 100
 EOT;
 
 
