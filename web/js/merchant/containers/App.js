@@ -260,6 +260,12 @@ class App extends Component {
             removeSplashLoader();
             this.setState({ isLoading: false });
 
+            // Decoupled this api from SSR can be loaded later
+            // Calling these APIs post the features are  because features are overriding campaigns and tags
+            // Can be refactored later for optimizing render
+            this.props.fetchUserTags();
+            this.props.fetchCampaigns();
+
             const merchantsSettlementStatus = JSON.parse(
               LocalStorageService.getItem('merchantsSettlementStatus'),
             );
@@ -330,17 +336,16 @@ class App extends Component {
     // Above parellel apis are render blocking & below apis are non render blocking
 
     // Giving less priority to below non render blocking APIs, because server doesn't support more than 8 parellel requests
-    this.props.fetchGST();
+    setTimeout(() => {
+      // Pushing these API calls on next tick to prioritize above apis
+      this.props.fetchGST();
 
-    this.props.fetchConfig();
-    this.props.fetchRefundPricing();
-    this.props.fetchTrustedBadgeStatus();
-    this.props.fetchMerchantReferralDetail();
-    this.fetchSupportedCurrencies();
-    this.props.fetchCampaigns();
-
-    // Decoupled this api from SSR
-    this.props.fetchUserTags();
+      this.props.fetchConfig();
+      this.props.fetchRefundPricing();
+      this.props.fetchMerchantReferralDetail();
+      this.fetchSupportedCurrencies();
+      this.props.fetchTrustedBadgeStatus();
+    }, 0);
 
     const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
     if (user?.merchants && Object.keys(user.merchants).length === 1) {

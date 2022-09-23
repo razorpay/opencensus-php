@@ -9,6 +9,7 @@ const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
 const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 const UPDATE_USER_TAGS = 'UPDATE_USER_TAGS';
+const UPDATE_USER_CAMPAIGNS = 'UPDATE_USER_CAMPAIGNS';
 
 export const updateSession = (payload) => {
   return {
@@ -42,6 +43,16 @@ export const fetchUserTags = () => {
     payload: ajax({
       url: `/merchant/tags`,
       appendModeInURL: false,
+    }),
+  };
+};
+
+export const fetchCampaigns = () => {
+  return {
+    type: UPDATE_USER_CAMPAIGNS,
+    payload: merchantFetch({
+      url: 'credits?fetch_expired=0&is_promotion=1',
+      method: 'GET',
     }),
   };
 };
@@ -106,6 +117,22 @@ export default function sessionReducer(state = initialState, action) {
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
+
+    case `${UPDATE_USER_CAMPAIGNS}::SUCCESS`: {
+      const campaigns = action.payload?.data?.items?.map((item) => item?.campaign) || [];
+      // in other places rzp_user is getting used to update the session so updating with campaigns
+      window.rzp_user = {
+        ...window.rzp_user,
+        campaigns,
+      };
+
+      return merge(state, {
+        user: new User({
+          ...state.user,
+          campaigns,
+        }),
+      });
+    }
 
     case `${UPDATE_USER_TAGS}::SUCCESS`:
       // in lot of other places rzp_user is getting directly used to update the session

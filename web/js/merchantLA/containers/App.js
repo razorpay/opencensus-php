@@ -100,9 +100,6 @@ export default class App extends Component {
 
     let currentMode = LocalStorageService.getItem(this.modeToken);
 
-    // Decoupled this api from SSR
-    this.props.fetchUserTags();
-
     Promise.all([
       this.fetchUser().then(({ data }) => {
         let user = data;
@@ -148,6 +145,12 @@ export default class App extends Component {
           }
 
           this.setState({ isLoading: false });
+
+          // Decoupled this api from SSR can be loaded later
+          // Calling these APIs post the features are  because features are overriding campaigns and tags
+          // Can be refactored later for optimizing render
+          this.props.fetchUserTags();
+          this.props.fetchCampaigns();
         });
     });
   }
