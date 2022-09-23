@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import ShimmerWidget from './shimmer';
 import { analyticsFn } from 'merchant/utils/intlPaymentsRecommendation';
+import imgIntlPaymentRecommendation from 'assets/product-recommendation/intl-payment-recommendation.svg';
 
 function sendAnalyticsEvent() {
   analyticsFn({ eventName: 'International payments recommendation cta', event: 'clicked' });
@@ -34,10 +35,7 @@ const IntlPaymentsRecommendation = ({ internationalSettingStatus }) => {
           </button>
         </div>
         <div className="product-card">
-          <img
-            src="https://cdn.razorpay.com/static/assets/product-recommendation/intl-payment-recommendation.svg"
-            alt="intl-payment-recommendation"
-          />
+          <img src={imgIntlPaymentRecommendation} alt="intl-payment-recommendation" />
           <div className="product-card__container">
             <div className="name">
               <span>Enable International Payments Today</span>

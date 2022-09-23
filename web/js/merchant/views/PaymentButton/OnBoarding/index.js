@@ -1,4 +1,6 @@
+import React from 'react';
 import { connect } from 'react-redux';
+import imgPaymentButton from 'assets/product_onboarding/payment_button.svg';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -38,7 +40,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
-        isLocalEnabler={this.props.user.isSubscriptionsEnabled ? true : false}
+        isLocalEnabler={!!this.props.user.isSubscriptionsEnabled}
         feature={
           this.props.user.isSubscriptionsEnabled ? RZPFeatures.PB : RZPFeatures.SUBSCRIPTIONS
         }
@@ -77,7 +79,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
               {...sliderProps}
               title="Payment Buttons"
               feature={RZPFeatures.PB}
-              imageUrl="/dist/css/assets/product_onboarding/payment_button.svg"
+              imageUrl={imgPaymentButton}
               desc="Collect payments and donations on your websites and blogs, copy-paste a single line of code to collect payments online. Zero integrations required!"
             />
           )}
@@ -116,7 +118,7 @@ function setPaymentButtonOnBoardingData(isEnabled) {
   setOnBoardingDataInLocalState({
     feature: RZPFeatures.PB,
     data: {
-      isEnabled: isEnabled,
+      isEnabled,
       lastVisitedTime: Date.now(),
     },
   });

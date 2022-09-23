@@ -8,6 +8,10 @@ import { isMobileDevice } from 'merchant/components/Home/data';
 import ShowWhen from 'merchant/components/ShowWhen';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 import { getRecommendedProductDetails } from 'merchant/components/Activation/ActivationUtils';
+import imgPaymentGeteway from 'assets/product-recommendation/payment-geteway.svg';
+import imgPaymentPage from 'assets/product-recommendation/payment-page.svg';
+import imgPaymentButton from 'assets/product-recommendation/payment-button.svg';
+import imgPaymentLink from 'assets/product-recommendation/payment-link.svg';
 
 const WelcomeModal = ({
   onActivate,
@@ -159,40 +163,28 @@ const WelcomeModal = ({
           <div className="slideshow_wrapper">
             <div className="product-recommendation">
               <div className="payment-product">
-                <img
-                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-geteway.svg"
-                  className="prd-icon active"
-                />
+                <img src={imgPaymentGeteway} className="prd-icon active" />
                 <div className="active-product">
                   <div className="title">Payment Gateway</div>
                   <div className="subtitle">Accept payments through your website or app</div>
                 </div>
               </div>
               <div className="payment-product">
-                <img
-                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-page.svg"
-                  className="prd-icon active"
-                />
+                <img src={imgPaymentPage} className="prd-icon active" />
                 <div className="active-product">
                   <div className="title">Payment Pages</div>
                   <div className="subtitle">Create no-code online pages to accept payments</div>
                 </div>
               </div>
               <div className="payment-product">
-                <img
-                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-button.svg"
-                  className="prd-icon active"
-                />
+                <img src={imgPaymentButton} className="prd-icon active" />
                 <div className="active-product">
                   <div className="title">Payment Buttons</div>
                   <div className="subtitle">Add payment button directly on your website</div>
                 </div>
               </div>
               <div className="payment-product">
-                <img
-                  src="https://cdn.razorpay.com/static/assets/product-recommendation/payment-link.svg"
-                  className="prd-icon active"
-                />
+                <img src={imgPaymentLink} className="prd-icon active" />
                 <div className="active-product">
                   <div className="title">Payment Link</div>
                   <div className="subtitle">Accept payments through SMS, whatsapp, email</div>

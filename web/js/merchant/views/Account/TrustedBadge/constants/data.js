@@ -1,3 +1,13 @@
+import imgBoostFeature from 'assets/trustedbadge/boost_feature.svg';
+import imgBuild from 'assets/trustedbadge/build-brand_feature.svg';
+import imgCodFeature from 'assets/trustedbadge/cod_feature.svg';
+import imgRtbNotAvaiilable from 'assets/trustedbadge/rtb_not_avaiilable.svg';
+import imgRtbWaitlist from 'assets/trustedbadge/rtb_waitlist.svg';
+import imgRTBEligibility from 'assets/trustedbadge/rtb_eligibility.svg';
+
+// For dynamic assets use assets which are copied to dist folder
+const trustedBadgeAssets = `${window.cdnDashboardUrl}/dist/css/assets/trustedbadge`;
+
 export const STATUS = {
   /** Not eligible, not waitlisted, not delisted once */
   NOT_ELIGIBLE_WAITLISTED_DELISTED: 'NOT_ELIGIBLE_WAITLISTED_DELISTED',
@@ -25,7 +35,7 @@ export const pageData = {
           'It shows your commitment to serving your customers',
           'It will be 100% free of cost on checkout once live',
         ],
-        imgSrc: `https://cdn.razorpay.com/static/assets/trustedbadge/${STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED.toLowerCase()}.svg`,
+        imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_WAITLISTED_DELISTED.toLowerCase()}.svg`,
         subComponent: ['joinWaitlist'],
       },
       requirements: {
@@ -47,7 +57,7 @@ export const pageData = {
           'It shows your commitment to serving your customers',
           'It will be 100% free of cost on checkout once live',
         ],
-        imgSrc: `https://cdn.razorpay.com/static/assets/trustedbadge/${STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED.toLowerCase()}.svg`,
+        imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_YES_WAITLISTED_DELISTED.toLowerCase()}.svg`,
         subComponent: ['divider', 'notAvailable', 'info'],
       },
       requirements: {
@@ -75,7 +85,7 @@ export const pageData = {
           'It shows your commitment to serving your customers',
           'It will be 100% free of cost on checkout once live',
         ],
-        imgSrc: `https://cdn.razorpay.com/static/assets/trustedbadge/${STATUS.NOT_ELIGIBLE_DELISTED_YES_WAITLISTED.toLowerCase()}.svg`,
+        imgSrc: `${trustedBadgeAssets}/${STATUS.NOT_ELIGIBLE_DELISTED_YES_WAITLISTED.toLowerCase()}.svg`,
         subComponent: ['divider', 'joinedWaitlist', 'info'],
       },
       requirements: {
@@ -103,7 +113,7 @@ export const pageData = {
           'Build credibility for your business',
           'Reduce dependency on cash on delivery',
         ],
-        imgSrc: `https://cdn.razorpay.com/static/assets/trustedbadge/${STATUS.YES_ELIGIBLE_OPTED_OUT.toLowerCase()}.svg`,
+        imgSrc: `${trustedBadgeAssets}/${STATUS.YES_ELIGIBLE_OPTED_OUT.toLowerCase()}.svg`,
         subComponent: ['info', 'activateBadge'],
       },
       requirements: {
@@ -129,7 +139,7 @@ export const pageData = {
           'It is a sign of quality and trust',
           'It shows your commitment to serving your customers',
         ],
-        imgSrc: `https://cdn.razorpay.com/static/assets/trustedbadge/rtb_${STATUS.YES_ELIGIBLE_LIVE.toLowerCase()}.svg`,
+        imgSrc: `${trustedBadgeAssets}/rtb_${STATUS.YES_ELIGIBLE_LIVE.toLowerCase()}.svg`,
         subComponent: ['info', 'optOut'],
       },
       requirements: {
@@ -166,18 +176,18 @@ export const pageData = {
       type: 'growth',
       features: [
         {
-          icon: 'https://cdn.razorpay.com/static/assets/trustedbadge/boost_feature.svg',
+          icon: imgBoostFeature,
           title: 'Boosts payment volume',
           desc: 'Businesses see upto 5% increase in order conversion rate and retention',
         },
         {
-          icon: 'https://cdn.razorpay.com/static/assets/trustedbadge/build-brand_feature.svg',
+          icon: imgBuild,
           title: 'Builds brand credibility',
           desc:
             'Unlock growth and attract new customers for your business by building love for you brand',
         },
         {
-          icon: 'https://cdn.razorpay.com/static/assets/trustedbadge/cod_feature.svg',
+          icon: imgCodFeature,
           title: 'Reduces dependency on COD',
           desc:
             'As customers start trusting your brand, they increasingly pay via online payment modes',
@@ -190,7 +200,7 @@ export const pageData = {
       type: 'details',
       className: 'mt-6',
       title: 'Eligibility Criteria for the badge',
-      imgSrc: 'https://cdn.razorpay.com/static/assets/trustedbadge/rtb_eligibility.svg',
+      imgSrc: imgRTBEligibility,
       details: [
         'Maintain excellent customer service levels by <strong>resolving escalations and disputes</strong> on time',
         'Keep using Razorpay for processing your <strong>online payments</strong>',
@@ -217,12 +227,12 @@ export const pageData = {
     },
     notAvailable: {
       type: 'text-icon',
-      icon: 'https://cdn.razorpay.com/static/assets/trustedbadge/rtb_not_avaiilable.svg',
+      icon: imgRtbNotAvaiilable,
       text: 'Not available for you at the moment',
     },
     joinedWaitlist: {
       type: 'text-icon',
-      icon: 'https://cdn.razorpay.com/static/assets/trustedbadge/rtb_waitlist.svg',
+      icon: imgRtbWaitlist,
       text: 'You are in the waitlist',
     },
     divider: {
