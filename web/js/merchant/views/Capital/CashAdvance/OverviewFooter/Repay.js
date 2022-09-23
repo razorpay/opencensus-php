@@ -15,10 +15,12 @@ const Repay = ({
   totalPrincipalAmount,
   setResultAmounts,
   loading,
+  user,
 }) => {
   const [repayType, setRepayType] = useState(REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING);
   const [customAmount, setCustomAmount] = useState(null);
   const [repayAmount, setRepayAmount] = useState(currentOutstandingTotalAmount);
+  const isFundsOnHold = user?.merchant?.hold_funds;
 
   const isBalanceZero = balance === 0;
 
@@ -41,6 +43,7 @@ const Repay = ({
   function getInputType() {
     if (
       isBalanceZero ||
+      isFundsOnHold ||
       (!isSettlementBalanceLessThanRepayAmount && isCustomAmountLessThanOrEqualToBalance)
     )
       return 'radio';
@@ -52,11 +55,11 @@ const Repay = ({
   useEffect(() => {
     setSettlementBalance({
       ...settlementBalance,
-      active: !isBalanceZero,
+      active: !isBalanceZero && !isFundsOnHold,
     });
     setBankBalance({
       ...bankBalance,
-      active: isSettlementBalanceLessThanRepayAmount,
+      active: isFundsOnHold || isSettlementBalanceLessThanRepayAmount,
     });
   }, [view]);
 
@@ -66,7 +69,7 @@ const Repay = ({
       ...settlementBalance,
       amount,
       customAmount: amount,
-      active: !isBalanceZero,
+      active: !isBalanceZero && !isFundsOnHold,
     });
   }, [repayAmount, balance]);
 

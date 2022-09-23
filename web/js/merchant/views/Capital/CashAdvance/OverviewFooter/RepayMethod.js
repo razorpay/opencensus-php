@@ -50,6 +50,12 @@ const RepayMethod = ({
   const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
   const isFundsOnHold = user?.merchant?.hold_funds;
+  const isSettlementActiveAndHasBalance = !!(
+    settlementBalance &&
+    settlementBalance.active &&
+    !isFundsOnHold &&
+    settlementBalance.amount
+  );
 
   const handleRazorpayCheckoutPayment = (RepaymentInstance, paymentParams) => {
     const requests = [
@@ -97,11 +103,6 @@ const RepayMethod = ({
       currency: 'INR',
     };
     const requests = [];
-    const isSettlementActiveAndHasBalance = !!(
-      settlementBalance &&
-      settlementBalance.active &&
-      settlementBalance.amount
-    );
     const isBankBalanceActiveAndHasBalance = !!(
       bankBalance &&
       bankBalance.active &&
@@ -175,11 +176,6 @@ const RepayMethod = ({
   };
 
   const handleCancelClick = () => {
-    const isSettlementActiveAndHasBalance = !!(
-      settlementBalance &&
-      settlementBalance.active &&
-      settlementBalance.amount
-    );
     const isBankBalanceActiveAndHasBalance = !!(
       bankBalance &&
       bankBalance.active &&

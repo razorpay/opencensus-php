@@ -95,6 +95,7 @@ function OverviewFooter({
             totalPrincipalAmount={totalPrincipalAmount}
             setResultAmounts={setResultAmounts}
             loading={balances.loading || installments.loading}
+            user={user}
           />
         )}
         {(view === REPAYMENT_VIEWS.RESULT_FAILURE || view === REPAYMENT_VIEWS.RESULT_SUCCESS) && (

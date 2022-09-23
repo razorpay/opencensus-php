@@ -12,11 +12,11 @@ import {
 const RepayFailure = ({ setView, resultAmounts, location: { pathname } }) => {
   const handleCloseClick = () => {
     trackRepaymentClose(pathname, 'button', resultAmounts);
-    setView(REPAYMENT_VIEWS.SUMMARY);
+    setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
   const handleRetryRepaymentClick = () => {
     trackRepaymentRetry(pathname, resultAmounts);
-    setView(REPAYMENT_VIEWS.REPAY_METHOD);
+    setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
   useEffect(() => {
     if (resultAmounts.repayAmount > 0) {

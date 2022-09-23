@@ -9,7 +9,7 @@ const Result = ({ setView, view, resultAmounts, location: { pathname } }) => {
   const handleCrossClick = () => {
     if (view !== REPAYMENT_VIEWS.RESULT_SUCCESS)
       trackRepaymentClose(pathname, 'icon', resultAmounts);
-    setView(REPAYMENT_VIEWS.SUMMARY);
+    setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
   return (
     <div className="repay-container repay-result">

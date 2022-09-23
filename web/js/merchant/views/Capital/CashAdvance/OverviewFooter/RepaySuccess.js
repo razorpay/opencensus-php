@@ -6,7 +6,7 @@ import { trackRepaymentSuccess } from '../TrackEvents/trackEvents';
 
 const RepaySuccess = ({ setView, resultAmounts, location: { pathname = '' } }) => {
   const handleDoneClick = () => {
-    setView(REPAYMENT_VIEWS.SUMMARY);
+    setView(REPAYMENT_VIEWS.REPAY_AMOUNT);
   };
   const userRepayMethodText = REPAYMENT_USER_METHODS_TYPE[resultAmounts.userRepayMethod] || '';
 
