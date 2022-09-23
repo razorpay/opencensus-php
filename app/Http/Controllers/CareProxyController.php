@@ -91,6 +91,10 @@ class CareProxyController extends Controller
     const FAQ_CONFIG_DELETE_DASHBOARD_ID   = 'twirp/rzp.care.faq.v1.FaqConfigService/DeleteDashboardGuide';
     const FAQ_CONFIG_FETCH_DASHBOARD_ID    = 'twirp/rzp.care.faq.v1.FaqConfigService/FetchDashboardGuide';
 
+    //Quicklink
+    const CREATE_QUICKLINKS      = 'twirp/rzp.care.quicklink.v1.QuicklinkService/CreateQuickLinks';
+    const RETRIEVE_QUICKLINKS    = 'twirp/rzp.care.quicklink.v1.QuicklinkService/RetrieveQuickLinks';
+
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
         self::CALLBACK_EDIT_DATE_CONFIG               => Name::CALLBACK_SLOT_CONFIG_EDIT,
@@ -130,6 +134,7 @@ class CareProxyController extends Controller
         self::CHAT_GET_HOLIDAYS                       => Name::MANAGE_FRESHCHAT,
         self::CHAT_GET_TIMINGS_CONFIG                 => Name::MANAGE_FRESHCHAT,
         self::CHAT_PUT_TIMINGS_CONFIG                 => Name::MANAGE_FRESHCHAT,
+        self::CREATE_QUICKLINKS                       => Name::QUICKLINK_CREATE,
     ];
 
     const MERCHANT_ROUTES = [
@@ -144,6 +149,7 @@ class CareProxyController extends Controller
         self::TICKET_CONFIG_FETCH_SUBCATEGORY_ITEM_MERCHANT,
         self::CHAT_CHECK_AVAILABILITY,
         self::FETCH_WORKFLOWS,
+        self::RETRIEVE_QUICKLINKS,
     ];
 
     const CRON_ROUTES = [
@@ -196,6 +202,7 @@ class CareProxyController extends Controller
         self::CHAT_PUT_HOLIDAYS,
         self::CHAT_GET_TIMINGS_CONFIG,
         self::CHAT_PUT_TIMINGS_CONFIG,
+        self::CREATE_QUICKLINKS,
     ];
 
     const CHAT_ROUTES = [

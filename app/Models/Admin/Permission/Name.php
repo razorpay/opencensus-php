@@ -873,6 +873,8 @@ class Name
     const BULK_UPDATE_WHITELISTED_DOMAIN               = 'bulk_update_whitelisted_domain';
     const ED_MERCHANT_SEARCH                           = 'ed_merchant_search';
 
+    const QUICKLINK_CREATE                             = 'quicklink_create';
+
     const CREATE_DEBIT_NOTE                            = 'create_debit_note';
 
     const TOKEN_REGISTRATION_ACTIONS = 'token_registration_actions';
