@@ -1,5 +1,9 @@
 import React from 'react';
 import ImgTopBg from 'assets/onboarding/top_bg.png';
+import Image from 'common/ui/Image';
+import ShopifyImg from 'assets/app-store/partner-logos/shopify.png';
+import WooCommerceImg from 'assets/app-store/partner-logos/woocommerce.png';
+import MagnetoImg from 'assets/app-store/partner-logos/magento.png';
 
 const ProductOnboardingCard = () => {
   const PaymentGateway = () => (
@@ -18,9 +22,9 @@ const ProductOnboardingCard = () => {
         </div>
         <div>
           <div className="plugins">
-            <img src="/dist/css/assets/app-store/partner-logos/shopify.png" />
-            <img src="/dist/css/assets/app-store/partner-logos/woocommerce.png" />
-            <img src="/dist/css/assets/app-store/partner-logos/magento.png" />
+            <Image src={ShopifyImg} isWebP />
+            <Image src={WooCommerceImg} isWebP />
+            <Image src={MagnetoImg} isWebP />
             <span>& more plugins available</span>
           </div>
           <div className="btn-container">
@@ -112,7 +116,7 @@ const ProductOnboardingCard = () => {
   return (
     <div className="product-onboarding-card">
       <div className="illustration-top">
-        <img src={ImgTopBg} alt="Top" />
+        <Image src={ImgTopBg} alt="Top" isWebP />
       </div>
       <div className="illustration-bottom">
         <img src="https://cdn.razorpay.com/static/assets/product-led-onboarding/bottom-bg.svg" />

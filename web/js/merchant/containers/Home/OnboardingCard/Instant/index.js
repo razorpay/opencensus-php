@@ -18,6 +18,7 @@ import CaInfoContainer from './RxCa/CaInfo';
 import PaymentProgressBar from '../PaymentProgressBar';
 import ImgTopBg from 'assets/onboarding/top_bg.png';
 import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
+import Image from 'common/ui/Image';
 
 import {
   trackTestModeCard,
@@ -240,11 +241,11 @@ export default class OnboardingCardInstant extends Component {
             ) : null}
 
             <div className="onboarding-illustration-top">
-              <img src={ImgTopBg} alt="Top" />
+              <Image src={ImgTopBg} alt="Top" isWebP />
             </div>
             <div className="onboarding-illustration" />
             <div className="onboarding-illustration-bottom">
-              <img src={ImgBottomBg} alt="Bottom" />
+              <Image src={ImgBottomBg} alt="Bottom" isWebP />
             </div>
             {isAccepted && integration.paymentsMade && (
               <div className="btn-close cursor-pointer" onClick={this.onClose}>

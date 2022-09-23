@@ -1,9 +1,28 @@
-import TimedSlider, {
-  TimedSlide,
-  TimedSliderTabs,
-} from 'common/ui/TimedSlider';
+import TimedSlider, { TimedSlide, TimedSliderTabs } from 'common/ui/TimedSlider';
+import GoToTransactionsImg from 'assets/product_onboarding/route/goto_transactions.png';
+import CapturePaymentImg from 'assets/product_onboarding/route/capture_payment.png';
+import CreateTransferImg from 'assets/product_onboarding/route/create_transfer.png';
 
 import ModalHeader from 'common/ui/ModalHeader';
+import Image from '../../../../common/ui/Image';
+
+const SLIDER_DATA = [
+  {
+    duration: 2000,
+    imgURL: GoToTransactionsImg,
+    title: '1. Go to Transactions',
+  },
+  {
+    duration: 2000,
+    imgURL: CapturePaymentImg,
+    title: '2. Select a captured payment',
+  },
+  {
+    duration: 2000,
+    imgURL: CreateTransferImg,
+    title: '3. Create Transfer',
+  },
+];
 
 export default ({ closeModal }) => (
   <div class="TransfersPreviewModal">
@@ -13,7 +32,7 @@ export default ({ closeModal }) => (
       <TimedSlider AfterFrame={TimedSliderTabs}>
         {SLIDER_DATA.map((data, idx) => (
           <TimedSlide key={idx} {...data}>
-            <img src={data.imgURL} />
+            <Image src={data.imgURL} isWebP />
           </TimedSlide>
         ))}
       </TimedSlider>
@@ -24,21 +43,3 @@ export default ({ closeModal }) => (
     </div>
   </div>
 );
-
-const SLIDER_DATA = [
-  {
-    duration: 2000,
-    imgURL: '/dist/css/assets/product_onboarding/route/goto_transactions.png',
-    title: '1. Go to Transactions',
-  },
-  {
-    duration: 2000,
-    imgURL: '/dist/css/assets/product_onboarding/route/capture_payment.png',
-    title: '2. Select a captured payment',
-  },
-  {
-    duration: 2000,
-    imgURL: '/dist/css/assets/product_onboarding/route/create_transfer.png',
-    title: '3. Create Transfer',
-  },
-];

@@ -35,8 +35,13 @@ class Image extends Component {
   }
 
   render() {
-    const { children, src, isWebP = false } = this.props;
+    const { children, src, isWebP = false, ...props } = this.props;
     const { validUrl, loading } = this.state;
+    const imgProps = {
+      ...props,
+      onLoad: this.onImageFetchSuccess,
+      onError: this.onImageFetchError,
+    };
     return (
       <div className={`rzp-image${!validUrl ? ' invalid-src' : ''}`}>
         {loading || !validUrl ? (
@@ -44,15 +49,10 @@ class Image extends Component {
         ) : isWebP ? (
           <picture>
             <source srcSet={updateExtension(src, '.webp')} type="image/webp" />
-            <img
-              srcSet={src}
-              src={src}
-              onLoad={this.onImageFetchSuccess}
-              onError={this.onImageFetchError}
-            />
+            <img srcSet={src} src={src} {...imgProps} />
           </picture>
         ) : (
-          <img src={src} onLoad={this.onImageFetchSuccess} onError={this.onImageFetchError} />
+          <img src={src} {...imgProps} />
         )}
       </div>
     );

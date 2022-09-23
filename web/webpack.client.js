@@ -8,6 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 // const projectConfigJs = require('./config')[process.env.STAGE];
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WorkbboxWebpackPlugin = require('workbox-webpack-plugin');
+const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
 
 const fontsToProjectMap = {
   pokedex: 'merchant',
@@ -190,6 +191,20 @@ module.exports = ({ config, project }) => {
         include: [/\.(js|css)?$/, /\.(woff|woff2)?$/],
         swSrc: './utils/customWorkbox.js',
         swDest: `sw-utils/sw-${project}.js`,
+      }),
+    );
+  }
+  if (project === 'merchant') {
+    config.plugins.push(
+      new ImageminWebpWebpackPlugin({
+        config: [
+          {
+            test: /\.(jpe?g|png)/,
+            options: {
+              quality: 75,
+            },
+          },
+        ],
       }),
     );
   }

@@ -3,6 +3,8 @@ import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/compon
 import ModalHeader from 'common/ui/ModalHeader';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
+import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
+import Image from '../../../../common/ui/Image';
 
 export default function ReferralBox({
   user,
@@ -54,7 +56,7 @@ export default function ReferralBox({
     return (
       <div className="referral-box-modal">
         <div style={{ padding: '10px' }}>
-          <img src="/dist/css/assets/onboarding/share-referral-link.png" height="50" />{' '}
+          <Image src={ShareReferralLink} isWebP height="50" />{' '}
           <strong>
             <strong>Share Referral Link</strong>
           </strong>

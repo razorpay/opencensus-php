@@ -46,6 +46,9 @@ import ActionButtonKYC from './components/ActionButtonKYC';
 import SubMerchantKycStatusLabel from './components/SubMerchantKycStatusLabel';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
+import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
+import Image from '../../../../common/ui/Image';
 
 const email = {
   title: 'Registered Email',
@@ -623,7 +626,7 @@ class ProductSubMerchantsList extends ListContainer {
                     <div>
                       <div>
                         <div>
-                          <img src="/dist/css/assets/onboarding/add-new-sub-merchants.png" />
+                          <Image src={AddNewSubMerchants} isWebP />
                         </div>
                         <p>
                           <strong>Invite a merchant</strong> by adding their details
@@ -644,7 +647,7 @@ class ProductSubMerchantsList extends ListContainer {
                       >
                         <div>
                           <div>
-                            <img src="/dist/css/assets/onboarding/share-referral-link.png" />
+                            <Image src={ShareReferralLink} isWebP />
                           </div>
                           <p>
                             Share the <strong>invite link</strong> on social media

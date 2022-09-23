@@ -2,6 +2,7 @@
 import ModalHeader from 'common/ui/ModalHeader';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
+import Image from '../../../../common/ui/Image';
 
 const PaddedImageWithZoom = ({ openModal, closeModal, brandColor, ...rest }) => {
   const onImageClick = () => {
@@ -12,7 +13,7 @@ const PaddedImageWithZoom = ({ openModal, closeModal, brandColor, ...rest }) => 
         <div class="app-store-setup-image-modal">
           <ModalHeader onCloseClick={closeModal} />
           <div class="modal-body">
-            <img className="content-zoomed-image" {...rest} />
+            <Image className="content-zoomed-image" {...rest} />
           </div>
         </div>
       ),
@@ -21,15 +22,15 @@ const PaddedImageWithZoom = ({ openModal, closeModal, brandColor, ...rest }) => 
 
   return (
     <div className="content-image-holder" style={{ backgroundColor: brandColor }}>
-      <img className="content-image" {...rest} onClick={onImageClick} />
+      <Image className="content-image" {...rest} onClick={onImageClick} />
     </div>
   );
 };
 
 function PadImage(brandColor) {
   return connect(
-    (state) => ({
-      brandColor: brandColor,
+    () => ({
+      brandColor,
     }),
     { openModal, closeModal },
   )(PaddedImageWithZoom);

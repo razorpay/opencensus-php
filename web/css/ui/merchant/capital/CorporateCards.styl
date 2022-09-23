@@ -1,3 +1,5 @@
+// stylelint-disable no-descending-specificity
+// stylelint-disable max-nesting-depth
 .corporate-cards-wrapper
   display: flex;
   min-height: 100vh;
@@ -9,7 +11,7 @@
 
     .cta
       display: inline-block;
-      box-shadow: 1px 3px 6px rgba(58, 69, 103, 0.12);
+      box-shadow: 1px 3px 6px rgb(58 69 103 / 0.12);
       padding: 9px 16px;
       text-align: center;
       text-decoration: none;
@@ -18,53 +20,55 @@
 
   .corporate-cards__left
     width: 48%;
-    background: white;
+    background: #FFF;
     padding-right: 0;
 
-    @media(max-width: 1500px) {
+    @media (max-width 1500px) {
       padding: 60px;
-      padding-right: 0px;
+      padding-right: 0;
     }
 
     .left__header
       padding-bottom: 28px;
-      border-bottom: 3px solid #ebebeb91;
+      border-bottom: 3px solid #EBEBEB91;
       position: relative;
 
       > div
         padding-left: 40px;
 
-        &:before,
-        &:after
-          content: '';
+        &::before,
+        &::after
+          content: "";
           position: absolute;
           left: 5px;
           width: 18px;
           height: 70px;
 
-        &:before
+        &::before
           transform: skew(15deg);
-          background: rgba(252, 109, 11, 1);
+          background: rgb(252 109 11 / 1);
 
-        &:after
+        &::after
           top: 0;
-          background: rgba(252, 109, 11, 0.7);
+          background: rgb(252 109 11 / 0.7);
 
-      h1, h3, h4
+      h1,
+      h3,
+      h4
         margin: 0;
         padding: 0;
 
       h3
-        color: rgba(22, 47, 86, 0.76);
+        color: rgb(22 47 86 / 0.76);
 
       h1
-        color: rgba(22, 47, 86, 0.87);
+        color: rgb(22 47 86 / 0.87);
         font-weight: bold;
         font-size: 40px;
         margin-top: 3px;
 
       h4
-        color: rgba(22, 47, 86, 0.36);
+        color: rgb(22 47 86 / 0.36);
         margin-top: 6px;
         margin-left: 42px;
 
@@ -80,7 +84,7 @@
         justify-content: space-between;
         align-items: flex-start;
 
-        @media(max-width: 1500px) {
+        @media (max-width 1500px) {
           width: 75%;
         }
 
@@ -90,7 +94,7 @@
         > div
           width: 80%;
           padding-bottom: 30px;
-          border-bottom: 1px solid #ebebeb91;
+          border-bottom: 1px solid #EBEBEB91;
 
           p
             margin: 0;
@@ -99,29 +103,32 @@
             &:nth-of-type(1)
               font-size: 16px;
               font-weight: bold;
-              color: rgba(22, 47, 86, 0.76);
+              color: rgb(22 47 86 / 0.76);
 
             &:nth-of-type(2)
               font-size: 14px;
               margin-top: 3px;
-              color: rgba(22, 47, 86, 0.5);
+              color: rgb(22 47 86 / 0.5);
 
         &:last-child
           > div
             border-bottom: none;
 
       a.secondary
-        background: rgba(11, 112, 231, 0.1);
+        background: rgb(11 112 231 / 0.1);
         color: #0B70E7;
         margin-top: 15px;
         margin-left: 40px;
+
+      .rzp-image
+        width: auto;
 
   .corporate-cards__right
     flex: 1;
     display: flex;
     justify-content: center;
 
-    @media(max-width: 1500px) {
+    @media (max-width 1500px) {
       padding: 55px;
     }
 
@@ -136,44 +143,48 @@
       position: relative;
       overflow: hidden;
 
-      @media(max-width: 1500px) {
+      @media (max-width 1500px) {
         height: 100%;
         width: 100%;
         max-height: 650px;
       }
 
-      img {
+      .rzp-image {
         position: absolute;
         top: 30px;
         right: 30px;
+        width: auto;
       }
 
-      &:after
+      &::after
         content: "";
         position: absolute;
-        bottom: 0px;
+        bottom: 0;
         right: -90%;
-        background: rgb(38, 43, 76);
+        background: rgb(38 43 76);
         opacity: 0.56;
         transform: skew(-30deg);
         width: 110%;
         height: 90%;
 
-      h1, p, ul
+      h1,
+      p,
+      ul
         margin: 0;
         padding: 0;
 
       h1
-        color: rgba(255, 255, 255, 0.87);
+        color: rgb(255 255 255 / 0.87);
         font-weight: bold;
         margin-bottom: 20px;
 
       > div
         width: 60%;
 
-        ul, p
+        ul,
+        p
           font-size: 14px;
-          color: rgba(255, 255, 255, 0.76);
+          color: rgb(255 255 255 / 0.76);
 
         ul
           margin-top: 20px;
@@ -184,9 +195,9 @@
             padding-left: 20px;
             margin-bottom: 15px;
 
-            /* Overwriting default list-style for custom color & styling */
-            &:before
-              content: '';
+            // Overwriting default list-style for custom color & styling
+            &::before
+              content: "";
               position: absolute;
               left: 5px;
               top: 4px;
@@ -197,5 +208,5 @@
 
         a.primary
           background: #0B70E7;
-          color: #fff;
+          color: #FFF;
           margin-top: 30px;

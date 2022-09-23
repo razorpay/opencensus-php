@@ -70,7 +70,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Log into your Zoho Dashboard and click <strong>Settings</strong>.
                 </p>
-                <PaddedImage alt="screenshot of settings icon on top right" src={Img1} />
+                <PaddedImage alt="screenshot of settings icon on top right" src={Img1} isWebP />
               </div>
             </li>
             <li>
@@ -79,7 +79,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Integrations</strong>.
                 </p>
-                <PaddedImage alt="Integration button in right settings pan" src={Img2} />
+                <PaddedImage alt="Integration button in right settings pan" src={Img2} isWebP />
               </div>
             </li>
             <li>
@@ -92,6 +92,7 @@ function Data(brandColor) {
                 <PaddedImage
                   alt="Red button with Setup now text on Customer Payments page"
                   src={Img3}
+                  isWebP
                 />
               </div>
             </li>
@@ -105,6 +106,7 @@ function Data(brandColor) {
                 <PaddedImage
                   alt="Screenshot of razorpay login page with email and password inputs"
                   src={Img4}
+                  isWebP
                 />
               </div>
             </li>
@@ -114,7 +116,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Authorize</strong>.
                 </p>
-                <PaddedImage alt="Authorize button in purple" src={Img5} />
+                <PaddedImage alt="Authorize button in purple" src={Img5} isWebP />
               </div>
             </li>
             <li>
@@ -124,7 +126,7 @@ function Data(brandColor) {
                   The integration is complete, Razorpay is marked as <code>Active</code> and you can
                   start accepting payments from your customers using the Razorpay Payment Gateway.
                 </p>
-                <PaddedImage alt="Active text next to Razorpay logo" src={Img6} />
+                <PaddedImage alt="Active text next to Razorpay logo" src={Img6} isWebP />
               </div>
             </li>
             <li>

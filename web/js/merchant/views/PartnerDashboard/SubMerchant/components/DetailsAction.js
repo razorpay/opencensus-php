@@ -9,6 +9,9 @@ import { fetchSubmerchants } from 'merchant/reducers/collection';
 import moment from 'moment';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
+import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
+import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
+import Image from '../../../../../common/ui/Image';
 
 const DetailsAction = ({
   activation_status = null,
@@ -28,9 +31,7 @@ const DetailsAction = ({
   let pendingState = 'Sending KYC access request...';
 
   let title = 'You can send request for KYC access';
-  const waitingApprovalImg = '/dist/css/assets/partner-dashboard/waiting-approval.png';
-  const defaultImg = '/dist/css/assets/partner-dashboard/req-by-email-1.png';
-  let image = defaultImg;
+  let image = DefaultImg;
 
   let description = (
     <>
@@ -84,7 +85,7 @@ const DetailsAction = ({
   if (state === 'pending_approval') {
     title = "Your merchant's approval for KYC access is pending";
     description = 'Your merchant would have received an email with approval link.';
-    image = waitingApprovalImg;
+    image = WaitingApprovalImg;
     isHidden = true;
   }
   if (state === 'expired') {
@@ -138,8 +139,8 @@ const DetailsAction = ({
           {<strong className="title">{title}</strong>}
           <br />
           <p className="description">{description}</p>
-          <div className={`${image === waitingApprovalImg ? 'waiting-approval' : 'default-img'}`}>
-            <img src={image} />
+          <div className={`${image === WaitingApprovalImg ? 'waiting-approval' : 'default-img'}`}>
+            <Image src={image} isWebP />
           </div>
           {!isHidden && (
             <AsyncBtn.Primary showLoader={true} pendingState={pendingState} onClick={onClickAction}>

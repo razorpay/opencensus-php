@@ -10,6 +10,7 @@ import ImgDone from 'assets/onboarding/done.png';
 import ImgActive from 'assets/onboarding/active.png';
 import ImgBlocked from 'assets/onboarding/blocked.png';
 import ImgWarning from 'assets/onboarding/warning.svg';
+import Image from 'common/ui/Image';
 
 const IMAGE_MAP = {
   progress: ImgProgress,
@@ -81,7 +82,11 @@ class Step extends Component {
           {isLoading || !IMAGE_MAP[status] ? (
             <PlaceholderLoader />
           ) : (
-            <img src={IMAGE_MAP[status] || ImgProgress} alt={status} />
+            <Image
+              src={IMAGE_MAP[status] || ImgProgress}
+              alt={status}
+              isWebP={status !== 'warning'}
+            />
           )}
         </div>
         <div

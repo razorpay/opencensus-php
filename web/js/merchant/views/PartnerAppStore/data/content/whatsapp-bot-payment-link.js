@@ -1,6 +1,10 @@
-import PadImage from '../PadImage.js';
+import PadImage from '../PadImage';
+import Img1 from 'assets/app-store/content-assets/whatsapp-bot-payment-link/whatsapp-bot-payment-link-2.png';
+import Img2 from 'assets/app-store/content-assets/whatsapp-bot-payment-link/whatsapp-bot-payment-link-3.png';
+import Img3 from 'assets/app-store/content-assets/whatsapp-bot-payment-link/whatsapp-bot-payment-link-4.png';
 
 function Data(brandColor) {
+  // eslint-disable-next-line babel/new-cap
   const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
@@ -53,7 +57,8 @@ function Data(brandColor) {
                 </p>
                 <PaddedImage
                   alt="Screenshot from whatsapp chat where Razorpay bot sent App Successfully Installed message"
-                  src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/2.png"
+                  src={Img1}
+                  isWebP
                 />
               </div>
             </li>
@@ -72,10 +77,7 @@ function Data(brandColor) {
                     eg: Create 100 will create a Payment Link for INR 100
                   </span>
                 </p>
-                <PaddedImage
-                  alt="User sent Create 100"
-                  src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/3.png"
-                />
+                <PaddedImage alt="User sent Create 100" src={Img2} isWebP />
               </div>
             </li>
 
@@ -92,7 +94,8 @@ function Data(brandColor) {
                 </p>
                 <PaddedImage
                   alt="Razorpay bot replied with Link creation success message and the payment link"
-                  src="/dist/css/assets/app-store/content-assets/whatsapp-bot-payment-link/4.png"
+                  src={Img3}
+                  isWebP
                 />
               </div>
             </li>

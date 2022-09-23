@@ -4,6 +4,11 @@ import { Redirect } from 'react-router-dom';
 import analyticsService from '@razorpay/commander-services/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import LoanEntity from 'merchant/models/Capital/BaseOrigination';
+import CCGetStarted from 'assets/capital/cc-get-started.png';
+import CCCreditLimit from 'assets/capital/cc-credit-limit.png';
+import CCDeposits from 'assets/capital/cc-deposits.png';
+import XLogo from 'assets/capital/x-logo.png';
+import Image from '../../../../common/ui/Image';
 
 const LOS_CARDS_LINK = 'https://x.razorpay.com/cards/apply';
 const CARDS_DASHBOARD_LINK = 'https://x.razorpay.com/cards';
@@ -112,21 +117,21 @@ const CorporateCards = ({ user }) => {
                 <p>Get Started for FREE</p>
                 <p>Joining fee of ₹1499 will be waived off for Razorpay users if they apply now</p>
               </div>
-              <img src="/dist/css/assets/capital/cc-get-started.png" />
+              <Image src={CCGetStarted} isWebP />
             </li>
             <li>
               <div>
                 <p>2x Credit Limit</p>
                 <p>Your credit limit will increase faster to stay twice your spends</p>
               </div>
-              <img src="/dist/css/assets/capital/cc-credit-limit.png" />
+              <Image src={CCCreditLimit} isWebP />
             </li>
             <li>
               <div>
                 <p>0 security deposits</p>
                 <p>We require no personal guarantees or security deposits to get you started</p>
               </div>
-              <img src="/dist/css/assets/capital/cc-deposits.png" />
+              <Image src={CCDeposits} isWebP />
             </li>
           </ul>
           <a
@@ -143,7 +148,7 @@ const CorporateCards = ({ user }) => {
           className="right__content"
           style={{ backgroundImage: "url('/dist/css/assets/capital/cc-preview.png')" }}
         >
-          <img src="/dist/css/assets/capital/x-logo.png" />
+          <Image src={XLogo} isWebP />
           <h1>Corporate Cards</h1>
           <div>
             <p>A real credit card for your business to make all the digital spends including:</p>

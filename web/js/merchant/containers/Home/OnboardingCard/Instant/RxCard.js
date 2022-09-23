@@ -18,6 +18,7 @@ import ImgRxBgRight from 'assets/onboarding/rx-bg-right.svg';
 import ParliamentLogo from 'assets/onboarding/parliament.svg';
 import DoneLogo from 'assets/onboarding/done.png';
 import PointLogo from 'assets/onboarding/points.svg';
+import Image from 'common/ui/Image';
 
 @connect(
   (state) => ({
@@ -163,7 +164,7 @@ class RxCard extends Component {
             ) : (
               <div className="req-success">
                 <div>
-                  <img className="req-submit" src={DoneLogo} alt="Done logo" />
+                  <Image className="req-submit" src={DoneLogo} alt="Done logo" isWebP />
                 </div>
                 <div className="req-info">
                   Request submitted successfully. Our executive will call you for further process

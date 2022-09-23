@@ -1,4 +1,13 @@
 import PadImage from '../PadImage';
+import Wix1 from 'assets/app-store/content-assets/wix/wix-1.png';
+import Wix2 from 'assets/app-store/content-assets/wix/wix-2.png';
+import Wix3 from 'assets/app-store/content-assets/wix/wix-3.png';
+import Wix4 from 'assets/app-store/content-assets/wix/wix-4.png';
+import Wix5 from 'assets/app-store/content-assets/wix/wix-5.png';
+import Wix6 from 'assets/app-store/content-assets/wix/wix-6.png';
+import Wix7 from 'assets/app-store/content-assets/wix/wix-8.png';
+import Wix8 from 'assets/app-store/content-assets/wix/wix-9.png';
+import Wix9 from 'assets/app-store/content-assets/wix/final-webhook.gif';
 
 function Data(brandColor) {
   // eslint-disable-next-line babel/new-cap
@@ -45,10 +54,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Settings</strong> → <strong>Accept Payments</strong>.
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-1.png"
-                  alt="accept payments"
-                />
+                <PaddedImage src={Wix1} isWebP alt="accept payments" />
               </div>
             </li>
             <li>
@@ -57,10 +63,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Add Payment Methods</strong>.
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-2.png"
-                  alt="add payments methods"
-                />
+                <PaddedImage alt="add payments methods" src={Wix2} isWebP />
               </div>
             </li>
             <li>
@@ -69,10 +72,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Select <strong>Razorpay</strong> and click <strong>Add</strong>.
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-3.png"
-                  alt="add razorpay"
-                />
+                <PaddedImage alt="add razorpay" src={Wix3} isWebP />
               </div>
             </li>
             <li>
@@ -81,10 +81,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Once added, a success message appears as shown
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-4.png"
-                  alt="success message"
-                />
+                <PaddedImage alt="success message" src={Wix4} isWebP />
               </div>
             </li>
             <li>
@@ -94,10 +91,7 @@ function Data(brandColor) {
                   Razorpay appears added as a payment method. Click{' '}
                   <strong>Set up Account to Activate</strong>.
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-5.png"
-                  alt="account activation"
-                />
+                <PaddedImage alt="account activation" src={Wix5} isWebP />
               </div>
             </li>
             <li>
@@ -106,10 +100,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   In the dialog box that appears, select the appropriate action
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-6.png"
-                  alt="dialog box"
-                />
+                <PaddedImage alt="dialog box" src={Wix6} isWebP />
               </div>
             </li>
             <li className="number-label-top">
@@ -133,10 +124,7 @@ function Data(brandColor) {
                   </li>
                 </ul>
 
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-8.png"
-                  alt="Connect Existing Account"
-                />
+                <PaddedImage alt="Connect Existing Account" src={Wix7} isWebP />
               </div>
             </li>
             <li>
@@ -145,10 +133,7 @@ function Data(brandColor) {
                   <div className="list-counter" style={brandStyles.listBg} />
                   Click <strong>Connect My Account</strong>. A success message appears on screen.
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-4.png"
-                  alt="Connect My Account"
-                />
+                <PaddedImage alt="Connect My Account" src={Wix4} isWebP />
               </div>
             </li>
             <li>
@@ -158,10 +143,7 @@ function Data(brandColor) {
                   Razorpay now appears under <strong>Payment Methods</strong>. Ensure{' '}
                   <strong>Active on your Checkout</strong> is enabled.
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/wix-9.png"
-                  alt="Active on Checkout"
-                />
+                <PaddedImage alt="Active on Checkout" src={Wix8} isWebP />
               </div>
             </li>
             <li>
@@ -241,10 +223,7 @@ function Data(brandColor) {
                   Watch the short animation below for more details.
                   <p>This completes your integration.</p>
                 </p>
-                <PaddedImage
-                  src="/dist/css/assets/app-store/content-assets/wix/final-webhook.gif"
-                  alt="webhook"
-                />
+                <PaddedImage alt="webhook" src={Wix9} />
               </div>
             </li>
           </ol>

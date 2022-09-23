@@ -1,6 +1,14 @@
-import PadImage from '../PadImage.js';
+import PadImage from '../PadImage';
+import Img1 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-1.png';
+import Img2 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-2.png';
+import Img3 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-3.png';
+import Img4 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-13.png';
+import Img5 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-14.png';
+import Img6 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-15.png';
+import Img7 from 'assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-16.png';
 
 function Data(brandColor) {
+  // eslint-disable-next-line babel/new-cap
   const PaddedImage = PadImage(brandColor);
   const brandStyles = {
     listBg: { backgroundColor: brandColor },
@@ -50,7 +58,8 @@ function Data(brandColor) {
               </p>
               <PaddedImage
                 alt="Online Payments option highlighted in a green box with Razorpay logo selected"
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-1.png"
+                src={Img1}
+                isWebP
               />
             </div>
           </li>
@@ -62,7 +71,8 @@ function Data(brandColor) {
               </p>
               <PaddedImage
                 alt="A popup with text Do you want to leave without saving and Yes and No Buttons. Mouse pointing on the Yes."
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-2.png"
+                src={Img2}
+                isWebP
               />
             </div>
           </li>
@@ -75,7 +85,8 @@ function Data(brandColor) {
               </p>
               <PaddedImage
                 alt="Page with Heading, Accept Payments with Razorpay, 3 infographics about the process and Let's get started button"
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-3.png"
+                src={Img3}
+                isWebP
               />
             </div>
           </li>
@@ -86,10 +97,7 @@ function Data(brandColor) {
                 Once your account is set up, go back to QuickBooks and click{' '}
                 <strong className>Let’s get started</strong>.
               </p>
-              <PaddedImage
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-13.png"
-                alt="Click Let's get started Button"
-              />
+              <PaddedImage alt="Click Let's get started Button" src={Img4} isWebP />
             </div>
           </li>
           <li>
@@ -100,10 +108,7 @@ function Data(brandColor) {
                 will be asked to log in and thereafter you will be prompted to give QuickBooks
                 permission to connect with Razorpay. Click <strong>Allow</strong>.
               </p>
-              <PaddedImage
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-14.png"
-                alt="Click Allow"
-              />
+              <PaddedImage alt="Click Allow" src={Img5} isWebP />
             </div>
           </li>
           <li>
@@ -116,10 +121,7 @@ function Data(brandColor) {
                 <div className="list-counter" style={brandStyles.listBg} />
                 Click <strong>Authorise </strong>to let QuickBooks access your Razorpay account.
               </p>
-              <PaddedImage
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-15.png"
-                alt="Click Authorize"
-              />
+              <PaddedImage src={Img6} isWebP alt="Click Authorize" />
             </div>
           </li>
           <li>
@@ -129,7 +131,8 @@ function Data(brandColor) {
                 You will get a success notification.
               </p>
               <PaddedImage
-                src="/dist/css/assets/app-store/content-assets/intuit-quickbooks/intuit-quickbooks-16.png"
+                src={Img7}
+                isWebP
                 alt="Success Message that reads- Razorpay is Connected"
               />
             </div>

@@ -1,4 +1,6 @@
 import PadImage from '../PadImage';
+import Img1 from 'assets/app-store/content-assets/shopify/shopify-1.png';
+import Img2 from 'assets/app-store/content-assets/shopify/shopify-2.png';
 
 function Data(brandColor) {
   // eslint-disable-next-line babel/new-cap
@@ -60,7 +62,8 @@ function Data(brandColor) {
                   </p>
                   <PaddedImage
                     alt="Alternative Payments section, with razorpay in the dropdown list"
-                    src="/dist/css/assets/app-store/content-assets/shopify/shopify-1.png"
+                    src={Img1}
+                    isWebP
                   />
                 </div>
               </li>
@@ -71,10 +74,7 @@ function Data(brandColor) {
                     Enter the <code>&lt;YOUR_KEY_ID&gt;</code> and{' '}
                     <code>&lt;YOUR_KEY_SECRET&gt;</code> generated in the previous section.
                   </p>
-                  <PaddedImage
-                    alt="Textbox with Key ID and Key Secret Labels"
-                    src="/dist/css/assets/app-store/content-assets/shopify/shopify-2.png"
-                  />
+                  <PaddedImage alt="Textbox with Key ID and Key Secret Labels" src={Img2} isWebP />
                 </div>
               </li>
               <li>

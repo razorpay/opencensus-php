@@ -1,4 +1,9 @@
 import PadImage from '../PadImage';
+import WebhookCreation1 from 'assets/app-store/content-assets/woocommerce/webhook-creation-1.png';
+import WebhookCreation2 from 'assets/app-store/content-assets/woocommerce/webhook-creation-2.png';
+import WebhookList from 'assets/app-store/content-assets/woocommerce/webhooks-list.png';
+import WebhookCreation from 'assets/app-store/content-assets/woocommerce/webhook-creation.gif';
+import GenerateApiKeys from 'assets/app-store/content-assets/woocommerce/generate-api-keys.gif';
 
 function Data(brandColor) {
   // eslint-disable-next-line babel/new-cap
@@ -159,7 +164,8 @@ function Data(brandColor) {
                   </p>
                   <PaddedImage
                     alt="Add new webhook button on top right of the screen"
-                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation-1.png"
+                    src={WebhookCreation1}
+                    isWebP
                   />
                 </div>
               </li>
@@ -209,10 +215,7 @@ function Data(brandColor) {
                       </li>
                     </ul>
                   </div>
-                  <PaddedImage
-                    alt="Webhook setup page"
-                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation-2.png"
-                  />
+                  <PaddedImage alt="Webhook setup page" src={WebhookCreation2} isWebP />
                 </div>
               </li>
               <li>
@@ -225,17 +228,15 @@ function Data(brandColor) {
                   </p>
                   <PaddedImage
                     alt="Table of webhooks with created webhook listed on it"
-                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhooks-list.png"
+                    src={WebhookList}
+                    isWebP
                   />
                 </div>
               </li>
               <li>
                 <div className="list-flex">
                   <p>Watch the short animation below for more details.</p>
-                  <PaddedImage
-                    alt="Animations of above steps"
-                    src="/dist/css/assets/app-store/content-assets/woocommerce/webhook-creation.gif"
-                  />
+                  <PaddedImage alt="Animations of above steps" src={WebhookCreation} />
                 </div>
               </li>
             </ol>
@@ -279,7 +280,7 @@ function Data(brandColor) {
                   </p>
                   <PaddedImage
                     alt="Animations of clicking buttons in following format: Settings then API Keys then Generate Live Keys"
-                    src="/dist/css/assets/app-store/content-assets/woocommerce/generate-api-keys.gif"
+                    src={GenerateApiKeys}
                   />
                 </div>
               </li>

@@ -10,6 +10,7 @@ import {
   trackCashAdvanceSidebarLinkRendered,
 } from './helpers';
 import { trackViewedBankingNavBar } from './ga';
+import BBPSImage from 'assets/bbps.png';
 import * as LocalStorageService from 'common/utils/localStorage';
 import {
   setRecommendedProduct,
@@ -232,7 +233,7 @@ function MerchantNavLinks(props) {
       <MainNavLink
         label="BBPS"
         type="product"
-        image="/dist/css/assets/bbps.png"
+        image={BBPSImage}
         to={routes.bbps}
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('bbps') && currentUser.isBbpsEnabled

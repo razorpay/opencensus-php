@@ -1,5 +1,6 @@
 import React from 'react';
 import ImgTopBg from 'assets/onboarding/top_bg.png';
+import Image from 'common/ui/Image';
 
 const QuickActionsCard = () => {
   const ShareLink = () => (
@@ -33,7 +34,7 @@ const QuickActionsCard = () => {
   return (
     <div className="product-onboarding-card quick-options">
       <div className="illustration-top">
-        <img src={ImgTopBg} alt="Top" />
+        <Image src={ImgTopBg} alt="Top" isWebP />
       </div>
       <div className="illustration-right">
         <img
