@@ -608,40 +608,76 @@ class Core extends Base\Core
      */
     public function editGlobalAddress($input): array
     {
-        if(Session()->has($this->mode . '_app_token') === false)
+        $this->trace->count(AddressMetric::GLOBAL_EDIT_ADDRESS_COUNT);
+
+        $startTime = millitime();
+
+        $traceResponse = [];
+
+        $ex = [];
+
+        try {
+
+            if(Session()->has($this->mode . '_app_token') === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            }
+            $appToken = Session()->get($this->mode . '_app_token');
+            Customer\Validator::validateEditGlobalAddress($input);
+            list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
+                ['app_token' => $appToken],
+                $this->merchant,
+                true);
+            // 1cc Demo: Reject address saving for +911234567890
+            if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
+            {
+                return [];
+            }
+            $input = Customer\Validator::validateAndParseContactInInput($input);
+            $address = [];
+            if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
+                $address[Entity::SHIPPING_ADDRESS] = $this->editAddress($input[Entity::SHIPPING_ADDRESS], $customer);
+            }
+            if ( isset($input[Entity::BILLING_ADDRESS]) ) {
+                $address[Entity::BILLING_ADDRESS] = $this->editAddress($input[Entity::BILLING_ADDRESS], $customer);
+            }
+            $this->traceResponseTime(
+                AddressMetric::GLOBAL_EDIT_ADDRESS_RESPONSE_TIME_MILLIS,
+                $startTime
+            );
+
+            if (isset($address[Entity::SHIPPING_ADDRESS]) === true) {
+                $traceResponse[Entity::SHIPPING_ADDRESS] = $address[Entity::SHIPPING_ADDRESS]->toArrayPublic();
+            }
+
+            if (isset($address[Entity::BILLING_ADDRESS]) === true) {
+                $traceResponse[Entity::BILLING_ADDRESS] = $address[Entity::BILLING_ADDRESS]->toArrayPublic();
+            }
+            return $address;
+        }
+        catch (\Exception $exception)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+            $ex = $exception;
+            $this->trace->count(AddressMetric::GLOBAL_EDIT_ADDRESS_ERROR_COUNT);
+            throw $exception;
         }
-
-        $appToken = Session()->get($this->mode . '_app_token');
-
-        Customer\Validator::validateEditGlobalAddress($input);
-
-        list($customer, $appToken) = (new Customer\Core)->getCustomerAndApp(
-            ['app_token' => $appToken],
-            $this->merchant,
-            true);
-
-        // 1cc Demo: Reject address saving for +911234567890
-        if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
-        {
-            return [];
+        finally {
+            if (empty($ex) === true){
+                $this->trace->info(TraceCode::GLOBAL_EDIT_ADDRESS_REQUEST,
+                    [
+                        'request' =>  $this->getMaskedDetails($input),
+                        'response' => $this->getMaskedDetails($traceResponse)
+                    ]
+                );
+            }else {
+                $this->trace->error(TraceCode::GLOBAL_EDIT_ADDRESS_ERROR,
+                    [
+                        'request' => $this->getMaskedDetails($input),
+                        'exception'=> $ex->getTrace()
+                    ]
+                );
+            }
         }
-
-        $input = Customer\Validator::validateAndParseContactInInput($input);
-
-        $address = [];
-
-        if ( isset($input[Entity::SHIPPING_ADDRESS]) ) {
-            $address[Entity::SHIPPING_ADDRESS] = $this->editAddress($input[Entity::SHIPPING_ADDRESS], $customer);
-        }
-
-        if ( isset($input[Entity::BILLING_ADDRESS]) ) {
-            $address[Entity::BILLING_ADDRESS] = $this->editAddress($input[Entity::BILLING_ADDRESS], $customer);
-        }
-
-        return $address;
-
     }
 
     /**
