@@ -62,6 +62,10 @@ class Validator extends Base\Validator
     const  HEALTH_COACHING                      = 'health_coaching';
     const  COMPUTER_PROGRAMMING_DATA_PROCESSING = 'computer_programming_data_processing';
     const  UTILITIES_ELECTRIC_GAS_OIL_WATER     = 'utilities_electric_gas_oil_water';
+    const  MULTI_LEVEL_MARKETING                = 'multi_level_marketing';
+    const  CRYPTO_CURRENCIES                    = 'crypto_currencies';
+    const  DIRECT_MONEY_TRANSFER                = 'direct_money_transfer';
+
 
     // Types of Accounts for RBL
     const INSIGNIA = 'insignia';
@@ -320,7 +324,10 @@ class Validator extends Base\Validator
         self::CATERING,
         self::HEALTH_COACHING,
         self::COMPUTER_PROGRAMMING_DATA_PROCESSING,
-        self::UTILITIES_ELECTRIC_GAS_OIL_WATER
+        self::UTILITIES_ELECTRIC_GAS_OIL_WATER,
+        self::CRYPTO_CURRENCIES,
+        self::MULTI_LEVEL_MARKETING,
+        self::DIRECT_MONEY_TRANSFER
     ];
 
     protected static $allowedAccountTypesForRBL = [
