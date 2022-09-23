@@ -404,41 +404,33 @@ class Core extends Base\Core
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        if (($payment->isFailed() === true) or
-            ($payment->getStatus() === Payment\Status::REFUNDED))
-        {
-            try
-            {
-                $mandateHub->ReportInitialPayment($cardMandate, $payment);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e,
-                    Trace::ERROR,
-                    TraceCode::CARD_MANDATE_REPORT_INITIAL_PAYMENT_FAILED,
-                    [
-                        'card_mandate_id' => $cardMandate->getId(),
-                        'payment_id'      => $payment->getId(),
-                        'exception'       => $e->getMessage(),
-                    ]);
-            }
-        }
-        else
+        try
         {
             $mandateHub->ReportInitialPayment($cardMandate, $payment);
+
+            if (($payment->isFailed() === false) and
+                ($payment->getStatus() !== Payment\Status::REFUNDED))
+            {
+                $cardMandate->setStatus(Status::ACTIVE);
+
+                $cardMandate->saveOrFail();
+
+                $this->trace->info(TraceCode::CARD_MANDATE_CONFIRMED, [
+                    'card_mandate_id'     => $cardMandate->getId(),
+                    'card_mandate_status' => $cardMandate->getStatus(),
+                ]);
+            }
         }
-
-        if (($payment->isFailed() === false) and
-            ($payment->getStatus() !== Payment\Status::REFUNDED))
+        catch (\Exception $e)
         {
-            $cardMandate->setStatus(Status::ACTIVE);
-
-            $cardMandate->saveOrFail();
-
-            $this->trace->info(TraceCode::CARD_MANDATE_CONFIRMED, [
-                'card_mandate_id'     => $cardMandate->getId(),
-                'card_mandate_status' => $cardMandate->getStatus(),
-            ]);
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::CARD_MANDATE_REPORT_INITIAL_PAYMENT_FAILED,
+                [
+                    'card_mandate_id' => $cardMandate->getId(),
+                    'payment_id'      => $payment->getId(),
+                    'exception'       => $e->getMessage(),
+                ]);
         }
     }
 
