@@ -32,6 +32,11 @@ class Route
         // Dev routes
         'inspector_view_get'                      => ['get',      '_inspector',                                      'GenericController@getInspectorIndex'                               ],
 
+        // ------------------------------ Checkout Order Routes - START ------------------------------
+        'create_checkout_order'                    => ['post',      'checkout/order',                               'CheckoutOrderController@create'    ],
+        'close_checkout_order'                     => ['delete',    'checkout/order/{id}',                          'CheckoutOrderController@close'     ],
+        // ------------------------------ Checkout Order Routes - END ------------------------------
+
         //qr code cutoff config
         'qr_configs_create'                        => ['post',      '/payment/qr_codes/configs/create',             'QrCodeConfigController@create'                                      ],
         'qr_configs_fetch'                         => ['get',       '/payment/qr_codes/configs',                    'QrCodeConfigController@fetchConfigsForMerchant'                     ],
@@ -3873,6 +3878,8 @@ class Route
         '1cc_shopify_complete_preflight',
         '1cc_shopify_oauth_redirect',
         '1cc_shopify_oauth_callback',
+        'create_checkout_order',
+        'close_checkout_order',
         'checkout',
         'payment_create',
         'payment_create_checkout',

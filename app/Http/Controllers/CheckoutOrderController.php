@@ -18,10 +18,10 @@ class CheckoutOrderController extends Controller
         return Response::json($data);
     }
 
-    public function close(Request $request): JsonResponse
+    public function close(Request $request, string $checkoutOrderId): JsonResponse
     {
-        $data = $this->service()->close($request->all());
+        $this->service()->close($request->all(), $checkoutOrderId);
 
-        return Response::json($data);
+        return Response::json([], 204);
     }
 }

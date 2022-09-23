@@ -69,7 +69,7 @@ class Service extends QrCode\Service
 
     public function createForCheckout($input)
     {
-        $this->trace->info(TraceCode::QR_CODE_CREATE_REQUEST, $input);
+        $this->trace->info(TraceCode::QR_CODE_CHECKOUT_CREATE_REQUEST, $input);
 
         (new Validator())->validateInput('createForCheckout', $input);
 

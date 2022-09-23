@@ -26,15 +26,14 @@ class Validator extends BaseValidator
     public static $createRules = [
         '_' => 'sometimes|array',
         Entity::ACCOUNT_ID => 'sometimes|string|alpha_num|size:14',
-        Entity::AMOUNT => 'required|int|min:1',
+        Entity::AMOUNT => 'required|int|min_amount',
         Entity::AUTH_LINK_ID => 'sometimes|string|alpha_num|size:14',
         Entity::CHECKOUT_ID => 'required|string|alpha_num|size:14',
         Entity::CONTACT => 'sometimes|contact_syntax',
-        Entity::CONVENIENCE_FEE => 'sometimes|int|min:0',
+        Entity::CURRENCY => 'sometimes|size:3',
         Entity::DESCRIPTION => 'sometimes|string|custom',
         Entity::EMAIL => 'sometimes|email',
         Entity::EXPIRE_AT => 'sometimes|epoch|custom',
-        Entity::FEE => 'sometimes|int|min:0',
         Entity::INVOICE_ID => 'sometimes|string|alpha_num|size:14',
         Entity::METHOD => 'sometimes|in:upi',
         Entity::NAME => 'sometimes|string|custom',
@@ -44,6 +43,12 @@ class Validator extends BaseValidator
         Entity::PAYMENT_LINK_ID => 'sometimes|string|alpha_num|size:14',
         Entity::RECEIVER_TYPE => 'required|in:qr_code',
         Entity::SIGNATURE => 'sometimes|string',
+        Entity::UPI => 'sometimes|array',
+        Entity::UPI . '.flow' => 'sometimes_if:method,upi|in:intent',
+    ];
+
+    public static $closeRules = [
+        'close_reason'  => 'required|string|not_in:paid',
     ];
 
     public function validateDescription(string $attribute, string $value): bool

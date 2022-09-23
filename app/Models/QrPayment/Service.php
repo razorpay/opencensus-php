@@ -27,7 +27,7 @@ class Service extends Base\Service
 
     public static function getCacheKeyForQRCodeId(string $qrCodeId): string
     {
-        QrV2::verifyIdAndStripSign($qrCodeId);
+        QrV2::verifyIdAndSilentlyStripSign($qrCodeId);
 
         return 'payment:qr_code.polling.' . $qrCodeId . '.status';
     }

@@ -92,6 +92,7 @@ class Entity extends PublicEntity
         self::PAYMENT_LINK_ID,
         self::RECEIVER_TYPE,
         self::SIGNATURE,
+        self::UPI,
     ];
 
     /**
@@ -283,14 +284,19 @@ class Entity extends PublicEntity
         return $this->order->getAmountDue();
     }
 
+    public function getClosedAt()
+    {
+        return $this->getAttribute(self::CLOSED_AT);
+    }
+
     public function getCustomerId(): string
     {
-        return $this->attributes[self::META_DATA][self::CUSTOMER_ID] ?? '';
+        return $this->getAttribute(self::META_DATA)[self::CUSTOMER_ID] ?? '';
     }
 
     public function getDescription(): string
     {
-        return $this->attributes[self::META_DATA][self::DESCRIPTION] ?? '';
+        return $this->getAttribute(self::META_DATA)[self::DESCRIPTION] ?? '';
     }
 
     public function getExpireAt(): int
@@ -300,7 +306,7 @@ class Entity extends PublicEntity
 
     public function getName(): string
     {
-        return $this->attributes[self::META_DATA][self::NAME] ?? '';
+        return $this->getAttribute(self::META_DATA)[self::NAME] ?? '';
     }
 
     /**
@@ -308,11 +314,13 @@ class Entity extends PublicEntity
      */
     public function getNotes(): ?Notes
     {
-        if (empty($this->getNotesJson())) {
+        $jsonNotes = $this->getNotesJson();
+
+        if (empty($jsonNotes)) {
             return null;
         }
 
-        return $this->getNotesAttribute($this->getNotesJson());
+        return $this->getNotesAttribute($jsonNotes);
     }
 
     /**
@@ -320,7 +328,17 @@ class Entity extends PublicEntity
      */
     public function getNotesJson(): string
     {
-        return $this->attributes[self::META_DATA][self::NOTES] ?? '';
+        return json_encode($this->getNotesArray());
+    }
+
+    /**
+     * Return Notes object as an array
+     *
+     * @return array
+     */
+    public function getNotesArray(): array
+    {
+        return $this->getAttribute(self::META_DATA)[self::NOTES] ?? [];
     }
 
     // ------------------------------ GETTERS END ------------------------------
@@ -345,9 +363,14 @@ class Entity extends PublicEntity
     {
         parent::setNotesAttribute($notes);
 
-        $this->attributes[self::META_DATA][self::NOTES] = $this->attributes[self::NOTES];
+        $this->setAttribute(self::META_DATA . '->' . self::NOTES, $this->attributes[self::NOTES]);
 
         unset($this->attributes[self::NOTES]);
+    }
+
+    public function setClosedAt(int $closedAt): void
+    {
+        $this->setAttribute(self::CLOSED_AT, $closedAt);
     }
 
     // ------------------------------ SETTERS END ------------------------------

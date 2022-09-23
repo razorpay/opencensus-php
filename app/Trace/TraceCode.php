@@ -8099,6 +8099,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DEDUPE_FAILED_FOR_XPRESS_ONBOARDING                         = 'DEDUPE_FAILED_FOR_XPRESS_ONBOARDING';
 
+    // CheckoutOrder related trace codes
+    const INPUT_AMOUNT_DIFFERENT_THAN_ORDER_AMOUNT                    = 'INPUT_AMOUNT_DIFFERENT_THAN_ORDER_AMOUNT';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

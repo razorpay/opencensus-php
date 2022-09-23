@@ -83,7 +83,7 @@ class Repository extends Base\Repository
 
     public function getLatestExpectedPaymentIdForQrCodeId(string $qrCodeId)
     {
-        QrV2\Entity::verifyIdAndStripSign($qrCodeId);
+        QrV2\Entity::verifyIdAndSilentlyStripSign($qrCodeId);
 
         return $this->newQueryOnSlave()
                     ->where(Entity::QR_CODE_ID, '=', $qrCodeId)
