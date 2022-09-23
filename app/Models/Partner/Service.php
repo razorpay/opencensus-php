@@ -269,7 +269,7 @@ class Service extends Base\Service
     {
         if ($this->isPartnerTypeMigrationExpEnabled() === false)
         {
-            return ['success' => true, 'errorMessage' => null];
+            return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration"];
         }
         return $this->core()->bulkMigrateResellerToAggregatorPartner($input);
     }
@@ -283,7 +283,7 @@ class Service extends Base\Service
      */
     public function migrateResellerToAggregatorPartner($input)
     {
-        if ($this->isPartnerTypeMigrationExpEnabled() === false)
+        if ($this->isPartnerTypeMigrationExpEnabled($input['merchant_id']) === false)
         {
             return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration."];
         }
@@ -302,7 +302,7 @@ class Service extends Base\Service
             throw $e;
         }
 
-        $traceInfo = ['success' => $result, 'errorMessage' => null];
+        $traceInfo = ['success' => $result, 'errorMessage' => $result !== true ? "Invalid merchant for migration" :null];
         $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
         return $traceInfo;
     }
@@ -312,13 +312,18 @@ class Service extends Base\Service
      *
      * @return bool
      */
-    private function isPartnerTypeMigrationExpEnabled() : bool
+    private function isPartnerTypeMigrationExpEnabled(string $merchantId = null): bool
     {
-        $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        if ($this->auth->isAdminAuth() === false)
+        {
+            $merchantId = $this->auth->isPartnerAuth() ? $this->auth->getPartnerMerchantId() : $this->auth->getMerchantId();
+        }
+
         $properties = [
             'id'            => $merchantId,
             'experiment_id' => $this->app['config']->get('app.partner_type_migration_exp_id'),
         ];
+
         return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
     }
 }

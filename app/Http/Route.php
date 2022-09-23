@@ -2755,6 +2755,8 @@ class Route
         // Partner types migration routes
         'bulk_migrate_aggregator_to_reseller'      => ['put',      'partner/migrate_aggregator_to_reseller/bulk',       'MerchantController@bulkMigrateAggregatorToResellerPartner'         ],
         'bulk_migrate_reseller_to_aggregator'      => ['put',      'partner/migrate_reseller_to_aggregator/bulk',       'PartnerController@bulkMigrateResellerToAggregatorPartner'],
+        'internal_migrate_reseller_to_aggregator'  => ['put',      'partner/migrate_reseller_to_aggregator/internal',   'PartnerController@migrateResellerToAggregatorPartner'              ],
+        'internal_migrate_aggregator_to_reseller'  => ['put',      'partner/migrate_aggregator_to_reseller/internal',   'MerchantController@migrateAggregatorToResellerPartner'             ],
         'migrate_reseller_to_aggregator'           => ['put',      'partner/migrate_reseller_to_aggregator',            'PartnerController@migrateResellerToAggregatorPartner'    ],
         'migrate_aggregator_to_reseller'           => ['put',      'partner/migrate_aggregator_to_reseller',            'MerchantController@migrateAggregatorToResellerPartner'             ],
         'partner_remove_switch_merchant_access'    => ['put',      'partner/remove_submerchant_dashboard_access/bulk',  'MerchantController@removeSubmerchantDashboardAccessOfPartner'      ],
@@ -4060,8 +4062,8 @@ class Route
         'mock_bvs_validation_event',
         'bulk_migrate_aggregator_to_reseller',
         'bulk_migrate_reseller_to_aggregator',
-        'migrate_reseller_to_aggregator',
-        'migrate_aggregator_to_reseller',
+        'internal_migrate_reseller_to_aggregator',
+        'internal_migrate_aggregator_to_reseller',
         'partner_remove_switch_merchant_access',
         'qr_configs_create',
         'qr_configs_fetch',
@@ -6721,7 +6723,8 @@ class Route
         'partner_actions',
         'partner_activation_bulk_assign_reviewer',
 
-//        'bulk_migrate_aggregator_to_reseller',
+        'migrate_reseller_to_aggregator',
+        'migrate_aggregator_to_reseller',
 
         //  Uploading bank refund file
         'gateway_file_bank_refunds_upload',

@@ -3121,7 +3121,7 @@ class Validator extends Base\Validator
         );
         if(count($applications) != 2 or empty($appTypeDiff) == false )
         {
-            $this->trace->info(
+            $this->getTrace()->info(
                 TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_INVALID_APPLICATION,
                 [
                     '$applications' => $applications,
