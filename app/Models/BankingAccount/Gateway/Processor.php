@@ -11,6 +11,7 @@ use RZP\Services\FTS;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\CardVault;
+use RZP\Models\Card\BuNamespace;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\RecordAlreadyExists;
@@ -470,8 +471,9 @@ abstract class Processor extends Base\Core
     {
         $request = $traceRequest =
             [
-                'namespace' => self::CREDENTIALS_VAULT_NAMESPACE,
-                'secret'    => $element
+                'namespace'    => self::CREDENTIALS_VAULT_NAMESPACE,
+                'secret'       => $element,
+                'bu_namespace' => BuNamespace::RAZORPAYX_NODAL_CERTS,
             ];
 
         /** @var CardVault $cardVaultService */

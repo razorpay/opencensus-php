@@ -74,8 +74,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $createVaultTokenRules = [
-        'namespace' => 'required|max:30|in:nodal_certs,banking_account_creds',
-        'secret'    => 'required'
+        'namespace'    => 'required|max:30|in:nodal_certs,banking_account_creds',
+        'secret'       => 'required',
+        'bu_namespace' => 'required|in:razorpayx_nodal_certs'
     ];
 
     protected function validateExpiryDate($input)

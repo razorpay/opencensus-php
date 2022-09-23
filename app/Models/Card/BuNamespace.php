@@ -8,4 +8,5 @@ class BuNamespace
     const RAZORPAYX_NON_SAVED_CARDS = 'razorpayx_non_saved_cards';
     const RAZORPAYX_TOKEN_PAN       = 'razorpayx_token_pan';
     const PAYMENTS_TOKEN_PAN        = 'payments_token_pan';
+    const RAZORPAYX_NODAL_CERTS     = 'razorpayx_nodal_certs';
 }
