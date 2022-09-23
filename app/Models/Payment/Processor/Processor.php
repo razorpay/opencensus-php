@@ -3790,8 +3790,7 @@ class Processor
 
         $sqsPush = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_SQS_PUSH, $this->mode);
 
-        if  (($methodResult !== 'on') and
-             ($sqsPush != 'on'))
+        if  ($methodResult !== 'on')
         {
             return;
         }
@@ -3803,8 +3802,7 @@ class Processor
         $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
         $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
 
-        if (( $gatewayResult !== 'on' || $demoMerchant !== 'control') and
-            ( $sqsPush != 'on'))
+        if ( $gatewayResult !== 'on' || $demoMerchant !== 'control')
         {
             return;
         }
@@ -5806,12 +5804,12 @@ class Processor
             return $response;
         }
 
-        // For PayU, in case of registration payment, 
+        // For PayU, in case of registration payment,
         // token confirmation will be sent via webhooks.
         // Cannot auto capture until we know final status of token.
-        // For some banks, they will let us know the status in sync, 
+        // For some banks, they will let us know the status in sync,
         // for others they will give the final status in T+2 days via webhooks.
-        // 
+        //
         // In case of debit payment, final confirmation is received from webhooks.
         if ($payment->isApiBasedEmandateAsyncPayment() === true)
         {
