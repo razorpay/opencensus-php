@@ -13,6 +13,20 @@ use Throwable;
 class Service extends Base\Service
 {
 
+    protected $attributeCore;
+
+    protected $attributeService;
+
+    public function __construct($attributeCore = null, $attributeService = null)
+    {
+        parent::__construct();
+
+        $this->attributeCore = $attributeCore ?? new Attribute\Core();
+
+        $this->attributeService = $attributeService ?? new Attribute\Service();
+    }
+
+
     /**
      * Get channel and subchannel given UTM params array. Fields used: website, final_utm_source, final_utm_medium,
      * final_utm_campaign
@@ -107,9 +121,8 @@ class Service extends Base\Service
 
     public function addChannelDetailsInSFPayload(Entity $merchant, array &$utm_params)
     {
-        $attributeCore = new Attribute\Core;
-        $attributes    = $attributeCore->fetchKeyValues($merchant, Product::BANKING, Attribute\Group::X_SIGNUP,
-                                                        [Attribute\Type::CHANNEL, Attribute\Type::SUBCHANNEL]);
+        $attributes = $this->attributeCore->fetchKeyValues($merchant, Product::BANKING, Attribute\Group::X_SIGNUP,
+                                                           [Attribute\Type::CHANNEL, Attribute\Type::SUBCHANNEL]);
 
         $channel    = '';
         $subchannel = '';
@@ -138,25 +151,23 @@ class Service extends Base\Service
      */
     public function storeChannelDetails(Entity $merchant, array $utmParams)
     {
-        $attributeCore = new Attribute\Core;
-
         $existingChannel = null;
         $signupSource    = null;
         $channelDetails  = [];
 
         try
         {
-            $signupSourceAttribute = $attributeCore->fetchKeyValues($merchant, Product::BANKING,
-                                                                    Attribute\Group::X_MERCHANT_PREFERENCES,
-                                                                    [Attribute\Type::X_SIGNUP_PLATFORM])->first();
+            $signupSourceAttribute = $this->attributeCore->fetchKeyValues($merchant, Product::BANKING,
+                                                                          Attribute\Group::X_MERCHANT_PREFERENCES,
+                                                                          [Attribute\Type::X_SIGNUP_PLATFORM])->first();
             if (!empty($signupSourceAttribute))
             {
                 $signupSource = $signupSourceAttribute[AttributeEntity::VALUE];
             }
 
-            $existingChannelAttribute = $attributeCore->fetchKeyValues($merchant, Product::BANKING,
-                                                                       Attribute\Group::X_SIGNUP,
-                                                                       [Attribute\Type::CHANNEL])->first();
+            $existingChannelAttribute = $this->attributeCore->fetchKeyValues($merchant, Product::BANKING,
+                                                                             Attribute\Group::X_SIGNUP,
+                                                                             [Attribute\Type::CHANNEL])->first();
             if (!empty($existingChannelAttribute))
             {
                 $existingChannel = $existingChannelAttribute[AttributeEntity::VALUE];
@@ -175,7 +186,8 @@ class Service extends Base\Service
         ]);
 
         // If existing channel is Unmapped, we can override it
-        if ($existingChannel === Channels::UNMAPPED) {
+        if ($existingChannel === Channels::UNMAPPED)
+        {
             $existingChannel = null;
         }
 
@@ -221,12 +233,12 @@ class Service extends Base\Service
      * Checks if mobile channel's priority is higher than given existing channel. Also updates the channel and
      * sub-channel in $channelDetails if so. Priority is higher if it has a lower value.
      *
-     * @param string $existingChannel
-     * @param array  $channelDetails
+     * @param string|null $existingChannel
+     * @param array       $channelDetails
      *
      * @return bool
      */
-    protected function updateChannelDetailsIfMobilePriorityIsHigher(string $existingChannel, array &$channelDetails): bool
+    protected function updateChannelDetailsIfMobilePriorityIsHigher(?string $existingChannel, array &$channelDetails): bool
     {
         $existingChannelPriority = $this->getChannelPriority($existingChannel);
         $xMobileChannelPriority  = $this->getChannelPriority(Channels::MOBILE_APP_SIGNUPS);
@@ -263,8 +275,6 @@ class Service extends Base\Service
 
     protected function upsertChannelDetailsInMerchantAttributes(array $channelDetails, array $utmParams, Entity $merchant)
     {
-        $attributeService = new Attribute\Service;
-
         $channel                 = $this->getArrayValueOrDefault($channelDetails, Constants::CHANNEL, Channels::UNMAPPED);
         $subchannel              = $this->getArrayValueOrDefault($channelDetails, Constants::SUBCHANNEL, Channels::UNMAPPED);
         $finalUtmSource          = $this->getArrayValueOrDefault($utmParams, Constants::FINAL_UTM_SOURCE, Constants::UNKNOWN);
@@ -316,7 +326,7 @@ class Service extends Base\Service
 
         try
         {
-            $attributeService->upsert(Attribute\Group::X_SIGNUP, $data, Product::BANKING, $merchant);
+            $this->attributeService->upsert(Attribute\Group::X_SIGNUP, $data, Product::BANKING, $merchant);
         }
         catch (Throwable $e)
         {
@@ -401,11 +411,9 @@ class Service extends Base\Service
 
     public function storeChannelAndSubchannel(Entity $merchant, string $channel, string $subchannel)
     {
-        $attributeCore = new Attribute\Core;
-
-        $existingChannelAttribute = $attributeCore->fetchKeyValues($merchant, Product::BANKING,
-                                                                   Attribute\Group::X_SIGNUP,
-                                                                   [Attribute\Type::CHANNEL])->first();
+        $existingChannelAttribute = $this->attributeCore->fetchKeyValues($merchant, Product::BANKING,
+                                                                         Attribute\Group::X_SIGNUP,
+                                                                         [Attribute\Type::CHANNEL])->first();
 
         $channelDetails = [
             Constants::CHANNEL    => Channels::UNMAPPED,
