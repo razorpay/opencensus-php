@@ -5621,7 +5621,9 @@ class RefundTest extends TestCase
 
         $this->fixtures->card->edit($payment['card_id'], ['vault_token' => 'XXXXXXXXXXX']);
 
-        $this->fixtures->card->edit($payment['card_id'], ['issuer'  => null]);
+//        $this->fixtures->card->edit($payment['card_id'], ['iin' => $iin['iin']]);
+//
+//        $this->fixtures->card->edit($payment['card_id'], ['issuer'  => null]);
 
         $this->gateway = 'hdfc';
 

@@ -1483,22 +1483,29 @@ class Service extends Base\Service
 
     protected function getPaymentExtraDataIsIinPrepaid(Payment\Entity $payment)
     {
-        if ((empty($payment->card) === true) or (empty($payment->card->iinRelation) === true))
+        if (empty($payment->card) === true)
         {
             return null;
         }
 
-        return IIN::isIinPrepaid($payment->card->iinRelation->getIin());
+        $cardEntityArray = $payment->card->toArrayRefund();
+
+        if (isset($cardEntityArray[RefundConstants::IIN]) === false)
+        {
+            return null;
+        }
+
+        return IIN::isIinPrepaid($cardEntityArray[RefundConstants::IIN]);
     }
 
     protected function getPaymentExtraDataCardHasSupportedIssuer(Payment\Entity $payment)
     {
-        if ((empty($payment->card) === true) or (empty($payment->card->iinRelation) === true))
+        if (empty($payment->card) === true)
         {
             return null;
         }
 
-        $cardIssuer = $payment->card->iinRelation->getIssuer();
+        $cardIssuer = $payment->card->getIssuer();
 
         return in_array($cardIssuer, TransferMode::getSupportedIssuers());
     }

@@ -96,6 +96,9 @@ class Constants
     const CARD_TRIVIA               = 'trivia';
     const TOKEN_STATUS              = 'token_status';
     const NETWORK_TOKENISED_CARD    = 'network_tokenised_card';
+    const TOKENIZED                 = 'tokenized';
+    const TOKEN_EXPIRED_AT          = 'token_expired_at';
+    const IIN                       = 'iin';
 
     /**
      * razorx experiments related constants

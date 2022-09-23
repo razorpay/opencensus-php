@@ -3392,17 +3392,17 @@ trait Refund
         if (($payment->hasCard() === true) and
             ($payment->card->getCardVaultToken() !== null) and ($payment->isGatewayCaptured() === true))
         {
-            $iin = $payment->card->iinRelation;
+            $cardEntityArray = $payment->card->toArrayRefund();
 
-            if ($iin !== null)
+            if (isset($cardEntityArray[RefundConstants::IIN]) === true)
             {
-                $cardType = strtolower($iin->getType());
+                $cardType = strtolower($payment->card->getType());
 
-                $cardIssuer = $iin->getIssuer();
+                $cardIssuer = $payment->card->getIssuer();
 
                 if (($cardType === Type::CREDIT) and
                     (in_array($cardIssuer, FundTransfer\Mode::getSupportedIssuers(), true) === true) and
-                    (IIN::isIinPrepaid($iin->getIin()) === false))
+                    (IIN::isIinPrepaid($cardEntityArray[RefundConstants::IIN]) === false))
                 {
                     if (($ignoreFeatureFlag === false) and
                         ($this->merchant->isFeatureEnabled(Feature::DISABLE_INSTANT_REFUNDS) === true))
@@ -4023,7 +4023,12 @@ trait Refund
                     $queryParams[RefundConstants::NETWORK_CODE] = $payment->card->getNetworkCode();
                     $queryParams[RefundConstants::ISSUER] = $payment->card->getIssuer();
                     $queryParams[RefundConstants::CARD_TYPE] = strtolower($payment->card->getType());
-                    $queryParams[RefundConstants::BIN] = $payment->card->getIin();
+
+                    $cardEntityArray = $payment->card->toArrayRefund();
+                    if (isset($cardEntityArray[RefundConstants::IIN]) === true)
+                    {
+                        $queryParams[RefundConstants::BIN] = $cardEntityArray[RefundConstants::IIN];
+                    }
                 }
             }
             else
@@ -4160,19 +4165,18 @@ trait Refund
     {
         if (($payment->getMethod() === Method::CARD) && ($payment->hasCard() === true))
         {
-            $queryParams[RefundConstants::CARD_TOKEN_EXPIRY_MONTH]  = $payment->card->getTokenExpiryMonth();
-            $queryParams[RefundConstants::CARD_TOKEN_EXPIRY_YEAR]   = $payment->card->getTokenExpiryYear();
-            $queryParams[RefundConstants::CARD_TRIVIA]              = $payment->card->getTrivia();
+            $cardEntity = $payment->card->toArrayRefund();
+            if (isset($cardEntity[RefundConstants::TOKENIZED]) === true)
+            {
+                $queryParams[RefundConstants::TOKENIZED] = $cardEntity[RefundConstants::TOKENIZED];
+            }
 
             $tokenEntity = $payment->getGlobalOrLocalTokenEntity();
 
             if (empty($tokenEntity) === false)
             {
                 $queryParams[RefundConstants::TOKEN_STATUS] = $tokenEntity->getStatus();
-                if (is_null($tokenEntity->card) === false)
-                {
-                    $queryParams[RefundConstants::NETWORK_TOKENISED_CARD] = $tokenEntity->card->isNetworkTokenisedCard();
-                }
+                $queryParams[RefundConstants::TOKEN_EXPIRED_AT] = strval($tokenEntity->getExpiredAt());
             }
         }
         return $queryParams;
