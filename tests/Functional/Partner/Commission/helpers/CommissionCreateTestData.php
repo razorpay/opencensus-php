@@ -436,6 +436,64 @@ return [
         ],
     ],
 
+    'testFetchCommissionConfigByPayment' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/commission_configs?payment_id=',
+        ],
+        'response' => [
+            'content' => [
+                'isPartnerOriginated' => true,
+                'partner' => [
+                    'type' => 'pure_platform'
+                ],
+                'tax_components' => [
+                    'cgst' => 900,
+                    'sgst' => 900
+                ],
+                'partner_config' => [
+                    'commissions_enabled' => true
+                ]
+            ],
+        ],
+    ],
+
+    'testFetchCommissionConfigsWithInvalidPayment' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/commission_configs?payment_id=randomId',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ]
+    ],
+
+    'testFetchCommissionConfigByPaymentForMerchant' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/commission_configs?payment_id=randomId',
+        ],
+        'response' => [
+            'content'     => [
+                'isPartnerOriginated' => false,
+                'partner' => [],
+                'tax_components' => [],
+                'partner_config' => []
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testBulkCaptureByPartner' => [
         'request'  => [
             'method'  => 'POST',
@@ -447,5 +505,26 @@ return [
                 'count' => 2,
             ],
         ],
+    ],
+
+    'testBulkCaptureByPartnerInvalidInput' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/commissions/partner/capture/bulk',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The partner ids field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
     ],
 ];

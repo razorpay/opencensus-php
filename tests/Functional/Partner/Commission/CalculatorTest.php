@@ -237,6 +237,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testImplicitFixedCustomerFeeBearer()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     public function testImplicitVariablePostpaid()
     {
         $this->ruleEngine->execute(__FUNCTION__);

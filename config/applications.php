@@ -1428,4 +1428,8 @@ return [
         'url'       => env('SIMILARWEB_API_URL'),
         'api_key'   => env('SIMILARWEB_API_KEY')
     ],
+
+    'partnership_service'   => [
+        'secret'   => env('PARTNERSHIP_SERVICE_API_SECRET'),
+    ],
 ];

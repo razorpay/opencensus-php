@@ -1147,6 +1147,41 @@ return [
         ],
     ],
 
+    'testImplicitFixedCustomerFeeBearer' => [
+        'setup' => [
+            'create_partner'     => [
+                'id'    => 'BptVjGnFv6ITBm',
+                'type'  => 'fully_managed',
+            ],
+            'create_plans'       => [
+                [
+                    'plan_id'      => '200MerchantPln',
+                    'percent_rate' => 200,
+                    'fee_bearer'   => 'customer',
+                ],
+                [
+                    'plan_id'      => '003PartnerPlan',
+                    'percent_rate' => 30,
+                    'type'         => 'commission',
+                    'fee_bearer'   => 'customer',
+                ],
+            ],
+            'attach_submerchant' => [
+                'partner_id'      => 'BptVjGnFv6ITBm',
+                'pricing_plan_id' => '200MerchantPln',
+                'fee_model'       => 'postpaid',
+            ],
+            'define_config'      => [
+                'type'             => 'partner',
+                'implicit_plan_id' => '003PartnerPlan',
+            ],
+            'create_payment'     => [
+                'amount' => 4000 * 100, // paise
+                'auth'   => 'partner',
+            ],
+        ],
+    ],
+
     'testImplicitFixedPostpaid' => [
         'setup' => [
             'create_partner'     => [

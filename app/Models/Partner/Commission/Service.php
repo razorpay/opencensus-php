@@ -6,9 +6,10 @@ use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
-use RZP\Exception\LogicException;
+use RZP\Exception;
 use RZP\Models\Base\Repository as BaseRepository;
 
 class Service extends Base\Service
@@ -83,6 +84,23 @@ class Service extends Base\Service
         return $this->core()->fetchAggregateCommissionDetails($partner, $input);
     }
 
+    /**
+     * Fetches required commission config for the payment
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException| \Throwable
+     */
+    public function fetchCommissionConfigsForPayment(array $input): array
+    {
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        return $this->core()->fetchCommissionConfigsForPayment($payment);
+    }
+
     public function fetchAnalytics(array $input): array
     {
         (new Merchant\Validator)->validateIsPartner($this->merchant);
@@ -107,7 +125,7 @@ class Service extends Base\Service
 
         if (method_exists($commissionAnalytics, $func) === false)
         {
-            throw new LogicException('Invalid Query type');
+            throw new Exception\LogicException('Invalid Query type');
         }
 
         $query = $commissionAnalytics->$func($input);

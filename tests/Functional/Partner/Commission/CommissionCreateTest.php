@@ -689,6 +689,64 @@ class CommissionCreateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testFetchCommissionConfigByPayment()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $paymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 1000,
+            'fee'         => 4
+        ];
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->createEntityOrigin('payment', $payment->getId());
+
+        $this->ba->partnershipServiceAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/commission_configs?payment_id='.$payment->getId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchCommissionConfigsWithInvalidPayment()
+    {
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchCommissionConfigByPaymentForMerchant()
+    {
+        $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $paymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 1000,
+            'fee'         => 4
+        ];
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->ba->partnershipServiceAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/commission_configs?payment_id='.$payment->getId();
+
+        $this->runRequestResponseFlow($testData);
+    }
 
     public function testCaptureCommissionByPartner()
     {
@@ -719,6 +777,13 @@ class CommissionCreateTest extends TestCase
         $testData['request']['content']['partner_ids'] = [$partner->getId(), 'SampleMerchant'];
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testBulkCaptureByPartnerInvalidInput()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
     }
 
     public function testImplicitFixedOnPaymentCapture()

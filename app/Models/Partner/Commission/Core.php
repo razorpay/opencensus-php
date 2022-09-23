@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Constants\Mode;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -17,9 +18,11 @@ use RZP\Models\Merchant\Detail;
 use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Channel;
 use RZP\Jobs\CommissionTdsSettlement;
 use RZP\Models\Partner\Config as PartnerConfig;
+use RZP\Models\Pricing\Calculator as FeeCalculator;
 use RZP\Jobs\CommissionFinanceTriggeredOnHoldClear;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
 
@@ -57,7 +60,7 @@ class Core extends Base\Core
      * @param Payment\Entity $payment
      *
      * @return array
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
     public function createFromCapturedPayment(Payment\Entity $payment): array
     {
@@ -70,7 +73,7 @@ class Core extends Base\Core
      * @param Payout\Entity $payout
      *
      * @return array
-     * @throws Exception\LogicException
+     * @throws LogicException
      */
     public function createFromPayout(Payout\Entity $payout) : array
     {
@@ -84,7 +87,7 @@ class Core extends Base\Core
      * @param CommissionSourceInterface $sourceEntity
      *
      * @return array
-     * @throws Exception\LogicException
+     * @throws LogicException
      */
     protected function createCommission(CommissionSourceInterface  $sourceEntity)
     {
@@ -199,6 +202,61 @@ class Core extends Base\Core
             Constants::TOTAL_NET_AMOUNT => $netAmount,
             Constants::TDS_PERCENTAGE   => ($tdsPercentage/100),
         ];
+    }
+
+    /**
+     * Fetches all entities involved in validating commission
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return array $response
+     * @throws LogicException | Exception\BadRequestException
+     */
+    public function fetchCommissionConfigsForPayment(Payment\Entity $payment): array
+    {
+        $response = null;
+
+        $submerchant = $payment->merchant;
+
+        $entityOriginCore = new EntityOrigin\Core;
+
+        $traceData = ['paymentId' => $payment->getId()];
+
+        // The logic to find entity origin will be moved to partnership service and will be removed in reverse shadow phase
+        if ($entityOriginCore->isOriginApplication($payment) === true)
+        {
+            $partnerApp = $entityOriginCore->getOrigin($payment);
+            $response['isPartnerOriginated'] = true;
+        }
+        else
+        {
+            $partnerApp = (new Merchant\AccessMap\Core())->getReferredAppOfSubmerchant($submerchant);
+            $response['isPartnerOriginated'] = false;
+        }
+
+        if ($partnerApp === null)
+        {
+            $response['partner']         =  [];
+            $response['tax_components']  =  [];
+            $response['partner_config']  =  [];
+
+            return $response;
+        }
+
+        $partner = (new Merchant\Core)->getPartnerFromApp($partnerApp);
+
+        if(empty($partner) == true)
+        {
+            throw new LogicException(
+                'The partner application does not have an owner merchant');
+        }
+
+        $response['partner']['id']   =  $partner->getId();
+        $response['partner']['type'] =  $partner->getPartnerType();
+        $response['tax_components']  =  FeeCalculator\Base::getTaxComponents($partner);
+        $response['partner_config']  =  (new PartnerConfig\Core)->fetch($partnerApp, $submerchant);
+
+        return $response;
     }
 
     public function calculateTds(Merchant\Entity $partner, int $totalCommission): array
@@ -366,7 +424,7 @@ class Core extends Base\Core
      *
      * @return bool
      * @throws \RZP\Exception\BadRequestException
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
     public function shouldShowAggregateCommissionReportForPartner(Merchant\Entity $partner): bool
     {
@@ -464,7 +522,7 @@ class Core extends Base\Core
 
         if ($configs->isEmpty() === true)
         {
-            throw new Exception\LogicException('Default partner config not found for partner');
+            throw new LogicException('Default partner config not found for partner');
         }
     }
 }

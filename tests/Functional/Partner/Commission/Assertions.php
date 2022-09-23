@@ -194,6 +194,29 @@ class Assertions extends TestCase
         $this->assertEquals(144, $commission->getTax());
     }
 
+    public function testImplicitFixedCustomerFeeBearer(array $data)
+    {
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_fixed');
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // INR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $commissionPricing = 0.3;
+        $this->assertEquals($this->getFee($amount, $commissionPricing), $commission->getFee());
+        $this->assertEquals($this->getTax($amount, $commissionPricing), $commission->getTax());
+    }
+
     public function testPartnerDoesNotExist(array $data)
     {
         $this->assertShouldNotCreateCommission($data);

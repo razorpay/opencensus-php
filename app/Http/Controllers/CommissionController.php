@@ -87,4 +87,13 @@ class CommissionController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchCommissionConfigsForPayment()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchCommissionConfigsForPayment($input);
+
+        return ApiResponse::json($response);
+    }
 }

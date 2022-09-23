@@ -1083,6 +1083,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function partnershipServiceAuth($mode = 'test')
+    {
+        $partnershipConfig = \Config::get('applications.partnership_service');
+
+        $pwd = $partnershipConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function setMerchant($merchant)
     {
         $this->merchant = $merchant;

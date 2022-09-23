@@ -2776,6 +2776,9 @@ class Route
 
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
+        //partnership service usecase routes
+        'fetch_commission_configs'                 => ['get',     'commission_configs',         'CommissionController@fetchCommissionConfigsForPayment'                     ],
+
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
         'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
         'commissions_capture'                      => ['post',     'commissions/{id}/capture',                       'CommissionController@capture'                                      ],
@@ -5263,6 +5266,10 @@ class Route
         'customer_fetch_by_id_global',
 
         'role_list_admins_internal',
+
+        // partnership service dependent routes
+        'fetch_commission_configs',
+
         'create_ledger_journal_batch',
     ];
 
@@ -13754,6 +13761,10 @@ class Route
             'payout_create_2FA_internal',
             'payout_fetch_by_id_internal',
             'setl_adj_add'
+        ],
+
+        'partnership_service' => [
+            'fetch_commission_configs'
         ],
 
         'terminals_service' => [
