@@ -206,6 +206,23 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
+
+        Entity::RBL_ACTIVATION_DETAILS                  => 'sometimes|json',
+        Entity::CUSTOMER_APPOINTMENT_DATE               => 'sometimes|epoch|nullable',
+        Entity::BRANCH_CODE                             => 'sometimes|string|max:6',
+        Entity::RM_EMPLOYEE_CODE                        => 'sometimes|string|max:6',
+        Entity::RM_ASSIGNMENT_TYPE                      => 'sometimes|string|in:branch,pcarm,insignia',
+        Entity::DOC_COLLECTION_DATE                     => 'sometimes|epoch|nullable',
+        Entity::ACCOUNT_OPENING_IR_CLOSE_DATE           => 'sometimes|epoch|nullable',
+        Entity::ACCOUNT_OPENING_FTNR                    => 'sometimes|boolean',
+        Entity::ACCOUNT_OPENING_FTNR_REASONS            => 'sometimes|string',
+        Entity::API_IR_CLOSED_DATE                      => 'sometimes|epoch|nullable',
+        Entity::LDAP_ID_MAIL_DATE                       => 'sometimes|epoch|nullable',
+        Entity::API_ONBOARDING_FTNR                     => 'sometimes|boolean',
+        Entity::API_ONBOARDING_FTNR_REASONS             => 'sometimes|string',
+        Entity::UPI_CREDENTIAL_RECEIVED_DATE            => 'sometimes|epoch|nullable',
+        Entity::RZP_CA_ACTIVATED_DATE                   => 'sometimes|epoch|nullable',
+
         Entity::MERCHANT_POC_NAME                   => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_DESIGNATION            => 'sometimes|string|max:255',
         Entity::MERCHANT_POC_EMAIL                  => 'sometimes|string|max:255',

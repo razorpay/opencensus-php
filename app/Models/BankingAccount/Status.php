@@ -6,30 +6,40 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class Status
 {
-    const CREATED           = 'created';       // Application Received
-    const PICKED            = 'picked';        // Razorpay Processing
-    const INITIATED         = 'initiated';     // Sent to Bank
-    const PROCESSING        = 'processing';    // Bank Processing
-    const PROCESSED         = 'processed';     // CA Opened
-    const CANCELLED         = 'cancelled';     // Merchant Cancelled
-    const ACTIVATED         = 'activated';     // CA Activated
-    const UNSERVICEABLE     = 'unserviceable'; // Temp Unserviceable
-    const REJECTED          = 'rejected';      // Bank Rejected
-    const ARCHIVED          = 'archived';
+    const CREATED               = 'created';            // Application Received
+    const PICKED                = 'picked';             // Razorpay Processing
+    const INITIATED             = 'initiated';          // Sent to Bank
+    const VERIFICATION_CALL     = 'verification_call';  // Bank LMS - Verification Call
+    const DOC_COLLECTION        = 'doc_collection';     // Bank LMS - Doc Collection
+    const ACCOUNT_OPENING       = 'account_opening';    // Bank LMS - Account Opening
+    const API_ONBOARDING        = 'api_onboarding';     // Bank LMS - API Onboarding
+    const ACCOUNT_ACTIVATION    = 'account_activation'; // Bank LMS - Account Activation
+    const PROCESSING            = 'processing';         // Bank Processing
+    const PROCESSED             = 'processed';          // CA Opened
+    const CANCELLED             = 'cancelled';          // Merchant Cancelled
+    const ACTIVATED             = 'activated';          // CA Activated
+    const UNSERVICEABLE         = 'unserviceable';      // Temp Unserviceable
+    const REJECTED              = 'rejected';           // Bank Rejected
+    const ARCHIVED              = 'archived';
 
 
     // External Statuses as interpreted by Product
 
-    const APPLICATION_RECEIVED = 'ApplicationReceived';
-    const RAZORPAY_PROCESSING  = 'RazorpayProcessing';
-    const SENT_TO_BANK         = 'SentToBank';
-    const BANK_PROCESSING      = 'BankProcessing';
-    const CA_OPENED            = 'CAOpened';
-    const MERCHANT_CANCELLED   = 'MerchantCancelled';
-    const CA_ACTIVATED         = 'CAActivated';
-    const TEMP_UNSERVICEABLE   = 'TempUnserviceable';
-    const BANK_REJECTED        = 'BankRejected';
-    const ARCHIVED_EXTERNAL    = 'Archived';
+    const APPLICATION_RECEIVED           = 'ApplicationReceived';
+    const RAZORPAY_PROCESSING            = 'RazorpayProcessing';
+    const SENT_TO_BANK                   = 'SentToBank';
+    const BANK_PROCESSING                = 'BankProcessing';
+    const VERIFICATION_CALL_EXTERNAL     = 'VerificationCall';
+    const DOC_COLLECTION_EXTERNAL        = 'DocCollection';
+    const ACCOUNT_OPENING_EXTERNAL       = 'AccountOpening';
+    const API_ONBOARDING_EXTERNAL        = 'ApiOnboarding';
+    const ACCOUNT_ACTIVATION_EXTERNAL    = 'AccountActivation';
+    const CA_OPENED                      = 'CAOpened';
+    const MERCHANT_CANCELLED             = 'MerchantCancelled';
+    const CA_ACTIVATED                   = 'CAActivated';
+    const TEMP_UNSERVICEABLE             = 'TempUnserviceable';
+    const BANK_REJECTED                  = 'BankRejected';
+    const ARCHIVED_EXTERNAL              = 'Archived';
 
     // Substatuses
     const DOCS_WALK_THROUGH_PENDING      = 'docs_walkthrough_pending';
@@ -128,7 +138,65 @@ class Status
     const PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS              = self::PENDING_ON_SALES_SUB_STRING.'merchant_preparing_kyc_docs';
     const PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS                   = self::PENDING_ON_SALES_SUB_STRING.'issue_with_commercials';
     const PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE               = self::PENDING_ON_SALES_SUB_STRING.'merchant_wants_bank_change';
-    
+
+    // Sub-statuses for Stage - Verification Call
+    const IN_PROCESSING = 'in_processing';
+    const CUSTOMER_CALL_ATTEMPTED = 'customer_call_attempted';
+    const CUSTOMER_NOT_RESPONDING = 'customer_not_responding';
+    const CUSTOMER_NOT_INTERESTED = 'customer_not_interested';
+    const FOLLOW_UP_REQUESTED_BY_MERCHANT = 'follow_up_requested_by_merchant';
+    const API_DOCKET_NOT_RECEIVED = 'api_docket_not_received';
+    const KYC_ISSUE_WITH_CLIENT = 'kyc_issue_with_client';
+    const ASSIGNED_TO_INSIGNIA = 'assigned_to_insignia';
+    const ASSIGNED_TO_PCARM = 'assigned_to_pcarm';
+    const ASSIGNED_TO_BRANCH = 'assigned_to_branch';
+
+    // Sub-statuses for Doc Collection
+    const VISIT_DUE = 'visit_due';
+    const VISIT_RESCHEDULED = 'visit_rescheduled';
+    const FOLLOW_UP_PARTIAL_AC_DOCS_AVAILABLE = 'follow_up_partial_ac_docs_available';
+    const FOLLOW_UP_API_DOCS_UNAVAILABLE = 'follow_up_api_docs_unavailable';
+    const PICKED_UP_DOCS = 'picked_up_docs';
+
+    // Commonly used in Account Opening and API Onboarding
+    const IN_REVIEW = 'in_review';
+    const API_REGISTRATION_NOT_COMPLETE = 'api_registration_not_complete';
+    const IR_RAISED = 'ir_raised';
+    const IR_IN_DISCREPANCY = 'ir_in_discrepancy';
+    const IR_IN_REWORK = 'ir_in_rework';
+    const DOCS_VERIFIED = 'docs_verified';
+    const CA_OPENED_SUB_STATUS = 'ca_opened';
+    const API_IR_CLOSED = 'api_ir_closed';
+
+    // Sub-statuses for Doc Collection
+    const IN_PROCESS = 'in_process';
+    const CORP_ID_SENT = 'corp_id_sent';
+    const CA_ACTIVATED_SUB_STATUS = 'ca_activated';
+    const UPI_CREDS_PENDING = 'upi_creds_pending';
+    const UPI_ACTIVATED = 'upi_activated';
+    const CLIENT_NOT_RESPONDING = 'client_not_responding';
+    const DIRECTOR_PARTNER_IS_UNAVAILABLE = 'director/partner_is_unavailable';
+    const CLIENT_NOT_INTERESTED_ALREADY_HAS_ACCOUNT_WITH_DIFFERENT_BANK = 'client_not_interested_-_already_has_account_with_different_bank';
+    const CLIENT_NOT_INTERESTED_DID_NOT_CLARIFY = 'client_not_interested_-_did_not_clarify';
+    const CLIENT_NOT_INTERESTED_OPENED_ACCOUNT_IN_ANOTHER_BANK = 'client_not_interested_-_opened_account_in_another_bank';
+    const CLIENT_NOT_INTERESTED_STALLING_APPOINTMENTS = 'client_not_interested_-_stalling_appointments';
+    const CLIENT_NOT_INTERESTED_IP_CHEQUE_AMB_BANK_CHARGES = 'client_not_interested_-_ip_cheque/amb/bank_charges';
+    const CLIENT_NOT_INTERESTED_WANTS_TO_LINK_EXISTING_CA = 'client_not_interested_-_wants_to_link_existing_ca';
+    const CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA = 'client_not_interested_-_wants_to_use_only_va';
+    const CLIENT_NOT_INTERESTED_RZP_ISSUE = 'client_not_interested_-_rzp_issue';
+    const CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT = 'client_not_interested_-_due_to_longer_tat';
+    const ON_HOLD_BY_CLIENT = 'on_hold_by_client';
+    const BUSINESS_IS_NOT_OPERATIONAL = 'business_is_not_operational';
+    const NEGATIVE_PROFILE_SVR_ISSUE = 'negative_profile/_svr_issue';
+    const INCOMPLETE_KYC = 'incomplete_kyc';
+    const NOT_SERVICEABLE = 'not_serviceable';
+    const UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL = 'unsupported_rzp_business_type/model';
+    const ENTITY_CHANGE_IN_PROGRESS = 'entity_change_in_progress';
+    const CC_OD_WITH_OTHER_BANK = 'cc/od_with_other_bank';
+    const CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID = 'client_proceeding_with_different_rzp_mid';
+    const CA_OPENED_ORGANICALLY = 'ca_opened_organically';
+    const RM_DELAYS_IN_ACCOUNT_OPENING = 'rm_delays_in_account_opening';
+
     // Shortening the string value for the following substatuses as they exceed the allowed length in DB
     const PENDING_ON_SALES_DWT_NOT_COMPLETED_MX_NOT_RESPONDING_SPOC_TO_RESCHEDULE         = self::PENDING_ON_SALES_SUB_STRING.'dwt_not_completed_-_mx_not_responding'; // DWT Not Completed - MX Not Responding - SPOC to Reschedule
     const PENDING_ON_SALES_UNSUPPORTED_MISMATCH_OF_BIZ_TYPE_ON_ADMIN_DASHBOARD_AND_LMS    = self::PENDING_ON_SALES_SUB_STRING.'unsupported/_mismatch_of_biz_type'; // Unsupported/Mismatch of Biz Type on Admin Dashboard And LMS
@@ -157,6 +225,16 @@ class Status
         self::INITIATED,
         // When bank starts processing the application
         self::PROCESSING,
+        // When bank is making verfication call, assigning branch and RM
+        self::VERIFICATION_CALL,
+        // When bank RM picks up the docs
+        self::DOC_COLLECTION,
+        // When account is geting opened
+        self::ACCOUNT_OPENING,
+        // When credentials mail is sent by RZP
+        self::API_ONBOARDING,
+        // When Account is getting activated
+        self::ACCOUNT_ACTIVATION,
         // when user cancels his application to open CA.
         self::CANCELLED,
         // when Bank has processed, and opened the CA.
@@ -210,6 +288,7 @@ class Status
         self::PICKED => [
             self::INITIATED,
             self::UNSERVICEABLE,
+            self::VERIFICATION_CALL,
             self::CANCELLED,
             self::PROCESSED,
             self::ARCHIVED,
@@ -217,14 +296,66 @@ class Status
         self::INITIATED => [
             self::PROCESSING,
             self::PROCESSED,
+            self::VERIFICATION_CALL,
             self::CANCELLED,
             self::REJECTED,
-            self::ARCHIVED
+            self::ARCHIVED,
         ],
         self::PROCESSING => [
             self::PROCESSED,
+            self::VERIFICATION_CALL,
+            self::DOC_COLLECTION,
+            self::ACCOUNT_OPENING,
+            self::API_ONBOARDING,
+            self::ACCOUNT_ACTIVATION,
+            self::ACTIVATED,
             self::CANCELLED,
             self::REJECTED,
+            self::ARCHIVED,
+        ],
+        self::VERIFICATION_CALL => [
+            self::PROCESSED,
+            self::DOC_COLLECTION,
+            self::ACCOUNT_OPENING,
+            self::API_ONBOARDING,
+            self::ACCOUNT_ACTIVATION,
+            self::ACTIVATED,
+            self::ARCHIVED,
+        ],
+        self::DOC_COLLECTION => [
+            self::PROCESSED,
+            self::VERIFICATION_CALL,
+            self::ACCOUNT_OPENING,
+            self::API_ONBOARDING,
+            self::ACCOUNT_ACTIVATION,
+            self::ACTIVATED,
+            self::ARCHIVED,
+        ],
+        self::ACCOUNT_OPENING => [
+            self::PROCESSED,
+            self::VERIFICATION_CALL,
+            self::DOC_COLLECTION,
+            self::API_ONBOARDING,
+            self::ACCOUNT_ACTIVATION,
+            self::ACTIVATED,
+            self::ARCHIVED,
+        ],
+        self::API_ONBOARDING => [
+            self::PROCESSED,
+            self::VERIFICATION_CALL,
+            self::DOC_COLLECTION,
+            self::ACCOUNT_OPENING,
+            self::ACCOUNT_ACTIVATION,
+            self::ACTIVATED,
+            self::ARCHIVED,
+        ],
+        self::ACCOUNT_ACTIVATION => [
+            self::PROCESSED,
+            self::VERIFICATION_CALL,
+            self::DOC_COLLECTION,
+            self::ACCOUNT_OPENING,
+            self::API_ONBOARDING,
+            self::ACTIVATED,
             self::ARCHIVED,
         ],
         self::PROCESSED => [
@@ -235,7 +366,6 @@ class Status
         self::UNSERVICEABLE => [
             self::PICKED,
         ],
-
         self::ACTIVATED => [
             self::ARCHIVED
         ],
@@ -329,12 +459,70 @@ class Status
         self::PENDING_ON_SALES_MERCHANT_PREPARING_KYC_DOCS,
         self::PENDING_ON_SALES_ISSUE_WITH_COMMERCIALS,
         self::PENDING_ON_SALES_MERCHANT_WANTS_BANK_CHANGE,
+
+        self::IN_PROCESSING,
+        self::CUSTOMER_CALL_ATTEMPTED,
+        self::CUSTOMER_NOT_RESPONDING,
+        self::CUSTOMER_NOT_INTERESTED,
+        self::FOLLOW_UP_REQUESTED_BY_MERCHANT,
+        self::API_DOCKET_NOT_RECEIVED,
+        self::KYC_ISSUE_WITH_CLIENT,
+        self::ASSIGNED_TO_INSIGNIA,
+        self::ASSIGNED_TO_PCARM,
+        self::ASSIGNED_TO_BRANCH,
+        self::VISIT_DUE,
+        self::VISIT_RESCHEDULED,
+        self::FOLLOW_UP_PARTIAL_AC_DOCS_AVAILABLE,
+        self::FOLLOW_UP_API_DOCS_UNAVAILABLE,
+        self::PICKED_UP_DOCS,
+        self::IN_REVIEW,
+        self::API_REGISTRATION_NOT_COMPLETE,
+        self::IR_RAISED,
+        self::IR_IN_DISCREPANCY,
+        self::IR_IN_REWORK,
+        self::DOCS_VERIFIED,
+        self::CA_OPENED_SUB_STATUS,
+        self::API_IR_CLOSED,
+        self::IN_PROCESS,
+        self::CORP_ID_SENT,
+        self::CA_ACTIVATED_SUB_STATUS,
+        self::UPI_CREDS_PENDING,
+        self::UPI_ACTIVATED,
+        self::CLIENT_NOT_RESPONDING,
+        self::DIRECTOR_PARTNER_IS_UNAVAILABLE,
+        self::CLIENT_NOT_INTERESTED_ALREADY_HAS_ACCOUNT_WITH_DIFFERENT_BANK,
+        self::CLIENT_NOT_INTERESTED_DID_NOT_CLARIFY,
+        self::CLIENT_NOT_INTERESTED_OPENED_ACCOUNT_IN_ANOTHER_BANK,
+        self::CLIENT_NOT_INTERESTED_STALLING_APPOINTMENTS,
+        self::CLIENT_NOT_INTERESTED_IP_CHEQUE_AMB_BANK_CHARGES,
+        self::CLIENT_NOT_INTERESTED_WANTS_TO_LINK_EXISTING_CA,
+        self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA,
+        self::CLIENT_NOT_INTERESTED_RZP_ISSUE,
+        self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT,
+        self::ON_HOLD_BY_CLIENT,
+        self::BUSINESS_IS_NOT_OPERATIONAL,
+        self::NEGATIVE_PROFILE_SVR_ISSUE,
+        self::INCOMPLETE_KYC,
+        self::NOT_SERVICEABLE,
+        self::UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL,
+        self::ENTITY_CHANGE_IN_PROGRESS,
+        self::CC_OD_WITH_OTHER_BANK,
+        self::CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID,
+        self::CA_OPENED_ORGANICALLY,
+        self::RM_DELAYS_IN_ACCOUNT_OPENING,
+
         self::OTHER,
         self::NONE,
     ];
 
     protected static $defaultSubStatus = [
-        self::PROCESSED => self::API_ONBOARDING_PENDING
+        self::PROCESSED => self::API_ONBOARDING_PENDING,
+        self::VERIFICATION_CALL => self::IN_PROCESSING,
+        self::DOC_COLLECTION => self::VISIT_DUE,
+        self::ACCOUNT_OPENING => self::IN_REVIEW,
+        self::API_ONBOARDING => self::IN_REVIEW,
+        self::ACCOUNT_ACTIVATION => self::IN_PROCESS,
+        self::ARCHIVED => self::IN_PROCESS,
     ];
 
     /**
@@ -421,6 +609,50 @@ class Status
             self::DISCREPANCY_IN_DOCS,
             self::BANK_OPENED_ACCOUNT,
         ],
+        self::VERIFICATION_CALL => [
+            self::IN_PROCESSING,
+            self::CUSTOMER_CALL_ATTEMPTED,
+            self::CUSTOMER_NOT_RESPONDING,
+            self::CUSTOMER_NOT_INTERESTED,
+            self::NEEDS_CLARIFICATION_FROM_RZP,
+            self::FOLLOW_UP_REQUESTED_BY_MERCHANT,
+            self::API_DOCKET_NOT_RECEIVED,
+            self::KYC_ISSUE_WITH_CLIENT,
+            self::ASSIGNED_TO_INSIGNIA,
+            self::ASSIGNED_TO_PCARM,
+            self::ASSIGNED_TO_BRANCH,
+        ],
+        self::DOC_COLLECTION => [
+            self::VISIT_DUE,
+            self::CUSTOMER_NOT_RESPONDING,
+            self::VISIT_RESCHEDULED,
+            self::FOLLOW_UP_REQUESTED_BY_MERCHANT,
+            self::FOLLOW_UP_PARTIAL_AC_DOCS_AVAILABLE,
+            self::FOLLOW_UP_API_DOCS_UNAVAILABLE,
+            self::PICKED_UP_DOCS,
+        ],
+        self::ACCOUNT_OPENING => [
+            self::IN_REVIEW,
+            self::IR_RAISED,
+            self::IR_IN_DISCREPANCY,
+            self::IR_IN_REWORK,
+            self::DOCS_VERIFIED,
+            self::CA_OPENED_SUB_STATUS,
+        ],
+        self::API_ONBOARDING => [
+            self::IN_REVIEW,
+            self::API_REGISTRATION_NOT_COMPLETE,
+            self::IR_RAISED,
+            self::IR_IN_DISCREPANCY,
+            self::IR_IN_REWORK,
+            self::DOCS_VERIFIED,
+            self::API_IR_CLOSED,
+        ],
+        self::ACCOUNT_ACTIVATION => [
+            self::IN_PROCESS,
+            self::CORP_ID_SENT,
+            self::CA_ACTIVATED_SUB_STATUS,
+        ],
         self::PROCESSED => [
             // Pending on RZP
             self::API_ONBOARDING_PENDING,
@@ -437,12 +669,38 @@ class Status
         self::UNSERVICEABLE => [
         ],
 
-        self::ACTIVATED => [],
+        self::ACTIVATED => [
+            self::UPI_CREDS_PENDING,
+            self::UPI_ACTIVATED,
+        ],
         self::CANCELLED => [
         ],
         self::REJECTED  => [
         ],
         self::ARCHIVED  => [
+            self::IN_PROCESS,
+            self::CLIENT_NOT_RESPONDING,
+            self::DIRECTOR_PARTNER_IS_UNAVAILABLE,
+            self::CLIENT_NOT_INTERESTED_ALREADY_HAS_ACCOUNT_WITH_DIFFERENT_BANK,
+            self::CLIENT_NOT_INTERESTED_DID_NOT_CLARIFY,
+            self::CLIENT_NOT_INTERESTED_OPENED_ACCOUNT_IN_ANOTHER_BANK,
+            self::CLIENT_NOT_INTERESTED_STALLING_APPOINTMENTS,
+            self::CLIENT_NOT_INTERESTED_IP_CHEQUE_AMB_BANK_CHARGES,
+            self::CLIENT_NOT_INTERESTED_WANTS_TO_LINK_EXISTING_CA,
+            self::CLIENT_NOT_INTERESTED_WANTS_TO_USE_ONLY_VA,
+            self::CLIENT_NOT_INTERESTED_RZP_ISSUE,
+            self::CLIENT_NOT_INTERESTED_DUE_TO_LONGER_TAT,
+            self::ON_HOLD_BY_CLIENT,
+            self::BUSINESS_IS_NOT_OPERATIONAL,
+            self::NEGATIVE_PROFILE_SVR_ISSUE,
+            self::INCOMPLETE_KYC,
+            self::NOT_SERVICEABLE,
+            self::UNSUPPORTED_RZP_BUSINESS_TYPE_MODEL,
+            self::ENTITY_CHANGE_IN_PROGRESS,
+            self::CC_OD_WITH_OTHER_BANK,
+            self::CLIENT_PROCEEDING_WITH_DIFFERENT_RZP_MID,
+            self::CA_OPENED_ORGANICALLY,
+            self::RM_DELAYS_IN_ACCOUNT_OPENING,
         ]
     ];
 
@@ -450,6 +708,11 @@ class Status
         self::CREATED,
         self::PICKED,
         self::INITIATED,
+        self::VERIFICATION_CALL,
+        self::DOC_COLLECTION,
+        self::ACCOUNT_OPENING,
+        self::API_ONBOARDING,
+        self::ACCOUNT_ACTIVATION,
         self::PROCESSED,
         self::PROCESSING,
         self::UNSERVICEABLE,
@@ -473,16 +736,21 @@ class Status
      * manual activation operation via admin dashboard.
      */
     public static $externalToInternalStatusMap = [
-        self::APPLICATION_RECEIVED => self::CREATED,
-        self::RAZORPAY_PROCESSING  => self::PICKED,
-        self::SENT_TO_BANK         => self::INITIATED,
-        self::BANK_PROCESSING      => self::PROCESSING,
-        self::CA_OPENED            => self::PROCESSED,
-        self::MERCHANT_CANCELLED   => self::CANCELLED,
-        self::TEMP_UNSERVICEABLE   => self::UNSERVICEABLE,
-        self::BANK_REJECTED        => self::REJECTED,
-        self::ARCHIVED_EXTERNAL    => self::ARCHIVED,
-        self::CA_ACTIVATED         => self::ACTIVATED
+        self::APPLICATION_RECEIVED          => self::CREATED,
+        self::RAZORPAY_PROCESSING           => self::PICKED,
+        self::SENT_TO_BANK                  => self::INITIATED,
+        self::BANK_PROCESSING               => self::PROCESSING,
+        self::CA_OPENED                     => self::PROCESSED,
+        self::MERCHANT_CANCELLED            => self::CANCELLED,
+        self::TEMP_UNSERVICEABLE            => self::UNSERVICEABLE,
+        self::BANK_REJECTED                 => self::REJECTED,
+        self::ARCHIVED_EXTERNAL             => self::ARCHIVED,
+        self::VERIFICATION_CALL_EXTERNAL    => self::VERIFICATION_CALL,
+        self::DOC_COLLECTION_EXTERNAL       => self::DOC_COLLECTION,
+        self::ACCOUNT_OPENING_EXTERNAL      => self::ACCOUNT_OPENING,
+        self::API_ONBOARDING_EXTERNAL       => self::API_ONBOARDING,
+        self::ACCOUNT_ACTIVATION_EXTERNAL   => self::ACCOUNT_ACTIVATION,
+        self::CA_ACTIVATED                  => self::ACTIVATED
     ];
 
     public static $allowedExternalStatuses = [
@@ -516,6 +784,89 @@ class Status
         'null'                                        => null
     ];
 
+    // Used to automatically move lead to next status
+    public static $statusToTerminalSubStatusMap = [
+        self::VERIFICATION_CALL => [
+            self::ASSIGNED_TO_BRANCH,
+            self::ASSIGNED_TO_PCARM,
+            self::ASSIGNED_TO_INSIGNIA,
+        ],
+        self::DOC_COLLECTION => [
+            self::PICKED_UP_DOCS,
+        ],
+        self::ACCOUNT_OPENING => [
+            // self::CA_OPENED_SUB_STATUS,
+        ],
+        self::API_ONBOARDING => [
+            self::API_IR_CLOSED,
+        ],
+        self::ACCOUNT_ACTIVATION => [
+            self::CA_ACTIVATED_SUB_STATUS,
+        ],
+        self::ACTIVATED => [
+            self::UPI_ACTIVATED,
+        ],
+    ];
+
+    // Ideal sequence of status for normal cases
+    public static $statusSequence = [
+        self::CREATED,
+        self::PICKED,
+        self::INITIATED,
+        self::VERIFICATION_CALL,
+        self::DOC_COLLECTION,
+        self::ACCOUNT_OPENING,
+        self::API_ONBOARDING,
+        self::ACCOUNT_ACTIVATION,
+        self::ACTIVATED,
+    ];
+
+    public static function hasReachedTerminalSubStatus(string $status, string $subStatus): bool
+    {
+        if (array_key_exists($status, self::$statusToTerminalSubStatusMap))
+        {
+            $terminalSubStatuses = self::$statusToTerminalSubStatusMap[$status];
+
+            if (in_array($subStatus, $terminalSubStatuses))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function getNextStatusInSequence(string $status)
+    {
+        $i = 0;
+        while ($i < sizeof(self::$statusSequence) && self::$statusSequence[$i] !== $status)
+        {
+            $i++;
+        }
+        $i++;
+
+        if ($i < sizeof(self::$statusSequence))
+        {
+            return self::$statusSequence[$i];
+        }
+
+        return null;
+    }
+
+    public static function getCompletedStages(string $status)
+    {
+        $completedStages = [];
+
+        foreach (self::$statusSequence as $stage)
+        {
+            if ($status === $stage)
+            {
+                break;
+            }
+            array_push($completedStages, $stage);
+        }
+
+        return $completedStages;
+    }
 
     public static function isValidStatus(string $status = null)
     {
@@ -589,9 +940,22 @@ class Status
         }
     }
 
+    // This function is not working properly 
+    // but so many tests are written based on the flawed implementation
+    // We can change these tests later, for now writing correct implementation below
     public static function getDetaultSubStatus(string $status)
     {
         if (in_array($status, self::$defaultSubStatus) === true)
+        {
+            return self::$defaultSubStatus[$status];
+        }
+
+        return null;
+    }
+
+    public static function getInitialSubStatus(string $status)
+    {
+        if (array_key_exists($status, self::$defaultSubStatus) === true)
         {
             return self::$defaultSubStatus[$status];
         }

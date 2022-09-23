@@ -24,6 +24,9 @@ class CreateBankingAccountState extends Migration
             $table->char(Entity::ADMIN_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::USER_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH)
                   ->nullable();
 

@@ -6013,6 +6013,30 @@ ALTER table banking_account_activation_details
 ALTER table banking_account_activation_details
 	ADD COLUMN bank_poc_user_id CHAR(14) DEFAULT NULL;
 
+ALTER table banking_account_activation_details
+   ADD COLUMN rbl_activation_details json DEFAULT NULL,
+   ADD COLUMN customer_appointment_date int DEFAULT NULL,
+   ADD COLUMN branch_code varchar(10) COLLATE utf8_bin DEFAULT NULL,
+   ADD COLUMN rm_employee_code varchar(10) COLLATE utf8_bin DEFAULT NULL,
+   ADD COLUMN rm_assignment_type varchar(64) COLLATE utf8_bin DEFAULT NULL,
+   ADD COLUMN doc_collection_date int DEFAULT NULL,
+   ADD COLUMN account_opening_ir_close_date int DEFAULT NULL,
+   ADD COLUMN account_opening_ftnr tinyint(1) DEFAULT NULL,
+   ADD COLUMN account_opening_ftnr_reasons text COLLATE utf8_bin,
+   ADD COLUMN api_ir_closed_date int DEFAULT NULL,
+   ADD COLUMN ldap_id_mail_date int DEFAULT NULL,
+   ADD COLUMN api_onboarding_ftnr tinyint(1) DEFAULT NULL,
+   ADD COLUMN api_onboarding_ftnr_reasons text COLLATE utf8_bin,
+   ADD COLUMN upi_credential_received_date int DEFAULT NULL,
+   ADD COLUMN rzp_ca_activated_date int DEFAULT NULL,
+   ADD COLUMN drop_off_date int DEFAULT NULL;
+
+ALTER table banking_account_state
+    ADD COLUMN user_id char(14) DEFAULT NULL;
+
+ALTER TABLE banking_account_comments
+    ADD COLUMN user_id char(14) DEFAULT NULL;
+
 ALTER TABLE orders
     MODIFY COLUMN payment_capture TINYINT(1) DEFAULT NULL;
 

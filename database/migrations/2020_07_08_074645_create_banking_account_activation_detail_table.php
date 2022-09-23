@@ -117,6 +117,55 @@ class CreateBankingAccountActivationDetailTable extends Migration
 
             $table->char(Entity::BANK_POC_USER_ID, Entity::ID_LENGTH)
                   ->nullable();
+            
+            $table->json(Entity::RBL_ACTIVATION_DETAILS)
+                  ->nullable()
+                  ->default(null);
+
+            $table->integer(Entity::CUSTOMER_APPOINTMENT_DATE)
+                  ->nullable();
+
+            $table->string(Entity::BRANCH_CODE)
+                  ->nullable();
+
+            $table->string(Entity::RM_EMPLOYEE_CODE)
+                  ->nullable();
+
+            $table->string(Entity::RM_ASSIGNMENT_TYPE)
+                  ->nullable();
+
+            $table->integer(Entity::DOC_COLLECTION_DATE)
+                  ->nullable();
+
+            $table->integer(Entity::ACCOUNT_OPENING_IR_CLOSE_DATE)
+                  ->nullable();
+
+            $table->boolean(Entity::ACCOUNT_OPENING_FTNR)
+                  ->nullable();
+
+            $table->text(Entity::ACCOUNT_OPENING_FTNR_REASONS)
+                  ->nullable();
+
+            $table->integer(Entity::API_IR_CLOSED_DATE)
+                  ->nullable();
+
+            $table->integer(Entity::LDAP_ID_MAIL_DATE)
+                  ->nullable();
+
+            $table->boolean(Entity::API_ONBOARDING_FTNR)
+                  ->nullable();
+
+            $table->text(Entity::API_ONBOARDING_FTNR_REASONS)
+                  ->nullable();
+
+            $table->integer(Entity::RZP_CA_ACTIVATED_DATE)
+                  ->nullable();
+
+            $table->integer(Entity::UPI_CREDENTIAL_RECEIVED_DATE)
+                  ->nullable();
+
+            $table->integer(Entity::DROP_OFF_DATE)
+                  ->nullable();
 
             $table->integer(Entity::ACCOUNT_OPEN_DATE)
                   ->nullable();

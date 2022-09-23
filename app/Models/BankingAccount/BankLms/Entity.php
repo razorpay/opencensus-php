@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount\BankLms;
 
 use RZP\Constants\Table;
 use \RZP\Models\BankingAccount;
+use \RZP\Models\BankingAccount\Status;
 use RZP\Models\Admin\Admin;
 
 /**
@@ -17,6 +18,7 @@ class Entity extends BankingAccount\Entity
     const MERCHANT_NAME = 'merchant_name';
     const SENT_TO_BANK_DATE = 'sent_to_bank_date';
     const BANK_POC_NAME = 'bank_poc_name';
+    const COMPLETED_STAGES = 'completed_stages';
 
     protected $public = [
         self::ID,
@@ -41,6 +43,7 @@ class Entity extends BankingAccount\Entity
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
+        self::COMPLETED_STAGES,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::SPOCS,
@@ -55,6 +58,7 @@ class Entity extends BankingAccount\Entity
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
+        self::COMPLETED_STAGES,
         self::SPOCS,
         self::REVIEWERS,
     ];
@@ -86,6 +90,7 @@ class Entity extends BankingAccount\Entity
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
+        self::COMPLETED_STAGES,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::SPOCS,
@@ -119,6 +124,7 @@ class Entity extends BankingAccount\Entity
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
         self::BANK_POC_NAME,
+        self::COMPLETED_STAGES,
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::SPOCS,
@@ -172,6 +178,16 @@ class Entity extends BankingAccount\Entity
         }
 
         $array[self::BANK_POC_NAME] = $bankPocUser->getName();
+    }
+
+    public function setPublicCompletedStagesAttribute(array & $array)
+    {
+        $bankingAccountStatus = $this->getStatus();
+
+        if(empty($bankingAccountStatus) === false)
+        {
+            $array[self::COMPLETED_STAGES] = Status::getCompletedStages($bankingAccountStatus);
+        }
     }
 
     public function setPublicSpocsAttribute(array & $array)

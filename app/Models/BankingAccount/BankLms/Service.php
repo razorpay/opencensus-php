@@ -7,6 +7,7 @@ use RZP\Models\BankingAccount;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Trace\TraceCode;
 
 class Service extends BankingAccount\Service
 {
@@ -139,8 +140,6 @@ class Service extends BankingAccount\Service
 
         $bankingAccount = $this->repo->banking_account->findByPublicId($input[BankingAccount\Entity::BANKING_ACCOUNT_ID]);
 
-        //Todo: Check if Bank user needs to be removed too.
-
         $this->core->detachCaApplicationMerchantFromBankPartner($this->partnerBankMerchant, $bankingAccount->merchant);
     }
 
@@ -163,6 +162,13 @@ class Service extends BankingAccount\Service
         $bankPocUserId = $input[BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID];
 
         $this->validator->validateUserBelongsToPartnerBankMerchant($bankPocUserId, $this->partnerBankMerchant);
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_ASSIGN_BANK_POC,
+            [
+                'id'      => $bankingAccount->getId(),
+                'input'   => $input,
+            ]);
 
         $bankingAccount = $this->core->assignBankPartnerPocToApplication($bankingAccount, $bankPocUserId);
 
@@ -194,6 +200,38 @@ class Service extends BankingAccount\Service
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
+
+        $entity = $this->core->fetchBankingAccountById($bankingAccountId, $input);
+
+        return $entity->toArrayCaPartnerBankPoc();
+    }
+
+    /**
+     * @param Entity                 $bankingAccount
+     * @param array                  $input
+     * @param Base\PublicEntity|null $entity
+     * @param bool                   $isAutomatedUpdate
+     * @param bool                   $fromDashboard
+     *
+     * @return Entity
+     * @throws BadRequestException
+     * @throws LogicException
+    */
+    public function updateLeadDetails(string $bankingAccountId, array $input)
+    {
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
+
+        $this->validator->validateInput('partner_lms_edit', $input);
+
+        if (array_key_exists('activation_detail', $input)) 
+        {
+            $activationDetail = $input['activation_detail'];
+            $this->validator->validateInput('edit_activation_detail_by_bank', $activationDetail);
+        }
+
+        $this->update($bankingAccountId, $input);
 
         $entity = $this->core->fetchBankingAccountById($bankingAccountId, $input);
 

@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin;
+use RZP\Models\User;
 use RZP\Models\BankingAccount;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -15,6 +16,8 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
 
     const ADMIN_ID = 'admin_id'; // id of admin who added comment
+
+    const USER_ID = 'user_id'; // id of user who added comment - one of RBL merchant users
 
     const BANKING_ACCOUNT_ID = 'banking_account_id';
 
@@ -75,6 +78,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
         self::NOTES,
@@ -87,6 +91,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
         self::NOTES,
@@ -101,6 +106,7 @@ class Entity extends Base\PublicEntity
     public $public = [
         self::ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
         self::NOTES,
@@ -119,6 +125,7 @@ class Entity extends Base\PublicEntity
     protected $bankBranchPoc = [
         self::ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
         self::SOURCE_TEAM_TYPE,
@@ -136,6 +143,7 @@ class Entity extends Base\PublicEntity
     protected $bankBranchManager = [
         self::ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::COMMENT,
         self::SOURCE_TEAM_TYPE,
@@ -164,6 +172,11 @@ class Entity extends Base\PublicEntity
     public function admin()
     {
         return $this->belongsTo(Admin\Entity::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     public function getComment()

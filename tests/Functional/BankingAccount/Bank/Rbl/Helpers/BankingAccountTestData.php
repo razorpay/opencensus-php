@@ -4265,6 +4265,124 @@ return [
         ],
     ],
 
+    'testBankLmsEndToEndPatchLead' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'PATCH',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'status' => 'verification_call',
+                'sub_status' => 'assigned_to_pcarm',
+
+                'activation_detail' => [
+
+                    'account_login_date' => 1658921126,
+                    'account_open_date' => 1661106600,
+
+                    'additional_details' => [
+
+                        'api_onboarded_date' => 1661279400,
+                        'api_onboarding_login_date' => 1660242600
+                    ],
+
+                    'customer_appointment_date' => 1660761000,
+                    'rm_assignment_type' => 'insignia',
+                    'rm_employee_code' => '35155',
+                    'rm_name' => 'Gopal Nachimuthu',
+                    'rm_phone_number' => '9604549972',
+                    'branch_code' => '202',
+
+                    'doc_collection_date' => 1660847400,
+
+                    'account_opening_ir_close_date' => 1661279400,
+                    'account_opening_ftnr' => false,
+                    'account_opening_ftnr_reasons' => 'AO BM/BOM Sign/Stamp/Emp_No/Approval Missing,AO Scanning Issue',
+
+                    'api_ir_closed_date' => 1661365800,
+                    'api_onboarding_ftnr' => false,
+                    'api_onboarding_ftnr_reasons' => 'API BM/BOM Sign/Stamp/Emp_No/Approval Missing,API RRT/Attachment/Details Issue,API Scanning Issue',
+
+                    'rbl_activation_details' => [
+                        'account_opening_ir_number' => '1658921126',
+                        'account_opening_tat_exception' => true,
+                        'account_opening_tat_exception_reason' => 'XYZ',
+                        'api_docs_delay_reason' => 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Labore ea magnam velit harum porro facere ducimus, aliquam sint maxime repellat, beatae unde illum nulla iste quasi consequatur ipsa delectus deserunt. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Amet officia itaque adipisci cum quod ad soluta ducimus natus, repellendus maiores perferendis fuga voluptatum repudiandae expedita, facere eveniet blanditiis cupiditate vel!',
+                        'api_docs_received_with_ca_docs' => true,
+                        'api_ir_number' => 'IR0001926 6582',
+                        'api_onboarding_tat_exception' => true,
+                        'api_onboarding_tat_exception_reason' => 'XYZ',
+                        'case_login_different_locations' => true,
+                        'ip_cheque_value' => 12345,
+                        'ir_number' => 'IR0001926 6579',
+                        'lead_ir_number' => 'IR0001926 6580',
+                        'lead_referred_by_rbl_staff' => true,
+                        'office_different_locations' => false,
+                        'promo_code' => 'RZPAY',
+                        'revised_declaration' => true,
+                        'sr_number' => 'IR0001926 6581',
+                        'upi_credential_not_done_remarks' => 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Labore ea magnam velit harum porro facere ducimus, aliquam sint maxime repellat, beatae unde illum nulla iste quasi consequatur ipsa delectus deserunt. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Amet officia itaque adipisci cum quod ad soluta ducimus natus, repellendus maiores perferendis fuga voluptatum repudiandae expedita, facere eveniet blanditiis cupiditate vel!'
+                    ]
+                ]
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'account_type' => 'current',
+                'status' => 'doc_collection',
+                'sub_status' => 'visit_due',
+                'banking_account_activation_details' => [
+
+                    'account_login_date' => 1658921126,
+                    'account_open_date' => 1661106600,
+            
+                    'customer_appointment_date' => 1660761000,
+                    'rm_assignment_type' => 'insignia',
+                    'rm_employee_code' => '35155',
+                    'rm_name' => 'Gopal Nachimuthu',
+                    'rm_phone_number' => '9604549972',
+                    'branch_code' => '202',
+
+                    'doc_collection_date' => 1660847400,
+                    'doc_collection_tat' => 24,
+            
+                    'account_opening_ir_close_date' => 1661279400,
+                    'account_opening_ftnr' => 0,
+                    'account_opening_ftnr_reasons' => 'AO BM/BOM Sign/Stamp/Emp_No/Approval Missing,AO Scanning Issue',
+                    'account_opening_tat' => 30,
+            
+                    'api_ir_closed_date' => 1661365800,
+                    'api_onboarding_ftnr' => 0,
+                    'api_onboarding_ftnr_reasons' => 'API BM/BOM Sign/Stamp/Emp_No/Approval Missing,API RRT/Attachment/Details Issue,API Scanning Issue',
+
+                    'rbl_activation_details' => [
+                        'account_opening_ir_number' => '1658921126',
+                        'account_opening_tat_exception' => true,
+                        'account_opening_tat_exception_reason' => 'XYZ',
+                        'api_docs_delay_reason' => 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Labore ea magnam velit harum porro facere ducimus, aliquam sint maxime repellat, beatae unde illum nulla iste quasi consequatur ipsa delectus deserunt. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Amet officia itaque adipisci cum quod ad soluta ducimus natus, repellendus maiores perferendis fuga voluptatum repudiandae expedita, facere eveniet blanditiis cupiditate vel!',
+                        'api_docs_received_with_ca_docs' => true,
+                        'api_ir_number' => 'IR0001926 6582',
+                        'api_onboarding_tat_exception' => true,
+                        'api_onboarding_tat_exception_reason' => 'XYZ',
+                        'case_login_different_locations' => true,
+                        'ip_cheque_value' => 12345,
+                        'ir_number' => 'IR0001926 6579',
+                        'lead_ir_number' => 'IR0001926 6580',
+                        'lead_referred_by_rbl_staff' => true,
+                        'office_different_locations' => false,
+                        'promo_code' => 'RZPAY',
+                        'revised_declaration' => true,
+                        'sr_number' => 'IR0001926 6581',
+                        'upi_credential_not_done_remarks' => 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Labore ea magnam velit harum porro facere ducimus, aliquam sint maxime repellat, beatae unde illum nulla iste quasi consequatur ipsa delectus deserunt. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Amet officia itaque adipisci cum quod ad soluta ducimus natus, repellendus maiores perferendis fuga voluptatum repudiandae expedita, facere eveniet blanditiis cupiditate vel!'
+                    ]
+
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBankLmsEndToEndForFetchById' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/banking_account',

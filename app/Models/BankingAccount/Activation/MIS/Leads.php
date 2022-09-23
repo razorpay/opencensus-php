@@ -128,6 +128,11 @@ class Leads extends Base
             return $value;
         }
 
+        if (empty($value))
+        {
+            return null;
+        }
+
         return self::$toPublicMap[$header][$value];
     }
 

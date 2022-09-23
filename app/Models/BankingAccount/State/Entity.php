@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount\State;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\User;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankingAccount;
 
@@ -21,6 +22,8 @@ class Entity extends Base\PublicEntity
 
     const ADMIN_ID = 'admin_id';
 
+    const USER_ID = 'user_id';
+
     const BANKING_ACCOUNT_ID = 'banking_account_id';
 
     protected $entity = 'banking_account_state';
@@ -35,6 +38,7 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::MERCHANT_ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
     ];
 
@@ -46,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::MERCHANT_ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::CREATED_AT,
     ];
@@ -58,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::ASSIGNEE_TEAM,
         self::MERCHANT_ID,
         self::ADMIN_ID,
+        self::USER_ID,
         self::BANKING_ACCOUNT_ID,
         self::CREATED_AT,
     ];
@@ -70,6 +76,14 @@ class Entity extends Base\PublicEntity
     public function admin()
     {
         return $this->belongsTo(Admin\Entity::class);
+    }
+
+    // TODO: 
+    // Request coming from RBL Partner LMS
+    // Discuss how to implement this
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     public function merchant()

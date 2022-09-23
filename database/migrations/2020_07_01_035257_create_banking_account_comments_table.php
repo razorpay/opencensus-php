@@ -23,6 +23,9 @@ class CreateBankingAccountCommentsTable extends Migration
 
             $table->char(Entity::ADMIN_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::USER_ID, Entity::ID_LENGTH)
+                ->nullable();
+
             $table->char(Entity::BANKING_ACCOUNT_ID, Entity::ID_LENGTH);
 
             $table->text(Entity::COMMENT);

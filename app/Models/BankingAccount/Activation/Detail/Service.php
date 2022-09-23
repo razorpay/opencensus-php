@@ -58,7 +58,7 @@ class Service extends Base\Service
 
             if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
             {
-                $input[Entity::ADDITIONAL_DETAILS] = json_encode($input['additional_details']);
+                $input[Entity::ADDITIONAL_DETAILS] = json_encode($input[Entity::ADDITIONAL_DETAILS]);
             }
 
             $activationDetail = $this->core->create($input, $validatorOP);
@@ -235,6 +235,14 @@ class Service extends Base\Service
             // not necessarily the entire json value. It will also ensure that previous data is not lost.
 
             $input = $this->updateAdditionalDetailsPayload($activationDetail, $input);
+        }
+
+        if (array_key_exists(Entity::RBL_ACTIVATION_DETAILS, $input) === true)
+        {
+            // This is to ensure that update request comes with only those keys which has to be updated and
+            // not necessarily the entire json value. It will also ensure that previous data is not lost.
+
+            $input = $this->updateRblActivationDetailsPayload($activationDetail, $input);
         }
 
         $updatedActivationDetail = $this->repo->transaction(function() use ($bankingAccount,
@@ -541,6 +549,7 @@ class Service extends Base\Service
         $dateFields = [
             Entity::API_ONBOARDED_DATE,
             Entity::API_ONBOARDING_LOGIN_DATE,
+            Entity::BANK_POC_ASSIGNED_DATE,
         ];
 
         // Convert date strings to epoch
@@ -568,6 +577,36 @@ class Service extends Base\Service
         else
         {
             $input[Entity::ADDITIONAL_DETAILS] = json_encode($currentAdditionalDetails);
+        }
+
+        return $input;
+    }
+
+    /**
+     * @param Entity $activationDetail
+     * @param array  $input
+     *
+     * @return array
+     * @throws BadRequestException
+     */
+    public function updateRblActivationDetailsPayload(Entity $activationDetails, array $input): array
+    {
+        $previousRblActivationDetails = json_decode($activationDetails->getRblActivationDetails(), true);
+
+        $currentRblActivationDetails = $input[Entity::RBL_ACTIVATION_DETAILS];
+
+        if ($previousRblActivationDetails)
+        {
+            if (!is_array($previousRblActivationDetails))
+            {
+                $previousRblActivationDetails = json_decode($previousRblActivationDetails, true);
+            }
+
+            $input[Entity::RBL_ACTIVATION_DETAILS] = json_encode(array_merge($previousRblActivationDetails, $currentRblActivationDetails), true);
+        }
+        else
+        {
+            $input[Entity::RBL_ACTIVATION_DETAILS] = json_encode($currentRblActivationDetails);
         }
 
         return $input;

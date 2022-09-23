@@ -762,7 +762,8 @@ class Core extends Base\Core
                 $bankingAccountStatusChanged,
                 $bankInternalStatusChanged,
                 $bankingAccountSubStatusChanged,
-                $isAutomatedUpdate)
+                $isAutomatedUpdate,
+                $fromDashboard)
         {
             // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
@@ -796,6 +797,43 @@ class Core extends Base\Core
                 $stateCore = new State\Core;
 
                 $stateCore->captureNewBankingAccountState($bankingAccount, $entity);
+
+                // This block of code changes status and substatus to
+                // to next status and default sub-status in normal sequence
+                // if we are changing sub-status to a terminal sub-status
+                if (
+                    array_key_exists(Entity::SUB_STATUS, $input) === true &&
+                    empty($input[Entity::SUB_STATUS]) === false
+                )
+                {
+
+                    $subStatus = $input[Entity::SUB_STATUS];
+                    $status = $bankingAccount->getStatus();
+
+                    if (empty($input[Entity::STATUS]) === false)
+                    {
+                        $status = $input[Entity::STATUS];
+                    }
+
+                    if (
+                        Status::hasReachedTerminalSubStatus($status, $subStatus) === true &&
+                        empty(Status::getNextStatusInSequence($status)) === false
+                    )
+                    {
+                        $status = Status::getNextStatusInSequence(($status));
+                        $subStatus = Status::getInitialSubStatus($status);
+
+                        if (empty($status) === false && empty($subStatus) === false)
+                        {
+                            $nextInput = [
+                                Entity::STATUS => $status,
+                                Entity::SUB_STATUS => $subStatus,
+                            ];
+
+                            $bankingAccount = $this->updateBankingAccount($bankingAccount, $nextInput, $entity, $isAutomatedUpdate, $fromDashboard);
+                        }
+                    }
+                }
             }
 
             $this->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);

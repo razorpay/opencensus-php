@@ -134,9 +134,21 @@ class Core extends BankingAccount\Core
         return $misProcessor->generate();
     }
 
-    public function assignBankPartnerPocToApplication($bankingAccount, $bankPocUserId)
+    public function assignBankPartnerPocToApplication(BankingAccount\Entity $bankingAccount, $bankPocUserId)
     {
         (new BankingAccount\Activation\Detail\Core())->assignBankPartnerPocToApplication($bankingAccount->bankingAccountActivationDetails, $bankPocUserId);
+
+        if ($bankingAccount->getStatus() === BankingAccount\Status::INITIATED)
+        {
+            $input = [
+                BankingAccount\Entity::STATUS => BankingAccount\Status::VERIFICATION_CALL,
+                BankingAccount\Entity::SUB_STATUS => BankingAccount\Status::IN_PROCESSING,
+            ];
+
+            $user = $this->app['basicauth']->getUser();
+
+            // (new BankingAccount\Core())->updateBankingAccount($bankingAccount, $input, $user, false, false);
+        }
 
         $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_POC_ASSIGNED);
 

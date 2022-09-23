@@ -92,6 +92,15 @@ class BankingAccountController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function udpateBankingAccountLeadByBank(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->updateLeadDetails($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function assignBankPocUserToApplication(string $id)
     {
         $input = Request::all();

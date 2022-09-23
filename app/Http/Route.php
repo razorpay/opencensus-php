@@ -3084,6 +3084,7 @@ class Route
         // Bank LMS Routes
         'banking_account_bank_lms_fetch_multiple'         => ['get', 'banking_accounts/rbl/lms/banking_account', 'BankingAccountController@fetchMultipleBankingAccountEntity'],
         'banking_account_bank_lms_fetch_by_id'            => ['get', 'banking_accounts/rbl/lms/banking_account/{id}', 'BankingAccountController@fetchBankingAccountEntityById'],
+        'banking_account_bank_lms_patch_lead'             => ['patch', 'banking_accounts/rbl/lms/banking_account/{id}', 'BankingAccountController@udpateBankingAccountLeadByBank'],
         'banking_account_bank_lms_comments_list'          => ['get', 'banking_accounts/rbl/lms/activation/{id}/comments', 'BankingAccountController@fetchBankingAccountActivationCommentsById'],
         'banking_account_bank_lms_download_mis'           => ['get', 'banking_accounts/rbl/lms/activation/mis/download', 'BankingAccountController@downloadActivationMisForBank'],
         'banking_account_bank_lms_assign_bank_poc'        => ['patch', 'banking_accounts/rbl/lms/activation/{id}/bank_poc', 'BankingAccountController@assignBankPocUserToApplication'],
@@ -5821,6 +5822,7 @@ class Route
         'banking_account_create',
         'banking_account_bank_lms_fetch_multiple',
         'banking_account_bank_lms_fetch_by_id',
+        'banking_account_bank_lms_patch_lead',
         'banking_account_bank_lms_comments_list',
         'fetch_branch_list',
         'fetch_rm_list',
@@ -8713,6 +8715,7 @@ class Route
     public static $bankLmsRoutePermissions = [
         'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
         'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
+        'banking_account_bank_lms_patch_lead'          => Permission::RBL_BANK_MID_OFFICE_EDIT_LEAD,
         'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
         'banking_account_bank_lms_assign_bank_poc'     => Permission::RBL_BANK_MID_OFFICE_MANAGE_LEAD,
         'banking_account_bank_lms_download_mis'        => Permission::RBL_BANK_MID_OFFICE_VIEW_LEAD,
@@ -9651,6 +9654,7 @@ class Route
             'banking_account_create_dashboard',
             'banking_account_bank_lms_fetch_multiple',
             'banking_account_bank_lms_fetch_by_id',
+            'banking_account_bank_lms_patch_lead',
             'banking_account_bank_lms_comments_list',
             'fetch_branch_list',
             'fetch_rm_list',
@@ -14070,6 +14074,7 @@ class Route
         // Bank LMS APIs
         'banking_account_bank_lms_fetch_multiple'       => [Feature::RBL_BANK_LMS_DASHBOARD],
         'banking_account_bank_lms_fetch_by_id'          => [Feature::RBL_BANK_LMS_DASHBOARD],
+        'banking_account_bank_lms_patch_lead'           => [Feature::RBL_BANK_LMS_DASHBOARD],
         'banking_account_bank_lms_comments_list'        => [Feature::RBL_BANK_LMS_DASHBOARD],
         'banking_account_bank_lms_download_mis'         => [Feature::RBL_BANK_LMS_DASHBOARD],
         'banking_account_bank_lms_assign_bank_poc'      => [Feature::RBL_BANK_LMS_DASHBOARD],
@@ -14789,6 +14794,7 @@ class Route
         'banking_account_create_dashboard',
         'banking_account_bank_lms_fetch_multiple',
         'banking_account_bank_lms_fetch_by_id',
+        'banking_account_bank_lms_patch_lead',
         'banking_account_bank_lms_comments_list',
         'fetch_branch_list',
         'fetch_rm_list',

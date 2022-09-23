@@ -8,6 +8,7 @@ use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use \RZP\Models\Merchant;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\Activation\Detail\Entity as ActivationDetail;
 use RZP\Models\Base\PublicEntity;
 
 /**
@@ -17,7 +18,7 @@ use RZP\Models\Base\PublicEntity;
  *
  * @property BankingAccount\Entity $entity
  */
-class Validator extends Base\Validator
+class Validator extends BankingAccount\Validator
 {
     const CREATE_BANK_CA_ONBOARDING_PARTNER_TYPE = 'create_bank_ca_onboarding_partner_type';
 
@@ -56,6 +57,39 @@ class Validator extends Base\Validator
         Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
         Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
         Constants::IS_GREEN_CHANNEL              => 'sometimes|in:yes,no',
+    ];
+
+    protected static $partnerLmsEditRules = [
+        Entity::STATUS                          => 'filled|string',
+        Entity::SUB_STATUS                      => 'string|nullable|custom',
+        Entity::ACTIVATION_DETAIL               => 'sometimes|array',
+    ];
+
+    protected static $editActivationDetailByBankRules = [
+        
+        ActivationDetail::RBL_ACTIVATION_DETAILS                  => 'sometimes',
+        ActivationDetail::CUSTOMER_APPOINTMENT_DATE               => 'sometimes|epoch|nullable',
+        ActivationDetail::BRANCH_CODE                             => 'sometimes|string|max:6',
+        ActivationDetail::RM_ASSIGNMENT_TYPE                      => 'sometimes|string|in:branch,pcarm,insignia',
+        ActivationDetail::RM_EMPLOYEE_CODE                        => 'sometimes|string|max:6',
+        ActivationDetail::DOC_COLLECTION_DATE                     => 'sometimes|epoch|nullable',
+        ActivationDetail::ACCOUNT_OPENING_IR_CLOSE_DATE           => 'sometimes|epoch|nullable',
+        ActivationDetail::ACCOUNT_OPENING_FTNR                    => 'sometimes|boolean',
+        ActivationDetail::ACCOUNT_OPENING_FTNR_REASONS            => 'sometimes|string',
+        ActivationDetail::API_IR_CLOSED_DATE                      => 'sometimes|epoch|nullable',
+        ActivationDetail::API_ONBOARDING_FTNR                     => 'sometimes|boolean',
+        ActivationDetail::API_ONBOARDING_FTNR_REASONS             => 'sometimes|string',
+        
+        ActivationDetail::ADDITIONAL_DETAILS                      => 'sometimes',
+        ActivationDetail::ACCOUNT_OPEN_DATE                       => 'sometimes|epoch|nullable',
+        ActivationDetail::ACCOUNT_LOGIN_DATE                      => 'sometimes|epoch|nullable',
+        ActivationDetail::MERCHANT_CITY                           => 'sometimes|string|max:255',
+        ActivationDetail::ASSIGNEE_TEAM                           => 'sometimes|string|nullable|in:ops,bank,sales',
+        ActivationDetail::RM_NAME                                 => 'sometimes|string|max:255',
+        ActivationDetail::RM_PHONE_NUMBER                         => 'sometimes|string|max:255',
+        ActivationDetail::ACCOUNT_OPEN_DATE                       => 'sometimes|epoch|nullable',
+        ActivationDetail::ACCOUNT_LOGIN_DATE                      => 'sometimes|epoch|nullable',
+        ActivationDetail::MERCHANT_CITY                           => 'sometimes|string|max:255',
     ];
 
     /**

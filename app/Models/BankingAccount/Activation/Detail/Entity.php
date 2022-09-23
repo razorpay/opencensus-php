@@ -3,6 +3,8 @@
 
 namespace RZP\Models\BankingAccount\Activation\Detail;
 
+use Carbon\Carbon;
+
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -12,6 +14,8 @@ use RZP\Models\BankingAccount;
 /**
  * This captures the details that Sales POCs enter into the admin dashboard
  * which need to be exported and sent to RBl.
+ * Furthermore, with introduction of Partner LMS for bank,
+ * It also stores data that Bank shares with RZP through Reverse MIS.
  * This  data contains both lead-related and ops-related data.
  * For example, the GMV, Insignia, etc are lead-related,
  * and the Merchant POC details are OPs related (for documentation purposes)
@@ -119,8 +123,68 @@ class Entity extends Base\PublicEntity
     const API_ONBOARDED_DATE        = 'api_onboarded_date';
     const API_ONBOARDING_LOGIN_DATE = 'api_onboarding_login_date';
 
+    // RBL - Bank LMS activation related field
+
     // For Assigning Leads to Bank POC
     const BANK_POC_USER_ID = 'bank_poc_user_id';
+    const BANK_POC_ASSIGNED_DATE = 'bank_poc_assigned_date';
+
+    const COMPLETED_STAGES = 'completed_stages';
+
+    const RBL_ACTIVATION_DETAILS = 'rbl_activation_details';
+    // Following fields will be part of rbl_activation_details
+    const IR_NUMBER             = 'ir_number';
+    const LEAD_IR_NUMBER = 'lead_ir_number';
+    const IP_CHEQUE_VALUE = 'ip_cheque_value';
+    const OFFICE_DIFFERENT_LOCATIONS = 'office_different_locations';
+    const API_DOCS_RECEIVED_WITH_CA_DOCS = 'api_docs_received_with_ca_docs';
+    const ACCOUNT_OPENING_IR_NUMBER = 'account_opening_ir_number';
+    const CASE_LOGIN_DIFFERENT_LOCATIONS = 'case_login_different_locations';
+    const SR_NUMBER = 'sr_number';
+    const REVISED_DECLARATION = 'revised_declaration';
+    const API_IR_NUMBER = 'api_ir_number';
+    const UPI_CREDENTIAL_NOT_DONE_REMARKS = 'upi_credential_not_done_remarks';
+    const PROMO_CODE = 'promo_code';
+    const LEAD_REFERRED_BY_RBL_STAFF = 'lead_referred_by_rbl_staff';
+    const ACCOUNT_OPENING_TAT_EXCEPTION = 'account_opening_tat_exception';
+    const ACCOUNT_OPENING_TAT_EXCEPTION_REASON = 'account_opening_tat_exception_reason';
+    const API_ONBOARDING_TAT_EXCEPTION = 'api_onboarding_tat_exception';
+    const API_ONBOARDING_TAT_EXCEPTION_REASON = 'api_onboarding_tat_exception_reason';
+
+
+    const CUSTOMER_APPOINTMENT_DATE = 'customer_appointment_date';
+    const BRANCH_CODE = 'branch_code';
+    const RM_EMPLOYEE_CODE = 'rm_employee_code';
+    const RM_ASSIGNMENT_TYPE = 'rm_assignment_type';
+    const VERIFICATION_COMPLETION_DATE = 'verification_completion_date';
+    const VERIFICATION_TAT = 'verification_tat';
+
+    const DOC_COLLECTION_DATE = 'doc_collection_date';
+    const API_DOCS_DELAY_REASON = 'api_docs_delay_reason';
+    const DOC_COLLECTION_COMPLETION_DATE = 'doc_collection_completion_date';
+    const DOC_COLLECTION_TAT = 'doc_collection_tat';
+
+    const ACCOUNT_OPENING_IR_CLOSE_DATE = 'account_opening_ir_close_date';
+    const ACCOUNT_OPENING_FTNR = 'account_opening_ftnr';
+    const ACCOUNT_OPENING_FTNR_REASONS = 'account_opening_ftnr_reasons';
+    const ACCOUNT_OPENING_COMPLETION_DATE = 'account_opening_completion_date';
+    const ACCOUNT_OPENING_TAT = 'account_opening_tat';
+
+    const API_IR_CLOSED_DATE = 'api_ir_closed_date';
+    const LDAP_ID_MAIL_DATE = 'ldap_id_mail_date';
+    const API_ONBOARDING_FTNR = 'api_onboarding_ftnr';
+    const API_ONBOARDING_FTNR_REASONS = 'api_onboarding_ftnr_reasons';
+    const API_ONBOARDING_COMPLETION_DATE = 'api_onboarding_completion_date';
+    const API_ONBOARDING_TAT = 'api_onboarding_tat';
+
+    const RZP_CA_ACTIVATED_DATE = 'rzp_ca_activated_date';
+    const DROP_OFF_DATE = 'drop_off_date';
+    const ACCOUNT_ACTIVATION_COMPLETION_DATE = 'account_activation_completion_date';
+    const ACCOUNT_ACTIVATION_TAT = 'account_activation_tat';
+
+    const UPI_CREDENTIAL_RECEIVED_DATE = 'upi_credential_received_date';
+    const UPI_ACTIVATION_COMPLETION_DATE = 'upi_activation_completion_date';
+    const UPI_ACTIVATION_TAT = 'upi_activation_tat';
 
     // relations
     // admin_audit_map is used here
@@ -175,6 +239,21 @@ class Entity extends Base\PublicEntity
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
+        self::RBL_ACTIVATION_DETAILS,
+        self::CUSTOMER_APPOINTMENT_DATE,
+        self::BRANCH_CODE,
+        self::RM_EMPLOYEE_CODE,
+        self::RM_ASSIGNMENT_TYPE,
+        self::DOC_COLLECTION_DATE,
+        self::ACCOUNT_OPENING_IR_CLOSE_DATE,
+        self::ACCOUNT_OPENING_FTNR,
+        self::ACCOUNT_OPENING_FTNR_REASONS,
+        self::API_IR_CLOSED_DATE,
+        self::LDAP_ID_MAIL_DATE,
+        self::API_ONBOARDING_FTNR,
+        self::API_ONBOARDING_FTNR_REASONS,
+        self::UPI_CREDENTIAL_RECEIVED_DATE,
+        self::RZP_CA_ACTIVATED_DATE,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::BUSINESS_NAME,
@@ -214,11 +293,39 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::COMMENTS,
         self::RM_NAME,
+        self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
         self::DECLARATION_STEP,
         self::APPLICATION_TYPE,
         self::BUSINESS_PAN_VALIDATION,
-        self::RM_PHONE_NUMBER,
+        self::BANK_POC_USER_ID,
+        self::COMPLETED_STAGES,
+        self::RBL_ACTIVATION_DETAILS,
+        self::CUSTOMER_APPOINTMENT_DATE,
+        self::BRANCH_CODE,
+        self::RM_EMPLOYEE_CODE,
+        self::RM_ASSIGNMENT_TYPE,
+        self::VERIFICATION_COMPLETION_DATE,
+        self::VERIFICATION_TAT,
+        self::DOC_COLLECTION_DATE,
+        self::DOC_COLLECTION_COMPLETION_DATE,
+        self::DOC_COLLECTION_TAT,
+        self::ACCOUNT_OPENING_IR_CLOSE_DATE,
+        self::ACCOUNT_OPENING_FTNR,
+        self::ACCOUNT_OPENING_FTNR_REASONS,
+        self::ACCOUNT_OPENING_COMPLETION_DATE,
+        self::ACCOUNT_OPENING_TAT,
+        self::API_IR_CLOSED_DATE,
+        self::LDAP_ID_MAIL_DATE,
+        self::API_ONBOARDING_FTNR,
+        self::API_ONBOARDING_FTNR_REASONS,
+        self::API_ONBOARDING_COMPLETION_DATE,
+        self::API_ONBOARDING_TAT,
+        self::UPI_CREDENTIAL_RECEIVED_DATE,
+        self::RZP_CA_ACTIVATED_DATE,
+        self::DROP_OFF_DATE,
+        self::ACCOUNT_ACTIVATION_COMPLETION_DATE,
+        self::ACCOUNT_ACTIVATION_TAT,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
@@ -259,6 +366,33 @@ class Entity extends Base\PublicEntity
         self::RM_NAME,
         self::RM_PHONE_NUMBER,
         self::BANK_POC_USER_ID,
+        self::COMPLETED_STAGES,
+        self::RBL_ACTIVATION_DETAILS,
+        self::CUSTOMER_APPOINTMENT_DATE,
+        self::BRANCH_CODE,
+        self::RM_EMPLOYEE_CODE,
+        self::RM_ASSIGNMENT_TYPE,
+        self::VERIFICATION_COMPLETION_DATE,
+        self::VERIFICATION_TAT,
+        self::DOC_COLLECTION_DATE,
+        self::DOC_COLLECTION_COMPLETION_DATE,
+        self::DOC_COLLECTION_TAT,
+        self::ACCOUNT_OPENING_IR_CLOSE_DATE,
+        self::ACCOUNT_OPENING_FTNR,
+        self::ACCOUNT_OPENING_FTNR_REASONS,
+        self::ACCOUNT_OPENING_COMPLETION_DATE,
+        self::ACCOUNT_OPENING_TAT,
+        self::API_IR_CLOSED_DATE,
+        self::LDAP_ID_MAIL_DATE,
+        self::API_ONBOARDING_FTNR,
+        self::API_ONBOARDING_FTNR_REASONS,
+        self::API_ONBOARDING_COMPLETION_DATE,
+        self::API_ONBOARDING_TAT,
+        self::UPI_CREDENTIAL_RECEIVED_DATE,
+        self::RZP_CA_ACTIVATED_DATE,
+        self::DROP_OFF_DATE,
+        self::ACCOUNT_ACTIVATION_COMPLETION_DATE,
+        self::ACCOUNT_ACTIVATION_TAT,
         self::ACCOUNT_OPEN_DATE,
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
@@ -267,6 +401,19 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ADDITIONAL_DETAILS,
+        self::RBL_ACTIVATION_DETAILS,
+        self::VERIFICATION_COMPLETION_DATE,
+        self::VERIFICATION_TAT,
+        self::DOC_COLLECTION_COMPLETION_DATE,
+        self::DOC_COLLECTION_TAT,
+        self::ACCOUNT_OPENING_COMPLETION_DATE,
+        self::ACCOUNT_OPENING_TAT,
+        self::API_ONBOARDING_COMPLETION_DATE,
+        self::API_ONBOARDING_TAT,
+        self::ACCOUNT_ACTIVATION_COMPLETION_DATE,
+        self::ACCOUNT_ACTIVATION_TAT,
+        self::UPI_ACTIVATION_COMPLETION_DATE,
+        self::UPI_ACTIVATION_TAT,
         self::COMMENTS,
     ];
 
@@ -353,6 +500,21 @@ class Entity extends Base\PublicEntity
     public function setBankPOCUserId(string $userId)
     {
         $this->setAttribute(self::BANK_POC_USER_ID, $userId);
+
+        $rblActivationDetails = $this->getRblActivationDetails();
+
+        if (isset($rblActivationDetails) === true)
+        {
+            $rblActivationDetails = json_decode($rblActivationDetails, true);
+            $rblActivationDetails[self::BANK_POC_ASSIGNED_DATE] = Carbon::now()->timestamp;
+        }
+        else
+        {
+            $rblActivationDetails = [
+                self::BANK_POC_ASSIGNED_DATE => Carbon::now()->timestamp
+            ];
+        }
+        $this->setAttribute(self::RBL_ACTIVATION_DETAILS, $rblActivationDetails);
     }
 
     public function setSalesTeam(string $salesTeam)
@@ -425,6 +587,22 @@ class Entity extends Base\PublicEntity
         return array_key_exists(self::ASSIGNEE_TEAM, $this->getChanges());
     }
 
+    public function setPublicRblActivationDetailsAttribute(array &$array)
+    {
+        if (isset($array[self::RBL_ACTIVATION_DETAILS]) === true) 
+        {
+            if (is_string($array[self::RBL_ACTIVATION_DETAILS]) === true)
+            {
+                $array[self::RBL_ACTIVATION_DETAILS] = json_decode($array[self::RBL_ACTIVATION_DETAILS], true);
+            }
+        }
+    }
+
+    public function getRblActivationDetails()
+    {
+        return $this->getAttributeValue(self::RBL_ACTIVATION_DETAILS);
+    }
+
     public function setPublicAdditionalDetailsAttribute(array &$array)
     {
         if (app('basicauth')->isAdminAuth() === true and
@@ -438,5 +616,147 @@ class Entity extends Base\PublicEntity
     public function getAdditionalDetails()
     {
         return $this->getAttributeValue(self::ADDITIONAL_DETAILS);
+    }
+
+    public function extractFieldFromJSONField($json, $field)
+    {
+        if (isset($json) === true)
+        {
+            if (is_string($json) === true)
+            {
+                $json = json_decode($json, true);
+            }
+
+            if (is_array($json) && array_key_exists($field, $json))
+            {
+                return $json[$field];
+            }
+        }
+
+        return null;
+    }
+
+    public function hourDifferenceBetweenTimestamps($t1, $t2, $skipWeekend = true)
+    {
+        if (empty($t1) === true || empty($t2) === true)
+        {
+            return null;
+        }
+
+        $t1 = (int)$t1;
+        $t2 = (int)$t2;
+
+        // t1 <= t2, since these dates refer to a process that must happen sequentially
+        if ($t1 > $t2)
+        {
+            // Not throwing any error
+            return null;
+        }
+
+        $time1 = new \Carbon\CarbonImmutable($t1);
+        $time2 = new \Carbon\CarbonImmutable($t2);
+
+        $diffInMinutes = 0;
+        $step = $time1;
+
+        while ($step < $time2) {
+            if ($skipWeekend === true && $step->isWeekend()) {
+                $step = $step->next('Monday');
+
+                continue;
+            }
+
+            $nextStep = min($time2, $step->addDay()->startOfDay());
+
+            $diffInMinutes += $step->diffInMinutes($nextStep);
+            $step = $nextStep;
+        }
+
+        return round($diffInMinutes / 60);
+    }
+
+    public function setPublicVerificationCompletionDateAttribute(array &$array)
+    {
+        $array[self::VERIFICATION_COMPLETION_DATE] = $this->getAttribute(self::CUSTOMER_APPOINTMENT_DATE);
+    }
+
+    public function setPublicVerificationTatAttribute(array &$array)
+    {
+        $verificationDate = $array[self::VERIFICATION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
+        $rblActivationDetails = $array[self::RBL_ACTIVATION_DETAILS] ?? $this->getRblActivationDetails();
+        $assignedDate = $this->extractFieldFromJSONField($rblActivationDetails, self::BANK_POC_ASSIGNED_DATE);
+
+        $array[self::VERIFICATION_TAT] =
+            $this->hourDifferenceBetweenTimestamps($assignedDate, $verificationDate);
+    }
+
+    public function setPublicDocCollectionCompletionDateAttribute(array &$array)
+    {
+        $array[self::DOC_COLLECTION_COMPLETION_DATE] = $this->getAttribute(self::DOC_COLLECTION_DATE);
+    }
+
+    public function setPublicDocCollectionTatAttribute(array &$array)
+    {
+        $verificationDate = $array[self::VERIFICATION_COMPLETION_DATE];
+        $docCollectionDate = $array[self::DOC_COLLECTION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
+
+        $array[self::DOC_COLLECTION_TAT] =
+                $this->hourDifferenceBetweenTimestamps($verificationDate, $docCollectionDate);
+    }
+
+    public function setPublicAccountOpeningCompletionDateAttribute(array &$array)
+    {
+        $array[self::ACCOUNT_OPENING_COMPLETION_DATE] = $this->getAttribute(self::ACCOUNT_OPEN_DATE);
+    }
+
+    public function setPublicAccountOpeningTatAttribute(array &$array)
+    {
+        $docCollectionDate = $array[self::DOC_COLLECTION_COMPLETION_DATE];
+        $accountOpeningDate = $array[self::ACCOUNT_OPENING_COMPLETION_DATE] ?? Carbon::now()->timestamp;
+
+        $array[self::ACCOUNT_OPENING_TAT] =
+            $this->hourDifferenceBetweenTimestamps($docCollectionDate, $accountOpeningDate);
+    }
+
+    public function setPublicApiOnboardingCompletionDateAttribute(array &$array)
+    {
+        $array[self::API_ONBOARDING_COMPLETION_DATE] = $this->getAttribute(self::API_IR_CLOSED_DATE);
+    }
+
+    public function setPublicApiOnboardingTatAttribute(array &$array)
+    {
+        $accountOpeningDate = $array[self::ACCOUNT_OPENING_COMPLETION_DATE];
+        $apiOnboardingDate = $array[self::API_ONBOARDING_COMPLETION_DATE] ?? Carbon::now()->timestamp;
+
+        $array[self::API_ONBOARDING_TAT] =
+            $this->hourDifferenceBetweenTimestamps($accountOpeningDate, $apiOnboardingDate);
+    }
+
+    public function setPublicAccountActivationCompletionDateAttribute(array &$array)
+    {
+        $array[self::ACCOUNT_ACTIVATION_COMPLETION_DATE] = $this->getAttribute(self::RZP_CA_ACTIVATED_DATE);
+    }
+
+    public function setPublicAccountActivationTatAttribute(array &$array)
+    {
+        $apiOnboardingDate = $array[self::API_ONBOARDING_COMPLETION_DATE];
+        $accountActivationDate = $array[self::ACCOUNT_ACTIVATION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
+
+        $array[self::ACCOUNT_ACTIVATION_TAT] =
+            $this->hourDifferenceBetweenTimestamps($apiOnboardingDate, $accountActivationDate);
+    }
+
+    public function setPublicUpiActivationCompletionDateAttribute(array &$array)
+    {
+        $array[self::UPI_ACTIVATION_COMPLETION_DATE] = $this->getAttribute(self::UPI_CREDENTIAL_RECEIVED_DATE);
+    }
+
+    public function setPublicUpiActivationTatAttribute(array &$array)
+    {
+        $apiOnboardingDate = $array[self::API_ONBOARDING_COMPLETION_DATE];
+        $upiActivationDate = $array[self::UPI_ACTIVATION_COMPLETION_DATE] ?? Carbon::now()->timestamp;
+
+        $array[self::UPI_ACTIVATION_TAT] =
+            $this->hourDifferenceBetweenTimestamps($apiOnboardingDate, $upiActivationDate);
     }
 }
