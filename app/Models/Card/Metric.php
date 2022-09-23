@@ -13,13 +13,16 @@ use RZP\Models\Card\Entity;
 class Metric extends Base\Core
 {
     // Labels for Card vault Metrics
-    const CARD_VAULT_METRICS                    = 'card_vault_metrics';
-    const LABEL_STATUS                          = 'status';
-    const LABEL_ACTION                          = 'action';
-    const LABEL_STATUS_CODE                     = 'status_code';
-    const LABEL_BU_NAMESPACE                    = 'bu_namespace';
-    const LABEL_NAMESPACE                       = 'namespace';
-
+    const CARD_VAULT_METRICS                       = 'card_vault_metrics';
+    const CARD_METADATA_FETCH                      = 'card_metadata_fetch';
+    const CARD_METADATA_SAVE                       = 'card_metadata_save';
+    const CARD_METADATA_FETCH_AFTER_5_DAYS         = 'card_metadata_fetch_after_5_days';
+    const CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY = 'card_metadata_fetch_before_or_on_5th_day';
+    const LABEL_STATUS                             = 'status';
+    const LABEL_ACTION                             = 'action';
+    const LABEL_STATUS_CODE                        = 'status_code';
+    const LABEL_BU_NAMESPACE                       = 'bu_namespace';
+    const LABEL_NAMESPACE                          = 'namespace';
 
     public function pushCardVaultDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
     {
@@ -56,7 +59,6 @@ class Metric extends Base\Core
                 ]);
         }
     }
-
 
     protected function getDefaultDimensions($input)
     {

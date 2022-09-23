@@ -221,6 +221,22 @@ class CardVault extends BaseCardVault
         return $response;
     }
 
+    public function saveCardMetaData($input)
+    {
+        return [];
+    }
+
+    public function getCardMetaData($input)
+    {
+        $response['token']        = $input['token'];
+        $response['iin']          = '411111';
+        $response['expiry_month'] = '02';
+        $response['expiry_year']  = '2028';
+        $response['name']         = 'cards';
+
+        return $response;
+    }
+
     public function encrypt($input)
     {
         $token = base64_encode($input['card']);

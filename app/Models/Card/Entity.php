@@ -4,6 +4,7 @@ namespace RZP\Models\Card;
 
 use App;
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Card;
@@ -58,6 +59,7 @@ class Entity extends Base\PublicEntity
     const TOKEN_LAST_4                          = 'token_last4';
     const PROVIDER_REFERENCE_ID                 = 'provider_reference_id';
 
+
     /**
      * Number and cvv are never saved in the database
      * but are referenced at various points
@@ -95,6 +97,8 @@ class Entity extends Base\PublicEntity
     protected static $sign = 'card';
 
     protected $entity = 'card';
+
+    protected $cardMetadata = [];
 
     protected $fillable = [
         self::ID,
@@ -807,6 +811,29 @@ class Entity extends Base\PublicEntity
         return $merchant->getPaymentFlows($iin);
     }
 
+    public function getIinRelationAttribute()
+    {
+        if ($this->relationLoaded('iinRelation') === true)
+        {
+            return $this->getRelation('iinRelation');
+        }
+
+        $iin = $this->getIin();
+
+        $app = App::getFacadeRoot();
+
+        $iinEntity = $app['repo']->iin->find($iin);
+
+        if (isset($iinEntity) === false)
+        {
+            return $iinEntity;
+        }
+
+        $this->iinRelation()->associate($iinEntity);
+
+        return $iinEntity;
+    }
+
     public function setPublicIssuerAttribute(array & $array)
     {
         // Allowing only for policy bazaar and shared merchant account
@@ -883,14 +910,32 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::EMI);
     }
 
+    protected function getNameAttribute()
+    {
+        $name = $this->getCardMetadata(self::NAME);
+
+        return (empty($name) === false) ? $name : $this->getAttributeFromArray(self::NAME);
+    }
+
+    protected function getIinAttribute()
+    {
+        $iin = $this->getCardMetadata(self::IIN);
+
+        return (empty($iin) === false) ? $iin : $this->getAttributeFromArray(self::IIN);
+    }
+
     protected function getExpiryMonthAttribute()
     {
-        return (int) $this->getAttributeFromArray(self::EXPIRY_MONTH);
+        $expiryMonth = $this->getCardMetadata(self::EXPIRY_MONTH);
+
+        return (empty($expiryMonth) === false) ? (int)$expiryMonth :(int) $this->getAttributeFromArray(self::EXPIRY_MONTH);
     }
 
     protected function getExpiryYearAttribute()
     {
-        return (int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
+        $expiryYear = $this->getCardMetadata(self::EXPIRY_YEAR);
+
+        return (empty($expiryYear) === false) ? (int)$expiryYear :(int) $this->getAttributeFromArray(self::EXPIRY_YEAR);
     }
 
     protected function isPublicExpiryAllowed()
@@ -1401,5 +1446,24 @@ class Entity extends Base\PublicEntity
         }
 
         return [];
+    }
+
+    public function getCardMetadata($key = null)
+    {
+        if ($key === null)
+        {
+            return null;
+        }
+
+        if (isset($this->cardMetadata[$key]) === false)
+        {
+            $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this);
+        }
+        return $this->cardMetadata[$key] ?? null;
+    }
+
+    public function setCardMetaData($metaDataArray)
+    {
+        $this->cardMetadata = $metaDataArray;
     }
 }

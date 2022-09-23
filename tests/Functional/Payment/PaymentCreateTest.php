@@ -1239,6 +1239,44 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($payment['status'], 'authorized');
     }
 
+    public function testPaymentS2SPaymentWithSaveandFetchMetaData()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $order = $this->fixtures->create('order', ['amount' => 50000]);
+
+        $payment['capture'] = true;
+        $payment['order_id'] = $order->getPublicId();
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'vault_bu_namespace_card_metadata_variant')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $response = $this->doS2SPrivateAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals($payment['status'], 'authorized');
+    }
+
     public function testPaymentS2SDisable()
     {
         $this->ba->privateAuth();

@@ -161,6 +161,15 @@ class TestCase extends IlluminateTestCase
                 case 'detokenize':
                     $response['value'] = base64_decode($input['token']);
                     break;
+                case 'cards/metadata':
+                    break;
+                case 'cards/metadata/fetch':
+                    $response['token'] = $input['token'];
+                    $response['iin'] = $input['411111'];
+                    $response['expiry_month'] = '02';
+                    $response['expiry_year'] = '30';
+                    $response['name'] = 'cards';
+                    break;
 
                 case 'validate':
                     if ($input['token'] === 'fail')
@@ -168,7 +177,6 @@ class TestCase extends IlluminateTestCase
                         $response['success'] = false;
                     }
                     break;
-
                 case 'token/renewal' :
                     $response['expiry_time'] = date('Y-m-d H:i:s', strtotime('+1 year'));
                     break;

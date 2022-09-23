@@ -8,6 +8,7 @@ use Mockery;
 
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\Card\Entity;
 use RZP\Models\FundAccount;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Network;
@@ -1416,7 +1417,7 @@ class FundAccountsTest extends TestCase
             switch ($route)
             {
                 case 'tokenize':
-                    $response['token']       = 'pay2_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
                     $response['fingerprint'] = null;
                     $response['scheme']      = '2';
                     break;
@@ -1437,7 +1438,84 @@ class FundAccountsTest extends TestCase
 
         $this->assertEquals($response['card']['input_type'], 'card');
 
-        $this->assertEquals('pay2_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+        $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
+    }
+
+    public function testCreateNonSavedCardFundAccountBySavingCardMetaData()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::PAYOUT_NAMESPACE_CHANGES,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS,
+                                                Feature\Constants::VAULT_COMPLIANCE_CHECK]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::VAULT_BU_NAMESPACE_MIGRATION             => 'on',
+                                       RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT => 'on']);
+
+        $this->fixtures->create('contact', ['id' => '1000000contact', 'name' => 'Mr. John']);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '2';
+                    break;
+
+                case 'cards/metadata/fetch':
+                    $response['token']        = $input['token'];
+                    $response['iin']          = '411111';
+                    $response['expiry_month'] = '08';
+                    $response['expiry_year']  = '2025';
+                    $response['name']         = 'chirag';
+                    break;
+
+                case 'cards/metadata':
+                    self::assertArrayKeysExist($input, [
+                        Entity::TOKEN,
+                        Entity::NAME,
+                        Entity::EXPIRY_YEAR,
+                        Entity::EXPIRY_MONTH,
+                        Entity::IIN
+                    ]);
+
+                    self::assertEquals(5, count($input));
+                    break;
+            }
+
+            return $response;
+        };
+
+        $app = App::getFacadeRoot();
+
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$app])->makePartial();
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        // Expectations set to 4 times: getTokenAndFingerprint, saveCardMetaData, create account FTS, Nodal bene detokenize
+        $cardVault->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                  ->andReturnUsing($callable);
+
+        $this->ba->privateAuth();
+
+        $testData = &$this->testData['testCreateNonSavedCardFundAccount'];
+
+        $response = $this->startTest($testData);
+
+        $card = $this->getDbLastEntity('card');
+
+        $this->assertNull($card['trivia']);
+
+        $this->assertEquals($response['card']['input_type'], 'card');
+
+        $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $card['vault_token']);
     }
 
     public function testCreateCardFundAccountWithNamespaceChanges()
@@ -1772,7 +1850,7 @@ class FundAccountsTest extends TestCase
             switch ($route)
             {
                 case 'tokenize':
-                    $response['token']       = 'pay2_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
                     $response['fingerprint'] = null;
                     $response['scheme']      = '2';
                     break;

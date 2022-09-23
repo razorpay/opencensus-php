@@ -39,6 +39,9 @@ final class RazorxTreatment
     //Razorx treatment constant, allows system to send new bu namespace to vault service
     const VAULT_BU_NAMESPACE_MIGRATION  = 'vault_bu_namespace_migration';
 
+    // razorx treatment constant, allows saving and fetching card meta data in vault service temporarily
+    const VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT = 'vault_bu_namespace_card_metadata_variant';
+
     //Razorx treatment constant, allows system to save the cards data temporarily in vault db
     const VAULT_TEMP_SAVE  = 'vault_temp_save';
 

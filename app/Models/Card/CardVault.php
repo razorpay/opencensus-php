@@ -2,18 +2,29 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Exception;
+use App;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Customer\Token\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Models\P2p\Base\Libraries\Card;
-use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Detail;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\Customer\Token\Core as TokenCore;
 
 class CardVault extends Base\Core
 {
+    const NAME                             = 'name';
+    const IIN                              = 'iin';
+    const EXPIRY_MONTH                     = 'expiry_month';
+    const EXPIRY_YEAR                      = 'expiry_year';
+    const NUMBER                           = 'number';
+    const TOKEN                            = 'token';
+    const TEMP_VAULT_TOKEN_PREFIX          = 'pay_';
+
     public function __construct()
     {
         parent::__construct();
@@ -193,6 +204,152 @@ class CardVault extends Base\Core
         }
     }
 
+    public function saveCardMetaData($card, $input, $isRzpX = false)
+    {
+        try
+        {
+           if (str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false)
+           {
+               return [];
+           }
+
+            $app = App::getFacadeRoot();
+
+            $mode = $app['rzp.mode'] ?? Mode::LIVE;
+
+            /** Razorx experiment to save the card meta data temporarily in vault db
+             * for a  period of 5 days
+             *
+             * @var  $tempCardMetaDataVariant
+             */
+            $tempCardMetaDataVariant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+                                                                          RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT,
+                                                                          $mode);
+
+            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_RAZORX_VARIANT,
+                               [
+                                   'temp_save_card_meta_variant' => $tempCardMetaDataVariant,
+                                   'action'                      => 'save',
+                               ]);
+
+            $expiryYear  = "";
+            $expiryMonth = "";
+
+            if ((isset($input[self::EXPIRY_YEAR])) and
+                (strlen($input[self::EXPIRY_YEAR]) === 2))
+            {
+                $expiryYear = '20' . $input[self::EXPIRY_YEAR];
+            }
+            else
+            {
+                $expiryYear = $input[self::EXPIRY_YEAR];
+            }
+
+            if (isset($input[self::EXPIRY_MONTH]))
+            {
+                $expiryMonth = ltrim($input[self::EXPIRY_MONTH], '0');
+            }
+
+            // tokenised payment will not have the vault token with pay_ hence we are reading 6 digit iin
+
+            $payload = [
+                self::NAME         => $input[self::NAME] ?? "",
+                self::EXPIRY_MONTH => $expiryMonth,
+                self::EXPIRY_YEAR  => $expiryYear,
+                self::IIN          => substr($input[self::NUMBER], 0, 6),
+                self::TOKEN        => $card->getVaultToken(),
+            ];
+
+            if ($tempCardMetaDataVariant !== 'on')
+            {
+                return $payload;
+            }
+
+            $this->cardVault->saveCardMetaData($payload);
+
+            // returning payload so that we don't have to call first time and we will have these details in memory
+            return $payload;
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::VAULT_CARD_METADATA_SAVE_FAILED,
+                [
+                    'message' => 'Failed to save card meta data'
+                ]
+            );
+        }
+
+        return [];
+    }
+
+    public function getCardMetaData($card)
+    {
+        try
+        {
+            if (str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false)
+            {
+                return [];
+            }
+
+            $app = App::getFacadeRoot();
+
+            $mode = $app['rzp.mode'] ?? Mode::LIVE;
+
+            $tempCardMetaDataVariant =  $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(),
+                                                                           RazorxTreatment::VAULT_BU_NAMESPACE_CARD_METADATA_VARIANT,
+                                                                           $mode);
+
+            $this->trace->info(TraceCode::VAULT_TEMP_CARD_METADATA_RAZORX_VARIANT,
+                               [
+                                   'temp_card_metadata_variant'          => $tempCardMetaDataVariant,
+                                   'action'                              => 'fetch',
+                               ]);
+
+            if ($tempCardMetaDataVariant !== 'on')
+            {
+                return [];
+            }
+
+            $createdtAt = array_key_exists(CardEntity::CREATED_AT, $card->getAttributes()) ?
+                $card[CardEntity::CREATED_AT] : Carbon::now(Timezone::IST)->getTimestamp();
+
+            $diff = Carbon::now(Timezone::IST)->getTimestamp() - $createdtAt;
+
+            // checking if we are hitting card meta data fetch api after 5 days (5*24*60*60 seconds)
+            if ($diff > 432000)
+            {
+                $this->trace->info(TraceCode::CARD_METADATA_FETCH_AFTER_5_DAYS, [
+                    'card_id'               => $card->getId(),
+                    'created_at'            => $createdtAt,
+                    'difference'            => $diff,
+                ]);
+
+                $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_5_DAYS);
+            }
+            else
+            {
+                $this->trace->count(Metric::CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY);
+            }
+
+            $this->trace->count(Metric::CARD_METADATA_FETCH);
+
+            $input = [
+                self::TOKEN => $card->getVaultToken()
+            ];
+
+            return $this->cardVault->getCardMetaData($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::VAULT_CARD_METADATA_FETCH_FAILED,
+                [
+                    'message' => 'Failed to fetch card meta data'
+                ]
+            );
+        }
+    }
 
     public function getBuNamespaceIfApplicable($input, $isRzpX = false ,$gateway=null)
     {

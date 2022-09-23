@@ -296,6 +296,20 @@ class CardVault
         return $response;
     }
 
+    public function saveCardMetaData($payload)
+    {
+        $response = $this->sendRequest('cards/metadata', 'post', $payload);
+
+        return $response;
+    }
+
+    public function getCardMetaData($payload)
+    {
+        $response = $this->sendRequest('cards/metadata/fetch', 'post', $payload);
+
+        return $response;
+    }
+
     public function validateToken($token)
     {
         $input = [
@@ -450,7 +464,6 @@ class CardVault
             'options' => $options,
             'content' => $data
         ];
-
 
 
         $this->trace->info(TraceCode::CARD_VAULT_REQUEST, [

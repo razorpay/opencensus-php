@@ -64,20 +64,6 @@ class Core extends Base\Core
 
         $this->card = $card;
 
-        $iin = $this->fillNetworkDetails($card, $input);
-
-        $this->trace->info(
-            TraceCode::UPDATED_IIN_AND_CARD_ENTITY,
-            [
-                'iin_entity = '   => $iin,
-                'card_entity = '  => $card,
-            ]);
-
-        if (empty($iin) === false)
-        {
-            $card->iinRelation()->associate($iin);
-        }
-
         /**
          * Allow setting of vault token and fingerprint if it is the PG flow
          *
@@ -101,13 +87,20 @@ class Core extends Base\Core
             }
         }
 
-        $this->repo->saveOrFail($card);
+        $this->saveCardMetaData($card, $input, $isRzpX);
 
-        $this->saveParValue($card, $input);
+        $iin = $this->fillNetworkDetails($card, $input);
+
+        if (empty($iin) === false)
+        {
+            $card->iinRelation()->associate($iin);
+        }
 
         if ($dummyProcessing === false)
         {
             $this->repo->saveOrFail($card);
+
+            $this->saveParValue($card, $input);
         }
 
         return $card;
@@ -129,15 +122,11 @@ class Core extends Base\Core
 
                 $this->trace->info(TraceCode::ASYNC_FETCH_PAR_RAZORX_VARIANT, [
                     'card'           => $card,
-                    'input'          => $input,
                     'razorx_variant' => $variant,
                 ]);
 
                 ParAsyncTokenisationJob::dispatch($this->mode, $card->getId(), $input["number"]);
 
-                $card = $this->repo->card->getCardById($card->getId());
-
-                $this->card = $card;
             }
         }
         catch (\Throwable $e)
@@ -636,6 +625,30 @@ class Core extends Base\Core
         $card->setVault($vault);
     }
 
+    public function saveCardMetaData(Card\Entity $card, array $input, $isRzpX = false)
+    {
+        $cardMetaData = [];
+
+        try
+        {
+            $cardVault    = (new Card\CardVault);
+
+            $cardMetaData = $cardVault->saveCardMetaData($card, $input, $isRzpX);
+
+            $card->setCardMetaData($cardMetaData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::VAULT_CARD_METADATA_SAVE_FAILED
+            );
+        }
+
+        return $cardMetaData;
+    }
+
     public function createDuplicateCard($input, $merchant)
     {
         $createInput = [
@@ -655,7 +668,7 @@ class Core extends Base\Core
 
     public function fillNetworkDetails($card, $input)
     {
-        $iinNumber = $card->getIin();
+        $iinNumber = $card->getAttributes()[Card\Entity::IIN];
 
         if ((empty($input[Card\Entity::TOKENISED]) === false) and
             (boolval($input[Card\Entity::TOKENISED]) === true) and

@@ -503,7 +503,7 @@ class Core extends Base\Core
             $token = $this->repo->token->findByPublicIdAndMerchant($id, $merchant);
         }
 
-        if (($token->getMerchantId() !== $merchant->getId()) || (empty($token->getCustomerId()) === false))
+        if (($token->getMerchantId() !== $merchant->getId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TOKEN_NOT_FOUND,
