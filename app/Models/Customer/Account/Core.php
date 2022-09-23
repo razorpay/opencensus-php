@@ -527,7 +527,7 @@ class Core extends Base\Core
 
         $startTime = millitime();
 
-        $response = [];
+        $traceResponse = [];
 
         $ex = '';
 
@@ -571,7 +571,13 @@ class Core extends Base\Core
                 $startTime
             );
 
-            $response = $address;
+            if (isset($address[Entity::SHIPPING_ADDRESS]) === true) {
+                $traceResponse[Entity::SHIPPING_ADDRESS] = $address[Entity::SHIPPING_ADDRESS]->toArrayPublic();
+            }
+
+            if (isset($address[Entity::BILLING_ADDRESS]) === true) {
+                $traceResponse[Entity::BILLING_ADDRESS] = $address[Entity::BILLING_ADDRESS]->toArrayPublic();
+            }
 
             return $address;
         }
@@ -586,7 +592,7 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::GLOBAL_CREATE_ADDRESS_REQUEST,
                         [
                             'request' =>  $this->getMaskedDetails($input),
-                            'response' => $this->getMaskedDetails($response) ,
+                            'response' => $this->getMaskedDetails($traceResponse) ,
                             'exception'=> $ex
                         ]
                 );
@@ -594,7 +600,6 @@ class Core extends Base\Core
                 $this->trace->error(TraceCode::GLOBAL_CREATE_ADDRESS_ERROR,
                         [
                             'request' => $this->getMaskedDetails($input),
-                            'response' => $this->getMaskedDetails($response) ,
                             'exception'=> $ex->getTrace()
                         ]
                 );
@@ -1213,11 +1218,29 @@ class Core extends Base\Core
         if (empty($data['email']) === false) {
             $data['email'] = mask_email($data['email']);
         }
-        if (empty($data['line1']) === false) {
-            $data['line1'] = mask_by_percentage($data['line1']);
+
+        if (empty($data) === false && empty($data['shipping_address']) === false) {
+            if(empty($data['shipping_address']['line1']) === false) {
+                $data['shipping_address']['line1'] = mask_by_percentage($data['shipping_address']['line1']);
+            }
+            if (empty($data['shipping_address']['line2']) === false) {
+                $data['shipping_address']['line2'] = mask_by_percentage($data['shipping_address']['line2']);
+            }
+            if ( empty($data['shipping_address']['contact']) === false) {
+                $data['shipping_address']['contact'] =  mask_phone($data['shipping_address']['contact']);
+            }
         }
-        if (empty($data['line2']) === false) {
-            $data['line2'] = mask_by_percentage($data['line2']);
+
+        if (empty($data) === false && empty($data['billing_address']) === false) {
+            if(empty($data['billing_address']['line1']) === false) {
+                $data['billing_address']['line1'] = mask_by_percentage($data['billing_address']['line1']);
+            }
+            if (empty($data['billing_address']['line2']) === false) {
+                $data['billing_address']['line2'] = mask_by_percentage($data['billing_address']['line2']);
+            }
+            if ( empty($data['billing_address']['contact']) === false) {
+                $data['shipping_address']['contact'] =  mask_phone($data['billing_address']['contact']);
+            }
         }
         return $data;
     }
