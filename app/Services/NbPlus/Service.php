@@ -178,7 +178,7 @@ class Service
 
         try
         {
-            $this->checkForErrors($response, $code);
+            $this->checkForErrors($response, $code, $data);
         }
         catch (\Exception $exc)
         {
@@ -193,6 +193,20 @@ class Service
         }
 
         return $response[Response::RESPONSE];
+    }
+
+    protected function getMetaData($input)
+    {
+        $meta_data = [];
+
+        if(array_key_exists('order_id', $input))
+        {
+            $meta_data['order_id'] = $input['order_id'];
+        }
+
+        $meta_data['payment_id'] = $input['payment']['id'];
+
+        return $meta_data;
     }
 
     protected function sendRawRequest($request)
@@ -341,7 +355,7 @@ class Service
 
     // ----------------------- Error ---------------------------------------------
 
-    public function checkForErrors($response, $code)
+    public function checkForErrors($response, $code, $data)
     {
         if (empty($response) === true)
         {
@@ -353,6 +367,17 @@ class Service
         if (($code === 200) and (empty($response[Response::ERROR]) === true))
         {
             return;
+        }
+
+        if(array_key_exists('input', $data))
+        {
+            $input = $data['input'];
+
+            if (array_key_exists('method', $input) and $input['method'] === Payment\Gateway::PAYLATER and
+                array_key_exists('provider', $input) and $input['provider'] === Payment\Processor\PayLater::LAZYPAY)
+            {
+                $response['meta_data'] = $this->getMetaData($input);
+            }
         }
 
         $error = $response[Response::ERROR];
@@ -407,10 +432,17 @@ class Service
                 throw new Exception\GatewayTimeoutException($errorCode);
 
             default:
+                $data = [];
+
+                if(isset($response['meta_data']) === true)
+                {
+                    $data = array_merge($response['meta_data'], $data);
+                }
+
                 $error = $response[Response::ERROR];
                 $gatewayErrorCode = $error[Error::CAUSE]['gateway_error_code'] ?? null;
                 $gatewayErrorDesc = $error[Error::CAUSE]['gateway_error_description'] ?? null;
-                throw new Exception\GatewayErrorException($errorCode, $gatewayErrorCode, $gatewayErrorDesc);
+                throw new Exception\GatewayErrorException($errorCode, $gatewayErrorCode, $gatewayErrorDesc, $data);
         }
     }
 
